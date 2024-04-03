@@ -23,21 +23,27 @@
 class REFLECTED_API A : public Object {
     GENERATED_BODY()
 
+public:
     PROPERTY(K)
-    int d;
+    int d = 20;
 
-    PROPERTY(Serialized, Name=APC)
-    int ABC;
+    PROPERTY(Serialized, Name = APC)
+    int ABC{};
 };
 
 class REFLECTED C : public Object {
     GENERATED_BODY()
 
+private:
+
     PROPERTY(K)
     int d;
 
-    PROPERTY(Serialized, Name=APC)
+    PROPERTY(Serialized, Name = APC)
     int ABC;
+
+    PROPERTY(F)
+    std::vector<A> a = {A{}};
 };
 
 //RTTR_REGISTRATION {

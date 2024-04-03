@@ -10,7 +10,7 @@
 
 
 class Object {
-    RTTR_EN
+
 };
 
 

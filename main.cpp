@@ -19,10 +19,18 @@ struct TestStruct {
 //                .property("test_string", &TestStruct::test_string);
 //};
 
+template <typename T>
+using Ref = std::reference_wrapper<T>;
+
 int main() {
-    rttr::type t = rttr::type::get<A>();
-    for (const auto &item: t.get_properties()) {
-        std::cout << item.get_name() << std::endl;
-    }
+
+    C obj{};
+    property prop = type::get<C>().get_property("a");
+    variant var = prop.get_value(obj);
+    std::cout << var.is_type<Ref<std::vector<A>>>();
+    auto ref = variant_cast<Ref<std::vector<A>>>(var);
+    ref.get()[0].ABC = 50;
+    ref.get().emplace_back();
+//    vec[0].ABC = 50;
     return 0;
 }

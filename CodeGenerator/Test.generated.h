@@ -21,21 +21,22 @@ public:\
     RTTR_REGISTRATION_IN_CLASS(A)\
     GENERATED_CODE_24
 
-#define GENERATED_CODE_34 \
+#define GENERATED_CODE_35 \
 {\
 rttr::registration::class_<C>("C")\
     .property("d", &C::d)(rttr::metadata("K", "True"))\
     .property("APC", &C::ABC)(rttr::metadata("Serialized", "True"))\
+    .property("a", &C::a)(rttr::metadata("F", "True"))\
 ;\
 }
 
-#define GENERATED_BODY_INTERNAL_Test_h_34 \
+#define GENERATED_BODY_INTERNAL_Test_h_35 \
 public:\
     typedef Object Super;\
     typedef C ThisClass;\
     RTTR_ENABLE(Object)\
     RTTR_REGISTRATION_IN_CLASS(C)\
-    GENERATED_CODE_34
+    GENERATED_CODE_35
 #undef CURRENT_FILE_ID
 #define CURRENT_FILE_ID Test_h
 #endif

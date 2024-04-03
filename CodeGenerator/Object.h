@@ -8,6 +8,8 @@
 #ifndef ELBOWENGINE_OBJECT_H
 #define ELBOWENGINE_OBJECT_H
 #include "rttr/registration"
+#include "rttr/policy.h"
+
 
 
 #define RTTR_REGISTRATION_IN_CLASS(name)                                      \

@@ -12,7 +12,7 @@ def parse_meta(meta: str):
     for meta_value in metas:
         if '=' in meta_value:
             name, value = meta_value.split('=')
-            value = value.strip("\"")
+            value = value.strip().strip("\"").strip()
             if name.strip() != "":
                 rtn_metas[name.strip()] = value
         else:
@@ -270,7 +270,7 @@ class FileWatcher:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Code Generator')
     parser.add_argument('--libpath', type=str, help='Path to the clang library', required=True)
-    parser.add_argument('--filefolder', type=str, help='File path to parser and generate code', required=True)
+    parser.add_argument('--file', type=str, help='File path to parser and generate code', required=True)
     parser.add_argument('--genpath', type=str, help='File path to generated code', required=True)
 
     clang_lib_path = parser.parse_args().libpath
