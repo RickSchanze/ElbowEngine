@@ -1,2 +1,0 @@
-#include "Test.generated.cpp"
-

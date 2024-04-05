@@ -1,14 +1,13 @@
+#include "CodeGenerator/Test.h"
 #include "rttr/registration"
 #include <iostream>
-#include "CodeGenerator/Test.h"
 
 using namespace rttr;
 
-struct TestStruct {
+struct TestStruct
+{
 
-    TestStruct() {
-        test_string = L"你好！";
-    }
+    TestStruct() { test_string = L"你好！"; }
 
     std::wstring test_string;
 };
@@ -19,18 +18,20 @@ struct TestStruct {
 //                .property("test_string", &TestStruct::test_string);
 //};
 
-template <typename T>
+template<typename T>
 using Ref = std::reference_wrapper<T>;
 
 int main() {
 
-    C obj{};
+    C        obj{};
     property prop = type::get<C>().get_property("a");
-    variant var = prop.get_value(obj);
+    variant  var  = prop.get_value(obj);
     std::cout << var.is_type<Ref<std::vector<A>>>();
-    auto ref = variant_cast<Ref<std::vector<A>>>(var);
+    auto ref         = variant_cast<Ref<std::vector<A>>>(var);
     ref.get()[0].ABC = 50;
     ref.get().emplace_back();
-//    vec[0].ABC = 50;
+    auto rr = MakeRef(obj);
+    auto r  = std::ref(obj);
+    //    vec[0].ABC = 50;
     return 0;
 }

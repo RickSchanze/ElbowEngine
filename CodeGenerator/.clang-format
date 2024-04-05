@@ -14,7 +14,7 @@ AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveDeclarations: true
   # 对齐连续位域字段的风格
   # AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
-# 对齐连续宏定义的风格
+  # 对齐连续宏定义的风格
 # AlignConsecutiveMacros: Consecutive #clang-format 12
 # 用于在使用反斜杠换行中对齐反斜杠的选项
 AlignEscapedNewlines: Left
@@ -88,7 +88,7 @@ BraceWrapping:
 BreakBeforeBinaryOperators: None
   # 在大括号前换行: Attach(始终将大括号附加到周围的上下文), Linux(除函数、命名空间和类定义，与Attach类似),
   #   Mozilla(除枚举、函数、记录定义，与Attach类似), Stroustrup(除函数定义、catch、else，与Attach类似),
-#   Allman(总是在大括号前换行), GNU(总是在大括号前换行，并对于控制语句的大括号增加额外的缩进), WebKit(在函数前换行), Custom
+  #   Allman(总是在大括号前换行), GNU(总是在大括号前换行，并对于控制语句的大括号增加额外的缩进), WebKit(在函数前换行), Custom
 #   注：这里认为语句块也属于函数
 # 大括号的换行规则
 BreakBeforeBraces: Custom
@@ -97,7 +97,7 @@ BreakBeforeTernaryOperators: true
 # 要使用的构造函数初始化式样式
 BreakConstructorInitializers: AfterColon
 # 每行字符的限制，0表示没有限制
-ColumnLimit: 100
+ColumnLimit: 0
 # 如果为true，则连续的名称空间声明将在同一行上。如果为false，则在新行上声明每个名称空间。
 CompactNamespaces: false
 # 构造函数的初始化列表的缩进宽度
@@ -153,7 +153,7 @@ PenaltyBreakFirstLessLess:  120
 PenaltyBreakString: 1000
 # 对于每个在行字符数限制之外的字符的penalty
 PenaltyExcessCharacter: 1000000
-# 对每一个空格缩进字符的penalty(相对于前导的非空格列计算)
+  # 对每一个空格缩进字符的penalty(相对于前导的非空格列计算)
 # PenaltyIndentedWhitespace: 0
 # 将函数的返回类型放到它自己的行的penalty
 PenaltyReturnTypeOnItsOwnLine: 120
@@ -171,7 +171,7 @@ SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 # 在 template 关键字后插入一个空格
 SpaceAfterTemplateKeyword: false
-# 定义在什么情况下在指针限定符之前或之后放置空格
+  # 定义在什么情况下在指针限定符之前或之后放置空格
 # SpaceAroundPointerQualifiers: Before
 # 在赋值运算符之前添加空格
 SpaceBeforeAssignmentOperators: true

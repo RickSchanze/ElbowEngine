@@ -1,0 +1,85 @@
+/**
+ * @file ReflectedEntityFinder.h
+ * @author Echo 
+ * @Date 24-4-5
+ * @brief 
+ */
+
+#ifndef CODEGENERATOR_REFLECTEDENTITYFINDER_H
+#define CODEGENERATOR_REFLECTEDENTITYFINDER_H
+
+#include <utility>
+
+#include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "json/json.h"
+
+/**
+ * 需要反射的类的信息
+ */
+class ClassEntity {
+    using CXXRecordDecl = clang::CXXRecordDecl;
+    using FieldDecl     = clang::FieldDecl;
+    using FunctionDecl  = clang::FunctionDecl;
+
+public:
+    ClassEntity() = delete;
+    explicit ClassEntity(const clang::CXXRecordDecl* record, Json::Value& Config,
+                         int ReflDeclLineNumber, std::string CurrentFileID) :
+        mRecord(record), mConig(Config), mReflDeclLineNumber(ReflDeclLineNumber),
+        mCurrentFileID(std::move(CurrentFileID)) {}
+
+    void AddField(const FieldDecl* field) { mFields.push_back(field); }
+
+    void Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const;
+    void GenerateField(const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,
+                       llvm::raw_fd_ostream& os) const;
+
+    [[nodiscard]] std::map<std::string, std::string> GetFieldAttributes(
+        const std::string& AttrStr) const;
+
+    [[nodiscard]] std::string GetBaseClassName() const;
+
+    [[nodiscard]] std::string GetClassName() const;
+
+private:
+    const clang::CXXRecordDecl*      mRecord = nullptr;
+    std::vector<const FieldDecl*>    mFields;
+    std::vector<const FunctionDecl*> mFunctions;
+    std::string                      mCurrentFileID;   // 当前文件ID
+    Json::Value&                     mConig;
+    int                              mReflDeclLineNumber;   // 声明"REFL"的位置
+};
+
+/**
+ * 寻找所有需要反射的实体
+ */
+class ReflectedEntityFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
+    using SourceManager = clang::SourceManager;
+    using ASTContext    = clang::ASTContext;
+    using MatchFinder   = clang::ast_matchers::MatchFinder;
+
+public:
+    explicit ReflectedEntityFinder(Json::Value& Config) : mConfig(Config) {}
+
+    virtual void run(const MatchFinder::MatchResult& Result) override;
+    virtual void onEndOfTranslationUnit() override;
+
+protected:
+    void FoundRecord(const clang::CXXRecordDecl* Decl);
+    void FoundField(const clang::FieldDecl* Decl);
+
+
+private:
+    ASTContext*              mContext       = nullptr;
+    SourceManager*           mSourceManager = nullptr;
+    std::string              mOriginalFilename;
+    std::string              mGeneratedFilename;
+    std::vector<ClassEntity> mEntities;
+    bool                     bThisFileHasReflectedEntity = false;
+    Json::Value&             mConfig;
+    std::string              mFileID;
+};
+
+
+
+#endif   //CODEGENERATOR_REFLECTEDENTITYFINDER_H
