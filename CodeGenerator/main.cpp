@@ -6,15 +6,16 @@
 #include <fstream>
 #include <iostream>
 
+using namespace clang::tooling;
+
 static llvm::cl::OptionCategory gToolCategory{"Reflection Code Generator"};
+
+static llvm::cl::list<std::string> gInclude("inc", llvm::cl::desc("includ paths"), llvm::cl::value_desc("path"),
+                                            llvm::cl::cat(gToolCategory));
 
 bool VerifyConfigFile(Json::Value& Value) {
     if (!Value.isMember("DefineMacros")) {
         std::cerr << "Config \"DefineMacros\" lacks";
-        return false;
-    }
-    if (!Value.isMember("Includes")) {
-        std::cerr << "Config \"Includes\" lacks";
         return false;
     }
     if (!Value.isMember("ExtraParams")) {
@@ -22,6 +23,15 @@ bool VerifyConfigFile(Json::Value& Value) {
         return false;
     }
     return true;
+}
+
+void AddIncludePaths(ClangTool &tool)
+{
+    for (const auto &path : gInclude)
+    {
+        std::string path_command = std::string("-I") + path;
+        tool.appendArgumentsAdjuster(getInsertArgumentAdjuster(path_command.c_str()));
+    }
 }
 
 int main(int argc, const char** argv) {
@@ -78,5 +88,6 @@ int main(int argc, const char** argv) {
     }
     IgnoringDiagConsumer Consumer;
     Tool.setDiagnosticConsumer(&Consumer);
+    AddIncludePaths(Tool);
     return Tool.run(newFrontendActionFactory(&Finder).get());
 }

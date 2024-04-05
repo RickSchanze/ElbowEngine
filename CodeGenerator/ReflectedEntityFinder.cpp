@@ -139,6 +139,7 @@ void ClassEntity::GenerateField(const clang::FieldDecl*                   Decl,
                                            std::make_format_args(FieldName, GetClassName(), FieldDeclName));
     for (const auto& [Key, Value]: AttrMap) {
         if (Key == "Name") continue;
+        if (Key == "Reflected") continue;
         RegisterStr += std::vformat(R"((rttr::metadata("{}", "{}")))", std::make_format_args(Key, Value));
     }
     if (mConig.isMember("RefWrapperType")) {

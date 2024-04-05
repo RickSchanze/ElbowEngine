@@ -86,8 +86,11 @@ private:                                                                        
 // GENERATED_BODY定义
 #define GENRATED_BODY_COMBINE_IMPL(A, B, C, D) A##B##C##D
 #define GENERATED_BODY_COMBINE_IMPL(A, B, C, D) GENRATED_BODY_COMBINE_IMPL(A, B, C, D)
+#ifndef REFLECTION
 #define GENERATED_BODY(...) GENERATED_BODY_COMBINE_IMPL(GENERATED_BODY_, CURRENT_FILE_ID, _, __LINE__)
-
+#else
+#define GENERATED_BODY(...)
+#endif
 #ifndef REFLECTION
 #    define PROPERTY(...)
 #    define REFL
