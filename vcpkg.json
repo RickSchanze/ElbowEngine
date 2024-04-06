@@ -2,8 +2,14 @@
   "name" : "elbowengine",
   "version-string" : "1.0.0",
   "builtin-baseline" : "37c3e63a1306562f7f59c4c3c8892ddd50fdf992",
-  "dependencies" : [  {
+  "dependencies" : [ {
     "name" : "rttr",
     "version>=" : "0.9.6+20210811"
+  }, {
+    "name" : "spdlog",
+    "version>=" : "1.13.0"
+  }, {
+    "name" : "yaml-cpp",
+    "version>=" : "0.8.0#1"
   } ]
 }

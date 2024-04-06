@@ -79,7 +79,8 @@ class ReflectedEntityFinder final : public clang::ast_matchers::MatchFinder::Mat
     using MatchFinder   = clang::ast_matchers::MatchFinder;
 
 public:
-    explicit ReflectedEntityFinder(Json::Value& Config) : mConfig(Config) {}
+    explicit ReflectedEntityFinder(Json::Value& Config, std::string  OutputPath) :
+        mConfig(Config), mOutputPath(std::move(OutputPath)) {}
 
     virtual void run(const MatchFinder::MatchResult& Result) override;
     virtual void onEndOfTranslationUnit() override;
@@ -99,6 +100,7 @@ private:
     std::vector<EnumEntity> mEnumEntites;
     Json::Value& mConfig;
     std::string mFileID;
+    std::string mOutputPath;
 };
 
 

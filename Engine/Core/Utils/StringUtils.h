@@ -1,0 +1,35 @@
+/**
+ * @file StringUtils.h
+ * @author Echo 
+ * @Date 24-4-6
+ * @brief 
+ */
+
+#ifndef STRINGUTILS_H
+#define STRINGUTILS_H
+
+#include "Core/CoreDef.h"
+
+
+class StringUtils {
+public:
+    /**
+     * 将String(std::wstring)转为std::string
+     * @note Windows下使用 因为使用了WideCharToMultiByte
+     * @param Str
+     * @return
+     */
+    static std::string ToStdString(const String& Str);
+
+    /**
+     * 将std::string转换为String(std::wstring)
+     * @note Windows下使用 因为使用了MultiByteToWideChar
+     * @param Str
+     * @return
+     */
+    static String FromStdString(const std::string& Str);
+};
+
+
+
+#endif //STRINGUTILS_H

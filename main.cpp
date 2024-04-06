@@ -1,37 +1,24 @@
-#include "CodeGenerator/Test.h"
-#include "rttr/registration"
+#include "Core/Log/Logger.h"
+#include "Core/Object/Object.h"
+#include "windows.h"
+
 #include <iostream>
 
-using namespace rttr;
-
-struct TestStruct
-{
-
-    TestStruct() { test_string = L"你好！"; }
-
-    std::wstring test_string;
-};
-
-//RTTR_REGISTRATION{
-//        registration::class_<TestStruct>("TestStruct")
-//                .constructor<>()
-//                .property("test_string", &TestStruct::test_string);
-//};
-
-template<typename T>
-using Ref = std::reference_wrapper<T>;
-
 int main() {
-
-    C        obj{};
-    property prop = type::get<C>().get_property("a");
-    variant  var  = prop.get_value(obj);
-    std::cout << var.is_type<Ref<std::vector<A>>>();
-    auto ref         = variant_cast<Ref<std::vector<A>>>(var);
-    ref.get()[0].ABC = 50;
-    ref.get().emplace_back();
-    auto rr = MakeRef(obj);
-    auto r  = std::ref(obj);
-    //    vec[0].ABC = 50;
-    return 0;
+    // 让std::wcout 顺利运行
+    setlocale(LC_ALL, "zh_CN");
+    // 让spdlog不产生乱码
+    SetConsoleOutputCP(65001);
+    Object* Refl = new TestRefl{};
+    Refl->SetName(L"你好");
+    std::wcout << Refl->GetName() << std::endl;
+    auto t       = Refl->GetType();
+    auto proerty = t.get_property("Name");
+    String Str   = proerty.get_value(Refl).convert<String>();
+    bool Success = proerty.set_value(Refl, String(L"不太好"));
+    std::wcout << Success;
+    std::wcout << Refl->GetName() << std::endl;
+    Logger Logger{};
+    Refl->TestYaml();
+    std::wcout << Refl->GetName() << std::endl;
 }

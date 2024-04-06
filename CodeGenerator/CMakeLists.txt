@@ -31,8 +31,5 @@ target_link_libraries(CodeGenerator PRIVATE JsonCpp::JsonCpp)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(CodeGenerator PRIVATE RTTR::Core)
-
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(CodeGenerator PRIVATE clangAST clangASTMatchers clangBasic clangFrontend clangTooling)
-
-
-

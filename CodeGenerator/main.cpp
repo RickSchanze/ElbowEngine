@@ -15,6 +15,11 @@ static llvm::cl::list<std::string> gInclude(
     llvm::cl::cat(gToolCategory)
 );
 
+static llvm::cl::opt<std::string> gOutputPath(
+    "output-file-path", llvm::cl::desc("Output file path"), llvm::cl::value_desc("path"),
+    llvm::cl::cat(gToolCategory), llvm::cl::Required
+);
+
 bool VerifyConfigFile(const Json::Value& Value) {
     if (!Value.isMember("DefineMacros")) {
         std::cerr << "Config \"DefineMacros\" lacks";
@@ -50,7 +55,7 @@ int main(int argc, const char** argv) {
         return -1;
     }
 
-    ReflectedEntityFinder ClassFinder{Config};
+    ReflectedEntityFinder ClassFinder{Config, gOutputPath};
     MatchFinder Finder;
 
     static DeclarationMatcher ClassMatcher =

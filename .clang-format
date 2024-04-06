@@ -7,13 +7,13 @@ BasedOnStyle: LLVM
 # 访问说明符(public、private等)的偏移
 AccessModifierOffset: -4
 # 左括号(左圆括号、左尖括号、左方括号)后的对齐: Align, DontAlign, AlwaysBreak(总是在左括号后换行)
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: BlockIndent
 # 连续赋值时，对齐所有等号
 AlignConsecutiveAssignments: AcrossComments
 # 连续声明时，对齐所有声明的变量名
-AlignConsecutiveDeclarations: true
+AlignConsecutiveDeclarations: false
   # 对齐连续位域字段的风格
-  # AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
+# AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
 # 对齐连续宏定义的风格
 # AlignConsecutiveMacros: Consecutive #clang-format 12
 # 用于在使用反斜杠换行中对齐反斜杠的选项
@@ -21,12 +21,11 @@ AlignEscapedNewlines: Left
 # 水平对齐二元和三元表达式的操作数
 AlignOperands: Align
 # 对齐连续的尾随的注释
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
 # 如果函数调用或带括号的初始化列表不适合全部在一行时
 # 允许将所有参数放到下一行，即使BinPackArguments为false
 AllowAllArgumentsOnNextLine: true
-# 允许构造函数的初始化参数放在下一行
-AllowAllConstructorInitializersOnNextLine: true
 # 允许函数声明的所有参数在放在下一行
 AllowAllParametersOfDeclarationOnNextLine: true
 # 允许短的块放在同一行(Always 总是将短块合并成一行，Empty 只合并空块)
@@ -78,7 +77,7 @@ BraceWrapping:
   # 缩进大括号(整个大括号框起来的部分都缩进)
   IndentBraces: false
   # 空函数的大括号是否可以在一行
-  SplitEmptyFunction: false
+  SplitEmptyFunction: true
   # 空记录体(struct/class/union)的大括号是否可以在一行
   SplitEmptyRecord: false
   # 空名字空间的大括号是否可以在一行
@@ -87,7 +86,7 @@ BraceWrapping:
 # 在二元运算符前换行: None(在操作符后换行), NonAssignment(在非赋值的操作符前换行), All(在操作符前换行)
 BreakBeforeBinaryOperators: None
   # 在大括号前换行: Attach(始终将大括号附加到周围的上下文), Linux(除函数、命名空间和类定义，与Attach类似),
-  #   Mozilla(除枚举、函数、记录定义，与Attach类似), Stroustrup(除函数定义、catch、else，与Attach类似),
+#   Mozilla(除枚举、函数、记录定义，与Attach类似), Stroustrup(除函数定义、catch、else，与Attach类似),
 #   Allman(总是在大括号前换行), GNU(总是在大括号前换行，并对于控制语句的大括号增加额外的缩进), WebKit(在函数前换行), Custom
 #   注：这里认为语句块也属于函数
 # 大括号的换行规则

@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.27)
 project(ElbowEngine)
-
 set(CMAKE_CXX_STANDARD 20)
+set(REFLECTION_EXE "C:/Users/Echo/BaiduSyncDisk/Work/Projects/ElbowEngine/CodeGenerator/bin/CodeGenerator.exe")
+set(PYTHON_EXE "C:/Users/Echo/AppData/Local/Programs/Python/Python312/python.exe")
+execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGenerator.py
+        --reflection-tool-path=${REFLECTION_EXE}
+        --output-files-path=${CMAKE_SOURCE_DIR}/Generated
+        --process-files-path ${CMAKE_SOURCE_DIR}/Engine
+        --include-path ${CMAKE_SOURCE_DIR}/Engine ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include
+)
 
 if (MSVC)
     add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
@@ -9,10 +16,11 @@ if (MSVC)
     add_compile_options("/wd4244")
     add_compile_options("/wd4312")
 endif ()
-
+include_directories(${CMAKE_SOURCE_DIR}/Generated)
 add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 
 find_package(rttr CONFIG REQUIRED)
-target_link_libraries(ElbowEngine PRIVATE RTTR::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
