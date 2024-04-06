@@ -12,7 +12,7 @@ endif ()
 
 add_subdirectory(Engine)
 
-add_executable(ElbowEngine main.cpp CodeGenerator/Object.h CodeGenerator/Test.h)
+add_executable(ElbowEngine main.cpp)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(ElbowEngine PRIVATE RTTR::Core)

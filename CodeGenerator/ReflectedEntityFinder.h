@@ -14,6 +14,23 @@
 #include "json/json.h"
 
 /**
+ * 需要反射的枚举类的信息
+ */
+class EnumEntity {
+public:
+    explicit EnumEntity(const clang::EnumDecl* EnumDecl, std::string CurrentFileID) :
+        mEnumDecl(EnumDecl), mCurrentFileID(std::move(CurrentFileID)) {}
+    void AddConstant(const clang::EnumConstantDecl* Constant) { mConstants.push_back(Constant); }
+    void Generate(const clang::ASTContext* Context, llvm::raw_fd_ostream& OS) const;
+    [[nodiscard]] std::string GetEnumName() const;
+
+private:
+    const clang::EnumDecl* mEnumDecl;
+    std::vector<const clang::EnumConstantDecl*> mConstants;
+    std::string mCurrentFileID;
+};
+
+/**
  * 需要反射的类的信息
  */
 class ClassEntity {
@@ -23,37 +40,40 @@ class ClassEntity {
 
 public:
     ClassEntity() = delete;
-    explicit ClassEntity(const clang::CXXRecordDecl* record, Json::Value& Config,
-                         int ReflDeclLineNumber, std::string CurrentFileID) :
-        mRecord(record), mConig(Config), mReflDeclLineNumber(ReflDeclLineNumber),
-        mCurrentFileID(std::move(CurrentFileID)) {}
+    explicit ClassEntity(
+        const clang::CXXRecordDecl* RecordDecl, Json::Value& Config, std::string CurrentFileID
+    ) : mRecord(RecordDecl), mCurrentFileID(std::move(CurrentFileID)), mConig(Config) {}
 
     void AddField(const FieldDecl* field) { mFields.push_back(field); }
 
     void Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const;
-    void GenerateField(const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,
-                       llvm::raw_fd_ostream& os) const;
 
-    [[nodiscard]] std::map<std::string, std::string> GetFieldAttributes(
-        const std::string& AttrStr) const;
+    void GenerateField(
+        const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,
+        llvm::raw_fd_ostream& os
+    ) const;
+
+    [[nodiscard]] std::map<std::string, std::string> GetFieldAttributes(const std::string& AttrStr
+    ) const;
 
     [[nodiscard]] std::string GetBaseClassName() const;
+
+    [[nodiscard]] std::string GetClassQualifiedName() const;
 
     [[nodiscard]] std::string GetClassName() const;
 
 private:
-    const clang::CXXRecordDecl*      mRecord = nullptr;
-    std::vector<const FieldDecl*>    mFields;
+    const clang::CXXRecordDecl* mRecord = nullptr;
+    std::vector<const FieldDecl*> mFields;
     std::vector<const FunctionDecl*> mFunctions;
-    std::string                      mCurrentFileID;   // 当前文件ID
-    Json::Value&                     mConig;
-    int                              mReflDeclLineNumber;   // 声明"REFL"的位置
+    std::string mCurrentFileID;   // 当前文件ID
+    Json::Value& mConig;
 };
 
 /**
  * 寻找所有需要反射的实体
  */
-class ReflectedEntityFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
+class ReflectedEntityFinder final : public clang::ast_matchers::MatchFinder::MatchCallback {
     using SourceManager = clang::SourceManager;
     using ASTContext    = clang::ASTContext;
     using MatchFinder   = clang::ast_matchers::MatchFinder;
@@ -67,17 +87,18 @@ public:
 protected:
     void FoundRecord(const clang::CXXRecordDecl* Decl);
     void FoundField(const clang::FieldDecl* Decl);
-
+    void FoundEnum(const clang::EnumDecl* Decl);
+    void FoundEnumConstant(const clang::EnumConstantDecl* Decl);
 
 private:
-    ASTContext*              mContext       = nullptr;
-    SourceManager*           mSourceManager = nullptr;
-    std::string              mOriginalFilename;
-    std::string              mGeneratedFilename;
-    std::vector<ClassEntity> mEntities;
-    bool                     bThisFileHasReflectedEntity = false;
-    Json::Value&             mConfig;
-    std::string              mFileID;
+    ASTContext* mContext          = nullptr;
+    SourceManager* mSourceManager = nullptr;
+    std::string mOriginalFilename;
+    std::string mGeneratedFilename;
+    std::vector<ClassEntity> mRecordEntities;
+    std::vector<EnumEntity> mEnumEntites;
+    Json::Value& mConfig;
+    std::string mFileID;
 };
 
 
