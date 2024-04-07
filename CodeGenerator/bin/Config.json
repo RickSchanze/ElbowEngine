@@ -10,11 +10,16 @@
     "Array",
     "Map",
     "Set",
+    "HashMap",
     "StaticArray",
+    "SharedPtr",
+    "UniquePtr",
     "std::vector",
     "std::map",
     "std::set",
     "std::array",
-    "std::shared_ptr"
+    "std::shared_ptr",
+    "std::unique_ptr",
+    "std::unordered_map"
   ]
 }

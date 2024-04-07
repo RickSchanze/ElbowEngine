@@ -8,23 +8,21 @@
 #ifndef ELBOWENGINE_OBJECT_H
 #define ELBOWENGINE_OBJECT_H
 #include "Core/CoreDef.h"
-#include "Object.generated.h"
 
 class Object {
     RTTR_ENABLE()
     RTTR_REGISTRATION_FRIEND
-    REGISTRATION_IN_CLASS(Object_h, Object) {
-        rttr::registration::class_<Object>("Object").property("Name", &Object::mName);
-    }
+
+    friend class ObjectCreateHelper;
 
 public:
-    virtual ~Object() = default;
+    virtual ~Object();
 
     /**
      * 获取反射类型
      * @return rttr::typr
      */
-    virtual rttr::type GetType() const { return get_type(); }
+    [[nodiscard]] rttr::type GetType() const { return get_type(); }
 
 public:
     /**
@@ -34,24 +32,36 @@ public:
     [[nodiscard]] String GetName() const { return mName; }
 
     /**
+     * 获取对象的字符串表示
+     * @return
+     */
+    [[nodiscard]] virtual String ToString() const;
+
+    /**
+     * 获取对象ID
+     * @return
+     */
+    [[nodiscard]] uint32 GetID() const { return mID; }
+
+    /**
      * 设置对象的名字
      * @param Name
      */
     void SetName(String Name) { mName = std::move(Name); }
 
-    void TestYaml();
+    /**
+     * 对象是否还有效
+     * @return
+     */
+    [[nodiscard]] bool Valid() const;
 
 private:
-    String mName;
+    String mName;        // 对象名字
+    uint32 mID;          // 对象ID
+    bool   mIsGarbage;   // 对象是否应该被清除
 };
 
-class REFL TestRefl : public Object {
-    GENERATED_BODY(TestRefl)
-
-private:
-    PROPERTY(Name = "Test")
-    int32 C;
-};
-
+template <typename T>
+concept IsObject = std::is_base_of_v<Object, T>;
 
 #endif   //ELBOWENGINE_OBJECT_H

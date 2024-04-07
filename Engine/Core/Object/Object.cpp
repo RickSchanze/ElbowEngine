@@ -6,17 +6,25 @@
  */
 
 #include "Object.h"
+#include "Core/CoreGlobal.h"
+#include "Core/Log/Logger.h"
+#include "ObjectManager.h"
 
-#include "Core/Utils/StringUtils.h"
-#include "yaml-cpp/yaml.h"
+RTTR_REGISTRATION {
+    rttr::registration::class_<Object>("Object")
+        .property("Name", &Object::mName)
+        .property("Id", &Object::mID);
+}
 
-#include <fstream>
-void Object::TestYaml() {
-    // YAML::Node j;
-    // j["Name"] = StringUtils::ToStdString(GetName());
-    // std::ofstream stream("yaml.yaml");
-    // stream << j;
+Object::~Object() {
+    ObjectManager::Get().RemoveObject(mID);
+    gLogger.Info(L"Delete Object {}", mName);
+}
 
-    YAML::Node j1 = YAML::LoadFile("yaml.yaml");
-    SetName(StringUtils::FromStdString(j1["Name"].as<std::string>()));
+String Object::ToString() const {
+    return std::format(L"[Object] Name: {0}, Id: {1}", mName, mID);
+}
+
+bool Object::Valid() const {
+    return !mIsGarbage;
 }

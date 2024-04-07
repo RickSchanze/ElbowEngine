@@ -38,17 +38,18 @@ using StaticArray = std::array<T, Size>;
 
 // std::map -> Map
 #include <map>
-template<class KeyType, class ValueType, class Comparator = std::less<KeyType>,
-         class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
+template<
+    class KeyType, class ValueType, class Comparator = std::less<KeyType>,
+    class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 // basic typedefs
 #include <cstdint>
-typedef int8_t   int8;
-typedef int16_t  int16;
-typedef int32_t  int32;
-typedef int64_t  int64;
-typedef uint8_t  uint8;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
@@ -58,6 +59,53 @@ typedef uint64_t uint64;
 // std::string用于编写生成器
 #include <string>
 typedef std::wstring String;
+
+// std::optional -> Optional
+#include <optional>
+template<typename T>
+using Optional = std::optional<T>;
+
+// std::shared_ptr -> SharedPtr
+#include <memory>
+template<typename T>
+using SharedPtr = std::shared_ptr<T>;
+// std::unique_ptr -> UniquePtr
+template<typename T>
+using UniquePtr = std::unique_ptr<T>;
+// std::make_shared -> MakeShared
+template<typename T, typename... Args>
+SharedPtr<T> MakeShared(Args&&... args) {
+    return std::make_shared<T>(std::forward<Args>(args)...);
+}
+// std::make_unique -> MakeUnique
+template<typename T, typename... Args>
+UniquePtr<T> MakeUnique(Args&&... args) {
+    return std::make_unique<T>(std::forward<Args>(args)...);
+}
+
+// std::forward -> Forward
+template<typename T>
+constexpr T&& Forward(std::remove_reference_t<T>& Arg) noexcept {
+    return static_cast<T&&>(Arg);
+}
+
+// std::unordered_map -> HashMap
+#include <unordered_map>
+template<
+    class KeyType, class ValueType, class Hash = std::hash<KeyType>,
+    class KeyEqual = std::equal_to<KeyType>,
+    class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
+using HashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
+
+template<typename T>
+constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
+    static_assert(!std::is_lvalue_reference_v<T>, "Can not forward an rvalue as an lvalue.");
+    return static_cast<T&&>(Arg);
+}
+
+// std::wstring_view -> StringView
+#include <string_view>
+typedef std::wstring_view StringView;
 
 // 定义反射宏
 #include "rttr/policy.h"
@@ -126,4 +174,12 @@ private:                                                        \
     }
 
 #define GENERATED_ENUM(EnumName) GENERATED_ENUM_IMPL(EnumName, CURRENT_FILE_ID)
+
+
+// // 获取当前调用栈的宏
+#include "cpptrace/cpptrace.hpp"
+#define GENERATE_STACKTRACE()                                  \
+    const auto CurrentStackTrace = cpptrace::generate_trace(); \
+    auto CurrentStackTraceStr = CurrentStackTrace.to_string();
+
 #endif

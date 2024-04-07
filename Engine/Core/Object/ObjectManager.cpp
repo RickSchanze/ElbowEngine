@@ -1,0 +1,36 @@
+/**
+ * @file ObjectManager.cpp
+ * @author Echo 
+ * @Date 24-4-7
+ * @brief 
+ */
+
+#include "ObjectManager.h"
+#include "Core/Log/Logger.h"
+#include "Core/CoreGlobal.h"
+#include "Object.h"
+
+bool ObjectManager::AddObject(Object* NewObject) {
+    if (!IsValid(NewObject)) return false;
+    if (!IsIDValid(NewObject->GetID())) {
+        mObjects[NewObject->GetID()] = NewObject;
+        return true;
+    }
+    return false;
+}
+
+bool ObjectManager::IsIDValid(const uint32 ID) const {
+    return !mObjects.contains(ID);
+}
+
+uint32 ObjectManager::GetNextValidID() {
+    while (!IsIDValid(mIDCount++)) {}
+    return mIDCount;
+}
+
+bool ObjectManager::RemoveObject(const uint32 ID) {
+    if (mObjects.erase(ID) != 0) {
+        return true;
+    }
+    return false;
+}

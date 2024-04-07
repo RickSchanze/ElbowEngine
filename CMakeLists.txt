@@ -16,6 +16,7 @@ if (MSVC)
     add_compile_options("/wd4244")
     add_compile_options("/wd4312")
 endif ()
+
 include_directories(${CMAKE_SOURCE_DIR}/Generated)
 add_subdirectory(Engine)
 

@@ -11,5 +11,8 @@
   }, {
     "name" : "yaml-cpp",
     "version>=" : "0.8.0#1"
+  }, {
+    "name" : "cpptrace",
+    "version>=" : "0.4.0"
   } ]
 }
