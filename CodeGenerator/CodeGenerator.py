@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--process-files-path', type=str, nargs="*", required=True)
     # 自己工程的头文件路径 递归添加每一个文件夹
     parser.add_argument('--include-path', type=str, nargs="*", required=True)
+    parser.add_argument('--config-path', type=str, required=True)
     args = parser.parse_args()
 
     output_files_path = args.output_files_path
@@ -43,6 +44,7 @@ if __name__ == '__main__':
     process_files_path = args.process_files_path
     include_paths = args.include_path
     cache_file = Path(output_files_path) / "cache.json"
+    config_path = args.config_path
 
     Path(output_files_path).mkdir(parents=True, exist_ok=True)
 
@@ -64,14 +66,16 @@ if __name__ == '__main__':
 
     command = [reflection_tool_path, "", "--output-file-path=" + output_files_path]
     command.extend(my_include_paths)
+    config_command = [f"--config={str(config_path)}"]
+    command.extend(config_command)
     command.append("--")
 
     processes = []
     for file in files_to_process:
         command[1] = str(file)
-        # if check_updated(file, Path(output_files_path), cache):
-        if True:
-            # print(subprocess.list2cmdline(command))
+        if check_updated(file, Path(output_files_path), cache):
+            # if True:
+            print(subprocess.list2cmdline(command))
             proc = subprocess.Popen(command)
             processes.append(proc)
 

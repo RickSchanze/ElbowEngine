@@ -10,6 +10,8 @@
 
 #include "Log/Logger.h"
 #include "Object/Object.h"
+#include "Singleton/Singleton.h"
+
 extern Logger gLogger;
 
 /** BEGIN IsValid函数族 */
@@ -72,6 +74,8 @@ public:
 template<typename T, ENewReturnType Strategy = ENewReturnType::Raw>
     requires IsObject<T>
 typename NewReturnType<T, Strategy>::Type New(const String& Name = L"") {
+    // T不能是个单例
+    static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
     uint32 AvailableID = ObjectCreateHelper::GetAvailableID();
 
     typename NewReturnType<T, Strategy>::Type Rtn;

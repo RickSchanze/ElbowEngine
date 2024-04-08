@@ -9,12 +9,18 @@ add_library(${PROJECT_NAME} STATIC
         Log/Logger.cpp
         Utils/StringUtils.h
         Utils/StringUtils.cpp
+        Utils/TypeUtils.h
+        Utils/TypeUtils.cpp
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h
+        Serialization/Interfaces.h
+        Serialization/YamlSerializer.h
+        Serialization/YamlSerializer.cpp
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp
+        TTT.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

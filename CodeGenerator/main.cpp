@@ -20,6 +20,11 @@ static llvm::cl::opt<std::string> gOutputPath(
     llvm::cl::cat(gToolCategory), llvm::cl::Required
 );
 
+static llvm::cl::opt<std::string> gConfigPath(
+    "config", llvm::cl::desc("Config file path"), llvm::cl::value_desc("path"),
+    llvm::cl::cat(gToolCategory), llvm::cl::Required
+);
+
 bool VerifyConfigFile(const Json::Value& Value) {
     if (!Value.isMember("DefineMacros")) {
         std::cerr << "Config \"DefineMacros\" lacks";
@@ -49,10 +54,16 @@ int main(int argc, const char** argv) {
     ClangTool Tool(OptionsParser->getCompilations(), OptionsParser->getSourcePathList());
 
     Json::Value Config;
-    std::ifstream ConfigStream("Config.json");
-    ConfigStream >> Config;
-    if (!VerifyConfigFile(Config)) {
-        return -1;
+    try {
+        std::ifstream ConfigStream;
+        ConfigStream.open(gConfigPath, std::ios::in);
+        ConfigStream >> Config;
+        if (!VerifyConfigFile(Config)) {
+            return -1;
+        }
+    } catch (const std::exception& e) {
+        std::cout << e.what();
+        return 0;
     }
 
     ReflectedEntityFinder ClassFinder{Config, gOutputPath};
@@ -101,7 +112,8 @@ int main(int argc, const char** argv) {
     IgnoringDiagConsumer Consumer;
     Tool.setDiagnosticConsumer(&Consumer);
     AddIncludePaths(Tool);
-    return Tool.run(newFrontendActionFactory(&Finder).get());
+    int rtn = Tool.run(newFrontendActionFactory(&Finder).get());
+    std::cout << "Return code: " << rtn;
 }
 
 

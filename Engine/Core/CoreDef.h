@@ -45,11 +45,11 @@ using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 // basic typedefs
 #include <cstdint>
-typedef int8_t int8;
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
-typedef uint8_t uint8;
+typedef int8_t   int8;
+typedef int16_t  int16;
+typedef int32_t  int32;
+typedef int64_t  int64;
+typedef uint8_t  uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
@@ -59,6 +59,7 @@ typedef uint64_t uint64;
 // std::string用于编写生成器
 #include <string>
 typedef std::wstring String;
+typedef std::string  AnsiString;
 
 // std::optional -> Optional
 #include <optional>
@@ -93,7 +94,7 @@ constexpr T&& Forward(std::remove_reference_t<T>& Arg) noexcept {
 #include <unordered_map>
 template<
     class KeyType, class ValueType, class Hash = std::hash<KeyType>,
-    class KeyEqual = std::equal_to<KeyType>,
+    class KeyEqual  = std::equal_to<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using HashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
@@ -178,8 +179,11 @@ private:                                                        \
 
 // // 获取当前调用栈的宏
 #include "cpptrace/cpptrace.hpp"
-#define GENERATE_STACKTRACE()                                  \
-    const auto CurrentStackTrace = cpptrace::generate_trace(); \
-    auto CurrentStackTraceStr = CurrentStackTrace.to_string();
+#define GENERATE_STACKTRACE()                                     \
+    const auto CurrentStackTrace    = cpptrace::generate_trace(); \
+    auto       CurrentStackTraceStr = CurrentStackTrace.to_string();
+
+#define interface class
+#define OUT
 
 #endif

@@ -9,8 +9,8 @@
 #define LOGGER_H
 #define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include "Core/Exception/Exception.h"
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 class Logger {
 public:
     Logger() {
@@ -33,6 +33,11 @@ public:
     /** 输出Error级别的信息 */
     template<typename... ArgsT>
     void Error(spdlog::wformat_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        mLogger->error(Fmt, Forward<ArgsT>(Args)...);
+    }
+
+    template<typename... ArgsT>
+    void Error(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
         mLogger->error(Fmt, Forward<ArgsT>(Args)...);
     }
 

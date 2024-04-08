@@ -1,9 +1,12 @@
 #include "Core/CoreGlobal.h"
 #include "Core/Exception/Exception.h"
-#include "windows.h"
 #include "Core/Log/Logger.h"
+#include "Core/Serialization/Interfaces.h"
+#include "Core/Serialization/YamlSerializer.h"
 
-int a = 50;
+#include "windows.h"
+#include <fstream>
+
 
 int main() {
     // 让std::wcout 顺利运行
@@ -13,8 +16,8 @@ int main() {
     try {
         const auto* O1 = New<Object>();
         delete O1;
-        auto O2 = New<Object, ENewReturnType::SharedPtr>();
-        auto O3 = New<Object, ENewReturnType::UniquePtr>();
+        auto   O2 = New<Object, ENewReturnType::SharedPtr>();
+        auto   O3 = New<Object, ENewReturnType::UniquePtr>();
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

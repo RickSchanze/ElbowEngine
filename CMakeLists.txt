@@ -8,6 +8,7 @@ execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGene
         --output-files-path=${CMAKE_SOURCE_DIR}/Generated
         --process-files-path ${CMAKE_SOURCE_DIR}/Engine
         --include-path ${CMAKE_SOURCE_DIR}/Engine ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include
+        --config-path ${CMAKE_SOURCE_DIR}/CodeGenerator/Config.json
 )
 
 if (MSVC)

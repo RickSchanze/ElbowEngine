@@ -10,6 +10,7 @@
 
 template<typename T>
 class Singleton {
+    friend T;
 public:
     static T& Get();
 };
