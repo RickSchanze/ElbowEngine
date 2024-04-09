@@ -12,8 +12,8 @@
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Object>("Object")
-        .property("Name", &Object::mName)
-        .property("Id", &Object::mID);
+        .property("Name", &Object::mName)(rttr::metadata("Serialized", "True"))
+        .property("Id", &Object::mID)(rttr::metadata("Serialized", "True"));
 }
 
 Object::~Object() {

@@ -8,18 +8,17 @@
 #include "YamlSerializer.h"
 
 #include "Core/CoreGlobal.h"
+#include "Core/Utils/ReflUtils.h"
 
 using namespace rttr;
 
-bool YamlSerializer::Serialize(const instance& Obj, AnsiString& OutStr) {
+bool YamlSerializer::Serialize(const instance& Obj, AnsiOutputStream& Stream) {
     if (!Obj.is_valid()) {
-        OutStr = "";
         return false;
     }
 
-    YAML::Emitter Emitter;
+    YAML::Emitter Emitter{Stream};
     ToYamlRecursively(Obj, Emitter);
-    OutStr = Emitter.c_str();
     return true;
 }
 
@@ -30,7 +29,7 @@ void YamlSerializer::ToYamlRecursively(const instance& Obj2, YAML::Emitter& Emit
 
     auto PorpList = Obj.get_derived_type().get_properties();
     for (auto Prop: PorpList) {
-        if (Prop.get_metadata("NO_SERIALIZE")) continue;
+        if (!ReflUtils::IsPropertySerializable(Prop)) continue;
 
         variant PropValue = Prop.get_value(Obj);
         if (!PropValue) continue;   // cannot serialize, because we cannot retrieve the value
@@ -96,7 +95,7 @@ bool YamlSerializer::WriteAtomicTypesToYaml(
         return true;
     }
     if (Type == type::get<String>()) {
-        Emitter << StringUtils::ToStdString(Var.convert<String>());
+        Emitter << StringUtils::ToAnsiString(Var.convert<String>());
         return true;
     }
     return false;

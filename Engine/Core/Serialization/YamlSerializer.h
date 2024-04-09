@@ -12,8 +12,14 @@
 class YamlSerializer final : public ISerializer {
 public:
     using ISerializer::Serialize;
-    // 将Obj序列化为Yaml字符串
-    bool Serialize(const rttr::instance& Obj, AnsiString& OutStr) override;
+
+    /**
+     * 将Obj序列化为到Stream中
+     * @param Obj 要序列化的对象
+     * @param Stream 输出流
+     * @return
+     */
+    bool Serialize(const rttr::instance& Obj, AnsiOutputStream& Stream) override;
 
 private:
     void ToYamlRecursively(const rttr::instance& Obj2, YAML::Emitter& Emitter);

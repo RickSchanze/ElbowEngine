@@ -9,24 +9,45 @@
 #define EXCEPTION_H
 
 #include <exception>
+#include <utility>
 
 #include "Core/CoreDef.h"
 
 class Exception : public std::exception {
 public:
-    explicit Exception(const StringView View) {
+    ~Exception() override = default;
+
+    explicit Exception(String Message) : mMessage(std::move(Message)) {
         mStackTrace = cpptrace::generate_trace();
-        mMessage    = View;
     }
 
-    [[nodiscard]] virtual StringView What() const { return mMessage; }
-    [[nodiscard]] std::string GetStackTrace() const { return mStackTrace.to_string(); }
+    [[nodiscard]] virtual String What() const { return L"Exception"; }
+    [[nodiscard]] AnsiString     GetStackTrace() const { return mStackTrace.to_string(); }
 
-private:
+protected:
     [[nodiscard]] char const* what() const override { return ""; }
 
-    StringView mMessage;
     cpptrace::stacktrace mStackTrace;
+    String               mMessage;
+};
+
+class FileOpenException final : public Exception {
+public:
+    /**
+     * @param Filepath 打开失败的文件路径
+     * @param Errno 打开失败的错误码
+     * @param Message 此错误的具体描述
+     */
+    explicit FileOpenException(String Filepath, const int32 Errno, const String& Message = L"") :
+        Exception(Message), Errno{Errno}, Filepath{std::move(Filepath)} {}
+
+    [[nodiscard]] String What() const override;
+    [[nodiscard]] int32  GetErrno() const { return Errno; }
+    [[nodiscard]] String GetFilepath() const { return Filepath; }
+
+private:
+    int32  Errno;
+    String Filepath;
 };
 
 #endif   //EXCEPTION_H

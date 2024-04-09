@@ -107,10 +107,26 @@ constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
 // std::wstring_view -> StringView
 #include <string_view>
 typedef std::wstring_view StringView;
+typedef std::string_view  AnsiStringView;
+
+// Stream typedefs
+#include <fstream>
+typedef std::wostream      OutputStream;
+typedef std::wistream      InputStream;
+typedef std::wstringstream StringStream;
+
+typedef std::ostream      AnsiOutputStream;
+typedef std::istream      AnsiInputStream;
+typedef std::stringstream AnsiStringStream;
+typedef std::ofstream     FileOutputStream;
+
+// 反射相关类的定义
+#include "rttr/registration"
+typedef rttr::type     Type;
+typedef rttr::property Property;
 
 // 定义反射宏
 #include "rttr/policy.h"
-#include "rttr/registration"
 #include "rttr/registration_friend"
 #define CONCAT_IMPL(x, y) x##y
 #define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
@@ -183,7 +199,15 @@ private:                                                        \
     const auto CurrentStackTrace    = cpptrace::generate_trace(); \
     auto       CurrentStackTraceStr = CurrentStackTrace.to_string();
 
+// 表示一个接口
 #define interface class
+
+// 表示这个参数是一个输出参数
 #define OUT
+
+// 这个宏表示这个方法必须由子类实现
+#define INTERFACE_METHOD = 0;
+
+#define _CRT_SECURE_NO_WARNINGS
 
 #endif

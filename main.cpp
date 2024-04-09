@@ -4,7 +4,9 @@
 #include "Core/Serialization/Interfaces.h"
 #include "Core/Serialization/YamlSerializer.h"
 
+#include "Core/Utils/ReflUtils.h"
 #include "windows.h"
+
 #include <fstream>
 
 
@@ -16,8 +18,11 @@ int main() {
     try {
         const auto* O1 = New<Object>();
         delete O1;
-        auto   O2 = New<Object, ENewReturnType::SharedPtr>();
-        auto   O3 = New<Object, ENewReturnType::UniquePtr>();
+        auto O2   = New<Object, ENewReturnType::SharedPtr>();
+        auto O3   = New<Object, ENewReturnType::UniquePtr>();
+        YamlSerializer s{};
+        String Name = L"wdc.yaml";
+        s.SerializeFile(O2, Name);
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

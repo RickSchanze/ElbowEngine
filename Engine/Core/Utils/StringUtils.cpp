@@ -9,7 +9,7 @@
 #include "Core/Log/Logger.h"
 #include "Windows.h"
 
-std::string StringUtils::ToStdString(const String& Str) {
+std::string StringUtils::ToAnsiString(const String& Str) {
     if (Str.empty()) return {std::string()};
     const int SizeNeeded = WideCharToMultiByte(
         CP_UTF8, 0, &Str[0], static_cast<int>(Str.size()), nullptr, 0, nullptr, nullptr
@@ -21,7 +21,7 @@ std::string StringUtils::ToStdString(const String& Str) {
     return StrRtn;
 }
 
-String StringUtils::FromStdString(const std::string& Str) {
+String StringUtils::FromAnsiString(const std::string& Str) {
     if (Str.empty()) return {String()};
     const int SizeNeeded =
         MultiByteToWideChar(CP_UTF8, 0, Str.c_str(), static_cast<int>(Str.size()), nullptr, 0);

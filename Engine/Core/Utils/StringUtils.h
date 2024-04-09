@@ -19,7 +19,7 @@ public:
      * @param Str
      * @return
      */
-    static std::string ToStdString(const String& Str);
+    static std::string ToAnsiString(const String& Str);
 
     /**
      * 将std::string转换为String(std::wstring)
@@ -27,7 +27,7 @@ public:
      * @param Str
      * @return
      */
-    static String FromStdString(const std::string& Str);
+    static String FromAnsiString(const std::string& Str);
 };
 
 

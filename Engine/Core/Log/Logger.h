@@ -15,12 +15,18 @@ class Logger {
 public:
     Logger() {
         mLogger = spdlog::stdout_color_mt("ElbowEngine");
-        mLogger->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] [%v]");
+        mLogger->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
     }
 
     /** 输出Info级别的信息 */
     template<typename... ArgsT>
     void Info(spdlog::wformat_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        mLogger->info(Fmt, Forward<ArgsT>(Args)...);
+    }
+
+    /** 输出Info级别的信息 */
+    template<typename... ArgsT>
+    void Info(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
         mLogger->info(Fmt, Forward<ArgsT>(Args)...);
     }
 
@@ -30,16 +36,24 @@ public:
         mLogger->debug(Fmt, Forward<ArgsT>(Args)...);
     }
 
+    /** 输出Debug级别的信息 */
+    template<typename... ArgsT>
+    void Debug(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        mLogger->debug(Fmt, Forward<ArgsT>(Args)...);
+    }
+
     /** 输出Error级别的信息 */
     template<typename... ArgsT>
     void Error(spdlog::wformat_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
         mLogger->error(Fmt, Forward<ArgsT>(Args)...);
     }
 
+    /** 输出Error级别的信息 */
     template<typename... ArgsT>
     void Error(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
         mLogger->error(Fmt, Forward<ArgsT>(Args)...);
     }
+
 
     /** 输出Warning级别的信息 */
     template<typename... ArgsT>
@@ -47,9 +61,21 @@ public:
         mLogger->warn(Fmt, Forward<ArgsT>(Args)...);
     }
 
+    /** 输出Warning级别的信息 */
+    template<typename... ArgsT>
+    void Warning(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        mLogger->warn(Fmt, Forward<ArgsT>(Args)...);
+    }
+
     /** 输出Trace级别的信息 */
     template<typename... ArgsT>
     void Trace(spdlog::wformat_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        mLogger->trace(Fmt, Forward<ArgsT>(Args)...);
+    }
+
+    /** 输出Trace级别的信息 */
+    template<typename... ArgsT>
+    void Trace(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
         mLogger->trace(Fmt, Forward<ArgsT>(Args)...);
     }
 
@@ -62,12 +88,21 @@ public:
         exit(-1);
     }
 
+    /** 输出Critical级别的信息 会自动Crash程序 */
+    template<typename... ArgsT>
+    void Critical(spdlog::format_string_t<ArgsT...> Fmt, ArgsT&&... Args) {
+        GENERATE_STACKTRACE()
+        mLogger->critical(Fmt, Forward<ArgsT>(Args)...);
+        mLogger->critical("{}", CurrentStackTraceStr);
+        exit(-1);
+    }
+
     /**
      * 输出一个Exception
      * @param Exception
      */
     void Exception(const Exception& Exception) const {
-        mLogger->error(L"未处理的异常: {}", Exception.What());
+        mLogger->error(L"未处理的异常:\n {}", Exception.What());
         mLogger->error("{}", Exception.GetStackTrace());
     }
 
