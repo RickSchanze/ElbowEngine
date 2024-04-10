@@ -4,10 +4,8 @@
 #include "Core/Serialization/Interfaces.h"
 #include "Core/Serialization/YamlSerializer.h"
 
-#include "Core/Utils/ReflUtils.h"
+#include "Core/Serialization/TestSerialization.h"
 #include "windows.h"
-
-#include <fstream>
 
 
 int main() {
@@ -16,13 +14,15 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        const auto* O1 = New<Object>();
-        delete O1;
-        auto O2   = New<Object, ENewReturnType::SharedPtr>();
-        auto O3   = New<Object, ENewReturnType::UniquePtr>();
-        YamlSerializer s{};
-        String Name = L"wdc.yaml";
-        s.SerializeFile(O2, Name);
+        auto O1 = New<TestSerialization>(L"测试序列化功能对象");
+        // YamlSerializer s{};
+        // const String Name = L"wdc.yaml";
+        // s.SerializeFile(O1, Name);
+        const AnsiString Name = "wdc.yaml";
+        YAML::Node N = YAML::LoadFile(Name);
+        for (auto CN:N) {
+            // auto str = CN.second.as<std::string>();
+        }
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

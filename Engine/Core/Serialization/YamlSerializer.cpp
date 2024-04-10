@@ -19,7 +19,7 @@ bool YamlSerializer::Serialize(const instance& Obj, AnsiOutputStream& Stream) {
 
     YAML::Emitter Emitter{Stream};
     ToYamlRecursively(Obj, Emitter);
-    return true;
+    return Emitter.good();
 }
 
 void YamlSerializer::ToYamlRecursively(const instance& Obj2, YAML::Emitter& Emitter) {
@@ -34,10 +34,10 @@ void YamlSerializer::ToYamlRecursively(const instance& Obj2, YAML::Emitter& Emit
         variant PropValue = Prop.get_value(Obj);
         if (!PropValue) continue;   // cannot serialize, because we cannot retrieve the value
 
-        const auto name = AnsiString(Prop.get_name().data());
-        Emitter << YAML::Key << name.data();
+        const auto Name = AnsiString(Prop.get_name().data());
+        Emitter << YAML::Key << Name.data();
         if (!WriteVariant(PropValue, Emitter)) {
-            gLogger.Error("序列化字段{}失败", name);
+            gLogger.Error("序列化字段{}失败", Name);
         }
     }
 
@@ -124,25 +124,28 @@ void YamlSerializer::WriteArray(const variant_sequential_view& View, YAML::Emitt
 void YamlSerializer::WriteAssociativeContainer(
     const variant_associative_view& view, YAML::Emitter& Emitter
 ) {
-    Emitter << YAML::BeginMap;
-
     if (view.is_key_only_type()) {
+        Emitter << YAML::BeginSeq;
         for (auto& Item: view) {
             WriteVariant(Item.first, Emitter);
         }
+        Emitter << YAML::EndSeq;
     } else {
+        Emitter << YAML::BeginMap;
         for (const auto& [Key, Value]: view) {
+            // Emitter << YAML::Flow;
             Emitter << YAML::Key;
             WriteVariant(Key, Emitter);
+            // Emitter << YAML::Block;
             Emitter << YAML::Value;
             WriteVariant(Value, Emitter);
         }
+        Emitter << YAML::EndMap;
     }
-
-    Emitter << YAML::EndMap;
 }
 
 bool YamlSerializer::WriteVariant(const variant& Var, YAML::Emitter& Emitter) {
+    auto name = Var.get_type().get_name();
     const auto ValueType   = Var.get_type();
     const auto WrappedType = ValueType.is_wrapper() ? ValueType.get_wrapped_type() : ValueType;
     const bool bIsWrapper  = WrappedType != ValueType;
@@ -168,7 +171,6 @@ bool YamlSerializer::WriteVariant(const variant& Var, YAML::Emitter& Emitter) {
                 Emitter << Text;
                 return false;
             }
-
             Emitter << Text;
         }
     }

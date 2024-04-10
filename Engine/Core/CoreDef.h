@@ -36,6 +36,12 @@ using Array = std::vector<T, Allocator>;
 template<typename T, size_t Size>
 using StaticArray = std::array<T, Size>;
 
+// std::set -> Set
+#include <set>
+template<
+    class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
+using Set = std::set<KeyType, Comparator, Allocator>;
+
 // std::map -> Map
 #include <map>
 template<
@@ -111,6 +117,7 @@ typedef std::string_view  AnsiStringView;
 
 // Stream typedefs
 #include <fstream>
+#include <sstream>
 typedef std::wostream      OutputStream;
 typedef std::wistream      InputStream;
 typedef std::wstringstream StringStream;

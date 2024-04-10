@@ -6,4 +6,6 @@
  */
 
 #include "YamlDeserializer.h"
-bool YamlDeserializer::Deserialize(AnsiInputStream& Stream, rttr::instance& Obj) {}
+bool YamlDeserializer::Deserialize(AnsiInputStream& Stream, rttr::instance& Obj) {
+    return true;
+}

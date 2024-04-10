@@ -19,9 +19,12 @@ add_library(${PROJECT_NAME} STATIC
         Serialization/YamlSerializer.cpp
         Serialization/YamlDeserializer.h
         Serialization/YamlDeserializer.cpp
+        Serialization/TestSerialization.h
+        Serialization/TestSerialization.cpp
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp
+        CoreTypeTraits.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

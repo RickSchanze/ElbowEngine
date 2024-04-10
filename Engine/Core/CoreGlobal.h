@@ -71,7 +71,7 @@ public:
  * @param Name 对象名称
  * @return
  */
-template<typename T, ENewReturnType Strategy = ENewReturnType::Raw>
+template<typename T, ENewReturnType Strategy = ENewReturnType::SharedPtr>
     requires IsObject<T>
 typename NewReturnType<T, Strategy>::Type New(const String& Name = L"") {
     // T不能是个单例

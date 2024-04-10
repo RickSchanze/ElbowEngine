@@ -9,6 +9,7 @@
 #define STRINGUTILS_H
 
 #include "Core/CoreDef.h"
+#include "Core/CoreTypeTraits.h"
 
 
 class StringUtils {
@@ -28,7 +29,31 @@ public:
      * @return
      */
     static String FromAnsiString(const std::string& Str);
+
+    template<typename T>
+        requires IsNumeric<T>
+    static Optional<T> ConvertTo(const AnsiString& Str) {
+        T                Result;
+        AnsiStringStream ss;
+        ss << Str;
+        ss >> Result;
+        if (ss.fail() || !ss.eof()) {
+            return std::nullopt;
+        }
+        return Result;
+    }
 };
+
+template<>
+inline Optional<bool> StringUtils::ConvertTo<bool>(const AnsiString& Str) {
+    Optional<bool> Rtn;
+    if (Str == "true" || Str == "True") {
+        Rtn = true;
+    } else if (Str == "false" || Str == "False") {
+        Rtn = false;
+    }
+    return Rtn;
+}
 
 
 

@@ -111,7 +111,7 @@ public:
      * @param Exception 输出的错误
      */
     void StdException(const std::exception& Exception) const {
-        mLogger->error("Unhandled exception: {}", Exception.what());
+        mLogger->error("Unhandled exception:\n {}", Exception.what());
     }
 
 private:

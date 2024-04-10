@@ -9,8 +9,6 @@
 #define YAMLDESERIALIZER_H
 #include "Interfaces.h"
 
-
-
 class YamlDeserializer : public IDeserializer {
 public:
     bool Deserialize(AnsiInputStream& Stream, rttr::instance& Obj) override;
