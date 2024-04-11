@@ -66,7 +66,7 @@ int main(int argc, const char** argv) {
         return 0;
     }
 
-    ReflectedEntityFinder ClassFinder{Config, gOutputPath};
+    ReflectedEntityFinder ClassFinder{Config, static_cast<std::string>(gOutputPath)};
     MatchFinder Finder;
 
     static DeclarationMatcher ClassMatcher =

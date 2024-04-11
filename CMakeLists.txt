@@ -7,7 +7,7 @@ execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGene
         --reflection-tool-path=${REFLECTION_EXE}
         --output-files-path=${CMAKE_SOURCE_DIR}/Generated
         --process-files-path ${CMAKE_SOURCE_DIR}/Engine
-        --include-path ${CMAKE_SOURCE_DIR}/Engine ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include
+        --include-path ${CMAKE_SOURCE_DIR}/Engine ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include ${CMAKE_SOURCE_DIR}/Generated
         --config-path ${CMAKE_SOURCE_DIR}/CodeGenerator/Config.json
 )
 

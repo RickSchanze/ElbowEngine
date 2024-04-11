@@ -19,8 +19,7 @@ add_library(${PROJECT_NAME} STATIC
         Serialization/YamlSerializer.cpp
         Serialization/YamlDeserializer.h
         Serialization/YamlDeserializer.cpp
-        Serialization/TestSerialization.h
-        Serialization/TestSerialization.cpp
+        Serialization/TestRefl.h
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp

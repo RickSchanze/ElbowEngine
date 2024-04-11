@@ -15,15 +15,7 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        while (1) {
-            auto O1 = New<TestSerialization>(L"测试序列化功能对象");
-            YamlSerializer s{};
-            const String Name = L"wdc.yaml";
-            YamlDeserializer SS{};
-            rttr::instance O = O1;
-            bool bSuccess = SS.DeserializeFile(Name, O);
-            gLogger.Info(L"反序列化成功");
-        }
+
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

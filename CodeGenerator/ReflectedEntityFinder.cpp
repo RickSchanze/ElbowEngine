@@ -234,7 +234,7 @@ void ClassEntity::Generate(const clang::ASTContext* context, llvm::raw_fd_ostrea
     );
     os << CodeMacroStr << "\n";
     const std::string RegisterClassCode = std::vformat(
-        R"(rttr::registration::class_<{}>("{}") \)",
+        R"(rttr::registration::class_<{}>("{}").constructor<>()(rttr::policy::ctor::as_object) \)",
         std::make_format_args(GetClassQualifiedName(), GetClassQualifiedName())
     );
     os << RegisterClassCode << "\n";
