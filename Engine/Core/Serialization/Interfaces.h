@@ -57,7 +57,7 @@ public:
      * @param
      * @return
      */
-    virtual bool Deserialize(AnsiInputStream & Stream, OUT rttr::instance & Obj) INTERFACE_METHOD;
+    virtual bool Deserialize(AnsiInputStream & Stream, OUT rttr::instance &Obj) INTERFACE_METHOD;
 
     /**
      * 从AnsiStringView反序列化一个对象
@@ -76,6 +76,14 @@ public:
      * @return
      */
     virtual bool Deserialize(StringView StrView, OUT rttr::instance& Obj);
+
+    /**
+     * 从文件反序列化一个对象
+     * @param Filename
+     * @param Obj
+     * @return
+     */
+    virtual bool DeserializeFile(StringView Filename, OUT rttr::instance& Obj) ;
 };
 
 inline bool ISerializer::SerializeFile(const rttr::instance& Obj, const StringView Filename) {
@@ -118,6 +126,15 @@ inline bool IDeserializer::Deserialize(const StringView StrView, rttr::instance&
     Stream << StrView;
     const AnsiString AnsiStreamStr = StringUtils::ToAnsiString(Stream.str());
     return Deserialize(AnsiStreamStr, Obj);
+}
+
+inline bool IDeserializer::DeserializeFile(const StringView Filename, rttr::instance& Obj){
+    FileInputStream Stream;
+    Stream.open(Filename.data(), std::ios::in);
+    if (!Stream.is_open()) {
+        throw FileOpenException(Filename.data(), errno);
+    }
+    return Deserialize(Stream, Obj);
 }
 
 #endif

@@ -5,6 +5,7 @@
 #include "Core/Serialization/YamlSerializer.h"
 
 #include "Core/Serialization/TestSerialization.h"
+#include "Core/Serialization/YamlDeserializer.h"
 #include "windows.h"
 
 
@@ -14,14 +15,14 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        auto O1 = New<TestSerialization>(L"测试序列化功能对象");
-        // YamlSerializer s{};
-        // const String Name = L"wdc.yaml";
-        // s.SerializeFile(O1, Name);
-        const AnsiString Name = "wdc.yaml";
-        YAML::Node N = YAML::LoadFile(Name);
-        for (auto CN:N) {
-            // auto str = CN.second.as<std::string>();
+        while (1) {
+            auto O1 = New<TestSerialization>(L"测试序列化功能对象");
+            YamlSerializer s{};
+            const String Name = L"wdc.yaml";
+            YamlDeserializer SS{};
+            rttr::instance O = O1;
+            bool bSuccess = SS.DeserializeFile(Name, O);
+            gLogger.Info(L"反序列化成功");
         }
     } catch (const Exception& e) {
         gLogger.Exception(e);

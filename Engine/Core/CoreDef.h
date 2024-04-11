@@ -126,6 +126,7 @@ typedef std::ostream      AnsiOutputStream;
 typedef std::istream      AnsiInputStream;
 typedef std::stringstream AnsiStringStream;
 typedef std::ofstream     FileOutputStream;
+typedef std::ifstream     FileInputStream;
 
 // 反射相关类的定义
 #include "rttr/registration"

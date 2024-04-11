@@ -11,6 +11,8 @@
 #include "Core/Object/Object.h"
 #include "TestSerialization.generated.h"
 
+#include <iostream>
+
 struct REFL TestComplicatedKey
 {
     GENERATED_BODY(TestComplicatedKey)
@@ -38,35 +40,35 @@ public:
 
 class REFL TestSerialization : public Object {
     GENERATED_BODY(TestSerialization)
+public:
 
     PROPERTY(Serialized)
-    int32 mTestInt32 = 15;
+    int32 mTestInt32{};
 
     PROPERTY(Serialized)
-    bool mTestBoolTrue = true;
+    bool mTestBoolTrue{};
 
     PROPERTY(Serialized)
-    bool mTestBoolFalse = false;
+    bool mTestBoolFalse{};
 
     PROPERTY(Serialized)
-    Array<float> mTestFloatArray{1.5, 2.1, 3.7, 4.6};
+    Array<float> mTestFloatArray{};
 
     PROPERTY(Serialized)
-    StaticArray<double, 5> TestStaticDoubleArray{4.7, 9.5, 120.4, 61.7, 22.1};
+    StaticArray<double, 5> TestStaticDoubleArray{};
 
     PROPERTY(Serialized)
-    Map<int8, float> mTestSimpleMap{{1, 2.7}, {2, 3.9}, {3, 4.5}};
+    Map<int8, float> mTestSimpleMap{};
 
     PROPERTY(Serialized)
-    Map<TestComplicatedKey, double> mTestComplicatedMap{
-        {TestComplicatedKey(), 1.5}, {TestComplicatedKey(), 2.5}
+    Map<TestComplicatedKey, TestComplicatedKey> mTestComplicatedMap{
     };
 
     PROPERTY(Serialized)
-    Set<char> mTestSimpleSet = {'1', '2', '3'};
+    Set<int8> mTestSimpleSet = {};
 
     PROPERTY(Serialized)
-    Set<TestComplicatedKey> mTestComplicatedSet = {TestComplicatedKey(), TestComplicatedKey()};
+    Set<TestComplicatedKey> mTestComplicatedSet = {};
 };
 
 

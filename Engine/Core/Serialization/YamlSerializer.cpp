@@ -18,6 +18,7 @@ bool YamlSerializer::Serialize(const instance& Obj, AnsiOutputStream& Stream) {
     }
 
     YAML::Emitter Emitter{Stream};
+    // Emitter << YAML::Flow;
     ToYamlRecursively(Obj, Emitter);
     return Emitter.good();
 }
@@ -133,10 +134,8 @@ void YamlSerializer::WriteAssociativeContainer(
     } else {
         Emitter << YAML::BeginMap;
         for (const auto& [Key, Value]: view) {
-            // Emitter << YAML::Flow;
             Emitter << YAML::Key;
             WriteVariant(Key, Emitter);
-            // Emitter << YAML::Block;
             Emitter << YAML::Value;
             WriteVariant(Value, Emitter);
         }
