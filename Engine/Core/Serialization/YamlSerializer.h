@@ -5,8 +5,8 @@
  * @brief 
  */
 
-#ifndef CORE_SERIALIZATION_YAMLSERIALIZER_H
-#define CORE_SERIALIZATION_YAMLSERIALIZER_H
+#pragma once
+
 #include "Interfaces.h"
 
 class YamlSerializer final : public ISerializer {
@@ -32,7 +32,3 @@ private:
     // clang-format on
     bool WriteVariant(const rttr::variant& Var, YAML::Emitter& Emitter);
 };
-
-
-
-#endif   //CORE_SERIALIZATION_YAMLSERIALIZER_H

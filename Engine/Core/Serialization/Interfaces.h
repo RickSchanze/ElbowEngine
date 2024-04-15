@@ -1,9 +1,8 @@
-#ifndef CORE_SERIALIZATION_ISERIALIZER_H
-#define CORE_SERIALIZATION_ISERIALIZER_H
+#pragma once
 
-#include "Core/CoreDef.h"
-#include "Core/Exception/Exception.h"
-#include "Core/Utils/StringUtils.h"
+#include "CoreDef.h"
+#include "Exception/Exception.h"
+#include "Utils/StringUtils.h"
 #include "yaml-cpp/yaml.h"
 
 #include <format>
@@ -136,5 +135,3 @@ inline bool IDeserializer::DeserializeFile(const StringView Filename, rttr::inst
     }
     return Deserialize(Stream, Obj);
 }
-
-#endif

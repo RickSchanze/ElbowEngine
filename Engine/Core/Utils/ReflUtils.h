@@ -5,11 +5,9 @@
  * @brief 
  */
 
-#ifndef TYPEUTILS_H
-#define TYPEUTILS_H
-#include "Core/CoreDef.h"
+#pragma once
 
-
+#include "CoreDef.h"
 
 namespace rttr {
 class property;
@@ -46,7 +44,3 @@ public:
      */
     static bool IsPropertySerializedByReference(const rttr::property& Property);
 };
-
-
-
-#endif //TYPEUTILS_H

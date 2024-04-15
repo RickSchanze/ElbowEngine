@@ -1,3 +1,4 @@
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Core)
 
 add_library(${PROJECT_NAME} STATIC
@@ -19,7 +20,6 @@ add_library(${PROJECT_NAME} STATIC
         Serialization/YamlSerializer.cpp
         Serialization/YamlDeserializer.h
         Serialization/YamlDeserializer.cpp
-        Serialization/TestRefl.h
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp
@@ -40,5 +40,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)
 find_package(cpptrace CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/..)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 

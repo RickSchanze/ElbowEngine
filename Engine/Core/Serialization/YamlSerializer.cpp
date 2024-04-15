@@ -7,8 +7,8 @@
 
 #include "YamlSerializer.h"
 
-#include "Core/CoreGlobal.h"
-#include "Core/Utils/ReflUtils.h"
+#include "CoreGlobal.h"
+#include "Utils/ReflUtils.h"
 
 using namespace rttr;
 

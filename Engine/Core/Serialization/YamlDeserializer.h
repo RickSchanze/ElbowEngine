@@ -4,9 +4,8 @@
  * @Date 24-4-9
  * @brief 
  */
+#pragma once
 
-#ifndef YAMLDESERIALIZER_H
-#define YAMLDESERIALIZER_H
 #include "Interfaces.h"
 
 class YamlDeserializer : public IDeserializer {
@@ -24,7 +23,3 @@ private:
 
     bool FromYamlRecursively(const rttr::instance& Obj2, YAML::Node Node);
 };
-
-
-
-#endif //YAMLDESERIALIZER_H

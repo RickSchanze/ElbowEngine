@@ -5,8 +5,7 @@
  * @brief 
  */
 
-#ifndef SINGLETON_H
-#define SINGLETON_H
+#pragma once
 
 template<typename T>
 class Singleton {
@@ -20,5 +19,3 @@ T& Singleton<T>::Get() {
     static T Instance;
     return Instance;
 }
-
-#endif   //SINGLETON_H

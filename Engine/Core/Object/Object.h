@@ -5,9 +5,9 @@
  * @brief 
  */
 
-#ifndef ELBOWENGINE_OBJECT_H
-#define ELBOWENGINE_OBJECT_H
-#include "Core/CoreDef.h"
+#pragma once
+
+#include "CoreDef.h"
 
 class Object {
     RTTR_ENABLE()
@@ -63,5 +63,3 @@ private:
 
 template <typename T>
 concept IsObject = std::is_base_of_v<Object, T>;
-
-#endif   //ELBOWENGINE_OBJECT_H

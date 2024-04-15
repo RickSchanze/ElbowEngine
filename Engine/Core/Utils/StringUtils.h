@@ -5,11 +5,10 @@
  * @brief 
  */
 
-#ifndef STRINGUTILS_H
-#define STRINGUTILS_H
+#pragma once
 
-#include "Core/CoreDef.h"
-#include "Core/CoreTypeTraits.h"
+#include "CoreDef.h"
+#include "CoreTypeTraits.h"
 
 
 class StringUtils {
@@ -54,7 +53,3 @@ inline Optional<bool> StringUtils::ConvertTo<bool>(const AnsiString& Str) {
     }
     return Rtn;
 }
-
-
-
-#endif //STRINGUTILS_H

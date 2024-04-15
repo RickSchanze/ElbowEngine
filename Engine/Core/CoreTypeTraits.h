@@ -5,8 +5,7 @@
  * @brief 
  */
 
-#ifndef CORETYPETRAITS_H
-#define CORETYPETRAITS_H
+#pragma once
 
 #include <type_traits>
 // 数字类型
@@ -16,6 +15,3 @@ concept IsNumeric = std::is_arithmetic_v<T>;
 // 是个布尔类型
 template <typename T>
 concept IsBoolean = std::is_same_v<T, bool>;
-
-
-#endif //CORETYPETRAITS_H

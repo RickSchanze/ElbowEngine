@@ -1,8 +1,8 @@
 /**
 * 一些重要的定义
 */
-#ifndef ELBOWENGINE_COREDEFS_H
-#define ELBOWENGINE_COREDEFS_H
+#pragma once
+
 // 一些Typedef
 #include <functional>
 
@@ -217,5 +217,3 @@ private:                                                        \
 #define INTERFACE_METHOD = 0;
 
 #define _CRT_SECURE_NO_WARNINGS
-
-#endif

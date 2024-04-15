@@ -5,13 +5,12 @@
  * @brief 
  */
 
-#ifndef EXCEPTION_H
-#define EXCEPTION_H
+#pragma once
 
 #include <exception>
 #include <utility>
 
-#include "Core/CoreDef.h"
+#include "CoreDef.h"
 
 class Exception : public std::exception {
 public:
@@ -49,5 +48,3 @@ private:
     int32  Errno;
     String Filepath;
 };
-
-#endif   //EXCEPTION_H

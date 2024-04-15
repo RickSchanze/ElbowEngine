@@ -4,11 +4,10 @@
  * @Date 24-4-6
  * @brief 
  */
+#pragma once
 
-#ifndef LOGGER_H
-#define LOGGER_H
 #define SPDLOG_WCHAR_TO_UTF8_SUPPORT
-#include "Core/Exception/Exception.h"
+#include "Exception/Exception.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 class Logger {
@@ -119,5 +118,3 @@ private:
 };
 
 #define INFO Logger::Get().Info
-
-#endif //LOGGER_H

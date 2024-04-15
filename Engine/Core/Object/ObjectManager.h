@@ -5,10 +5,10 @@
  * @brief 
  */
 
-#ifndef OBJECTMANAGER_H
-#define OBJECTMANAGER_H
-#include "Core/CoreDef.h"
-#include "Core/Singleton/Singleton.h"
+#pragma once
+
+#include "CoreDef.h"
+#include "Singleton/Singleton.h"
 
 class Object;
 class ObjectManager : public Singleton<ObjectManager> {
@@ -44,5 +44,3 @@ private:
     HashMap<uint32, Object*> mObjects;
     int32                    mIDCount = 0;
 };
-
-#endif //OBJECTMANAGER_H

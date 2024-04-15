@@ -7,7 +7,7 @@
 
 #include "Exception.h"
 
-#include "Core/Utils/StringUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <format>
 

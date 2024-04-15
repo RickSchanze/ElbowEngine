@@ -6,8 +6,7 @@
  */
 
 #include "ObjectManager.h"
-#include "Core/Log/Logger.h"
-#include "Core/CoreGlobal.h"
+#include "CoreGlobal.h"
 #include "Object.h"
 
 bool ObjectManager::AddObject(Object* NewObject) {

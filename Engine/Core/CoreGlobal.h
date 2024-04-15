@@ -5,8 +5,7 @@
  * @brief 
  */
 
-#ifndef COREGLOBAL_H
-#define COREGLOBAL_H
+#pragma once
 
 #include "Log/Logger.h"
 #include "Object/Object.h"
@@ -96,5 +95,3 @@ typename NewReturnType<T, Strategy>::Type New(const String& Name = L"") {
     ObjectCreateHelper::SetObjectID(Rtn, AvailableID);
     return Rtn;
 }
-
-#endif //COREGLOBAL_H

@@ -6,8 +6,8 @@
  */
 
 #include "Object.h"
-#include "Core/CoreGlobal.h"
-#include "Core/Log/Logger.h"
+#include "CoreGlobal.h"
+#include "Log/Logger.h"
 #include "ObjectManager.h"
 
 RTTR_REGISTRATION {

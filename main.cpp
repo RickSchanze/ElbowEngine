@@ -1,11 +1,7 @@
-#include "Core/CoreGlobal.h"
-#include "Core/Exception/Exception.h"
-#include "Core/Log/Logger.h"
-#include "Core/Serialization/Interfaces.h"
-#include "Core/Serialization/YamlSerializer.h"
-
-#include "Core/Serialization/TestSerialization.h"
-#include "Core/Serialization/YamlDeserializer.h"
+#include "CoreGlobal.h"
+#include "Engine/Function/Path/Path.h"
+#include "Exception/Exception.h"
+#include "Log/Logger.h"
 #include "windows.h"
 
 
@@ -15,7 +11,8 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-
+        Path::SetProjectWorkPath(L"C:/TestProj");
+        auto Path = Path::GetProjectMetaFilePath();
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

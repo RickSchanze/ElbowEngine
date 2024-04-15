@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(ElbowEngine)
 set(CMAKE_CXX_STANDARD 20)
 set(REFLECTION_EXE "C:/Users/Echo/BaiduSyncDisk/Work/Projects/ElbowEngine/CodeGenerator/bin/CodeGenerator.exe")
@@ -22,7 +23,9 @@ include_directories(${CMAKE_SOURCE_DIR}/Generated)
 add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
