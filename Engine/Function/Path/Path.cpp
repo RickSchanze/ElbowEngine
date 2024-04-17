@@ -8,14 +8,23 @@
 #include "Path.h"
 
 #include "Exception.h"
+#include "Utils/StringUtils.h"
 
 Path::Path(StringView PathStr) {
+    if (PathStr.back() == L'/' || PathStr.back() == L'\\') {
+        // 去掉最后的'/'或者'\\'
+        PathStr.remove_suffix(1);
+    }
     if (sProjectWorkPath == nullptr)
         throw ProjectPathNotValidException(String{PathStr.begin(), PathStr.end()});
     mPath = sProjectWorkPath->mPath / PathStr;
 }
 
-void Path::SetProjectWorkPath(const StringView PathStr) {
+void Path::SetProjectWorkPath(StringView PathStr) {
+    if (PathStr.back() == L'/' || PathStr.back() == L'\\') {
+        // 去掉最后的'/'或者'\\'
+        PathStr.remove_suffix(1);
+    }
     sProjectWorkPath        = new Path{};
     sProjectWorkPath->mPath = PathStr;
     if (!sProjectWorkPath->IsExist()) {
@@ -23,18 +32,21 @@ void Path::SetProjectWorkPath(const StringView PathStr) {
         GetProjectMetaFilePath()->CreateFile();
     } else {
         if (!sProjectWorkPath->IsFolderEmpty()) {
-            // TODO: 工程目录不为空则判断是否是工程目录
+            // 查找存不存在工程元文件
+            if (!GetProjectMetaFilePath()->IsExist()) {
+                throw PathInvalidException(*sProjectWorkPath, L"目录不为空");
+            }
+        } else {
+            GetProjectMetaFilePath()->CreateFile();
         }
-        // TODO: 工程目录为空则创建工程元文件
     }
-
 }
 
-bool Path::IsExist() const noexcept {
+bool Path::IsExist() const {
     return std::filesystem::exists(mPath);
 }
 
-String Path::ToString() const noexcept {
+String Path::ToString() const {
     return mPath.generic_wstring();
 }
 
@@ -42,18 +54,28 @@ void Path::CreateDirectory() const {
     std::error_code ec;
     create_directories(mPath, ec);
     if (ec) {
-        throw PathInvalidException(*this, L"创建目录失败");
+        const auto ErrorMessage = std::format(
+            L"创建目录失败,错误码:{},错误消息:{}",
+            ec.value(),
+            StringUtils::FromAnsiString(ec.message(), EStringEncoding::GBK)
+        );
+        throw PathInvalidException(*this, ErrorMessage);
     }
 }
 
-bool Path::IsFolderEmpty() const noexcept {
-    if (!IsFolder()) return false;
+bool Path::IsFolderEmpty() const {
+    // 判断此目录是否为空 则此目录必须存在
+    if (!IsFolder(true)) return false;
     // 判断mPath目录是不是空
     return std::filesystem::is_empty(mPath);
 }
 
-bool Path::IsFolder() const noexcept {
-    return std::filesystem::is_directory(mPath);
+bool Path::IsFolder(const bool bMustExist) const {
+    if (bMustExist) {
+        if (!IsExist()) return false;
+    }
+    // 最后按理说不会为'/'或'\'因为构造函数已经去掉了
+    return mPath.has_filename() && !mPath.has_extension();
 }
 
 Optional<Path> Path::GetWorkPath() noexcept {

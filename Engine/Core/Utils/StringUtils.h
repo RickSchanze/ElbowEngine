@@ -10,6 +10,11 @@
 #include "CoreDef.h"
 #include "CoreTypeTraits.h"
 
+enum class EStringEncoding {
+    UTF8,
+    GBK,
+};
+
 
 class StringUtils {
 public:
@@ -25,9 +30,12 @@ public:
      * 将std::string转换为String(std::wstring)
      * @note Windows下使用 因为使用了MultiByteToWideChar
      * @param Str
+     * @param SourceStringEncoding Str的编码
      * @return
      */
-    static String FromAnsiString(const std::string& Str);
+    static String FromAnsiString(
+        const std::string& Str, EStringEncoding SourceStringEncoding = EStringEncoding::UTF8
+    );
 
     template<typename T>
         requires IsNumeric<T>

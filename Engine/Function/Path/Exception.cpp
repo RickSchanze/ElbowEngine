@@ -7,11 +7,12 @@
 #include "Exception.h"
 String PathInvalidException::What() const {
     return std::format(
-        L"PathInvalidException: 路径 \"{}\" 包含非法字符.{}",
+        L"PathInvalidException: \"{}\": {}",
         mPath.ToString(),
         mMessage.empty() ? L"" : L" " + mMessage
     );
 }
+
 String ProjectPathNotValidException::What() const {
     return std::format(
         L"ProjectPathNotValidException: 项目工程路径未设置"

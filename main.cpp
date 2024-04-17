@@ -11,8 +11,7 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        Path::SetProjectWorkPath(L"C:/TestProj");
-        auto Path = Path::GetProjectMetaFilePath();
+        Path::SetProjectWorkPath(L"C:/Testp");
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

@@ -37,13 +37,13 @@ public:
      * 路径不存在时不算无效
      * @return
      */
-    [[nodiscard]] bool IsExist() const noexcept;
+    [[nodiscard]] bool IsExist() const;
 
     /**
      * 将Path转换为绝对路径字符串
      * @return
      */
-    [[nodiscard]] String ToString() const noexcept;
+    [[nodiscard]] String ToString() const;
 
     /**
      * 以此Path为路径创建一个目录
@@ -52,16 +52,20 @@ public:
 
     /**
      * 判断这个path指示的目录是不是空
-     * 如果不是目录返回false 是目录不为空返回false
+     * 如果不是目录返回false 是目录不为空返回false 如果此路径不存在返回false
      * @return
      */
-    [[nodiscard]] bool IsFolderEmpty() const noexcept;
+    [[nodiscard]] bool IsFolderEmpty() const;
 
     /**
      * 判断这个path指示的是不是目录
+     * A. C:/Test -> true
+     * B. C:/Test/ -> true
+     * C. C:/Test/P -> true
+     * C. C:/Test/P.jpg -> false
      * @return
      */
-    [[nodiscard]] bool IsFolder() const noexcept;
+    [[nodiscard]] bool IsFolder(bool bMustExist = false) const;
 
     /**
      * 获取工作目录 未设置则返回空
@@ -79,6 +83,15 @@ public:
      * 创建当前路径指示的文件
      */
     void CreateFile() const;
+
+    /**
+     * 获取最后一个文件夹的名字, 没后缀认为是文件夹, 有后缀认为是文件
+     * A. C:/Testp/ -> Testp
+     * B. C:/Testp -> Testp
+     * C. C:/Testp/1.jpg -> Testp
+     * @return
+     */
+    // String GetLastFolderName() const;
 
 private:
     // 项目工作路径
