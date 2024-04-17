@@ -26,6 +26,10 @@ add_executable(ElbowEngine main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function)
+target_link_libraries(${PROJECT_NAME} PRIVATE Platform)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
+
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)

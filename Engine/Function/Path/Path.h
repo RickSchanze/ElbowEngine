@@ -84,15 +84,6 @@ public:
      */
     void CreateFile() const;
 
-    /**
-     * 获取最后一个文件夹的名字, 没后缀认为是文件夹, 有后缀认为是文件
-     * A. C:/Testp/ -> Testp
-     * B. C:/Testp -> Testp
-     * C. C:/Testp/1.jpg -> Testp
-     * @return
-     */
-    // String GetLastFolderName() const;
-
 private:
     // 项目工作路径
     static inline Path* sProjectWorkPath = nullptr;

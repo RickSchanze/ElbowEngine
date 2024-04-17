@@ -2,7 +2,10 @@
 #include "Engine/Function/Path/Path.h"
 #include "Exception/Exception.h"
 #include "Log/Logger.h"
+#include "RHI/Vulkan/Core.h"
 #include "windows.h"
+#define GLFW_INCLUDE_VULKAN
+#include "GLFW/glfw3.h"
 
 
 int main() {
@@ -11,7 +14,12 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        Path::SetProjectWorkPath(L"C:/Testp");
+        glfwInit();
+        uint32 Count;
+        const char** Extensions = glfwGetRequiredInstanceExtensions(&Count);
+        Vulkan::Application App{VK_MAKE_VERSION(1, 1, 1), VK_MAKE_VERSION(1, 1, 1)};
+        App.Init(Extensions, Count);
+        App.Finalize();
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;
