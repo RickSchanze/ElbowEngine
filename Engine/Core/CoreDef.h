@@ -217,3 +217,6 @@ private:                                                        \
 #define INTERFACE_METHOD = 0;
 
 #define _CRT_SECURE_NO_WARNINGS
+
+// 项目Debug宏
+#define ELBOW_DEBUG _DEBUG

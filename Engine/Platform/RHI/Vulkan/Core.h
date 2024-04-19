@@ -14,6 +14,26 @@
 
 namespace Vulkan {
 
+class Surface {
+public:
+    virtual ~Surface() = default;
+
+    /**
+     * 创建一个窗口表明对象
+     * @param InInstance 窗口需要的Instance
+     */
+    virtual void Create(vk::Instance& InInstance) = 0;
+    virtual void Finalize();
+
+    explicit operator vk::SurfaceKHR() const { return mSurface; }
+    explicit operator VkSurfaceKHR() const { return mSurface; }
+
+    [[nodiscard]] vk::SurfaceKHR GetSurface() const { return mSurface; }
+
+private:
+    vk::SurfaceKHR mSurface{};
+};
+
 class ValidationLayer {
 public:
     typedef ValidationLayer          ThisClass;
@@ -58,7 +78,7 @@ public:
     void Setup();
 
     /**
-     * 设置此验证层附着到的实力
+     * 设置此验证层附着到的实例
      * @param Instance 实例
      */
     void SetAttachedInstance(vk::Instance Instance);
@@ -107,18 +127,18 @@ public:
      */
     void Finalize();
 
-    [[nodiscard]] vk::Instance GetInstance() const { return mInstance; }
+    [[nodiscard]] vk::Instance     GetInstance() const { return mInstance; }
     [[nodiscard]] ValidationLayer& GetValidationLayer() { return mValidationLayer; }
-    [[nodiscard]] bool IsInitialized() const { return bInitialized; }
-    [[nodiscard]] bool IsFinalized() const { return bFinalized; }
+    [[nodiscard]] bool             IsInitialized() const { return bInitialized; }
+    [[nodiscard]] bool             IsFinalized() const { return bFinalized; }
 
 protected:
     void CreateVulkanInstance(const char** InExtensions, uint32 InExtensionCount);
 
-
 private:
-    vk::Instance    mInstance{};
-    ValidationLayer mValidationLayer{};
+    vk::Instance       mInstance{};
+    ValidationLayer    mValidationLayer{};
+    UniquePtr<Surface> mSurface;
 
     String mAppName;
     uint32 mAppVersion;

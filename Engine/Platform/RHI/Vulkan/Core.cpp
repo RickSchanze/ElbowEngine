@@ -11,6 +11,10 @@
 #include "Exception.h"
 #include "Utils/StringUtils.h"
 
+void Vulkan::Surface::Finalize() {
+
+}
+
 bool Vulkan::ValidationLayer::CheckValidationLayerSupport() {
     // 获取所有可用的校验层列表
     auto AvailableLayers = vk::enumerateInstanceLayerProperties();
@@ -41,7 +45,7 @@ VkBool32 Vulkan::ValidationLayer::DebugCallback(
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT: break;
     }
     // 如果是True vulkan api调用会返回VK_ERROR_VALIDATION_FAILED_EXT
-    // 错误代码 通常只在测试校验层本身时设置为True
+    // 错误代码 通常只在测试校验层本身时设置为 True
     return VK_FALSE;
 }
 

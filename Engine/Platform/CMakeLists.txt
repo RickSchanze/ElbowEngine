@@ -4,11 +4,25 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.280.0")
 
+if (MSVC)
+    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
+    add_compile_options("/wd4996")
+    add_compile_options("/wd4244")
+    add_compile_options("/wd4312")
+endif ()
+
+
 add_library(Platform
         RHI/Vulkan/Core.h
         RHI/Vulkan/Core.cpp
         RHI/Vulkan/Exception.h
         RHI/Vulkan/Exception.cpp
+        RHI/Vulkan/Instance.cpp
+        RHI/Vulkan/Instance.h
+        RHI/Vulkan/ValidationLayer.h
+        RHI/Vulkan/ValidationLayer.cpp
+        RHI/Vulkan/VulkanCommon.h
+        RHI/Vulkan/Interface/IRHIResource.h
 )
 
 find_package(Vulkan REQUIRED)
