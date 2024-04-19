@@ -6,15 +6,19 @@
  */
 
 #include "Instance.h"
-Vulkan::Instance::Instance() {
+RHI_VULKAN_NAMESPACE_BEGIN
+
+Instance::Instance() {
     mVulkanInstance = VK_NULL_HANDLE;
 }
 
-void Vulkan::Instance::Initialize() {
+void Instance::Initialize() {
     mDynamicDispatcher = {mVulkanInstance, vkGetInstanceProcAddr};
 }
 
-void Vulkan::Instance::Finalize() {
+void Instance::Finalize() {
 
 }
+
+RHI_VULKAN_NAMESPACE_END
 

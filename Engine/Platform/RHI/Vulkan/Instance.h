@@ -7,10 +7,12 @@
 
 #pragma once
 #include "Interface/IRHIResource.h"
+#include "VulkanCommon.h"
 
 #include <vulkan/vulkan.hpp>
 
-namespace Vulkan {
+RHI_VULKAN_NAMESPACE_BEGIN
+
 class Instance : public IRHIResource {
 public:
     Instance();
@@ -30,4 +32,5 @@ private:
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic mDynamicDispatcher;
 };
-}
+
+RHI_VULKAN_NAMESPACE_END

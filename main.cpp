@@ -14,7 +14,7 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        Vulkan::ValidationLayer I;
+        RHI::Vulkan::ValidationLayer I;
         I.Initialize();
     } catch (const Exception& e) {
         gLogger.Exception(e);

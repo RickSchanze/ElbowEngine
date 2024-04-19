@@ -7,6 +7,9 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "RHI/Vulkan/VulkanCommon.h"
+
+RHI_VULKAN_NAMESPACE_BEGIN
 
 interface IRHIResource {
 public:
@@ -14,3 +17,5 @@ public:
     virtual void Initialize() INTERFACE_METHOD;
     virtual void Finalize() INTERFACE_METHOD;
 };
+
+RHI_VULKAN_NAMESPACE_END
