@@ -18,6 +18,7 @@ TOOL_NAMESPACE_BEGIN
 
 class EngineApplication {
 public:
+    // TODO: 自定义设定启动应用的名字、窗口大小、版本等
          EngineApplication() = default;
     ~    EngineApplication() { Finitialize(); }
     void Initialize();

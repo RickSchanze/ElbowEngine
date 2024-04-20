@@ -1,7 +1,7 @@
 set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Core)
 
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME}
         Object/Object.h
         Object/Object.cpp
         Object/ObjectManager.h

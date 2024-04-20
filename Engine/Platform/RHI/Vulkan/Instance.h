@@ -60,6 +60,7 @@ public:
 
 protected:
     void InitializeSurface() const;
+    void PickPhysicalDevice();
 
 private:
     vk::Instance               mVulkanInstanceHandle;

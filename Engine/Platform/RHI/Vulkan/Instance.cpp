@@ -8,6 +8,7 @@
 #include "Instance.h"
 
 #include "CoreGlobal.h"
+#include "Utils/StringUtils.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -40,7 +41,7 @@ void Instance::Initialize() {
     mValidationLayer      = MakeUnique<ValidationLayer>(this);
     mValidationLayer->Initialize();
     InitializeSurface();
-    mPhysicalDevice = PhysicalDevice::PickPhysicalDevice(this);
+    PickPhysicalDevice();
 }
 
 void Instance::Finalize() {
@@ -70,10 +71,16 @@ Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
     return mVulkanInstanceHandle.enumeratePhysicalDevices();
 }
 
-
 void Instance::InitializeSurface() const {
     mSurface->Initialize();
     LOG_INFO_CATEGORY(Vulkan, L"Surface初始化完成");
+}
+
+void Instance::PickPhysicalDevice() {
+    mPhysicalDevice       = PhysicalDevice::PickPhysicalDevice(this);
+    const auto Properties = mPhysicalDevice->GetProperties();
+    auto       Name       = StringUtils::FromAnsiString(Properties.deviceName);
+    LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", Name);
 }
 
 RHI_VULKAN_NAMESPACE_END
