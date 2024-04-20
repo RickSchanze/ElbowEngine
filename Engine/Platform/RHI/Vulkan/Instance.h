@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Interface/IRHIResource.h"
+#include "PhysicalDevice.h"
 #include "ValidationLayer.h"
 #include "VulkanCommon.h"
 
@@ -16,54 +17,62 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class SurfaceBase : public IRHIResource {
 public:
-    explicit SurfaceBase(Instance* InParentInstance) : mAttachedInstance(InParentInstance) {}
+    explicit SurfaceBase(Instance* InParentInstance) : mAttachedInstanceHandle(InParentInstance) {}
 
     ~SurfaceBase() override = default;
 
-    [[nodiscard]] vk::SurfaceKHR GetSurface() const { return mSurface; }
+    [[nodiscard]] Instance&      GetInstanceHandle() const { return *mAttachedInstanceHandle; }
+    SurfaceBase&                 SetInstanceHandle(Instance* InInstanceHandle);
+    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const { return mSurfaceHandle; }
+    SurfaceBase&                 SetSurfaceHandle(vk::SurfaceKHR InSurfaceHandle);
 
-    explicit operator vk::SurfaceKHR() const { return mSurface; }
+    explicit operator vk::SurfaceKHR() const { return mSurfaceHandle; }
 
     /** 此函数必修初始化mSurface */
     void Initialize() override INTERFACE_METHOD;
     void Finalize() override;
 
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurface); }
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurfaceHandle); }
 
 protected:
-    vk::SurfaceKHR mSurface;
-    Instance* mAttachedInstance = nullptr;
+    vk::SurfaceKHR mSurfaceHandle;
+    Instance*      mAttachedInstanceHandle = nullptr;
 };
 
-class Instance : public IRHIResource {
+class Instance final : public IRHIResource {
 public:
     Instance();
-
-    explicit Instance(const vk::InstanceCreateInfo& InCreateInfo);
 
     void Initialize() override;
     void Finalize() override;
 
     Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
 
+    // clang-format off
     [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstance); }
-    [[nodiscard]] vk::Instance GetVulkanInstance() const { return mVulkanInstance; }
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstanceHandle); }
+    [[nodiscard]] vk::Instance GetVulkanInstanceHandle() const { return mVulkanInstanceHandle; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
     [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const;
+
+    Instance& SetInstanceCreateInfo(const vk::InstanceCreateInfo &InCreateInfo) { mInstanceCreateInfo = InCreateInfo; return *this; }
+    // clang-format on
 
 protected:
     void InitializeSurface() const;
 
 private:
-    vk::Instance mVulkanInstance;
+    vk::Instance               mVulkanInstanceHandle;
     // 验证层
     UniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
-    UniquePtr<SurfaceBase> mSurface;
-
+    UniquePtr<SurfaceBase>     mSurface;
+    // 物理设备
+    UniquePtr<PhysicalDevice>  mPhysicalDevice;
     // 动态加载各种函数用
-    vk::DispatchLoaderDynamic mDynamicDispatcher;
+    vk::DispatchLoaderDynamic  mDynamicDispatcher;
+    // 实例创建信息
+    vk::InstanceCreateInfo     mInstanceCreateInfo;
 };
 
 RHI_VULKAN_NAMESPACE_END

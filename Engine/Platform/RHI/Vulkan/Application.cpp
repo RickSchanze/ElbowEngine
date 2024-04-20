@@ -43,9 +43,13 @@ VulkanApplication& VulkanApplication::SetApiVersion(const uint32_t InApiVersion)
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& InExtensions
-) noexcept {
+VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& InExtensions) noexcept {
     Extensions = InExtensions;
+    return *this;
+}
+
+VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept {
+    mVulkanInstance.SetSurface(Move(InSurface));
     return *this;
 }
 
@@ -79,7 +83,7 @@ void VulkanApplication::CreateInstance() {
     InstanceCreateInfo.setPApplicationInfo(&AppInfo)
         .setEnabledExtensionCount(Extensions.size())
         .setPpEnabledExtensionNames(Extensions.data());
-    mVulkanInstance = Instance(InstanceCreateInfo);
+    mVulkanInstance.SetInstanceCreateInfo(InstanceCreateInfo);
 }
 
 RHI_VULKAN_NAMESPACE_END

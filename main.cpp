@@ -4,9 +4,11 @@
 #include "Log/Logger.h"
 #include "windows.h"
 #define GLFW_INCLUDE_VULKAN
+#include "EngineApplication.h"
 #include "GLFW/glfw3.h"
 #include "RHI/Vulkan/Application.h"
-#include "RHI/Vulkan/ValidationLayer.h"
+#include "Utils/StringUtils.h"
+#include "vulkan/vk_enum_string_helper.h"
 
 
 int main() {
@@ -15,8 +17,10 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        RHI::Vulkan::VulkanApplication App;
+        Tool::EngineApplication App;
         App.Initialize();
+        App.Run();
+        App.Finitialize();
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;

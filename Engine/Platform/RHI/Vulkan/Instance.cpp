@@ -8,35 +8,46 @@
 #include "Instance.h"
 
 #include "CoreGlobal.h"
-#include "Exception.h"
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
+SurfaceBase& SurfaceBase::SetInstanceHandle(Instance* InInstanceHandle) {
+    mAttachedInstanceHandle = InInstanceHandle;
+    return *this;
+}
+
+SurfaceBase& SurfaceBase::SetSurfaceHandle(vk::SurfaceKHR InSurfaceHandle) {
+    mSurfaceHandle = InSurfaceHandle;
+    return *this;
+}
+
 void SurfaceBase::Finalize() {
-    if (mAttachedInstance->IsValid()) {
-        mAttachedInstance->GetVulkanInstance().destroySurfaceKHR(mSurface);
-        mSurface = VK_NULL_HANDLE;
+    if (mAttachedInstanceHandle->IsValid()) {
+        mAttachedInstanceHandle->GetVulkanInstanceHandle().destroySurfaceKHR(mSurfaceHandle);
+        mSurfaceHandle = VK_NULL_HANDLE;
+        LOG_INFO_CATEGORY(Vulkan, L"Surface清理完成");
     }
 }
 
 Instance::Instance() {
-    mVulkanInstance = VK_NULL_HANDLE;
+    mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
 
-Instance::Instance(const vk::InstanceCreateInfo& InCreateInfo) {
-    mVulkanInstance = vk::createInstance(InCreateInfo);
-}
 
 void Instance::Initialize() {
-    mDynamicDispatcher = {mVulkanInstance, vkGetInstanceProcAddr};
-    mValidationLayer   = MakeUnique<ValidationLayer>(this);
+    mVulkanInstanceHandle = vk::createInstance(mInstanceCreateInfo);
+    mDynamicDispatcher    = {mVulkanInstanceHandle, vkGetInstanceProcAddr};
+    mValidationLayer      = MakeUnique<ValidationLayer>(this);
     mValidationLayer->Initialize();
     InitializeSurface();
+    mPhysicalDevice = PhysicalDevice::PickPhysicalDevice(this);
 }
 
 void Instance::Finalize() {
+    mSurface->Finalize();
     mValidationLayer->Finalize();
-    mVulkanInstance.destroy();
-    mVulkanInstance = VK_NULL_HANDLE;
+    mVulkanInstanceHandle.destroy();
+    mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
 
 const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
@@ -45,7 +56,7 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
 
 vk::SurfaceKHR Instance::GetSurfaceHandle() const {
     if (mSurface) {
-        return mSurface->GetSurface();
+        return mSurface->GetSurfaceHandle();
     }
     return {};
 }
@@ -56,14 +67,11 @@ Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
 }
 
 Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
-    return mVulkanInstance.enumeratePhysicalDevices();
+    return mVulkanInstanceHandle.enumeratePhysicalDevices();
 }
 
 
 void Instance::InitializeSurface() const {
-    if (!mSurface) {
-        throw VulkanException(L"mSurface为空,此字段表面必须手动设置");
-    }
     mSurface->Initialize();
     LOG_INFO_CATEGORY(Vulkan, L"Surface初始化完成");
 }

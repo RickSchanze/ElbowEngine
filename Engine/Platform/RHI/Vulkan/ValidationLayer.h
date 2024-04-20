@@ -29,7 +29,7 @@ public:
 #else
     static constexpr bool sEnableValidationLayer = false;
 #endif
-    static constexpr Array<const char*> gValidationLayers = {
+    static inline  Array<const char*> gValidationLayers = {
         "VK_LAYER_KHRONOS_validation",
     };
 

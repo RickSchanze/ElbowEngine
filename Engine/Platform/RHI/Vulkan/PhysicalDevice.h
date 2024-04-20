@@ -19,9 +19,7 @@ struct QueueFamilyIndices
     Optional<uint32> GraphicsFamily;
     Optional<uint32> PresentFamily;
 
-    [[nodiscard]] bool IsValid() const {
-        return GraphicsFamily.has_value() && PresentFamily.has_value();
-    }
+    [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 };
 
 class PhysicalDevice {
@@ -30,17 +28,17 @@ public:
 
     struct SwapChainSupportDetails
     {
-        vk::SurfaceCapabilitiesKHR Capabilities;
+        vk::SurfaceCapabilitiesKHR  Capabilities;
         Array<vk::SurfaceFormatKHR> Formats;
-        Array<vk::PresentModeKHR> PresentModes;
+        Array<vk::PresentModeKHR>   PresentModes;
     };
 
 public:
     typedef PhysicalDevice ThisClass;
-    explicit PhysicalDevice(Instance* InAttachedInstance) : mAttachedInstance(InAttachedInstance) {}
-    explicit operator vk::PhysicalDevice() const { return mDeviceHandle; }
-    explicit operator bool() const { return IsValid(); }
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mDeviceHandle); }
+    explicit               PhysicalDevice(Instance* InAttachedInstance) : mAttachedInstance(InAttachedInstance) {}
+    explicit               operator vk::PhysicalDevice() const { return mDeviceHandle; }
+    explicit               operator bool() const { return IsValid(); }
+    [[nodiscard]] bool     IsValid() const { return static_cast<bool>(mDeviceHandle); }
 
     /**
      * 使用Instance选择合适的物理设备
@@ -48,10 +46,8 @@ public:
      * @param PickFunc 用来确定一个设备是否合适
      * @return
      */
-    static UniquePtr<PhysicalDevice> PickPhysicalDevice(
-        Instance* InAttachedInstance,
-        const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable
-    );
+    static UniquePtr<PhysicalDevice>
+    PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -79,13 +75,20 @@ public:
      * 查询此物理设备对交换链的支持情况
      * @return
      */
-    [[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport();
+    [[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport() const;
+
+    // 一些转发函数
+    // clang-format off
+    [[nodiscard]] vk::PhysicalDevice GetVulkanPhysicalDeviceHandle() const { return mDeviceHandle; }
+    [[nodiscard]] vk::PhysicalDeviceProperties GetProperties() const { return mDeviceHandle.getProperties(); }
+    [[nodiscard]] vk::PhysicalDeviceFeatures GetFeatures() const { return mDeviceHandle.getFeatures(); }
+    // clang-format on
 
 private:
     // 实际的vkPhysicalDevice
     vk::PhysicalDevice mDeviceHandle;
     // 附着的VkInstance实例
-    Instance* mAttachedInstance = nullptr;
+    Instance*          mAttachedInstance = nullptr;
     // 支持的FamilyIndices
     QueueFamilyIndices mSupportedQueueFamilyIndices;
 };
