@@ -23,6 +23,8 @@ add_library(Platform
         RHI/Vulkan/Interface/IRHIResource.h
         RHI/Vulkan/Application.h
         RHI/Vulkan/Application.cpp
+        RHI/Vulkan/PhysicalDevice.cpp
+        RHI/Vulkan/PhysicalDevice.h
 )
 
 find_package(Vulkan REQUIRED)

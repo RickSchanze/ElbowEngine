@@ -32,7 +32,7 @@ public:
 
 protected:
     vk::SurfaceKHR mSurface;
-    Instance*      mAttachedInstance = nullptr;
+    Instance* mAttachedInstance = nullptr;
 };
 
 class Instance : public IRHIResource {
@@ -44,24 +44,23 @@ public:
     void Initialize() override;
     void Finalize() override;
 
-    [[nodiscard]] vk::Instance GetVulkanInstance() const { return mVulkanInstance; }
-    [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const {
-        return mDynamicDispatcher;
-    }
-
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstance); }
-
     Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
+
+    [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstance); }
+    [[nodiscard]] vk::Instance GetVulkanInstance() const { return mVulkanInstance; }
+    [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
+    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const;
 
 protected:
     void InitializeSurface() const;
 
 private:
-    vk::Instance               mVulkanInstance;
+    vk::Instance mVulkanInstance;
     // 验证层
     UniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
-    UniquePtr<SurfaceBase>     mSurface;
+    UniquePtr<SurfaceBase> mSurface;
 
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic mDynamicDispatcher;

@@ -39,10 +39,26 @@ void Instance::Finalize() {
     mVulkanInstance = VK_NULL_HANDLE;
 }
 
+const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
+    return mDynamicDispatcher;
+}
+
+vk::SurfaceKHR Instance::GetSurfaceHandle() const {
+    if (mSurface) {
+        return mSurface->GetSurface();
+    }
+    return {};
+}
+
 Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
     mSurface = Move(InSurface);
     return *this;
 }
+
+Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
+    return mVulkanInstance.enumeratePhysicalDevices();
+}
+
 
 void Instance::InitializeSurface() const {
     if (!mSurface) {

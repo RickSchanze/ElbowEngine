@@ -11,7 +11,7 @@ AlignAfterOpenBracket: BlockIndent
 # 连续赋值时，对齐所有等号
 AlignConsecutiveAssignments: AcrossComments
 # 连续声明时，对齐所有声明的变量名
-AlignConsecutiveDeclarations: AcrossComments
+AlignConsecutiveDeclarations: false
   # 对齐连续位域字段的风格
 # AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
 # 对齐连续宏定义的风格
