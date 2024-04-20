@@ -13,8 +13,6 @@ endif ()
 
 
 add_library(Platform
-        RHI/Vulkan/Core.h
-        RHI/Vulkan/Core.cpp
         RHI/Vulkan/Exception.h
         RHI/Vulkan/Exception.cpp
         RHI/Vulkan/Instance.cpp
@@ -23,6 +21,8 @@ add_library(Platform
         RHI/Vulkan/ValidationLayer.cpp
         RHI/Vulkan/VulkanCommon.h
         RHI/Vulkan/Interface/IRHIResource.h
+        RHI/Vulkan/Application.h
+        RHI/Vulkan/Application.cpp
 )
 
 find_package(Vulkan REQUIRED)

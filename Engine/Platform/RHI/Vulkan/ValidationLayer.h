@@ -6,16 +6,17 @@
  */
 
 #pragma once
-#include "Instance.h"
 #include "Interface/IRHIResource.h"
 #include "VulkanCommon.h"
 
 #include <vulkan/vulkan.hpp>
 
 RHI_VULKAN_NAMESPACE_BEGIN
+class Instance;
 
 class ValidationLayer final : public IRHIResource {
 public:
+    typedef ValidationLayer ThisClass;
     void Initialize() override;
     void Finalize() override;
 
@@ -24,11 +25,26 @@ public:
 #else
     static constexpr bool sEnableValidationLayer = false;
 #endif
+    static constexpr Array<const char*> gValidationLayers = {
+        "VK_LAYER_KHRONOS_validation",
+    };
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
+        VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
+    );
+
+    [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const {
+        return mDebugMessengerCallback;
+    }
+
+    ValidationLayer& SetAttachedVulkanInstance(Instance* InInstance) noexcept;
 
 private:
-    vk::DebugUtilsMessengerEXT mDebugMessengerCallback{};
+    vk::DebugUtilsMessengerEXT mDebugMessengerCallback;
     // 验证层附加的Instance对象
-    Instance                   mVulkanInstance{};
+    Instance*                  mAttachedVulkanInstance = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END

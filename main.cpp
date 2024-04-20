@@ -5,6 +5,7 @@
 #include "windows.h"
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
+#include "RHI/Vulkan/Application.h"
 #include "RHI/Vulkan/ValidationLayer.h"
 
 
@@ -14,8 +15,8 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        RHI::Vulkan::ValidationLayer I;
-        I.Initialize();
+        RHI::Vulkan::VulkanApplication App;
+        App.Initialize();
     } catch (const Exception& e) {
         gLogger.Exception(e);
         return -1;
