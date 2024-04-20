@@ -96,6 +96,12 @@ constexpr T&& Forward(std::remove_reference_t<T>& Arg) noexcept {
     return static_cast<T&&>(Arg);
 }
 
+// std::move -> Move
+template<typename T>
+constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept {
+    return static_cast<std::remove_reference_t<T>&&>(Arg);
+}
+
 // std::unordered_map -> HashMap
 #include <unordered_map>
 template<

@@ -14,10 +14,31 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
+class SurfaceBase : public IRHIResource {
+public:
+    explicit SurfaceBase(Instance* InParentInstance) : mAttachedInstance(InParentInstance) {}
+
+    ~SurfaceBase() override = default;
+
+    [[nodiscard]] vk::SurfaceKHR GetSurface() const { return mSurface; }
+
+    explicit operator vk::SurfaceKHR() const { return mSurface; }
+
+    /** 此函数必修初始化mSurface */
+    void Initialize() override INTERFACE_METHOD;
+    void Finalize() override;
+
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurface); }
+
+protected:
+    vk::SurfaceKHR mSurface;
+    Instance*      mAttachedInstance = nullptr;
+};
+
 class Instance : public IRHIResource {
 public:
-             Instance();
-             Instance(const Instance&) = default;
+    Instance();
+
     explicit Instance(const vk::InstanceCreateInfo& InCreateInfo);
 
     void Initialize() override;
@@ -30,10 +51,18 @@ public:
 
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstance); }
 
+    Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
+
+protected:
+    void InitializeSurface() const;
+
 private:
-    vk::Instance              mVulkanInstance;
+    vk::Instance               mVulkanInstance;
     // 验证层
-    ValidationLayer           mValidationLayer;
+    UniquePtr<ValidationLayer> mValidationLayer;
+    // 窗口表面
+    UniquePtr<SurfaceBase>     mSurface;
+
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic mDynamicDispatcher;
 };

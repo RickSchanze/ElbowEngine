@@ -17,6 +17,10 @@ class Instance;
 class ValidationLayer final : public IRHIResource {
 public:
     typedef ValidationLayer ThisClass;
+
+    explicit ValidationLayer(Instance* InParentInstance) noexcept :
+        mAttachedVulkanInstance(InParentInstance) {}
+
     void Initialize() override;
     void Finalize() override;
 
@@ -43,8 +47,9 @@ public:
 
 private:
     vk::DebugUtilsMessengerEXT mDebugMessengerCallback;
+
     // 验证层附加的Instance对象
-    Instance*                  mAttachedVulkanInstance = nullptr;
+    Instance* mAttachedVulkanInstance = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END
