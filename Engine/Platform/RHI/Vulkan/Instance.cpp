@@ -34,17 +34,26 @@ Instance::Instance() {
     mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
 
-
 void Instance::Initialize() {
     mVulkanInstanceHandle = vk::createInstance(mInstanceCreateInfo);
     mDynamicDispatcher    = {mVulkanInstanceHandle, vkGetInstanceProcAddr};
-    mValidationLayer      = MakeUnique<ValidationLayer>(this);
+
+    // 初始化验证层
+    mValidationLayer = MakeUnique<ValidationLayer>(this);
     mValidationLayer->Initialize();
+    // 初始化窗口表面
     InitializeSurface();
+
+    // 选择物理设备
     PickPhysicalDevice();
+
+    // 创建初始化逻辑设备
+    mLogicalDevice = MakeUnique<LogicalDevice>(mPhysicalDevice->CreateLogicalDevice());
+    mLogicalDevice->Initialize();
 }
 
 void Instance::Finalize() {
+    mLogicalDevice->Finalize();
     mSurface->Finalize();
     mValidationLayer->Finalize();
     mVulkanInstanceHandle.destroy();

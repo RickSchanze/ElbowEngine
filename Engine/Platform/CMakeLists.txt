@@ -28,6 +28,10 @@ add_library(Platform
         Window/GLFWWindow.h
         Window/GLFWWindow.cpp
         Window/WindowCommon.h
+        RHI/Vulkan/LogicalDevice.cpp
+        RHI/Vulkan/LogicalDevice.h
+        RHI/Vulkan/VulkanQueue.cpp
+        RHI/Vulkan/VulkanQueue.h
 )
 
 add_library(Engine::Platform ALIAS Platform)

@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "LogicalDevice.h"
 #include "VulkanCommon.h"
 
 #include "vulkan/vulkan.hpp"
@@ -24,7 +25,11 @@ struct QueueFamilyIndices
 
 class PhysicalDevice {
 public:
-    static inline Set<AnsiString> sDeviceRequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    static inline Array<const char*> sDeviceRequiredExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    };
+    static inline Array<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
 
     struct SwapChainSupportDetails
     {
@@ -69,13 +74,25 @@ public:
      * @param RequiredExtensions
      * @return
      */
-    [[nodiscard]] bool CheckExtensionSupport(const Set<AnsiString>& RequiredExtensions) const;
+    [[nodiscard]] bool CheckExtensionSupport(const Array<const char*>& RequiredExtensions) const;
 
     /**
      * 查询此物理设备对交换链的支持情况
      * @return
      */
     [[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport() const;
+
+    /**
+     * 以此物理设备为基础创建一个逻辑设备
+     * @return
+     */
+    LogicalDevice CreateLogicalDevice();
+
+    /**
+     * 获得以此物理设备为基础创建的逻辑设备
+     * @return
+     */
+    [[nodiscard]] LogicalDevice GetAssociatedLogicalDevice() const { return mAssociatedLogicalDevice; }
 
     // 一些转发函数
     // clang-format off
@@ -91,6 +108,8 @@ private:
     Instance*          mAttachedInstance = nullptr;
     // 支持的FamilyIndices
     QueueFamilyIndices mSupportedQueueFamilyIndices;
+    // 由此物理设备创建的逻辑设备
+    LogicalDevice      mAssociatedLogicalDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

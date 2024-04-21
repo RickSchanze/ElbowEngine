@@ -70,6 +70,8 @@ private:
     UniquePtr<SurfaceBase>     mSurface;
     // 物理设备
     UniquePtr<PhysicalDevice>  mPhysicalDevice;
+    // 逻辑设备
+    UniquePtr<LogicalDevice>   mLogicalDevice;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic  mDynamicDispatcher;
     // 实例创建信息

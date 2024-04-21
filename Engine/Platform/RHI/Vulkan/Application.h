@@ -47,7 +47,7 @@ private:
     String   mEngineName    = L"Elbow Engine";
     uint32_t mAppVersion    = VK_MAKE_VERSION(1, 0, 0);
     uint32_t mEngineVersion = VK_MAKE_VERSION(1, 0, 0);
-    uint32_t mApiVersion    = VK_MAKE_API_VERSION(1, 0, 0, 0);
+    uint32_t mApiVersion    = VK_API_VERSION_1_3;
 
     Instance           mVulkanInstance;
     Array<const char*> Extensions;

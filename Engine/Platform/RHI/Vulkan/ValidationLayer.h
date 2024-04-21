@@ -18,8 +18,7 @@ class ValidationLayer final : public IRHIResource {
 public:
     typedef ValidationLayer ThisClass;
 
-    explicit ValidationLayer(Instance* InParentInstance) noexcept :
-        mAttachedVulkanInstance(InParentInstance) {}
+    explicit ValidationLayer(Instance* InParentInstance) noexcept : mAttachedVulkanInstance(InParentInstance) {}
 
     void Initialize() override;
     void Finalize() override;
@@ -29,19 +28,19 @@ public:
 #else
     static constexpr bool sEnableValidationLayer = false;
 #endif
-    static inline  Array<const char*> gValidationLayers = {
+    static inline Array<const char*> gValidationLayers = {
         "VK_LAYER_KHRONOS_validation",
     };
 
+    static constexpr bool               IsEnable() noexcept { return sEnableValidationLayer; }
+    static constexpr Array<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
-        VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
+        VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity, VkDebugUtilsMessageTypeFlagsEXT InMessageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
     );
 
-    [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const {
-        return mDebugMessengerCallback;
-    }
+    [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return mDebugMessengerCallback; }
 
     ValidationLayer& SetAttachedVulkanInstance(Instance* InInstance) noexcept;
 

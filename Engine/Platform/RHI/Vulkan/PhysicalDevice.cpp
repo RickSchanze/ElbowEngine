@@ -7,6 +7,7 @@
 
 #include "PhysicalDevice.h"
 
+#include "CoreGlobal.h"
 #include "Instance.h"
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -72,13 +73,13 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
     return {};
 }
 
-bool PhysicalDevice::CheckExtensionSupport(const Set<AnsiString>& RequiredExtensions) const {
-    const Array     Extensions           = mDeviceHandle.enumerateDeviceExtensionProperties();
-    Set<AnsiString> MyRequiredExtensions = RequiredExtensions;
+bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocator<const char*>>& RequiredExtensions) const {
+    const Array      Extensions           = mDeviceHandle.enumerateDeviceExtensionProperties();
+    Set<const char*> MyRequiredExtensions = {RequiredExtensions.begin(), RequiredExtensions.end()};
     for (const auto& Extension: Extensions) {
         MyRequiredExtensions.erase(Extension.extensionName);
     }
-    return MyRequiredExtensions.empty();
+    return !MyRequiredExtensions.empty();
 }
 
 PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() const {
@@ -89,5 +90,39 @@ PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() 
     RtnDetails.PresentModes = mDeviceHandle.getSurfacePresentModesKHR(mAttachedInstance->GetSurfaceHandle());
     return RtnDetails;
 }
+
+LogicalDevice PhysicalDevice::CreateLogicalDevice() {
+    QueueFamilyIndices               Indices = FindQueueFamilyIndices();
+    Array<vk::DeviceQueueCreateInfo> QueueCreateInfos;
+    Set<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
+    float                            QueuePriority       = 1.0f;
+    for (uint32_t QueueFamily: UniqueQueueFamilies) {
+        vk::DeviceQueueCreateInfo QueueCreateInfo{};
+        QueueCreateInfo
+            .setQueueFamilyIndex(QueueFamily)       // 队列族索引
+            .setQueueCount(1)                       // 队列数量
+            .setPQueuePriorities(&QueuePriority);   // 队列优先级 即使只有一个队列也需要指定
+        QueueCreateInfos.push_back(QueueCreateInfo);
+    }
+    // 指定要使用的设备特性
+    vk::PhysicalDeviceFeatures DeviceFeatures{};
+    DeviceFeatures.setSamplerAnisotropy(true);   // 开启采样器各向异性过滤支持
+
+    // 创建逻辑设备
+    vk::DeviceCreateInfo DeviceInfo{};
+    DeviceInfo
+        .setQueueCreateInfos(QueueCreateInfos)                  // 设置队列创建信息
+        .setPEnabledFeatures(&DeviceFeatures)                   // 设置要求的设备特性
+        .setPEnabledExtensionNames(sDeviceRequiredExtensions);   // 设置启用的扩展名
+        // 校验层
+        auto ValidationLayers = ValidationLayer::GetValidationLayerNames();
+    if (ValidationLayer::IsEnable()) {
+        DeviceInfo.setEnabledLayerCount(ValidationLayers.size()).setPpEnabledLayerNames(ValidationLayers.data());
+    }
+    auto LogicalDeviceHandle = mDeviceHandle.createDevice(DeviceInfo);
+    mAssociatedLogicalDevice = LogicalDevice(LogicalDeviceHandle);
+    return mAssociatedLogicalDevice;
+}
+
 
 RHI_VULKAN_NAMESPACE_END
