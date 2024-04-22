@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Interface/IRHIResource.h"
 #include "vulkan/vulkan.hpp"
 #include "VulkanCommon.h"
 
@@ -14,7 +15,7 @@ class LogicalDevice;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class SwapChain {
+class SwapChain : public IRHIResource {
 public:
     SwapChain() = default;
     explicit SwapChain(const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice) :
@@ -27,7 +28,9 @@ public:
     [[nodiscard]] vk::SwapchainKHR GetSwapchainHandle() const { return mSwapchainHandle; }
     [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
 
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSwapchainHandle) && mAssociatedLogicalDevice != nullptr; }
+    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mSwapchainHandle) && mAssociatedLogicalDevice != nullptr; }
+    void               Initialize() override;
+    void               Finalize() override;
 
 private:
     vk::SwapchainKHR mSwapchainHandle;
