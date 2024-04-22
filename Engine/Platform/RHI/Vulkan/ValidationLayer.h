@@ -23,6 +23,8 @@ public:
     void Initialize() override;
     void Finalize() override;
 
+    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mDebugMessengerCallback); }
+
 #if ELBOW_DEBUG
     static constexpr bool sEnableValidationLayer = true;
 #else
@@ -41,8 +43,8 @@ public:
     );
 
     [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return mDebugMessengerCallback; }
+    ValidationLayer&                         SetAttachedVulkanInstance(Instance* InInstance) noexcept;
 
-    ValidationLayer& SetAttachedVulkanInstance(Instance* InInstance) noexcept;
 
 private:
     vk::DebugUtilsMessengerEXT mDebugMessengerCallback;

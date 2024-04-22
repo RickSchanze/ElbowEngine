@@ -23,7 +23,7 @@ public:
     VulkanApplication& SetEngineVersion(uint32_t InEngineVersion) noexcept;
     VulkanApplication& SetApiVersion(uint32_t InApiVersion) noexcept;
     VulkanApplication& SetExtensions(const Array<const char*>& InExtensions) noexcept;
-    VulkanApplication& SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept;
+    VulkanApplication& SetWindowSurface(SharedPtr<SurfaceBase> InSurface) noexcept;
 
     void Initialize();
     void Finalize();
@@ -41,7 +41,6 @@ public:
     // 初始化Instance
     void CreateInstance();
 
-protected:
 private:
     String   mAppName       = L"Elbow Engine Editor";
     String   mEngineName    = L"Elbow Engine";

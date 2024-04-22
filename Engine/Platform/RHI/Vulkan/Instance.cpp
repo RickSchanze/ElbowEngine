@@ -64,15 +64,8 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
     return mDynamicDispatcher;
 }
 
-vk::SurfaceKHR Instance::GetSurfaceHandle() const {
-    if (mSurface) {
-        return mSurface->GetSurfaceHandle();
-    }
-    return {};
-}
-
-Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
-    mSurface = Move(InSurface);
+Instance& Instance::SetSurface(const SharedPtr<SurfaceBase>& InSurface) {
+    mSurface = InSurface;
     return *this;
 }
 

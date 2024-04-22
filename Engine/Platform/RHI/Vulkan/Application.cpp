@@ -48,7 +48,7 @@ VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& In
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept {
+VulkanApplication& VulkanApplication::SetWindowSurface(SharedPtr<SurfaceBase> InSurface) noexcept {
     mVulkanInstance.SetSurface(Move(InSurface));
     return *this;
 }

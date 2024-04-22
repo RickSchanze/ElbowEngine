@@ -32,7 +32,7 @@ public:
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
 
-    UniquePtr<GLFWWindowSurface>     GetWindowSurface();
+    SharedPtr<GLFWWindowSurface>     GetWindowSurface();
     [[nodiscard]] Array<const char*> GetRequiredExtensions() const;
     [[nodiscard]] GLFWwindow*        GetGLFWWindowHandle() const { return mWindowHandle; }
 

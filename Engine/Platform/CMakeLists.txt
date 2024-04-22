@@ -32,6 +32,8 @@ add_library(Platform
         RHI/Vulkan/LogicalDevice.h
         RHI/Vulkan/VulkanQueue.cpp
         RHI/Vulkan/VulkanQueue.h
+        RHI/Vulkan/SwapChain.cpp
+        RHI/Vulkan/SwapChain.h
 )
 
 add_library(Engine::Platform ALIAS Platform)

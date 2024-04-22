@@ -32,7 +32,7 @@ public:
     void Initialize() override INTERFACE_METHOD;
     void Finalize() override;
 
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurfaceHandle); }
+    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mSurfaceHandle); }
 
 protected:
     vk::SurfaceKHR mSurfaceHandle;
@@ -46,14 +46,14 @@ public:
     void Initialize() override;
     void Finalize() override;
 
-    Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
+    Instance& SetSurface(const SharedPtr<SurfaceBase>& InSurface);
 
     // clang-format off
     [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
-    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstanceHandle); }
+    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mVulkanInstanceHandle); }
     [[nodiscard]] vk::Instance GetVulkanInstanceHandle() const { return mVulkanInstanceHandle; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
-    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const;
+    [[nodiscard]] SharedPtr<SurfaceBase> GetSurface() const {return mSurface;}
 
     Instance& SetInstanceCreateInfo(const vk::InstanceCreateInfo &InCreateInfo) { mInstanceCreateInfo = InCreateInfo; return *this; }
     // clang-format on
@@ -67,7 +67,7 @@ private:
     // 验证层
     UniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
-    UniquePtr<SurfaceBase>     mSurface;
+    SharedPtr<SurfaceBase>     mSurface;
     // 物理设备
     UniquePtr<PhysicalDevice>  mPhysicalDevice;
     // 逻辑设备

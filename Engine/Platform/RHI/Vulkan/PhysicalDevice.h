@@ -43,7 +43,7 @@ public:
     explicit               PhysicalDevice(Instance* InAttachedInstance) : mAttachedInstance(InAttachedInstance) {}
     explicit               operator vk::PhysicalDevice() const { return mDeviceHandle; }
     explicit               operator bool() const { return IsValid(); }
-    [[nodiscard]] bool     IsValid() const { return static_cast<bool>(mDeviceHandle); }
+    [[nodiscard]] bool     IsValid() const { return static_cast<bool>(mDeviceHandle) && mAttachedInstance != nullptr; }
 
     /**
      * 使用Instance选择合适的物理设备
@@ -93,6 +93,8 @@ public:
      * @return
      */
     [[nodiscard]] LogicalDevice GetAssociatedLogicalDevice() const { return mAssociatedLogicalDevice; }
+
+    [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }
 
     // 一些转发函数
     // clang-format off
