@@ -120,7 +120,7 @@ SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDevice() {
         DeviceInfo.setEnabledLayerCount(ValidationLayers.size()).setPpEnabledLayerNames(ValidationLayers.data());
     }
     auto LogicalDeviceHandle = mDeviceHandle.createDevice(DeviceInfo);
-    auto ptr = shared_from_this();
+    auto ptr = weak_from_this();
     return LogicalDevice::CreateShared(LogicalDeviceHandle, ptr);
 }
 

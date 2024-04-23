@@ -7,9 +7,9 @@
 
 #include "LogicalDevice.h"
 
+#include "CoreGlobal.h"
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
-#include "CoreGlobal.h"
 #include "SwapChain.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -19,17 +19,20 @@ LogicalDevice::~LogicalDevice() {
     Finalize();
 }
 
-SharedPtr<LogicalDevice> LogicalDevice::CreateShared(vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
-    return MakeUnique<LogicalDevice>(InDevice, InAssociatedPhysicalDevice);
+SharedPtr<LogicalDevice> LogicalDevice::CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
+    return MakeShared<LogicalDevice>(ResourcePrivate{}, InDevice, InAssociatedPhysicalDevice);
 }
 
-LogicalDevice::LogicalDevice(const vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice) :
+UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
+    return MakeUnique<LogicalDevice>(ResourcePrivate{}, InDevice, InAssociatedPhysicalDevice);
+}
+
+LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) :
     mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
     Initialize();
 }
 
-void LogicalDevice::Initialize() {
-}
+void LogicalDevice::Initialize() {}
 
 void LogicalDevice::Finalize() {
     mLogicalDeviceHandle.destroy();

@@ -24,13 +24,12 @@ RHI_VULKAN_NAMESPACE_BEGIN
 class LogicalDevice final : public IRHIResource {
 public:
     LogicalDevice() = default;
-
     ~LogicalDevice() override;
 
-    static SharedPtr<LogicalDevice> CreateShared(vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static SharedPtr<LogicalDevice> CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-public:
-    explicit LogicalDevice(vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
+    explicit LogicalDevice(ResourcePrivate, vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
 
     void Initialize() override;
     void Finalize() override;

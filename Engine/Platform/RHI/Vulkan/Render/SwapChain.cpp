@@ -13,10 +13,14 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 UniquePtr<SwapChain> SwapChain::CreateUnique(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice) {
-    return MakeUnique<SwapChain>(InSwapchainHandle, InAssociatedLogicalDevice);
+    return MakeUnique<SwapChain>(InSwapchainHandle, InAssociatedLogicalDevice, ResourcePrivate{});
 }
 
-SwapChain::SwapChain(const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice) :
+SharedPtr<SwapChain> SwapChain::CreateShared(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice) {
+    return MakeShared<SwapChain>(InSwapchainHandle, InAssociatedLogicalDevice, ResourcePrivate{});
+}
+
+SwapChain::SwapChain(const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, ResourcePrivate) :
     mSwapchainHandle(InSwapchainHandle), mAssociatedLogicalDevice(InAssociatedLogicalDevice) {
     Initialize();
 }

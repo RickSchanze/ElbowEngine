@@ -21,10 +21,11 @@ public:
     SwapChain() = default;
 
     static UniquePtr<SwapChain> CreateUnique(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice);
+    static SharedPtr<SwapChain> CreateShared(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice);
 
 public:
     // 请勿直接使用此函数，请使用SwapChain::Create
-    explicit SwapChain(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice);
+    explicit SwapChain(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, ResourcePrivate);
 
 public:
     ~SwapChain() override;

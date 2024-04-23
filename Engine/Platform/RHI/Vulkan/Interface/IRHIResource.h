@@ -12,6 +12,9 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 interface IRHIResource {
+protected:
+    struct ResourcePrivate{};
+
 public:
     virtual ~IRHIResource() = default;
     virtual void Initialize() INTERFACE_METHOD;
