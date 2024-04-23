@@ -12,9 +12,9 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 
-UniquePtr<PhysicalDevice>
+SharedPtr<PhysicalDevice>
 PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc) {
-    auto        Rtn     = MakeUnique<PhysicalDevice>(InAttachedInstance);
+    auto        Rtn     = MakeShared<PhysicalDevice>(InAttachedInstance);
     const Array Devices = InAttachedInstance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices) {
         PhysicalDevice TempDevice(InAttachedInstance);
@@ -63,7 +63,7 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
             Rtn.GraphicsFamily = i;
         }
         // 检查支不支持Surface
-        if (mDeviceHandle.getSurfaceSupportKHR(i, mAttachedInstance->GetSurface()->GetSurfaceHandle())) {
+        if (mDeviceHandle.getSurfaceSupportKHR(i, mAttachedInstance->GetSurfaceHandle())) {
             Rtn.PresentFamily = i;
         }
         if (Rtn.IsValid()) {
@@ -85,13 +85,13 @@ bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocat
 PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() const {
     THROW_IF_NOT(VULKAN_CHECK_PTR(mAttachedInstance), L"Physical::FindQueueFamilyIndices: 查询交换链支持情况mAttachedInstance无效");
     SwapChainSupportDetails RtnDetails;
-    RtnDetails.Capabilities = mDeviceHandle.getSurfaceCapabilitiesKHR(mAttachedInstance->GetSurface()->GetSurfaceHandle());
-    RtnDetails.Formats      = mDeviceHandle.getSurfaceFormatsKHR(mAttachedInstance->GetSurface()->GetSurfaceHandle());
-    RtnDetails.PresentModes = mDeviceHandle.getSurfacePresentModesKHR(mAttachedInstance->GetSurface()->GetSurfaceHandle());
+    RtnDetails.Capabilities = mDeviceHandle.getSurfaceCapabilitiesKHR(mAttachedInstance->GetSurfaceHandle());
+    RtnDetails.Formats      = mDeviceHandle.getSurfaceFormatsKHR(mAttachedInstance->GetSurfaceHandle());
+    RtnDetails.PresentModes = mDeviceHandle.getSurfacePresentModesKHR(mAttachedInstance->GetSurfaceHandle());
     return RtnDetails;
 }
 
-LogicalDevice PhysicalDevice::CreateLogicalDevice() {
+SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDevice() {
     QueueFamilyIndices               Indices = FindQueueFamilyIndices();
     Array<vk::DeviceQueueCreateInfo> QueueCreateInfos;
     Set<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
@@ -120,8 +120,8 @@ LogicalDevice PhysicalDevice::CreateLogicalDevice() {
         DeviceInfo.setEnabledLayerCount(ValidationLayers.size()).setPpEnabledLayerNames(ValidationLayers.data());
     }
     auto LogicalDeviceHandle = mDeviceHandle.createDevice(DeviceInfo);
-    mAssociatedLogicalDevice = LogicalDevice(LogicalDeviceHandle, this);
-    return mAssociatedLogicalDevice;
+    auto ptr = shared_from_this();
+    return LogicalDevice::CreateShared(LogicalDeviceHandle, ptr);
 }
 
 

@@ -7,25 +7,42 @@
 
 #include "LogicalDevice.h"
 
+#include "RHI/Vulkan/Instance.h"
+#include "RHI/Vulkan/PhysicalDevice.h"
 #include "CoreGlobal.h"
-#include "Instance.h"
-#include "PhysicalDevice.h"
 #include "SwapChain.h"
 
-void RHI::Vulkan::LogicalDevice::Initialize() {
-    LOG_INFO_CATEGORY(VK_NULL_HANDLE, L"逻辑设备初始化完成");
+RHI_VULKAN_NAMESPACE_BEGIN
+
+LogicalDevice::~LogicalDevice() {
+    if (!IsValid()) return;
+    Finalize();
 }
 
-void RHI::Vulkan::LogicalDevice::Finalize() {
+SharedPtr<LogicalDevice> LogicalDevice::CreateShared(vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
+    return MakeUnique<LogicalDevice>(InDevice, InAssociatedPhysicalDevice);
+}
+
+LogicalDevice::LogicalDevice(const vk::Device InDevice, const SharedPtr<PhysicalDevice>& InAssociatedPhysicalDevice) :
+    mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
+    Initialize();
+}
+
+void LogicalDevice::Initialize() {
+}
+
+void LogicalDevice::Finalize() {
     mLogicalDeviceHandle.destroy();
     mLogicalDeviceHandle = VK_NULL_HANDLE;
-    LOG_INFO_CATEGORY(VK_NULL_HANDLE, L"逻辑设备清理完成");
 }
 
-RHI::Vulkan::SwapChain RHI::Vulkan::LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount) {
-    THROW_IF_NOT(VULKAN_CHECK_PTR(mAssociatedPhysicalDevice), L"逻辑设备关联的物理设备失效");
-    auto SwapChainSupport = mAssociatedPhysicalDevice->QuerySwapChainSupport();
-    auto Surface          = mAssociatedPhysicalDevice->GetAttachedInstance()->GetSurface()->GetSurfaceHandle();
+UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount) {
+    if (mAssociatedPhysicalDevice.expired())
+        throw VulkanException(L"LogicalDevice::CreateSwapChain: 无法创建交换链: mAssociatedPhysicalDevice失效");
+    const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.lock();
+
+    const auto SwapChainSupport = AssociatedPhysicalDevice->QuerySwapChainSupport();
+    const auto Surface          = AssociatedPhysicalDevice->GetAttachedInstance()->GetSurfaceHandle();
 
     const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
@@ -56,7 +73,7 @@ RHI::Vulkan::SwapChain RHI::Vulkan::LogicalDevice::CreateSwapChain(const uint32 
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                   Indicies            = mAssociatedPhysicalDevice->FindQueueFamilyIndices();
+    const auto                   Indicies            = AssociatedPhysicalDevice->FindQueueFamilyIndices();
     const StaticArray<uint32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),
@@ -64,9 +81,11 @@ RHI::Vulkan::SwapChain RHI::Vulkan::LogicalDevice::CreateSwapChain(const uint32 
     if (Indicies.GraphicsFamily != Indicies.PresentFamily) {
         SwapChainInfo
             .setImageSharingMode(vk::SharingMode::eConcurrent)   // 图像可以在多个队列族使用而不需要显式改变图像所有权
-            .setQueueFamilyIndices(QueueFamilyIndicies);                // 不是同一队列族时需要指定此项
+            .setQueueFamilyIndices(QueueFamilyIndicies);         // 不是同一队列族时需要指定此项
     } else {
         SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive); // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
-    return SwapChain(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this);
+    return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this);
 }
+
+RHI_VULKAN_NAMESPACE_END

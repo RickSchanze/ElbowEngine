@@ -7,7 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
-#include "LogicalDevice.h"
+#include "Render/LogicalDevice.h"
 #include "VulkanCommon.h"
 
 #include "vulkan/vulkan.hpp"
@@ -23,7 +23,7 @@ struct QueueFamilyIndices
     [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 };
 
-class PhysicalDevice {
+class PhysicalDevice : public std::enable_shared_from_this<PhysicalDevice> {
 public:
     static inline Array<const char*> sDeviceRequiredExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -51,8 +51,7 @@ public:
      * @param PickFunc 用来确定一个设备是否合适
      * @return
      */
-    static UniquePtr<PhysicalDevice>
-    PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
+    static SharedPtr<PhysicalDevice> PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -86,13 +85,7 @@ public:
      * 以此物理设备为基础创建一个逻辑设备
      * @return
      */
-    LogicalDevice CreateLogicalDevice();
-
-    /**
-     * 获得以此物理设备为基础创建的逻辑设备
-     * @return
-     */
-    [[nodiscard]] LogicalDevice GetAssociatedLogicalDevice() const { return mAssociatedLogicalDevice; }
+    SharedPtr<LogicalDevice> CreateLogicalDevice();
 
     [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }
 
@@ -105,13 +98,11 @@ public:
 
 private:
     // 实际的vkPhysicalDevice
-    vk::PhysicalDevice mDeviceHandle;
+    vk::PhysicalDevice            mDeviceHandle;
     // 附着的VkInstance实例
-    Instance*          mAttachedInstance = nullptr;
+    Instance*                     mAttachedInstance = nullptr;
     // 支持的FamilyIndices
-    QueueFamilyIndices mSupportedQueueFamilyIndices;
-    // 由此物理设备创建的逻辑设备
-    LogicalDevice      mAssociatedLogicalDevice;
+    QueueFamilyIndices            mSupportedQueueFamilyIndices;
 };
 
 RHI_VULKAN_NAMESPACE_END

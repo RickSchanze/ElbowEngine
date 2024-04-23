@@ -17,7 +17,7 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        Tool::EngineApplication App;
+        Tool::EngineApplication App{};
         App.Initialize();
         App.Run();
         App.Finitialize();

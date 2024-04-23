@@ -35,7 +35,8 @@ Instance::Instance() {
 }
 
 void Instance::Initialize() {
-    mVulkanInstanceHandle = vk::createInstance(mInstanceCreateInfo);
+    if (IsValid()) return;
+    mVulkanInstanceHandle = createInstance(mInstanceCreateInfo);
     mDynamicDispatcher    = {mVulkanInstanceHandle, vkGetInstanceProcAddr};
 
     // 初始化验证层
@@ -46,14 +47,10 @@ void Instance::Initialize() {
 
     // 选择物理设备
     PickPhysicalDevice();
-
-    // 创建初始化逻辑设备
-    mLogicalDevice = MakeUnique<LogicalDevice>(mPhysicalDevice->CreateLogicalDevice());
-    mLogicalDevice->Initialize();
 }
 
 void Instance::Finalize() {
-    mLogicalDevice->Finalize();
+    if (!IsValid()) return;
     mSurface->Finalize();
     mValidationLayer->Finalize();
     mVulkanInstanceHandle.destroy();
@@ -64,13 +61,17 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
     return mDynamicDispatcher;
 }
 
-Instance& Instance::SetSurface(const SharedPtr<SurfaceBase>& InSurface) {
-    mSurface = InSurface;
+Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
+    mSurface = Move(InSurface);
     return *this;
 }
 
 Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
     return mVulkanInstanceHandle.enumeratePhysicalDevices();
+}
+
+SharedPtr<LogicalDevice> Instance::CreateLogicalDevice() const{
+    return mPhysicalDevice->CreateLogicalDevice();
 }
 
 void Instance::InitializeSurface() const {

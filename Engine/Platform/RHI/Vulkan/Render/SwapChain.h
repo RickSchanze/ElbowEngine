@@ -6,20 +6,28 @@
  */
 
 #pragma once
-#include "Interface/IRHIResource.h"
+#include "RHI/Vulkan/Interface/IRHIResource.h"
+#include "RHI/Vulkan/VulkanCommon.h"
+#include "Image.h"
 #include "vulkan/vulkan.hpp"
-#include "VulkanCommon.h"
 
 namespace RHI::Vulkan {
 class LogicalDevice;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class SwapChain : public IRHIResource {
+class SwapChain final : public IRHIResource {
 public:
     SwapChain() = default;
-    explicit SwapChain(const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice) :
-        mSwapchainHandle(InSwapchainHandle), mAssociatedLogicalDevice(InAssociatedLogicalDevice) {}
+
+    static UniquePtr<SwapChain> CreateUnique(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice);
+
+public:
+    // 请勿直接使用此函数，请使用SwapChain::Create
+    explicit SwapChain(vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice);
+
+public:
+    ~SwapChain() override;
 
     static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& availableFormats);
     static vk::PresentModeKHR   ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& availablePresentModes);
@@ -28,13 +36,16 @@ public:
     [[nodiscard]] vk::SwapchainKHR GetSwapchainHandle() const { return mSwapchainHandle; }
     [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
 
-    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mSwapchainHandle) && mAssociatedLogicalDevice != nullptr; }
-    void               Initialize() override;
-    void               Finalize() override;
+    [[nodiscard]] bool IsValid() const override;
+
+    void Initialize() override;
+    void Finalize() override;
 
 private:
     vk::SwapchainKHR mSwapchainHandle;
-    LogicalDevice*   mAssociatedLogicalDevice = nullptr;
+    Array<Image>     mSwapchainImages;
+
+    LogicalDevice* mAssociatedLogicalDevice = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END

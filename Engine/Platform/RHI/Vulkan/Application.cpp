@@ -48,7 +48,7 @@ VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& In
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetWindowSurface(SharedPtr<SurfaceBase> InSurface) noexcept {
+VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept {
     mVulkanInstance.SetSurface(Move(InSurface));
     return *this;
 }
@@ -59,7 +59,18 @@ void VulkanApplication::Initialize() {
 }
 
 void VulkanApplication::Finalize() {
+    for (const auto& Renderer: mRenderers) {
+        Renderer->Finitialize();
+    }
+    mRenderers.clear();
     mVulkanInstance.Finalize();
+}
+
+void VulkanApplication::Tick() {
+    // TODO: 按需渲染
+    for (const auto& Render: mRenderers) {
+        Render->Draw();
+    }
 }
 
 void VulkanApplication::CreateInstance() {

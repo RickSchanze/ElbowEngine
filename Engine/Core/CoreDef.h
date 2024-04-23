@@ -79,6 +79,9 @@ using SharedPtr = std::shared_ptr<T>;
 // std::unique_ptr -> UniquePtr
 template<typename T>
 using UniquePtr = std::unique_ptr<T>;
+// std::weak_ptr -> WeakPtr
+template <typename T>
+using WeakPtr = std::weak_ptr<T>;
 // std::make_shared -> MakeShared
 template<typename T, typename... Args>
 SharedPtr<T> MakeShared(Args&&... args) {

@@ -46,17 +46,23 @@ public:
     void Initialize() override;
     void Finalize() override;
 
-    Instance& SetSurface(const SharedPtr<SurfaceBase>& InSurface);
+    Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
 
     // clang-format off
     [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
     [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mVulkanInstanceHandle); }
     [[nodiscard]] vk::Instance GetVulkanInstanceHandle() const { return mVulkanInstanceHandle; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
-    [[nodiscard]] SharedPtr<SurfaceBase> GetSurface() const {return mSurface;}
+    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const {return mSurface->GetSurfaceHandle();}
 
     Instance& SetInstanceCreateInfo(const vk::InstanceCreateInfo &InCreateInfo) { mInstanceCreateInfo = InCreateInfo; return *this; }
     // clang-format on
+
+    /**
+     * 创建一个逻辑设备
+     * @return
+     */
+    [[nodiscard]] SharedPtr<LogicalDevice> CreateLogicalDevice() const;
 
 protected:
     void InitializeSurface() const;
@@ -67,11 +73,9 @@ private:
     // 验证层
     UniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
-    SharedPtr<SurfaceBase>     mSurface;
+    UniquePtr<SurfaceBase>     mSurface;
     // 物理设备
-    UniquePtr<PhysicalDevice>  mPhysicalDevice;
-    // 逻辑设备
-    UniquePtr<LogicalDevice>   mLogicalDevice;
+    SharedPtr<PhysicalDevice>  mPhysicalDevice;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic  mDynamicDispatcher;
     // 实例创建信息

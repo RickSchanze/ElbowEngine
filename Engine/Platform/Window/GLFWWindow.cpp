@@ -23,8 +23,8 @@ void GLFWWindowSurface::Initialize() {
     }
 }
 
-SharedPtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
-    auto Surface = MakeShared<GLFWWindowSurface>(nullptr, mWindowHandle);
+UniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
+    auto Surface = MakeUnique<GLFWWindowSurface>(nullptr, mWindowHandle);
     return Surface;
 }
 

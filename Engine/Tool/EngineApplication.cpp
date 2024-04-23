@@ -15,6 +15,7 @@
 TOOL_NAMESPACE_BEGIN
 
 void EngineApplication::Initialize() {
+    if (IsValid()) return;
     // 创建并初始化GlfwWindow
     mWindow = MakeUnique<Platform::Window::GlfwWindow>("Elbow Engine Editor", 1920, 1080);
     mWindow->Initialize();
@@ -26,9 +27,13 @@ void EngineApplication::Initialize() {
     mRenderApplication->SetWindowSurface(Move(Surface));
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
+
+    mRenderer = RHI::Vulkan::VulkanRenderer::CreateShared(mRenderApplication->GetVulkanInstance());
+    mRenderApplication->AddRenderer(mRenderer);
 }
 
 void EngineApplication::Finitialize() const {
+    if (!IsValid()) return;
     if (mRenderApplication->IsValid()) mRenderApplication->Finalize();
     if (mWindow->IsValid()) mWindow->Finalize();
 }
