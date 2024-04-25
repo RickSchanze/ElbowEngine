@@ -11,6 +11,13 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "SwapChain.h"
 
+namespace RHI::Vulkan {
+class IRenderPassProducer;
+}
+namespace RHI::Vulkan {
+class RenderPass;
+}
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 class VulkanRenderer {
@@ -19,10 +26,16 @@ public:
 
     ~VulkanRenderer();
 
-    static SharedPtr<VulkanRenderer> CreateShared(const Instance& InVulkanInstance);
+    static SharedPtr<VulkanRenderer>
+    CreateShared(const Instance& InVulkanInstance, const SharedPtr<IRenderPassProducer>& Producer = nullptr);
 
+protected:
+    struct Protected
+    {};
+
+public:
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanRenderer(const Instance& InVulkanInstance);
+    explicit VulkanRenderer(Protected, const Instance& InVulkanInstance, const SharedPtr<IRenderPassProducer>& Producer = nullptr);
 
 public:
     void Initialize();
@@ -37,6 +50,9 @@ private:
 
     UniquePtr<SwapChain> mSwapChain;
     int32                mSwapChainImageCount = 3;
+
+    SharedPtr<RenderPass>          mRenderPass;
+    SharedPtr<IRenderPassProducer> mRenderPassProducer;
 
     int32 mRendererID = 0;
 

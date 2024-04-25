@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Exception.h"
+#include "vulkan/vulkan.hpp"
 #define RHI_VULKAN_NAMESPACE_BEGIN namespace RHI::Vulkan {
 #define RHI_VULKAN_NAMESPACE_END }
 
