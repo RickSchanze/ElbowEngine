@@ -41,7 +41,8 @@ Array<const char*> GlfwWindow::GetRequiredExtensions() const {
 void GlfwWindow::Initialize() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    mWindowHandle = glfwCreateWindow(mWidth, mHeight, mWindowTitle.c_str(), nullptr, nullptr);
+    const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
+    mWindowHandle = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
 }
 
 void GlfwWindow::Finalize() {

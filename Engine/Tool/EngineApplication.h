@@ -22,6 +22,7 @@ class EngineApplication {
 public:
     // TODO: 自定义设定启动应用的名字、窗口大小、版本等
     EngineApplication() = default;
+    EngineApplication(const String& ProjectPath, const String& WindowTitle);
 
     ~EngineApplication() { Finitialize(); }
 
@@ -36,6 +37,8 @@ private:
     UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
     SharedPtr<RHI::Vulkan::VulkanRenderer>    mRenderer;
     UniquePtr<Platform::Window::GlfwWindow>   mWindow;
+
+    String mWindowTitle;
 };
 
 TOOL_NAMESPACE_END

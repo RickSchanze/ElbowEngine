@@ -7,17 +7,22 @@
 
 #include "EngineApplication.h"
 
-#include "CoreGlobal.h"
+#include "Path/Path.h"
 #include "GLFW/glfw3.h"
 #include "RHI/Vulkan/Application.h"
 #include "Window/GLFWWindow.h"
 
 TOOL_NAMESPACE_BEGIN
 
+EngineApplication::EngineApplication(const String& ProjectPath, const String& WindowTitle) {
+    Path::SetProjectWorkPath(ProjectPath);
+    mWindowTitle = WindowTitle;
+}
+
 void EngineApplication::Initialize() {
     if (IsValid()) return;
     // 创建并初始化GlfwWindow
-    mWindow = MakeUnique<Platform::Window::GlfwWindow>("Elbow Engine Editor", 1920, 1080);
+    mWindow = MakeUnique<Platform::Window::GlfwWindow>(mWindowTitle, 1920, 1080);
     mWindow->Initialize();
     // 创建并初始化VulkanApplication
     mRenderApplication = MakeUnique<RHI::Vulkan::VulkanApplication>();

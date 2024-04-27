@@ -45,13 +45,17 @@ add_library(Platform
         RHI/Vulkan/VulkanStringifiy.h
         RHI/Vulkan/Render/ImageView.cpp
         RHI/Vulkan/Render/ImageView.h
+        RHI/Vulkan/Render/Shader.cpp
+        RHI/Vulkan/Render/Shader.h
+        RHI/Vulkan/Render/GraphicsPipeline.cpp
+        RHI/Vulkan/Render/GraphicsPipeline.h
 )
 
 add_library(Engine::Platform ALIAS Platform)
 
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)

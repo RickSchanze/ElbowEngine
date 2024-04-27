@@ -27,7 +27,7 @@ struct GLFWWindowSurface : RHI::Vulkan::SurfaceBase
 
 class GlfwWindow {
 public:
-    explicit GlfwWindow(AnsiString InWindowTitle, const int InWidth, const int InHeight) :
+    explicit GlfwWindow(String InWindowTitle, const int InWidth, const int InHeight) :
         mWindowTitle(Move(InWindowTitle)), mWidth(InWidth), mHeight(InHeight) {}
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
@@ -42,7 +42,7 @@ public:
 
 private:
     GLFWwindow* mWindowHandle = nullptr;
-    AnsiString  mWindowTitle;
+    String      mWindowTitle;
 
     int mWidth;
     int mHeight;
