@@ -22,7 +22,7 @@ SurfaceBase& SurfaceBase::SetSurfaceHandle(vk::SurfaceKHR InSurfaceHandle) {
     return *this;
 }
 
-void SurfaceBase::Finalize() {
+void SurfaceBase::Finialize() {
     if (mAttachedInstanceHandle->IsValid()) {
         mAttachedInstanceHandle->GetVulkanInstanceHandle().destroySurfaceKHR(mSurfaceHandle);
         mSurfaceHandle = VK_NULL_HANDLE;
@@ -49,10 +49,10 @@ void Instance::Initialize() {
     PickPhysicalDevice();
 }
 
-void Instance::Finalize() {
+void Instance::Finialize() {
     if (!IsValid()) return;
-    mSurface->Finalize();
-    mValidationLayer->Finalize();
+    mSurface->Finialize();
+    mValidationLayer->Finialize();
     mVulkanInstanceHandle.destroy();
     mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
@@ -70,8 +70,12 @@ Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
     return mVulkanInstanceHandle.enumeratePhysicalDevices();
 }
 
-SharedPtr<LogicalDevice> Instance::CreateLogicalDevice() const{
-    return mPhysicalDevice->CreateLogicalDevice();
+SharedPtr<LogicalDevice> Instance::CreateLogicalDeviceShared() const {
+    return mPhysicalDevice->CreateLogicalDeviceShared();
+}
+
+UniquePtr<LogicalDevice> Instance::CreateLogicalDeviceUnique() const{
+    return mPhysicalDevice->CreateLogicalDeviceUnique();
 }
 
 void Instance::InitializeSurface() const {

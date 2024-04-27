@@ -18,7 +18,7 @@ protected:
 public:
     virtual ~IRHIResource() = default;
     virtual void Initialize() INTERFACE_METHOD;
-    virtual void Finalize() INTERFACE_METHOD;
+    virtual void Finialize() INTERFACE_METHOD;
     [[nodiscard]] virtual bool IsValid() const INTERFACE_METHOD;
 };
 

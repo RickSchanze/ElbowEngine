@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include "Image.h"
+#include "ImageView.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
@@ -23,7 +25,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class LogicalDevice final : public IRHIResource {
 public:
-    LogicalDevice() = default;
+     LogicalDevice() = default;
     ~LogicalDevice() override;
 
     static SharedPtr<LogicalDevice> CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
@@ -32,19 +34,33 @@ public:
     explicit LogicalDevice(ResourcePrivate, vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
 
     void Initialize() override;
-    void Finalize() override;
+    void Finialize() override;
 
     /**
      * 创建一个交换链对象
      * @param InSwapChainImageCount 交换链图像数量 为0表示自动选择
+     * @param InWidth
+     * @param InHeight
      * @return
      */
-    UniquePtr<SwapChain> CreateSwapChain(uint32 InSwapChainImageCount = 0);
+    UniquePtr<SwapChain> CreateSwapChain(uint32 InSwapChainImageCount = 0, uint32 InWidth = 0, uint32 InHeight = 0);
 
-    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
+    /**
+     * 基于InImage创建一个图像视图
+     * @param InImage
+     * @param InFormat
+     * @param InAspectFlags
+     * @param InMipLevels
+     * @return
+     */
+    SharedPtr<ImageView> CreateImageView(
+        const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
+        uint32 InMipLevels = 1
+    );
 
-    [[nodiscard]] vk::Device                GetLogicalDeviceHandle() const { return mLogicalDeviceHandle; }
-    [[nodiscard]] SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
+    bool       IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
+    vk::Device GetHandle() const { return mLogicalDeviceHandle; }
+    SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
 
 private:
     vk::Device              mLogicalDeviceHandle = VK_NULL_HANDLE;

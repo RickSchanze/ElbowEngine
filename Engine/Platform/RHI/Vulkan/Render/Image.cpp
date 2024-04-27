@@ -6,3 +6,7 @@
  */
 
 #include "Image.h"
+
+RHI::Vulkan::ImageBase::~ImageBase() {
+    mImageHandle = VK_NULL_HANDLE;
+}

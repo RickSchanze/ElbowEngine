@@ -44,7 +44,7 @@ void ValidationLayer::Initialize() {
     }
 }
 
-void ValidationLayer::Finalize() {
+void ValidationLayer::Finialize() {
     if (!sEnableValidationLayer) return;
     if (mAttachedVulkanInstance && mAttachedVulkanInstance->IsValid() && mDebugMessengerCallback) {
         const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();

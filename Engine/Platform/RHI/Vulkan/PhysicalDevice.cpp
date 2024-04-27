@@ -91,7 +91,38 @@ PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() 
     return RtnDetails;
 }
 
-SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDevice() {
+vk::Format PhysicalDevice::FindSupportFormat(
+    const Array<vk::Format>& InCandidates, const vk::ImageTiling InTiling, const vk::FormatFeatureFlagBits InFeatures
+) const {
+    for (const vk::Format& Format: InCandidates) {
+        const auto Props = mDeviceHandle.getFormatProperties(Format);
+        // 图形布局经过优化
+        if (InTiling == vk::ImageTiling::eOptimal && (Props.optimalTilingFeatures & InFeatures) == InFeatures) {
+            return Format;
+        }
+        // 图像在内部行主序存储 导致要访问下一列数据则需要跨行 不好
+        if (InTiling == vk::ImageTiling::eLinear && (Props.linearTilingFeatures & InFeatures) == InFeatures) {
+            return Format;
+        }
+    }
+    throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
+}
+
+
+
+SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceShared() {
+    const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
+    const auto ptr                 = weak_from_this();
+    return LogicalDevice::CreateShared(LogicalDeviceHandle, ptr);
+}
+
+UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique() {
+    const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
+    const auto ptr                 = weak_from_this();
+    return LogicalDevice::CreateUnique(LogicalDeviceHandle, ptr);
+}
+
+vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {
     QueueFamilyIndices               Indices = FindQueueFamilyIndices();
     Array<vk::DeviceQueueCreateInfo> QueueCreateInfos;
     Set<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
@@ -111,18 +142,18 @@ SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDevice() {
     // 创建逻辑设备
     vk::DeviceCreateInfo DeviceInfo{};
     DeviceInfo
-        .setQueueCreateInfos(QueueCreateInfos)                  // 设置队列创建信息
-        .setPEnabledFeatures(&DeviceFeatures)                   // 设置要求的设备特性
+        .setQueueCreateInfos(QueueCreateInfos)                   // 设置队列创建信息
+        .setPEnabledFeatures(&DeviceFeatures)                    // 设置要求的设备特性
         .setPEnabledExtensionNames(sDeviceRequiredExtensions);   // 设置启用的扩展名
-        // 校验层
-        auto ValidationLayers = ValidationLayer::GetValidationLayerNames();
+    // 校验层
+    auto ValidationLayers = ValidationLayer::GetValidationLayerNames();
     if (ValidationLayer::IsEnable()) {
         DeviceInfo.setEnabledLayerCount(ValidationLayers.size()).setPpEnabledLayerNames(ValidationLayers.data());
     }
     auto LogicalDeviceHandle = mDeviceHandle.createDevice(DeviceInfo);
-    auto ptr = weak_from_this();
-    return LogicalDevice::CreateShared(LogicalDeviceHandle, ptr);
+    return LogicalDeviceHandle;
 }
+
 
 
 RHI_VULKAN_NAMESPACE_END

@@ -41,6 +41,10 @@ add_library(Platform
         RHI/Vulkan/Render/RenderPass.cpp
         RHI/Vulkan/Render/RenderPass.h
         RHI/Vulkan/Interface/IRenderPassProducer.h
+        RHI/Vulkan/VulkanStringifiy.cpp
+        RHI/Vulkan/VulkanStringifiy.h
+        RHI/Vulkan/Render/ImageView.cpp
+        RHI/Vulkan/Render/ImageView.h
 )
 
 add_library(Engine::Platform ALIAS Platform)

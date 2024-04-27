@@ -30,7 +30,7 @@ public:
 
     /** 此函数必修初始化mSurface */
     void Initialize() override INTERFACE_METHOD;
-    void Finalize() override;
+    void Finialize() override;
 
     [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mSurfaceHandle); }
 
@@ -44,7 +44,7 @@ public:
     Instance();
 
     void Initialize() override;
-    void Finalize() override;
+    void Finialize() override;
 
     Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
 
@@ -62,7 +62,8 @@ public:
      * 创建一个逻辑设备
      * @return
      */
-    [[nodiscard]] SharedPtr<LogicalDevice> CreateLogicalDevice() const;
+    SharedPtr<LogicalDevice> CreateLogicalDeviceShared() const;
+    UniquePtr<LogicalDevice> CreateLogicalDeviceUnique() const;
 
 protected:
     void InitializeSurface() const;

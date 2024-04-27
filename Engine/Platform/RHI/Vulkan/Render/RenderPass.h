@@ -16,7 +16,8 @@ class LogicalDevice;
 
 class DefaultRenderPassProducer : public IRenderPassProducer {
 public:
-                             DefaultRenderPassProducer() = default;
+    DefaultRenderPassProducer() = delete;
+
     vk::RenderPassCreateInfo GetRenderPassCreateInfo() override;
 
     // TODO: 选择交换链图像格式和深度图像格式
@@ -41,19 +42,19 @@ public:
 
     ~RenderPass() override;
 
-    static SharedPtr<RenderPass> CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const WeakPtr<LogicalDevice>& InDevice);
+    static SharedPtr<RenderPass> CreateShared(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice);
 
-    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const WeakPtr<LogicalDevice>& InDevice);
+    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice);
 
     void Initialize() override;
-    void Finalize() override;
+    void Finialize() override;
 
 protected:
     vk::RenderPass mRenderPassHandle = VK_NULL_HANDLE;
 
     vk::RenderPassCreateInfo mRenderPassCreateInfo;
 
-    WeakPtr<LogicalDevice> mDevice;
+    LogicalDevice* mDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

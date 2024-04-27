@@ -21,7 +21,7 @@ public:
     explicit ValidationLayer(Instance* InParentInstance) noexcept : mAttachedVulkanInstance(InParentInstance) {}
 
     void Initialize() override;
-    void Finalize() override;
+    void Finialize() override;
 
     [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mDebugMessengerCallback); }
 

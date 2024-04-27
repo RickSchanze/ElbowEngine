@@ -51,7 +51,8 @@ public:
      * @param PickFunc 用来确定一个设备是否合适
      * @return
      */
-    static SharedPtr<PhysicalDevice> PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
+    static SharedPtr<PhysicalDevice>
+    PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -82,10 +83,22 @@ public:
     [[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport() const;
 
     /**
+     * 在InCandidates中找到一个支持InTiling和InFeatures的格式
+     * @param InCandidates
+     * @param InTiling
+     * @param InFeatures
+     * @return
+     */
+    vk::Format
+    FindSupportFormat(const Array<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
+
+    /**
      * 以此物理设备为基础创建一个逻辑设备
      * @return
      */
-    SharedPtr<LogicalDevice> CreateLogicalDevice();
+    SharedPtr<LogicalDevice> CreateLogicalDeviceShared();
+    UniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
+    vk::Device               CreateLogicalDeviceHandle()const;
 
     [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }
 

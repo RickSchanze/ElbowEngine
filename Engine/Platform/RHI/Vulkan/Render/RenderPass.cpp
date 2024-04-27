@@ -49,9 +49,9 @@ vk::RenderPassCreateInfo RHI::Vulkan::DefaultRenderPassProducer::GetRenderPassCr
         .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
     // RenderPass附着
-    vk::AttachmentReference ColorAttachmentRef{0, vk::ImageLayout::eColorAttachmentOptimal /** 此值一般而言性能最佳 */};
-    vk::AttachmentReference DepthAttachmentRef{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
-    vk::AttachmentReference ColorAttachmentResolveRef{2, vk::ImageLayout::eColorAttachmentOptimal};
+    constexpr vk::AttachmentReference ColorAttachmentRef{0, vk::ImageLayout::eColorAttachmentOptimal /** 此值一般而言性能最佳 */};
+    constexpr vk::AttachmentReference DepthAttachmentRef{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    constexpr vk::AttachmentReference ColorAttachmentResolveRef{2, vk::ImageLayout::eColorAttachmentOptimal};
 
     // 指定Subpass
     vk::SubpassDescription Subpass{};
@@ -94,35 +94,34 @@ bool RHI::Vulkan::RenderPass::IsValid() const {
 
 RHI::Vulkan::RenderPass::~RenderPass() {
     if (IsValid()) {
-        Finalize();
+        Finialize();
     }
 }
 
 SharedPtr<RHI::Vulkan::RenderPass>
-RHI::Vulkan::RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const WeakPtr<LogicalDevice>& InDevice) {
+RHI::Vulkan::RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
     return MakeShared<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
-RHI::Vulkan::RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const WeakPtr<LogicalDevice>& InDevice) {
+RHI::Vulkan::RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
     mDevice               = InDevice;
     mRenderPassCreateInfo = CreateInfo;
 }
 
 void RHI::Vulkan::RenderPass::Initialize() {
     if (IsValid()) return;
-    if (mDevice.expired()) {
+    if (mDevice == nullptr) {
         throw VulkanException(L"RenderPass::Initialize: 初始化RenderPass失败: mDevice失效");
     }
-    const auto Device = mDevice.lock();
-    mRenderPassHandle = Device->GetLogicalDeviceHandle().createRenderPass(mRenderPassCreateInfo);
+    mRenderPassHandle = mDevice->GetHandle().createRenderPass(mRenderPassCreateInfo);
 }
 
-void RHI::Vulkan::RenderPass::Finalize() {
+void RHI::Vulkan::RenderPass::Finialize() {
     if (!IsValid()) return;
-    if (mDevice.expired()) {
+    if (mDevice == nullptr) {
         throw VulkanException(L"RenderPass::Finalize: 销毁RenderPass失败: mDevice失效");
     }
-    const auto Device = mDevice.lock();
-    Device->GetLogicalDeviceHandle().destroyRenderPass(mRenderPassHandle);
+    mDevice->GetHandle().destroyRenderPass(mRenderPassHandle);
     mRenderPassHandle = VK_NULL_HANDLE;
+    mDevice = nullptr;
 }

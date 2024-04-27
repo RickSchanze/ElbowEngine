@@ -16,7 +16,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 LogicalDevice::~LogicalDevice() {
     if (!IsValid()) return;
-    Finalize();
+    Finialize();
 }
 
 SharedPtr<LogicalDevice> LogicalDevice::CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
@@ -34,12 +34,12 @@ LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const W
 
 void LogicalDevice::Initialize() {}
 
-void LogicalDevice::Finalize() {
+void LogicalDevice::Finialize() {
     mLogicalDeviceHandle.destroy();
     mLogicalDeviceHandle = VK_NULL_HANDLE;
 }
 
-UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount) {
+UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
     if (mAssociatedPhysicalDevice.expired())
         throw VulkanException(L"LogicalDevice::CreateSwapChain: 无法创建交换链: mAssociatedPhysicalDevice失效");
     const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.lock();
@@ -49,7 +49,7 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
 
     const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
-    const auto Extent        = SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities);
+    const auto Extent        = SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities, InWidth, InHeight);
 
     uint32 ImageCount = InSwapChainImageCount;
     if (InSwapChainImageCount == 0) {
@@ -86,9 +86,30 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
             .setImageSharingMode(vk::SharingMode::eConcurrent)   // 图像可以在多个队列族使用而不需要显式改变图像所有权
             .setQueueFamilyIndices(QueueFamilyIndicies);         // 不是同一队列族时需要指定此项
     } else {
-        SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive); // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
+        SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive);   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
-    return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this);
+    return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent);
+}
+
+SharedPtr<ImageView>
+LogicalDevice::CreateImageView(const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const uint32 InMipLevels) {
+    vk::ImageViewCreateInfo ViewInfo = {};
+    ViewInfo.setImage(InImage.GetHandle())
+        .setViewType(vk::ImageViewType::e2D)
+        .setFormat(InFormat)
+        .setSubresourceRange(vk::ImageSubresourceRange()
+                                 .setAspectMask(InAspectFlags)
+                                 .setBaseMipLevel(0)
+                                 .setLevelCount(InMipLevels)
+                                 .setBaseArrayLayer(0)
+                                 .setLayerCount(1))
+        .setComponents(vk::ComponentMapping()
+                           .setR(vk::ComponentSwizzle::eIdentity)
+                           .setG(vk::ComponentSwizzle::eIdentity)
+                .setB(vk::ComponentSwizzle::eIdentity)
+                .setA(vk::ComponentSwizzle::eIdentity)
+        );
+    return MakeShared<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo), this);
 }
 
 RHI_VULKAN_NAMESPACE_END

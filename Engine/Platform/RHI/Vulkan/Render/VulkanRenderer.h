@@ -46,8 +46,6 @@ public:
     [[nodiscard]] bool IsValid() const;
 
 private:
-    SharedPtr<LogicalDevice> mLogicalDevice;
-
     UniquePtr<SwapChain> mSwapChain;
     int32                mSwapChainImageCount = 3;
 
@@ -57,6 +55,8 @@ private:
     int32 mRendererID = 0;
 
     static inline int32 sRendererIDCount = 0;
+
+    UniquePtr<LogicalDevice> mLogicalDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

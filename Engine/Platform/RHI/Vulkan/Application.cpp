@@ -63,7 +63,7 @@ void VulkanApplication::Finalize() {
         Renderer->Finitialize();
     }
     mRenderers.clear();
-    mVulkanInstance.Finalize();
+    mVulkanInstance.Finialize();
 }
 
 void VulkanApplication::Tick() {
