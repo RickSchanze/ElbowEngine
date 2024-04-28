@@ -1,15 +1,15 @@
 /**
- * @file VulkanStringifiy.h
+ * @file VulkanStringify.h
  * @author Echo 
  * @Date 24-4-27
- * @brief 
+ * @brief Vulkan常用类型ToString
  */
 
 #pragma once
 #include "CoreDef.h"
 #include "vulkan/vulkan.hpp"
 
-class VulkanStringifiy {
+class VulkanStringify {
 public:
     static String ToString(const vk::Extent2D& InExtent);
 };

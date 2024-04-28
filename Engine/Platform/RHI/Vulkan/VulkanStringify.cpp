@@ -5,7 +5,9 @@
  * @brief 
  */
 
-#include "VulkanStringifiy.h"
-String VulkanStringifiy::ToString(const vk::Extent2D& InExtent) {
+#include "VulkanStringify.h"
+#include "vulkan/vulkan_to_string.hpp"
+String VulkanStringify::ToString(const vk::Extent2D& InExtent) {
     return std::format(L"(Width={}, Height={})", InExtent.width, InExtent.height);
 }
+

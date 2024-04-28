@@ -9,7 +9,7 @@
 
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
-#include "RHI/Vulkan/VulkanStringifiy.h"
+#include "RHI/Vulkan/VulkanStringify.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -101,7 +101,7 @@ void SwapChain::Initialize() {
     }
 
     LOG_INFO_CATEGORY(
-        VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", mSwapchainImages.size(), VulkanStringifiy::ToString(mSwapchainExtent)
+        VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", mSwapchainImages.size(), VulkanStringify::ToString(mSwapchainExtent)
     );
 }
 

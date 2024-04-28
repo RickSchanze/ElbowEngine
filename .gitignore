@@ -3,6 +3,7 @@ Release
 .idea/copilot
 cmake-build-debug
 cmake-build-release
+cmake-build-relwithdebinfo
 Generated
 
 cmake-build--relwithdebinfo
@@ -84,3 +85,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 !CodeGenerator/bin
+
+*.spv

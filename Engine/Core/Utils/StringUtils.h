@@ -34,8 +34,15 @@ public:
      * @return
      */
     static String FromAnsiString(
-        const std::string& Str, EStringEncoding SourceStringEncoding = EStringEncoding::UTF8
-    );
+        const std::string& Str, EStringEncoding SourceStringEncoding = EStringEncoding::UTF8);
+
+    /**
+     * 异常码转字符串 调用strerror
+     * @param ErrorCode 异常码
+     * @param SourceStringEncoding 异常码字符串的编码
+     * @return
+     */
+    static String ErrorCodeToString(errno_t ErrorCode, EStringEncoding SourceStringEncoding = EStringEncoding::GBK);
 
     template<typename T>
         requires IsNumeric<T>
