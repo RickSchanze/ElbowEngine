@@ -12,6 +12,9 @@
 #include "vulkan/vulkan.hpp"
 
 namespace RHI::Vulkan {
+class LogicalDevice;
+}
+namespace RHI::Vulkan {
 class GraphicsPipeline;
 }
 
@@ -19,43 +22,49 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 enum class EShaderType { Vertex, Fragment, None };
 
-// 输入Spirv文件路径，通过反射获取所有uniform变量，并提供方便的通过SetParameter设置uniform变量的接口
+// TODO: Vulkan中设定vulkan需要指定stage
+struct UniformObject
+{
+    AnsiString Name;
+    uint32     Set;
+    uint32     Binding;
+    uint32     Size;
+    uint32     Offset;
+};
+
+// 假如声明layout(location = 0) in vec3 inPos;
+struct VertexInAttribute
+{
+    AnsiString Name;       // = inPos
+    uint32     Location;   // = 0
+    uint32     Size;       // = 4 * 3 4字节 * 3
+    uint32     Width;      // = 4 浮点数4字节
+    uint32     Offset;     // = 0
+};
+
+// 输入Spirv文件路径，通过反射获取所有uniform变量
 class Shader {
 public:
-    struct UniformObject
-    {
-        AnsiString Name;
-        uint32     Set;
-        uint32     Binding;
-        uint32     Size;
-        uint32     Offset;
-    };
-
-    // 假如声明layout(location = 0) in vec3 inPos;
-    struct InOutAttribute
-    {
-        AnsiString Name;       // = inPos
-        uint32     Location;   // = 0
-        uint32     Size;       // = 32 * 3 浮点数32位 * 3
-        uint32     Width;      // = 32 浮点数 32位
-        uint32     Offset;     // = 0
-    };
-
     /**
      * 将磁盘的Shader文件加载
      * @param InShaderPath Shader路径
      * @param InShaderType Shader类型
-     * @param InGraphicsPipeline Shader所属的管线
+     * @param InDevice Shader所属的管线
      */
-    Shader(const Path& InShaderPath, EShaderType InShaderType, const SharedPtr<GraphicsPipeline>& InGraphicsPipeline);
+    Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, EShaderType InShaderType);
+
+    static SharedPtr<Shader> CreateShared(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, EShaderType InShaderType) {
+        return MakeShared<Shader>(InDevice, InShaderPath, InShaderType);
+    }
+
+    ~Shader();
 
 
-    const Path&                  GetShaderPath() const { return mShaderPath; }
-    const vk::ShaderModule&      GetShaderModule() const { return mShaderModule; }
-    const EShaderType&           GetShaderType() const { return mShaderType; }
-    const Array<UniformObject>&  GetUniformObjects() const { return mUniformObjects; }
-    const Array<InOutAttribute>& GetInAttributes() const { return mInAttributes; }
-    const Array<InOutAttribute>& GetOutAttributes() const { return mOutAttributes; }
+    const Path&                     GetShaderPath() const { return mShaderPath; }
+    const vk::ShaderModule&         GetShaderModule() const { return mShaderModule; }
+    const EShaderType&              GetShaderType() const { return mShaderType; }
+    const Array<UniformObject>&     GetUniformObjects() const { return mUniformObjects; }
+    const Array<VertexInAttribute>& GetInAttributes() const { return mInAttributes; }
 
 protected:
     // 解析传入的Shader代码
@@ -66,11 +75,10 @@ private:
     Path             mShaderPath;
     vk::ShaderModule mShaderModule;
 
-    Array<UniformObject>  mUniformObjects;
-    Array<InOutAttribute> mInAttributes;
-    Array<InOutAttribute> mOutAttributes;
+    Array<UniformObject>     mUniformObjects;
+    Array<VertexInAttribute> mInAttributes;
 
-    WeakPtr<GraphicsPipeline> mGraphicsPipeline; // 使用此Shader的管线
+    WeakPtr<LogicalDevice> mDevice; // 使用此Shader的管线
 };
 
 RHI_VULKAN_NAMESPACE_END

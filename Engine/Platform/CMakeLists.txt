@@ -51,6 +51,8 @@ add_library(Platform
         RHI/Vulkan/Render/Shader.h
         RHI/Vulkan/Render/GraphicsPipeline.cpp
         RHI/Vulkan/Render/GraphicsPipeline.h
+        RHI/Vulkan/Render/ShaderProgram.cpp
+        RHI/Vulkan/Render/ShaderProgram.h
 )
 
 add_library(Engine::Platform ALIAS Platform)
