@@ -7,18 +7,29 @@
 
 #include "GraphicsPipeline.h"
 
+#include "CoreGlobal.h"
+#include "LogicalDevice.h"
+#include "RenderPass.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
 
+#include <ranges>
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
+
 // TODO: 将管线加入程序启动流程
-GraphicsPipeline::GraphicsPipeline(
-    const SharedPtr<LogicalDevice>& InDevice, const Path& InVertexShaderPath, const Path& InFragmentShaderPath, vk::Extent2D InViewportSize,
-    vk::SampleCountFlagBits InMsaaSamples
-) {
-    const auto VertShader = Shader::CreateShared(InDevice, InVertexShaderPath, EShaderType::Vertex);
-    const auto FragShader = Shader::CreateShared(InDevice, InFragmentShaderPath, EShaderType::Fragment);
+GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+    // 创建RenderPass
+    if (!InCreateInfo.RenderPassProducer) {
+        throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
+    }
+    mDevice = InDevice;
+    const auto RenderPassProducer = InCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
+    mRenderPass                   = RenderPass::CreateUnique(RenderPassProducer, InDevice.get());
+
+    const auto VertShader = Shader::CreateShared(InDevice, InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
+    const auto FragShader = Shader::CreateShared(InDevice, InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
     mShaderProg           = ShaderProgram::CreateShared(InDevice, VertShader, FragShader);
 
     // 配置Shader的阶段
@@ -43,13 +54,16 @@ GraphicsPipeline::GraphicsPipeline(
         .setTopology(vk::PrimitiveTopology::eTriangleList)   // 每三个顶点构成一个图元
         .setPrimitiveRestartEnable(false);
 
+    if (InCreateInfo.ViewportSize.height == 0 || InCreateInfo.ViewportSize.width == 0) {
+        throw VulkanException(L"创建图形管线失败：视口大小不合法");
+    }
     // 设置视口
     vk::Viewport ViewportInfo = {};
     ViewportInfo   //
         .setX(0)
         .setY(0)   // xy是左上角
-        .setWidth(static_cast<float>(InViewportSize.width))
-        .setHeight(static_cast<float>(InViewportSize.height))
+        .setWidth(static_cast<float>(InCreateInfo.ViewportSize.width))
+        .setHeight(static_cast<float>(InCreateInfo.ViewportSize.height))
         .setMinDepth(0.f)
         .setMaxDepth(1.f);   //深度的最大最小值必须在[0,1]职中
 
@@ -57,7 +71,7 @@ GraphicsPipeline::GraphicsPipeline(
     vk::Rect2D Scissor = {};
     Scissor   //
         .setOffset({0, 0})
-        .setExtent(InViewportSize);
+        .setExtent(InCreateInfo.ViewportSize);
 
     vk::PipelineViewportStateCreateInfo ViewportStateCreateInfo = {};
     ViewportStateCreateInfo.setViewports({ViewportInfo}).setScissors({Scissor});
@@ -79,7 +93,7 @@ GraphicsPipeline::GraphicsPipeline(
     vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
     MultisampleInfo   //
         .setSampleShadingEnable(false)
-        .setRasterizationSamples(InMsaaSamples);
+        .setRasterizationSamples(InCreateInfo.MsaaSamples);
 
     // 配置深度模版测试阶段
     vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
@@ -105,9 +119,15 @@ GraphicsPipeline::GraphicsPipeline(
         .setLogicOp(vk::LogicOp::eCopy)   // 逻辑操作
         .setAttachments({ColorBlendAttachment});
 
+    // 创建描述符集布局
+    CreateDescriptionSetLayout();
+
     // 指定管线布局(uniform)
     vk::PipelineLayoutCreateInfo PipelineLayoutInfo = {};
-    // PipelineLayoutInfo.setSetLayouts();
+    PipelineLayoutInfo.setSetLayouts({mDescriptorSetLayout});
+
+    // 创建管线布局
+    mPipelineLayout = InDevice->GetHandle().createPipelineLayout(PipelineLayoutInfo);
 
     // 定义管线
     vk::GraphicsPipelineCreateInfo PipelineInfo = {};
@@ -116,11 +136,51 @@ GraphicsPipeline::GraphicsPipeline(
         .setPInputAssemblyState(&InputAssemblyInfo)
         .setPViewportState(&ViewportStateCreateInfo)
         .setPRasterizationState(&RasterizerInfo)
-        .setPMultisampleState(&MultisampleInfo);
+        .setPMultisampleState(&MultisampleInfo)
+        .setPDepthStencilState(&DepthStencilInfo)   // 深度和模版测试
+        .setPColorBlendState(&ColorBlendInfo)       // 颜色混合
+        .setLayout(mPipelineLayout)                 // 管线布局
+        .setRenderPass(mRenderPass->GetHandle())    // RenderPass
+        .setSubpass(0);                             // 子Pass
+
+    auto Pipeline = InDevice->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
+    if (Pipeline.result != vk::Result::eSuccess) {
+        throw VulkanException(L"创建管线失败");
+    } else {
+        mPipeline = Pipeline.value;
+    }
+    LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
+}
+
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(const SharedPtr<LogicalDevice>& InDevice, const GraphicsPipelineCreateInfo& InCreateInfo){
+    return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
+}
+
+void GraphicsPipeline::Finalize() const {
+    const auto Device = mDevice.lock();
+    const auto Handle = Device->GetHandle();
+    if (Device) {
+        Handle.destroyPipeline(mPipeline);
+        Handle.destroyPipelineLayout(mPipelineLayout);
+        Handle.destroyDescriptorSetLayout(mDescriptorSetLayout);
+        mRenderPass->Finialize();
+    }
+    LOG_INFO_CATEGORY(Vulkan, L"图形管线销毁完成");
 }
 
 void GraphicsPipeline::CreateDescriptionSetLayout() {
-    // TODO: 创建描述符集
+    Array<vk::DescriptorSetLayoutBinding> UniformBindings;
+    for (const auto& UniformBinding: mShaderProg->GetUniforms() | std::views::values) {
+        vk::DescriptorSetLayoutBinding Binding;
+        Binding.binding         = UniformBinding.Binding;
+        Binding.descriptorType  = GetVkDescriptorType(UniformBinding.Type);
+        Binding.descriptorCount = 1;
+        Binding.stageFlags      = GetVkShaderStage(UniformBinding.Stage);
+        UniformBindings.push_back(Binding);
+    }
+    vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
+    LayoutInfo.setBindings(UniformBindings);
+    mDescriptorSetLayout = mDevice.lock()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
 RHI_VULKAN_NAMESPACE_END

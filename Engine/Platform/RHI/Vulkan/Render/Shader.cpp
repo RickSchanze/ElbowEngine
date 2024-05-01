@@ -16,9 +16,26 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Shader::Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, const EShaderType InShaderType) :
-    mShaderType(InShaderType), mShaderPath(InShaderPath), mDevice(InDevice) {
-    if (InDevice || !InDevice->IsValid()) {
+vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType InType) {
+    switch (InType) {
+    case EUniformDescriptorType::Object: return vk::DescriptorType::eUniformBuffer;
+    case EUniformDescriptorType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
+    }
+    return vk::DescriptorType::eUniformBuffer;
+}
+
+vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage InStage) {
+    switch (InStage) {
+    case EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
+    case EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
+    default: return vk::ShaderStageFlagBits::eVertex;
+    }
+    return vk::ShaderStageFlagBits::eVertex;
+}
+
+Shader::Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, const EShaderStage InShaderStage) :
+    mShaderStage(InShaderStage), mShaderPath(InShaderPath), mDevice(InDevice) {
+    if (InDevice == nullptr || !InDevice->IsValid()) {
         // 传入图形管线为空
         throw VulkanException(std::format(L"Shader {} 构造时传入的图像管线为空", InShaderPath.ToString()));
     }
@@ -38,10 +55,10 @@ Shader::Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPat
     auto*  ShaderCodePtr  = reinterpret_cast<uint32*>(ShaderCode.data());
     size_t ShaderCodeSize = ShaderCode.size() / 4;
     // 解析此Shader的所有参数
-    ParseShaderCode(ShaderCodePtr, ShaderCodeSize);
+    ParseShaderCode(ShaderCodePtr, ShaderCodeSize, InShaderStage);
     // 创建ShaderModule
     vk::ShaderModuleCreateInfo CreateInfo = {};
-    CreateInfo.setCodeSize(ShaderCodeSize).setPCode(ShaderCodePtr);
+    CreateInfo.setCodeSize(ShaderCodeSize * 4).setPCode(ShaderCodePtr);
     mShaderModule = InDevice->GetHandle().createShaderModule(CreateInfo);
 }
 
@@ -54,28 +71,43 @@ Shader::~Shader() {
     Device->GetHandle().destroy(mShaderModule);
 }
 
-void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize) {
+void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage) {
+    mShaderStage = InShaderStage;
     using namespace spirv_cross;
     Compiler        Compiler(InShderCode, InShderCodeSize);
     ShaderResources Res = Compiler.get_shader_resources();
     // 收集所有UniformBuffer信息
     {
         size_t Offset = 0;
+
         for (const auto& UBO: Res.uniform_buffers) {
-            UniformObject Obj;
+            UniformDescriptor Obj;
+            Obj.Stage   = InShaderStage;
             Obj.Name    = Compiler.get_name(UBO.id);
-            Obj.Set     = Compiler.get_decoration(UBO.id, spv::DecorationDescriptorSet);
+            // Obj.Set     = Compiler.get_decoration(UBO.id, spv::DecorationDescriptorSet);
             Obj.Binding = Compiler.get_decoration(UBO.id, spv::DecorationBinding);
             Obj.Size    = Compiler.get_declared_struct_size(Compiler.get_type(UBO.type_id));
             Obj.Offset  = Offset;
+            Obj.Type    = EUniformDescriptorType::Object;
             Offset += Obj.Size;
-            mUniformObjects.push_back(Obj);
+            mUniformDescriptors.push_back(Obj);
+        }
+    }
+    // 收集所有Sampler2D信息
+    {
+        for (const auto& Sampler: Res.sampled_images) {
+            UniformDescriptor SamplerDesc;
+            SamplerDesc.Name    = Compiler.get_name(Sampler.id);
+            SamplerDesc.Binding = Compiler.get_decoration(Sampler.id, spv::DecorationBinding);
+            SamplerDesc.Stage   = InShaderStage;
+            SamplerDesc.Type    = EUniformDescriptorType::Sampler2D;
+            mUniformDescriptors.push_back(SamplerDesc);
         }
     }
     // 收集所有layout(location = 0) in vec3 inPos;信息
     {
         // 只有顶点输入需要在管线建立
-        if (mShaderType != EShaderType::Vertex) {
+        if (mShaderStage != EShaderStage::Vertex) {
             return;
         }
         size_t Offset = 0;
@@ -85,7 +117,7 @@ void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize) 
             InAttr.Location = Compiler.get_decoration(In.id, spv::DecorationLocation);
             auto t          = Compiler.get_type(In.type_id);
             InAttr.Width    = t.width / 8;
-            InAttr.Size     = t.width * t.vecsize;
+            InAttr.Size     = InAttr.Width * t.vecsize;
             InAttr.Offset   = Offset;
             Offset += InAttr.Size;
             mInAttributes.push_back(InAttr);

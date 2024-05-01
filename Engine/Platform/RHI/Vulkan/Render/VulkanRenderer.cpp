@@ -8,6 +8,7 @@
 #include "VulkanRenderer.h"
 
 #include "CoreGlobal.h"
+#include "GraphicsPipeline.h"
 #include "RenderPass.h"
 #include "RHI/Vulkan/Instance.h"
 
@@ -19,41 +20,44 @@ VulkanRenderer::~VulkanRenderer() {
     }
 }
 
-SharedPtr<VulkanRenderer> VulkanRenderer::CreateShared(const Instance& InVulkanInstance, const SharedPtr<IRenderPassProducer>& Producer) {
-    return MakeShared<VulkanRenderer>(Protected{}, InVulkanInstance, Producer);
+SharedPtr<VulkanRenderer> VulkanRenderer::CreateShared(const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer) {
+    return MakeShared<VulkanRenderer>(Protected{}, InVulkanInstance, Move(Producer));
 }
 
-VulkanRenderer::VulkanRenderer(Protected, const Instance& InVulkanInstance, const SharedPtr<IRenderPassProducer>& Producer) {
+VulkanRenderer::VulkanRenderer(Protected, const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer) {
     mRendererID = sRendererIDCount++;
     LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", mRendererID, mSwapChainImageCount);
-    mLogicalDevice = InVulkanInstance.CreateLogicalDeviceUnique();
+    mLogicalDevice = InVulkanInstance.CreateLogicalDeviceShared();
     mSwapChain     = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, 1920, 1080);
 
-    if (Producer) {
-        mRenderPassProducer = Producer;
-    } else {
-        // 寻找支持的深度图像格式
-        const auto DepthFormat = mLogicalDevice->GetAssociatedPhysicalDevice()->FindSupportFormat(
-            {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
-            vk::ImageTiling::eOptimal,
-            vk::FormatFeatureFlagBits::eDepthStencilAttachment
-        );
-        const auto SwapchainImageFormat      = mSwapChain->GetImageFormat();
-        const auto DefaultRenderPassProducer = MakeShared<Vulkan::DefaultRenderPassProducer>(SwapchainImageFormat, DepthFormat);
-        mRenderPassProducer                  = DefaultRenderPassProducer;
-    }
+    // 创建图形管线
+    // 寻找深度图像格式
+    auto DepthFormat = mLogicalDevice->GetAssociatedPhysicalDevice()->FindSupportFormat(
+        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint,vk::Format::eD24UnormS8Uint},
+        vk::ImageTiling::eOptimal,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
+    GraphicsPipelineCreateInfo CreateInfo = {};
+    CreateInfo.ViewportSize               = mSwapChain->GetExtent();
+    CreateInfo.MsaaSamples                = vk::SampleCountFlagBits::e1;
+    if (Producer)
+        CreateInfo.RenderPassProducer = Move(Producer);
+    else
+        CreateInfo.RenderPassProducer = MakeUnique<DefaultRenderPassProducer>(mSwapChain->GetImageFormat(), DepthFormat);
+    CreateInfo.FragmentShaderPath = L"Shaders/frag.spv";
+    CreateInfo.VertexShaderPath   = L"Shaders/vert.spv";
+
+    mGraphicsPipeline = GraphicsPipeline::CreateShared(mLogicalDevice, CreateInfo);
     Initialize();
 }
 
 void VulkanRenderer::Initialize() {
-    const auto RenderPassInfo = mRenderPassProducer->GetRenderPassCreateInfo();
-    mRenderPass               = RenderPass::CreateShared(RenderPassInfo, mLogicalDevice.get());
     LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", mRendererID, mSwapChainImageCount);
 }
 
 void VulkanRenderer::Finitialize() {
     if (!IsValid()) return;
-    mRenderPass->Finialize();
+    mGraphicsPipeline->Finalize();
     mSwapChain->Finialize();
     mLogicalDevice->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", mRendererID);

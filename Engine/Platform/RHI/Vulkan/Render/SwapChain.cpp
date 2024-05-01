@@ -43,13 +43,9 @@ SwapChain::~SwapChain() {
 }
 
 vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& InAvailableFormats) {
-    // format为undefined表示没有首选格式 此时返回设定的格式
-    if (InAvailableFormats.size() == 1 && InAvailableFormats[0].format == vk::Format::eUndefined) {
-        return {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
-    }
     // 看看设定的格式在不在列表
     for (const auto& AvailableFormat: InAvailableFormats) {
-        if (AvailableFormat.format == vk::Format::eB8G8R8A8Unorm && AvailableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+        if (AvailableFormat.format == vk::Format::eB8G8R8Unorm && AvailableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
             return AvailableFormat;
         }
     }

@@ -29,14 +29,15 @@ public:
      */
     bool CheckAndUpdateUniforms(const SharedPtr<Shader>& InShader);
 
-    Array<vk::VertexInputAttributeDescription> GetVertexInputAttributeDescriptions() const;
-    Array<vk::VertexInputBindingDescription>   GetVertexInputBindingDescription() const;
-    uint32                                     GetStride() const;
+    Array<vk::VertexInputAttributeDescription>    GetVertexInputAttributeDescriptions() const;
+    Array<vk::VertexInputBindingDescription>      GetVertexInputBindingDescription() const;
+    uint32                                        GetStride() const;
+    const HashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return mUniforms; }
 
 private:
     // 存储所有的Uniform变量
-    HashMap<AnsiString, UniformObject> mUniforms;
-    Array<VertexInAttribute>           mVertexInputAttributes;
+    HashMap<AnsiString, UniformDescriptor> mUniforms;
+    Array<VertexInAttribute>               mVertexInputAttributes;
 
     WeakPtr<LogicalDevice> mDevice;
 };

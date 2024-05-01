@@ -228,4 +228,4 @@ private:                                                        \
 #define _CRT_SECURE_NO_WARNINGS
 
 // 项目Debug宏
-#define ELBOW_DEBUG _DEBUG
+#define ELBOW_DEBUG _DEBUG || RELWITHDEBINFO

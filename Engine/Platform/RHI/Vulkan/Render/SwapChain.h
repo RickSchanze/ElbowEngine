@@ -48,7 +48,9 @@ public:
 
     [[nodiscard]] bool IsValid() const override;
 
-    vk::Format   GetImageFormat() const { return mSwapchainImageFormat; }
+    vk::Format   GetImageFormat() const {
+        return mSwapchainImageFormat;
+    }
     vk::Extent2D GetExtent() const { return mSwapchainExtent; }
 
     void Initialize() override;

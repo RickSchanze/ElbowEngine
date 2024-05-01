@@ -48,21 +48,18 @@ vk::RenderPassCreateInfo RHI::Vulkan::DefaultRenderPassProducer::GetRenderPassCr
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
-    // RenderPass附着
-    constexpr vk::AttachmentReference ColorAttachmentRef{0, vk::ImageLayout::eColorAttachmentOptimal /** 此值一般而言性能最佳 */};
-    constexpr vk::AttachmentReference DepthAttachmentRef{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
-    constexpr vk::AttachmentReference ColorAttachmentResolveRef{2, vk::ImageLayout::eColorAttachmentOptimal};
-
     // 指定Subpass
     vk::SubpassDescription Subpass{};
     Subpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
         .setColorAttachmentCount(1)
-        .setPColorAttachments(&ColorAttachmentRef)
+        .setPColorAttachments(&mColorAttachmentRef)
         // 指定引用的深度附着
-        .setPDepthStencilAttachment(&DepthAttachmentRef)
-        .setPResolveAttachments(&ColorAttachmentResolveRef);
+        .setPDepthStencilAttachment(&mDepthAttachmentRef);
+    if (mSamplesCount != vk::SampleCountFlagBits::e1) {
+        Subpass.pResolveAttachments = &mColorAttachmentResolveRef;
+    }
 
     // 指定Subpass依赖
     vk::SubpassDependency Dependency = {};
@@ -103,9 +100,15 @@ RHI::Vulkan::RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo
     return MakeShared<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
+UniquePtr<RHI::Vulkan::RenderPass>
+RHI::Vulkan::RenderPass::CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
+    return MakeUnique<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
+}
+
 RHI::Vulkan::RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
     mDevice               = InDevice;
     mRenderPassCreateInfo = CreateInfo;
+    Initialize();
 }
 
 void RHI::Vulkan::RenderPass::Initialize() {

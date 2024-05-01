@@ -100,10 +100,10 @@ vk::Format PhysicalDevice::FindSupportFormat(
         if (InTiling == vk::ImageTiling::eOptimal && (Props.optimalTilingFeatures & InFeatures) == InFeatures) {
             return Format;
         }
-        // 图像在内部行主序存储 导致要访问下一列数据则需要跨行 不好
-        if (InTiling == vk::ImageTiling::eLinear && (Props.linearTilingFeatures & InFeatures) == InFeatures) {
-            return Format;
-        }
+        // if (InTiling == vk::ImageTiling::eLinear && (Props.linearTilingFeatures & InFeatures) == InFeatures) {
+        //     // 图像在内部行主序存储 导致要访问下一列数据则需要跨行 不好
+        //     return Format;
+        // }
     }
     throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
 }

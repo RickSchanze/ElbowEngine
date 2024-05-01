@@ -11,6 +11,7 @@
 #include "GLFW/glfw3.h"
 #include "RHI/Vulkan/Application.h"
 #include "Window/GLFWWindow.h"
+#include "RHI/Vulkan/Render/VulkanRenderer.h"
 
 TOOL_NAMESPACE_BEGIN
 

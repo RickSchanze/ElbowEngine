@@ -12,16 +12,17 @@
 
 
 class Path {
-private:
-    // 只能用来初始化工作路径
-    Path() = default;
+
 
 public:
+    Path() = default;
     /**
      * 初始化一个路径
      * @param PathStr
      */
-    explicit Path(StringView PathStr);
+    Path(StringView PathStr);
+
+    Path(const wchar_t* PathStr) : Path(StringView(PathStr)) {}
 
     Path(const Path& OtherPath) = default;
 
