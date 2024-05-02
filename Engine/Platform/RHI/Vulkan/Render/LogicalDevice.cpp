@@ -29,6 +29,7 @@ UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const 
 
 LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) :
     mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
+
     Initialize();
 }
 
@@ -88,11 +89,14 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
     } else {
         SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive);   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
+    mGraphicsQueue = mLogicalDeviceHandle.getQueue(Indicies.GraphicsFamily.value(), 0);
+    mPresentQueue  = mLogicalDeviceHandle.getQueue(Indicies.PresentFamily.value(), 0);
     return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent);
 }
 
-SharedPtr<ImageView>
-LogicalDevice::CreateImageView(const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const uint32 InMipLevels) {
+SharedPtr<ImageView> LogicalDevice::CreateImageView(
+    const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const uint32 InMipLevels
+) {
     vk::ImageViewCreateInfo ViewInfo = {};
     ViewInfo.setImage(InImage.GetHandle())
         .setViewType(vk::ImageViewType::e2D)

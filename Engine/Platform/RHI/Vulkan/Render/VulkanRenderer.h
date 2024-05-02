@@ -7,10 +7,10 @@
 
 #pragma once
 #include "LogicalDevice.h"
+#include "RenderPass.h"
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "SwapChain.h"
-#include "RenderPass.h"
 
 namespace RHI::Vulkan {
 class GraphicsPipeline;
@@ -30,8 +30,7 @@ public:
 
     ~VulkanRenderer();
 
-    static SharedPtr<VulkanRenderer>
-    CreateShared(const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
+    static SharedPtr<VulkanRenderer> CreateShared(const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
 
 protected:
     struct Protected
@@ -47,7 +46,11 @@ public:
 
     void Draw();
 
-    [[nodiscard]] bool IsValid() const;
+    bool IsValid() const;
+
+    SharedPtr<LogicalDevice> GetLogicalDevice() const { return mLogicalDevice; }
+    vk::Format               GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
+    vk::Extent2D             GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
 
 private:
     UniquePtr<SwapChain> mSwapChain;

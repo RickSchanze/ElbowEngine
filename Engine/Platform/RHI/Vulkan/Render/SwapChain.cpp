@@ -93,7 +93,7 @@ void SwapChain::Initialize() {
     mSwapchainImageViews.resize(GetSwapchainImageCount());
     for (uint32 i = 0; i < GetSwapchainImageCount(); ++i) {
         mSwapchainImageViews[i] =
-            mAssociatedLogicalDevice->CreateImageView(*mSwapchainImages[i].get(), mSwapchainImageFormat, vk::ImageAspectFlagBits::eColor, 1);
+            mAssociatedLogicalDevice->CreateImageView(*mSwapchainImages[i], mSwapchainImageFormat, vk::ImageAspectFlagBits::eColor, 1);
     }
 
     LOG_INFO_CATEGORY(

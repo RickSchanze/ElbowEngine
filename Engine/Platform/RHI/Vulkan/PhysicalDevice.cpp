@@ -108,6 +108,16 @@ vk::Format PhysicalDevice::FindSupportFormat(
     throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
 }
 
+uint32 PhysicalDevice::FindMemoryType(const uint32 InTypeFilter, const vk::MemoryPropertyFlags InProperties) const {
+    const auto MemProperties = mDeviceHandle.getMemoryProperties();
+    for (uint32 i = 0; i < MemProperties.memoryTypeCount; i++) {
+        if ((InTypeFilter & (1 << i)) && (MemProperties.memoryTypes[i].propertyFlags & InProperties) == InProperties) {
+            return i;
+        }
+    }
+    throw VulkanException(L"PhysicalDevice::FindMemoryType: 未找到合适的内存类型");
+}
+
 
 
 SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceShared() {

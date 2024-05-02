@@ -12,6 +12,7 @@
 #include "RenderPass.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
+#include "VulkanRenderer.h"
 
 #include <ranges>
 
@@ -19,18 +20,19 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 
 // TODO: 将管线加入程序启动流程
-GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+GraphicsPipeline::GraphicsPipeline(VulkanRenderer* InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) {
     // 创建RenderPass
     if (!InCreateInfo.RenderPassProducer) {
         throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
     }
-    mDevice = InDevice;
+    mRenderer                     = InRenderer;
+    const auto Device             = InRenderer->GetLogicalDevice();
     const auto RenderPassProducer = InCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
-    mRenderPass                   = RenderPass::CreateUnique(RenderPassProducer, InDevice.get());
+    const auto mRenderPass        = RenderPass::CreateUnique(RenderPassProducer, Device);
 
-    const auto VertShader = Shader::CreateShared(InDevice, InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
-    const auto FragShader = Shader::CreateShared(InDevice, InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
-    mShaderProg           = ShaderProgram::CreateShared(InDevice, VertShader, FragShader);
+    const auto VertShader = Shader::CreateShared(Device, InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
+    const auto FragShader = Shader::CreateShared(Device, InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
+    mShaderProg           = ShaderProgram::CreateShared(Device, VertShader, FragShader);
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
@@ -91,9 +93,10 @@ GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, con
 
     // 多重采样设置
     vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
+    mMsaaSamples                                           = InCreateInfo.MsaaSamples;
     MultisampleInfo   //
         .setSampleShadingEnable(false)
-        .setRasterizationSamples(InCreateInfo.MsaaSamples);
+        .setRasterizationSamples(mMsaaSamples);
 
     // 配置深度模版测试阶段
     vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
@@ -127,7 +130,7 @@ GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, con
     PipelineLayoutInfo.setSetLayouts({mDescriptorSetLayout});
 
     // 创建管线布局
-    mPipelineLayout = InDevice->GetHandle().createPipelineLayout(PipelineLayoutInfo);
+    mPipelineLayout = Device->GetHandle().createPipelineLayout(PipelineLayoutInfo);
 
     // 定义管线
     vk::GraphicsPipelineCreateInfo PipelineInfo = {};
@@ -143,7 +146,7 @@ GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, con
         .setRenderPass(mRenderPass->GetHandle())    // RenderPass
         .setSubpass(0);                             // 子Pass
 
-    auto Pipeline = InDevice->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
+    auto Pipeline = Device->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
     if (Pipeline.result != vk::Result::eSuccess) {
         throw VulkanException(L"创建管线失败");
     } else {
@@ -152,12 +155,12 @@ GraphicsPipeline::GraphicsPipeline(const SharedPtr<LogicalDevice>& InDevice, con
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(const SharedPtr<LogicalDevice>& InDevice, const GraphicsPipelineCreateInfo& InCreateInfo){
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(VulkanRenderer* InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
 void GraphicsPipeline::Finalize() const {
-    const auto Device = mDevice.lock();
+    const auto Device = mRenderer->GetLogicalDevice();
     const auto Handle = Device->GetHandle();
     if (Device) {
         Handle.destroyPipeline(mPipeline);
@@ -180,7 +183,25 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     }
     vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
     LayoutInfo.setBindings(UniformBindings);
-    mDescriptorSetLayout = mDevice.lock()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+    mDescriptorSetLayout = mRenderer->GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+}
+
+void GraphicsPipeline::CreateMsaaColorBuffer() {
+    if (mMsaaSamples == vk::SampleCountFlagBits::e1) {
+        // 不需要多重采样
+        return;
+    }
+    const auto      Renderer        = mRenderer;
+    const auto      Device          = Renderer->GetLogicalDevice();
+    const auto      SwapchainExtent = Renderer->GetSwapChainExtent();
+    ImageCreateInfo ImageInfo{};
+    ImageInfo.Height      = SwapchainExtent.height;
+    ImageInfo.Width       = SwapchainExtent.width;
+    ImageInfo.Format = Renderer->GetSwapChainImageFormat();
+    ImageInfo.Usage = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
+    ImageInfo.SampleCount = mMsaaSamples;
+    mMsaaColorImage = Image::CreateShared(Device, ImageInfo);
+    mMsaaColorImageView = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
 }
 
 RHI_VULKAN_NAMESPACE_END

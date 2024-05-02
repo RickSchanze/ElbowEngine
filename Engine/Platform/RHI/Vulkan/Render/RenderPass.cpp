@@ -9,7 +9,9 @@
 
 #include "LogicalDevice.h"
 
-vk::RenderPassCreateInfo RHI::Vulkan::DefaultRenderPassProducer::GetRenderPassCreateInfo() {
+RHI_VULKAN_NAMESPACE_BEGIN
+
+vk::RenderPassCreateInfo DefaultRenderPassProducer::GetRenderPassCreateInfo() {
     // 交换链图像的附着藐视
     vk::AttachmentDescription ColorAttachment{};
     ColorAttachment
@@ -81,50 +83,51 @@ vk::RenderPassCreateInfo RHI::Vulkan::DefaultRenderPassProducer::GetRenderPassCr
     return Info;
 }
 
-RHI::Vulkan::DefaultRenderPassProducer::DefaultRenderPassProducer(
+DefaultRenderPassProducer::DefaultRenderPassProducer(
     const vk::Format& SwapchainImageFormat, const vk::Format& DepthImageFormat, const vk::SampleCountFlagBits& SamplesCount
 ) : mSwapchainImageFormat(SwapchainImageFormat), mSamplesCount(SamplesCount), mDepthImageFormat(DepthImageFormat) {}
 
-bool RHI::Vulkan::RenderPass::IsValid() const {
+bool RenderPass::IsValid() const {
     return static_cast<bool>(mRenderPassHandle);
 }
 
-RHI::Vulkan::RenderPass::~RenderPass() {
+RenderPass::~RenderPass() {
     if (IsValid()) {
         Finialize();
     }
 }
 
-SharedPtr<RHI::Vulkan::RenderPass>
-RHI::Vulkan::RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
+SharedPtr<RenderPass> RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
     return MakeShared<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
-UniquePtr<RHI::Vulkan::RenderPass>
-RHI::Vulkan::RenderPass::CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
+UniquePtr<RenderPass> RenderPass::CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
     return MakeUnique<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
-RHI::Vulkan::RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice) {
+RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
     mDevice               = InDevice;
     mRenderPassCreateInfo = CreateInfo;
     Initialize();
 }
 
-void RHI::Vulkan::RenderPass::Initialize() {
+void RenderPass::Initialize() {
     if (IsValid()) return;
-    if (mDevice == nullptr) {
+    if (mDevice.expired()) {
         throw VulkanException(L"RenderPass::Initialize: 初始化RenderPass失败: mDevice失效");
     }
-    mRenderPassHandle = mDevice->GetHandle().createRenderPass(mRenderPassCreateInfo);
+
+    mRenderPassHandle = mDevice.lock()->GetHandle().createRenderPass(mRenderPassCreateInfo);
 }
 
-void RHI::Vulkan::RenderPass::Finialize() {
+void RenderPass::Finialize() {
     if (!IsValid()) return;
-    if (mDevice == nullptr) {
+    if (mDevice.expired()) {
         throw VulkanException(L"RenderPass::Finalize: 销毁RenderPass失败: mDevice失效");
     }
-    mDevice->GetHandle().destroyRenderPass(mRenderPassHandle);
+    mDevice.lock()->GetHandle().destroyRenderPass(mRenderPassHandle);
     mRenderPassHandle = VK_NULL_HANDLE;
-    mDevice = nullptr;
+    mDevice.reset();
 }
+
+RHI_VULKAN_NAMESPACE_END

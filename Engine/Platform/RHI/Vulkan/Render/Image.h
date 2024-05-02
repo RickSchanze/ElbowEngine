@@ -24,7 +24,7 @@ public:
 
     vk::Image GetHandle() const { return mImageHandle; }
 
-private:
+protected:
     vk::Image mImageHandle = VK_NULL_HANDLE;
 };
 
@@ -34,6 +34,41 @@ public:
     explicit SwapChainImage(const vk::Image& InImgHandle) : ImageBase(InImgHandle) {}
 
     SwapChainImage() = default;
+};
+
+struct ImageCreateInfo
+{
+    vk::Format              Format;
+    vk::ImageUsageFlags     Usage;
+    uint32                  Width;
+    uint32                  Height;
+    uint32                  Depth          = 1;
+    uint32                  MipLevels      = 1;
+    vk::ImageTiling         Tiling         = vk::ImageTiling::eOptimal;
+    vk::SampleCountFlagBits SampleCount    = vk::SampleCountFlagBits::e1;
+    vk::ImageType           ImageType      = vk::ImageType::e2D;
+    vk::MemoryPropertyFlags MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
+};
+
+class Image final : public ImageBase {
+protected:
+    struct Protected
+    {};
+
+public:
+    explicit Image(Protected, const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo);
+
+    static SharedPtr<Image> CreateShared(const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo);
+
+    ~Image() override;
+
+
+    void Finialize();
+
+private:
+    WeakPtr<LogicalDevice> mDevice;
+
+    vk::DeviceMemory mImageMemory = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END

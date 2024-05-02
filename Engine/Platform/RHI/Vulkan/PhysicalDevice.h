@@ -92,13 +92,15 @@ public:
     vk::Format
     FindSupportFormat(const Array<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
 
+    uint32 FindMemoryType(uint32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
+
     /**
      * 以此物理设备为基础创建一个逻辑设备
      * @return
      */
     SharedPtr<LogicalDevice> CreateLogicalDeviceShared();
     UniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
-    vk::Device               CreateLogicalDeviceHandle()const;
+    vk::Device               CreateLogicalDeviceHandle() const;
 
     [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }
 

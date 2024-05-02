@@ -26,8 +26,6 @@ public:
         const vk::SampleCountFlagBits& SamplesCount = vk::SampleCountFlagBits::e1
     );
 
-
-
 private:
     vk::Format              mSwapchainImageFormat{};
     vk::SampleCountFlagBits mSamplesCount = vk::SampleCountFlagBits::e1;
@@ -49,10 +47,10 @@ public:
 
     ~RenderPass() override;
 
-    static SharedPtr<RenderPass> CreateShared(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice);
-    static UniquePtr<RenderPass> CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice);
+    static SharedPtr<RenderPass> CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
+    static UniquePtr<RenderPass> CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
 
-    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, LogicalDevice* InDevice);
+    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
 
     void Initialize() override;
     void Finialize() override;
@@ -64,7 +62,7 @@ protected:
 
     vk::RenderPassCreateInfo mRenderPassCreateInfo;
 
-    LogicalDevice* mDevice;
+    WeakPtr<LogicalDevice> mDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

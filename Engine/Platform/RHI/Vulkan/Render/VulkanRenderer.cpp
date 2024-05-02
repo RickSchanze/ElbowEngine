@@ -47,7 +47,7 @@ VulkanRenderer::VulkanRenderer(Protected, const Instance& InVulkanInstance, Uniq
     CreateInfo.FragmentShaderPath = L"Shaders/frag.spv";
     CreateInfo.VertexShaderPath   = L"Shaders/vert.spv";
 
-    mGraphicsPipeline = GraphicsPipeline::CreateShared(mLogicalDevice, CreateInfo);
+    mGraphicsPipeline = GraphicsPipeline::CreateShared(this, CreateInfo);
     Initialize();
 }
 

@@ -53,6 +53,8 @@ add_library(Platform
         RHI/Vulkan/Render/GraphicsPipeline.h
         RHI/Vulkan/Render/ShaderProgram.cpp
         RHI/Vulkan/Render/ShaderProgram.h
+        RHI/Vulkan/Render/CommandProducer.cpp
+        RHI/Vulkan/Render/CommandProducer.h
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

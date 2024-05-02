@@ -61,10 +61,15 @@ public:
     bool       IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
     vk::Device GetHandle() const { return mLogicalDeviceHandle; }
     SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
+    vk::Queue                 GetGraphicsQueue() const { return mGraphicsQueue; }
+    vk::Queue                 GetPresentQueue() const { return mPresentQueue; }
 
 private:
     vk::Device              mLogicalDeviceHandle = VK_NULL_HANDLE;
     WeakPtr<PhysicalDevice> mAssociatedPhysicalDevice;
+
+    vk::Queue mGraphicsQueue;
+    vk::Queue mPresentQueue;
 };
 
 RHI_VULKAN_NAMESPACE_END
