@@ -24,7 +24,7 @@ class RenderPass;
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class VulkanRenderer {
+class VulkanRenderer : public std::enable_shared_from_this<VulkanRenderer> {
 public:
     VulkanRenderer() = default;
 
@@ -38,7 +38,7 @@ protected:
 
 public:
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanRenderer(Protected, const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
+    explicit VulkanRenderer(Protected, const Instance& InVulkanInstance);
 
 public:
     void Initialize();
@@ -51,6 +51,8 @@ public:
     SharedPtr<LogicalDevice> GetLogicalDevice() const { return mLogicalDevice; }
     vk::Format               GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
     vk::Extent2D             GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
+
+    virtual void CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer);
 
 private:
     UniquePtr<SwapChain> mSwapChain;

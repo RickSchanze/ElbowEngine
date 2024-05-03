@@ -20,7 +20,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 
 // TODO: 将管线加入程序启动流程
-GraphicsPipeline::GraphicsPipeline(VulkanRenderer* InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) {
+GraphicsPipeline::GraphicsPipeline(const SharedPtr<VulkanRenderer>& InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) {
     // 创建RenderPass
     if (!InCreateInfo.RenderPassProducer) {
         throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
@@ -155,12 +155,16 @@ GraphicsPipeline::GraphicsPipeline(VulkanRenderer* InRenderer, const GraphicsPip
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(VulkanRenderer* InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(const SharedPtr<VulkanRenderer>&InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
 void GraphicsPipeline::Finalize() const {
-    const auto Device = mRenderer->GetLogicalDevice();
+    if (mRenderer.expired()) {
+        LOG_ERROR_CATEGORY(Vulkan, L"图形管线销毁失败：Renderer失效");
+        return;
+    }
+    const auto Device = mRenderer.lock()->GetLogicalDevice();
     const auto Handle = Device->GetHandle();
     if (Device) {
         Handle.destroyPipeline(mPipeline);
@@ -183,7 +187,7 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     }
     vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
     LayoutInfo.setBindings(UniformBindings);
-    mDescriptorSetLayout = mRenderer->GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+    mDescriptorSetLayout = mRenderer.lock()->GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
 void GraphicsPipeline::CreateMsaaColorBuffer() {
@@ -191,7 +195,7 @@ void GraphicsPipeline::CreateMsaaColorBuffer() {
         // 不需要多重采样
         return;
     }
-    const auto      Renderer        = mRenderer;
+    const auto      Renderer        = mRenderer.lock();
     const auto      Device          = Renderer->GetLogicalDevice();
     const auto      SwapchainExtent = Renderer->GetSwapChainExtent();
     ImageCreateInfo ImageInfo{};

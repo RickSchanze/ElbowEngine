@@ -47,9 +47,10 @@ public:
      * @param InRenderer 逻辑设备
      * @param InCreateInfo 创建信息
      */
-    GraphicsPipeline(VulkanRenderer* InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo);
+    GraphicsPipeline(const SharedPtr<VulkanRenderer>& InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo);
 
-    static SharedPtr<GraphicsPipeline> CreateShared(VulkanRenderer* InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
+    static SharedPtr<GraphicsPipeline>
+    CreateShared(const SharedPtr<VulkanRenderer>& InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
     void Finalize() const;
 
@@ -62,7 +63,7 @@ protected:
 private:
     SharedPtr<ShaderProgram> mShaderProg;
 
-    VulkanRenderer*  mRenderer;
+    WeakPtr<VulkanRenderer>  mRenderer;
 
     vk::PipelineLayout      mPipelineLayout;
     vk::Pipeline            mPipeline;
