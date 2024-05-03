@@ -13,8 +13,8 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 ShaderProgram::ShaderProgram(
-    const SharedPtr<LogicalDevice>& InDevice, const SharedPtr<Shader>& InVertexShader, const SharedPtr<Shader>& InFragmentShader
-) {
+    const Ref<LogicalDevice> InDevice, const SharedPtr<Shader>& InVertexShader, const SharedPtr<Shader>& InFragmentShader
+) : mDevice(InDevice) {
     mVertexInputAttributes = InVertexShader->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
     if (!CheckAndUpdateUniforms(InVertexShader)) {
@@ -23,8 +23,6 @@ ShaderProgram::ShaderProgram(
     if (!CheckAndUpdateUniforms(InFragmentShader)) {
         return;
     }
-
-    mDevice = InDevice;
 }
 
 bool ShaderProgram::CheckAndUpdateUniforms(const SharedPtr<Shader>& InShader) {

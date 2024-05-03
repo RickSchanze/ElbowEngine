@@ -16,9 +16,12 @@ Ref<T> MakeRef(T& TValue) {
     return std::ref(TValue);
 }
 
+template <typename T>
+using ConstRef = std::reference_wrapper<const T>;
+
 // std::cref -> MakeConstRef
 template<typename T>
-Ref<const T> MakeConstRef(const T& TValue) {
+ConstRef<T> MakeConstRef(const T& TValue) {
     return std::cref(TValue);
 }
 

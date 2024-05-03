@@ -15,13 +15,13 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class CommandProducer {
 protected:
-    struct Private{};
+    struct Private
+    {};
 
 public:
-    CommandProducer(Private, const SharedPtr<LogicalDevice>& InDevice);
+    CommandProducer(Private, Ref<UniquePtr<LogicalDevice>> InDevice);
 
-    static SharedPtr<CommandProducer>
-    CreateShared(const SharedPtr<LogicalDevice>& InDevice);
+    static UniquePtr<CommandProducer> CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice);
 
     void CreateCommandPool();
     void CleanCommandPool();
@@ -35,12 +35,12 @@ public:
 
 protected:
     vk::CommandBuffer BeginSingleTimeCommands() const;
-    void EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const;
+    void              EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const;
 
 private:
     vk::CommandPool mPool = nullptr;
 
-    WeakPtr<LogicalDevice> mDevice;
+    Ref<UniquePtr<LogicalDevice>> mDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

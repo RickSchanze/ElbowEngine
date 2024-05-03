@@ -8,13 +8,13 @@
 #pragma once
 #include "LogicalDevice.h"
 #include "RenderPass.h"
-#include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "SwapChain.h"
 
 namespace RHI::Vulkan {
+class CommandProducer;
 class GraphicsPipeline;
-}
+}   // namespace RHI::Vulkan
 namespace RHI::Vulkan {
 class IRenderPassProducer;
 }
@@ -28,9 +28,9 @@ class VulkanRenderer : public std::enable_shared_from_this<VulkanRenderer> {
 public:
     VulkanRenderer() = default;
 
-    ~VulkanRenderer();
+    virtual ~VulkanRenderer();
 
-    static SharedPtr<VulkanRenderer> CreateShared(const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
+    static UniquePtr<VulkanRenderer> CreateUnique(const Instance& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
 
 protected:
     struct Protected
@@ -42,17 +42,25 @@ public:
 
 public:
     void Initialize();
-    void Finitialize();
+    void Finalize();
 
     void Draw();
 
     bool IsValid() const;
 
-    SharedPtr<LogicalDevice> GetLogicalDevice() const { return mLogicalDevice; }
-    vk::Format               GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
-    vk::Extent2D             GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
+    UniquePtr<LogicalDevice>&       GetLogicalDevice() { return mLogicalDevice; }
+    const UniquePtr<LogicalDevice>& GetLogicalDevice() const { return mLogicalDevice; }
 
-    virtual void CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer);
+    vk::Format                   GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
+    vk::Extent2D                 GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
+    uint32                       GetSwapChainImageCount() const { return mSwapChainImageCount; }
+    Array<SharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
+
+    vk::Format GetDepthFormat() const { return mDepthFormat; }
+
+    const UniquePtr<CommandProducer>& GetCommandProducer() const { return mCommandProducer; }
+
+    virtual void CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, Ref<VulkanRenderer>InRenderer);
 
 private:
     UniquePtr<SwapChain> mSwapChain;
@@ -60,11 +68,15 @@ private:
 
     SharedPtr<GraphicsPipeline> mGraphicsPipeline;
 
+    UniquePtr<CommandProducer> mCommandProducer;
+
+    vk::Format mDepthFormat = {};
+
     int32 mRendererID = 0;
 
     static inline int32 sRendererIDCount = 0;
 
-    SharedPtr<LogicalDevice> mLogicalDevice;
+    UniquePtr<LogicalDevice> mLogicalDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -34,7 +34,7 @@ void EngineApplication::Initialize() {
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
 
-    mRenderer = RHI::Vulkan::VulkanRenderer::CreateShared(mRenderApplication->GetVulkanInstance());
+    mRenderer = RHI::Vulkan::VulkanRenderer::CreateUnique(mRenderApplication->GetVulkanInstance());
     mRenderApplication->AddRenderer(mRenderer);
 }
 

@@ -12,27 +12,19 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandProducer::CommandProducer(Private, const SharedPtr<LogicalDevice>& InDevice) {
-    if (!InDevice) {
-        throw VulkanException(L"InDevice is nullptr");
-    }
-    mDevice = InDevice;
+CommandProducer::CommandProducer(Private, const Ref<UniquePtr<LogicalDevice>> InDevice) : mDevice(InDevice) {
     CreateCommandPool();
 }
 
-SharedPtr<CommandProducer> CommandProducer::CreateShared(const SharedPtr<LogicalDevice>& InDevice) {
-    return MakeShared<CommandProducer>(Private{}, InDevice);
+UniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice) {
+    return MakeUnique<CommandProducer>(Private{}, InDevice);
 }
 
 void CommandProducer::CreateCommandPool() {
-    if (mDevice.expired()) {
-        throw VulkanException(L"Device is expired");
-    }
-
-    const auto Device = mDevice.lock();
+    const auto& Device = mDevice.get();
 
     // 获取队列族索引
-    const auto QueueFamilyIndices = Device->GetAssociatedPhysicalDevice()->FindQueueFamilyIndices();
+    const auto QueueFamilyIndices = Device->GetAssociatedPhysicalDevice().FindQueueFamilyIndices();
 
     // 命令池创建
     vk::CommandPoolCreateInfo CommandPoolCreateInfo{};
@@ -42,10 +34,7 @@ void CommandProducer::CreateCommandPool() {
 
 void CommandProducer::CleanCommandPool() {
     if (!mPool) return;
-    if (mDevice.expired()) {
-        throw VulkanException(L"Device is expired");
-    }
-    const auto Device = mDevice.lock();
+    const auto& Device = mDevice.get();
     Device->GetHandle().destroyCommandPool(mPool);
     mPool = nullptr;
 }
@@ -118,7 +107,7 @@ vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
     AllocateInfo.setCommandPool(mPool);
     AllocateInfo.setLevel(vk::CommandBufferLevel::ePrimary);
     AllocateInfo.setCommandBufferCount(1);
-    const auto                 DeviceHandle  = mDevice.lock()->GetHandle();
+    const auto                 DeviceHandle  = mDevice.get()->GetHandle();
     const vk::CommandBuffer    CommandBuffer = DeviceHandle.allocateCommandBuffers(AllocateInfo)[0];
     vk::CommandBufferBeginInfo BeginInfo{};
     BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -128,7 +117,7 @@ vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
 
 void CommandProducer::EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const {
     InCommandBuffer.end();
-    const auto     Device       = mDevice.lock();
+    const auto&    Device       = mDevice.get();
     const auto     DeviceHandle = Device->GetHandle();
     vk::SubmitInfo SubmitInfo{};
     SubmitInfo.setCommandBuffers({InCommandBuffer});

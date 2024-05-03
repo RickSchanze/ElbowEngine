@@ -20,7 +20,7 @@ public:
     // 使用一个hanlde来初始化此Image
     explicit ImageBase(const vk::Image& InImgHandle) : mImageHandle(InImgHandle) {}
 
-    bool IsValid() const { return static_cast<bool>(mImageHandle); }
+    virtual bool IsValid() const { return static_cast<bool>(mImageHandle); }
 
     vk::Image GetHandle() const { return mImageHandle; }
 
@@ -56,17 +56,20 @@ protected:
     {};
 
 public:
-    explicit Image(Protected, const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo);
+    typedef ImageBase Super;
 
-    static SharedPtr<Image> CreateShared(const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo);
+    explicit Image(Protected, Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo);
+
+    static SharedPtr<Image> CreateShared(Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo);
 
     ~Image() override;
 
+    bool IsValid() const override;
 
     void Finialize();
 
 private:
-    WeakPtr<LogicalDevice> mDevice;
+    Ref<UniquePtr<LogicalDevice>> mDevice;
 
     vk::DeviceMemory mImageMemory = nullptr;
 };

@@ -60,7 +60,7 @@ void VulkanApplication::Initialize() {
 
 void VulkanApplication::Finalize() {
     for (const auto& Renderer: mRenderers) {
-        Renderer->Finitialize();
+        Renderer->Finalize();
     }
     mRenderers.clear();
     mVulkanInstance.Finialize();

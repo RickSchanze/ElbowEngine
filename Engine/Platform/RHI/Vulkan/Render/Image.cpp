@@ -16,10 +16,9 @@ ImageBase::~ImageBase() {
     mImageHandle = VK_NULL_HANDLE;
 }
 
-Image::Image(Protected, const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo) {
+Image::Image(Protected, Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo) : mDevice(InDevice) {
     vk::ImageCreateInfo ImageCreateInfo{};
-    mDevice                 = InDevice;
-    const auto DeviceHandle = InDevice->GetHandle();
+    const auto          DeviceHandle = InDevice.get()->GetHandle();
     ImageCreateInfo.setImageType(InCreateInfo.ImageType);
     const vk::Extent3D Extent{
         InCreateInfo.Width, InCreateInfo.Height, InCreateInfo.ImageType == vk::ImageType::e3D ? 1 : InCreateInfo.Depth
@@ -31,6 +30,7 @@ Image::Image(Protected, const SharedPtr<LogicalDevice>& InDevice, const ImageCre
     ImageCreateInfo.setInitialLayout(vk::ImageLayout::eUndefined);
     ImageCreateInfo.setUsage(InCreateInfo.Usage);
     ImageCreateInfo.setSamples(InCreateInfo.SampleCount);
+    ImageCreateInfo.setMipLevels(InCreateInfo.MipLevels);
     // 只被一个队列族使用
     ImageCreateInfo.setSharingMode(vk::SharingMode::eExclusive);
 
@@ -40,13 +40,13 @@ Image::Image(Protected, const SharedPtr<LogicalDevice>& InDevice, const ImageCre
     vk::MemoryAllocateInfo MemoryAllocateInfo{};
     MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
     MemoryAllocateInfo.setMemoryTypeIndex(
-        InDevice->GetAssociatedPhysicalDevice()->FindMemoryType(MemoryRequirements.memoryTypeBits, InCreateInfo.MemoryProperty)
+        InDevice.get()->GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, InCreateInfo.MemoryProperty)
     );
     mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
 }
 
-SharedPtr<Image> Image::CreateShared(const SharedPtr<LogicalDevice>& InDevice, const ImageCreateInfo& InCreateInfo) {
+SharedPtr<Image> Image::CreateShared(Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo) {
     return MakeShared<Image>(Protected{}, InDevice, InCreateInfo);
 }
 
@@ -54,16 +54,17 @@ Image::~Image() {
     Finialize();
 }
 
+bool Image::IsValid() const {
+    return Super::IsValid() && mImageMemory != nullptr;
+}
+
 void Image::Finialize() {
-    if (mDevice.expired()) {
-        throw VulkanException(L"Device is expired");
-    }
-    const auto Device = mDevice.lock();
-    if (mImageHandle == nullptr) {
+    const auto& Device = mDevice.get();
+    if (mImageHandle != nullptr) {
         Device->GetHandle().destroyImage(mImageHandle);
         mImageHandle = nullptr;
     }
-    if (mImageMemory == nullptr) {
+    if (mImageMemory != nullptr) {
         Device->GetHandle().freeMemory(mImageMemory);
         mImageMemory = nullptr;
     }

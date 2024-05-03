@@ -47,10 +47,9 @@ public:
 
     ~RenderPass() override;
 
-    static SharedPtr<RenderPass> CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
-    static UniquePtr<RenderPass> CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
+    static UniquePtr<RenderPass> CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo);
 
-    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice);
+    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, Ref<LogicalDevice> InDevice);
 
     void Initialize() override;
     void Finialize() override;
@@ -62,7 +61,7 @@ protected:
 
     vk::RenderPassCreateInfo mRenderPassCreateInfo;
 
-    WeakPtr<LogicalDevice> mDevice;
+    Ref<LogicalDevice> mDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

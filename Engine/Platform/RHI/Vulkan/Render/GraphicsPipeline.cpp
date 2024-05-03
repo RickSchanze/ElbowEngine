@@ -7,6 +7,7 @@
 
 #include "GraphicsPipeline.h"
 
+#include "CommandProducer.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RenderPass.h"
@@ -18,21 +19,18 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-
-// TODO: 将管线加入程序启动流程
-GraphicsPipeline::GraphicsPipeline(const SharedPtr<VulkanRenderer>& InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) {
+GraphicsPipeline::GraphicsPipeline(Ref<VulkanRenderer> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) : mRenderer(InRenderer) {
     // 创建RenderPass
     if (!InCreateInfo.RenderPassProducer) {
         throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
     }
-    mRenderer                     = InRenderer;
-    const auto Device             = InRenderer->GetLogicalDevice();
+    auto&      Device             = InRenderer.get().GetLogicalDevice();
     const auto RenderPassProducer = InCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
-    const auto mRenderPass        = RenderPass::CreateUnique(RenderPassProducer, Device);
+    mRenderPass                   = RenderPass::CreateUnique(MakeRef(*Device), RenderPassProducer);
 
-    const auto VertShader = Shader::CreateShared(Device, InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
-    const auto FragShader = Shader::CreateShared(Device, InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
-    mShaderProg           = ShaderProgram::CreateShared(Device, VertShader, FragShader);
+    const auto VertShader = Shader::CreateShared(MakeRef(*Device), InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
+    const auto FragShader = Shader::CreateShared(MakeRef(*Device), InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
+    mShaderProg           = ShaderProgram::CreateShared(MakeRef(*Device), VertShader, FragShader);
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
@@ -152,26 +150,41 @@ GraphicsPipeline::GraphicsPipeline(const SharedPtr<VulkanRenderer>& InRenderer, 
     } else {
         mPipeline = Pipeline.value;
     }
+
+    // 创建多重采样颜色缓冲区
+    CreateMsaaColorBuffer();
+    // 创建深度缓冲区
+    CreateDepthBuffer();
+    // 创建交换链帧缓冲区
+    CreateFramebuffers();
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(const SharedPtr<VulkanRenderer>&InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanRenderer> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
-void GraphicsPipeline::Finalize() const {
-    if (mRenderer.expired()) {
-        LOG_ERROR_CATEGORY(Vulkan, L"图形管线销毁失败：Renderer失效");
-        return;
-    }
-    const auto Device = mRenderer.lock()->GetLogicalDevice();
-    const auto Handle = Device->GetHandle();
+void GraphicsPipeline::Finalize() {
+    if (!IsValid()) return;
+    const auto& Device = mRenderer.get().GetLogicalDevice();
+    const auto  Handle = Device->GetHandle();
     if (Device) {
+        // 交换链缓冲区销毁
+        CleanFramebuffers();
+        // 深度图像销毁
+        mDepthImageView->Finialize();
+        mDepthImage->Finialize();
+        // MSAA缓冲销毁
+        mMsaaColorImageView->Finialize();
+        mMsaaColorImage->Finialize();
         Handle.destroyPipeline(mPipeline);
         Handle.destroyPipelineLayout(mPipelineLayout);
         Handle.destroyDescriptorSetLayout(mDescriptorSetLayout);
         mRenderPass->Finialize();
     }
+    mPipeline            = nullptr;
+    mPipelineLayout      = nullptr;
+    mDescriptorSetLayout = nullptr;
     LOG_INFO_CATEGORY(Vulkan, L"图形管线销毁完成");
 }
 
@@ -187,25 +200,67 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     }
     vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
     LayoutInfo.setBindings(UniformBindings);
-    mDescriptorSetLayout = mRenderer.lock()->GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+    mDescriptorSetLayout = mRenderer.get().GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
 void GraphicsPipeline::CreateMsaaColorBuffer() {
-    if (mMsaaSamples == vk::SampleCountFlagBits::e1) {
-        // 不需要多重采样
-        return;
-    }
-    const auto      Renderer        = mRenderer.lock();
-    const auto      Device          = Renderer->GetLogicalDevice();
-    const auto      SwapchainExtent = Renderer->GetSwapChainExtent();
+    const auto&     Renderer        = mRenderer;
+    auto&           Device          = Renderer.get().GetLogicalDevice();
+    const auto      SwapchainExtent = Renderer.get().GetSwapChainExtent();
     ImageCreateInfo ImageInfo{};
     ImageInfo.Height      = SwapchainExtent.height;
     ImageInfo.Width       = SwapchainExtent.width;
-    ImageInfo.Format = Renderer->GetSwapChainImageFormat();
-    ImageInfo.Usage = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
+    ImageInfo.Format      = Renderer.get().GetSwapChainImageFormat();
+    ImageInfo.Usage       = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
     ImageInfo.SampleCount = mMsaaSamples;
-    mMsaaColorImage = Image::CreateShared(Device, ImageInfo);
-    mMsaaColorImageView = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
+    mMsaaColorImage       = Image::CreateShared(MakeRef(Device), ImageInfo);
+    mMsaaColorImageView   = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
+    mRenderer.get().GetCommandProducer()->TrainsitionImageLayout(
+        mMsaaColorImage->GetHandle(), ImageInfo.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1
+    );
+}
+
+void GraphicsPipeline::CreateDepthBuffer() {
+    const auto      DepthFormat = mRenderer.get().GetDepthFormat();
+    auto&           Renderer    = static_cast<VulkanRenderer&>(mRenderer);
+    ImageCreateInfo ImageInfo{};
+    ImageInfo.Height = Renderer.GetSwapChainExtent().height;
+    ImageInfo.Width  = Renderer.GetSwapChainExtent().width;
+    ImageInfo.Format = DepthFormat;
+    ImageInfo.Usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+    mDepthImage      = Image::CreateShared(MakeRef(Renderer.GetLogicalDevice()), ImageInfo);
+    mDepthImageView  = Renderer.GetLogicalDevice()->CreateImageView(*mDepthImage, DepthFormat, vk::ImageAspectFlagBits::eDepth);
+    Renderer.GetCommandProducer()->TrainsitionImageLayout(
+        mDepthImage->GetHandle(), DepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1
+    );
+}
+
+void GraphicsPipeline::CreateFramebuffers() {
+    const auto& Renderer = static_cast<VulkanRenderer&>(mRenderer);
+    mFramebuffers.resize(Renderer.GetSwapChainImageCount());
+    for (size_t i = 0; i < mFramebuffers.size(); i++) {
+        Array Attachments = {
+            mMsaaColorImageView->GetHandle(),
+            mDepthImageView->GetHandle(),
+            Renderer.GetSwapChainImageViews()[i]->GetHandle(),
+        };
+        vk::FramebufferCreateInfo FramebufferInfo = {};
+        FramebufferInfo   //
+            .setRenderPass(mRenderPass->GetHandle())
+            .setAttachments(Attachments)
+            .setWidth(Renderer.GetSwapChainExtent().width)
+            .setHeight(Renderer.GetSwapChainExtent().height)
+            .setLayers(1);
+        mFramebuffers[i] = Renderer.GetLogicalDevice()->GetHandle().createFramebuffer(FramebufferInfo);
+    }
+}
+
+void GraphicsPipeline::CleanFramebuffers() {
+    const auto& Device = mRenderer.get().GetLogicalDevice();
+    for (const auto& Framebuffer: mFramebuffers) {
+        Device->GetHandle().destroyFramebuffer(Framebuffer);
+    }
+    mFramebuffers.clear();
 }
 
 RHI_VULKAN_NAMESPACE_END

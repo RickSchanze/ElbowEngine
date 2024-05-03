@@ -97,37 +97,26 @@ RenderPass::~RenderPass() {
     }
 }
 
-SharedPtr<RenderPass> RenderPass::CreateShared(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
-    return MakeShared<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
-}
-
-UniquePtr<RenderPass> RenderPass::CreateUnique(const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
+UniquePtr<RenderPass> RenderPass::CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo) {
     return MakeUnique<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
-RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const SharedPtr<LogicalDevice>& InDevice) {
-    mDevice               = InDevice;
+RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const Ref<LogicalDevice> InDevice) :
+    mDevice(InDevice) {
     mRenderPassCreateInfo = CreateInfo;
     Initialize();
 }
 
 void RenderPass::Initialize() {
     if (IsValid()) return;
-    if (mDevice.expired()) {
-        throw VulkanException(L"RenderPass::Initialize: 初始化RenderPass失败: mDevice失效");
-    }
 
-    mRenderPassHandle = mDevice.lock()->GetHandle().createRenderPass(mRenderPassCreateInfo);
+    mRenderPassHandle = mDevice.get().GetHandle().createRenderPass(mRenderPassCreateInfo);
 }
 
 void RenderPass::Finialize() {
     if (!IsValid()) return;
-    if (mDevice.expired()) {
-        throw VulkanException(L"RenderPass::Finalize: 销毁RenderPass失败: mDevice失效");
-    }
-    mDevice.lock()->GetHandle().destroyRenderPass(mRenderPassHandle);
+    mDevice.get().GetHandle().destroyRenderPass(mRenderPassHandle);
     mRenderPassHandle = VK_NULL_HANDLE;
-    mDevice.reset();
 }
 
 RHI_VULKAN_NAMESPACE_END

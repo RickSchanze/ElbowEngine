@@ -30,15 +30,10 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage InStage) {
     case EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
     default: return vk::ShaderStageFlagBits::eVertex;
     }
-    return vk::ShaderStageFlagBits::eVertex;
 }
 
-Shader::Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, const EShaderStage InShaderStage) :
+Shader::Shader(Protected, const Ref<LogicalDevice> InDevice, const Path& InShaderPath, const EShaderStage InShaderStage) :
     mShaderStage(InShaderStage), mShaderPath(InShaderPath), mDevice(InDevice) {
-    if (InDevice == nullptr || !InDevice->IsValid()) {
-        // 传入图形管线为空
-        throw VulkanException(std::format(L"Shader {} 构造时传入的图像管线为空", InShaderPath.ToString()));
-    }
     // 加载Shader文件
     FileInputStream ShaderFileStream{InShaderPath.ToString(), std::ios::ate | std::ios::binary};
     if (!ShaderFileStream.is_open()) {
@@ -59,16 +54,12 @@ Shader::Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPat
     // 创建ShaderModule
     vk::ShaderModuleCreateInfo CreateInfo = {};
     CreateInfo.setCodeSize(ShaderCodeSize * 4).setPCode(ShaderCodePtr);
-    mShaderModule = InDevice->GetHandle().createShaderModule(CreateInfo);
+    mShaderModule = InDevice.get().GetHandle().createShaderModule(CreateInfo);
 }
 
 Shader::~Shader() {
-    if (mDevice.expired()) {
-        LOG_WARNING_CATEGORY(Vulkan, L"Shader::~Shader()时mDevice已经过期");
-        return;
-    }
-    const auto Device = mDevice.lock();
-    Device->GetHandle().destroy(mShaderModule);
+    const auto& Device = mDevice.get();
+    Device.GetHandle().destroy(mShaderModule);
 }
 
 void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage) {

@@ -49,6 +49,10 @@ struct VertexInAttribute
 
 // 输入Spirv文件路径，通过反射获取所有uniform变量
 class Shader {
+protected:
+    struct Protected
+    {};
+
 public:
     /**
      * 将磁盘的Shader文件加载
@@ -56,10 +60,10 @@ public:
      * @param InShaderStage Shader类型
      * @param InDevice Shader所属的管线
      */
-    Shader(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, EShaderStage InShaderStage);
+    Shader(Protected, Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderStage);
 
-    static SharedPtr<Shader> CreateShared(const SharedPtr<LogicalDevice>& InDevice, const Path& InShaderPath, EShaderStage InShaderType) {
-        return MakeShared<Shader>(InDevice, InShaderPath, InShaderType);
+    static SharedPtr<Shader> CreateShared(Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderType) {
+        return MakeShared<Shader>(Protected{}, InDevice, InShaderPath, InShaderType);
     }
 
     ~Shader();
@@ -82,7 +86,7 @@ private:
     Array<UniformDescriptor> mUniformDescriptors;
     Array<VertexInAttribute> mInAttributes;
 
-    WeakPtr<LogicalDevice> mDevice; // 使用此Shader的管线
+    Ref<LogicalDevice> mDevice; // 使用此Shader的管线
 };
 
 RHI_VULKAN_NAMESPACE_END
