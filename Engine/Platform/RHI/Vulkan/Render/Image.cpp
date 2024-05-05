@@ -40,7 +40,7 @@ Image::Image(Protected, Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreat
     vk::MemoryAllocateInfo MemoryAllocateInfo{};
     MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
     MemoryAllocateInfo.setMemoryTypeIndex(
-        InDevice.get()->GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, InCreateInfo.MemoryProperty)
+        InDevice.get()->GetAssociatedPhysicalDevice()->FindMemoryType(MemoryRequirements.memoryTypeBits, InCreateInfo.MemoryProperty)
     );
     mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);

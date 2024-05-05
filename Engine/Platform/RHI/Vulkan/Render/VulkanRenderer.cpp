@@ -44,7 +44,10 @@ void VulkanRenderer::Initialize() {
 void VulkanRenderer::Finalize() {
     if (!IsValid()) return;
     mCommandProducer->Finialize();
-    mGraphicsPipeline->Finalize();
+    // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
+    // 在调用就成了未定义行为，因此加一个if判断
+    // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
+    if (mGraphicsPipeline) mGraphicsPipeline->Finalize();
     mSwapChain->Finialize();
     mLogicalDevice->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", mRendererID);
@@ -56,11 +59,10 @@ bool VulkanRenderer::IsValid() const {
     return mLogicalDevice->IsValid() && mSwapChain->IsValid();
 }
 
-void VulkanRenderer::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, Ref<VulkanRenderer>InRenderer
-) {
+void VulkanRenderer::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, const Ref<VulkanRenderer> InRenderer) {
     // 创建图形管线
     // 寻找深度图像格式
-    mDepthFormat = mLogicalDevice->GetAssociatedPhysicalDevice().FindSupportFormat(
+    mDepthFormat = mLogicalDevice->GetAssociatedPhysicalDevice()->FindSupportFormat(
         {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
         vk::ImageTiling::eOptimal,
         vk::FormatFeatureFlagBits::eDepthStencilAttachment

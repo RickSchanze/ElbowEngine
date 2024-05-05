@@ -58,7 +58,9 @@ public:
         uint32 InMipLevels = 1
     );
 
-    bool       IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
+    bool       IsValid() const override {
+        return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired();
+    }
     vk::Device GetHandle() const { return mLogicalDeviceHandle; }
     SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
     vk::Queue                 GetGraphicsQueue() const { return mGraphicsQueue; }

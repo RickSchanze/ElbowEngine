@@ -75,6 +75,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "C:/VulkanSDK/1.3.280.0/Include")
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
-
-find_package(unofficial-spirv-reflect CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::spirv-reflect)
