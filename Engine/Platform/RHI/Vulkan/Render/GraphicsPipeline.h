@@ -11,6 +11,9 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 
 namespace RHI::Vulkan {
+class Texture;
+}
+namespace RHI::Vulkan {
 class CommandProducer;
 }
 namespace RHI::Vulkan {
@@ -93,6 +96,14 @@ private:
 
     // Renderer拥有此对象
     Ref<VulkanRenderer> mRenderer;
+
+    // 下面所有的东西都应该是材质
+    // TODO: 重构整合材质系统
+    SharedPtr<Texture> mTexture;
+    SharedPtr<ImageView> mTextureView;
+
+    void CreateTextureImage();
+    void CleanTextureImage();
 };
 
 RHI_VULKAN_NAMESPACE_END

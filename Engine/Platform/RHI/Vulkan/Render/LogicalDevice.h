@@ -58,9 +58,20 @@ public:
         uint32 InMipLevels = 1
     );
 
-    bool       IsValid() const override {
-        return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired();
-    }
+    /**
+     * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
+     * @param InSize
+     * @param InUsage
+     * @param InProperties
+     * @param OutBuffer
+     * @param OutBufferMemory
+     */
+    void CreateBuffer(
+        vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
+        vk::DeviceMemory& OutBufferMemory
+    )const;
+
+    bool       IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
     vk::Device GetHandle() const { return mLogicalDeviceHandle; }
     SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
     vk::Queue                 GetGraphicsQueue() const { return mGraphicsQueue; }

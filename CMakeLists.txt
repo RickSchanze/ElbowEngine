@@ -22,7 +22,10 @@ endif ()
 include_directories(${CMAKE_SOURCE_DIR}/Generated)
 add_subdirectory(Engine)
 
-add_executable(ElbowEngine main.cpp)
+add_executable(ElbowEngine main.cpp
+        Engine/Resource/Texture.cpp
+        Engine/Resource/Texture.h
+        Engine/Resource/ResourceCommon.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function)

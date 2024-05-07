@@ -17,16 +17,25 @@ extern Logger gLogger;
 #define STRINGIFY(x) #x
 #define LSTRINGIFY(x) L#x
 #define LOG_INFO(Text, ...) gLogger.Info(L##Text, __VA_ARGS__)
-#define LOG_INFO_CATEGORY(Category, Text, ...) \
-    gLogger.Info(L"[" LSTRINGIFY(Category)  L"] " Text, __VA_ARGS__)
+#define LOG_INFO_CATEGORY(Category, Text, ...) gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_WARNING(Text, ...) gLogger.Warning(L##Text, __VA_ARGS__)
-#define LOG_WARNING_CATEGORY(Category, Text, ...) \
-    gLogger.Warning(L"[" LSTRINGIFY(Category)  L"] " Text, __VA_ARGS__)
+#define LOG_WARNING_CATEGORY(Category, Text, ...) gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_ERROR(Text, ...) gLogger.Error(L##Text, __VA_ARGS__)
-#define LOG_ERROR_CATEGORY(Category, Text, ...) \
-    gLogger.Error(L"[" LSTRINGIFY(Category)  L"] " Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY(Category, Text, ...) gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+
+#ifdef ELBOW_DEBUG
+#    define LOG_DEBUG(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
+#    define LOG_DEBUG_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#    define LOG_TRACE(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
+#    define LOG_TRACE_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#else
+#    define LOG_DEBUG(Text, ...)
+#    define LOG_DEBUG_CATEGORY(Category, Text, ...)
+#    define LOG_TRACE(Text, ...)
+#    define LOG_TRACE_CATEGORY(Category, Text, ...)
+#endif
 
 /** BEGIN IsValid函数族 */
 inline bool IsValid(Object* Obj) {

@@ -11,6 +11,7 @@
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "SwapChain.h"
+#include "vulkan/vulkan.hpp"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -110,10 +111,26 @@ SharedPtr<ImageView> LogicalDevice::CreateImageView(
         .setComponents(vk::ComponentMapping()
                            .setR(vk::ComponentSwizzle::eIdentity)
                            .setG(vk::ComponentSwizzle::eIdentity)
-                .setB(vk::ComponentSwizzle::eIdentity)
-                .setA(vk::ComponentSwizzle::eIdentity)
-        );
+                           .setB(vk::ComponentSwizzle::eIdentity)
+                           .setA(vk::ComponentSwizzle::eIdentity));
     return MakeShared<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo), this);
+}
+
+void LogicalDevice::CreateBuffer(
+    const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage, const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
+    vk::DeviceMemory& OutBufferMemory
+) const {
+    vk::BufferCreateInfo BufferInfo = {};
+    BufferInfo.setSize(InSize).setUsage(InUsage).setSharingMode(vk::SharingMode::eExclusive);
+    OutBuffer                              = mLogicalDeviceHandle.createBuffer(BufferInfo);
+    const vk::MemoryRequirements MemReq    = mLogicalDeviceHandle.getBufferMemoryRequirements(OutBuffer);
+    // 分配内存
+    vk::MemoryAllocateInfo       AllocInfo = {};
+    AllocInfo.setAllocationSize(MemReq.size)
+        .setMemoryTypeIndex(GetAssociatedPhysicalDevice()->FindMemoryType(MemReq.memoryTypeBits, InProperties)
+        );
+    OutBufferMemory = mLogicalDeviceHandle.allocateMemory(AllocInfo);
+    mLogicalDeviceHandle.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 }
 
 RHI_VULKAN_NAMESPACE_END

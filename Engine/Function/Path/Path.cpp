@@ -15,8 +15,7 @@ Path::Path(StringView PathStr) {
         // 去掉最后的'/'或者'\\'
         PathStr.remove_suffix(1);
     }
-    if (sProjectWorkPath == nullptr)
-        throw ProjectPathNotValidException(String{PathStr.begin(), PathStr.end()});
+    if (sProjectWorkPath == nullptr) throw ProjectPathNotValidException(String{PathStr.begin(), PathStr.end()});
     mPath = sProjectWorkPath->mPath / PathStr;
 }
 
@@ -50,15 +49,16 @@ String Path::ToString() const {
     return mPath.generic_wstring();
 }
 
+AnsiString Path::ToAnsiString() const {
+    return StringUtils::ToAnsiString(ToString());
+}
+
 void Path::CreateDirectory() const {
     std::error_code ec;
     create_directories(mPath, ec);
     if (ec) {
-        const auto ErrorMessage = std::format(
-            L"创建目录失败,错误码:{},错误消息:{}",
-            ec.value(),
-            StringUtils::FromAnsiString(ec.message(), EStringEncoding::GBK)
-        );
+        const auto ErrorMessage =
+            std::format(L"创建目录失败,错误码:{},错误消息:{}", ec.value(), StringUtils::FromAnsiString(ec.message(), EStringEncoding::GBK));
         throw PathInvalidException(*this, ErrorMessage);
     }
 }

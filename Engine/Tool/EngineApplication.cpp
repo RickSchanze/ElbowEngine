@@ -7,17 +7,25 @@
 
 #include "EngineApplication.h"
 
-#include "Path/Path.h"
 #include "GLFW/glfw3.h"
+#include "Path/Path.h"
 #include "RHI/Vulkan/Application.h"
-#include "Window/GLFWWindow.h"
 #include "RHI/Vulkan/Render/VulkanRenderer.h"
+#include "Window/GLFWWindow.h"
 
 TOOL_NAMESPACE_BEGIN
 
 EngineApplication::EngineApplication(const String& ProjectPath, const String& WindowTitle) {
     Path::SetProjectWorkPath(ProjectPath);
     mWindowTitle = WindowTitle;
+    mInstance    = this;
+}
+
+EngineApplication& EngineApplication::Instance() {
+    if (!mInstance) {
+        throw Exception(L"EngineApplication未初始化");
+    }
+    return *mInstance;
 }
 
 void EngineApplication::Initialize() {
@@ -34,8 +42,8 @@ void EngineApplication::Initialize() {
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
 
-    mRenderer = RHI::Vulkan::VulkanRenderer::CreateUnique(mRenderApplication->GetVulkanInstance());
-    mRenderApplication->AddRenderer(mRenderer);
+    mMainRenderer = RHI::Vulkan::VulkanRenderer::CreateUnique(mRenderApplication->GetVulkanInstance());
+    mRenderApplication->AddRenderer(mMainRenderer);
 }
 
 void EngineApplication::Finitialize() const {

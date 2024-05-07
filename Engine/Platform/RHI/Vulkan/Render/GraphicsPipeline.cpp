@@ -157,6 +157,10 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanRenderer> InRenderer, const Graphic
     CreateDepthBuffer();
     // 创建交换链帧缓冲区
     CreateFramebuffers();
+
+    // TODO: 重构并整个至材质系统
+    CreateTextureImage();
+
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
@@ -169,6 +173,9 @@ void GraphicsPipeline::Finalize() {
     const auto& Device = mRenderer.get().GetLogicalDevice();
     const auto  Handle = Device->GetHandle();
     if (Device) {
+        // TODO: 重构并整合至材质系统
+        // 清理纹理
+        CleanTextureImage();
         // 交换链缓冲区销毁
         CleanFramebuffers();
         // 深度图像销毁
@@ -213,7 +220,7 @@ void GraphicsPipeline::CreateMsaaColorBuffer() {
     ImageInfo.Format      = Renderer.get().GetSwapChainImageFormat();
     ImageInfo.Usage       = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
     ImageInfo.SampleCount = mMsaaSamples;
-    mMsaaColorImage       = Image::CreateShared(MakeRef(Device), ImageInfo);
+    mMsaaColorImage       = Image::CreateShared(*Device, ImageInfo);
     mMsaaColorImageView   = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
     mRenderer.get().GetCommandProducer()->TrainsitionImageLayout(
         mMsaaColorImage->GetHandle(), ImageInfo.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1
@@ -228,7 +235,7 @@ void GraphicsPipeline::CreateDepthBuffer() {
     ImageInfo.Width  = Renderer.GetSwapChainExtent().width;
     ImageInfo.Format = DepthFormat;
     ImageInfo.Usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-    mDepthImage      = Image::CreateShared(MakeRef(Renderer.GetLogicalDevice()), ImageInfo);
+    mDepthImage      = Image::CreateShared(*Renderer.GetLogicalDevice(), ImageInfo);
     mDepthImageView  = Renderer.GetLogicalDevice()->CreateImageView(*mDepthImage, DepthFormat, vk::ImageAspectFlagBits::eDepth);
     Renderer.GetCommandProducer()->TrainsitionImageLayout(
         mDepthImage->GetHandle(), DepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1
@@ -261,6 +268,15 @@ void GraphicsPipeline::CleanFramebuffers() {
         Device->GetHandle().destroyFramebuffer(Framebuffer);
     }
     mFramebuffers.clear();
+}
+
+void GraphicsPipeline::CreateTextureImage(){
+    const auto Texture = Resource::Texture::CreateShared(L"Textures/viking_room.png");
+    mTexture = Texture::Create(*mRenderer.get().GetLogicalDevice(), *mRenderer.get().GetCommandProducer(), Texture);
+}
+
+void GraphicsPipeline::CleanTextureImage(){
+    mTexture->Finialize();
 }
 
 RHI_VULKAN_NAMESPACE_END

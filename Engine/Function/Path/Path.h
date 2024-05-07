@@ -38,13 +38,15 @@ public:
      * 路径不存在时不算无效
      * @return
      */
-    [[nodiscard]] bool IsExist() const;
+    bool IsExist() const;
 
     /**
      * 将Path转换为绝对路径字符串
      * @return
      */
-    [[nodiscard]] String ToString() const;
+    String ToString() const;
+
+    AnsiString ToAnsiString() const;
 
     /**
      * 以此Path为路径创建一个目录

@@ -26,10 +26,14 @@ public:
     void CreateCommandPool();
     void CleanCommandPool();
 
-    // 转换图像布局
+
     void TrainsitionImageLayout(
         vk::Image InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, uint32 InMipLevel = 1
     ) const;
+
+    void CopyBufferToImage(vk::Buffer InBuffer, vk::Image InImage, uint32 InWidth, uint32 InHeight) const;
+
+    bool GenerateMipmaps(vk::Image InImage, vk::Format InImageFormat, int32 InTexWidth, int32 InTexHeight, uint32 InMipLevel) const;
 
     void Finialize();
 

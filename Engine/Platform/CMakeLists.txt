@@ -68,7 +68,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${SPIRV_CROSS_LIB})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${SPIRV_REFLECT_LIB})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function Engine::Resource)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)

@@ -6,10 +6,14 @@
  */
 
 #pragma once
+#include "../../../../Resource/Texture.h"
 #include "ImageView.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
+namespace RHI::Vulkan {
+class CommandProducer;
+}
 RHI_VULKAN_NAMESPACE_BEGIN
 
 class ImageBase {
@@ -38,19 +42,22 @@ public:
 
 struct ImageCreateInfo
 {
-    vk::Format              Format;
-    vk::ImageUsageFlags     Usage;
-    uint32                  Width;
-    uint32                  Height;
-    uint32                  Depth          = 1;
+    vk::Format              Format{};
+    vk::ImageUsageFlags     Usage{};
+    int32                   Width          = 0;
+    int32                   Height         = 0;
+    int32                   Depth          = 1;
     uint32                  MipLevels      = 1;
     vk::ImageTiling         Tiling         = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits SampleCount    = vk::SampleCountFlagBits::e1;
     vk::ImageType           ImageType      = vk::ImageType::e2D;
     vk::MemoryPropertyFlags MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
+
+             ImageCreateInfo() = default;
+    explicit ImageCreateInfo(const vk::ImageCreateInfo& InVkImageInfo);
 };
 
-class Image final : public ImageBase {
+class Image : public ImageBase {
 protected:
     struct Protected
     {};
@@ -58,9 +65,9 @@ protected:
 public:
     typedef ImageBase Super;
 
-    explicit Image(Protected, Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo);
+    explicit Image(Protected, Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
 
-    static SharedPtr<Image> CreateShared(Ref<UniquePtr<LogicalDevice>> InDevice, const ImageCreateInfo& InCreateInfo);
+    static SharedPtr<Image> CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
 
     ~Image() override;
 
@@ -68,10 +75,31 @@ public:
 
     void Finialize();
 
-private:
-    Ref<UniquePtr<LogicalDevice>> mDevice;
+    uint32 GetWidth() const { return mCreateInfo.Width; }
+    uint32 GetHeight() const { return mCreateInfo.Height; }
+    uint32 GetDepth() const { return mCreateInfo.Depth; }
+
+protected:
+    void CreateImage();
+
+protected:
+    explicit Image(const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {}
+
+    Ref<LogicalDevice> mDevice;
 
     vk::DeviceMemory mImageMemory = nullptr;
+    ImageCreateInfo  mCreateInfo{};
+};
+
+class Texture : public Image {
+public:
+    Texture(
+        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
+    );
+
+    static SharedPtr<Texture> Create(
+        Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
+    );
 };
 
 RHI_VULKAN_NAMESPACE_END

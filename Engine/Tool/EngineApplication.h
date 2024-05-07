@@ -21,22 +21,28 @@ TOOL_NAMESPACE_BEGIN
 class EngineApplication {
 public:
     // TODO: 自定义设定启动应用的名字、窗口大小、版本等
-    EngineApplication() = default;
+    // EngineApplication() = default;
     EngineApplication(const String& ProjectPath, const String& WindowTitle);
 
     ~EngineApplication() { Finitialize(); }
+
+    static EngineApplication& Instance();
 
     void Initialize();
     void Finitialize() const;
 
     void Run();
 
-    [[nodiscard]] bool IsValid() const { return mRenderApplication && mRenderApplication->IsValid(); }
+    bool IsValid() const { return mRenderApplication && mRenderApplication->IsValid(); }
+
+    RHI::Vulkan::VulkanRenderer& GetMainRenderer() const { return *mMainRenderer; }
 
 private:
     UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
-    SharedPtr<RHI::Vulkan::VulkanRenderer>    mRenderer;
+    SharedPtr<RHI::Vulkan::VulkanRenderer>    mMainRenderer;
     UniquePtr<Platform::Window::GlfwWindow>   mWindow;
+
+    static inline EngineApplication* mInstance = nullptr;
 
     String mWindowTitle;
 };
