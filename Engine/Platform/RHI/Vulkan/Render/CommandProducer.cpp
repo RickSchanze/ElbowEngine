@@ -184,6 +184,14 @@ void CommandProducer::Finialize() {
     CleanCommandPool();
 }
 
+void CommandProducer::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer InDstBuffer, const uint64_t InSize) const {
+    const auto     CommandBuffer = BeginSingleTimeCommands();
+    vk::BufferCopy CopyRegion{};
+    CopyRegion.size = InSize;
+    CommandBuffer.copyBuffer(InSrcBuffer, InDstBuffer, {CopyRegion});
+    EndSingleTimeCommands(CommandBuffer);
+}
+
 vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
     vk::CommandBufferAllocateInfo AllocateInfo{};
     AllocateInfo.setCommandPool(mPool);

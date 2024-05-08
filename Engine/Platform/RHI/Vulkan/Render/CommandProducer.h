@@ -37,6 +37,8 @@ public:
 
     void Finialize();
 
+    void CopyBuffer(vk::Buffer InSrcBuffer, vk::Buffer InDstBuffer, uint64_t InSize) const;
+
 protected:
     vk::CommandBuffer BeginSingleTimeCommands() const;
     void              EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const;

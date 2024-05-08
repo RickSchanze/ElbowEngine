@@ -7,11 +7,12 @@
 
 #include "GraphicsPipeline.h"
 
-#include "../VulkanContext.h"
 #include "CommandProducer.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
+#include "Model.h"
 #include "RenderPass.h"
+#include "RHI/Vulkan/VulkanContext.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
 
@@ -159,7 +160,10 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
     CreateFramebuffers();
 
     // TODO: 重构并整个至材质系统
-    CreateTextureImage();
+    CreateTextureImageAndView();
+
+    // TODO: 模型系统解耦
+    LoadModel();
 
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
@@ -173,9 +177,11 @@ void GraphicsPipeline::Finalize() {
     const auto& Device = mContext.get().GetLogicalDevice();
     const auto  Handle = Device->GetHandle();
     if (Device) {
+        // TODO: 模型系统解耦
+        CleanModel();
         // TODO: 重构并整合至材质系统
         // 清理纹理
-        CleanTextureImage();
+        CleanTextureImageAndView();
         // 交换链缓冲区销毁
         CleanFramebuffers();
         // 深度图像销毁
@@ -270,13 +276,95 @@ void GraphicsPipeline::CleanFramebuffers() {
     mFramebuffers.clear();
 }
 
-void GraphicsPipeline::CreateTextureImage(){
-    const auto Texture = Resource::Texture::CreateShared(L"Textures/viking_room.png");
-    mTexture = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
+void GraphicsPipeline::LoadModel() {
+    mModel            = MakeShared<Resource::Model>(L"Models/viking_room.obj");
+    // 顶点缓冲
+    auto BufferCreate = [this](vk::DeviceSize InSize, const void* SrcData, vk::Buffer& OutBuffer, vk::DeviceMemory& OutBufferMemory) {
+        vk::Buffer       StagingBuffer;
+        vk::DeviceMemory StagingBufferMemory;
+        auto&            Context = mContext.get();
+        auto&            Device  = Context.GetLogicalDevice();
+        Device->CreateBuffer(
+            InSize,
+            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+            StagingBuffer,
+            StagingBufferMemory
+        );
+        // 清理暂存缓冲
+        // 填充顶点缓冲
+        void* Data;
+        // 最后一个参数返回内存映射后的地址
+        // 倒数第二个参数必须是0
+        Device->MapMemory(StagingBufferMemory, InSize, 0, &Data);
+        // 复制内存数据
+        memcpy(Data, SrcData, InSize);
+        // 结束内存映射
+        Device->UnmapMemory(StagingBufferMemory);
+        // 保证内存可见的一致性的第二种方式是调用vkFlushMappedMemoryRanges函数
+        // 读取映射的内存数据前调用vkInvalidateMappedMemoryRanges
+        Device->CreateBuffer(
+            InSize,
+            vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::MemoryPropertyFlagBits::eDeviceLocal,
+            OutBuffer,
+            OutBufferMemory
+        );
+        Context.GetCommandProducer()->CopyBuffer(StagingBuffer, mVertexBuffer, InSize);
+        Device->GetHandle().destroyBuffer(StagingBuffer);
+        Device->GetHandle().freeMemory(StagingBufferMemory);
+    };
+    const vk::DeviceSize VertexBufferSize = sizeof(mModel->GetVertices()[0]) * mModel->GetVertices().size();
+    BufferCreate(VertexBufferSize, mModel->GetVertices().data(), mVertexBuffer, mVertexBufferMemory);
+    const vk::DeviceSize IndexBufferSize = sizeof(mModel->GetIndices()[0]) * mModel->GetIndices().size();
+    BufferCreate(IndexBufferSize, mModel->GetIndices().data(), mIndexBuffer, mIndexBufferMemory);
 }
 
-void GraphicsPipeline::CleanTextureImage(){
+void GraphicsPipeline::CleanModel() {
+    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mVertexBuffer);
+    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mVertexBufferMemory);
+    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mIndexBuffer);
+    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mIndexBufferMemory);
+}
+
+void GraphicsPipeline::CreateTextureImageAndView() {
+    const auto Texture = Resource::Texture::CreateShared(L"Textures/viking_room.png");
+    mTexture           = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
+    mTextureView       = mContext.get().GetLogicalDevice()->CreateImageView(
+        *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
+    );
+}
+
+void GraphicsPipeline::CleanTextureImageAndView() {
+    mTextureView->Finialize();
     mTexture->Finialize();
+}
+
+void GraphicsPipeline::CreateTextureSampler() {
+    vk::SamplerCreateInfo SamplerInfo   = {};
+    SamplerInfo.magFilter               = vk::Filter::eLinear;
+    SamplerInfo.minFilter               = vk::Filter::eLinear;
+    SamplerInfo.addressModeU            = vk::SamplerAddressMode::eRepeat;
+    SamplerInfo.addressModeV            = vk::SamplerAddressMode::eRepeat;
+    SamplerInfo.addressModeW            = vk::SamplerAddressMode::eRepeat;
+    SamplerInfo.anisotropyEnable        = true;
+    SamplerInfo.maxAnisotropy           = 16;
+    SamplerInfo.borderColor             = vk::BorderColor::eIntOpaqueBlack;
+    // false则纹理坐标为(0,1)
+    SamplerInfo.unnormalizedCoordinates = false;
+    // 与一个特定值比较，通常阴影贴图会用到
+    SamplerInfo.compareEnable           = false;
+    SamplerInfo.compareOp = vk::CompareOp::eAlways;
+    // Mipmap
+    SamplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    SamplerInfo.mipLodBias = 0;
+    SamplerInfo.minLod = 0;
+    SamplerInfo.maxLod = 0;
+    mTextureSampler = mContext.get().GetLogicalDevice()->GetHandle().createSampler(SamplerInfo);
+}
+
+void GraphicsPipeline::CleanTextureSampler(){
+    mContext.get().GetLogicalDevice()->GetHandle().destroy(mTextureSampler);
 }
 
 RHI_VULKAN_NAMESPACE_END

@@ -7,32 +7,27 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "glm/glm.hpp"
 #include "Path/Path.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
+
+namespace Resource {
+class Model;
+}
+
 namespace RHI::Vulkan {
 class Texture;
-}
-namespace RHI::Vulkan {
 class CommandProducer;
-}
-namespace RHI::Vulkan {
 class VulkanContext;
-}
-namespace RHI::Vulkan {
 class ImageView;
 class Image;
 class IRenderPassProducer;
-}   // namespace RHI::Vulkan
-namespace RHI::Vulkan {
 class RenderPass;
-}
-namespace RHI::Vulkan {
 class LogicalDevice;
-}
-namespace RHI::Vulkan {
 class ShaderProgram;
-}
+}   // namespace RHI::Vulkan
+
 RHI_VULKAN_NAMESPACE_BEGIN
 class Shader;
 
@@ -99,11 +94,27 @@ private:
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
-    SharedPtr<Texture> mTexture;
+    SharedPtr<Texture>   mTexture;
+    uint32               mTextureMipLevel;
     SharedPtr<ImageView> mTextureView;
+    vk::Sampler          mTextureSampler;
 
-    void CreateTextureImage();
-    void CleanTextureImage();
+    // TODO: 模型系统
+    SharedPtr<Resource::Model> mModel;
+    vk::Buffer                 mVertexBuffer;
+    vk::DeviceMemory           mVertexBufferMemory;
+    vk::Buffer                 mIndexBuffer;
+    vk::DeviceMemory           mIndexBufferMemory;
+
+    void LoadModel();
+
+    void CleanModel();
+
+    void CreateTextureImageAndView();
+    void CleanTextureImageAndView();
+
+    void CreateTextureSampler();
+    void CleanTextureSampler();
 };
 
 RHI_VULKAN_NAMESPACE_END

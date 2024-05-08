@@ -39,8 +39,8 @@ void LogicalDevice::Finialize() {
 
 UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
     const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
-    const auto SwapChainSupport = AssociatedPhysicalDevice.QuerySwapChainSupport();
-    const auto Surface          = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
+    const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
+    const auto Surface                  = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
 
     const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
@@ -120,10 +120,19 @@ void LogicalDevice::CreateBuffer(
     // 分配内存
     vk::MemoryAllocateInfo       AllocInfo = {};
     AllocInfo.setAllocationSize(MemReq.size)
-        .setMemoryTypeIndex(GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties)
-        );
+        .setMemoryTypeIndex(GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties));
     OutBufferMemory = mLogicalDeviceHandle.allocateMemory(AllocInfo);
     mLogicalDeviceHandle.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
+}
+
+vk::Result LogicalDevice::MapMemory(
+    const vk::DeviceMemory InMemory, const vk::DeviceSize InSize, const vk::DeviceSize InOffset, void** OutData
+) const {
+    return mLogicalDeviceHandle.mapMemory(InMemory, InOffset, InSize, vk::MemoryMapFlags(), OutData);
+}
+
+void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const{
+    mLogicalDeviceHandle.unmapMemory(InMemory);
 }
 
 RHI_VULKAN_NAMESPACE_END

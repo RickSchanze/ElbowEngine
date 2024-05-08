@@ -97,9 +97,13 @@ public:
         Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
     );
 
-    static SharedPtr<Texture> Create(
-        Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
-    );
+    static SharedPtr<Texture>
+    Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture);
+
+    int32 GetMipLevel() const { return mMipLevel; }
+
+protected:
+    int32 mMipLevel;
 };
 
 RHI_VULKAN_NAMESPACE_END

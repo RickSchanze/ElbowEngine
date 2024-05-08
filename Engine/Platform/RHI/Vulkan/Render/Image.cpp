@@ -105,7 +105,7 @@ Texture::Texture(
     }
 
     const vk::DeviceSize ImageSize = InTexture->GetWidth() * InTexture->GetHeight() * 4;
-    const int32 MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(InTexture->GetWidth(), InTexture->GetHeight())))) + 1;
+    mMipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(InTexture->GetWidth(), InTexture->GetHeight())))) + 1;
 
     mDevice.get().CreateBuffer(
         ImageSize,
@@ -125,7 +125,7 @@ Texture::Texture(
     Device.unmapMemory(StagingBufferMemory);
     mCreateInfo.Width     = InTexture->GetWidth();
     mCreateInfo.Height    = InTexture->GetHeight();
-    mCreateInfo.MipLevels = MipLevel;
+    mCreateInfo.MipLevels = mMipLevel;
     mCreateInfo.Format    = vk::Format::eR8G8B8A8Unorm;
     // 这里设为Src是为了生成mipmap
     mCreateInfo.Usage     = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
@@ -136,12 +136,12 @@ Texture::Texture(
     // 赋值暂存缓冲区数据到纹理图像
     // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
     InCommandProducer.TrainsitionImageLayout(
-        mImageHandle, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, MipLevel
+        mImageHandle, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mMipLevel
     );
     // 2. 复制缓冲区到图像
     InCommandProducer.CopyBufferToImage(StagingBuffer, mImageHandle, mCreateInfo.Width, mCreateInfo.Height);
     // 3. 生成mipmap
-    if (!InCommandProducer.GenerateMipmaps(mImageHandle, mCreateInfo.Format, mCreateInfo.Width, mCreateInfo.Height, MipLevel)) {
+    if (!InCommandProducer.GenerateMipmaps(mImageHandle, mCreateInfo.Format, mCreateInfo.Width, mCreateInfo.Height, mMipLevel)) {
         // 无法生成mipmap就直接传给shader
         InCommandProducer.TrainsitionImageLayout(
             mImageHandle, mCreateInfo.Format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal

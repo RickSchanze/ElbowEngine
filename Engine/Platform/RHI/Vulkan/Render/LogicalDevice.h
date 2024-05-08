@@ -69,6 +69,9 @@ public:
         vk::DeviceMemory& OutBufferMemory
     ) const;
 
+    vk::Result MapMemory(vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData) const;
+    void       UnmapMemory(vk::DeviceMemory InMemory) const;
+
     bool            IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle); }
     vk::Device      GetHandle() const { return mLogicalDeviceHandle; }
     PhysicalDevice& GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice; }

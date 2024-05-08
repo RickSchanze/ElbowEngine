@@ -20,5 +20,11 @@
   }, {
     "name" : "stb",
     "version>=" : "2023-04-11#1"
+  }, {
+    "name" : "glm",
+    "version>=" : "1.0.0#1"
+  }, {
+    "name" : "tinyobjloader",
+    "version>=" : "2.0.0-rc9"
   } ]
 }

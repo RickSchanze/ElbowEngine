@@ -41,7 +41,6 @@ public:
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
     explicit VulkanContext(Protected, const SharedPtr<Instance>& InVulkanInstance);
 
-public:
     void Initialize();
     void Finalize();
 
