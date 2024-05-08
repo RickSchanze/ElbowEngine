@@ -23,13 +23,13 @@ struct QueueFamilyIndices
     [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 };
 
-class PhysicalDevice : public std::enable_shared_from_this<PhysicalDevice> {
+class PhysicalDevice {
 public:
     static inline Array<const char*> sDeviceRequiredExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
-    static inline Array<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
+    static Array<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
 
     struct SwapChainSupportDetails
     {
@@ -51,7 +51,7 @@ public:
      * @param PickFunc 用来确定一个设备是否合适
      * @return
      */
-    static SharedPtr<PhysicalDevice>
+    static UniquePtr<PhysicalDevice>
     PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
 
     /**

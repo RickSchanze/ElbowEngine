@@ -86,7 +86,7 @@ void Image::CreateImage() {
     vk::MemoryAllocateInfo MemoryAllocateInfo{};
     MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
     MemoryAllocateInfo.setMemoryTypeIndex(
-        mDevice.get().GetAssociatedPhysicalDevice()->FindMemoryType(MemoryRequirements.memoryTypeBits, mCreateInfo.MemoryProperty)
+        mDevice.get().GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, mCreateInfo.MemoryProperty)
     );
     mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);

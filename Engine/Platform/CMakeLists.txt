@@ -32,12 +32,10 @@ add_library(Platform
         Window/WindowCommon.h
         RHI/Vulkan/Render/LogicalDevice.cpp
         RHI/Vulkan/Render/LogicalDevice.h
-        RHI/Vulkan/VulkanQueue.cpp
-        RHI/Vulkan/VulkanQueue.h
         RHI/Vulkan/Render/SwapChain.cpp
         RHI/Vulkan/Render/SwapChain.h
-        RHI/Vulkan/Render/VulkanRenderer.cpp
-        RHI/Vulkan/Render/VulkanRenderer.h
+        RHI/Vulkan/VulkanContext.h
+        RHI/Vulkan/VulkanContext.cpp
         RHI/Vulkan/Render/Image.cpp
         RHI/Vulkan/Render/Image.h
         RHI/Vulkan/Render/RenderPass.cpp

@@ -8,8 +8,8 @@
 #pragma once
 #include "CoreDef.h"
 #include "Instance.h"
-#include "Render/VulkanRenderer.h"
 #include "VulkanCommon.h"
+#include "VulkanContext.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -32,15 +32,14 @@ public:
 
     void Tick();
 
-    void AddRenderer(const SharedPtr<VulkanRenderer>& InRenderer) { mRenderers.push_back(InRenderer); }
+    [[nodiscard]] const String&       GetAppName() const noexcept { return mAppName; }
+    [[nodiscard]] const String&       GetEngineName() const noexcept { return mEngineName; }
+    [[nodiscard]] uint32_t            GetAppVersion() const noexcept { return mAppVersion; }
+    [[nodiscard]] uint32_t            GetEngineVersion() const noexcept { return mEngineVersion; }
+    [[nodiscard]] uint32_t            GetApiVersion() const noexcept { return mApiVersion; }
+    [[nodiscard]] SharedPtr<Instance> GetVulkanInstance() noexcept { return mVulkanInstance; }
+    [[nodiscard]] bool                IsValid() const noexcept { return mVulkanInstance->IsValid(); }
 
-    [[nodiscard]] const String& GetAppName() const noexcept { return mAppName; }
-    [[nodiscard]] const String& GetEngineName() const noexcept { return mEngineName; }
-    [[nodiscard]] uint32_t      GetAppVersion() const noexcept { return mAppVersion; }
-    [[nodiscard]] uint32_t      GetEngineVersion() const noexcept { return mEngineVersion; }
-    [[nodiscard]] uint32_t      GetApiVersion() const noexcept { return mApiVersion; }
-    [[nodiscard]] Instance&     GetVulkanInstance() noexcept { return mVulkanInstance; }
-    [[nodiscard]] bool          IsValid() const noexcept { return mVulkanInstance.IsValid(); }
 
 protected:
     // 初始化Instance
@@ -53,11 +52,10 @@ private:
     uint32_t mEngineVersion = VK_MAKE_VERSION(1, 0, 0);
     uint32_t mApiVersion    = VK_API_VERSION_1_3;
 
-    Instance mVulkanInstance;
+    SharedPtr<Instance>    mVulkanInstance;
+    UniquePtr<SurfaceBase> mSurface;
 
     Array<const char*> Extensions;
-
-    Array<SharedPtr<VulkanRenderer>> mRenderers;
 };
 
 RHI_VULKAN_NAMESPACE_END

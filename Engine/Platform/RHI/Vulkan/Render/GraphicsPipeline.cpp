@@ -7,19 +7,19 @@
 
 #include "GraphicsPipeline.h"
 
+#include "../VulkanContext.h"
 #include "CommandProducer.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RenderPass.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
-#include "VulkanRenderer.h"
 
 #include <ranges>
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-GraphicsPipeline::GraphicsPipeline(Ref<VulkanRenderer> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) : mRenderer(InRenderer) {
+GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) : mContext(InRenderer) {
     // 创建RenderPass
     if (!InCreateInfo.RenderPassProducer) {
         throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
@@ -164,13 +164,13 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanRenderer> InRenderer, const Graphic
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanRenderer> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
 void GraphicsPipeline::Finalize() {
     if (!IsValid()) return;
-    const auto& Device = mRenderer.get().GetLogicalDevice();
+    const auto& Device = mContext.get().GetLogicalDevice();
     const auto  Handle = Device->GetHandle();
     if (Device) {
         // TODO: 重构并整合至材质系统
@@ -207,11 +207,11 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     }
     vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
     LayoutInfo.setBindings(UniformBindings);
-    mDescriptorSetLayout = mRenderer.get().GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+    mDescriptorSetLayout = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
 void GraphicsPipeline::CreateMsaaColorBuffer() {
-    const auto&     Renderer        = mRenderer;
+    const auto&     Renderer        = mContext;
     auto&           Device          = Renderer.get().GetLogicalDevice();
     const auto      SwapchainExtent = Renderer.get().GetSwapChainExtent();
     ImageCreateInfo ImageInfo{};
@@ -222,14 +222,14 @@ void GraphicsPipeline::CreateMsaaColorBuffer() {
     ImageInfo.SampleCount = mMsaaSamples;
     mMsaaColorImage       = Image::CreateShared(*Device, ImageInfo);
     mMsaaColorImageView   = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
-    mRenderer.get().GetCommandProducer()->TrainsitionImageLayout(
+    mContext.get().GetCommandProducer()->TrainsitionImageLayout(
         mMsaaColorImage->GetHandle(), ImageInfo.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1
     );
 }
 
 void GraphicsPipeline::CreateDepthBuffer() {
-    const auto      DepthFormat = mRenderer.get().GetDepthFormat();
-    auto&           Renderer    = static_cast<VulkanRenderer&>(mRenderer);
+    const auto      DepthFormat = mContext.get().GetDepthFormat();
+    auto&           Renderer    = static_cast<VulkanContext&>(mContext);
     ImageCreateInfo ImageInfo{};
     ImageInfo.Height = Renderer.GetSwapChainExtent().height;
     ImageInfo.Width  = Renderer.GetSwapChainExtent().width;
@@ -243,27 +243,27 @@ void GraphicsPipeline::CreateDepthBuffer() {
 }
 
 void GraphicsPipeline::CreateFramebuffers() {
-    const auto& Renderer = static_cast<VulkanRenderer&>(mRenderer);
-    mFramebuffers.resize(Renderer.GetSwapChainImageCount());
+    auto& Context = static_cast<VulkanContext&>(mContext);
+    mFramebuffers.resize(Context.GetSwapChainImageCount());
     for (size_t i = 0; i < mFramebuffers.size(); i++) {
         Array Attachments = {
             mMsaaColorImageView->GetHandle(),
             mDepthImageView->GetHandle(),
-            Renderer.GetSwapChainImageViews()[i]->GetHandle(),
+            Context.GetSwapChainImageViews()[i]->GetHandle(),
         };
         vk::FramebufferCreateInfo FramebufferInfo = {};
         FramebufferInfo   //
             .setRenderPass(mRenderPass->GetHandle())
             .setAttachments(Attachments)
-            .setWidth(Renderer.GetSwapChainExtent().width)
-            .setHeight(Renderer.GetSwapChainExtent().height)
+            .setWidth(Context.GetSwapChainExtent().width)
+            .setHeight(Context.GetSwapChainExtent().height)
             .setLayers(1);
-        mFramebuffers[i] = Renderer.GetLogicalDevice()->GetHandle().createFramebuffer(FramebufferInfo);
+        mFramebuffers[i] = Context.GetLogicalDevice()->GetHandle().createFramebuffer(FramebufferInfo);
     }
 }
 
 void GraphicsPipeline::CleanFramebuffers() {
-    const auto& Device = mRenderer.get().GetLogicalDevice();
+    const auto& Device = mContext.get().GetLogicalDevice();
     for (const auto& Framebuffer: mFramebuffers) {
         Device->GetHandle().destroyFramebuffer(Framebuffer);
     }
@@ -272,7 +272,7 @@ void GraphicsPipeline::CleanFramebuffers() {
 
 void GraphicsPipeline::CreateTextureImage(){
     const auto Texture = Resource::Texture::CreateShared(L"Textures/viking_room.png");
-    mTexture = Texture::Create(*mRenderer.get().GetLogicalDevice(), *mRenderer.get().GetCommandProducer(), Texture);
+    mTexture = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
 }
 
 void GraphicsPipeline::CleanTextureImage(){

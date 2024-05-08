@@ -17,7 +17,7 @@ namespace RHI::Vulkan {
 class CommandProducer;
 }
 namespace RHI::Vulkan {
-class VulkanRenderer;
+class VulkanContext;
 }
 namespace RHI::Vulkan {
 class ImageView;
@@ -53,9 +53,9 @@ public:
      * @param InRenderer 逻辑设备
      * @param InCreateInfo 创建信息
      */
-    GraphicsPipeline(Ref<VulkanRenderer> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo);
+    GraphicsPipeline(Ref<VulkanContext> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo);
 
-    static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanRenderer> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
+    static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
     void Finalize();
 
@@ -95,7 +95,7 @@ private:
     UniquePtr<RenderPass> mRenderPass;
 
     // Renderer拥有此对象
-    Ref<VulkanRenderer> mRenderer;
+    Ref<VulkanContext> mContext;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统

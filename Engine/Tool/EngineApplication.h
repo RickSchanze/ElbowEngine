@@ -6,9 +6,9 @@
  */
 
 #pragma once
+#include "../Platform/RHI/Vulkan/VulkanContext.h"
 #include "CoreDef.h"
 #include "RHI/Vulkan/Application.h"
-#include "RHI/Vulkan/Render/VulkanRenderer.h"
 #include "ToolCommon.h"
 #include "Window/GLFWWindow.h"
 
@@ -33,13 +33,13 @@ public:
 
     void Run();
 
-    bool IsValid() const { return mRenderApplication && mRenderApplication->IsValid(); }
+    bool IsValid()const;
 
-    RHI::Vulkan::VulkanRenderer& GetMainRenderer() const { return *mMainRenderer; }
+    RHI::Vulkan::VulkanContext& GetMainRenderer() const { return *mMainContext; }
 
 private:
     UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
-    SharedPtr<RHI::Vulkan::VulkanRenderer>    mMainRenderer;
+    SharedPtr<RHI::Vulkan::VulkanContext>     mMainContext;
     UniquePtr<Platform::Window::GlfwWindow>   mWindow;
 
     static inline EngineApplication* mInstance = nullptr;

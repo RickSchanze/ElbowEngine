@@ -12,9 +12,9 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 
-SharedPtr<PhysicalDevice>
+UniquePtr<PhysicalDevice>
 PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc) {
-    auto        Rtn     = MakeShared<PhysicalDevice>(InAttachedInstance);
+    auto        Rtn     = MakeUnique<PhysicalDevice>(InAttachedInstance);
     const Array Devices = InAttachedInstance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices) {
         PhysicalDevice TempDevice(InAttachedInstance);
@@ -118,18 +118,9 @@ uint32 PhysicalDevice::FindMemoryType(const uint32 InTypeFilter, const vk::Memor
     throw VulkanException(L"PhysicalDevice::FindMemoryType: 未找到合适的内存类型");
 }
 
-
-
-SharedPtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceShared() {
-    const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
-    const auto ptr                 = weak_from_this();
-    return LogicalDevice::CreateShared(LogicalDeviceHandle, ptr);
-}
-
 UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique() {
     const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
-    const auto ptr                 = weak_from_this();
-    return LogicalDevice::CreateUnique(LogicalDeviceHandle, ptr);
+    return LogicalDevice::CreateUnique(LogicalDeviceHandle, *this);
 }
 
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {

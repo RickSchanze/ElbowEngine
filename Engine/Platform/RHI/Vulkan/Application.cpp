@@ -13,7 +13,7 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 VulkanApplication::~VulkanApplication() {
-    if (mVulkanInstance.IsValid()) {
+    if (mVulkanInstance->IsValid()) {
         Finalize();
     }
 }
@@ -49,28 +49,20 @@ VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& In
 }
 
 VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept {
-    mVulkanInstance.SetSurface(Move(InSurface));
+    mSurface = Move(InSurface);
     return *this;
 }
 
 void VulkanApplication::Initialize() {
     CreateInstance();
-    mVulkanInstance.Initialize();
+    mVulkanInstance->Initialize();
 }
 
 void VulkanApplication::Finalize() {
-    for (const auto& Renderer: mRenderers) {
-        Renderer->Finalize();
-    }
-    mRenderers.clear();
-    mVulkanInstance.Finialize();
+    mVulkanInstance->Finialize();
 }
 
 void VulkanApplication::Tick() {
-    // TODO: 按需渲染
-    for (const auto& Render: mRenderers) {
-        Render->Draw();
-    }
 }
 
 void VulkanApplication::CreateInstance() {
@@ -94,7 +86,9 @@ void VulkanApplication::CreateInstance() {
     InstanceCreateInfo.setPApplicationInfo(&AppInfo)
         .setEnabledExtensionCount(Extensions.size())
         .setPpEnabledExtensionNames(Extensions.data());
-    mVulkanInstance.SetInstanceCreateInfo(InstanceCreateInfo);
+    mVulkanInstance = MakeShared<Instance>();
+    mVulkanInstance->SetSurface(Move(mSurface));
+    mVulkanInstance->SetInstanceCreateInfo(InstanceCreateInfo);
 }
 
 RHI_VULKAN_NAMESPACE_END

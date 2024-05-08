@@ -20,15 +20,11 @@ LogicalDevice::~LogicalDevice() {
     Finialize();
 }
 
-SharedPtr<LogicalDevice> LogicalDevice::CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
-    return MakeShared<LogicalDevice>(ResourcePrivate{}, InDevice, InAssociatedPhysicalDevice);
-}
-
-UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) {
+UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) {
     return MakeUnique<LogicalDevice>(ResourcePrivate{}, InDevice, InAssociatedPhysicalDevice);
 }
 
-LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice) :
+LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
     mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
 
     Initialize();
@@ -42,12 +38,9 @@ void LogicalDevice::Finialize() {
 }
 
 UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
-    if (mAssociatedPhysicalDevice.expired())
-        throw VulkanException(L"LogicalDevice::CreateSwapChain: 无法创建交换链: mAssociatedPhysicalDevice失效");
-    const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.lock();
-
-    const auto SwapChainSupport = AssociatedPhysicalDevice->QuerySwapChainSupport();
-    const auto Surface          = AssociatedPhysicalDevice->GetAttachedInstance()->GetSurfaceHandle();
+    const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
+    const auto SwapChainSupport = AssociatedPhysicalDevice.QuerySwapChainSupport();
+    const auto Surface          = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
 
     const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
@@ -78,7 +71,7 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                   Indicies            = AssociatedPhysicalDevice->FindQueueFamilyIndices();
+    const auto                   Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
     const StaticArray<uint32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),
@@ -127,7 +120,7 @@ void LogicalDevice::CreateBuffer(
     // 分配内存
     vk::MemoryAllocateInfo       AllocInfo = {};
     AllocInfo.setAllocationSize(MemReq.size)
-        .setMemoryTypeIndex(GetAssociatedPhysicalDevice()->FindMemoryType(MemReq.memoryTypeBits, InProperties)
+        .setMemoryTypeIndex(GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties)
         );
     OutBufferMemory = mLogicalDeviceHandle.allocateMemory(AllocInfo);
     mLogicalDeviceHandle.bindBufferMemory(OutBuffer, OutBufferMemory, 0);

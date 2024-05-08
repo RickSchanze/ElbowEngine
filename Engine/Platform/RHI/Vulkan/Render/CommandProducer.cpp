@@ -26,7 +26,7 @@ void CommandProducer::CreateCommandPool() {
     const auto& Device = mDevice.get();
 
     // 获取队列族索引
-    const auto QueueFamilyIndices = Device->GetAssociatedPhysicalDevice()->FindQueueFamilyIndices();
+    const auto QueueFamilyIndices = Device->GetAssociatedPhysicalDevice().FindQueueFamilyIndices();
 
     // 命令池创建
     vk::CommandPoolCreateInfo CommandPoolCreateInfo{};

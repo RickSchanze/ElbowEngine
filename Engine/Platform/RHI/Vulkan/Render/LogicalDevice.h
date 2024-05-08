@@ -25,13 +25,11 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class LogicalDevice final : public IRHIResource {
 public:
-     LogicalDevice() = default;
     ~LogicalDevice() override;
 
-    static SharedPtr<LogicalDevice> CreateShared(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
-    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-    explicit LogicalDevice(ResourcePrivate, vk::Device InDevice, const WeakPtr<PhysicalDevice>& InAssociatedPhysicalDevice);
+    explicit LogicalDevice(ResourcePrivate, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
     void Initialize() override;
     void Finialize() override;
@@ -69,17 +67,17 @@ public:
     void CreateBuffer(
         vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
         vk::DeviceMemory& OutBufferMemory
-    )const;
+    ) const;
 
-    bool       IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle) && !mAssociatedPhysicalDevice.expired(); }
-    vk::Device GetHandle() const { return mLogicalDeviceHandle; }
-    SharedPtr<PhysicalDevice> GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice.lock(); }
-    vk::Queue                 GetGraphicsQueue() const { return mGraphicsQueue; }
-    vk::Queue                 GetPresentQueue() const { return mPresentQueue; }
+    bool            IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle); }
+    vk::Device      GetHandle() const { return mLogicalDeviceHandle; }
+    PhysicalDevice& GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice; }
+    vk::Queue       GetGraphicsQueue() const { return mGraphicsQueue; }
+    vk::Queue       GetPresentQueue() const { return mPresentQueue; }
 
 private:
-    vk::Device              mLogicalDeviceHandle = VK_NULL_HANDLE;
-    WeakPtr<PhysicalDevice> mAssociatedPhysicalDevice;
+    vk::Device          mLogicalDeviceHandle = VK_NULL_HANDLE;
+    Ref<PhysicalDevice> mAssociatedPhysicalDevice;
 
     vk::Queue mGraphicsQueue;
     vk::Queue mPresentQueue;

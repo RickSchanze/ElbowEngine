@@ -7,10 +7,10 @@
 
 #include "EngineApplication.h"
 
+#include "../Platform/RHI/Vulkan/VulkanContext.h"
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Application.h"
-#include "RHI/Vulkan/Render/VulkanRenderer.h"
 #include "Window/GLFWWindow.h"
 
 TOOL_NAMESPACE_BEGIN
@@ -29,25 +29,23 @@ EngineApplication& EngineApplication::Instance() {
 }
 
 void EngineApplication::Initialize() {
-    if (IsValid()) return;
     // 创建并初始化GlfwWindow
     mWindow = MakeUnique<Platform::Window::GlfwWindow>(mWindowTitle, 1920, 1080);
     mWindow->Initialize();
     // 创建并初始化VulkanApplication
-    mRenderApplication = MakeUnique<RHI::Vulkan::VulkanApplication>();
     // 设置初始化RenderApplication需要的值
-    auto Surface       = mWindow->GetWindowSurface();
-    Surface->SetInstanceHandle(&mRenderApplication->GetVulkanInstance());
+    mRenderApplication = MakeUnique<RHI::Vulkan::VulkanApplication>();
+    auto Surface = mWindow->GetWindowSurface();
     mRenderApplication->SetWindowSurface(Move(Surface));
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
 
-    mMainRenderer = RHI::Vulkan::VulkanRenderer::CreateUnique(mRenderApplication->GetVulkanInstance());
-    mRenderApplication->AddRenderer(mMainRenderer);
+    mMainContext = RHI::Vulkan::VulkanContext::CreateUnique(mRenderApplication->GetVulkanInstance());
 }
 
 void EngineApplication::Finitialize() const {
     if (!IsValid()) return;
+    if (mMainContext->IsValid()) mMainContext->Finalize();
     if (mRenderApplication->IsValid()) mRenderApplication->Finalize();
     if (mWindow->IsValid()) mWindow->Finalize();
 }
@@ -57,6 +55,13 @@ void EngineApplication::Run() {
         mRenderApplication->Tick();
         mWindow->Tick();
     }
+}
+
+bool EngineApplication::IsValid() const {
+    if (!(mRenderApplication && mRenderApplication->IsValid())) return false;
+    if (!(mMainContext && mMainContext->IsValid())) return false;
+    if (!(mWindow && mWindow->IsValid())) return false;
+    return true;
 }
 
 TOOL_NAMESPACE_END

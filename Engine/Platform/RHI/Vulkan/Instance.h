@@ -59,15 +59,13 @@ public:
     // clang-format on
 
     /**
-     * 创建一个逻辑设备
+     * 选择一个合适的PhysicalDevice返回
      * @return
      */
-    SharedPtr<LogicalDevice> CreateLogicalDeviceShared() const;
-    UniquePtr<LogicalDevice> CreateLogicalDeviceUnique() const;
+    UniquePtr<PhysicalDevice> PickPhysicalDevice();
 
 protected:
-    void InitializeSurface() const;
-    void PickPhysicalDevice();
+    void InitializeSurface();
 
 private:
     vk::Instance               mVulkanInstanceHandle;
@@ -75,8 +73,6 @@ private:
     UniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
     UniquePtr<SurfaceBase>     mSurface;
-    // 物理设备
-    SharedPtr<PhysicalDevice>  mPhysicalDevice;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic  mDynamicDispatcher;
     // 实例创建信息
