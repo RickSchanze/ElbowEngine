@@ -192,6 +192,10 @@ void CommandProducer::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer 
     EndSingleTimeCommands(CommandBuffer);
 }
 
+Array<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo &InAllocInfo) const{
+    return mDevice.get()->GetHandle().allocateCommandBuffers(InAllocInfo);
+}
+
 vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
     vk::CommandBufferAllocateInfo AllocateInfo{};
     AllocateInfo.setCommandPool(mPool);

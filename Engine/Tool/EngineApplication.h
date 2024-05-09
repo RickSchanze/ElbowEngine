@@ -35,11 +35,8 @@ public:
 
     bool IsValid()const;
 
-    RHI::Vulkan::VulkanContext& GetMainRenderer() const { return *mMainContext; }
-
 private:
     UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
-    SharedPtr<RHI::Vulkan::VulkanContext>     mMainContext;
     UniquePtr<Platform::Window::GlfwWindow>   mWindow;
 
     static inline EngineApplication* mInstance = nullptr;

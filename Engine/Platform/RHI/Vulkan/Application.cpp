@@ -56,13 +56,16 @@ VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> In
 void VulkanApplication::Initialize() {
     CreateInstance();
     mVulkanInstance->Initialize();
+    mContext = VulkanContext::CreateUnique(mVulkanInstance);
 }
 
 void VulkanApplication::Finalize() {
+    mContext->Finalize();
     mVulkanInstance->Finialize();
 }
 
 void VulkanApplication::Tick() {
+    mContext->Draw();
 }
 
 void VulkanApplication::CreateInstance() {

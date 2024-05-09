@@ -113,7 +113,7 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
             vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
             vk::ColorComponentFlagBits::eA
         )
-        .setBlendEnable(true);
+        .setBlendEnable(false);
 
     vk::PipelineColorBlendStateCreateInfo ColorBlendInfo = {};
     ColorBlendInfo   //
@@ -153,7 +153,9 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
     }
 
     // 创建多重采样颜色缓冲区
-    CreateMsaaColorBuffer();
+    if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
+        CreateMsaaColorBuffer();
+    }
     // 创建深度缓冲区
     CreateDepthBuffer();
     // 创建交换链帧缓冲区
@@ -161,9 +163,12 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
 
     // TODO: 重构并整个至材质系统
     CreateTextureImageAndView();
-
+    CreateUniformBuffers();
+    CreateDescriptorPool();
+    CreateDescriptotSets();
     // TODO: 模型系统解耦
     LoadModel();
+    CreateCommandBuffers();
 
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
@@ -172,15 +177,41 @@ SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> In
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
+void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) {
+    static auto               StartTime   = std::chrono::high_resolution_clock::now();
+    const auto                CurrentTime = std::chrono::high_resolution_clock::now();
+    const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+    StaticArray<glm::mat4, 3> UBO;
+    UBO[0] = glm::rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[1] = glm::lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[2] = glm::perspective(
+        glm::radians(45.f),
+        static_cast<float>(mContext.get().GetSwapChainExtent().width) / static_cast<float>(mContext.get().GetSwapChainExtent().height),
+        0.1f,
+        10.f
+    );
+    UBO[2][1][1] *= -1;
+    void* Data;
+    mContext.get().GetLogicalDevice()->MapMemory(mUniformBuffersMemory[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data);
+    memcpy(Data, UBO.data(), 3 * sizeof(glm::mat4));
+    mContext.get().GetLogicalDevice()->UnmapMemory(mUniformBuffersMemory[InCurrentImage]);
+}
+
+vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const uint32 InCurrentImage) const {
+    return mCommandBuffers[InCurrentImage];
+}
+
 void GraphicsPipeline::Finalize() {
     if (!IsValid()) return;
     const auto& Device = mContext.get().GetLogicalDevice();
     const auto  Handle = Device->GetHandle();
     if (Device) {
+        CleanDescriptorPool();
         // TODO: 模型系统解耦
         CleanModel();
         // TODO: 重构并整合至材质系统
         // 清理纹理
+        CleanUniformBuffers();
         CleanTextureImageAndView();
         // 交换链缓冲区销毁
         CleanFramebuffers();
@@ -188,8 +219,10 @@ void GraphicsPipeline::Finalize() {
         mDepthImageView->Finialize();
         mDepthImage->Finialize();
         // MSAA缓冲销毁
-        mMsaaColorImageView->Finialize();
-        mMsaaColorImage->Finialize();
+        if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
+            mMsaaColorImageView->Finialize();
+            mMsaaColorImage->Finialize();
+        }
         Handle.destroyPipeline(mPipeline);
         Handle.destroyPipelineLayout(mPipelineLayout);
         Handle.destroyDescriptorSetLayout(mDescriptorSetLayout);
@@ -199,6 +232,41 @@ void GraphicsPipeline::Finalize() {
     mPipelineLayout      = nullptr;
     mDescriptorSetLayout = nullptr;
     LOG_INFO_CATEGORY(Vulkan, L"图形管线销毁完成");
+}
+
+void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer) {
+    vk::CommandBufferBeginInfo BeginInfo = {};
+    BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+    InBuffer.begin(BeginInfo);
+}
+
+void GraphicsPipeline::EndRecordCommand(const vk::CommandBuffer InBuffer) {
+    InBuffer.end();
+}
+
+void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam) {
+    vk::RenderPassBeginInfo RenderPassInfo = {};
+    RenderPassInfo.setRenderPass(mRenderPass->GetHandle())
+        .setFramebuffer(InParam.FrameBuffer)
+        .setRenderArea({{0, 0}, mContext.get().GetSwapChainExtent()});
+    StaticArray<vk::ClearValue, 2> ClearValues = {};
+    ClearValues[0].color                       = vk::ClearColorValue{1.f, 0.f, 0.f, 1.f};
+    ClearValues[1].depthStencil                = vk::ClearDepthStencilValue{1.f, 0};
+    RenderPassInfo.setClearValues(ClearValues);
+    InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
+    InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
+    // 使用顶点缓冲需纳入
+    vk::Buffer     VertexBuffers = {mVertexBuffer};
+    vk::DeviceSize Offsets       = {0};
+    InBuffer.bindVertexBuffers(0, VertexBuffers, Offsets);
+    InBuffer.bindIndexBuffer(mIndexBuffer, 0, vk::IndexType::eUint32);
+    // 绑定描述符集
+    Array Set = {InParam.DescriptorSet};
+    InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
+
+    InBuffer.drawIndexed(static_cast<uint32>(mModel->GetIndices().size()), 1, 0, 0, 0);
+
+    InBuffer.endRenderPass();
 }
 
 void GraphicsPipeline::CreateDescriptionSetLayout() {
@@ -252,11 +320,19 @@ void GraphicsPipeline::CreateFramebuffers() {
     auto& Context = static_cast<VulkanContext&>(mContext);
     mFramebuffers.resize(Context.GetSwapChainImageCount());
     for (size_t i = 0; i < mFramebuffers.size(); i++) {
-        Array Attachments = {
-            mMsaaColorImageView->GetHandle(),
-            mDepthImageView->GetHandle(),
-            Context.GetSwapChainImageViews()[i]->GetHandle(),
-        };
+        Array<vk::ImageView> Attachments;
+        if (mMsaaSamples == vk::SampleCountFlagBits::e1) {
+            Attachments = {
+                Context.GetSwapChainImageViews()[i]->GetHandle(),
+                mDepthImageView->GetHandle(),
+            };
+        } else {
+            Attachments = {
+                mMsaaColorImageView->GetHandle(),
+                mDepthImageView->GetHandle(),
+                Context.GetSwapChainImageViews()[i]->GetHandle(),
+            };
+        }
         vk::FramebufferCreateInfo FramebufferInfo = {};
         FramebufferInfo   //
             .setRenderPass(mRenderPass->GetHandle())
@@ -277,47 +353,57 @@ void GraphicsPipeline::CleanFramebuffers() {
 }
 
 void GraphicsPipeline::LoadModel() {
-    mModel            = MakeShared<Resource::Model>(L"Models/viking_room.obj");
+    mModel                                = MakeShared<Resource::Model>(L"Models/viking_room.obj");
     // 顶点缓冲
-    auto BufferCreate = [this](vk::DeviceSize InSize, const void* SrcData, vk::Buffer& OutBuffer, vk::DeviceMemory& OutBufferMemory) {
-        vk::Buffer       StagingBuffer;
-        vk::DeviceMemory StagingBufferMemory;
-        auto&            Context = mContext.get();
-        auto&            Device  = Context.GetLogicalDevice();
-        Device->CreateBuffer(
-            InSize,
-            vk::BufferUsageFlagBits::eTransferSrc,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            StagingBuffer,
-            StagingBufferMemory
-        );
-        // 清理暂存缓冲
-        // 填充顶点缓冲
-        void* Data;
-        // 最后一个参数返回内存映射后的地址
-        // 倒数第二个参数必须是0
-        Device->MapMemory(StagingBufferMemory, InSize, 0, &Data);
-        // 复制内存数据
-        memcpy(Data, SrcData, InSize);
-        // 结束内存映射
-        Device->UnmapMemory(StagingBufferMemory);
-        // 保证内存可见的一致性的第二种方式是调用vkFlushMappedMemoryRanges函数
-        // 读取映射的内存数据前调用vkInvalidateMappedMemoryRanges
-        Device->CreateBuffer(
-            InSize,
-            vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::MemoryPropertyFlagBits::eDeviceLocal,
-            OutBuffer,
-            OutBufferMemory
-        );
-        Context.GetCommandProducer()->CopyBuffer(StagingBuffer, mVertexBuffer, InSize);
-        Device->GetHandle().destroyBuffer(StagingBuffer);
-        Device->GetHandle().freeMemory(StagingBufferMemory);
-    };
     const vk::DeviceSize VertexBufferSize = sizeof(mModel->GetVertices()[0]) * mModel->GetVertices().size();
-    BufferCreate(VertexBufferSize, mModel->GetVertices().data(), mVertexBuffer, mVertexBufferMemory);
+    vk::Buffer           VertexStagingBuffer;
+    vk::DeviceMemory     VertexStagingBufferMemory;
+    mContext.get().GetLogicalDevice()->CreateBuffer(
+        VertexBufferSize,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        VertexStagingBuffer,
+        VertexStagingBufferMemory
+    );
+    void* Data;
+    mContext.get().GetLogicalDevice()->MapMemory(VertexStagingBufferMemory, VertexBufferSize, 0, &Data);
+    memcpy(Data, mModel->GetVertices().data(), static_cast<size_t>(VertexBufferSize));
+    mContext.get().GetLogicalDevice()->UnmapMemory(VertexStagingBufferMemory);
+    mContext.get().GetLogicalDevice()->CreateBuffer(
+        VertexBufferSize,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        mVertexBuffer,
+        mVertexBufferMemory
+    );
+    mContext.get().GetCommandProducer()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
+    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(VertexStagingBuffer);
+    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
+
+    // 索引缓冲
     const vk::DeviceSize IndexBufferSize = sizeof(mModel->GetIndices()[0]) * mModel->GetIndices().size();
-    BufferCreate(IndexBufferSize, mModel->GetIndices().data(), mIndexBuffer, mIndexBufferMemory);
+    vk::Buffer           IndexStagingBuffer;
+    vk::DeviceMemory     IndexStagingBufferMemory;
+    mContext.get().GetLogicalDevice()->CreateBuffer(
+        IndexBufferSize,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        IndexStagingBuffer,
+        IndexStagingBufferMemory
+    );
+    mContext.get().GetLogicalDevice()->MapMemory(IndexStagingBufferMemory, IndexBufferSize, 0, &Data);
+    memcpy(Data, mModel->GetIndices().data(), static_cast<size_t>(IndexBufferSize));
+    mContext.get().GetLogicalDevice()->UnmapMemory(IndexStagingBufferMemory);
+    mContext.get().GetLogicalDevice()->CreateBuffer(
+        IndexBufferSize,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        mIndexBuffer,
+        mIndexBufferMemory
+    );
+    mContext.get().GetCommandProducer()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
+    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(IndexStagingBuffer);
+    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
 }
 
 void GraphicsPipeline::CleanModel() {
@@ -333,11 +419,13 @@ void GraphicsPipeline::CreateTextureImageAndView() {
     mTextureView       = mContext.get().GetLogicalDevice()->CreateImageView(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
     );
+    CreateTextureSampler();
 }
 
 void GraphicsPipeline::CleanTextureImageAndView() {
     mTextureView->Finialize();
     mTexture->Finialize();
+    CleanTextureSampler();
 }
 
 void GraphicsPipeline::CreateTextureSampler() {
@@ -354,17 +442,117 @@ void GraphicsPipeline::CreateTextureSampler() {
     SamplerInfo.unnormalizedCoordinates = false;
     // 与一个特定值比较，通常阴影贴图会用到
     SamplerInfo.compareEnable           = false;
-    SamplerInfo.compareOp = vk::CompareOp::eAlways;
+    SamplerInfo.compareOp               = vk::CompareOp::eAlways;
     // Mipmap
-    SamplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
-    SamplerInfo.mipLodBias = 0;
-    SamplerInfo.minLod = 0;
-    SamplerInfo.maxLod = 0;
-    mTextureSampler = mContext.get().GetLogicalDevice()->GetHandle().createSampler(SamplerInfo);
+    SamplerInfo.mipmapMode              = vk::SamplerMipmapMode::eLinear;
+    SamplerInfo.mipLodBias              = 0;
+    SamplerInfo.minLod                  = 0;
+    SamplerInfo.maxLod                  = 0;
+    mTextureSampler                     = mContext.get().GetLogicalDevice()->GetHandle().createSampler(SamplerInfo);
 }
 
-void GraphicsPipeline::CleanTextureSampler(){
+void GraphicsPipeline::CleanTextureSampler() {
     mContext.get().GetLogicalDevice()->GetHandle().destroy(mTextureSampler);
 }
+
+void GraphicsPipeline::CreateUniformBuffers() {
+    vk::DeviceSize BufferSize = 0;
+    for (const auto& [Key, Value]: mShaderProg->GetUniforms()) {
+        BufferSize += Value.Size;
+    }
+    mUniformBuffers.resize(mContext.get().GetSwapChainImageCount());
+    mUniformBuffersMemory.resize(mContext.get().GetSwapChainImageCount());
+    for (size_t i = 0; i < mContext.get().GetSwapChainImageCount(); i++) {
+        mContext.get().GetLogicalDevice()->CreateBuffer(
+            BufferSize,
+            vk::BufferUsageFlagBits::eUniformBuffer,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+            mUniformBuffers[i],
+            mUniformBuffersMemory[i]
+        );
+    }
+}
+void GraphicsPipeline::CleanUniformBuffers() {
+    for (size_t i = 0; i < mContext.get().GetSwapChainImageCount(); i++) {
+        mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mUniformBuffers[i]);
+        mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mUniformBuffersMemory[i]);
+    }
+}
+
+void GraphicsPipeline::CreateDescriptorPool() {
+    StaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
+    // Uniform Object
+    PoolSizes[0].type                                = vk::DescriptorType::eUniformBuffer;
+    PoolSizes[0].descriptorCount                     = mContext.get().GetSwapChainImageCount();
+
+    // 纹理采样器
+    PoolSizes[1].type            = vk::DescriptorType::eCombinedImageSampler;
+    PoolSizes[1].descriptorCount = mContext.get().GetSwapChainImageCount();
+
+    vk::DescriptorPoolCreateInfo PoolInfo = {};
+    PoolInfo.setPoolSizes(PoolSizes).setMaxSets(mContext.get().GetSwapChainImageCount());
+    mDescriptorPool = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorPool(PoolInfo);
+}
+
+void GraphicsPipeline::CleanDescriptorPool() {
+    mContext.get().GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
+}
+
+void GraphicsPipeline::CreateDescriptotSets() {
+    Array<vk::DescriptorSetLayout> Layouts(mContext.get().GetSwapChainImageCount(), mDescriptorSetLayout);
+    vk::DescriptorSetAllocateInfo  AllocInfo = {};
+    AllocInfo.setDescriptorPool(mDescriptorPool).setSetLayouts(Layouts);
+    mDescriptorSets.resize(mContext.get().GetSwapChainImageCount());
+    // 描述符池对象销毁时会自动清除描述符集
+    mDescriptorSets = mContext.get().GetLogicalDevice()->GetHandle().allocateDescriptorSets(AllocInfo);
+    for (size_t i = 0; i < mDescriptorSets.size(); i++) {
+        vk::DescriptorBufferInfo BufferInfo = {};
+        BufferInfo.setBuffer(mUniformBuffers[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
+        vk::DescriptorImageInfo ImageInfo = {};
+        ImageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+            .setImageView(mTextureView->GetHandle())
+            .setSampler(mTextureSampler);
+
+        StaticArray<vk::WriteDescriptorSet, 2> DescriptorWrites = {};
+
+        vk::WriteDescriptorSet DescriptorWrite = {};
+        DescriptorWrite.setDstSet(mDescriptorSets[i])
+            .setDstBinding(0)
+            .setDstArrayElement(0)
+            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            .setDescriptorCount(1)
+            .setPBufferInfo(&BufferInfo);
+        DescriptorWrites[0]                 = DescriptorWrite;
+        DescriptorWrites[1].dstSet          = mDescriptorSets[i];
+        DescriptorWrites[1].dstBinding      = 1;
+        DescriptorWrites[1].dstArrayElement = 0;
+        DescriptorWrites[1].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
+        DescriptorWrites[1].descriptorCount = 1;
+        DescriptorWrites[1].pImageInfo      = &ImageInfo;
+        mContext.get().GetLogicalDevice()->GetHandle().updateDescriptorSets(DescriptorWrites, nullptr);
+    }
+}
+
+void GraphicsPipeline::CreateCommandBuffers() {
+    vk::CommandBufferAllocateInfo AllocInfo = {};
+    AllocInfo.setCommandPool(mContext.get().GetCommandProducer()->GetCommandPool())
+        .setLevel(vk::CommandBufferLevel::ePrimary)
+        .setCommandBufferCount(mContext.get().GetSwapChainImageCount());
+
+    mCommandBuffers = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
+
+    for (size_t i = 0; i < mCommandBuffers.size(); i++) {
+        auto CommandBuffer = mCommandBuffers[i];
+        BeginRecordCommand(CommandBuffer);
+        {
+            CommandRecordingParam Param;
+            Param.FrameBuffer = mFramebuffers[i];
+            Param.DescriptorSet = mDescriptorSets[i];
+            RecordCommand(CommandBuffer, Param);
+        }
+        EndRecordCommand(CommandBuffer);
+    }
+}
+
 
 RHI_VULKAN_NAMESPACE_END

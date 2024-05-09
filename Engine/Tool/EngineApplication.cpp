@@ -39,13 +39,10 @@ void EngineApplication::Initialize() {
     mRenderApplication->SetWindowSurface(Move(Surface));
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
-
-    mMainContext = RHI::Vulkan::VulkanContext::CreateUnique(mRenderApplication->GetVulkanInstance());
 }
 
 void EngineApplication::Finitialize() const {
     if (!IsValid()) return;
-    if (mMainContext->IsValid()) mMainContext->Finalize();
     if (mRenderApplication->IsValid()) mRenderApplication->Finalize();
     if (mWindow->IsValid()) mWindow->Finalize();
 }
@@ -59,7 +56,6 @@ void EngineApplication::Run() {
 
 bool EngineApplication::IsValid() const {
     if (!(mRenderApplication && mRenderApplication->IsValid())) return false;
-    if (!(mMainContext && mMainContext->IsValid())) return false;
     if (!(mWindow && mWindow->IsValid())) return false;
     return true;
 }

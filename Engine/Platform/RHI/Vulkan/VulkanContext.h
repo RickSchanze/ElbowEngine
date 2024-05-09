@@ -48,6 +48,9 @@ public:
 
     bool IsValid() const;
 
+    // 重建交换链
+    void RebuildSwapChain();
+
     vk::Format                   GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
     vk::Extent2D                 GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
     uint32                       GetSwapChainImageCount() const { return mSwapChainImageCount; }
@@ -69,8 +72,14 @@ protected:
     // 初始化VulkanInstance
     void CreateInstance();
 
+    void CreateSyncObjecs();
+    void CleanSyncObjects();
+
 private:
     int32 mSwapChainImageCount = 3;
+
+    int32 mMaxFramesInFlight = 2;
+    int   mCurrentFrame      = 0;
 
     vk::Format mDepthFormat = {};
 
@@ -86,6 +95,10 @@ private:
     UniquePtr<LogicalDevice>   mLogicalDevice;
     UniquePtr<PhysicalDevice>  mPhysicalDevice;
     SharedPtr<Instance>        mVulkanInstance;
+
+    Array<vk::Semaphore> mImageAvailableSemaphores;
+    Array<vk::Semaphore> mImageRenderFinishedSemaphores;
+    Array<vk::Fence>     mInFlightFences;
 };
 
 RHI_VULKAN_NAMESPACE_END

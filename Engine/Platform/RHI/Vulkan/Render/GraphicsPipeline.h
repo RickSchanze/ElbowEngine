@@ -52,11 +52,25 @@ public:
 
     static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
+    void UpdateUniformBuffer(uint32 InCurrentImage);
+    vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage)const;
+
     void Finalize();
 
     bool IsValid() const { return mPipeline && mPipelineLayout && mDescriptorSetLayout; }
 
 protected:
+    void BeginRecordCommand(vk::CommandBuffer InBuffer);
+    void EndRecordCommand(vk::CommandBuffer InBuffer);
+
+    struct CommandRecordingParam
+    {
+        vk::Framebuffer   FrameBuffer;
+        vk::DescriptorSet DescriptorSet;
+    };
+
+    virtual void RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam);
+
     // 设置Uniform变量
     void CreateDescriptionSetLayout();
     // 创建多重采样需要的颜色缓冲区
@@ -68,8 +82,6 @@ protected:
     void CleanFramebuffers();
 
 private:
-    SharedPtr<ShaderProgram> mShaderProg;
-
     vk::PipelineLayout      mPipelineLayout;
     vk::Pipeline            mPipeline;
     vk::DescriptorSetLayout mDescriptorSetLayout;
@@ -87,6 +99,9 @@ private:
     // 3.交换链帧缓冲
     Array<vk::Framebuffer> mFramebuffers;
 
+    // 4.命令缓冲
+    Array<vk::CommandBuffer> mCommandBuffers;
+
     UniquePtr<RenderPass> mRenderPass;
 
     // Renderer拥有此对象
@@ -94,10 +109,15 @@ private:
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
-    SharedPtr<Texture>   mTexture;
-    uint32               mTextureMipLevel;
-    SharedPtr<ImageView> mTextureView;
-    vk::Sampler          mTextureSampler;
+    SharedPtr<Texture>       mTexture;
+    uint32                   mTextureMipLevel;
+    SharedPtr<ImageView>     mTextureView;
+    vk::Sampler              mTextureSampler;
+    SharedPtr<ShaderProgram> mShaderProg;
+    Array<vk::Buffer>        mUniformBuffers;
+    Array<vk::DeviceMemory>  mUniformBuffersMemory;
+    Array<vk::DescriptorSet> mDescriptorSets;
+
 
     // TODO: 模型系统
     SharedPtr<Resource::Model> mModel;
@@ -105,6 +125,7 @@ private:
     vk::DeviceMemory           mVertexBufferMemory;
     vk::Buffer                 mIndexBuffer;
     vk::DeviceMemory           mIndexBufferMemory;
+    vk::DescriptorPool         mDescriptorPool;
 
     void LoadModel();
 
@@ -115,6 +136,16 @@ private:
 
     void CreateTextureSampler();
     void CleanTextureSampler();
+
+    void CreateUniformBuffers();
+    void CleanUniformBuffers();
+
+    void CreateDescriptorPool();
+    void CleanDescriptorPool();
+
+    void CreateDescriptotSets();
+
+    void CreateCommandBuffers();
 };
 
 RHI_VULKAN_NAMESPACE_END

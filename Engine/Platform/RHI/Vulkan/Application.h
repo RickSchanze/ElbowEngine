@@ -40,7 +40,6 @@ public:
     [[nodiscard]] SharedPtr<Instance> GetVulkanInstance() noexcept { return mVulkanInstance; }
     [[nodiscard]] bool                IsValid() const noexcept { return mVulkanInstance->IsValid(); }
 
-
 protected:
     // 初始化Instance
     void CreateInstance();
@@ -52,8 +51,9 @@ private:
     uint32_t mEngineVersion = VK_MAKE_VERSION(1, 0, 0);
     uint32_t mApiVersion    = VK_API_VERSION_1_3;
 
-    SharedPtr<Instance>    mVulkanInstance;
-    UniquePtr<SurfaceBase> mSurface;
+    SharedPtr<Instance>      mVulkanInstance;
+    UniquePtr<SurfaceBase>   mSurface;
+    SharedPtr<VulkanContext> mContext;
 
     Array<const char*> Extensions;
 };

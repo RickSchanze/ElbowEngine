@@ -55,8 +55,7 @@ vk::RenderPassCreateInfo DefaultRenderPassProducer::GetRenderPassCreateInfo() {
     Subpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
-        .setColorAttachmentCount(1)
-        .setPColorAttachments(&mColorAttachmentRef)
+        .setColorAttachments(mColorAttachmentRef)
         // 指定引用的深度附着
         .setPDepthStencilAttachment(&mDepthAttachmentRef);
     if (mSamplesCount != vk::SampleCountFlagBits::e1) {
@@ -74,7 +73,10 @@ vk::RenderPassCreateInfo DefaultRenderPassProducer::GetRenderPassCreateInfo() {
         .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)                                        // 指定等待的管线阶段
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);   // 指定子进行的操作类型
 
-    mAttachmets   = {ColorAttachment, DepthAttachment, ColorAttachmentResolve};
+    mAttachmets = {ColorAttachment, DepthAttachment};
+    if (mSamplesCount != vk::SampleCountFlagBits::e1) {
+        mAttachmets.push_back(ColorAttachmentResolve);
+    }
     mSubpasses    = {Subpass};
     mDependencies = {Dependency};
 
@@ -101,8 +103,7 @@ UniquePtr<RenderPass> RenderPass::CreateUnique(Ref<LogicalDevice> InDevice, cons
     return MakeUnique<RenderPass>(ResourcePrivate{}, CreateInfo, InDevice);
 }
 
-RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const Ref<LogicalDevice> InDevice) :
-    mDevice(InDevice) {
+RenderPass::RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {
     mRenderPassCreateInfo = CreateInfo;
     Initialize();
 }

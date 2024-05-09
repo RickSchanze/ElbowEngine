@@ -26,6 +26,7 @@ public:
     void CreateCommandPool();
     void CleanCommandPool();
 
+    vk::CommandPool GetCommandPool() const { return mPool; }
 
     void TrainsitionImageLayout(
         vk::Image InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, uint32 InMipLevel = 1
@@ -38,6 +39,8 @@ public:
     void Finialize();
 
     void CopyBuffer(vk::Buffer InSrcBuffer, vk::Buffer InDstBuffer, uint64_t InSize) const;
+
+    Array<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const;
 
 protected:
     vk::CommandBuffer BeginSingleTimeCommands() const;

@@ -139,6 +139,7 @@ vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {
     // 指定要使用的设备特性
     vk::PhysicalDeviceFeatures DeviceFeatures{};
     DeviceFeatures.setSamplerAnisotropy(true);   // 开启采样器各向异性过滤支持
+    DeviceFeatures.setGeometryShader(true);
 
     // 创建逻辑设备
     vk::DeviceCreateInfo DeviceInfo{};
