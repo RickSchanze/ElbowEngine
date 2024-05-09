@@ -24,6 +24,8 @@ add_library(${PROJECT_NAME}
         CoreGlobal.h
         CoreGlobal.cpp
         CoreTypeTraits.h
+        Math/MathTypes.cpp
+        Math/MathTypes.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

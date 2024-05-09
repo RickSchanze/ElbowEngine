@@ -6,8 +6,8 @@
  */
 
 #include "GLFWWindow.h"
-#include "vulkan/vk_enum_string_helper.h"
 #include "Utils/StringUtils.h"
+#include "vulkan/vk_enum_string_helper.h"
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
@@ -38,11 +38,16 @@ Array<const char*> GlfwWindow::GetRequiredExtensions() const {
     return Extensions;
 }
 
+Size2D GlfwWindow::GetWindowSize() {
+    glfwGetFramebufferSize(mWindowHandle, &mWidth, &mHeight);
+    return Size2D(mWidth, mHeight);
+}
+
 void GlfwWindow::Initialize() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
-    mWindowHandle = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
+    mWindowHandle          = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
 }
 
 void GlfwWindow::Finalize() {

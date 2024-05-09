@@ -11,6 +11,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
+#include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
@@ -35,6 +36,12 @@ public:
     UniquePtr<GLFWWindowSurface>     GetWindowSurface();
     [[nodiscard]] Array<const char*> GetRequiredExtensions() const;
     [[nodiscard]] GLFWwindow*        GetGLFWWindowHandle() const { return mWindowHandle; }
+
+    Size2D GetWindowSize();
+
+    void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const {
+        glfwSetFramebufferSizeCallback(mWindowHandle, Callback);
+    }
 
     void Initialize();
     void Finalize();

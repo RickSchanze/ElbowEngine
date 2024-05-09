@@ -8,6 +8,7 @@
 #pragma once
 #include "../Platform/RHI/Vulkan/VulkanContext.h"
 #include "CoreDef.h"
+#include "Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
 #include "Window/GLFWWindow.h"
@@ -20,6 +21,7 @@ TOOL_NAMESPACE_BEGIN
 
 class EngineApplication {
 public:
+    typedef EngineApplication This;
     // TODO: 自定义设定启动应用的名字、窗口大小、版本等
     // EngineApplication() = default;
     EngineApplication(const String& ProjectPath, const String& WindowTitle);
@@ -28,14 +30,25 @@ public:
 
     static EngineApplication& Instance();
 
+    Size2D GetWindowSize() const;
+
     void Initialize();
     void Finitialize() const;
 
     void Run();
 
-    bool IsValid()const;
+    bool IsValid() const;
+
+    static EngineApplication& Get() { return *mInstance; }
+
+    bool bFrameBufferResized = true;
 
 private:
+    static void FrameBufferResizeCallback(GLFWwindow* Window, int Width, int Height) {
+        auto& App = Get();
+        App.bFrameBufferResized = true;
+    }
+
     UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
     UniquePtr<Platform::Window::GlfwWindow>   mWindow;
 

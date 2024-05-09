@@ -7,6 +7,7 @@
 
 #include "VulkanContext.h"
 
+#include "../../../Tool/EngineApplication.h"
 #include "CoreGlobal.h"
 #include "Instance.h"
 #include "Render/CommandProducer.h"
@@ -64,31 +65,32 @@ void VulkanContext::Finalize() {
 }
 
 void VulkanContext::Draw() {
-    vk::Device        Device = mLogicalDevice->GetHandle();
+    const vk::Device  Device = mLogicalDevice->GetHandle();
     // 首先等待当前帧的指令缓冲结束执行
     const StaticArray Fence  = {mInFlightFences[mCurrentFrame]};
     Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
-    const auto ImageIndex =
-        Device.acquireNextImageKHR(mSwapChain->GetHandle(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], nullptr);
-    if (ImageIndex.result == vk::Result::eErrorOutOfDateKHR) {
+    uint32     ImageIndex;
+    VkResult AcquireResult =
+        vkAcquireNextImageKHR(Device, mSwapChain->GetHandle(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], nullptr, &ImageIndex);
+    if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         // 交换链已经过期，需要重建
         RebuildSwapChain();
         return;
-    } else if (ImageIndex.result != vk::Result::eSuccess && ImageIndex.result != vk::Result::eSuboptimalKHR) {
+    } else if (AcquireResult != VK_SUCCESS && AcquireResult != VK_SUBOPTIMAL_KHR) {
         throw VulkanException(L"无法获取交换链图像");
     }
 
     Device.resetFences(Fence);
     // 这里更新UniformBuffer
-    mGraphicsPipeline->UpdateUniformBuffer(ImageIndex.value);
+    mGraphicsPipeline->UpdateUniformBuffer(ImageIndex);
 
     // 提交渲染指令
     vk::SubmitInfo SubmitInfo = {};
 
     StaticArray WaitStages       = {static_cast<vk::PipelineStageFlags>(vk::PipelineStageFlagBits::eColorAttachmentOutput)};
     StaticArray WaitSemaphores   = {mImageAvailableSemaphores[mCurrentFrame]};
-    StaticArray CurrentBuffer    = {mGraphicsPipeline->GetCurrentImageCommandBuffer(ImageIndex.value)};
+    StaticArray CurrentBuffer    = {mGraphicsPipeline->GetCurrentImageCommandBuffer(ImageIndex)};
     StaticArray SingalSemaphores = {mImageRenderFinishedSemaphores[mCurrentFrame]};
 
     SubmitInfo.setWaitSemaphores(WaitSemaphores)
@@ -101,10 +103,13 @@ void VulkanContext::Draw() {
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
     StaticArray        SwapChains  = {mSwapChain->GetHandle()};
-    PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(ImageIndex.value);
-    const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(PresentInfo);
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
+    PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(ImageIndex);
+
+    const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(&PresentInfo);
+
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().bFrameBufferResized) {
         RebuildSwapChain();
+        Tool::EngineApplication::Get().bFrameBufferResized = false;
     } else if (Result != vk::Result::eSuccess) {
         throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
     }
@@ -123,7 +128,32 @@ bool VulkanContext::IsValid() const {
     // clang-format on
 }
 
-void VulkanContext::RebuildSwapChain() {}
+void VulkanContext::RebuildSwapChain() {
+    auto Size = Tool::EngineApplication::Get().GetWindowSize();
+    while (Size.Width == 0 || Size.Height == 0) {
+        Size = Tool::EngineApplication::Get().GetWindowSize();
+        glfwWaitEvents();
+    }
+    mLogicalDevice->GetHandle().waitIdle();
+    mGraphicsPipeline->Finalize();
+    mSwapChain->Finialize();
+    mSwapChain = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, Size.Width, Size.Height);
+
+    // 创建图形管线
+    // 寻找深度图像格式
+    mDepthFormat = mPhysicalDevice->FindSupportFormat(
+        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+        vk::ImageTiling::eOptimal,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
+    GraphicsPipelineCreateInfo CreateInfo = {};
+    CreateInfo.ViewportSize               = mSwapChain->GetExtent();
+    CreateInfo.MsaaSamples                = vk::SampleCountFlagBits::e1;
+    CreateInfo.RenderPassProducer         = MakeUnique<DefaultRenderPassProducer>(mSwapChain->GetImageFormat(), mDepthFormat);
+    CreateInfo.FragmentShaderPath         = L"Shaders/frag.spv";
+    CreateInfo.VertexShaderPath           = L"Shaders/vert.spv";
+    mGraphicsPipeline                     = GraphicsPipeline::CreateShared(*this, CreateInfo);
+}
 
 void VulkanContext::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, const Ref<VulkanContext> InRenderer) {
     // 创建图形管线

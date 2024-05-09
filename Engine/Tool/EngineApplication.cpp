@@ -17,6 +17,9 @@ TOOL_NAMESPACE_BEGIN
 
 EngineApplication::EngineApplication(const String& ProjectPath, const String& WindowTitle) {
     Path::SetProjectWorkPath(ProjectPath);
+    if (mInstance != nullptr) {
+        throw Exception(L"窗口实例已存在");
+    }
     mWindowTitle = WindowTitle;
     mInstance    = this;
 }
@@ -28,14 +31,19 @@ EngineApplication& EngineApplication::Instance() {
     return *mInstance;
 }
 
+Size2D EngineApplication::GetWindowSize() const {
+    return mWindow->GetWindowSize();
+}
+
 void EngineApplication::Initialize() {
     // 创建并初始化GlfwWindow
     mWindow = MakeUnique<Platform::Window::GlfwWindow>(mWindowTitle, 1920, 1080);
     mWindow->Initialize();
+    mWindow->SetFrameBufferResizedCallback(&This::FrameBufferResizeCallback);
     // 创建并初始化VulkanApplication
     // 设置初始化RenderApplication需要的值
     mRenderApplication = MakeUnique<RHI::Vulkan::VulkanApplication>();
-    auto Surface = mWindow->GetWindowSurface();
+    auto Surface       = mWindow->GetWindowSurface();
     mRenderApplication->SetWindowSurface(Move(Surface));
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
