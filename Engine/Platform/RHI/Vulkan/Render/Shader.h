@@ -26,7 +26,6 @@ enum class EUniformDescriptorType : uint8 { Object, Sampler2D };
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType InType);
 vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage InStage);
 
-// TODO: Vulkan中设定vulkan需要指定stage
 struct UniformDescriptor
 {
     AnsiString             Name;

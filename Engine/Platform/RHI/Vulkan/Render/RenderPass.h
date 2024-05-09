@@ -20,7 +20,6 @@ public:
 
     vk::RenderPassCreateInfo GetRenderPassCreateInfo() override;
 
-    // TODO: 选择交换链图像格式和深度图像格式
     DefaultRenderPassProducer(
         const vk::Format& SwapchainImageFormat, const vk::Format& DepthImageFormat,
         const vk::SampleCountFlagBits& SamplesCount = vk::SampleCountFlagBits::e1
