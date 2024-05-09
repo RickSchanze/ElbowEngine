@@ -129,6 +129,7 @@ bool VulkanContext::IsValid() const {
 }
 
 void VulkanContext::RebuildSwapChain() {
+    // TODO: 使用PipelineCache
     auto Size = Tool::EngineApplication::Get().GetWindowSize();
     while (Size.Width == 0 || Size.Height == 0) {
         Size = Tool::EngineApplication::Get().GetWindowSize();
