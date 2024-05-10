@@ -19,11 +19,11 @@ protected:
     {};
 
 public:
-    CommandProducer(Private, Ref<UniquePtr<LogicalDevice>> InDevice);
+    CommandProducer(Private, Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags);
 
-    static UniquePtr<CommandProducer> CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice);
+    static UniquePtr<CommandProducer> CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags = {});
 
-    void CreateCommandPool();
+    void CreateCommandPool(vk::CommandPoolCreateFlags InPoolFlags);
     void CleanCommandPool();
 
     vk::CommandPool GetCommandPool() const { return mPool; }
@@ -40,7 +40,11 @@ public:
 
     void CopyBuffer(vk::Buffer InSrcBuffer, vk::Buffer InDstBuffer, uint64_t InSize) const;
 
+    void ResetCommandPool() const;
+
     Array<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const;
+
+    void DestroyCommandBuffers(const Array<vk::CommandBuffer>& InCommandBuffers) const;
 
 protected:
     vk::CommandBuffer BeginSingleTimeCommands() const;

@@ -70,7 +70,7 @@ void VulkanContext::Draw() {
     const StaticArray Fence  = {mInFlightFences[mCurrentFrame]};
     Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
-    uint32     ImageIndex;
+    uint32   ImageIndex;
     VkResult AcquireResult =
         vkAcquireNextImageKHR(Device, mSwapChain->GetHandle(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], nullptr, &ImageIndex);
     if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -85,20 +85,19 @@ void VulkanContext::Draw() {
     // 这里更新UniformBuffer
     mGraphicsPipeline->UpdateUniformBuffer(ImageIndex);
 
-    // 提交渲染指令
-    vk::SubmitInfo SubmitInfo = {};
+    Array                WaitSemaphores   = {mImageAvailableSemaphores[mCurrentFrame]};
+    Array<vk::Semaphore> SingalSemaphores = {};
 
-    StaticArray WaitStages       = {static_cast<vk::PipelineStageFlags>(vk::PipelineStageFlagBits::eColorAttachmentOutput)};
-    StaticArray WaitSemaphores   = {mImageAvailableSemaphores[mCurrentFrame]};
-    StaticArray CurrentBuffer    = {mGraphicsPipeline->GetCurrentImageCommandBuffer(ImageIndex)};
-    StaticArray SingalSemaphores = {mImageRenderFinishedSemaphores[mCurrentFrame]};
+    constexpr vk::SemaphoreCreateInfo SemaphoreInfo = {};
+    for (auto& Pipeline: mRenderGraphicsPipelines) {
+        SingalSemaphores.push_back(Device.createSemaphore(SemaphoreInfo));
+    }
 
-    SubmitInfo.setWaitSemaphores(WaitSemaphores)
-        .setWaitDstStageMask(WaitStages)
-        .setCommandBuffers(CurrentBuffer)
-        .setSignalSemaphores(SingalSemaphores);
-
-    mLogicalDevice->GetGraphicsQueue().submit({SubmitInfo}, mInFlightFences[mCurrentFrame]);
+    for (int i = 0; i < mRenderGraphicsPipelines.size(); i++) {
+        mRenderGraphicsPipelines[i]->SubmitGraphicsQueue(
+            ImageIndex, mLogicalDevice->GetGraphicsQueue(), WaitSemaphores, {SingalSemaphores[i]}, mInFlightFences[mCurrentFrame]
+        );
+    }
 
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
@@ -107,13 +106,18 @@ void VulkanContext::Draw() {
 
     const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(&PresentInfo);
 
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().bFrameBufferResized) {
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR ||
+        Tool::EngineApplication::Get().bFrameBufferResized) {
         RebuildSwapChain();
         Tool::EngineApplication::Get().bFrameBufferResized = false;
     } else if (Result != vk::Result::eSuccess) {
         throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
     }
+
     mLogicalDevice->GetPresentQueue().waitIdle();
+    for (auto& Semaphore: SingalSemaphores) {
+        Device.destroySemaphore(Semaphore);
+    }
     mCurrentFrame = (mCurrentFrame + 1) % mMaxFramesInFlight;
 }
 
@@ -135,25 +139,16 @@ void VulkanContext::RebuildSwapChain() {
         Size = Tool::EngineApplication::Get().GetWindowSize();
         glfwWaitEvents();
     }
+    mLogicalDevice->GetGraphicsQueue().waitIdle();
+    mLogicalDevice->GetPresentQueue().waitIdle();
     mLogicalDevice->GetHandle().waitIdle();
-    mGraphicsPipeline->Finalize();
+
     mSwapChain->Finialize();
     mSwapChain = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, Size.Width, Size.Height);
 
-    // 创建图形管线
-    // 寻找深度图像格式
-    mDepthFormat = mPhysicalDevice->FindSupportFormat(
-        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
-        vk::ImageTiling::eOptimal,
-        vk::FormatFeatureFlagBits::eDepthStencilAttachment
-    );
-    GraphicsPipelineCreateInfo CreateInfo = {};
-    CreateInfo.ViewportSize               = mSwapChain->GetExtent();
-    CreateInfo.MsaaSamples                = vk::SampleCountFlagBits::e1;
-    CreateInfo.RenderPassProducer         = MakeUnique<DefaultRenderPassProducer>(mSwapChain->GetImageFormat(), mDepthFormat);
-    CreateInfo.FragmentShaderPath         = L"Shaders/frag.spv";
-    CreateInfo.VertexShaderPath           = L"Shaders/vert.spv";
-    mGraphicsPipeline                     = GraphicsPipeline::CreateShared(*this, CreateInfo);
+    for (const auto& Pipeline: mRenderGraphicsPipelines) {
+        Pipeline->Rebuild();
+    }
 }
 
 void VulkanContext::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, const Ref<VulkanContext> InRenderer) {
@@ -178,7 +173,14 @@ void VulkanContext::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Produc
     mGraphicsPipeline = GraphicsPipeline::CreateShared(InRenderer, CreateInfo);
 }
 
-void VulkanContext::CreateInstance() {}
+void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
+    mRenderGraphicsPipelines.push_back(InPipeline);
+}
+
+void VulkanContext::RemovePipelineFromRender(IGraphicsPipeline* InPipeline) {
+    if (std::ranges::find(mRenderGraphicsPipelines, InPipeline) == mRenderGraphicsPipelines.end()) return;
+    mRenderGraphicsPipelines.erase(std::ranges::remove(mRenderGraphicsPipelines, InPipeline).begin(), mRenderGraphicsPipelines.end());
+}
 
 void VulkanContext::CreateSyncObjecs() {
     mImageAvailableSemaphores.resize(mMaxFramesInFlight);

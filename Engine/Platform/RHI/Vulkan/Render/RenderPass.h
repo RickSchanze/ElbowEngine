@@ -34,7 +34,6 @@ private:
     vk::AttachmentReference mDepthAttachmentRef{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
     vk::AttachmentReference mColorAttachmentResolveRef{2, vk::ImageLayout::eColorAttachmentOptimal};
 
-
     Array<vk::AttachmentDescription> mAttachmets;
     Array<vk::SubpassDescription>    mSubpasses;
     Array<vk::SubpassDependency>     mDependencies;

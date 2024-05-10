@@ -11,6 +11,8 @@
 #include "Render/SwapChain.h"
 #include "VulkanCommon.h"
 
+
+class IGraphicsPipeline;
 namespace RHI::Vulkan {
 class CommandProducer;
 class GraphicsPipeline;
@@ -62,6 +64,10 @@ public:
 
     virtual void CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, Ref<VulkanContext> InRenderer);
 
+    // 向渲染器提交命令缓冲区
+    void AddPipelineToRender(IGraphicsPipeline* InPipeline);
+    void RemovePipelineFromRender(IGraphicsPipeline* InPipeline);
+
     UniquePtr<SwapChain>&       GetSwapChain() { return mSwapChain; }
     UniquePtr<CommandProducer>& GetCommandProducer() { return mCommandProducer; }
     UniquePtr<LogicalDevice>&   GetLogicalDevice() { return mLogicalDevice; }
@@ -69,9 +75,6 @@ public:
     SharedPtr<Instance>         GetVulkanInstance() { return mVulkanInstance; }
 
 protected:
-    // 初始化VulkanInstance
-    void CreateInstance();
-
     void CreateSyncObjecs();
     void CleanSyncObjects();
 
@@ -99,6 +102,8 @@ private:
     Array<vk::Semaphore> mImageAvailableSemaphores;
     Array<vk::Semaphore> mImageRenderFinishedSemaphores;
     Array<vk::Fence>     mInFlightFences;
+
+    Array<IGraphicsPipeline*> mRenderGraphicsPipelines;
 };
 
 RHI_VULKAN_NAMESPACE_END

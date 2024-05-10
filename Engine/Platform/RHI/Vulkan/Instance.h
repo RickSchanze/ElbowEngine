@@ -51,7 +51,7 @@ public:
     // clang-format off
     [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
     [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mVulkanInstanceHandle); }
-    [[nodiscard]] vk::Instance GetVulkanInstanceHandle() const { return mVulkanInstanceHandle; }
+    [[nodiscard]] vk::Instance GetHandle() const { return mVulkanInstanceHandle; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
     [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const {return mSurface->GetSurfaceHandle();}
 

@@ -41,7 +41,7 @@ public:
 
     static EngineApplication& Get() { return *mInstance; }
 
-    bool bFrameBufferResized = true;
+    bool bFrameBufferResized = false;
 
 private:
     static void FrameBufferResizeCallback(GLFWwindow* Window, int Width, int Height) {

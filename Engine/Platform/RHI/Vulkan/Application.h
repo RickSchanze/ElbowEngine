@@ -32,13 +32,14 @@ public:
 
     void Tick();
 
-    [[nodiscard]] const String&       GetAppName() const noexcept { return mAppName; }
-    [[nodiscard]] const String&       GetEngineName() const noexcept { return mEngineName; }
-    [[nodiscard]] uint32_t            GetAppVersion() const noexcept { return mAppVersion; }
-    [[nodiscard]] uint32_t            GetEngineVersion() const noexcept { return mEngineVersion; }
-    [[nodiscard]] uint32_t            GetApiVersion() const noexcept { return mApiVersion; }
-    [[nodiscard]] SharedPtr<Instance> GetVulkanInstance() noexcept { return mVulkanInstance; }
-    [[nodiscard]] bool                IsValid() const noexcept { return mVulkanInstance->IsValid(); }
+    const String&       GetAppName() const noexcept { return mAppName; }
+    const String&       GetEngineName() const noexcept { return mEngineName; }
+    uint32_t            GetAppVersion() const noexcept { return mAppVersion; }
+    uint32_t            GetEngineVersion() const noexcept { return mEngineVersion; }
+    uint32_t            GetApiVersion() const noexcept { return mApiVersion; }
+    SharedPtr<Instance> GetVulkanInstance() noexcept { return mVulkanInstance; }
+    bool                IsValid() const noexcept { return mVulkanInstance->IsValid(); }
+    VulkanContext&      GetContext() const noexcept { return *mContext; }
 
 protected:
     // 初始化Instance

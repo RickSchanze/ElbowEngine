@@ -14,15 +14,16 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandProducer::CommandProducer(Private, const Ref<UniquePtr<LogicalDevice>> InDevice) : mDevice(InDevice) {
-    CreateCommandPool();
+CommandProducer::CommandProducer(Private, const Ref<UniquePtr<LogicalDevice>> InDevice, const vk::CommandPoolCreateFlags InPoolFlags) :
+    mDevice(InDevice) {
+    CreateCommandPool(InPoolFlags);
 }
 
-UniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice) {
-    return MakeUnique<CommandProducer>(Private{}, InDevice);
+UniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags) {
+    return MakeUnique<CommandProducer>(Private{}, InDevice, InPoolFlags);
 }
 
-void CommandProducer::CreateCommandPool() {
+void CommandProducer::CreateCommandPool(const vk::CommandPoolCreateFlags InPoolFlags) {
     const auto& Device = mDevice.get();
 
     // 获取队列族索引
@@ -30,6 +31,7 @@ void CommandProducer::CreateCommandPool() {
 
     // 命令池创建
     vk::CommandPoolCreateInfo CommandPoolCreateInfo{};
+    CommandPoolCreateInfo.setFlags(InPoolFlags);
     CommandPoolCreateInfo.setQueueFamilyIndex(QueueFamilyIndices.GraphicsFamily.value());
     mPool = Device->GetHandle().createCommandPool(CommandPoolCreateInfo);
 }
@@ -192,8 +194,16 @@ void CommandProducer::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer 
     EndSingleTimeCommands(CommandBuffer);
 }
 
-Array<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo &InAllocInfo) const{
+void CommandProducer::ResetCommandPool() const {
+    mDevice.get()->GetHandle().resetCommandPool(mPool);
+}
+
+Array<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const {
     return mDevice.get()->GetHandle().allocateCommandBuffers(InAllocInfo);
+}
+
+void CommandProducer::DestroyCommandBuffers(const Array<vk::CommandBuffer>& InCommandBuffers) const {
+    mDevice.get()->GetHandle().freeCommandBuffers(mPool, InCommandBuffers);
 }
 
 vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {

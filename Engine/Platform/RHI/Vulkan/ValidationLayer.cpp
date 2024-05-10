@@ -37,7 +37,7 @@ void ValidationLayer::Initialize() {
             .setPUserData(nullptr);
         const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();
         mDebugMessengerCallback =
-            mAttachedVulkanInstance->GetVulkanInstanceHandle().createDebugUtilsMessengerEXT(
+            mAttachedVulkanInstance->GetHandle().createDebugUtilsMessengerEXT(
                 CreateInfo, nullptr, Dispatcher
             );
         LOG_INFO_CATEGORY(Vulkan, L"验证层初始化完成");
@@ -48,7 +48,7 @@ void ValidationLayer::Finialize() {
     if (!sEnableValidationLayer) return;
     if (mAttachedVulkanInstance && mAttachedVulkanInstance->IsValid() && mDebugMessengerCallback) {
         const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();
-        mAttachedVulkanInstance->GetVulkanInstanceHandle().destroyDebugUtilsMessengerEXT(
+        mAttachedVulkanInstance->GetHandle().destroyDebugUtilsMessengerEXT(
             mDebugMessengerCallback, nullptr, Dispatcher
         );
         LOG_INFO_CATEGORY(Vulkan, L"验证层清理完成");

@@ -24,7 +24,7 @@ SurfaceBase& SurfaceBase::SetSurfaceHandle(vk::SurfaceKHR InSurfaceHandle) {
 
 void SurfaceBase::Finialize() {
     if (mAttachedInstanceHandle->IsValid()) {
-        mAttachedInstanceHandle->GetVulkanInstanceHandle().destroySurfaceKHR(mSurfaceHandle);
+        mAttachedInstanceHandle->GetHandle().destroySurfaceKHR(mSurfaceHandle);
         mSurfaceHandle = VK_NULL_HANDLE;
         LOG_INFO_CATEGORY(Vulkan, L"Surface清理完成");
     }

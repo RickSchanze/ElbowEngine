@@ -9,9 +9,13 @@
 #include "CoreDef.h"
 #include "glm/glm.hpp"
 #include "Path/Path.h"
+#include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
 
+namespace RHI::Vulkan {
+class DefaultRenderPassProducer;
+}
 namespace Resource {
 class Model;
 }
@@ -37,24 +41,27 @@ struct GraphicsPipelineCreateInfo
     Path                           FragmentShaderPath;
     vk::Extent2D                   ViewportSize;
     vk::SampleCountFlagBits        MsaaSamples;
-    UniquePtr<IRenderPassProducer> RenderPassProducer;
+    SharedPtr<IRenderPassProducer> RenderPassProducer;
 };
 
-class GraphicsPipeline {
+class GraphicsPipeline : public IGraphicsPipeline {
 public:
     // TODO: 传入Material而不是Shader路径
     /**
      * 创建一个图形管线
-     * @param InRenderer 逻辑设备
+     * @param InContext 逻辑设备
      * @param InCreateInfo 创建信息
      */
-    GraphicsPipeline(Ref<VulkanContext> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo);
+    GraphicsPipeline(Ref<VulkanContext> InContext, const GraphicsPipelineCreateInfo& InCreateInfo);
+    ~GraphicsPipeline() override;
 
     static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
     void UpdateUniformBuffer(uint32 InCurrentImage);
-    vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage)const;
 
+    vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage) const;
+
+    void Initialize();
     void Finalize();
 
     bool IsValid() const { return mPipeline && mPipelineLayout && mDescriptorSetLayout; }
@@ -77,6 +84,7 @@ protected:
     void CreateMsaaColorBuffer();
     // 创建深度图像缓冲区
     void CreateDepthBuffer();
+    void CleanDepthBuffer();
     // 创建交换链帧缓冲区
     void CreateFramebuffers();
     void CleanFramebuffers();
@@ -102,6 +110,7 @@ private:
     // 4.命令缓冲
     Array<vk::CommandBuffer> mCommandBuffers;
 
+    SharedPtr<IRenderPassProducer> mRenderPassProducer;
     UniquePtr<RenderPass> mRenderPass;
 
     // Renderer拥有此对象
@@ -117,6 +126,8 @@ private:
     Array<vk::Buffer>        mUniformBuffers;
     Array<vk::DeviceMemory>  mUniformBuffersMemory;
     Array<vk::DescriptorSet> mDescriptorSets;
+
+    GraphicsPipelineCreateInfo mCreateInfo;
 
 
     // TODO: 模型系统
@@ -146,6 +157,18 @@ private:
     void CreateDescriptotSets();
 
     void CreateCommandBuffers();
+    void CleanCommandBuffers();
+
+public:
+    // clang-format off
+    void SubmitGraphicsQueue(
+        int CurrentImageIndex,
+        vk::Queue InGraphicsQueue,
+        Array<vk::Semaphore> InWaitSemaphores,
+        Array<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
+    ) override;
+    // clang-format on
+    void Rebuild() override;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -20,17 +20,57 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const GraphicsPipelineCreateInfo& InCreateInfo) : mContext(InRenderer) {
+GraphicsPipeline::GraphicsPipeline(const Ref<VulkanContext> InContext, const GraphicsPipelineCreateInfo& InCreateInfo) :
+    mContext(InContext), mCreateInfo(InCreateInfo) {
+    mRenderPassProducer = InCreateInfo.RenderPassProducer;
+    Initialize();
+    mContext.get().AddPipelineToRender(this);
+}
+
+GraphicsPipeline::~GraphicsPipeline() {
+    mContext.get().RemovePipelineFromRender(this);
+    Finalize();
+}
+
+SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+    return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
+}
+
+void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) {
+    static auto               StartTime   = std::chrono::high_resolution_clock::now();
+    const auto                CurrentTime = std::chrono::high_resolution_clock::now();
+    const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+    StaticArray<glm::mat4, 3> UBO;
+    UBO[0] = rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[1] = lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[2] = glm::perspective(
+        glm::radians(45.f),
+        static_cast<float>(mContext.get().GetSwapChainExtent().width) / static_cast<float>(mContext.get().GetSwapChainExtent().height),
+        0.1f,
+        10.f
+    );
+    UBO[2][1][1] *= -1;
+    void* Data;
+    mContext.get().GetLogicalDevice()->MapMemory(mUniformBuffersMemory[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data);
+    memcpy(Data, UBO.data(), 3 * sizeof(glm::mat4));
+    mContext.get().GetLogicalDevice()->UnmapMemory(mUniformBuffersMemory[InCurrentImage]);
+}
+
+vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const uint32 InCurrentImage) const {
+    return mCommandBuffers[InCurrentImage];
+}
+
+void GraphicsPipeline::Initialize() {
     // 创建RenderPass
-    if (!InCreateInfo.RenderPassProducer) {
+    if (!mCreateInfo.RenderPassProducer) {
         throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
     }
-    auto&      Device             = InRenderer.get().GetLogicalDevice();
-    const auto RenderPassProducer = InCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
+    auto&      Device             = mContext.get().GetLogicalDevice();
+    const auto RenderPassProducer = mCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
     mRenderPass                   = RenderPass::CreateUnique(MakeRef(*Device), RenderPassProducer);
 
-    const auto VertShader = Shader::CreateShared(MakeRef(*Device), InCreateInfo.VertexShaderPath, EShaderStage::Vertex);
-    const auto FragShader = Shader::CreateShared(MakeRef(*Device), InCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
+    const auto VertShader = Shader::CreateShared(MakeRef(*Device), mCreateInfo.VertexShaderPath, EShaderStage::Vertex);
+    const auto FragShader = Shader::CreateShared(MakeRef(*Device), mCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
     mShaderProg           = ShaderProgram::CreateShared(MakeRef(*Device), VertShader, FragShader);
 
     // 配置Shader的阶段
@@ -55,24 +95,27 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
         .setTopology(vk::PrimitiveTopology::eTriangleList)   // 每三个顶点构成一个图元
         .setPrimitiveRestartEnable(false);
 
-    if (InCreateInfo.ViewportSize.height == 0 || InCreateInfo.ViewportSize.width == 0) {
+    if (mCreateInfo.ViewportSize.height == 0 || mCreateInfo.ViewportSize.width == 0) {
         throw VulkanException(L"创建图形管线失败：视口大小不合法");
     }
+    float Width = mContext.get().GetSwapChainExtent().width;
+    float Height = mContext.get().GetSwapChainExtent().height;
     // 设置视口
     vk::Viewport ViewportInfo = {};
     ViewportInfo   //
         .setX(0)
         .setY(0)   // xy是左上角
-        .setWidth(static_cast<float>(InCreateInfo.ViewportSize.width))
-        .setHeight(static_cast<float>(InCreateInfo.ViewportSize.height))
+        .setWidth(static_cast<float>(Width))
+        .setHeight(static_cast<float>(Height))
         .setMinDepth(0.f)
         .setMaxDepth(1.f);   //深度的最大最小值必须在[0,1]职中
 
     // 裁剪矩形
     vk::Rect2D Scissor = {};
+    vk::Extent2D ScissorExtent = {static_cast<uint32>(Width), static_cast<uint32>(Height)};
     Scissor   //
         .setOffset({0, 0})
-        .setExtent(InCreateInfo.ViewportSize);
+        .setExtent(ScissorExtent);
 
     vk::PipelineViewportStateCreateInfo ViewportStateCreateInfo = {};
     ViewportStateCreateInfo.setViewports({ViewportInfo}).setScissors({Scissor});
@@ -92,7 +135,7 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
 
     // 多重采样设置
     vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
-    mMsaaSamples                                           = InCreateInfo.MsaaSamples;
+    mMsaaSamples                                           = mCreateInfo.MsaaSamples;
     MultisampleInfo   //
         .setSampleShadingEnable(false)
         .setRasterizationSamples(mMsaaSamples);
@@ -156,6 +199,7 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
     if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
         CreateMsaaColorBuffer();
     }
+
     // 创建深度缓冲区
     CreateDepthBuffer();
     // 创建交换链帧缓冲区
@@ -173,34 +217,6 @@ GraphicsPipeline::GraphicsPipeline(Ref<VulkanContext> InRenderer, const Graphics
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
-    return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
-}
-
-void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) {
-    static auto               StartTime   = std::chrono::high_resolution_clock::now();
-    const auto                CurrentTime = std::chrono::high_resolution_clock::now();
-    const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
-    StaticArray<glm::mat4, 3> UBO;
-    UBO[0] = glm::rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
-    UBO[1] = glm::lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
-    UBO[2] = glm::perspective(
-        glm::radians(45.f),
-        static_cast<float>(mContext.get().GetSwapChainExtent().width) / static_cast<float>(mContext.get().GetSwapChainExtent().height),
-        0.1f,
-        10.f
-    );
-    UBO[2][1][1] *= -1;
-    void* Data;
-    mContext.get().GetLogicalDevice()->MapMemory(mUniformBuffersMemory[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data);
-    memcpy(Data, UBO.data(), 3 * sizeof(glm::mat4));
-    mContext.get().GetLogicalDevice()->UnmapMemory(mUniformBuffersMemory[InCurrentImage]);
-}
-
-vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const uint32 InCurrentImage) const {
-    return mCommandBuffers[InCurrentImage];
-}
-
 void GraphicsPipeline::Finalize() {
     if (!IsValid()) return;
     const auto& Device = mContext.get().GetLogicalDevice();
@@ -215,9 +231,7 @@ void GraphicsPipeline::Finalize() {
         CleanTextureImageAndView();
         // 交换链缓冲区销毁
         CleanFramebuffers();
-        // 深度图像销毁
-        mDepthImageView->Finialize();
-        mDepthImage->Finialize();
+        CleanDepthBuffer();
         // MSAA缓冲销毁
         if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
             mMsaaColorImageView->Finialize();
@@ -314,6 +328,11 @@ void GraphicsPipeline::CreateDepthBuffer() {
     Renderer.GetCommandProducer()->TrainsitionImageLayout(
         mDepthImage->GetHandle(), DepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1
     );
+}
+
+void GraphicsPipeline::CleanDepthBuffer() {
+    mDepthImageView->Finialize();
+    mDepthImage->Finialize();
 }
 
 void GraphicsPipeline::CreateFramebuffers() {
@@ -477,6 +496,8 @@ void GraphicsPipeline::CleanUniformBuffers() {
         mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mUniformBuffers[i]);
         mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mUniformBuffersMemory[i]);
     }
+    mUniformBuffers.clear();
+    mUniformBuffersMemory.clear();
 }
 
 void GraphicsPipeline::CreateDescriptorPool() {
@@ -539,19 +560,42 @@ void GraphicsPipeline::CreateCommandBuffers() {
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandBufferCount(mContext.get().GetSwapChainImageCount());
 
-    mCommandBuffers = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
+    mCommandBuffers = mContext.get().GetCommandProducer()->CreateCommandBuffers(AllocInfo);
 
     for (size_t i = 0; i < mCommandBuffers.size(); i++) {
         auto CommandBuffer = mCommandBuffers[i];
         BeginRecordCommand(CommandBuffer);
         {
             CommandRecordingParam Param;
-            Param.FrameBuffer = mFramebuffers[i];
+            Param.FrameBuffer   = mFramebuffers[i];
             Param.DescriptorSet = mDescriptorSets[i];
             RecordCommand(CommandBuffer, Param);
         }
         EndRecordCommand(CommandBuffer);
     }
+}
+
+void GraphicsPipeline::CleanCommandBuffers() {
+    mContext.get().GetCommandProducer()->DestroyCommandBuffers(mCommandBuffers);
+}
+
+void GraphicsPipeline::SubmitGraphicsQueue(
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, Array<vk::Semaphore> InWaitSemaphores, Array<vk::Semaphore> InSingalSemaphores,
+    vk::Fence InFrameFence
+) {
+    auto                   CmdBuffer  = GetCurrentImageCommandBuffer(CurrentImageIndex);
+    vk::SubmitInfo SubmitInfo = {};
+    vk::PipelineStageFlags WaitFlag = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    SubmitInfo.setCommandBuffers(CmdBuffer)
+        .setWaitSemaphores(InWaitSemaphores)
+        .setSignalSemaphores(InSingalSemaphores)
+        .setWaitDstStageMask(WaitFlag);
+    InGraphicsQueue.submit(SubmitInfo, InFrameFence);
+}
+
+void GraphicsPipeline::Rebuild() {
+    Finalize();
+    Initialize();
 }
 
 

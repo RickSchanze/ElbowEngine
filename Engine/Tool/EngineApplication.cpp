@@ -47,18 +47,23 @@ void EngineApplication::Initialize() {
     mRenderApplication->SetWindowSurface(Move(Surface));
     mRenderApplication->SetExtensions(mWindow->GetRequiredExtensions());
     mRenderApplication->Initialize();
+    mWindow->InitImGui(mRenderApplication->GetContext());
 }
 
 void EngineApplication::Finitialize() const {
     if (!IsValid()) return;
+    mWindow->ShutdownImGui();
+
     if (mRenderApplication->IsValid()) mRenderApplication->Finalize();
     if (mWindow->IsValid()) mWindow->Finalize();
 }
 
 void EngineApplication::Run() {
     while (!glfwWindowShouldClose(mWindow->GetGLFWWindowHandle())) {
-        mRenderApplication->Tick();
+        mWindow->BeginImGuiFrame();
         mWindow->Tick();
+        mRenderApplication->Tick();
+        mWindow->EndImGuiFrame();
     }
 }
 

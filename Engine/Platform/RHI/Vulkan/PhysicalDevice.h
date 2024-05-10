@@ -94,11 +94,7 @@ public:
 
     uint32 FindMemoryType(uint32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
 
-    /**
-     * 以此物理设备为基础创建一个逻辑设备
-     * @return
-     */
-    SharedPtr<LogicalDevice> CreateLogicalDeviceShared();
+
     UniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
     vk::Device               CreateLogicalDeviceHandle() const;
 
@@ -106,7 +102,7 @@ public:
 
     // 一些转发函数
     // clang-format off
-    [[nodiscard]] vk::PhysicalDevice GetVulkanPhysicalDeviceHandle() const { return mDeviceHandle; }
+    [[nodiscard]] vk::PhysicalDevice GetHandle() const { return mDeviceHandle; }
     [[nodiscard]] vk::PhysicalDeviceProperties GetProperties() const { return mDeviceHandle.getProperties(); }
     [[nodiscard]] vk::PhysicalDeviceFeatures GetFeatures() const { return mDeviceHandle.getFeatures(); }
     // clang-format on
