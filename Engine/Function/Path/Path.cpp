@@ -15,8 +15,7 @@ Path::Path(StringView PathStr) {
         // 去掉最后的'/'或者'\\'
         PathStr.remove_suffix(1);
     }
-    if (sProjectWorkPath == nullptr) throw ProjectPathNotValidException(String{PathStr.begin(), PathStr.end()});
-    mPath = sProjectWorkPath->mPath / PathStr;
+    mPath = PathStr;
 }
 
 void Path::SetProjectWorkPath(StringView PathStr) {
@@ -42,11 +41,11 @@ void Path::SetProjectWorkPath(StringView PathStr) {
 }
 
 bool Path::IsExist() const {
-    return std::filesystem::exists(mPath);
+    return exists(GetStdFullPath());
 }
 
 String Path::ToString() const {
-    return mPath.generic_wstring();
+    return GetStdFullPath().generic_wstring();
 }
 
 AnsiString Path::ToAnsiString() const {
@@ -55,7 +54,7 @@ AnsiString Path::ToAnsiString() const {
 
 void Path::CreateDirectory() const {
     std::error_code ec;
-    create_directories(mPath, ec);
+    create_directories(GetStdFullPath(), ec);
     if (ec) {
         const auto ErrorMessage =
             std::format(L"创建目录失败,错误码:{},错误消息:{}", ec.value(), StringUtils::FromAnsiString(ec.message(), EStringEncoding::GBK));
@@ -67,7 +66,7 @@ bool Path::IsFolderEmpty() const {
     // 判断此目录是否为空 则此目录必须存在
     if (!IsFolder(true)) return false;
     // 判断mPath目录是不是空
-    return std::filesystem::is_empty(mPath);
+    return is_empty(GetStdFullPath());
 }
 
 bool Path::IsFolder(const bool bMustExist) const {
@@ -75,7 +74,8 @@ bool Path::IsFolder(const bool bMustExist) const {
         if (!IsExist()) return false;
     }
     // 最后按理说不会为'/'或'\'因为构造函数已经去掉了
-    return mPath.has_filename() && !mPath.has_extension();
+    std::filesystem::path TempPath = GetStdFullPath();
+    return TempPath.has_filename() && !TempPath.has_extension();
 }
 
 Optional<Path> Path::GetWorkPath() noexcept {
@@ -95,4 +95,12 @@ void Path::CreateFile() const {
     if (!file.is_open()) {
         throw PathInvalidException(*this, L"创建文件失败");
     }
+}
+
+Path Path::GetParentPath() const {
+    return FromStdPath(GetStdFullPath().parent_path());
+}
+
+std::filesystem::path Path::GetStdFullPath() const{
+    return sProjectWorkPath->mPath / mPath;
 }

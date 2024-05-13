@@ -26,10 +26,10 @@ add_executable(ElbowEngine main.cpp
         Engine/Resource/Texture.cpp
         Engine/Resource/Texture.h
         Engine/Resource/ResourceCommon.h
-        Engine/Resource/Vertex.cpp
-        Engine/Resource/Vertex.h
         Engine/Resource/Model.cpp
-        Engine/Resource/Model.h)
+        Engine/Resource/Model.h
+        Engine/Resource/ResourceManager.cpp
+        Engine/Resource/ResourceManager.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function)

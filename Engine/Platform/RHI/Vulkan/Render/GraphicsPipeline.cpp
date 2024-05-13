@@ -433,7 +433,7 @@ void GraphicsPipeline::CleanModel() {
 }
 
 void GraphicsPipeline::CreateTextureImageAndView() {
-    const auto Texture = Resource::Texture::CreateShared(L"Textures/viking_room.png");
+    const auto Texture = Resource::Texture::Create(L"Textures/viking_room.png");
     mTexture           = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
     mTextureView       = mContext.get().GetLogicalDevice()->CreateImageView(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()

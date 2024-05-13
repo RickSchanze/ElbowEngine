@@ -34,15 +34,15 @@ add_library(Platform
         RHI/Vulkan/Render/SwapChain.h
         RHI/Vulkan/VulkanContext.h
         RHI/Vulkan/VulkanContext.cpp
-        RHI/Vulkan/Render/Image.cpp
-        RHI/Vulkan/Render/Image.h
+        RHI/Vulkan/Resource/Image.cpp
+        RHI/Vulkan/Resource/Image.h
         RHI/Vulkan/Render/RenderPass.cpp
         RHI/Vulkan/Render/RenderPass.h
         RHI/Vulkan/Interface/IRenderPassProducer.h
         RHI/Vulkan/VulkanStringify.cpp
         RHI/Vulkan/VulkanStringify.h
-        RHI/Vulkan/Render/ImageView.cpp
-        RHI/Vulkan/Render/ImageView.h
+        RHI/Vulkan/Resource/ImageView.cpp
+        RHI/Vulkan/Resource/ImageView.h
         RHI/Vulkan/Render/Shader.cpp
         RHI/Vulkan/Render/Shader.h
         RHI/Vulkan/Render/GraphicsPipeline.cpp
@@ -52,6 +52,8 @@ add_library(Platform
         RHI/Vulkan/Render/CommandProducer.cpp
         RHI/Vulkan/Render/CommandProducer.h
         RHI/Vulkan/Interface/IGraphicsPipeline.h
+        RHI/Vulkan/Resource/Mesh.cpp
+        RHI/Vulkan/Resource/Mesh.h
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

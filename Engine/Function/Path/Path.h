@@ -7,6 +7,7 @@
 
 #pragma once
 #include <filesystem>
+#include <utility>
 
 #include "CoreDef.h"
 
@@ -25,6 +26,12 @@ public:
     Path(const wchar_t* PathStr) : Path(StringView(PathStr)) {}
 
     Path(const Path& OtherPath) = default;
+
+    static Path FromStdPath(const std::filesystem::path& InPath) {
+        Path NewPath;
+        NewPath.mPath = InPath;
+        return NewPath;
+    }
 
     /**
      * 设置工作路径
@@ -87,9 +94,29 @@ public:
      */
     void CreateFile() const;
 
+    Path GetParentPath() const;
+
+    bool operator==(const Path& Other) const { return mPath == Other.mPath; }
+
+    Path operator/(const Path& Other) const {
+        Path NewPath;
+        NewPath.mPath = mPath / Other.mPath;
+        return NewPath;
+    }
+
 private:
+    std::filesystem::path GetStdFullPath() const;
+
     // 项目工作路径
     static inline Path* sProjectWorkPath = nullptr;
 
     std::filesystem::path mPath;
+};
+
+// Path的哈希
+template<>
+struct std::hash<Path> {
+    size_t operator()(const Path& InPath) const noexcept {
+        return std::hash<String>()(InPath.ToString());
+    }
 };

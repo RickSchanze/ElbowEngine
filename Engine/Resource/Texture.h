@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "Interface/IResource.h"
 #include "Path/Path.h"
 #include "ResourceCommon.h"
 
@@ -16,35 +17,39 @@ class Image;
 
 RESOURCE_NAMESPACE_BEGIN
 
-class Texture {
+enum class ETextureUsage {
+    Diffuse,
+};
+
+class Texture : public IResource {
 protected:
     struct Protected
     {};
 
 public:
-    Texture(Protected, const Path& InPath) : mPath(InPath) { LoadTexture(); }
+    Texture(Protected, const Path& InPath, ETextureUsage InUsage = ETextureUsage::Diffuse);
 
-    static SharedPtr<Texture> CreateShared(const Path& InPath) { return std::make_shared<Texture>(Protected{}, InPath); }
+    static Texture* Create(const Path& InPath, ETextureUsage InUsage = ETextureUsage::Diffuse);
 
-    bool IsValid() const { return mData != nullptr; }
+    bool IsValid() const override { return mData != nullptr; }
 
-    ~Texture();
+    ~Texture() override;
 
     int32  GetWidth() const { return mWidth; }
     int32  GetHeight() const { return mHeight; }
     int32  GetChannels() const { return mChannels; }
     uint8* GetData() const { return mData; }
-    Path   GetPath() const { return mPath; }
+    Path   GetPath() const override { return mPath; }
+
+    void Load() final;
 
 protected:
-    void LoadTexture();
-
-protected:
-    Path   mPath;
-    int32  mWidth    = 0;
-    int32  mHeight   = 0;
-    int32  mChannels = 0;
-    uint8* mData     = nullptr;
+    Path          mPath;
+    int32         mWidth    = 0;
+    int32         mHeight   = 0;
+    int32         mChannels = 0;
+    uint8*        mData     = nullptr;
+    ETextureUsage mUsage;
 };
 
 RESOURCE_NAMESPACE_END

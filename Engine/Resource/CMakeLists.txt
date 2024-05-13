@@ -4,10 +4,9 @@ add_library(${PROJECT_NAME}
         Texture.h
         Texture.cpp
         ResourceCommon.h
-        Vertex.h
-        Vertex.cpp
         Model.h
         Model.cpp
+        Interface/IResource.h
 )
 
 add_library(Engine::Resource ALIAS ${PROJECT_NAME})
@@ -20,8 +19,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${Stb_INCLUDE_DIR})
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
-find_package(tinyobjloader CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE tinyobjloader::tinyobjloader)
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE

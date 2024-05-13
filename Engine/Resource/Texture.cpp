@@ -9,14 +9,33 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreGlobal.h"
+#include "ResourceManager.h"
 #include "stb_image.h"
 
-Resource::Texture::~Texture() {
+RESOURCE_NAMESPACE_BEGIN
+
+Texture::Texture(Protected, const Path& InPath, const ETextureUsage InUsage) : mPath(InPath), mUsage(InUsage) {
+    // 所有的Load操作都发生在没有注册的情况下
+    // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
+    Load();
+    ResourceManager::Get().RegisterResource(mPath, this);
+}
+
+Texture* Texture::Create(const Path& InPath, ETextureUsage) {
+    auto* CachedTexture = ResourceManager::Get().GetResource<Texture>(InPath);
+    if (CachedTexture == nullptr) {
+        // 指针由ResourceManager管理
+        CachedTexture = new Texture(Protected{}, InPath);
+    }
+    return CachedTexture;
+}
+
+Texture::~Texture() {
     stbi_image_free(mData);
     mData = nullptr;
 }
 
-void Resource::Texture::LoadTexture() {
+void Texture::Load() {
     if (!mPath.IsExist()) {
         LOG_ERROR_CATEGORY(Resource, L"{}不存在", mPath.ToString());
     }
@@ -27,3 +46,5 @@ void Resource::Texture::LoadTexture() {
         LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", mPath.ToString());
     }
 }
+
+RESOURCE_NAMESPACE_END

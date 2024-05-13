@@ -24,14 +24,14 @@
     "name" : "glm",
     "version>=" : "1.0.0#1"
   }, {
-    "name" : "tinyobjloader",
-    "version>=" : "2.0.0-rc9"
-  }, {
     "name" : "imgui",
     "version>=" : "1.90.2",
     "features" : [ "docking-experimental", "glfw-binding", "vulkan-binding" ]
   }, {
     "name" : "spirv-cross",
     "version>=" : "1.3.275.0"
+  }, {
+    "name" : "assimp",
+    "version>=" : "5.3.1#4"
   } ]
 }

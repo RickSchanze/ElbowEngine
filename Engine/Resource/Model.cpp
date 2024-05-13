@@ -7,46 +7,99 @@
 
 #include "Model.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+
 #include "CoreGlobal.h"
-#include "tiny_obj_loader.h"
+#include "ResourceManager.h"
 
 RESOURCE_NAMESPACE_BEGIN
-Model::Model(const Path& InModelPath) : mPath(InModelPath) {
-    auto ModelPath = InModelPath.ToAnsiString();
-    if (!mPath.IsExist()) {
-        LOG_ERROR_CATEGORY(Vulkan, L"模型文件{}不存在", mPath.ToString());
+Model::Model(Protected, const Path& InModelPath) : mPath(InModelPath) {
+    Load();
+}
+
+Model* Model::Create(const Path& InModelPath) {
+    auto* CachedModel = ResourceManager::Get().GetResource<Model>(InModelPath);
+    if (CachedModel == nullptr) {
+        CachedModel = new Model(Protected{}, InModelPath);
+    }
+    return CachedModel;
+}
+
+void Model::Load() {
+    Assimp::Importer Importer;
+    const aiScene*   Scene = Importer.ReadFile(
+        mPath.ToAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
+    );
+    if (Scene == nullptr || Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode == nullptr) {
+        LOG_ERROR_CATEGORY(Resource, L"Model::Load(): 加载模型{}失败", mPath.ToString());
         return;
     }
+    ProcessNode(Scene->mRootNode, Scene);
+}
 
-    tinyobj::attrib_t                Attrib;
-    std::vector<tinyobj::shape_t>    Shapes;
-    std::vector<tinyobj::material_t> Materials;
-    std::string                      Warn;
-    std::string                      Err;
-    if (!LoadObj(&Attrib, &Shapes, &Materials, &Warn, &Err, ModelPath.c_str())) {
-        throw std::runtime_error(Err);
+void Model::ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutMesh) const {
+    // 遍历Mesh顶点
+    for (uint32 i = 0; i < InMesh->mNumVertices; i++) {
+        Vertex Vertex{};
+        // 位置
+        Vertex.Pos.x = InMesh->mVertices[i].x;
+        Vertex.Pos.y = InMesh->mVertices[i].y;
+        Vertex.Pos.z = InMesh->mVertices[i].z;
+        // 法线
+        if (InMesh->HasNormals()) {
+            Vertex.Normal.x = InMesh->mNormals[i].x;
+            Vertex.Normal.y = InMesh->mNormals[i].y;
+            Vertex.Normal.z = InMesh->mNormals[i].z;
+        }
+        // UV
+        if (InMesh->HasTextureCoords(0)) {
+            Vertex.UV.x = InMesh->mTextureCoords[0][i].x;
+            Vertex.UV.y = InMesh->mTextureCoords[0][i].y;
+            // TODO: 切线、副切线
+        }
+        OutMesh.GetVertices().push_back(Vertex);
     }
-    std::unordered_map<Vertex, uint32_t> UniqueVertices = {};
-    for (const auto& Shape: Shapes) {
-        for (const auto& Index: Shape.mesh.indices) {
-            Vertex Vertex = {};
-            Vertex.Pos    = {
-                Attrib.vertices[3 * Index.vertex_index + 0],
-                Attrib.vertices[3 * Index.vertex_index + 1],
-                Attrib.vertices[3 * Index.vertex_index + 2]
-            };
-            // 由于obj格式默认纹理坐标原点在左下角 而Vulkan在左上角 因此需要转换
-            Vertex.UV = {
-                Attrib.texcoords[2 * Index.texcoord_index + 0],
-                1 - Attrib.texcoords[2 * Index.texcoord_index + 1],
-            };
-            if (!UniqueVertices.contains(Vertex)) {
-                UniqueVertices[Vertex] = static_cast<uint32_t>(mVertices.size());
-                mVertices.push_back(Vertex);
-            }
-            mVertices.push_back(Vertex);
-            mIndices.push_back(UniqueVertices[Vertex]);
+    // 遍历索引
+    for (uint32 i = 0; i < InMesh->mNumFaces; i++) {
+        const aiFace Face = InMesh->mFaces[i];
+        for (uint32 j = 0; j < Face.mNumIndices; j++) {
+            OutMesh.GetIndices().push_back(Face.mIndices[j]);
         }
     }
+    // 纹理
+    // 这里直接加载 TODO: 自动解压纹理
+    const aiMaterial* Material = InScene->mMaterials[InMesh->mMaterialIndex];
+    LoadTextures(ETextureUsage::Diffuse, Material, OutMesh.GetTextures());
 }
+
+aiTextureType GetTextureType(const ETextureUsage InUsage) {
+    switch (InUsage) {
+    case ETextureUsage::Diffuse: return aiTextureType_DIFFUSE;
+    default: return aiTextureType_DIFFUSE;
+    }
+}
+
+void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMaterial, Array<Texture*>& OutTextures) const {
+    for (uint32 i = 0; i < InMaterial->GetTextureCount(GetTextureType(InUsage)); i++) {
+        aiString MyPath;
+        InMaterial->GetTexture(aiTextureType_DIFFUSE, i, &MyPath);
+        Path     TexturePath = mPath.GetParentPath() / Path::FromStdPath(MyPath.C_Str());
+        Texture* NewTexture  = Texture::Create(TexturePath, InUsage);
+        OutTextures.push_back(NewTexture);
+    }
+}
+
+void Model::ProcessNode(const aiNode* InNode, const aiScene* InScene) {
+    for (uint32 i = 0; i < InNode->mNumMeshes; i++) {
+        const aiMesh* AiMesh = InScene->mMeshes[InNode->mMeshes[i]];
+        mMeshes.emplace_back();
+        ProcessMesh(AiMesh, InScene, mMeshes.back());
+    }
+    for (uint32 i = 0; i < InNode->mNumChildren; i++) {
+        ProcessNode(InNode->mChildren[i], InScene);
+    }
+}
+
 RESOURCE_NAMESPACE_END
