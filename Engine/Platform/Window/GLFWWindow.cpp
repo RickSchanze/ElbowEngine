@@ -242,7 +242,7 @@ void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext) {
 }
 
 void GlfwWindow::ShutdownImGui() {
-    mGraphicsPipeline->Finialize();
+    if (mGraphicsPipeline) mGraphicsPipeline->Finialize();
     ImGui_ImplGlfw_Shutdown();
 }
 

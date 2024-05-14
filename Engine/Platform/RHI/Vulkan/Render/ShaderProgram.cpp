@@ -47,8 +47,16 @@ Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribut
         Desc
             .setBinding(0)
             .setLocation(Attribute.Location)
-            .setFormat(vk::Format::eR32G32B32Sfloat)
             .setOffset(Attribute.Offset);
+        if (Attribute.Size == 4) {
+            Desc.setFormat(vk::Format::eR32Sfloat);
+        } else if (Attribute.Size == 8) {
+            Desc.setFormat(vk::Format::eR32G32Sfloat);
+        } else if (Attribute.Size == 12) {
+            Desc.setFormat(vk::Format::eR32G32B32Sfloat);
+        } else if (Attribute.Size == 16) {
+            Desc.setFormat(vk::Format::eR32G32B32A32Sfloat);
+        }
         // clang-format on
         AttributeDesc.push_back(Desc);
     }

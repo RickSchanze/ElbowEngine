@@ -385,7 +385,7 @@ void GraphicsPipeline::CleanFramebuffers() {
 }
 
 void GraphicsPipeline::LoadModel() {
-    auto ModelResource = Resource::Model::Create(L"Models/m4a1_s.fbx");
+    auto ModelResource = Resource::Model::Create(L"Models/AK47/AK47_CS2.fbx");
     mModel             = Model::CreateUnique(ModelResource, mContext);
 }
 
@@ -394,7 +394,7 @@ void GraphicsPipeline::CleanModel() const {
 }
 
 void GraphicsPipeline::CreateTextureImageAndView() {
-    const auto Texture = Resource::Texture::Create(L"Textures/noodas.png");
+    const auto Texture = Resource::Texture::Create(L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
     mTexture           = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
     mTextureView       = mContext.get().GetLogicalDevice()->CreateImageView(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()

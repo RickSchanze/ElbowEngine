@@ -13,6 +13,7 @@
 
 #include "CoreGlobal.h"
 #include "ResourceManager.h"
+#include "Utils/StringUtils.h"
 
 RESOURCE_NAMESPACE_BEGIN
 
@@ -87,10 +88,11 @@ aiTextureType GetTextureType(const ETextureUsage InUsage) {
 }
 
 void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMaterial, Array<Texture*>& OutTextures) const {
+    int count = InMaterial->GetTextureCount(aiTextureType_NONE);
     for (uint32 i = 0; i < InMaterial->GetTextureCount(GetTextureType(InUsage)); i++) {
         aiString MyPath;
         InMaterial->GetTexture(aiTextureType_DIFFUSE, i, &MyPath);
-        Path     TexturePath = mPath.GetParentPath() / Path::FromStdPath(MyPath.C_Str());
+        Path     TexturePath = mPath.GetParentPath() / Path(StringUtils::FromAnsiString(MyPath.C_Str()));
         Texture* NewTexture  = Texture::Create(TexturePath, InUsage);
         OutTextures.push_back(NewTexture);
     }

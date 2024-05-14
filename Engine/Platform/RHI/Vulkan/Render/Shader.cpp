@@ -101,7 +101,7 @@ void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, 
         if (mShaderStage != EShaderStage::Vertex) {
             return;
         }
-        size_t Offset = 0;
+
         for (const auto& In: Res.stage_inputs) {
             VertexInAttribute InAttr;
             InAttr.Name     = Compiler.get_name(In.id);
@@ -109,9 +109,14 @@ void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, 
             auto t          = Compiler.get_type(In.type_id);
             InAttr.Width    = t.width / 8;
             InAttr.Size     = InAttr.Width * t.vecsize;
-            InAttr.Offset   = Offset;
-            Offset += InAttr.Size;
             mInAttributes.push_back(InAttr);
+        }
+        std::ranges::sort(mInAttributes, [](const auto& Lhs, const auto& Rhs) { return Lhs.Location < Rhs.Location;});
+        // 计算偏移
+        size_t Offset = 0;
+        for (auto& InAttr: mInAttributes) {
+            InAttr.Offset = Offset;
+            Offset += InAttr.Size;
         }
     }
 }
