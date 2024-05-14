@@ -47,4 +47,8 @@ void Texture::Load() {
     }
 }
 
+RHI::Vulkan::IRHIResource* Texture::GetRHIResource() {
+    return mTextureRHIResource;
+}
+
 RESOURCE_NAMESPACE_END

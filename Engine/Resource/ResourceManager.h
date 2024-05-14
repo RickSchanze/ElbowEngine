@@ -31,5 +31,6 @@ public:
     }
 
 private:
+    // TODO: Resource与Vulkan GPU Resource的映射
     HashMap<Path, IResource*> mResourceMap;
 };

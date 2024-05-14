@@ -7,10 +7,11 @@
 
 #include "Image.h"
 
-#include "CommandProducer.h"
 #include "CoreGlobal.h"
-#include "LogicalDevice.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
+#include "RHI/Vulkan/Render/CommandProducer.h"
+#include "RHI/Vulkan/Render/LogicalDevice.h"
+#include "Texture.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -93,8 +94,9 @@ void Image::CreateImage() {
 }
 
 Texture::Texture(
-    Protected, const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
+    Protected, const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const Resource::Texture* InTexture
 ) : Image(InDevice) {
+    // TODO: 绑定TextureSampler
     vk::Buffer       StagingBuffer;
     vk::DeviceMemory StagingBufferMemory;
 
@@ -151,8 +153,7 @@ Texture::Texture(
     Device.freeMemory(StagingBufferMemory);
 }
 
-SharedPtr<Texture>
-Texture::Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture) {
+SharedPtr<Texture> Texture::Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) {
     return MakeShared<Texture>(Protected{}, InDevice, InCommandProducer, InTexture);
 }
 

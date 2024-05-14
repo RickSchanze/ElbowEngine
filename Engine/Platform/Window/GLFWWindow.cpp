@@ -8,6 +8,7 @@
 #include "GLFWWindow.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include "Path/Path.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vk_enum_string_helper.h"

@@ -7,20 +7,21 @@
 
 #pragma once
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/gtx/hash.hpp>
 
 #include "CoreDef.h"
 #include "Interface/IResource.h"
+#include "Interface/IRHIResourceContainer.h"
 #include "Path/Path.h"
 #include "ResourceCommon.h"
 #include "Texture.h"
 
 
-
-
-
+namespace RHI::Vulkan {
+class Mesh;
+}
 struct aiNode;
 struct aiMaterial;
 struct aiScene;
@@ -38,21 +39,33 @@ struct Vertex
     bool      operator==(const Vertex& Other) const { return Pos == Other.Pos && UV == Other.UV; }
 };
 
-class Mesh {
+class Mesh : public IRHIResourceContainer {
+    friend class RHI::Vulkan::Mesh;
+
 public:
     Array<Vertex>&   GetVertices() { return mVertices; }
     Array<Texture*>& GetTextures() { return mTextures; }
     Array<uint32>&   GetIndices() { return mIndices; }
 
+    RHI::Vulkan::IRHIResource* GetRHIResource() override;
+
+    bool IsValid() const { return !mVertices.empty(); }
+
+protected:
+    void SetRHIResource(RHI::Vulkan::IRHIResource* InRHIResource) { mMeshRHIResource = InRHIResource; }
+
 private:
     Array<Vertex>   mVertices;
     Array<Texture*> mTextures;
     Array<uint32>   mIndices;
+
+    RHI::Vulkan::IRHIResource* mMeshRHIResource = nullptr;
 };
 
 class Model : public IResource {
 protected:
-    struct Protected{};
+    struct Protected
+    {};
 
 public:
     Model(Protected, const Path& InModelPath);

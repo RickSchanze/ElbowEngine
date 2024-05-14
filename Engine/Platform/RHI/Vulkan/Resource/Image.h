@@ -6,14 +6,17 @@
  */
 
 #pragma once
-#include "../../../../Resource/Texture.h"
 #include "ImageView.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
+namespace Resource {
+class Texture;
+}
 namespace RHI::Vulkan {
 class CommandProducer;
 }
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 class ImageBase {
@@ -94,11 +97,11 @@ protected:
 class Texture : public Image {
 public:
     Texture(
-        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture
+        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const Resource::Texture* InTexture
     );
 
     static SharedPtr<Texture>
-    Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const SharedPtr<Resource::Texture>& InTexture);
+    Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
     int32 GetMipLevel() const { return mMipLevel; }
 

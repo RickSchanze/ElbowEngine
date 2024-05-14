@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Image.h"
+#include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"

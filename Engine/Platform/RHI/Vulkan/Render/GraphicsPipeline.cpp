@@ -12,6 +12,9 @@
 #include "LogicalDevice.h"
 #include "Model.h"
 #include "RenderPass.h"
+#include "RHI/Vulkan/Resource/Image.h"
+#include "RHI/Vulkan/Resource/ImageView.h"
+#include "RHI/Vulkan/Resource/VulkanModel.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
@@ -36,13 +39,19 @@ SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> In
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
-void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) {
+void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
     static auto               StartTime   = std::chrono::high_resolution_clock::now();
     const auto                CurrentTime = std::chrono::high_resolution_clock::now();
     const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
     StaticArray<glm::mat4, 3> UBO;
     UBO[0] = rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    // 缩放
+    UBO[0] = scale(UBO[0], glm::vec3(0.05f, 0.05f, 0.05f));
+    // 绕X转90度
+    UBO[0] = rotate(UBO[0], glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
     UBO[1] = lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
+
+
     UBO[2] = glm::perspective(
         glm::radians(45.f),
         static_cast<float>(mContext.get().GetSwapChainExtent().width) / static_cast<float>(mContext.get().GetSwapChainExtent().height),
@@ -98,8 +107,8 @@ void GraphicsPipeline::Initialize() {
     if (mCreateInfo.ViewportSize.height == 0 || mCreateInfo.ViewportSize.width == 0) {
         throw VulkanException(L"创建图形管线失败：视口大小不合法");
     }
-    float Width = mContext.get().GetSwapChainExtent().width;
-    float Height = mContext.get().GetSwapChainExtent().height;
+    float        Width        = mContext.get().GetSwapChainExtent().width;
+    float        Height       = mContext.get().GetSwapChainExtent().height;
     // 设置视口
     vk::Viewport ViewportInfo = {};
     ViewportInfo   //
@@ -111,7 +120,7 @@ void GraphicsPipeline::Initialize() {
         .setMaxDepth(1.f);   //深度的最大最小值必须在[0,1]职中
 
     // 裁剪矩形
-    vk::Rect2D Scissor = {};
+    vk::Rect2D   Scissor       = {};
     vk::Extent2D ScissorExtent = {static_cast<uint32>(Width), static_cast<uint32>(Height)};
     Scissor   //
         .setOffset({0, 0})
@@ -270,16 +279,20 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
     // 使用顶点缓冲需纳入
-    vk::Buffer     VertexBuffers = {mVertexBuffer};
-    vk::DeviceSize Offsets       = {0};
-    InBuffer.bindVertexBuffers(0, VertexBuffers, Offsets);
-    InBuffer.bindIndexBuffer(mIndexBuffer, 0, vk::IndexType::eUint32);
-    // 绑定描述符集
-    Array Set = {InParam.DescriptorSet};
-    InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
 
-    InBuffer.drawIndexed(static_cast<uint32>(mModel->GetIndices().size()), 1, 0, 0, 0);
-
+    int i = 0;
+    for (const auto& Mesh: mModel->GetMeshes()) {
+        // 绑定顶点缓冲
+        i++;
+        vk::DeviceSize Offset          = 0;
+        vk::Buffer     VertexBuffers[] = {Mesh.GetVertexBuffer()};
+        InBuffer.bindVertexBuffers(0, 1, VertexBuffers, &Offset);
+        InBuffer.bindIndexBuffer(Mesh.GetIndexBuffer(), 0, vk::IndexType::eUint32);
+        // 绑定描述符集
+        Array Set = {InParam.DescriptorSet};
+        InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
+        InBuffer.drawIndexed(static_cast<uint32>(Mesh.GetIndexCount()), 1, 0, 0, 0);
+    }
     InBuffer.endRenderPass();
 }
 
@@ -330,7 +343,7 @@ void GraphicsPipeline::CreateDepthBuffer() {
     );
 }
 
-void GraphicsPipeline::CleanDepthBuffer() {
+void GraphicsPipeline::CleanDepthBuffer() const {
     mDepthImageView->Finialize();
     mDepthImage->Finialize();
 }
@@ -372,68 +385,16 @@ void GraphicsPipeline::CleanFramebuffers() {
 }
 
 void GraphicsPipeline::LoadModel() {
-    mModel                                = MakeShared<Resource::Model>(L"Models/viking_room.obj");
-    // 顶点缓冲
-    const vk::DeviceSize VertexBufferSize = sizeof(mModel->GetVertices()[0]) * mModel->GetVertices().size();
-    vk::Buffer           VertexStagingBuffer;
-    vk::DeviceMemory     VertexStagingBufferMemory;
-    mContext.get().GetLogicalDevice()->CreateBuffer(
-        VertexBufferSize,
-        vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-        VertexStagingBuffer,
-        VertexStagingBufferMemory
-    );
-    void* Data;
-    mContext.get().GetLogicalDevice()->MapMemory(VertexStagingBufferMemory, VertexBufferSize, 0, &Data);
-    memcpy(Data, mModel->GetVertices().data(), static_cast<size_t>(VertexBufferSize));
-    mContext.get().GetLogicalDevice()->UnmapMemory(VertexStagingBufferMemory);
-    mContext.get().GetLogicalDevice()->CreateBuffer(
-        VertexBufferSize,
-        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-        vk::MemoryPropertyFlagBits::eDeviceLocal,
-        mVertexBuffer,
-        mVertexBufferMemory
-    );
-    mContext.get().GetCommandProducer()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(VertexStagingBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
-
-    // 索引缓冲
-    const vk::DeviceSize IndexBufferSize = sizeof(mModel->GetIndices()[0]) * mModel->GetIndices().size();
-    vk::Buffer           IndexStagingBuffer;
-    vk::DeviceMemory     IndexStagingBufferMemory;
-    mContext.get().GetLogicalDevice()->CreateBuffer(
-        IndexBufferSize,
-        vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-        IndexStagingBuffer,
-        IndexStagingBufferMemory
-    );
-    mContext.get().GetLogicalDevice()->MapMemory(IndexStagingBufferMemory, IndexBufferSize, 0, &Data);
-    memcpy(Data, mModel->GetIndices().data(), static_cast<size_t>(IndexBufferSize));
-    mContext.get().GetLogicalDevice()->UnmapMemory(IndexStagingBufferMemory);
-    mContext.get().GetLogicalDevice()->CreateBuffer(
-        IndexBufferSize,
-        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
-        vk::MemoryPropertyFlagBits::eDeviceLocal,
-        mIndexBuffer,
-        mIndexBufferMemory
-    );
-    mContext.get().GetCommandProducer()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(IndexStagingBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
+    auto ModelResource = Resource::Model::Create(L"Models/m4a1_s.fbx");
+    mModel             = Model::CreateUnique(ModelResource, mContext);
 }
 
-void GraphicsPipeline::CleanModel() {
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mVertexBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mVertexBufferMemory);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mIndexBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mIndexBufferMemory);
+void GraphicsPipeline::CleanModel() const {
+    mModel->Finialize();
 }
 
 void GraphicsPipeline::CreateTextureImageAndView() {
-    const auto Texture = Resource::Texture::Create(L"Textures/viking_room.png");
+    const auto Texture = Resource::Texture::Create(L"Textures/noodas.png");
     mTexture           = Texture::Create(*mContext.get().GetLogicalDevice(), *mContext.get().GetCommandProducer(), Texture);
     mTextureView       = mContext.get().GetLogicalDevice()->CreateImageView(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
@@ -441,7 +402,7 @@ void GraphicsPipeline::CreateTextureImageAndView() {
     CreateTextureSampler();
 }
 
-void GraphicsPipeline::CleanTextureImageAndView() {
+void GraphicsPipeline::CleanTextureImageAndView() const {
     mTextureView->Finialize();
     mTexture->Finialize();
     CleanTextureSampler();
@@ -470,7 +431,7 @@ void GraphicsPipeline::CreateTextureSampler() {
     mTextureSampler                     = mContext.get().GetLogicalDevice()->GetHandle().createSampler(SamplerInfo);
 }
 
-void GraphicsPipeline::CleanTextureSampler() {
+void GraphicsPipeline::CleanTextureSampler() const {
     mContext.get().GetLogicalDevice()->GetHandle().destroy(mTextureSampler);
 }
 
@@ -515,7 +476,7 @@ void GraphicsPipeline::CreateDescriptorPool() {
     mDescriptorPool = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorPool(PoolInfo);
 }
 
-void GraphicsPipeline::CleanDescriptorPool() {
+void GraphicsPipeline::CleanDescriptorPool() const {
     mContext.get().GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
 }
 
@@ -575,7 +536,7 @@ void GraphicsPipeline::CreateCommandBuffers() {
     }
 }
 
-void GraphicsPipeline::CleanCommandBuffers() {
+void GraphicsPipeline::CleanCommandBuffers() const {
     mContext.get().GetCommandProducer()->DestroyCommandBuffers(mCommandBuffers);
 }
 

@@ -8,6 +8,7 @@
 #pragma once
 #include "CoreDef.h"
 #include "Interface/IResource.h"
+#include "Interface/IRHIResourceContainer.h"
 #include "Path/Path.h"
 #include "ResourceCommon.h"
 
@@ -21,7 +22,7 @@ enum class ETextureUsage {
     Diffuse,
 };
 
-class Texture : public IResource {
+class Texture : public IResource, public IRHIResourceContainer {
 protected:
     struct Protected
     {};
@@ -43,6 +44,8 @@ public:
 
     void Load() final;
 
+    RHI::Vulkan::IRHIResource* GetRHIResource() override;
+
 protected:
     Path          mPath;
     int32         mWidth    = 0;
@@ -50,6 +53,8 @@ protected:
     int32         mChannels = 0;
     uint8*        mData     = nullptr;
     ETextureUsage mUsage;
+
+    RHI::Vulkan::IRHIResource* mTextureRHIResource = nullptr;
 };
 
 RESOURCE_NAMESPACE_END

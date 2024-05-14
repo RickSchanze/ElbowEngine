@@ -52,8 +52,8 @@ add_library(Platform
         RHI/Vulkan/Render/CommandProducer.cpp
         RHI/Vulkan/Render/CommandProducer.h
         RHI/Vulkan/Interface/IGraphicsPipeline.h
-        RHI/Vulkan/Resource/Mesh.cpp
-        RHI/Vulkan/Resource/Mesh.h
+        RHI/Vulkan/Resource/VulkanModel.h
+        RHI/Vulkan/Resource/VulkanModel.cpp
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

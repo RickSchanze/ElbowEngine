@@ -12,14 +12,6 @@
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-
-namespace RHI::Vulkan {
-class DefaultRenderPassProducer;
-}
-namespace Resource {
-class Model;
-}
-
 namespace RHI::Vulkan {
 class Texture;
 class CommandProducer;
@@ -30,6 +22,8 @@ class IRenderPassProducer;
 class RenderPass;
 class LogicalDevice;
 class ShaderProgram;
+class DefaultRenderPassProducer;
+class Model;
 }   // namespace RHI::Vulkan
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -52,12 +46,12 @@ public:
      * @param InContext 逻辑设备
      * @param InCreateInfo 创建信息
      */
-    GraphicsPipeline(Ref<VulkanContext> InContext, const GraphicsPipelineCreateInfo& InCreateInfo);
+     GraphicsPipeline(Ref<VulkanContext> InContext, const GraphicsPipelineCreateInfo& InCreateInfo);
     ~GraphicsPipeline() override;
 
     static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
-    void UpdateUniformBuffer(uint32 InCurrentImage);
+    void UpdateUniformBuffer(uint32 InCurrentImage)const;
 
     vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage) const;
 
@@ -84,7 +78,7 @@ protected:
     void CreateMsaaColorBuffer();
     // 创建深度图像缓冲区
     void CreateDepthBuffer();
-    void CleanDepthBuffer();
+    void CleanDepthBuffer()const;
     // 创建交换链帧缓冲区
     void CreateFramebuffers();
     void CleanFramebuffers();
@@ -111,7 +105,7 @@ private:
     Array<vk::CommandBuffer> mCommandBuffers;
 
     SharedPtr<IRenderPassProducer> mRenderPassProducer;
-    UniquePtr<RenderPass> mRenderPass;
+    UniquePtr<RenderPass>          mRenderPass;
 
     // Renderer拥有此对象
     Ref<VulkanContext> mContext;
@@ -131,33 +125,29 @@ private:
 
 
     // TODO: 模型系统
-    SharedPtr<Resource::Model> mModel;
-    vk::Buffer                 mVertexBuffer;
-    vk::DeviceMemory           mVertexBufferMemory;
-    vk::Buffer                 mIndexBuffer;
-    vk::DeviceMemory           mIndexBufferMemory;
-    vk::DescriptorPool         mDescriptorPool;
+    UniquePtr<RHI::Vulkan::Model>   mModel;
+    vk::DescriptorPool mDescriptorPool;
 
     void LoadModel();
 
-    void CleanModel();
+    void CleanModel()const;
 
     void CreateTextureImageAndView();
-    void CleanTextureImageAndView();
+    void CleanTextureImageAndView()const;
 
     void CreateTextureSampler();
-    void CleanTextureSampler();
+    void CleanTextureSampler()const;
 
     void CreateUniformBuffers();
     void CleanUniformBuffers();
 
     void CreateDescriptorPool();
-    void CleanDescriptorPool();
+    void CleanDescriptorPool()const;
 
     void CreateDescriptotSets();
 
     void CreateCommandBuffers();
-    void CleanCommandBuffers();
+    void CleanCommandBuffers()const;
 
 public:
     // clang-format off

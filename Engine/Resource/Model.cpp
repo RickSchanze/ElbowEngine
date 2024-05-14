@@ -15,6 +15,11 @@
 #include "ResourceManager.h"
 
 RESOURCE_NAMESPACE_BEGIN
+
+RHI::Vulkan::IRHIResource* Mesh::GetRHIResource() {
+    return mMeshRHIResource;
+}
+
 Model::Model(Protected, const Path& InModelPath) : mPath(InModelPath) {
     Load();
 }
