@@ -21,10 +21,10 @@ LogicalDevice::~LogicalDevice() {
 }
 
 UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) {
-    return MakeUnique<LogicalDevice>(ResourcePrivate{}, InDevice, InAssociatedPhysicalDevice);
+    return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
-LogicalDevice::LogicalDevice(ResourcePrivate, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
+LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
     mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
 
     Initialize();

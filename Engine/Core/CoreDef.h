@@ -122,6 +122,12 @@ constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
     return static_cast<T&&>(Arg);
 }
 
+// std::dynamic_pointer_cast -> StaticPointerCast
+template<typename T, typename U>
+SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr) {
+    return std::static_pointer_cast<T>(InSharedPtr);
+}
+
 // std::wstring_view -> StringView
 #include <string_view>
 typedef std::wstring_view StringView;

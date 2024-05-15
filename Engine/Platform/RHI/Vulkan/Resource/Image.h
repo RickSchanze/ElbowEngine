@@ -7,6 +7,7 @@
 
 #pragma once
 #include "ImageView.h"
+#include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
@@ -60,7 +61,7 @@ struct ImageCreateInfo
     explicit ImageCreateInfo(const vk::ImageCreateInfo& InVkImageInfo);
 };
 
-class Image : public ImageBase {
+class Image : public ImageBase, public IRHIResource {
 protected:
     struct Protected
     {};
@@ -75,7 +76,6 @@ public:
     ~Image() override;
 
     bool IsValid() const override;
-
     void Finialize();
 
     uint32 GetWidth() const { return mCreateInfo.Width; }
@@ -88,6 +88,8 @@ protected:
 protected:
     explicit Image(const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {}
 
+protected:
+
     Ref<LogicalDevice> mDevice;
 
     vk::DeviceMemory mImageMemory = nullptr;
@@ -97,11 +99,9 @@ protected:
 class Texture : public Image {
 public:
     Texture(
-        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const Resource::Texture* InTexture
-    );
+        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
-    static SharedPtr<Texture>
-    Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
+    static SharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
     int32 GetMipLevel() const { return mMipLevel; }
 

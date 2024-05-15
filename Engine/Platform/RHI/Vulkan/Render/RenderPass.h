@@ -41,16 +41,16 @@ private:
 
 class RenderPass final : public IRHIResource {
 public:
-    bool IsValid() const override;
+    bool IsValid() const;
 
     ~RenderPass() override;
 
     static UniquePtr<RenderPass> CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo);
 
-    RenderPass(ResourcePrivate, const vk::RenderPassCreateInfo& CreateInfo, Ref<LogicalDevice> InDevice);
+    RenderPass(ResourceProtected, const vk::RenderPassCreateInfo& CreateInfo, Ref<LogicalDevice> InDevice);
 
-    void Initialize() override;
-    void Finialize() override;
+    void Initialize();
+    void Finialize();
 
     vk::RenderPass GetHandle() const { return mRenderPassHandle; }
 

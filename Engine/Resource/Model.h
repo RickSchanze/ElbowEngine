@@ -47,19 +47,16 @@ public:
     Array<Texture*>& GetTextures() { return mTextures; }
     Array<uint32>&   GetIndices() { return mIndices; }
 
-    RHI::Vulkan::IRHIResource* GetRHIResource() override;
+    SharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
 
     bool IsValid() const { return !mVertices.empty(); }
-
-protected:
-    void SetRHIResource(RHI::Vulkan::IRHIResource* InRHIResource) { mMeshRHIResource = InRHIResource; }
 
 private:
     Array<Vertex>   mVertices;
     Array<Texture*> mTextures;
     Array<uint32>   mIndices;
 
-    RHI::Vulkan::IRHIResource* mMeshRHIResource = nullptr;
+    SharedPtr<RHI::Vulkan::IRHIResource> mMeshRHIResource = nullptr;
 };
 
 class Model : public IResource {

@@ -93,9 +93,8 @@ void Image::CreateImage() {
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
 }
 
-Texture::Texture(
-    Protected, const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, const Resource::Texture* InTexture
-) : Image(InDevice) {
+Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) :
+    Image(InDevice) {
     // TODO: 绑定TextureSampler
     vk::Buffer       StagingBuffer;
     vk::DeviceMemory StagingBufferMemory;
@@ -153,8 +152,16 @@ Texture::Texture(
     Device.freeMemory(StagingBufferMemory);
 }
 
-SharedPtr<Texture> Texture::Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) {
-    return MakeShared<Texture>(Protected{}, InDevice, InCommandProducer, InTexture);
+SharedPtr<Texture>
+Texture::Create(const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) {
+    // 如果InTexture中有对应的RHI Vulkan资源则直接返回
+    if (InTexture->GetRHIResource() != nullptr) {
+        return std::dynamic_pointer_cast<Texture>(InTexture->GetRHIResource());
+    }
+    // 没有则创建一个新的
+    auto NewTexture                = MakeShared<Texture>(Protected{}, InDevice, InCommandProducer, InTexture);
+    InTexture->mTextureRHIResource = NewTexture;
+    return NewTexture;
 }
 
 RHI_VULKAN_NAMESPACE_END

@@ -29,10 +29,10 @@ public:
 
     static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-    explicit LogicalDevice(ResourcePrivate, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-    void Initialize() override;
-    void Finialize() override;
+    void Initialize();
+    void Finialize();
 
     /**
      * 创建一个交换链对象
@@ -75,7 +75,7 @@ public:
     vk::Result MapMemory(vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData) const;
     void       UnmapMemory(vk::DeviceMemory InMemory) const;
 
-    bool            IsValid() const override { return static_cast<bool>(mLogicalDeviceHandle); }
+    bool            IsValid() const { return static_cast<bool>(mLogicalDeviceHandle); }
     vk::Device      GetHandle() const { return mLogicalDeviceHandle; }
     PhysicalDevice& GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice; }
 

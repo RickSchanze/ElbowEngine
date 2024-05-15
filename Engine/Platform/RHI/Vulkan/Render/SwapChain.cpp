@@ -17,18 +17,18 @@ UniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
     vk::Extent2D InSwapchainExtent
 ) {
-    return MakeUnique<SwapChain>(ResourcePrivate{}, InSwapchainHandle, InAssociatedLogicalDevice, InSwapchainFormat, InSwapchainExtent);
+    return MakeUnique<SwapChain>(ResourceProtected{}, InSwapchainHandle, InAssociatedLogicalDevice, InSwapchainFormat, InSwapchainExtent);
 }
 
 SharedPtr<SwapChain> SwapChain::CreateShared(
     vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
     vk::Extent2D InSwapchainExtent
 ) {
-    return MakeShared<SwapChain>(ResourcePrivate{}, InSwapchainHandle, InAssociatedLogicalDevice, InSwapchainFormat, InSwapchainExtent);
+    return MakeShared<SwapChain>(ResourceProtected{}, InSwapchainHandle, InAssociatedLogicalDevice, InSwapchainFormat, InSwapchainExtent);
 }
 
 SwapChain::SwapChain(
-    ResourcePrivate, const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, const vk::Format InSwapchainFormat,
+    ResourceProtected, const vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, const vk::Format InSwapchainFormat,
     const vk::Extent2D InSwapchainExtent
 ) :
     mSwapchainHandle(InSwapchainHandle), mSwapchainImageFormat(InSwapchainFormat), mSwapchainExtent(InSwapchainExtent),

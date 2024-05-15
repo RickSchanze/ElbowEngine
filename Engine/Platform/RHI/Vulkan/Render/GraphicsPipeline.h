@@ -51,7 +51,7 @@ public:
 
     static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
-    void UpdateUniformBuffer(uint32 InCurrentImage)const;
+    void UpdateUniformBuffer(uint32 InCurrentImage) const;
 
     vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage) const;
 
@@ -78,7 +78,7 @@ protected:
     void CreateMsaaColorBuffer();
     // 创建深度图像缓冲区
     void CreateDepthBuffer();
-    void CleanDepthBuffer()const;
+    void CleanDepthBuffer() const;
     // 创建交换链帧缓冲区
     void CreateFramebuffers();
     void CleanFramebuffers();
@@ -123,31 +123,30 @@ private:
 
     GraphicsPipelineCreateInfo mCreateInfo;
 
-
     // TODO: 模型系统
-    UniquePtr<RHI::Vulkan::Model>   mModel;
+    UniquePtr<Model>   mModel;
     vk::DescriptorPool mDescriptorPool;
 
     void LoadModel();
 
-    void CleanModel()const;
+    void CleanModel() const;
 
     void CreateTextureImageAndView();
-    void CleanTextureImageAndView()const;
+    void CleanTextureImageAndView() const;
 
     void CreateTextureSampler();
-    void CleanTextureSampler()const;
+    void CleanTextureSampler() const;
 
     void CreateUniformBuffers();
     void CleanUniformBuffers();
 
     void CreateDescriptorPool();
-    void CleanDescriptorPool()const;
+    void CleanDescriptorPool() const;
 
     void CreateDescriptotSets();
 
     void CreateCommandBuffers();
-    void CleanCommandBuffers()const;
+    void CleanCommandBuffers() const;
 
 public:
     // clang-format off

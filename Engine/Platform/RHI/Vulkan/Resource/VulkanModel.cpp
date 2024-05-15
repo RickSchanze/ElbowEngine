@@ -7,16 +7,17 @@
 
 #include "VulkanModel.h"
 
+#include "CoreGlobal.h"
 #include "Model.h"
 #include "RHI/Vulkan/Render/CommandProducer.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Mesh::Mesh(Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(InContext) {
+Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(InContext) {
     if (InMeshResource == nullptr || !InMeshResource->IsValid()) return;
     // 顶点缓冲
-    mVertexCount = static_cast<uint32>(InMeshResource->GetVertices().size());
+    mVertexCount                          = static_cast<uint32>(InMeshResource->GetVertices().size());
     const vk::DeviceSize VertexBufferSize = sizeof(InMeshResource->GetVertices()[0]) * mVertexCount;
     vk::Buffer           VertexStagingBuffer;
     vk::DeviceMemory     VertexStagingBufferMemory;
@@ -43,7 +44,7 @@ Mesh::Mesh(Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
 
     // 索引缓冲
-    mIndexCount = static_cast<uint32>(InMeshResource->GetIndices().size());
+    mIndexCount                          = static_cast<uint32>(InMeshResource->GetIndices().size());
     const vk::DeviceSize IndexBufferSize = sizeof(InMeshResource->GetIndices()[0]) * mIndexCount;
     vk::Buffer           IndexStagingBuffer;
     vk::DeviceMemory     IndexStagingBufferMemory;
@@ -67,19 +68,25 @@ Mesh::Mesh(Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(
     mContext.get().GetCommandProducer()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
     mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(IndexStagingBuffer);
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
+}
 
-    InMeshResource->SetRHIResource(this);
-    Initialize();
+SharedPtr<Mesh> Mesh::Create(VulkanContext& InContext, Resource::Mesh* InMeshResource) {
+    if (InMeshResource->GetRHIResource() != nullptr) {
+        return StaticPointerCast<Mesh>(InMeshResource->GetRHIResource());
+    }
+    auto NewMesh = MakeShared<Mesh>(ResourceProtected{}, InMeshResource, InContext);
+
+    InMeshResource->mMeshRHIResource = NewMesh;
+    return NewMesh;
 }
 
 Mesh::~Mesh() {
+    Finialize();
 }
 
 bool Mesh::IsValid() const {
     return mVertexBuffer && mIndexBuffer;
 }
-
-void Mesh::Initialize() {}
 
 void Mesh::Finialize() {
     if (!IsValid()) return;
@@ -96,19 +103,25 @@ void Mesh::Finialize() {
 Model::Model(Resource::Model* InModel, VulkanContext& InContext) {
     if (InModel == nullptr || !InModel->IsValid()) return;
     for (auto& MeshResource: InModel->GetMeshes()) {
-        mMeshes.emplace_back(&MeshResource, InContext);
+        auto Mesh = Mesh::Create(InContext, &MeshResource);
+        if (Mesh->IsValid()) {
+            mMeshes.push_back(Mesh);
+        }
     }
+}
+
+Model::~Model() {
+    Finialize();
 }
 
 UniquePtr<Model> Model::CreateUnique(Resource::Model* InModel, VulkanContext& InContext) {
     return MakeUnique<Model>(InModel, InContext);
 }
 
-void Model::Initialize() {}
-
-void Model::Finialize() {
-    for (auto& Mesh: mMeshes) {
-        Mesh.Finialize();
+void Model::Finialize() const {
+    if (!IsValid()) return;
+    for (const auto& Mesh: mMeshes) {
+        Mesh->Finialize();
     }
 }
 

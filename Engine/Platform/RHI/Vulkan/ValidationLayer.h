@@ -20,10 +20,10 @@ public:
 
     explicit ValidationLayer(Instance* InParentInstance) noexcept : mAttachedVulkanInstance(InParentInstance) {}
 
-    void Initialize() override;
-    void Finialize() override;
+    void Initialize();
+    void Finialize();
 
-    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mDebugMessengerCallback); }
+    bool IsValid() const { return static_cast<bool>(mDebugMessengerCallback); }
 
 #if ELBOW_DEBUG
     static constexpr bool sEnableValidationLayer = true;

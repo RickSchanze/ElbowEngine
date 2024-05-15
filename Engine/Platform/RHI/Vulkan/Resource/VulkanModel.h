@@ -13,7 +13,7 @@
 namespace Resource {
 class Model;
 class Mesh;
-}
+}   // namespace Resource
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -21,14 +21,15 @@ class VulkanContext;
 
 class Mesh : public IRHIResource {
 public:
-    // TODO: Vulkan Mesh
-     Mesh(Resource::Mesh* InMeshResource, VulkanContext& InContext);
+    Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InContext);
+
+    static SharedPtr<Mesh> Create(VulkanContext& InContext, Resource::Mesh* InMeshResource);
+
     ~Mesh() override;
 
-    bool IsValid() const override;
+    bool IsValid() const;
 
-    void Initialize() final;
-    void Finialize() final;
+    void Finialize();
 
     vk::Buffer GetVertexBuffer() const { return mVertexBuffer; }
     vk::Buffer GetIndexBuffer() const { return mIndexBuffer; }
@@ -41,7 +42,7 @@ private:
     vk::DeviceMemory mVertexBufferMemory;
     vk::DeviceMemory mIndexBufferMemory;
 
-    uint32 mIndexCount = 0;
+    uint32 mIndexCount  = 0;
     uint32 mVertexCount = 0;
 
     Ref<VulkanContext> mContext;
@@ -49,19 +50,21 @@ private:
 
 class Model : public IRHIResource {
 public:
-    Model(Resource::Model* InModel, VulkanContext& InContext);
+     Model(Resource::Model* InModel, VulkanContext& InContext);
+    ~Model() override;
 
-    Array<Mesh>& GetMeshes() { return mMeshes; }
+    Array<SharedPtr<Mesh>>& GetMeshes() { return mMeshes; }
 
     static UniquePtr<Model> CreateUnique(Resource::Model* InModel, VulkanContext& InContext);
 
-    void               Initialize() override;
-    void               Finialize() override;
-    [[nodiscard]] bool IsValid() const override;
+    void Finialize() const;
+    bool IsValid() const;
 
 private:
-    // 注意 这里没有使用RAII 使用模型为单位进行资源管理而不是Mesh
-    Array<Mesh> mMeshes;
+    // TODO: 这里可能需要一种所有权指针
+    // 这里存储OwnerPtr：只有这里能释放资源
+    // 其他地方是UserPtr: 其他地方存储指向同一个地方的指针，当OwnerPtr失效是，所有UserPtr也失效
+    Array<SharedPtr<Mesh>> mMeshes;
 };
 
 RHI_VULKAN_NAMESPACE_END

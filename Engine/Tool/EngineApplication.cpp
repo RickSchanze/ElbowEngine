@@ -7,7 +7,6 @@
 
 #include "EngineApplication.h"
 
-#include "../Platform/RHI/Vulkan/VulkanContext.h"
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Application.h"

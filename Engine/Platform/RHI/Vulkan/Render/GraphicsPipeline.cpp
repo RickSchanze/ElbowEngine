@@ -285,13 +285,13 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
         // 绑定顶点缓冲
         i++;
         vk::DeviceSize Offset          = 0;
-        vk::Buffer     VertexBuffers[] = {Mesh.GetVertexBuffer()};
+        vk::Buffer     VertexBuffers[] = {Mesh->GetVertexBuffer()};
         InBuffer.bindVertexBuffers(0, 1, VertexBuffers, &Offset);
-        InBuffer.bindIndexBuffer(Mesh.GetIndexBuffer(), 0, vk::IndexType::eUint32);
+        InBuffer.bindIndexBuffer(Mesh->GetIndexBuffer(), 0, vk::IndexType::eUint32);
         // 绑定描述符集
         Array Set = {InParam.DescriptorSet};
         InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
-        InBuffer.drawIndexed(static_cast<uint32>(Mesh.GetIndexCount()), 1, 0, 0, 0);
+        InBuffer.drawIndexed(static_cast<uint32>(Mesh->GetIndexCount()), 1, 0, 0, 0);
     }
     InBuffer.endRenderPass();
 }

@@ -29,10 +29,10 @@ public:
     explicit operator vk::SurfaceKHR() const { return mSurfaceHandle; }
 
     /** 此函数必修初始化mSurface */
-    void Initialize() override INTERFACE_METHOD;
-    void Finialize() override;
+    virtual void Initialize() = 0;
+    void Finialize();
 
-    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mSurfaceHandle); }
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurfaceHandle); }
 
 protected:
     vk::SurfaceKHR mSurfaceHandle;
@@ -43,14 +43,14 @@ class Instance final : public IRHIResource {
 public:
     Instance();
 
-    void Initialize() override;
-    void Finialize() override;
+    void Initialize();
+    void Finialize();
 
     Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
 
     // clang-format off
     [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
-    [[nodiscard]] bool IsValid() const override { return static_cast<bool>(mVulkanInstanceHandle); }
+    [[nodiscard]] bool IsValid() const { return static_cast<bool>(mVulkanInstanceHandle); }
     [[nodiscard]] vk::Instance GetHandle() const { return mVulkanInstanceHandle; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
     [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const {return mSurface->GetSurfaceHandle();}

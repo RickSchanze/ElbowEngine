@@ -30,7 +30,7 @@ public:
     );
 
     explicit SwapChain(
-        ResourcePrivate, vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
+        ResourceProtected, vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
         vk::Extent2D InSwapchainExtent
     );
 
@@ -46,14 +46,14 @@ public:
     [[nodiscard]] vk::SwapchainKHR GetHandle() const { return mSwapchainHandle; }
     [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
 
-    [[nodiscard]] bool IsValid() const override;
+    [[nodiscard]] bool IsValid() const;
 
     vk::Format                   GetImageFormat() const { return mSwapchainImageFormat; }
     vk::Extent2D                 GetExtent() const { return mSwapchainExtent; }
     Array<SharedPtr<ImageView>>& GetImageViews() { return mSwapchainImageViews; }
 
-    void Initialize() override;
-    void Finialize() override;
+    void Initialize();
+    void Finialize();
 
     uint32 GetSwapchainImageCount() const { return static_cast<uint32>(mSwapchainImages.size()); }
 

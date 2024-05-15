@@ -13,6 +13,7 @@
 #include "ResourceCommon.h"
 
 namespace RHI::Vulkan {
+class Texture;
 class Image;
 }
 
@@ -23,6 +24,7 @@ enum class ETextureUsage {
 };
 
 class Texture : public IResource, public IRHIResourceContainer {
+    friend class RHI::Vulkan::Texture;
 protected:
     struct Protected
     {};
@@ -44,7 +46,7 @@ public:
 
     void Load() final;
 
-    RHI::Vulkan::IRHIResource* GetRHIResource() override;
+    SharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
 
 protected:
     Path          mPath;
@@ -54,7 +56,7 @@ protected:
     uint8*        mData     = nullptr;
     ETextureUsage mUsage;
 
-    RHI::Vulkan::IRHIResource* mTextureRHIResource = nullptr;
+    SharedPtr<RHI::Vulkan::IRHIResource> mTextureRHIResource = nullptr;
 };
 
 RESOURCE_NAMESPACE_END
