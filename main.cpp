@@ -5,7 +5,6 @@
 #include "windows.h"
 #define GLFW_INCLUDE_VULKAN
 #include "EngineApplication.h"
-#include "RHI/Vulkan/Render/Shader.h"
 
 
 int main() {
