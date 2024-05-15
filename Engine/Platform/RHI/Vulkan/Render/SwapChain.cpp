@@ -13,14 +13,14 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-UniquePtr<SwapChain> SwapChain::CreateUnique(
+TUniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
     vk::Extent2D InSwapchainExtent
 ) {
     return MakeUnique<SwapChain>(ResourceProtected{}, InSwapchainHandle, InAssociatedLogicalDevice, InSwapchainFormat, InSwapchainExtent);
 }
 
-SharedPtr<SwapChain> SwapChain::CreateShared(
+TSharedPtr<SwapChain> SwapChain::CreateShared(
     vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
     vk::Extent2D InSwapchainExtent
 ) {
@@ -42,7 +42,7 @@ SwapChain::~SwapChain() {
     }
 }
 
-vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& InAvailableFormats) {
+vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& InAvailableFormats) {
     // 看看设定的格式在不在列表
     for (const auto& AvailableFormat: InAvailableFormats) {
         if (AvailableFormat.format == vk::Format::eB8G8R8Unorm && AvailableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
@@ -53,7 +53,7 @@ vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceF
     return InAvailableFormats[0];
 }
 
-vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& InAvailablePresentModes) {
+vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes) {
     // FIFO: 垂直同步
     auto BestMode = vk::PresentModeKHR::eFifo;
     for (const auto& AvailablePresentMode: InAvailablePresentModes) {

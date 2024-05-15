@@ -34,9 +34,9 @@ private:
     vk::AttachmentReference mDepthAttachmentRef{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
     vk::AttachmentReference mColorAttachmentResolveRef{2, vk::ImageLayout::eColorAttachmentOptimal};
 
-    Array<vk::AttachmentDescription> mAttachmets;
-    Array<vk::SubpassDescription>    mSubpasses;
-    Array<vk::SubpassDependency>     mDependencies;
+    TArray<vk::AttachmentDescription> mAttachmets;
+    TArray<vk::SubpassDescription>    mSubpasses;
+    TArray<vk::SubpassDependency>     mDependencies;
 };
 
 class RenderPass final : public IRHIResource {
@@ -45,7 +45,7 @@ public:
 
     ~RenderPass() override;
 
-    static UniquePtr<RenderPass> CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo);
+    static TUniquePtr<RenderPass> CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo);
 
     RenderPass(ResourceProtected, const vk::RenderPassCreateInfo& CreateInfo, Ref<LogicalDevice> InDevice);
 

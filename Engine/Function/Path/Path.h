@@ -11,9 +11,7 @@
 
 #include "CoreDef.h"
 
-
 class Path {
-
 
 public:
     Path() = default;
@@ -81,13 +79,13 @@ public:
      * 获取工作目录 未设置则返回空
      * @return
      */
-    static Optional<Path> GetWorkPath() noexcept;
+    static TOptional<Path> GetWorkPath() noexcept;
 
     /**
      * 获取项目元数据文件路径
      * @return
      */
-    static Optional<Path> GetProjectMetaFilePath() noexcept;
+    static TOptional<Path> GetProjectMetaFilePath() noexcept;
 
     /**
      * 创建当前路径指示的文件

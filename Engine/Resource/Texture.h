@@ -46,7 +46,7 @@ public:
 
     void Load() final;
 
-    SharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
+    TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
 
 protected:
     Path          mPath;
@@ -56,7 +56,7 @@ protected:
     uint8*        mData     = nullptr;
     ETextureUsage mUsage;
 
-    SharedPtr<RHI::Vulkan::IRHIResource> mTextureRHIResource = nullptr;
+    TSharedPtr<RHI::Vulkan::IRHIResource> mTextureRHIResource = nullptr;
 };
 
 RESOURCE_NAMESPACE_END

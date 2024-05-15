@@ -27,7 +27,7 @@ class LogicalDevice final : public IRHIResource {
 public:
     ~LogicalDevice() override;
 
-    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
     explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
@@ -41,7 +41,7 @@ public:
      * @param InHeight
      * @return
      */
-    UniquePtr<SwapChain> CreateSwapChain(uint32 InSwapChainImageCount = 0, uint32 InWidth = 0, uint32 InHeight = 0);
+    TUniquePtr<SwapChain> CreateSwapChain(uint32 InSwapChainImageCount = 0, uint32 InWidth = 0, uint32 InHeight = 0);
 
     /**
      * 基于InImage创建一个图像视图
@@ -51,7 +51,7 @@ public:
      * @param InMipLevels
      * @return
      */
-    SharedPtr<ImageView> CreateImageView(
+    TSharedPtr<ImageView> CreateImageView(
         const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
         uint32 InMipLevels = 1
     );

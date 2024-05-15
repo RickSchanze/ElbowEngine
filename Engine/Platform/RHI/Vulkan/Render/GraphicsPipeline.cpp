@@ -35,7 +35,7 @@ GraphicsPipeline::~GraphicsPipeline() {
     Finalize();
 }
 
-SharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
+TSharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo) {
     return MakeShared<GraphicsPipeline>(InDevice, InCreateInfo);
 }
 
@@ -43,7 +43,7 @@ void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
     static auto               StartTime   = std::chrono::high_resolution_clock::now();
     const auto                CurrentTime = std::chrono::high_resolution_clock::now();
     const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
-    StaticArray<glm::mat4, 3> UBO;
+    TStaticArray<glm::mat4, 3> UBO;
     UBO[0] = rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
     // 缩放
     UBO[0] = scale(UBO[0], glm::vec3(0.05f, 0.05f, 0.05f));
@@ -87,7 +87,7 @@ void GraphicsPipeline::Initialize() {
     VertInfo.setStage(vk::ShaderStageFlagBits::eVertex).setModule(VertShader->GetShaderModule()).setPName("main");
     vk::PipelineShaderStageCreateInfo FragInfo{};
     FragInfo.setStage(vk::ShaderStageFlagBits::eFragment).setModule(FragShader->GetShaderModule()).setPName("main");
-    StaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
+    TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
 
     // 配置顶点Shader的输入信息
     auto BindingDesc   = mShaderProg->GetVertexInputBindingDescription();
@@ -272,7 +272,7 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     RenderPassInfo.setRenderPass(mRenderPass->GetHandle())
         .setFramebuffer(InParam.FrameBuffer)
         .setRenderArea({{0, 0}, mContext.get().GetSwapChainExtent()});
-    StaticArray<vk::ClearValue, 2> ClearValues = {};
+    TStaticArray<vk::ClearValue, 2> ClearValues = {};
     ClearValues[0].color                       = vk::ClearColorValue{1.f, 0.f, 0.f, 1.f};
     ClearValues[1].depthStencil                = vk::ClearDepthStencilValue{1.f, 0};
     RenderPassInfo.setClearValues(ClearValues);
@@ -289,7 +289,7 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
         InBuffer.bindVertexBuffers(0, 1, VertexBuffers, &Offset);
         InBuffer.bindIndexBuffer(Mesh->GetIndexBuffer(), 0, vk::IndexType::eUint32);
         // 绑定描述符集
-        Array Set = {InParam.DescriptorSet};
+        TArray Set = {InParam.DescriptorSet};
         InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
         InBuffer.drawIndexed(static_cast<uint32>(Mesh->GetIndexCount()), 1, 0, 0, 0);
     }
@@ -297,7 +297,7 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
 }
 
 void GraphicsPipeline::CreateDescriptionSetLayout() {
-    Array<vk::DescriptorSetLayoutBinding> UniformBindings;
+    TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
     for (const auto& UniformBinding: mShaderProg->GetUniforms() | std::views::values) {
         vk::DescriptorSetLayoutBinding Binding;
         Binding.binding         = UniformBinding.Binding;
@@ -352,7 +352,7 @@ void GraphicsPipeline::CreateFramebuffers() {
     auto& Context = static_cast<VulkanContext&>(mContext);
     mFramebuffers.resize(Context.GetSwapChainImageCount());
     for (size_t i = 0; i < mFramebuffers.size(); i++) {
-        Array<vk::ImageView> Attachments;
+        TArray<vk::ImageView> Attachments;
         if (mMsaaSamples == vk::SampleCountFlagBits::e1) {
             Attachments = {
                 Context.GetSwapChainImageViews()[i]->GetHandle(),
@@ -462,7 +462,7 @@ void GraphicsPipeline::CleanUniformBuffers() {
 }
 
 void GraphicsPipeline::CreateDescriptorPool() {
-    StaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
+    TStaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
     // Uniform Object
     PoolSizes[0].type                                = vk::DescriptorType::eUniformBuffer;
     PoolSizes[0].descriptorCount                     = mContext.get().GetSwapChainImageCount();
@@ -481,7 +481,7 @@ void GraphicsPipeline::CleanDescriptorPool() const {
 }
 
 void GraphicsPipeline::CreateDescriptotSets() {
-    Array<vk::DescriptorSetLayout> Layouts(mContext.get().GetSwapChainImageCount(), mDescriptorSetLayout);
+    TArray<vk::DescriptorSetLayout> Layouts(mContext.get().GetSwapChainImageCount(), mDescriptorSetLayout);
     vk::DescriptorSetAllocateInfo  AllocInfo = {};
     AllocInfo.setDescriptorPool(mDescriptorPool).setSetLayouts(Layouts);
     mDescriptorSets.resize(mContext.get().GetSwapChainImageCount());
@@ -495,7 +495,7 @@ void GraphicsPipeline::CreateDescriptotSets() {
             .setImageView(mTextureView->GetHandle())
             .setSampler(mTextureSampler);
 
-        StaticArray<vk::WriteDescriptorSet, 2> DescriptorWrites = {};
+        TStaticArray<vk::WriteDescriptorSet, 2> DescriptorWrites = {};
 
         vk::WriteDescriptorSet DescriptorWrite = {};
         DescriptorWrite.setDstSet(mDescriptorSets[i])
@@ -541,7 +541,7 @@ void GraphicsPipeline::CleanCommandBuffers() const {
 }
 
 void GraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, Array<vk::Semaphore> InWaitSemaphores, Array<vk::Semaphore> InSingalSemaphores,
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
     vk::Fence InFrameFence
 ) {
     auto                   CmdBuffer  = GetCurrentImageCommandBuffer(CurrentImageIndex);

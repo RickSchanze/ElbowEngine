@@ -71,7 +71,7 @@ public:
 
     explicit Image(Protected, Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
 
-    static SharedPtr<Image> CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
+    static TSharedPtr<Image> CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
 
     ~Image() override;
 
@@ -101,7 +101,7 @@ public:
     Texture(
         Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
-    static SharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
+    static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
     int32 GetMipLevel() const { return mMipLevel; }
 

@@ -99,7 +99,7 @@ RenderPass::~RenderPass() {
     }
 }
 
-UniquePtr<RenderPass> RenderPass::CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo) {
+TUniquePtr<RenderPass> RenderPass::CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo) {
     return MakeUnique<RenderPass>(ResourceProtected{}, CreateInfo, InDevice);
 }
 

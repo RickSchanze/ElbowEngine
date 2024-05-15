@@ -27,30 +27,30 @@ ConstRef<T> MakeConstRef(const T& TValue) {
 
 // std::function -> Function
 template<typename T>
-using Function = std::function<T>;
+using TFunction = std::function<T>;
 
 // std::vector -> Array
 #include <vector>
 template<typename T, typename Allocator = std::allocator<T>>
-using Array = std::vector<T, Allocator>;
+using TArray = std::vector<T, Allocator>;
 
 // std::array -> StaticArray
 #include <array>
 template<typename T, size_t Size>
-using StaticArray = std::array<T, Size>;
+using TStaticArray = std::array<T, Size>;
 
 // std::set -> Set
 #include <set>
 template<
     class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
-using Set = std::set<KeyType, Comparator, Allocator>;
+using TSet = std::set<KeyType, Comparator, Allocator>;
 
 // std::map -> Map
 #include <map>
 template<
     class KeyType, class ValueType, class Comparator = std::less<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
-using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
+using TMap = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 // basic typedefs
 #include <cstdint>
@@ -73,26 +73,26 @@ typedef std::string  AnsiString;
 // std::optional -> Optional
 #include <optional>
 template<typename T>
-using Optional = std::optional<T>;
+using TOptional = std::optional<T>;
 
 // std::shared_ptr -> SharedPtr
 #include <memory>
 template<typename T>
-using SharedPtr = std::shared_ptr<T>;
+using TSharedPtr = std::shared_ptr<T>;
 // std::unique_ptr -> UniquePtr
 template<typename T>
-using UniquePtr = std::unique_ptr<T>;
+using TUniquePtr = std::unique_ptr<T>;
 // std::weak_ptr -> WeakPtr
 template <typename T>
-using WeakPtr = std::weak_ptr<T>;
+using TWeakPtr = std::weak_ptr<T>;
 // std::make_shared -> MakeShared
 template<typename T, typename... Args>
-SharedPtr<T> MakeShared(Args&&... args) {
+TSharedPtr<T> MakeShared(Args&&... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 // std::make_unique -> MakeUnique
 template<typename T, typename... Args>
-UniquePtr<T> MakeUnique(Args&&... args) {
+TUniquePtr<T> MakeUnique(Args&&... args) {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
@@ -114,7 +114,7 @@ template<
     class KeyType, class ValueType, class Hash = std::hash<KeyType>,
     class KeyEqual  = std::equal_to<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
-using HashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
+using THashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
 template<typename T>
 constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
@@ -124,7 +124,7 @@ constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
 
 // std::dynamic_pointer_cast -> StaticPointerCast
 template<typename T, typename U>
-SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr) {
+TSharedPtr<T> StaticPointerCast(const TSharedPtr<U>& InSharedPtr) {
     return std::static_pointer_cast<T>(InSharedPtr);
 }
 

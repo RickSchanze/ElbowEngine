@@ -39,11 +39,11 @@ extern Logger gLogger;
 
 /** BEGIN IsValid函数族 */
 inline bool IsValid(Object* Obj) {
-    return Obj != nullptr && Obj->Valid();
+    return Obj != nullptr && Obj->IsValid();
 }
 
 inline bool IsValid(const Object* Obj) {
-    return Obj != nullptr && Obj->Valid();
+    return Obj != nullptr && Obj->IsValid();
 }
 
 template<typename T>
@@ -64,13 +64,13 @@ struct NewReturnType<T, ENewReturnType::Raw>
 template<typename T>
 struct NewReturnType<T, ENewReturnType::SharedPtr>
 {
-    using Type = SharedPtr<T>;
+    using Type = TSharedPtr<T>;
 };
 
 template<typename T>
 struct NewReturnType<T, ENewReturnType::UniquePtr>
 {
-    using Type = UniquePtr<T>;
+    using Type = TUniquePtr<T>;
 };
 
 // 使用这个可以不在头文件引入ObjectManager.h
@@ -79,8 +79,8 @@ public:
     // 获得可用的ID
     static uint32 GetAvailableID();
     static void   SetObjectID(Object* Obj, uint32 ID);
-    static void   SetObjectID(const SharedPtr<Object>& Obj, uint32 ID);
-    static void   SetObjectID(const UniquePtr<Object>& Obj, uint32 ID);
+    static void   SetObjectID(const TSharedPtr<Object>& Obj, uint32 ID);
+    static void   SetObjectID(const TUniquePtr<Object>& Obj, uint32 ID);
 };
 
 /**

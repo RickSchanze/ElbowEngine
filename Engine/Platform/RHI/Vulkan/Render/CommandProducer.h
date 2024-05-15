@@ -19,9 +19,9 @@ protected:
     {};
 
 public:
-    CommandProducer(Private, Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags);
+    CommandProducer(Private, Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags);
 
-    static UniquePtr<CommandProducer> CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags = {});
+    static TUniquePtr<CommandProducer> CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags = {});
 
     void CreateCommandPool(vk::CommandPoolCreateFlags InPoolFlags);
     void CleanCommandPool();
@@ -42,9 +42,9 @@ public:
 
     void ResetCommandPool() const;
 
-    Array<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const;
+    TArray<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const;
 
-    void DestroyCommandBuffers(const Array<vk::CommandBuffer>& InCommandBuffers) const;
+    void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& InCommandBuffers) const;
 
 protected:
     vk::CommandBuffer BeginSingleTimeCommands() const;
@@ -53,7 +53,7 @@ protected:
 private:
     vk::CommandPool mPool = nullptr;
 
-    Ref<UniquePtr<LogicalDevice>> mDevice;
+    Ref<TUniquePtr<LogicalDevice>> mDevice;
 };
 
 RHI_VULKAN_NAMESPACE_END

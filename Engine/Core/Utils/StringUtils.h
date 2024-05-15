@@ -46,7 +46,7 @@ public:
 
     template<typename T>
         requires IsNumeric<T>
-    static Optional<T> ConvertTo(const AnsiString& Str) {
+    static TOptional<T> ConvertTo(const AnsiString& Str) {
         T                Result;
         AnsiStringStream ss;
         ss << Str;
@@ -59,8 +59,8 @@ public:
 };
 
 template<>
-inline Optional<bool> StringUtils::ConvertTo<bool>(const AnsiString& Str) {
-    Optional<bool> Rtn;
+inline TOptional<bool> StringUtils::ConvertTo<bool>(const AnsiString& Str) {
+    TOptional<bool> Rtn;
     if (Str == "true" || Str == "True") {
         Rtn = true;
     } else if (Str == "false" || Str == "False") {

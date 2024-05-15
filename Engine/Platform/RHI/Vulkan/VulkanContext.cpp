@@ -25,13 +25,13 @@ VulkanContext::~VulkanContext() {
     }
 }
 
-UniquePtr<VulkanContext> VulkanContext::CreateUnique(const SharedPtr<Instance>& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer) {
+TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& InVulkanInstance, TUniquePtr<IRenderPassProducer> Producer) {
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, InVulkanInstance);
     Rtn->CreateGraphicsPipeline(Move(Producer), *Rtn);
     return Rtn;
 }
 
-VulkanContext::VulkanContext(Protected, const SharedPtr<Instance>& InVulkanInstance) {
+VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& InVulkanInstance) {
     mRendererID = sRendererIDCount++;
     LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", mRendererID, mSwapChainImageCount);
     mVulkanInstance       = InVulkanInstance;
@@ -67,7 +67,7 @@ void VulkanContext::Finalize() {
 void VulkanContext::Draw() {
     const vk::Device  Device = mLogicalDevice->GetHandle();
     // 首先等待当前帧的指令缓冲结束执行
-    const StaticArray Fence  = {mInFlightFences[mCurrentFrame]};
+    const TStaticArray Fence  = {mInFlightFences[mCurrentFrame]};
     Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
     uint32   ImageIndex;
@@ -85,8 +85,8 @@ void VulkanContext::Draw() {
     // 这里更新UniformBuffer
     mGraphicsPipeline->UpdateUniformBuffer(ImageIndex);
 
-    Array                WaitSemaphores   = {mImageAvailableSemaphores[mCurrentFrame]};
-    Array<vk::Semaphore> SingalSemaphores = {};
+    TArray                WaitSemaphores   = {mImageAvailableSemaphores[mCurrentFrame]};
+    TArray<vk::Semaphore> SingalSemaphores = {};
 
     constexpr vk::SemaphoreCreateInfo SemaphoreInfo = {};
     for (auto& Pipeline: mRenderGraphicsPipelines) {
@@ -101,7 +101,7 @@ void VulkanContext::Draw() {
 
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
-    StaticArray        SwapChains  = {mSwapChain->GetHandle()};
+    TStaticArray        SwapChains  = {mSwapChain->GetHandle()};
     PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(ImageIndex);
 
     const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(&PresentInfo);
@@ -151,7 +151,7 @@ void VulkanContext::RebuildSwapChain() {
     }
 }
 
-void VulkanContext::CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, const Ref<VulkanContext> InRenderer) {
+void VulkanContext::CreateGraphicsPipeline(TUniquePtr<IRenderPassProducer> Producer, const Ref<VulkanContext> InRenderer) {
     // 创建图形管线
     // 寻找深度图像格式
     mDepthFormat = mPhysicalDevice->FindSupportFormat(

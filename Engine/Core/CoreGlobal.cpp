@@ -19,10 +19,10 @@ void ObjectCreateHelper::SetObjectID(Object* Obj, const uint32 ID) {
     Obj->mID = ID;
 }
 
-void ObjectCreateHelper::SetObjectID(const SharedPtr<Object>& Obj, const uint32 ID) {
+void ObjectCreateHelper::SetObjectID(const TSharedPtr<Object>& Obj, const uint32 ID) {
     Obj->mID = ID;
 }
 
-void ObjectCreateHelper::SetObjectID(const UniquePtr<Object>& Obj, const uint32 ID) {
+void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const uint32 ID) {
     Obj->mID = ID;
 }

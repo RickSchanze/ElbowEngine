@@ -5,6 +5,7 @@
  * @brief 
  */
 #include "Exception.h"
+
 String PathInvalidException::What() const {
     return std::format(
         L"PathInvalidException: \"{}\": {}",

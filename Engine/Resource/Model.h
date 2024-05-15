@@ -43,20 +43,20 @@ class Mesh : public IRHIResourceContainer {
     friend class RHI::Vulkan::Mesh;
 
 public:
-    Array<Vertex>&   GetVertices() { return mVertices; }
-    Array<Texture*>& GetTextures() { return mTextures; }
-    Array<uint32>&   GetIndices() { return mIndices; }
+    TArray<Vertex>&   GetVertices() { return mVertices; }
+    TArray<Texture*>& GetTextures() { return mTextures; }
+    TArray<uint32>&   GetIndices() { return mIndices; }
 
-    SharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
+    TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
 
     bool IsValid() const { return !mVertices.empty(); }
 
 private:
-    Array<Vertex>   mVertices;
-    Array<Texture*> mTextures;
-    Array<uint32>   mIndices;
+    TArray<Vertex>   mVertices;
+    TArray<Texture*> mTextures;
+    TArray<uint32>   mIndices;
 
-    SharedPtr<RHI::Vulkan::IRHIResource> mMeshRHIResource = nullptr;
+    TSharedPtr<RHI::Vulkan::IRHIResource> mMeshRHIResource = nullptr;
 };
 
 class Model : public IResource {
@@ -73,15 +73,15 @@ public:
     Path GetPath() const override { return mPath; }
     void Load() final;
 
-    Array<Mesh>& GetMeshes() { return mMeshes; }
+    TArray<Mesh>& GetMeshes() { return mMeshes; }
 
 protected:
     void ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutMesh) const;
-    void LoadTextures(ETextureUsage InUsage, const aiMaterial* InMaterial, Array<Texture*>& OutTextures) const;
+    void LoadTextures(ETextureUsage InUsage, const aiMaterial* InMaterial, TArray<Texture*>& OutTextures) const;
     void ProcessNode(const aiNode* InNode, const aiScene* InScene);
 
 private:
-    Array<Mesh> mMeshes;
+    TArray<Mesh> mMeshes;
 
     Path mPath;
 };

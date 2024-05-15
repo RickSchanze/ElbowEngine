@@ -17,25 +17,25 @@ class Instance;
 
 struct QueueFamilyIndices
 {
-    Optional<uint32> GraphicsFamily;
-    Optional<uint32> PresentFamily;
+    TOptional<uint32> GraphicsFamily;
+    TOptional<uint32> PresentFamily;
 
     [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 };
 
 class PhysicalDevice {
 public:
-    static inline Array<const char*> sDeviceRequiredExtensions = {
+    static inline TArray<const char*> sDeviceRequiredExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
-    static Array<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
+    static TArray<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
 
     struct SwapChainSupportDetails
     {
         vk::SurfaceCapabilitiesKHR  Capabilities;
-        Array<vk::SurfaceFormatKHR> Formats;
-        Array<vk::PresentModeKHR>   PresentModes;
+        TArray<vk::SurfaceFormatKHR> Formats;
+        TArray<vk::PresentModeKHR>   PresentModes;
     };
 
 public:
@@ -51,8 +51,8 @@ public:
      * @param PickFunc 用来确定一个设备是否合适
      * @return
      */
-    static UniquePtr<PhysicalDevice>
-    PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
+    static TUniquePtr<PhysicalDevice>
+    PickPhysicalDevice(Instance* InAttachedInstance, const TFunction<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -74,7 +74,7 @@ public:
      * @param RequiredExtensions
      * @return
      */
-    [[nodiscard]] bool CheckExtensionSupport(const Array<const char*>& RequiredExtensions) const;
+    [[nodiscard]] bool CheckExtensionSupport(const TArray<const char*>& RequiredExtensions) const;
 
     /**
      * 查询此物理设备对交换链的支持情况
@@ -90,12 +90,12 @@ public:
      * @return
      */
     vk::Format
-    FindSupportFormat(const Array<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
+    FindSupportFormat(const TArray<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
 
     uint32 FindMemoryType(uint32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
 
 
-    UniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
+    TUniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
     vk::Device               CreateLogicalDeviceHandle() const;
 
     [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }

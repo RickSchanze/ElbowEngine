@@ -25,6 +25,6 @@ String Object::ToString() const {
     return std::format(L"[Object] Name: {0}, Id: {1}", mName, mID);
 }
 
-bool Object::Valid() const {
+bool Object::IsValid() const {
     return !mIsGarbage;
 }

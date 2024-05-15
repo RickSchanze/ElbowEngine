@@ -61,7 +61,7 @@ public:
      */
     Shader(Protected, Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderStage);
 
-    static SharedPtr<Shader> CreateShared(Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderType) {
+    static TSharedPtr<Shader> CreateShared(Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderType) {
         return MakeShared<Shader>(Protected{}, InDevice, InShaderPath, InShaderType);
     }
 
@@ -70,8 +70,8 @@ public:
     const Path&                     GetShaderPath() const { return mShaderPath; }
     const vk::ShaderModule&         GetShaderModule() const { return mShaderModule; }
     const EShaderStage&             GetShaderType() const { return mShaderStage; }
-    const Array<UniformDescriptor>& GetUniformObjects() const { return mUniformDescriptors; }
-    const Array<VertexInAttribute>& GetInAttributes() const { return mInAttributes; }
+    const TArray<UniformDescriptor>& GetUniformObjects() const { return mUniformDescriptors; }
+    const TArray<VertexInAttribute>& GetInAttributes() const { return mInAttributes; }
 
 protected:
     // 解析传入的Shader代码
@@ -82,8 +82,8 @@ private:
     Path             mShaderPath;
     vk::ShaderModule mShaderModule;
 
-    Array<UniformDescriptor> mUniformDescriptors;
-    Array<VertexInAttribute> mInAttributes;
+    TArray<UniformDescriptor> mUniformDescriptors;
+    TArray<VertexInAttribute> mInAttributes;
 
     Ref<LogicalDevice> mDevice; // 使用此Shader的管线
 };

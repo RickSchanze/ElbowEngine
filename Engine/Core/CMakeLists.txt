@@ -26,6 +26,9 @@ add_library(${PROJECT_NAME}
         CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
+        Event/Event.h
+        Misc/Guid.cpp
+        Misc/Guid.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -38,6 +41,9 @@ target_link_libraries(${PROJECT_NAME}  PRIVATE spdlog::spdlog_header_only)
 
 find_package(yaml-cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)
+
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
 find_package(cpptrace CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)

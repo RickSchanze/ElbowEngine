@@ -32,8 +32,8 @@ public:
 
     virtual ~VulkanContext();
 
-    static UniquePtr<VulkanContext>
-    CreateUnique(const SharedPtr<Instance>& InVulkanInstance, UniquePtr<IRenderPassProducer> Producer = nullptr);
+    static TUniquePtr<VulkanContext>
+    CreateUnique(const TSharedPtr<Instance>& InVulkanInstance, TUniquePtr<IRenderPassProducer> Producer = nullptr);
 
 protected:
     struct Protected
@@ -41,7 +41,7 @@ protected:
 
 public:
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanContext(Protected, const SharedPtr<Instance>& InVulkanInstance);
+    explicit VulkanContext(Protected, const TSharedPtr<Instance>& InVulkanInstance);
 
     void Initialize();
     void Finalize();
@@ -56,23 +56,23 @@ public:
     vk::Format                   GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
     vk::Extent2D                 GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
     uint32                       GetSwapChainImageCount() const { return mSwapChainImageCount; }
-    Array<SharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
+    TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
 
     vk::Format GetDepthFormat() const { return mDepthFormat; }
 
-    const UniquePtr<CommandProducer>& GetCommandProducer() const { return mCommandProducer; }
+    const TUniquePtr<CommandProducer>& GetCommandProducer() const { return mCommandProducer; }
 
-    virtual void CreateGraphicsPipeline(UniquePtr<IRenderPassProducer> Producer, Ref<VulkanContext> InRenderer);
+    virtual void CreateGraphicsPipeline(TUniquePtr<IRenderPassProducer> Producer, Ref<VulkanContext> InRenderer);
 
     // 向渲染器提交命令缓冲区
     void AddPipelineToRender(IGraphicsPipeline* InPipeline);
     void RemovePipelineFromRender(IGraphicsPipeline* InPipeline);
 
-    UniquePtr<SwapChain>&       GetSwapChain() { return mSwapChain; }
-    UniquePtr<CommandProducer>& GetCommandProducer() { return mCommandProducer; }
-    UniquePtr<LogicalDevice>&   GetLogicalDevice() { return mLogicalDevice; }
-    UniquePtr<PhysicalDevice>&  GetPhysicalDevice() { return mPhysicalDevice; }
-    SharedPtr<Instance>         GetVulkanInstance() { return mVulkanInstance; }
+    TUniquePtr<SwapChain>&       GetSwapChain() { return mSwapChain; }
+    TUniquePtr<CommandProducer>& GetCommandProducer() { return mCommandProducer; }
+    TUniquePtr<LogicalDevice>&   GetLogicalDevice() { return mLogicalDevice; }
+    TUniquePtr<PhysicalDevice>&  GetPhysicalDevice() { return mPhysicalDevice; }
+    TSharedPtr<Instance>         GetVulkanInstance() { return mVulkanInstance; }
 
 protected:
     void CreateSyncObjecs();
@@ -91,19 +91,19 @@ private:
     static inline int32 sRendererIDCount = 0;
 
     // TODO: 图形管线和Shader一起属于材质系统
-    SharedPtr<GraphicsPipeline> mGraphicsPipeline;
+    TSharedPtr<GraphicsPipeline> mGraphicsPipeline;
 
-    UniquePtr<SwapChain>       mSwapChain;
-    UniquePtr<CommandProducer> mCommandProducer;
-    UniquePtr<LogicalDevice>   mLogicalDevice;
-    UniquePtr<PhysicalDevice>  mPhysicalDevice;
-    SharedPtr<Instance>        mVulkanInstance;
+    TUniquePtr<SwapChain>       mSwapChain;
+    TUniquePtr<CommandProducer> mCommandProducer;
+    TUniquePtr<LogicalDevice>   mLogicalDevice;
+    TUniquePtr<PhysicalDevice>  mPhysicalDevice;
+    TSharedPtr<Instance>        mVulkanInstance;
 
-    Array<vk::Semaphore> mImageAvailableSemaphores;
-    Array<vk::Semaphore> mImageRenderFinishedSemaphores;
-    Array<vk::Fence>     mInFlightFences;
+    TArray<vk::Semaphore> mImageAvailableSemaphores;
+    TArray<vk::Semaphore> mImageRenderFinishedSemaphores;
+    TArray<vk::Fence>     mInFlightFences;
 
-    Array<IGraphicsPipeline*> mRenderGraphicsPipelines;
+    TArray<IGraphicsPipeline*> mRenderGraphicsPipelines;
 };
 
 RHI_VULKAN_NAMESPACE_END

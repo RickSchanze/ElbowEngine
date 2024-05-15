@@ -70,7 +70,7 @@ Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InC
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
 }
 
-SharedPtr<Mesh> Mesh::Create(VulkanContext& InContext, Resource::Mesh* InMeshResource) {
+TSharedPtr<Mesh> Mesh::Create(VulkanContext& InContext, Resource::Mesh* InMeshResource) {
     if (InMeshResource->GetRHIResource() != nullptr) {
         return StaticPointerCast<Mesh>(InMeshResource->GetRHIResource());
     }
@@ -114,7 +114,7 @@ Model::~Model() {
     Finialize();
 }
 
-UniquePtr<Model> Model::CreateUnique(Resource::Model* InModel, VulkanContext& InContext) {
+TUniquePtr<Model> Model::CreateUnique(Resource::Model* InModel, VulkanContext& InContext) {
     return MakeUnique<Model>(InModel, InContext);
 }
 

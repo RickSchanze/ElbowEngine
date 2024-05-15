@@ -47,7 +47,7 @@ void Texture::Load() {
     }
 }
 
-SharedPtr<RHI::Vulkan::IRHIResource> Texture::GetRHIResource() {
+TSharedPtr<RHI::Vulkan::IRHIResource> Texture::GetRHIResource() {
     return mTextureRHIResource;
 }
 

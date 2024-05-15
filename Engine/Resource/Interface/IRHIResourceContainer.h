@@ -16,5 +16,5 @@ public:
     virtual ~IRHIResourceContainer() = default;
 
     // 获取对应的RHIResource
-    virtual SharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() = 0;
+    virtual TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() = 0;
 };

@@ -37,7 +37,7 @@ Image::Image(Protected, const Ref<LogicalDevice> InDevice, const ImageCreateInfo
     CreateImage();
 }
 
-SharedPtr<Image> Image::CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo) {
+TSharedPtr<Image> Image::CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo) {
     return MakeShared<Image>(Protected{}, InDevice, InCreateInfo);
 }
 
@@ -152,7 +152,7 @@ Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandProd
     Device.freeMemory(StagingBufferMemory);
 }
 
-SharedPtr<Texture>
+TSharedPtr<Texture>
 Texture::Create(const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) {
     // 如果InTexture中有对应的RHI Vulkan资源则直接返回
     if (InTexture->GetRHIResource() != nullptr) {

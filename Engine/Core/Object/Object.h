@@ -22,26 +22,26 @@ public:
      * 获取反射类型
      * @return rttr::typr
      */
-    [[nodiscard]] rttr::type GetType() const { return get_type(); }
+    rttr::type GetType() const { return get_type(); }
 
 public:
     /**
      * 获取对象名字
      * @return
      */
-    [[nodiscard]] String GetName() const { return mName; }
+    String GetName() const { return mName; }
 
     /**
      * 获取对象的字符串表示
      * @return
      */
-    [[nodiscard]] virtual String ToString() const;
+    virtual String ToString() const;
 
     /**
      * 获取对象ID
      * @return
      */
-    [[nodiscard]] uint32 GetID() const { return mID; }
+    uint32 GetID() const { return mID; }
 
     /**
      * 设置对象的名字
@@ -53,13 +53,13 @@ public:
      * 对象是否还有效
      * @return
      */
-    [[nodiscard]] bool Valid() const;
+    bool IsValid() const;
 
-private:
+protected:
     String mName;        // 对象名字
     uint32 mID;          // 对象ID
     bool   mIsGarbage;   // 对象是否应该被清除
 };
 
-template <typename T>
+template<typename T>
 concept IsObject = std::is_base_of_v<Object, T>;

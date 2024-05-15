@@ -30,12 +30,12 @@ public:
 #else
     static constexpr bool sEnableValidationLayer = false;
 #endif
-    static inline Array<const char*> gValidationLayers = {
+    static inline TArray<const char*> gValidationLayers = {
         "VK_LAYER_KHRONOS_validation",
     };
 
     static constexpr bool               IsEnable() noexcept { return sEnableValidationLayer; }
-    static constexpr Array<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
+    static constexpr TArray<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
         VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity, VkDebugUtilsMessageTypeFlagsEXT InMessageType,

@@ -35,7 +35,7 @@ struct GraphicsPipelineCreateInfo
     Path                           FragmentShaderPath;
     vk::Extent2D                   ViewportSize;
     vk::SampleCountFlagBits        MsaaSamples;
-    SharedPtr<IRenderPassProducer> RenderPassProducer;
+    TSharedPtr<IRenderPassProducer> RenderPassProducer;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline {
@@ -49,7 +49,7 @@ public:
      GraphicsPipeline(Ref<VulkanContext> InContext, const GraphicsPipelineCreateInfo& InCreateInfo);
     ~GraphicsPipeline() override;
 
-    static SharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
+    static TSharedPtr<GraphicsPipeline> CreateShared(Ref<VulkanContext> InDevice, const GraphicsPipelineCreateInfo& InCreateInfo);
 
     void UpdateUniformBuffer(uint32 InCurrentImage) const;
 
@@ -90,41 +90,41 @@ private:
 
     // 各种缓冲
     // 1.多重采样缓存
-    SharedPtr<Image>        mMsaaColorImage;
-    SharedPtr<ImageView>    mMsaaColorImageView;
+    TSharedPtr<Image>        mMsaaColorImage;
+    TSharedPtr<ImageView>    mMsaaColorImageView;
     vk::SampleCountFlagBits mMsaaSamples;
 
     // 2.深度缓存
-    SharedPtr<Image>     mDepthImage;
-    SharedPtr<ImageView> mDepthImageView;
+    TSharedPtr<Image>     mDepthImage;
+    TSharedPtr<ImageView> mDepthImageView;
 
     // 3.交换链帧缓冲
-    Array<vk::Framebuffer> mFramebuffers;
+    TArray<vk::Framebuffer> mFramebuffers;
 
     // 4.命令缓冲
-    Array<vk::CommandBuffer> mCommandBuffers;
+    TArray<vk::CommandBuffer> mCommandBuffers;
 
-    SharedPtr<IRenderPassProducer> mRenderPassProducer;
-    UniquePtr<RenderPass>          mRenderPass;
+    TSharedPtr<IRenderPassProducer> mRenderPassProducer;
+    TUniquePtr<RenderPass>          mRenderPass;
 
     // Renderer拥有此对象
     Ref<VulkanContext> mContext;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
-    SharedPtr<Texture>       mTexture;
+    TSharedPtr<Texture>       mTexture;
     uint32                   mTextureMipLevel;
-    SharedPtr<ImageView>     mTextureView;
+    TSharedPtr<ImageView>     mTextureView;
     vk::Sampler              mTextureSampler;
-    SharedPtr<ShaderProgram> mShaderProg;
-    Array<vk::Buffer>        mUniformBuffers;
-    Array<vk::DeviceMemory>  mUniformBuffersMemory;
-    Array<vk::DescriptorSet> mDescriptorSets;
+    TSharedPtr<ShaderProgram> mShaderProg;
+    TArray<vk::Buffer>        mUniformBuffers;
+    TArray<vk::DeviceMemory>  mUniformBuffersMemory;
+    TArray<vk::DescriptorSet> mDescriptorSets;
 
     GraphicsPipelineCreateInfo mCreateInfo;
 
     // TODO: 模型系统
-    UniquePtr<Model>   mModel;
+    TUniquePtr<Model>   mModel;
     vk::DescriptorPool mDescriptorPool;
 
     void LoadModel();
@@ -153,8 +153,8 @@ public:
     void SubmitGraphicsQueue(
         int CurrentImageIndex,
         vk::Queue InGraphicsQueue,
-        Array<vk::Semaphore> InWaitSemaphores,
-        Array<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
+        TArray<vk::Semaphore> InWaitSemaphores,
+        TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
     ) override;
     // clang-format on
     void Rebuild() override;

@@ -17,7 +17,7 @@
 
 RESOURCE_NAMESPACE_BEGIN
 
-SharedPtr<RHI::Vulkan::IRHIResource> Mesh::GetRHIResource() {
+TSharedPtr<RHI::Vulkan::IRHIResource> Mesh::GetRHIResource() {
     return mMeshRHIResource;
 }
 
@@ -87,7 +87,7 @@ aiTextureType GetTextureType(const ETextureUsage InUsage) {
     }
 }
 
-void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMaterial, Array<Texture*>& OutTextures) const {
+void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMaterial, TArray<Texture*>& OutTextures) const {
     for (uint32 i = 0; i < InMaterial->GetTextureCount(GetTextureType(InUsage)); i++) {
         aiString MyPath;
         InMaterial->GetTexture(aiTextureType_DIFFUSE, i, &MyPath);

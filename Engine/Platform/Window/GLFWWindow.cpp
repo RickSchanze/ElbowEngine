@@ -139,7 +139,7 @@ void ImGuiGraphicsPipeline::CreateFramebuffers() {
     auto& Context = static_cast<VulkanContext&>(mContext);
     mFramebuffers.resize(Context.GetSwapChainImageCount());
     for (size_t i = 0; i < mFramebuffers.size(); i++) {
-        Array<vk::ImageView> Attachments;
+        TArray<vk::ImageView> Attachments;
         Attachments = {
             Context.GetSwapChainImageViews()[i]->GetHandle(),
         };
@@ -170,14 +170,14 @@ void ImGuiGraphicsPipeline::CreateCommandBuffers() {
 }
 
 void ImGuiGraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, Array<vk::Semaphore> InWaitSemaphores, Array<vk::Semaphore> InSingalSemaphores,
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
     vk::Fence InFrameFence
 ) {
     vk::CommandBufferBeginInfo BeginInfo = {};
     BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     mCommandBuffers[CurrentImageIndex].begin(&BeginInfo);
     vk::RenderPassBeginInfo        RenderPassInfo = {};
-    StaticArray<vk::ClearValue, 1> ClearValues    = {};
+    TStaticArray<vk::ClearValue, 1> ClearValues    = {};
     RenderPassInfo.renderPass                     = mRenderPass->GetHandle();
     RenderPassInfo.framebuffer                    = mFramebuffers[CurrentImageIndex];
     RenderPassInfo.renderArea                     = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
@@ -210,13 +210,13 @@ void ImGuiGraphicsPipeline::CreateDescriptorPool() {
     mDescriptorPool = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 
-UniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
+TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
     auto Surface = MakeUnique<GLFWWindowSurface>(nullptr, mWindowHandle);
     return Surface;
 }
 
-Array<const char*> GlfwWindow::GetRequiredExtensions() const {
-    Array<const char*> Extensions;
+TArray<const char*> GlfwWindow::GetRequiredExtensions() const {
+    TArray<const char*> Extensions;
     uint32_t           Count = 0;
     const char**       Names = glfwGetRequiredInstanceExtensions(&Count);
     for (uint32_t i = 0; i < Count; ++i) {

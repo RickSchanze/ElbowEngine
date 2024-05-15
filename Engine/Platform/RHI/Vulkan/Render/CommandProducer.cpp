@@ -14,12 +14,12 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandProducer::CommandProducer(Private, const Ref<UniquePtr<LogicalDevice>> InDevice, const vk::CommandPoolCreateFlags InPoolFlags) :
+CommandProducer::CommandProducer(Private, const Ref<TUniquePtr<LogicalDevice>> InDevice, const vk::CommandPoolCreateFlags InPoolFlags) :
     mDevice(InDevice) {
     CreateCommandPool(InPoolFlags);
 }
 
-UniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<UniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags) {
+TUniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags) {
     return MakeUnique<CommandProducer>(Private{}, InDevice, InPoolFlags);
 }
 
@@ -198,11 +198,11 @@ void CommandProducer::ResetCommandPool() const {
     mDevice.get()->GetHandle().resetCommandPool(mPool);
 }
 
-Array<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const {
+TArray<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const {
     return mDevice.get()->GetHandle().allocateCommandBuffers(InAllocInfo);
 }
 
-void CommandProducer::DestroyCommandBuffers(const Array<vk::CommandBuffer>& InCommandBuffers) const {
+void CommandProducer::DestroyCommandBuffers(const TArray<vk::CommandBuffer>& InCommandBuffers) const {
     mDevice.get()->GetHandle().freeCommandBuffers(mPool, InCommandBuffers);
 }
 

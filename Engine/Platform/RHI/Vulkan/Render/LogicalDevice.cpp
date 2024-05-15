@@ -20,7 +20,7 @@ LogicalDevice::~LogicalDevice() {
     Finialize();
 }
 
-UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) {
+TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) {
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
@@ -37,7 +37,7 @@ void LogicalDevice::Finialize() {
     mLogicalDeviceHandle = VK_NULL_HANDLE;
 }
 
-UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
     const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
     const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
     const auto Surface                  = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
@@ -72,7 +72,7 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
 
     // 指定在多个队列族中使用交换链图像的方式
     const auto                   Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
-    const StaticArray<uint32, 2> QueueFamilyIndicies = {
+    const TStaticArray<uint32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),
     };
@@ -88,7 +88,7 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImag
     return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent);
 }
 
-SharedPtr<ImageView> LogicalDevice::CreateImageView(
+TSharedPtr<ImageView> LogicalDevice::CreateImageView(
     const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const uint32 InMipLevels
 ) {
     vk::ImageViewCreateInfo ViewInfo = {};

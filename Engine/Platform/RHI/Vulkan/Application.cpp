@@ -43,12 +43,12 @@ VulkanApplication& VulkanApplication::SetApiVersion(const uint32_t InApiVersion)
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& InExtensions) noexcept {
+VulkanApplication& VulkanApplication::SetExtensions(const TArray<const char*>& InExtensions) noexcept {
     Extensions = InExtensions;
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> InSurface) noexcept {
+VulkanApplication& VulkanApplication::SetWindowSurface(TUniquePtr<SurfaceBase> InSurface) noexcept {
     mSurface = Move(InSurface);
     return *this;
 }

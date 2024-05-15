@@ -12,10 +12,10 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 
-UniquePtr<PhysicalDevice>
-PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const Function<bool(const PhysicalDevice&)>& PickFunc) {
+TUniquePtr<PhysicalDevice>
+PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const TFunction<bool(const PhysicalDevice&)>& PickFunc) {
     auto        Rtn     = MakeUnique<PhysicalDevice>(InAttachedInstance);
-    const Array Devices = InAttachedInstance->EnumeratePhysicalDevices();
+    const TArray Devices = InAttachedInstance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices) {
         PhysicalDevice TempDevice(InAttachedInstance);
         TempDevice.SetVulkanPhysicalDevice(Device);
@@ -53,7 +53,7 @@ PhysicalDevice& PhysicalDevice::SetVulkanPhysicalDevice(const vk::PhysicalDevice
 
 QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
     THROW_IF_NOT(VULKAN_CHECK_PTR(mAttachedInstance), L"Physical::FindQueueFamilyIndices: 查找队列族索引时mAttachedInstance无效");
-    const Array        QueueFamilies = mDeviceHandle.getQueueFamilyProperties();
+    const TArray        QueueFamilies = mDeviceHandle.getQueueFamilyProperties();
     // 查找需要的队列族索引
     QueueFamilyIndices Rtn{};
     for (int i = 0; i < QueueFamilies.size(); i++) {
@@ -73,9 +73,9 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
     return {};
 }
 
-bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocator<const char*>>& RequiredExtensions) const {
-    const Array      Extensions           = mDeviceHandle.enumerateDeviceExtensionProperties();
-    Set<const char*> MyRequiredExtensions = {RequiredExtensions.begin(), RequiredExtensions.end()};
+bool PhysicalDevice::CheckExtensionSupport(const TArray<const char*, std::allocator<const char*>>& RequiredExtensions) const {
+    const TArray      Extensions           = mDeviceHandle.enumerateDeviceExtensionProperties();
+    TSet<const char*> MyRequiredExtensions = {RequiredExtensions.begin(), RequiredExtensions.end()};
     for (const auto& Extension: Extensions) {
         MyRequiredExtensions.erase(Extension.extensionName);
     }
@@ -92,7 +92,7 @@ PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() 
 }
 
 vk::Format PhysicalDevice::FindSupportFormat(
-    const Array<vk::Format>& InCandidates, const vk::ImageTiling InTiling, const vk::FormatFeatureFlagBits InFeatures
+    const TArray<vk::Format>& InCandidates, const vk::ImageTiling InTiling, const vk::FormatFeatureFlagBits InFeatures
 ) const {
     for (const vk::Format& Format: InCandidates) {
         const auto Props = mDeviceHandle.getFormatProperties(Format);
@@ -118,15 +118,15 @@ uint32 PhysicalDevice::FindMemoryType(const uint32 InTypeFilter, const vk::Memor
     throw VulkanException(L"PhysicalDevice::FindMemoryType: 未找到合适的内存类型");
 }
 
-UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique() {
+TUniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique() {
     const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
     return LogicalDevice::CreateUnique(LogicalDeviceHandle, *this);
 }
 
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {
     QueueFamilyIndices               Indices = FindQueueFamilyIndices();
-    Array<vk::DeviceQueueCreateInfo> QueueCreateInfos;
-    Set<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
+    TArray<vk::DeviceQueueCreateInfo> QueueCreateInfos;
+    TSet<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
     float                            QueuePriority       = 1.0f;
     for (uint32_t QueueFamily: UniqueQueueFamilies) {
         vk::DeviceQueueCreateInfo QueueCreateInfo{};

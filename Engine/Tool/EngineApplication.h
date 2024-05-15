@@ -49,8 +49,8 @@ private:
         App.bFrameBufferResized = true;
     }
 
-    UniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
-    UniquePtr<Platform::Window::GlfwWindow>   mWindow;
+    TUniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
+    TUniquePtr<Platform::Window::GlfwWindow>   mWindow;
 
     static inline EngineApplication* mInstance = nullptr;
 

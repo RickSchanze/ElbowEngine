@@ -23,7 +23,7 @@ class Mesh : public IRHIResource {
 public:
     Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InContext);
 
-    static SharedPtr<Mesh> Create(VulkanContext& InContext, Resource::Mesh* InMeshResource);
+    static TSharedPtr<Mesh> Create(VulkanContext& InContext, Resource::Mesh* InMeshResource);
 
     ~Mesh() override;
 
@@ -53,9 +53,9 @@ public:
      Model(Resource::Model* InModel, VulkanContext& InContext);
     ~Model() override;
 
-    Array<SharedPtr<Mesh>>& GetMeshes() { return mMeshes; }
+    TArray<TSharedPtr<Mesh>>& GetMeshes() { return mMeshes; }
 
-    static UniquePtr<Model> CreateUnique(Resource::Model* InModel, VulkanContext& InContext);
+    static TUniquePtr<Model> CreateUnique(Resource::Model* InModel, VulkanContext& InContext);
 
     void Finialize() const;
     bool IsValid() const;
@@ -64,7 +64,7 @@ private:
     // TODO: 这里可能需要一种所有权指针
     // 这里存储OwnerPtr：只有这里能释放资源
     // 其他地方是UserPtr: 其他地方存储指向同一个地方的指针，当OwnerPtr失效是，所有UserPtr也失效
-    Array<SharedPtr<Mesh>> mMeshes;
+    TArray<TSharedPtr<Mesh>> mMeshes;
 };
 
 RHI_VULKAN_NAMESPACE_END

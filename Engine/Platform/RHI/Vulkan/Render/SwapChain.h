@@ -20,11 +20,11 @@ class SwapChain final : public IRHIResource {
 public:
     SwapChain() = default;
 
-    static UniquePtr<SwapChain> CreateUnique(
+    static TUniquePtr<SwapChain> CreateUnique(
         vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
         vk::Extent2D InSwapchainExtent
     );
-    static SharedPtr<SwapChain> CreateShared(
+    static TSharedPtr<SwapChain> CreateShared(
         vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
         vk::Extent2D InSwapchainExtent
     );
@@ -37,9 +37,9 @@ public:
     ~SwapChain() override;
 
     // 表面格式
-    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& InAvailableFormats);
+    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& InAvailableFormats);
     // 显示模式（垂直同步？）
-    static vk::PresentModeKHR   ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& InAvailablePresentModes);
+    static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes);
     // 分辨率
     static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, uint32 InWidth, uint32 InHeight);
 
@@ -50,7 +50,7 @@ public:
 
     vk::Format                   GetImageFormat() const { return mSwapchainImageFormat; }
     vk::Extent2D                 GetExtent() const { return mSwapchainExtent; }
-    Array<SharedPtr<ImageView>>& GetImageViews() { return mSwapchainImageViews; }
+    TArray<TSharedPtr<ImageView>>& GetImageViews() { return mSwapchainImageViews; }
 
     void Initialize();
     void Finialize();
@@ -59,8 +59,8 @@ public:
 
 private:
     vk::SwapchainKHR                 mSwapchainHandle;
-    Array<SharedPtr<SwapChainImage>> mSwapchainImages;
-    Array<SharedPtr<ImageView>>      mSwapchainImageViews;
+    TArray<TSharedPtr<SwapChainImage>> mSwapchainImages;
+    TArray<TSharedPtr<ImageView>>      mSwapchainImageViews;
     vk::Format                       mSwapchainImageFormat;
     vk::Extent2D                     mSwapchainExtent;
 

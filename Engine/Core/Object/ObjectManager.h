@@ -41,6 +41,6 @@ public:
     bool RemoveObject(uint32 ID);
 
 private:
-    HashMap<uint32, Object*> mObjects;
+    THashMap<uint32, Object*> mObjects;
     int32                    mIDCount = 0;
 };

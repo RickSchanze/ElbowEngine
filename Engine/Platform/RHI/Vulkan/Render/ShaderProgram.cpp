@@ -13,7 +13,7 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 ShaderProgram::ShaderProgram(
-    const Ref<LogicalDevice> InDevice, const SharedPtr<Shader>& InVertexShader, const SharedPtr<Shader>& InFragmentShader
+    const Ref<LogicalDevice> InDevice, const TSharedPtr<Shader>& InVertexShader, const TSharedPtr<Shader>& InFragmentShader
 ) : mDevice(InDevice) {
     mVertexInputAttributes = InVertexShader->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
@@ -25,7 +25,7 @@ ShaderProgram::ShaderProgram(
     }
 }
 
-bool ShaderProgram::CheckAndUpdateUniforms(const SharedPtr<Shader>& InShader) {
+bool ShaderProgram::CheckAndUpdateUniforms(const TSharedPtr<Shader>& InShader) {
     for (const auto& Uniform: InShader->GetUniformObjects()) {
         if (mUniforms.contains(Uniform.Name)) {
             if (Uniform.Binding != mUniforms[Uniform.Name].Binding) {
@@ -39,8 +39,8 @@ bool ShaderProgram::CheckAndUpdateUniforms(const SharedPtr<Shader>& InShader) {
     return true;
 }
 
-Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const {
-    Array<vk::VertexInputAttributeDescription> AttributeDesc;
+TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const {
+    TArray<vk::VertexInputAttributeDescription> AttributeDesc;
     for (const auto& Attribute: mVertexInputAttributes) {
         vk::VertexInputAttributeDescription Desc;
         // clang-format off
@@ -63,8 +63,8 @@ Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribut
     return AttributeDesc;
 }
 
-Array<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const {
-    Array<vk::VertexInputBindingDescription> BindingDescs;
+TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const {
+    TArray<vk::VertexInputBindingDescription> BindingDescs;
     vk::VertexInputBindingDescription        Desc{};
     // clang-format off
     Desc

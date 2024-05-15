@@ -78,12 +78,12 @@ bool Path::IsFolder(const bool bMustExist) const {
     return TempPath.has_filename() && !TempPath.has_extension();
 }
 
-Optional<Path> Path::GetWorkPath() noexcept {
+TOptional<Path> Path::GetWorkPath() noexcept {
     if (sProjectWorkPath == nullptr) return {};
     return *sProjectWorkPath;
 }
 
-Optional<Path> Path::GetProjectMetaFilePath() noexcept {
+TOptional<Path> Path::GetProjectMetaFilePath() noexcept {
     if (sProjectWorkPath == nullptr) return std::nullopt;
     const auto ProjectName = sProjectWorkPath->mPath.stem().generic_wstring();
     return Path(ProjectName + L".project");

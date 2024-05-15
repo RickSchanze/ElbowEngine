@@ -16,8 +16,8 @@ public:
     virtual void SubmitGraphicsQueue(
         int       CurrentImageIndex,
         vk::Queue InGraphicsQueue,
-        Array<vk::Semaphore> InWaitSemaphores,
-        Array<vk::Semaphore> InSingalSemaphores,
+        TArray<vk::Semaphore> InWaitSemaphores,
+        TArray<vk::Semaphore> InSingalSemaphores,
         vk::Fence InFrameFence
     ) = 0;
     // clang-format on

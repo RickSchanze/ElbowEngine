@@ -40,7 +40,7 @@ protected:
     {};
 
 public:
-    static UniquePtr<IRenderPassProducer> CreateUnique(vk::Format InSwapchainImageFormat) {
+    static TUniquePtr<IRenderPassProducer> CreateUnique(vk::Format InSwapchainImageFormat) {
         return MakeUnique<ImGuiRenderPassProducer>(Protected{}, InSwapchainImageFormat);
     }
 
@@ -55,9 +55,9 @@ private:
     // 不需要深度
     vk::AttachmentReference mColorAttachmentRef{0, vk::ImageLayout::eColorAttachmentOptimal};
 
-    Array<vk::AttachmentDescription> mAttachments;
-    Array<vk::SubpassDescription>    mSubpasses;
-    Array<vk::SubpassDependency>     mDependencies;
+    TArray<vk::AttachmentDescription> mAttachments;
+    TArray<vk::SubpassDescription>    mSubpasses;
+    TArray<vk::SubpassDependency>     mDependencies;
 };
 
 class ImGuiGraphicsPipeline : public IGraphicsPipeline {
@@ -78,7 +78,7 @@ protected:
 
 public:
     void SubmitGraphicsQueue(
-        int CurrentImageIndex, vk::Queue InGraphicsQueue, Array<vk::Semaphore> InWaitSemaphores, Array<vk::Semaphore> InSingalSemaphores,
+        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
         vk::Fence InFrameFence
     ) override;
 
@@ -88,10 +88,10 @@ private:
     Ref<RHI::Vulkan::VulkanContext> mContext;
 
     vk::DescriptorPool                      mDescriptorPool = nullptr;
-    UniquePtr<RHI::Vulkan::CommandProducer> mCommandProducer;
-    UniquePtr<RHI::Vulkan::RenderPass>      mRenderPass;
-    Array<vk::CommandBuffer>                mCommandBuffers;
-    Array<vk::Framebuffer>                  mFramebuffers;
+    TUniquePtr<RHI::Vulkan::CommandProducer> mCommandProducer;
+    TUniquePtr<RHI::Vulkan::RenderPass>      mRenderPass;
+    TArray<vk::CommandBuffer>                mCommandBuffers;
+    TArray<vk::Framebuffer>                  mFramebuffers;
 };
 
 class GlfwWindow {
@@ -101,8 +101,8 @@ public:
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
 
-    UniquePtr<GLFWWindowSurface>     GetWindowSurface();
-    [[nodiscard]] Array<const char*> GetRequiredExtensions() const;
+    TUniquePtr<GLFWWindowSurface>     GetWindowSurface();
+    [[nodiscard]] TArray<const char*> GetRequiredExtensions() const;
     [[nodiscard]] GLFWwindow*        GetGLFWWindowHandle() const { return mWindowHandle; }
 
     Size2D GetWindowSize();
@@ -125,7 +125,7 @@ private:
     GLFWwindow* mWindowHandle = nullptr;
     String      mWindowTitle;
 
-    UniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
+    TUniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
 
     int mWidth;
     int mHeight;

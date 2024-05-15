@@ -5,6 +5,13 @@ add_library(${PROJECT_NAME}
         Path/Exception.cpp
         Path/Path.cpp
         Path/Path.h
+        Component/ComponentBase.cpp
+        Component/ComponentBase.h
+        GameObject/GameObject.cpp
+        GameObject/GameObject.h
+        FunctionCommon.h
+        Component/TransformComponent.cpp
+        Component/TransformComponent.h
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

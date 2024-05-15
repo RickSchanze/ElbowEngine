@@ -114,7 +114,7 @@ public:
     }
 
 private:
-    SharedPtr<spdlog::logger> mLogger;
+    TSharedPtr<spdlog::logger> mLogger;
 };
 
 #define INFO Logger::Get().Info
