@@ -8,6 +8,7 @@
 #include "GLFWWindow.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include "Input/Input.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
@@ -176,13 +177,13 @@ void ImGuiGraphicsPipeline::SubmitGraphicsQueue(
     vk::CommandBufferBeginInfo BeginInfo = {};
     BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     mCommandBuffers[CurrentImageIndex].begin(&BeginInfo);
-    vk::RenderPassBeginInfo        RenderPassInfo = {};
+    vk::RenderPassBeginInfo         RenderPassInfo = {};
     TStaticArray<vk::ClearValue, 1> ClearValues    = {};
-    RenderPassInfo.renderPass                     = mRenderPass->GetHandle();
-    RenderPassInfo.framebuffer                    = mFramebuffers[CurrentImageIndex];
-    RenderPassInfo.renderArea                     = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
-    RenderPassInfo.clearValueCount                = static_cast<uint32_t>(ClearValues.size());
-    RenderPassInfo.pClearValues                   = ClearValues.data();
+    RenderPassInfo.renderPass                      = mRenderPass->GetHandle();
+    RenderPassInfo.framebuffer                     = mFramebuffers[CurrentImageIndex];
+    RenderPassInfo.renderArea                      = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
+    RenderPassInfo.clearValueCount                 = static_cast<uint32_t>(ClearValues.size());
+    RenderPassInfo.pClearValues                    = ClearValues.data();
     mCommandBuffers[CurrentImageIndex].beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[CurrentImageIndex]);
@@ -217,8 +218,8 @@ TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
 
 TArray<const char*> GlfwWindow::GetRequiredExtensions() const {
     TArray<const char*> Extensions;
-    uint32_t           Count = 0;
-    const char**       Names = glfwGetRequiredInstanceExtensions(&Count);
+    uint32_t            Count = 0;
+    const char**        Names = glfwGetRequiredInstanceExtensions(&Count);
     for (uint32_t i = 0; i < Count; ++i) {
         Extensions.emplace_back(Names[i]);
     }
@@ -261,6 +262,9 @@ void GlfwWindow::Initialize() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
     mWindowHandle          = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
+
+    Camera = new Function::Camera(L"摄像机", nullptr);
+    Camera->BeginPlay();
 }
 
 void GlfwWindow::Finalize() {
@@ -271,10 +275,12 @@ void GlfwWindow::Finalize() {
 }
 
 void GlfwWindow::Tick() {
+    Camera->Tick();
     ImGui::Begin("Hello");
     ImGui::Text("Hello, world!");
     ImGui::Text("你好世界！");
     ImGui::End();
+    ImGui::ShowDemoWindow();
     glfwPollEvents();
 }
 

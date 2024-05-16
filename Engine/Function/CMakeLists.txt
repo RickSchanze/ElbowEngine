@@ -12,6 +12,10 @@ add_library(${PROJECT_NAME}
         FunctionCommon.h
         Component/TransformComponent.cpp
         Component/TransformComponent.h
+        Input/Input.cpp
+        Input/Input.h
+        Component/Camera.cpp
+        Component/Camera.h
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

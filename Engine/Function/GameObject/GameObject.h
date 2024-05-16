@@ -11,7 +11,7 @@
 #include "Object/Object.h"
 
 namespace Function {
-class ComponentBase;
+class Component;
 }
 FUNCTION_NAMESPACE_BEGIN
 
@@ -22,7 +22,7 @@ public:
     void EndPlay();
 
     template<typename T>
-        requires std::derived_from<T, ComponentBase>
+        requires std::derived_from<T, Component>
     T* AddComponent(const String& InComponentName) {
         T* Component = new T(InComponentName, this);
         Component->mGameObject = this;
@@ -33,7 +33,7 @@ public:
     }
 
     template<typename T>
-        requires std::derived_from<T, ComponentBase>
+        requires std::derived_from<T, Component>
     T* GetComponent() const {
         for (auto component: mComponents) {
             if (dynamic_cast<T*>(component) != nullptr) {
@@ -43,11 +43,11 @@ public:
         return nullptr;
     }
 
-    void DestroyComponent(ComponentBase* InComponent);
+    void DestroyComponent(Component* InComponent);
 
 protected:
     TransformComponent mTransform = {};
-    TArray<ComponentBase*> mComponents;
+    TArray<Component*> mComponents;
 };
 
 FUNCTION_NAMESPACE_END

@@ -27,7 +27,7 @@ void Function::GameObject::EndPlay() {
     }
 }
 
-void Function::GameObject::DestroyComponent(ComponentBase* InComponent) {
+void Function::GameObject::DestroyComponent(Component* InComponent) {
     InComponent->EndPlay();
     std::erase(mComponents, InComponent);
     delete InComponent;

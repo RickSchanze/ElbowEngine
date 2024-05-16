@@ -10,6 +10,7 @@
 #include "WindowCommon.h"
 
 #define GLFW_INCLUDE_VULKAN
+#include "Component/Camera.h"
 #include "GLFW/glfw3.h"
 #include "imgui_impl_vulkan.h"
 #include "Math/MathTypes.h"
@@ -124,6 +125,9 @@ public:
 private:
     GLFWwindow* mWindowHandle = nullptr;
     String      mWindowTitle;
+
+    // TODO
+    Function::Camera* Camera;
 
     TUniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
 

@@ -9,6 +9,7 @@
 
 #include "CoreDef.h"
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 struct Size2D
@@ -19,6 +20,15 @@ struct Size2D
     String ToString();
 };
 
-typedef glm::vec3 Vector3;
-typedef glm::vec3 Vector4;
+typedef glm::vec3 FVector3;
+typedef glm::vec2 FVector2;
 typedef glm::vec3 Color;
+
+struct FRotator
+{
+    float Pitch;
+    float Yaw;
+    float Roll;
+
+    FVector3 GetForwardVector() const;
+};

@@ -40,3 +40,7 @@ String StringUtils::ErrorCodeToString(const errno_t ErrorCode, const EStringEnco
     return FromAnsiString(Buffer, SourceStringEncoding);
 }
 
+String StringUtils::ToString(FVector3 InVec) {
+    return std::format(L"({0}, {1}, {2})", InVec.x, InVec.y, InVec.z);
+}
+

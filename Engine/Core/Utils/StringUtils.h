@@ -9,6 +9,7 @@
 
 #include "CoreDef.h"
 #include "CoreTypeTraits.h"
+#include "Math/MathTypes.h"
 
 enum class EStringEncoding {
     UTF8,
@@ -56,6 +57,8 @@ public:
         }
         return Result;
     }
+
+    static String ToString(FVector3 InVec) ;
 };
 
 template<>

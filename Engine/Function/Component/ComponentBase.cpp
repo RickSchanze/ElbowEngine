@@ -10,7 +10,7 @@
 #include "CoreGlobal.h"
 #include "GameObject/GameObject.h"
 
-Function::ComponentBase::ComponentBase(String InName, GameObject* InGameObject) : mGameObject(InGameObject) {
+Function::Component::Component(String InName, GameObject* InGameObject) : mGameObject(InGameObject) {
     if (InGameObject == nullptr) {
         LOG_ERROR_CATEGORY(Component, L"创建组件{}失败: 输入组件为空", InName);
         return;
@@ -19,10 +19,12 @@ Function::ComponentBase::ComponentBase(String InName, GameObject* InGameObject) 
     // InGameObject 由GameObject的AddComponent设置
 }
 
-void Function::ComponentBase::BeginPlay() {
+void Function::Component::BeginPlay() {}
 
+Function::TransformComponent& Function::Component::GetTransform() const {
+    return *mTransform;
 }
 
-void Function::ComponentBase::Destroy() {
+void Function::Component::Destroy() {
     mGameObject->DestroyComponent(this);
 }

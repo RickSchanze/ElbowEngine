@@ -8,6 +8,8 @@
 #include "GraphicsPipeline.h"
 
 #include "CommandProducer.h"
+#include "Component/Camera.h"
+#include "Component/TransformComponent.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "Model.h"
@@ -18,7 +20,9 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
+#include "Utils/StringUtils.h"
 
+#include <iostream>
 #include <ranges>
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -44,7 +48,12 @@ void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
     const auto                CurrentTime = std::chrono::high_resolution_clock::now();
     const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
     TStaticArray<glm::mat4, 3> UBO;
-    UBO[0] = rotate(glm::mat4(1.f), Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[0] = glm::mat4(1.f);
+    // TODO: Here
+    if (Function::Camera::Main) {
+        UBO[0] = glm::translate(UBO[0], Function::Camera::Main->GetTransform().Position);
+    }
+    UBO[0] = rotate(UBO[0], Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
     // 缩放
     UBO[0] = scale(UBO[0], glm::vec3(0.05f, 0.05f, 0.05f));
     // 绕X转90度

@@ -15,14 +15,16 @@ class TransformComponent;
 }
 FUNCTION_NAMESPACE_BEGIN
 
-class ComponentBase : public Object {
+class Component : public Object {
 public:
     friend class GameObject;
-    explicit ComponentBase(String InName, GameObject* InGameObject);
+    explicit Component(String InName, GameObject* InGameObject);
 
     virtual void Tick() {}
     virtual void BeginPlay();
     virtual void EndPlay() {}
+
+    TransformComponent& GetTransform() const;
 
     void Destroy();
 
