@@ -11,7 +11,7 @@
 
 namespace Function {
 class GameObject;
-class TransformComponent;
+class Transform;
 }
 FUNCTION_NAMESPACE_BEGIN
 
@@ -20,16 +20,16 @@ public:
     friend class GameObject;
     explicit Component(String InName, GameObject* InGameObject);
 
-    virtual void Tick() {}
+    virtual void Tick(float DeltaTime) {}
     virtual void BeginPlay();
     virtual void EndPlay() {}
 
-    TransformComponent& GetTransform() const;
+    Transform& GetTransform() const;
 
     void Destroy();
 
 protected:
-    TransformComponent* mTransform = nullptr;
+    Transform* mTransform = nullptr;
     GameObject* mGameObject = nullptr;
 };
 

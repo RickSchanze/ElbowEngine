@@ -50,16 +50,12 @@ void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
     TStaticArray<glm::mat4, 3> UBO;
     UBO[0] = glm::mat4(1.f);
     // TODO: Here
-    if (Function::Camera::Main) {
-        UBO[0] = glm::translate(UBO[0], Function::Camera::Main->GetTransform().Position);
-    }
-    UBO[0] = rotate(UBO[0], Time * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    UBO[0] = rotate(UBO[0], glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
     // 缩放
     UBO[0] = scale(UBO[0], glm::vec3(0.05f, 0.05f, 0.05f));
     // 绕X转90度
     UBO[0] = rotate(UBO[0], glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
-    UBO[1] = lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
-
+    UBO[1] = Function::Camera::Main->GetViewMatrix();
 
     UBO[2] = glm::perspective(
         glm::radians(45.f),

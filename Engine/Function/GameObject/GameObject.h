@@ -18,7 +18,7 @@ FUNCTION_NAMESPACE_BEGIN
 class GameObject : public Object {
 public:
     void BeginPlay();
-    void Tick() const;
+    void Tick(float DeltaTime) const;
     void EndPlay();
 
     template<typename T>
@@ -46,7 +46,7 @@ public:
     void DestroyComponent(Component* InComponent);
 
 protected:
-    TransformComponent mTransform = {};
+    Transform mTransform = {};
     TArray<Component*> mComponents;
 };
 

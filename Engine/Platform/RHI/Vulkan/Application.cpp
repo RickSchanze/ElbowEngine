@@ -64,7 +64,7 @@ void VulkanApplication::Finalize() {
     mVulkanInstance->Finialize();
 }
 
-void VulkanApplication::Tick() {
+void VulkanApplication::Tick(float DeltaTime) {
     mContext->Draw();
 }
 

@@ -238,3 +238,5 @@ private:                                                        \
 
 // 项目Debug宏
 #define ELBOW_DEBUG _DEBUG || RELWITHDEBINFO
+
+#define U8(Text) (const char*)u8##Text

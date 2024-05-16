@@ -30,7 +30,7 @@ public:
     void Initialize();
     void Finalize();
 
-    void Tick();
+    void Tick(float DeltaTime);
 
     const String&       GetAppName() const noexcept { return mAppName; }
     const String&       GetEngineName() const noexcept { return mEngineName; }

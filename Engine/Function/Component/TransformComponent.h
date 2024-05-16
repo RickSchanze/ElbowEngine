@@ -12,13 +12,15 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class TransformComponent final : public Component {
+class Transform  {
 public:
-    TransformComponent() : Component(String(L"Transform"), nullptr) {}
-
     FVector3 Position = {0, 0, 0};
     FRotator Rotation = {0, 0, 0};
     FVector3 Scale    = {1, 1, 1};
+
+    FVector3 GetForwardVector() const;
+    FVector3 GetUpVector() const;
+    FVector3 GetRightVector() const;
 };
 
 FUNCTION_NAMESPACE_END

@@ -58,10 +58,14 @@ void EngineApplication::Finitialize() const {
 }
 
 void EngineApplication::Run() {
+    static auto LastFrameTime = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(mWindow->GetGLFWWindowHandle())) {
+        auto       CurrentFrameTime = std::chrono::high_resolution_clock::now();
+        const auto DeltaTime        = std::chrono::duration<float>(CurrentFrameTime - LastFrameTime).count();
+        LastFrameTime               = CurrentFrameTime;
         mWindow->BeginImGuiFrame();
-        mWindow->Tick();
-        mRenderApplication->Tick();
+        mWindow->Tick(DeltaTime);
+        mRenderApplication->Tick(DeltaTime);
         mWindow->EndImGuiFrame();
     }
 }
@@ -70,6 +74,10 @@ bool EngineApplication::IsValid() const {
     if (!(mRenderApplication && mRenderApplication->IsValid())) return false;
     if (!(mWindow && mWindow->IsValid())) return false;
     return true;
+}
+
+void EngineApplication::SetMouseVisible(const bool InVisible) const {
+    mWindow->SetMouseVisible(InVisible);
 }
 
 TOOL_NAMESPACE_END

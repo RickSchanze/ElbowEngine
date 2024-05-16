@@ -63,7 +63,6 @@ private:
 
 class ImGuiGraphicsPipeline : public IGraphicsPipeline {
 public:
-
     explicit ImGuiGraphicsPipeline(Ref<RHI::Vulkan::VulkanContext> InConext);
 
     void Initialize();
@@ -88,7 +87,7 @@ public:
 private:
     Ref<RHI::Vulkan::VulkanContext> mContext;
 
-    vk::DescriptorPool                      mDescriptorPool = nullptr;
+    vk::DescriptorPool                       mDescriptorPool = nullptr;
     TUniquePtr<RHI::Vulkan::CommandProducer> mCommandProducer;
     TUniquePtr<RHI::Vulkan::RenderPass>      mRenderPass;
     TArray<vk::CommandBuffer>                mCommandBuffers;
@@ -102,9 +101,9 @@ public:
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
 
-    TUniquePtr<GLFWWindowSurface>     GetWindowSurface();
-    [[nodiscard]] TArray<const char*> GetRequiredExtensions() const;
-    [[nodiscard]] GLFWwindow*        GetGLFWWindowHandle() const { return mWindowHandle; }
+    TUniquePtr<GLFWWindowSurface> GetWindowSurface();
+    TArray<const char*>           GetRequiredExtensions() const;
+    GLFWwindow*                   GetGLFWWindowHandle() const { return mWindowHandle; }
 
     Size2D GetWindowSize();
 
@@ -113,6 +112,7 @@ public:
     }
 
     void InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext);
+    void SetupImGuiFonts();
     void ShutdownImGui();
 
     void BeginImGuiFrame();
@@ -120,14 +120,18 @@ public:
 
     void Initialize();
     void Finalize();
-    void Tick();
+
+    void Tick(float DeltaTime);
+
+    void SetMouseVisible(bool InVisible)const;
+
 
 private:
     GLFWwindow* mWindowHandle = nullptr;
     String      mWindowTitle;
 
     // TODO
-    Function::Camera* Camera;
+    TSharedPtr<Function::GameObject> mCameraObject;
 
     TUniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
 

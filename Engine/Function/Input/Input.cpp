@@ -9,6 +9,10 @@
 
 #include "imgui.h"
 
+void Input::InternalTick() {
+    sLastFrameMousePos = GetMousePosition();
+}
+
 bool Input::IsKeyDown(KeyCode InCode) {
     return ImGui::IsKeyDown(static_cast<ImGuiKey>(static_cast<int>(InCode)));
 }
@@ -24,4 +28,8 @@ bool Input::IsKeyReleased(KeyCode InCode) {
 FVector2 Input::GetMousePosition() {
     ImGuiIO& IO = ImGui::GetIO();
     return {IO.MousePos.x, IO.MousePos.y};
+}
+
+FVector2 Input::GetMouseDelta() {
+    return GetMousePosition() - sLastFrameMousePos;
 }

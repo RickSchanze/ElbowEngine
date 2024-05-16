@@ -29,6 +29,8 @@ add_library(${PROJECT_NAME}
         Event/Event.h
         Misc/Guid.cpp
         Misc/Guid.h
+        Math/Math.cpp
+        Math/Math.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

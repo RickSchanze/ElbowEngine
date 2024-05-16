@@ -15,9 +15,9 @@ void Function::GameObject::BeginPlay() {
     }
 }
 
-void Function::GameObject::Tick() const {
+void Function::GameObject::Tick(float DeltaTime) const {
     for (const auto Component: mComponents) {
-        Component->Tick();
+        Component->Tick(DeltaTime);
     }
 }
 

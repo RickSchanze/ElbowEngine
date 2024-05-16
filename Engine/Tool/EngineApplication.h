@@ -43,6 +43,8 @@ public:
 
     bool bFrameBufferResized = false;
 
+    void SetMouseVisible(bool InVisible)const;
+
 private:
     static void FrameBufferResizeCallback(GLFWwindow* Window, int Width, int Height) {
         auto& App = Get();

@@ -6,6 +6,7 @@
  */
 
 #include "GLFWWindow.h"
+#include "GameObject/GameObject.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 #include "Input/Input.h"
@@ -234,11 +235,20 @@ Size2D GlfwWindow::GetWindowSize() {
 void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext) {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
-    mGraphicsPipeline             = MakeUnique<ImGuiGraphicsPipeline>(InContext);
+    mGraphicsPipeline = MakeUnique<ImGuiGraphicsPipeline>(InContext);
+    SetupImGuiFonts();
+}
+
+void GlfwWindow::SetupImGuiFonts() {
+    ImGuiIO&   IO                 = ImGui::GetIO();
     Path       DefaultFontPath    = L"Fonts/Maple_UI.ttf";
     AnsiString DefaultFontPathStr = DefaultFontPath.ToAnsiString();
-    ImGuiIO&   IO                 = ImGui::GetIO();
-    IO.Fonts->AddFontFromFileTTF(DefaultFontPathStr.c_str(), 30, nullptr, IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    ImVector<ImWchar> Ranges;
+    ImFontGlyphRangesBuilder Builder;
+    Builder.AddRanges(IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    Builder.AddText(U8("帧"));
+    Builder.BuildRanges(&Ranges);
+    IO.Fonts->AddFontFromFileTTF(DefaultFontPathStr.c_str(), 30, nullptr, Ranges.Data);
     ImGui_ImplVulkan_CreateFontsTexture();
 }
 
@@ -263,8 +273,9 @@ void GlfwWindow::Initialize() {
     const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
     mWindowHandle          = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
 
-    Camera = new Function::Camera(L"摄像机", nullptr);
-    Camera->BeginPlay();
+    mCameraObject = New<Function::GameObject>(L"摄像机");
+    mCameraObject->BeginPlay();
+    mCameraObject->AddComponent<Function::Camera>(L"CameraComp");
 }
 
 void GlfwWindow::Finalize() {
@@ -274,14 +285,21 @@ void GlfwWindow::Finalize() {
     glfwTerminate();
 }
 
-void GlfwWindow::Tick() {
-    Camera->Tick();
+void GlfwWindow::Tick(float DeltaTime) {
+    mCameraObject->Tick(DeltaTime);
     ImGui::Begin("Hello");
     ImGui::Text("Hello, world!");
     ImGui::Text("你好世界！");
+    ImGui::Text(U8("帧生成:%f"), DeltaTime);
+    ImGui::Text(U8("帧率:%f"), DeltaTime == 0 ? 0 : 1 / DeltaTime);
     ImGui::End();
     ImGui::ShowDemoWindow();
     glfwPollEvents();
+    Input::InternalTick();
+}
+
+void GlfwWindow::SetMouseVisible(const bool InVisible) const {
+    glfwSetInputMode(mWindowHandle, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 PLATFORM_WINDOW_NAMESPACE_END
