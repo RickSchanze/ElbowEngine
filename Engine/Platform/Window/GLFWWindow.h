@@ -130,7 +130,6 @@ private:
     GLFWwindow* mWindowHandle = nullptr;
     String      mWindowTitle;
 
-    // TODO
     TSharedPtr<Function::GameObject> mCameraObject;
 
     TUniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
