@@ -13,7 +13,7 @@ enum class KeyCode {
     A = 546,
     B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,
     Space = 524,
-    MouseLeft = 655,
+    MouseLeft = 655, MouseRight, MouseMiddle,
     Escape = 526,
 };
 // clang-format on

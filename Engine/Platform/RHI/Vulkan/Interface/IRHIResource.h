@@ -17,6 +17,7 @@ protected:
 
 public:
     virtual ~IRHIResource() = default;
+    virtual void Destroy() = 0;
 };
 
 RHI_VULKAN_NAMESPACE_END

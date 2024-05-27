@@ -30,9 +30,11 @@ public:
 
     /** 此函数必修初始化mSurface */
     virtual void Initialize() = 0;
-    void Finialize();
+    void         Finialize();
+    void         Destroy() override;
 
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurfaceHandle); }
+
 
 protected:
     vk::SurfaceKHR mSurfaceHandle;
@@ -45,6 +47,7 @@ public:
 
     void Initialize();
     void Finialize();
+    void Destroy() override;
 
     Instance& SetSurface(TUniquePtr<SurfaceBase> InSurface);
 
@@ -67,16 +70,19 @@ public:
 protected:
     void InitializeSurface();
 
+public:
+
+
 private:
-    vk::Instance               mVulkanInstanceHandle;
+    vk::Instance                mVulkanInstanceHandle;
     // 验证层
     TUniquePtr<ValidationLayer> mValidationLayer;
     // 窗口表面
     TUniquePtr<SurfaceBase>     mSurface;
     // 动态加载各种函数用
-    vk::DispatchLoaderDynamic  mDynamicDispatcher;
+    vk::DispatchLoaderDynamic   mDynamicDispatcher;
     // 实例创建信息
-    vk::InstanceCreateInfo     mInstanceCreateInfo;
+    vk::InstanceCreateInfo      mInstanceCreateInfo;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -10,6 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreGlobal.h"
 #include "ResourceManager.h"
+#include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "stb_image.h"
 
 RESOURCE_NAMESPACE_BEGIN
@@ -32,7 +33,9 @@ Texture* Texture::Create(const Path& InPath, ETextureUsage) {
 
 Texture::~Texture() {
     stbi_image_free(mData);
-    mData = nullptr;
+    if (mTextureRHIResource) mTextureRHIResource->Destroy();
+    mTextureRHIResource = nullptr;
+    mData               = nullptr;
 }
 
 void Texture::Load() {

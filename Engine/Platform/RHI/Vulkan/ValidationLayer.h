@@ -23,6 +23,8 @@ public:
     void Initialize();
     void Finialize();
 
+    void Destroy() override;
+
     bool IsValid() const { return static_cast<bool>(mDebugMessengerCallback); }
 
 #if ELBOW_DEBUG
@@ -34,7 +36,7 @@ public:
         "VK_LAYER_KHRONOS_validation",
     };
 
-    static constexpr bool               IsEnable() noexcept { return sEnableValidationLayer; }
+    static constexpr bool                IsEnable() noexcept { return sEnableValidationLayer; }
     static constexpr TArray<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
@@ -44,6 +46,7 @@ public:
 
     [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return mDebugMessengerCallback; }
     ValidationLayer&                         SetAttachedVulkanInstance(Instance* InInstance) noexcept;
+
 
 
 private:

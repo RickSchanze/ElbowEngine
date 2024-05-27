@@ -16,7 +16,6 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 LogicalDevice::~LogicalDevice() {
-    if (!IsValid()) return;
     Finialize();
 }
 
@@ -26,15 +25,19 @@ TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const
 
 LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
     mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
-
     Initialize();
 }
 
 void LogicalDevice::Initialize() {}
 
 void LogicalDevice::Finialize() {
+    if (!IsValid()) return;
     mLogicalDeviceHandle.destroy();
     mLogicalDeviceHandle = VK_NULL_HANDLE;
+}
+
+void LogicalDevice::Destroy() {
+    Finialize();
 }
 
 TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
@@ -71,7 +74,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainIma
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                   Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
+    const auto                    Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
     const TStaticArray<uint32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),

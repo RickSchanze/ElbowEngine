@@ -33,8 +33,7 @@ public:
 
 protected:
 
-    void HandleFocusedInput();
-    void HandleUnfocusedInput();
+    void HandleInput();
 
     PROPERTY(Serialized)
     float MovementSpeed = 0.001;

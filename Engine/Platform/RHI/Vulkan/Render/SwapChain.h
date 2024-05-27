@@ -18,7 +18,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class SwapChain final : public IRHIResource {
 public:
-    SwapChain() = default;
+    SwapChain();
 
     static TUniquePtr<SwapChain> CreateUnique(
         vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
@@ -56,6 +56,8 @@ public:
     void Finialize();
 
     uint32 GetSwapchainImageCount() const { return static_cast<uint32>(mSwapchainImages.size()); }
+
+    void   Destroy() override;
 
 private:
     vk::SwapchainKHR                 mSwapchainHandle;

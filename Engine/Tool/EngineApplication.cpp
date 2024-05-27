@@ -10,7 +10,10 @@
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Application.h"
+#include "UI/Window/DebugWindow.h"
+#include "UI/Window/WindowBase.h"
 #include "Window/GLFWWindow.h"
+
 
 TOOL_NAMESPACE_BEGIN
 
@@ -64,9 +67,18 @@ void EngineApplication::Run() {
         const auto DeltaTime        = std::chrono::duration<float>(CurrentFrameTime - LastFrameTime).count();
         LastFrameTime               = CurrentFrameTime;
         mWindow->BeginImGuiFrame();
+
+        for (auto& SubWindow: mSubWindows) {
+            SubWindow->Tick(DeltaTime);
+        }
+
+        DrawAppUI();
+
+        ImGui::ShowDemoWindow();
         mWindow->Tick(DeltaTime);
+
+        // 这个必须在最后一句 对ImGui的渲染在这里完成
         mRenderApplication->Tick(DeltaTime);
-        mWindow->EndImGuiFrame();
     }
 }
 
@@ -78,6 +90,30 @@ bool EngineApplication::IsValid() const {
 
 void EngineApplication::SetMouseVisible(const bool InVisible) const {
     mWindow->SetMouseVisible(InVisible);
+}
+
+// TODO: 更加可拓展的主窗口形式
+void EngineApplication::DrawAppUI() {
+    if (ImGui::BeginMainMenuBar()) {
+        DrawWindowMenu();
+        ImGui::EndMainMenuBar();
+    }
+}
+
+void EngineApplication::DrawWindowMenu() {
+    if (ImGui::BeginMenu(U8("窗口"))) {
+        if (ImGui::MenuItem(U8("调试控制台"))) {
+            OnOpenDebugWindow();
+        }
+        ImGui::EndMenu();
+    }
+
+}
+
+void EngineApplication::OnOpenDebugWindow() {
+    TUniquePtr<Window::DebugWindow> Window = MakeUnique<Window::DebugWindow>();
+    Window->SetWindowName(L"调试控制台");
+    mSubWindows.push_back(Move(Window));
 }
 
 TOOL_NAMESPACE_END

@@ -30,11 +30,13 @@ public:
     bool IsValid() const;
 
     void Finialize();
+    void Destroy() override;
 
     vk::Buffer GetVertexBuffer() const { return mVertexBuffer; }
     vk::Buffer GetIndexBuffer() const { return mIndexBuffer; }
     uint32     GetIndexCount() const { return mIndexCount; }
     uint32     GetVertexCount() const { return mVertexCount; }
+
 
 private:
     vk::Buffer       mVertexBuffer;
@@ -59,6 +61,7 @@ public:
 
     void Finialize() const;
     bool IsValid() const;
+    void Destroy() override;
 
 private:
     // TODO: 这里可能需要一种所有权指针

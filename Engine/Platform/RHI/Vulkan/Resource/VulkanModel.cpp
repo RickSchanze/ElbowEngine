@@ -100,6 +100,10 @@ void Mesh::Finialize() {
     mIndexBufferMemory  = nullptr;
 }
 
+void Mesh::Destroy() {
+    Finialize();
+}
+
 Model::Model(Resource::Model* InModel, VulkanContext& InContext) {
     if (InModel == nullptr || !InModel->IsValid()) return;
     for (auto& MeshResource: InModel->GetMeshes()) {
@@ -127,6 +131,10 @@ void Model::Finialize() const {
 
 bool Model::IsValid() const {
     return !mMeshes.empty();
+}
+
+void Model::Destroy() {
+    Finialize();
 }
 
 RHI_VULKAN_NAMESPACE_END

@@ -30,6 +30,10 @@ void SurfaceBase::Finialize() {
     }
 }
 
+void SurfaceBase::Destroy() {
+    Finialize();
+}
+
 Instance::Instance() {
     mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
@@ -51,6 +55,10 @@ void Instance::Finialize() {
     mValidationLayer->Finialize();
     mVulkanInstanceHandle.destroy();
     mVulkanInstanceHandle = VK_NULL_HANDLE;
+}
+
+void Instance::Destroy(){
+    Finialize();
 }
 
 const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {

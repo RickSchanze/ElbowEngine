@@ -31,10 +31,10 @@ class Shader;
 
 struct GraphicsPipelineCreateInfo
 {
-    Path                           VertexShaderPath;
-    Path                           FragmentShaderPath;
-    vk::Extent2D                   ViewportSize;
-    vk::SampleCountFlagBits        MsaaSamples;
+    Path                            VertexShaderPath;
+    Path                            FragmentShaderPath;
+    vk::Extent2D                    ViewportSize;
+    vk::SampleCountFlagBits         MsaaSamples;
     TSharedPtr<IRenderPassProducer> RenderPassProducer;
 };
 
@@ -90,8 +90,8 @@ private:
 
     // 各种缓冲
     // 1.多重采样缓存
-    TSharedPtr<Image>        mMsaaColorImage;
-    TSharedPtr<ImageView>    mMsaaColorImageView;
+    TSharedPtr<Image>       mMsaaColorImage;
+    TSharedPtr<ImageView>   mMsaaColorImageView;
     vk::SampleCountFlagBits mMsaaSamples;
 
     // 2.深度缓存
@@ -113,9 +113,9 @@ private:
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
     TSharedPtr<Texture>       mTexture;
-    uint32                   mTextureMipLevel;
+    uint32                    mTextureMipLevel;
     TSharedPtr<ImageView>     mTextureView;
-    vk::Sampler              mTextureSampler;
+    vk::Sampler               mTextureSampler;
     TSharedPtr<ShaderProgram> mShaderProg;
     TArray<vk::Buffer>        mUniformBuffers;
     TArray<vk::DeviceMemory>  mUniformBuffersMemory;
@@ -124,7 +124,7 @@ private:
     GraphicsPipelineCreateInfo mCreateInfo;
 
     // TODO: 模型系统
-    TUniquePtr<Model>   mModel;
+    TUniquePtr<Model>  mModel;
     vk::DescriptorPool mDescriptorPool;
 
     void LoadModel();

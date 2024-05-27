@@ -17,13 +17,7 @@
 
 void Function::Camera::Tick(const float DeltaTime) {
     Component::Tick(DeltaTime);
-    if (bEnableInput) {
-        if (bFocused) {
-            HandleFocusedInput();
-        } else {
-            HandleUnfocusedInput();
-        }
-    }
+    HandleInput();
 }
 
 
@@ -43,43 +37,36 @@ void Function::Camera::SetWindowFocused(bool InFocused) {
     Tool::EngineApplication::Get().SetMouseVisible(!InFocused);
 }
 
-void Function::Camera::HandleFocusedInput() {
-    if (Input::IsKeyDown(KeyCode::W)) {
-        mTransform->Position += MovementSpeed * mTransform->GetForwardVector();
-    }
-    if (Input::IsKeyDown(KeyCode::S)) {
-        mTransform->Position -= MovementSpeed * mTransform->GetForwardVector();
-    }
-    if (Input::IsKeyDown(KeyCode::A)) {
-        mTransform->Position -= MovementSpeed * mTransform->GetRightVector();
-    }
-    if (Input::IsKeyDown(KeyCode::D)) {
-        mTransform->Position += MovementSpeed * mTransform->GetRightVector();
-    }
-    if (Input::IsKeyDown(KeyCode::Escape)) {
-        SetWindowFocused(false);
-    }
-    if (Input::IsKeyDown(KeyCode::Q)) {
-        mTransform->Position += MovementSpeed * mTransform->GetUpVector();
-    }
-    if (Input::IsKeyDown(KeyCode::E)) {
-        mTransform->Position -= MovementSpeed * mTransform->GetUpVector();
-    }
-    FVector2 MouseDelta = Input::GetMouseDelta();
-    MouseDelta *= mMouseSensitivity;
-    mTransform->Rotation.Yaw += MouseDelta.x;
-    mTransform->Rotation.Pitch -= MouseDelta.y;
-    mTransform->Rotation.Pitch = FMath::Clamp(mTransform->Rotation.Pitch, -89.0f, 89.0f);
-}
-
-void Function::Camera::HandleUnfocusedInput() {
-    if (Input::IsKeyPressed(KeyCode::MouseLeft)) {
-        const auto now      = std::chrono::steady_clock::now();
-        const auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - mLastClickTime);
-        if (duration.count() <= mDoubleClickTime) {
-            SetWindowFocused(true);
-        } else {
-            mLastClickTime = now;
+void Function::Camera::HandleInput() {
+    if (Input::IsKeyDown(KeyCode::MouseRight)) {
+        if (Input::IsKeyDown(KeyCode::W)) {
+            mTransform->Position += MovementSpeed * mTransform->GetForwardVector();
         }
+        if (Input::IsKeyDown(KeyCode::S)) {
+            mTransform->Position -= MovementSpeed * mTransform->GetForwardVector();
+        }
+        if (Input::IsKeyDown(KeyCode::A)) {
+            mTransform->Position -= MovementSpeed * mTransform->GetRightVector();
+        }
+        if (Input::IsKeyDown(KeyCode::D)) {
+            mTransform->Position += MovementSpeed * mTransform->GetRightVector();
+        }
+        if (Input::IsKeyDown(KeyCode::Escape)) {
+            SetWindowFocused(false);
+        }
+        if (Input::IsKeyDown(KeyCode::Q)) {
+            mTransform->Position += MovementSpeed * mTransform->GetUpVector();
+        }
+        if (Input::IsKeyDown(KeyCode::E)) {
+            mTransform->Position -= MovementSpeed * mTransform->GetUpVector();
+        }
+        SetWindowFocused(true);
+        FVector2 MouseDelta = Input::GetMouseDelta();
+        MouseDelta *= mMouseSensitivity;
+        mTransform->Rotation.Yaw += MouseDelta.x;
+        mTransform->Rotation.Pitch -= MouseDelta.y;
+        mTransform->Rotation.Pitch = FMath::Clamp(mTransform->Rotation.Pitch, -89.0f, 89.0f);
+    } else {
+        SetWindowFocused(false);
     }
 }

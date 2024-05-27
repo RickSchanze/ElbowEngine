@@ -41,6 +41,10 @@ TSharedPtr<Image> Image::CreateShared(Ref<LogicalDevice> InDevice, const ImageCr
     return MakeShared<Image>(Protected{}, InDevice, InCreateInfo);
 }
 
+void Image::Destroy() {
+    Finialize();
+}
+
 Image::~Image() {
     Finialize();
 }

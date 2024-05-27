@@ -56,6 +56,7 @@ protected:
     uint8*        mData     = nullptr;
     ETextureUsage mUsage;
 
+private:
     TSharedPtr<RHI::Vulkan::IRHIResource> mTextureRHIResource = nullptr;
 };
 

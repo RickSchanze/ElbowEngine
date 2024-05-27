@@ -287,13 +287,6 @@ void GlfwWindow::Finalize() {
 
 void GlfwWindow::Tick(float DeltaTime) {
     mCameraObject->Tick(DeltaTime);
-    ImGui::Begin("Hello");
-    ImGui::Text("Hello, world!");
-    ImGui::Text("你好世界！");
-    ImGui::Text(U8("帧生成:%f"), DeltaTime);
-    ImGui::Text(U8("帧率:%f"), DeltaTime == 0 ? 0 : 1 / DeltaTime);
-    ImGui::End();
-    ImGui::ShowDemoWindow();
     glfwPollEvents();
     Input::InternalTick();
 }

@@ -68,7 +68,7 @@ void VulkanContext::Draw() {
     const vk::Device  Device = mLogicalDevice->GetHandle();
     // 首先等待当前帧的指令缓冲结束执行
     const TStaticArray Fence  = {mInFlightFences[mCurrentFrame]};
-    Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
+    auto _ = Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
     uint32   ImageIndex;
     VkResult AcquireResult =

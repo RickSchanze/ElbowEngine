@@ -112,4 +112,8 @@ void SwapChain::Finialize() {
     LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");
 }
 
+void SwapChain::Destroy(){
+    Finialize();
+}
+
 RHI_VULKAN_NAMESPACE_END

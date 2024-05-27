@@ -24,22 +24,12 @@ void ValidationLayer::Initialize() {
             return;
         }
         vk::DebugUtilsMessengerCreateInfoEXT CreateInfo{};
-        CreateInfo
-            .setMessageSeverity(
-                vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
-                vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-            )
-            .setMessageType(
-                vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-            )
+        CreateInfo.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
+            .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
             .setPfnUserCallback(&ThisClass::DebugCallBack)
             .setPUserData(nullptr);
-        const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();
-        mDebugMessengerCallback =
-            mAttachedVulkanInstance->GetHandle().createDebugUtilsMessengerEXT(
-                CreateInfo, nullptr, Dispatcher
-            );
+        const auto& Dispatcher  = mAttachedVulkanInstance->GetDynamicDispatcher();
+        mDebugMessengerCallback = mAttachedVulkanInstance->GetHandle().createDebugUtilsMessengerEXT(CreateInfo, nullptr, Dispatcher);
         LOG_INFO_CATEGORY(Vulkan, L"验证层初始化完成");
     }
 }
@@ -48,18 +38,19 @@ void ValidationLayer::Finialize() {
     if (!sEnableValidationLayer) return;
     if (mAttachedVulkanInstance && mAttachedVulkanInstance->IsValid() && mDebugMessengerCallback) {
         const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();
-        mAttachedVulkanInstance->GetHandle().destroyDebugUtilsMessengerEXT(
-            mDebugMessengerCallback, nullptr, Dispatcher
-        );
+        mAttachedVulkanInstance->GetHandle().destroyDebugUtilsMessengerEXT(mDebugMessengerCallback, nullptr, Dispatcher);
         LOG_INFO_CATEGORY(Vulkan, L"验证层清理完成");
     } else {
         LOG_WARNING_CATEGORY(Vulkan, L"销毁验证层时，验证层本身或其AttachedVulkanInstance失效");
     }
 }
 
+void ValidationLayer::Destroy() {
+    Finialize();
+}
+
 VkBool32 ValidationLayer::DebugCallBack(
-    VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
+    VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity, VkDebugUtilsMessageTypeFlagsEXT InMessageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
 ) {
     switch (InMessageSeverity) {
@@ -67,18 +58,12 @@ VkBool32 ValidationLayer::DebugCallBack(
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
         LOG_WARNING_CATEGORY(
-            Vulkan,
-            L"Validation Layer: {} [Message Type: {}]",
-            StringUtils::FromAnsiString(pCallbackData->pMessage),
-            InMessageType
+            Vulkan, L"Validation Layer: {} [Message Type: {}]", StringUtils::FromAnsiString(pCallbackData->pMessage), InMessageType
         );
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
         LOG_ERROR_CATEGORY(
-            Vulkan,
-            L"Validation Layer: {} [Message Type: {}]",
-            StringUtils::FromAnsiString(pCallbackData->pMessage),
-            InMessageType
+            Vulkan, L"Validation Layer: {} [Message Type: {}]", StringUtils::FromAnsiString(pCallbackData->pMessage), InMessageType
         );
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT: break;

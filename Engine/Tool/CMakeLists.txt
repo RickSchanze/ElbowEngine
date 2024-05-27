@@ -4,6 +4,18 @@ add_library(${PROJECT_NAME}
         EngineApplication.h
         EngineApplication.cpp
         ToolCommon.h
+        UI/Widget/WidgetBase.cpp
+        UI/Widget/WidgetBase.h
+        UI/Window/WindowBase.cpp
+        UI/Window/WindowBase.h
+        UI/Window/WindowRegistry.cpp
+        UI/Window/WindowRegistry.h
+        UI/Widget/Button.cpp
+        UI/Widget/Button.h
+        UI/Window/DebugWindow.cpp
+        UI/Window/DebugWindow.h
+        UI/Widget/Text.cpp
+        UI/Widget/Text.h
 )
 
 add_library(Engine::Tool ALIAS ${PROJECT_NAME})

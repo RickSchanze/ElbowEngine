@@ -94,16 +94,15 @@ bool RenderPass::IsValid() const {
 }
 
 RenderPass::~RenderPass() {
-    if (IsValid()) {
-        Finialize();
-    }
+    Finialize();
 }
 
 TUniquePtr<RenderPass> RenderPass::CreateUnique(Ref<LogicalDevice> InDevice, const vk::RenderPassCreateInfo& CreateInfo) {
     return MakeUnique<RenderPass>(ResourceProtected{}, CreateInfo, InDevice);
 }
 
-RenderPass::RenderPass(ResourceProtected, const vk::RenderPassCreateInfo& CreateInfo, const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {
+RenderPass::RenderPass(ResourceProtected, const vk::RenderPassCreateInfo& CreateInfo, const Ref<LogicalDevice> InDevice) :
+    mDevice(InDevice) {
     mRenderPassCreateInfo = CreateInfo;
     Initialize();
 }
@@ -118,6 +117,10 @@ void RenderPass::Finialize() {
     if (!IsValid()) return;
     mDevice.get().GetHandle().destroyRenderPass(mRenderPassHandle);
     mRenderPassHandle = VK_NULL_HANDLE;
+}
+
+void RenderPass::Destroy(){
+    Finialize();
 }
 
 RHI_VULKAN_NAMESPACE_END

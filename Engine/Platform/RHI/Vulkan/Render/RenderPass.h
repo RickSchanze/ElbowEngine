@@ -52,7 +52,10 @@ public:
     void Initialize();
     void Finialize();
 
+    void Destroy() override;
+
     vk::RenderPass GetHandle() const { return mRenderPassHandle; }
+
 
 protected:
     vk::RenderPass mRenderPassHandle = VK_NULL_HANDLE;

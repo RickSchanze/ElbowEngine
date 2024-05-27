@@ -73,6 +73,8 @@ public:
 
     static TSharedPtr<Image> CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
 
+    void Destroy() override;
+
     ~Image() override;
 
     bool IsValid() const override;
@@ -88,7 +90,7 @@ protected:
 protected:
     explicit Image(const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {}
 
-protected:
+
 
     Ref<LogicalDevice> mDevice;
 
@@ -98,8 +100,7 @@ protected:
 
 class Texture : public Image {
 public:
-    Texture(
-        Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
+    Texture(Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 
     static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
 

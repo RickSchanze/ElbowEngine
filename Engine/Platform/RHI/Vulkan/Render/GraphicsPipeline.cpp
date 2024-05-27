@@ -44,9 +44,9 @@ TSharedPtr<GraphicsPipeline> GraphicsPipeline::CreateShared(Ref<VulkanContext> I
 }
 
 void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
-    static auto               StartTime   = std::chrono::high_resolution_clock::now();
-    const auto                CurrentTime = std::chrono::high_resolution_clock::now();
-    const float               Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+    static auto                StartTime   = std::chrono::high_resolution_clock::now();
+    const auto                 CurrentTime = std::chrono::high_resolution_clock::now();
+    const float                Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
     TStaticArray<glm::mat4, 3> UBO;
     UBO[0] = glm::mat4(1.f);
     // TODO: Here
@@ -278,8 +278,8 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
         .setFramebuffer(InParam.FrameBuffer)
         .setRenderArea({{0, 0}, mContext.get().GetSwapChainExtent()});
     TStaticArray<vk::ClearValue, 2> ClearValues = {};
-    ClearValues[0].color                       = vk::ClearColorValue{1.f, 0.f, 0.f, 1.f};
-    ClearValues[1].depthStencil                = vk::ClearDepthStencilValue{1.f, 0};
+    ClearValues[0].color                        = vk::ClearColorValue{1.f, 0.f, 0.f, 1.f};
+    ClearValues[1].depthStencil                 = vk::ClearDepthStencilValue{1.f, 0};
     RenderPassInfo.setClearValues(ClearValues);
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
@@ -469,8 +469,8 @@ void GraphicsPipeline::CleanUniformBuffers() {
 void GraphicsPipeline::CreateDescriptorPool() {
     TStaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
     // Uniform Object
-    PoolSizes[0].type                                = vk::DescriptorType::eUniformBuffer;
-    PoolSizes[0].descriptorCount                     = mContext.get().GetSwapChainImageCount();
+    PoolSizes[0].type                                 = vk::DescriptorType::eUniformBuffer;
+    PoolSizes[0].descriptorCount                      = mContext.get().GetSwapChainImageCount();
 
     // 纹理采样器
     PoolSizes[1].type            = vk::DescriptorType::eCombinedImageSampler;
@@ -487,7 +487,7 @@ void GraphicsPipeline::CleanDescriptorPool() const {
 
 void GraphicsPipeline::CreateDescriptotSets() {
     TArray<vk::DescriptorSetLayout> Layouts(mContext.get().GetSwapChainImageCount(), mDescriptorSetLayout);
-    vk::DescriptorSetAllocateInfo  AllocInfo = {};
+    vk::DescriptorSetAllocateInfo   AllocInfo = {};
     AllocInfo.setDescriptorPool(mDescriptorPool).setSetLayouts(Layouts);
     mDescriptorSets.resize(mContext.get().GetSwapChainImageCount());
     // 描述符池对象销毁时会自动清除描述符集
@@ -550,8 +550,8 @@ void GraphicsPipeline::SubmitGraphicsQueue(
     vk::Fence InFrameFence
 ) {
     auto                   CmdBuffer  = GetCurrentImageCommandBuffer(CurrentImageIndex);
-    vk::SubmitInfo SubmitInfo = {};
-    vk::PipelineStageFlags WaitFlag = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    vk::SubmitInfo         SubmitInfo = {};
+    vk::PipelineStageFlags WaitFlag   = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     SubmitInfo.setCommandBuffers(CmdBuffer)
         .setWaitSemaphores(InWaitSemaphores)
         .setSignalSemaphores(InSingalSemaphores)
@@ -560,8 +560,174 @@ void GraphicsPipeline::SubmitGraphicsQueue(
 }
 
 void GraphicsPipeline::Rebuild() {
-    Finalize();
-    Initialize();
+    {
+        if (!IsValid()) return;
+        const auto& Device = mContext.get().GetLogicalDevice();
+        const auto  Handle = Device->GetHandle();
+        if (Device) {
+            // 交换链缓冲区销毁
+            CleanFramebuffers();
+            CleanDepthBuffer();
+            // MSAA缓冲销毁
+            if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
+                mMsaaColorImageView->Finialize();
+                mMsaaColorImage->Finialize();
+            }
+            Handle.destroyPipeline(mPipeline);
+            Handle.destroyPipelineLayout(mPipelineLayout);
+            Handle.destroyDescriptorSetLayout(mDescriptorSetLayout);
+            mRenderPass->Finialize();
+        }
+        mPipeline            = nullptr;
+        mPipelineLayout      = nullptr;
+        mDescriptorSetLayout = nullptr;
+        LOG_INFO_CATEGORY(Vulkan, L"图形管线销毁完成");
+    }
+    {
+        // 创建RenderPass
+        if (!mCreateInfo.RenderPassProducer) {
+            throw VulkanException(L"创建图形管线失败：RenderPassProducer为空");
+        }
+        auto&      Device             = mContext.get().GetLogicalDevice();
+        const auto RenderPassProducer = mCreateInfo.RenderPassProducer->GetRenderPassCreateInfo();
+        mRenderPass                   = RenderPass::CreateUnique(MakeRef(*Device), RenderPassProducer);
+
+        const auto VertShader = Shader::CreateShared(MakeRef(*Device), mCreateInfo.VertexShaderPath, EShaderStage::Vertex);
+        const auto FragShader = Shader::CreateShared(MakeRef(*Device), mCreateInfo.FragmentShaderPath, EShaderStage::Fragment);
+        mShaderProg           = ShaderProgram::CreateShared(MakeRef(*Device), VertShader, FragShader);
+
+        // 配置Shader的阶段
+        vk::PipelineShaderStageCreateInfo VertInfo{};
+        VertInfo.setStage(vk::ShaderStageFlagBits::eVertex).setModule(VertShader->GetShaderModule()).setPName("main");
+        vk::PipelineShaderStageCreateInfo FragInfo{};
+        FragInfo.setStage(vk::ShaderStageFlagBits::eFragment).setModule(FragShader->GetShaderModule()).setPName("main");
+        TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
+
+        // 配置顶点Shader的输入信息
+        auto BindingDesc   = mShaderProg->GetVertexInputBindingDescription();
+        auto AttributeDesc = mShaderProg->GetVertexInputAttributeDescriptions();
+
+        vk::PipelineVertexInputStateCreateInfo VertexInputInfo = {};
+        VertexInputInfo   //
+            .setVertexBindingDescriptions(BindingDesc)
+            .setVertexAttributeDescriptions(AttributeDesc);
+
+        // 配置输入装配
+        vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo = {};
+        InputAssemblyInfo                                        //
+            .setTopology(vk::PrimitiveTopology::eTriangleList)   // 每三个顶点构成一个图元
+            .setPrimitiveRestartEnable(false);
+
+        if (mCreateInfo.ViewportSize.height == 0 || mCreateInfo.ViewportSize.width == 0) {
+            throw VulkanException(L"创建图形管线失败：视口大小不合法");
+        }
+        float        Width        = mContext.get().GetSwapChainExtent().width;
+        float        Height       = mContext.get().GetSwapChainExtent().height;
+        // 设置视口
+        vk::Viewport ViewportInfo = {};
+        ViewportInfo   //
+            .setX(0)
+            .setY(0)   // xy是左上角
+            .setWidth(static_cast<float>(Width))
+            .setHeight(static_cast<float>(Height))
+            .setMinDepth(0.f)
+            .setMaxDepth(1.f);   //深度的最大最小值必须在[0,1]职中
+
+        // 裁剪矩形
+        vk::Rect2D   Scissor       = {};
+        vk::Extent2D ScissorExtent = {static_cast<uint32>(Width), static_cast<uint32>(Height)};
+        Scissor   //
+            .setOffset({0, 0})
+            .setExtent(ScissorExtent);
+
+        vk::PipelineViewportStateCreateInfo ViewportStateCreateInfo = {};
+        ViewportStateCreateInfo.setViewports({ViewportInfo}).setScissors({Scissor});
+
+        // 光栅化设置 将顶点着色器构成的几何图形转化为片段交给片段着色器着色
+        vk::PipelineRasterizationStateCreateInfo RasterizerInfo = {};
+        // clang-format off
+    RasterizerInfo
+        .setDepthClampEnable(false)                     // 是否开启深度裁剪,如果为true则近平面和远平面之外的片段会被裁剪到近平面和远平面 对阴影贴图的生成很有用
+        .setRasterizerDiscardEnable(false)              // 是否开启丢弃光栅化 若为true则所有几何图元都不能通过光栅化阶段 会禁止一切片段输出到帧缓冲 且需要启用相应特性
+        .setPolygonMode(vk::PolygonMode::eFill)         // 多边形模式(多边形包括多边形内部都产生片段)
+        .setLineWidth(1.f)
+        .setCullMode(vk::CullModeFlagBits::eBack)       // 设置为背面剔除
+        .setFrontFace(vk::FrontFace::eCounterClockwise) // 逆时针为正面
+        .setDepthBiasEnable(false);                     // 是否开启深度偏移
+        // clang-format on
+
+        // 多重采样设置
+        vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
+        mMsaaSamples                                           = mCreateInfo.MsaaSamples;
+        MultisampleInfo   //
+            .setSampleShadingEnable(false)
+            .setRasterizationSamples(mMsaaSamples);
+
+        // 配置深度模版测试阶段
+        vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
+        DepthStencilInfo   //
+            .setDepthTestEnable(true)
+            .setDepthWriteEnable(true)
+            .setDepthCompareOp(vk::CompareOp::eLess)
+            .setDepthBoundsTestEnable(false)
+            .setStencilTestEnable(false);
+
+        // 配置全局颜色混合 每个帧缓冲的单独颜色混合可以使用VkPipelineColorBlendStateCreateInfo
+        vk::PipelineColorBlendAttachmentState ColorBlendAttachment = {};
+        ColorBlendAttachment   //
+            .setColorWriteMask(
+                vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
+                vk::ColorComponentFlagBits::eA
+            )
+            .setBlendEnable(false);
+
+        vk::PipelineColorBlendStateCreateInfo ColorBlendInfo = {};
+        ColorBlendInfo   //
+            .setLogicOpEnable(false)
+            .setLogicOp(vk::LogicOp::eCopy)   // 逻辑操作
+            .setAttachments({ColorBlendAttachment});
+
+        // 创建描述符集布局
+        CreateDescriptionSetLayout();
+
+        // 指定管线布局(uniform)
+        vk::PipelineLayoutCreateInfo PipelineLayoutInfo = {};
+        PipelineLayoutInfo.setSetLayouts({mDescriptorSetLayout});
+
+        // 创建管线布局
+        mPipelineLayout = Device->GetHandle().createPipelineLayout(PipelineLayoutInfo);
+
+        // 定义管线
+        vk::GraphicsPipelineCreateInfo PipelineInfo = {};
+        PipelineInfo.setStages(ShaderStages)
+            .setPVertexInputState(&VertexInputInfo)
+            .setPInputAssemblyState(&InputAssemblyInfo)
+            .setPViewportState(&ViewportStateCreateInfo)
+            .setPRasterizationState(&RasterizerInfo)
+        .setPMultisampleState(&MultisampleInfo)
+        .setPDepthStencilState(&DepthStencilInfo)   // 深度和模版测试
+        .setPColorBlendState(&ColorBlendInfo)       // 颜色混合
+        .setLayout(mPipelineLayout)                 // 管线布局
+        .setRenderPass(mRenderPass->GetHandle())    // RenderPass
+        .setSubpass(0);                             // 子Pass
+
+    auto Pipeline = Device->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
+    if (Pipeline.result != vk::Result::eSuccess) {
+        throw VulkanException(L"创建管线失败");
+    } else {
+        mPipeline = Pipeline.value;
+    }
+
+    // 创建多重采样颜色缓冲区
+    if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
+        CreateMsaaColorBuffer();
+    }
+
+    // 创建深度缓冲区
+    CreateDepthBuffer();
+    // 创建交换链帧缓冲区
+    CreateFramebuffers();
+    }
 }
 
 

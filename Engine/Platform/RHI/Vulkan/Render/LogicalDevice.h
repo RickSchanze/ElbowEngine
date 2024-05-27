@@ -34,6 +34,8 @@ public:
     void Initialize();
     void Finialize();
 
+    void Destroy() override;
+
     /**
      * 创建一个交换链对象
      * @param InSwapChainImageCount 交换链图像数量 为0表示自动选择

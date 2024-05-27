@@ -6,12 +6,12 @@
  */
 
 #pragma once
-#include "../Platform/RHI/Vulkan/VulkanContext.h"
 #include "CoreDef.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
 #include "Window/GLFWWindow.h"
+#include "UI/Window/WindowBase.h"
 
 namespace RHI::Vulkan {
 class VulkanApplication;
@@ -24,7 +24,7 @@ public:
     typedef EngineApplication This;
     // TODO: 自定义设定启动应用的名字、窗口大小、版本等
     // EngineApplication() = default;
-    EngineApplication(const String& ProjectPath, const String& WindowTitle);
+                              EngineApplication(const String& ProjectPath, const String& WindowTitle);
 
     ~EngineApplication() { Finitialize(); }
 
@@ -43,11 +43,21 @@ public:
 
     bool bFrameBufferResized = false;
 
-    void SetMouseVisible(bool InVisible)const;
+    void SetMouseVisible(bool InVisible) const;
+
+protected:
+    // clang-format off
+    // 为整个应用程序绘制UI 不抽象出独立Window
+    void DrawAppUI();
+    // 绘制主菜单上的"窗口"菜单
+        void DrawWindowMenu();
+            // 窗口下的"调试窗口"
+            void OnOpenDebugWindow();
+    // clang-format on
 
 private:
     static void FrameBufferResizeCallback(GLFWwindow* Window, int Width, int Height) {
-        auto& App = Get();
+        auto& App               = Get();
         App.bFrameBufferResized = true;
     }
 
@@ -57,6 +67,8 @@ private:
     static inline EngineApplication* mInstance = nullptr;
 
     String mWindowTitle;
+
+    TArray<TUniquePtr<Window::WindowBase>> mSubWindows;
 };
 
 TOOL_NAMESPACE_END
