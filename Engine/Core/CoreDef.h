@@ -16,7 +16,7 @@ Ref<T> MakeRef(T& TValue) {
     return std::ref(TValue);
 }
 
-template <typename T>
+template<typename T>
 using ConstRef = std::reference_wrapper<const T>;
 
 // std::cref -> MakeConstRef
@@ -41,8 +41,7 @@ using TStaticArray = std::array<T, Size>;
 
 // std::set -> Set
 #include <set>
-template<
-    class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
+template<class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
 using TSet = std::set<KeyType, Comparator, Allocator>;
 
 // std::map -> Map
@@ -83,7 +82,7 @@ using TSharedPtr = std::shared_ptr<T>;
 template<typename T>
 using TUniquePtr = std::unique_ptr<T>;
 // std::weak_ptr -> WeakPtr
-template <typename T>
+template<typename T>
 using TWeakPtr = std::weak_ptr<T>;
 // std::make_shared -> MakeShared
 template<typename T, typename... Args>
@@ -111,8 +110,7 @@ constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept {
 // std::unordered_map -> HashMap
 #include <unordered_map>
 template<
-    class KeyType, class ValueType, class Hash = std::hash<KeyType>,
-    class KeyEqual  = std::equal_to<KeyType>,
+    class KeyType, class ValueType, class Hash = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using THashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
@@ -158,32 +156,17 @@ typedef rttr::property Property;
 #define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
 #define CONCAT_IMPL3(x, y, z) x##y##z
 #define MACRO_CONCAT3(x, y, z) CONCAT_IMPL3(x, y, z)
-#define REGISTER_CLASS_NAME(FileID, LineNumber) \
-    MACRO_CONCAT3(Z_Auto_Register_Class_, FileID, LineNumber)
-#define REGISTER_FUNCTION_NAME(FileID, LineNumber) \
-    MACRO_CONCAT3(Z_Auto_Register_Function_, FileID, LineNumber)
-#define REGISTER_FIELD_NAME(FieldID, LineNumber) \
-    MACRO_CONCAT3(Z_Auto_Register_Field_, FieldID, LineNumber)
-#define REGISTRATION_IN_CLASS(FileID, LineNumber)               \
-private:                                                        \
-    struct REGISTER_CLASS_NAME(FileID, LineNumber)              \
-    {                                                           \
-        REGISTER_CLASS_NAME(FileID, LineNumber)                 \
-        () {                                                    \
-            REGISTER_FUNCTION_NAME(FileID, LineNumber)          \
-            ();                                                 \
-        }                                                       \
-    };                                                          \
-    static inline const REGISTER_CLASS_NAME(FileID, LineNumber) \
-        REGISTER_FIELD_NAME(FileID, LineNumber){};              \
-    static void REGISTER_FUNCTION_NAME(FileID, LineNumber)()
+
+#define GENERATED_SOURCE()                        \
+    RTTR_REGISTRATION {                                 \
+        MACRO_CONCAT(GENERATED_SOURCE_, CURRENT_FILE_ID) \
+    }
 
 // GENERATED_BODY定义
 #define GENRATED_BODY_COMBINE_IMPL(A, B, C, D) A##B##C##D
 #define GENERATED_BODY_COMBINE_IMPL(A, B, C, D) GENRATED_BODY_COMBINE_IMPL(A, B, C, D)
 #ifndef REFLECTION
-#    define GENERATED_BODY(ClassName) \
-        GENERATED_BODY_COMBINE_IMPL(GENERATED_BODY_, CURRENT_FILE_ID, _, ClassName)
+#    define GENERATED_BODY(ClassName) GENERATED_BODY_COMBINE_IMPL(GENERATED_BODY_, CURRENT_FILE_ID, _, ClassName)
 #else
 #    define GENERATED_BODY(...)
 #endif
@@ -207,7 +190,7 @@ private:                                                        \
     };                                                                                 \
     }                                                                                  \
     static const rttr__auto__register__##EnumName RTTR_CAT(auto_register__, __LINE__); \
-    static void rttr_auto_register_reflection_function_##EnumName()
+    static void                                   rttr_auto_register_reflection_function_##EnumName()
 
 #define CONCAT_IMPL4(a, b, c, d) a##b##c##d
 
@@ -239,4 +222,4 @@ private:                                                        \
 // 项目Debug宏
 #define ELBOW_DEBUG _DEBUG || RELWITHDEBINFO
 
-#define U8(Text) (const char*)u8##Text
+#define U8(Text) (const char*)u8## Text

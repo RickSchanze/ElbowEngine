@@ -105,11 +105,6 @@ bool YamlDeserializer::WriteAssociativeViewRecursively(
     AnsiString DebugName;
     if (Node.IsSequence()) {
         for (const auto& YamlValue: Node) {
-            // try {
-            //     DebugName = YamlValue.as<AnsiString>();
-            // } catch (...) {
-            //     DebugName = YamlValue.first.as<AnsiString>();
-            // }
             variant ExtractedValue = ExtractValue(YamlValue, View.get_key_type());
             if (ExtractedValue) {
                 View.insert(ExtractedValue);
@@ -119,11 +114,6 @@ bool YamlDeserializer::WriteAssociativeViewRecursively(
         }
     } else if (Node.IsMap()) {
         for (const auto& YamlValue: Node) {
-            // try {
-            //     DebugName = YamlValue.as<AnsiString>();
-            // } catch (...) {
-            //     DebugName = YamlValue.first.as<AnsiString>();
-            // }
             variant KeyValue   = ExtractValue(YamlValue.first, View.get_key_type());
             variant ValueValue = ExtractValue(YamlValue.second, View.get_value_type());
             if (KeyValue && ValueValue) {

@@ -144,7 +144,6 @@ void YamlSerializer::WriteAssociativeContainer(
 }
 
 bool YamlSerializer::WriteVariant(const variant& Var, YAML::Emitter& Emitter) {
-    auto name = Var.get_type().get_name();
     const auto ValueType   = Var.get_type();
     const auto WrappedType = ValueType.is_wrapper() ? ValueType.get_wrapped_type() : ValueType;
     const bool bIsWrapper  = WrappedType != ValueType;

@@ -7,21 +7,28 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "Object/Object.h"
 #include "ToolCommon.h"
+#include "WindowBase.generated.h"
+
 namespace Tool::Widget {
 class WidgetBase;
 }
 
 WINDOW_NAMESPACE_BEGIN
 
-class WindowBase {
+class REFL WindowBase : public Object {
+
+private:
+    RTTR_REGISTRATION_FRIEND
+
 public:
     void Tick(float InDeltaTime);
 
     // 在这个函数里添加所有的Widget
     virtual void Construct() {}
 
-    virtual ~WindowBase();
+    ~WindowBase() override;
 
     void AddWidget(Widget::WidgetBase* Widget) { mWidgets.push_back(Widget); }
 
@@ -37,11 +44,15 @@ protected:
 
     virtual void Draw(float InDeltaTime);
 
-    String                      mWindowName;
-    AnsiString                  mCachedAnsiWindowName;
+    PROPERTY(Serialized, Name = "WindowName")
+    String mWindowName;
+
+    AnsiString mCachedAnsiWindowName;
+
     TArray<Widget::WidgetBase*> mWidgets;
 
-    bool bDirty    = true;
+    bool bDirty = true;
+
     bool bVisiable = true;
 };
 

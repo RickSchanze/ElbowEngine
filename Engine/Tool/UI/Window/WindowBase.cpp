@@ -6,11 +6,14 @@
  */
 
 #include "WindowBase.h"
-
-#include "UI/Widget/WidgetBase.h"
 #include "Utils/StringUtils.h"
+#include "UI/Widget/WidgetBase.h"
+
+#include "CoreDef.h"
 
 #include <imgui.h>
+
+GENERATED_SOURCE()
 
 WINDOW_NAMESPACE_BEGIN
 
@@ -19,7 +22,7 @@ bool bClosed;
 void WindowBase::Tick(float InDeltaTime) {
     if (bDirty) {
         mCachedAnsiWindowName = StringUtils::ToAnsiString(mWindowName);
-        bDirty = false;
+        bDirty                = false;
     }
     if (bVisiable) {
         ImGui::Begin(mCachedAnsiWindowName.c_str(), &bClosed);

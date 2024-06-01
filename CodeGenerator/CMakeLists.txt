@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(CodeGenerator)
 
 if (MSVC)

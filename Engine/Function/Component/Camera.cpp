@@ -6,14 +6,14 @@
  */
 
 #include "Camera.h"
-
-#include "CoreGlobal.h"
 #include "EngineApplication.h"
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include "TransformComponent.h"
 
 #include <glm/ext/matrix_transform.hpp>
+
+GENERATED_SOURCE()
 
 void Function::Camera::Tick(const float DeltaTime) {
     Component::Tick(DeltaTime);

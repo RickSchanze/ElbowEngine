@@ -21,8 +21,9 @@ public:
     explicit EnumEntity(const clang::EnumDecl* EnumDecl, std::string CurrentFileID) :
         mEnumDecl(EnumDecl), mCurrentFileID(std::move(CurrentFileID)) {}
     void AddConstant(const clang::EnumConstantDecl* Constant) { mConstants.push_back(Constant); }
-    void Generate(const clang::ASTContext* Context, llvm::raw_fd_ostream& OS) const;
-    [[nodiscard]] std::string GetEnumName() const;
+    std::string Generate(const clang::ASTContext* Context, llvm::raw_fd_ostream& OS) const;
+    [[nodiscard]] std::string GetQualifiedEnumName() const;
+    std::string GetEnumUnderlineName() const;
 
 private:
     const clang::EnumDecl* mEnumDecl;
@@ -46,7 +47,7 @@ public:
 
     void AddField(const FieldDecl* field) { mFields.push_back(field); }
 
-    void Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const;
+    std::string Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const;
 
     void GenerateField(
         const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,

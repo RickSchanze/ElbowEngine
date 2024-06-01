@@ -23,8 +23,10 @@ class REFL Camera : public Component {
     using Component::Component;
 
 public:
-    void                  Tick(float DeltaTime) override;
-    void                  BeginPlay() override;
+    void Tick(float DeltaTime) override;
+
+    void BeginPlay() override;
+
     static inline Camera* Main = nullptr;
 
     glm::mat4 GetViewMatrix() const;
@@ -32,7 +34,6 @@ public:
     void SetWindowFocused(bool InFocused);
 
 protected:
-
     void HandleInput();
 
     PROPERTY(Serialized)
@@ -44,7 +45,7 @@ protected:
     PROPERTY(Serialized, Name = DoubleClickTime)
     float mDoubleClickTime = 0.2f;
 
-    PROPERTY(Serialized, Name=MouseSensitivity)
+    PROPERTY(Serialized, Name = MouseSensitivity)
     float mMouseSensitivity = 0.1f;
 
     std::chrono::time_point<std::chrono::steady_clock> mLastClickTime;
