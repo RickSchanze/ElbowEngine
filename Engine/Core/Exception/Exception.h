@@ -48,3 +48,10 @@ private:
     int32  Errno;
     String Filepath;
 };
+
+class NeverEnterException final : public Exception
+{
+public:
+    explicit NeverEnterException(const String& InMessage) : Exception(InMessage) {}
+    explicit NeverEnterException() : NeverEnterException(L"不可调用的代码被执行") {}
+};

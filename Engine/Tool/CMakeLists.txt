@@ -8,8 +8,8 @@ add_library(${PROJECT_NAME}
         UI/Widget/WidgetBase.h
         UI/Window/WindowBase.cpp
         UI/Window/WindowBase.h
-        UI/Window/WindowRegistry.cpp
-        UI/Window/WindowRegistry.h
+        UI/Window/WindowManager.cpp
+        UI/Window/WindowManager.h
         UI/Widget/Button.cpp
         UI/Widget/Button.h
         UI/Window/DebugWindow.cpp

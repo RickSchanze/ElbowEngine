@@ -13,6 +13,7 @@
 #include "Render/CommandProducer.h"
 #include "Render/GraphicsPipeline.h"
 #include "Render/RenderPass.h"
+#include "Utils/ContainerUtils.h"
 #include "Utils/StringUtils.h"
 
 #include <iostream>
@@ -173,14 +174,13 @@ void VulkanContext::CreateGraphicsPipeline(TUniquePtr<IRenderPassProducer> Produ
     mGraphicsPipeline = GraphicsPipeline::CreateShared(InRenderer, CreateInfo);
 }
 
-void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
-    mRenderGraphicsPipelines.push_back(InPipeline);
-}
-
-void VulkanContext::RemovePipelineFromRender(IGraphicsPipeline* InPipeline) {
-    if (std::ranges::find(mRenderGraphicsPipelines, InPipeline) == mRenderGraphicsPipelines.end()) return;
-    mRenderGraphicsPipelines.erase(std::ranges::remove(mRenderGraphicsPipelines, InPipeline).begin(), mRenderGraphicsPipelines.end());
-}
+// void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
+//     mRenderGraphicsPipelines.push_back(InPipeline);
+// }
+//
+// void VulkanContext::RemovePipelineFromRender(IGraphicsPipeline* InPipeline) {
+//     ContainerUtils::Remove(mRenderGraphicsPipelines, InPipeline);
+// }
 
 void VulkanContext::CreateSyncObjecs() {
     mImageAvailableSemaphores.resize(mMaxFramesInFlight);

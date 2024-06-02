@@ -5,13 +5,13 @@ add_library(${PROJECT_NAME}
         Path/Exception.cpp
         Path/Path.cpp
         Path/Path.h
-        Component/ComponentBase.cpp
-        Component/ComponentBase.h
+        Component/Component.cpp
+        Component/Component.h
         GameObject/GameObject.cpp
         GameObject/GameObject.h
         FunctionCommon.h
-        Component/TransformComponent.cpp
-        Component/TransformComponent.h
+        Component/Transform.cpp
+        Component/Transform.h
         Input/Input.cpp
         Input/Input.h
         Component/Camera.cpp

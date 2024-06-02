@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "Event/Event.h"
 #include "Object/Object.h"
 #include "ToolCommon.h"
 #include "WindowBase.generated.h"
@@ -17,16 +18,21 @@ class WidgetBase;
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL WindowBase : public Object {
+enum class REFL EWindowVisiable { Visiable, Hidden, DefaultMax };
 
-private:
-    RTTR_REGISTRATION_FRIEND
+struct WindowVisiableChangedEvent : TEvent<EWindowVisiable>
+{};
+
+class REFL WindowBase : public Object {
+    GENERATED_BODY(WindowBase)
 
 public:
+    WindowBase() : Super(EOF_IsWindow) {}
+
     void Tick(float InDeltaTime);
 
     // 在这个函数里添加所有的Widget
-    virtual void Construct() {}
+    virtual void Construct();
 
     ~WindowBase() override;
 
@@ -34,10 +40,19 @@ public:
 
     WindowBase& SetWindowName(const String& InWindowName);
 
-    WindowBase& SetVisible(bool bVisible) {
-        bVisiable = bVisible;
-        return *this;
-    }
+    // 设置窗口可见性
+    FUNCTION()
+    WindowBase& SetVisible(EWindowVisiable InVisible);
+
+    FUNCTION()
+    bool IsValid() const override;
+
+    FUNCTION()
+    bool HasConstructed() const { return bConstructed; }
+
+public:
+    // 当窗口可见性发生变化时触发，参数是旧的可见性
+    WindowVisiableChangedEvent OnVisiableChanged;
 
 protected:
     void MarkDirty();
@@ -51,9 +66,10 @@ protected:
 
     TArray<Widget::WidgetBase*> mWidgets;
 
-    bool bDirty = true;
+    bool bDirty       = true;
+    bool bConstructed = false;
 
-    bool bVisiable = true;
+    EWindowVisiable mVisiable = EWindowVisiable::DefaultMax;
 };
 
 WINDOW_NAMESPACE_END

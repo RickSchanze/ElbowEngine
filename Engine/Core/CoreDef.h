@@ -149,6 +149,11 @@ typedef std::ifstream     FileInputStream;
 typedef rttr::type     Type;
 typedef rttr::property Property;
 
+template<typename T>
+Type GetType() {
+    return rttr::type::get<T>();
+}
+
 // 定义反射宏
 #include "rttr/policy.h"
 #include "rttr/registration_friend"
@@ -157,8 +162,8 @@ typedef rttr::property Property;
 #define CONCAT_IMPL3(x, y, z) x##y##z
 #define MACRO_CONCAT3(x, y, z) CONCAT_IMPL3(x, y, z)
 
-#define GENERATED_SOURCE()                        \
-    RTTR_REGISTRATION {                                 \
+#define GENERATED_SOURCE()                               \
+    RTTR_REGISTRATION {                                  \
         MACRO_CONCAT(GENERATED_SOURCE_, CURRENT_FILE_ID) \
     }
 
@@ -173,6 +178,7 @@ typedef rttr::property Property;
 #ifndef REFLECTION
 #    define PROPERTY(...)
 #    define REFL
+#    define FUNCTION(...)
 #else
 #    define PROPERTY(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
 #    define REFL __attribute__((annotate("Reflected, ")))

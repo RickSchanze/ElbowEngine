@@ -9,6 +9,7 @@
 #include "Render/LogicalDevice.h"
 #include "Render/RenderPass.h"
 #include "Render/SwapChain.h"
+#include "Utils/ContainerUtils.h"
 #include "VulkanCommon.h"
 
 
@@ -65,8 +66,12 @@ public:
     virtual void CreateGraphicsPipeline(TUniquePtr<IRenderPassProducer> Producer, Ref<VulkanContext> InRenderer);
 
     // 向渲染器提交命令缓冲区
-    void AddPipelineToRender(IGraphicsPipeline* InPipeline);
-    void RemovePipelineFromRender(IGraphicsPipeline* InPipeline);
+    void AddPipelineToRender(IGraphicsPipeline* InPipeline) {
+        mRenderGraphicsPipelines.push_back(InPipeline);
+    }
+    void RemovePipelineFromRender(IGraphicsPipeline* InPipeline) {
+        ContainerUtils::Remove(mRenderGraphicsPipelines, InPipeline);
+    }
 
     TUniquePtr<SwapChain>&       GetSwapChain() { return mSwapChain; }
     TUniquePtr<CommandProducer>& GetCommandProducer() { return mCommandProducer; }

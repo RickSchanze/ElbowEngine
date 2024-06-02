@@ -11,7 +11,7 @@
 #include "ObjectManager.h"
 
 RTTR_REGISTRATION {
-    rttr::registration::class_<Object>("Object")
+    rttr::registration::class_<Object>("Object").constructor<>()(rttr::policy::ctor::as_raw_ptr)
         .property("Name", &Object::mName)(rttr::metadata("Serialized", "True"))
         .property("Id", &Object::mID)(rttr::metadata("Serialized", "True"));
 }

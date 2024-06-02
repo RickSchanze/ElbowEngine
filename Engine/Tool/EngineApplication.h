@@ -10,8 +10,8 @@
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
-#include "Window/GLFWWindow.h"
 #include "UI/Window/WindowBase.h"
+#include "Window/GLFWWindow.h"
 
 namespace RHI::Vulkan {
 class VulkanApplication;
@@ -45,6 +45,10 @@ public:
 
     void SetMouseVisible(bool InVisible) const;
 
+    void AddWindow(Window::WindowBase* InWindow) { mSubWindows.push_back(InWindow); }
+    void RemoveWindow(Window::WindowBase* InWindow);
+    void RemoveWindow(Type InType);
+
 protected:
     // clang-format off
     // 为整个应用程序绘制UI 不抽象出独立Window
@@ -68,7 +72,7 @@ private:
 
     String mWindowTitle;
 
-    TArray<TUniquePtr<Window::WindowBase>> mSubWindows;
+    TArray<Window::WindowBase*> mSubWindows;
 };
 
 TOOL_NAMESPACE_END

@@ -45,6 +45,9 @@ public:
      */
     static String ErrorCodeToString(errno_t ErrorCode, EStringEncoding SourceStringEncoding = EStringEncoding::GBK);
 
+    static String FromAnsiStringView(const std::string_view& AnsiStrView);
+    static String FromAnsiStringView(const rttr::string_view& AnsiStrView);
+
     template<typename T>
         requires IsNumeric<T>
     static TOptional<T> ConvertTo(const AnsiString& Str) {

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Component/TransformComponent.h"
+#include "Component/Transform.h"
 #include "FunctionCommon.h"
 #include "Object/Object.h"
 

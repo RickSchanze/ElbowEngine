@@ -9,6 +9,12 @@
 
 #include "CoreDef.h"
 
+enum EObjectFlag {
+    EOF_IsGameObject,   // 在游戏世界运行
+    EOF_IsComponent,    // 这个Object是一个Component
+    EOF_IsWindow,       // 这个是一个窗口对象
+};
+
 class Object {
     RTTR_ENABLE()
     RTTR_REGISTRATION_FRIEND
@@ -16,6 +22,9 @@ class Object {
     friend class ObjectCreateHelper;
 
 public:
+    Object() : Object(EOF_IsGameObject) {}
+    Object(const EObjectFlag InFlag) : mFlag(InFlag) {}
+
     virtual ~Object();
 
     /**
@@ -53,12 +62,16 @@ public:
      * 对象是否还有效
      * @return
      */
-    bool IsValid() const;
+    virtual bool IsValid() const;
+
+    EObjectFlag GetObjectFlag() const { return mFlag; }
 
 protected:
-    String mName;        // 对象名字
-    uint32 mID;          // 对象ID
-    bool   mIsGarbage;   // 对象是否应该被清除
+    String mName;                // 对象名字
+    uint32 mID        = -1;      // 对象ID
+    bool   mIsGarbage = false;   // 是否是垃圾对象
+
+    const EObjectFlag mFlag;
 };
 
 template<typename T>

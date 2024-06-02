@@ -12,6 +12,8 @@ add_library(${PROJECT_NAME}
         Utils/StringUtils.cpp
         Utils/ReflUtils.h
         Utils/ReflUtils.cpp
+        Utils/ContainerUtils.h
+        Utils/ContainerUtils.cpp
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h

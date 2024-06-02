@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "ComponentBase.h"
+#include "Component.h"
 #include "CoreDef.h"
 #include "FunctionCommon.h"
 
@@ -21,6 +21,8 @@ class REFL Camera : public Component {
     GENERATED_BODY(Camera)
 
     using Component::Component;
+
+    Camera();
 
 public:
     void Tick(float DeltaTime) override;

@@ -5,7 +5,10 @@
  * @brief 
  */
 
-#include "TransformComponent.h"
+#include "Transform.h"
+
+GENERATED_SOURCE()
+
 FVector3 Function::Transform::GetForwardVector() const {
     return Rotation.GetForwardVector();
 }

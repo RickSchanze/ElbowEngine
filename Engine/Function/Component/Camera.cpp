@@ -9,11 +9,15 @@
 #include "EngineApplication.h"
 #include "Input/Input.h"
 #include "Math/Math.h"
-#include "TransformComponent.h"
+#include "Transform.h"
 
 #include <glm/ext/matrix_transform.hpp>
 
 GENERATED_SOURCE()
+
+Function::Camera::Camera() : Component(L"Error", nullptr) {
+    throw NeverEnterException();
+}
 
 void Function::Camera::Tick(const float DeltaTime) {
     Component::Tick(DeltaTime);

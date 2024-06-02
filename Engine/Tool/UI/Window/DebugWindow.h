@@ -9,14 +9,18 @@
 #include "ToolCommon.h"
 #include "WindowBase.h"
 
+#include "DebugWindow.generated.h"
+
 WINDOW_NAMESPACE_BEGIN
 
-class DebugWindow : public WindowBase {
+class REFL DebugWindow : public WindowBase {
+    GENERATED_BODY(DebugWindow)
+
 public:
+    DebugWindow();
     void Construct() override;
     void Draw(float InDeltaTime) override;
-private:
-
 };
+
 
 WINDOW_NAMESPACE_END

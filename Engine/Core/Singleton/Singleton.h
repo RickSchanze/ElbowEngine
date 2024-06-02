@@ -12,6 +12,7 @@ class Singleton {
     friend T;
 public:
     static T& Get();
+    ~Singleton() = default;
 };
 
 template<typename T>

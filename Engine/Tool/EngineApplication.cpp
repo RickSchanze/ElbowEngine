@@ -12,6 +12,8 @@
 #include "RHI/Vulkan/Application.h"
 #include "UI/Window/DebugWindow.h"
 #include "UI/Window/WindowBase.h"
+#include "UI/Window/WindowManager.h"
+#include "Utils/ContainerUtils.h"
 #include "Window/GLFWWindow.h"
 
 
@@ -92,6 +94,19 @@ void EngineApplication::SetMouseVisible(const bool InVisible) const {
     mWindow->SetMouseVisible(InVisible);
 }
 
+void EngineApplication::RemoveWindow(Window::WindowBase* InWindow) {
+    ContainerUtils::Remove(mSubWindows, InWindow);
+}
+
+void EngineApplication::RemoveWindow(Type InType) {
+    ContainerUtils::RemoveIf(mSubWindows, [InType](const Window::WindowBase* Window) {
+        if (Window->GetType() == InType) {
+            return true;
+        }
+        return false;
+    });
+}
+
 // TODO: 更加可拓展的主窗口形式
 void EngineApplication::DrawAppUI() {
     if (ImGui::BeginMainMenuBar()) {
@@ -107,13 +122,14 @@ void EngineApplication::DrawWindowMenu() {
         }
         ImGui::EndMenu();
     }
-
 }
 
 void EngineApplication::OnOpenDebugWindow() {
-    TUniquePtr<Window::DebugWindow> Window = MakeUnique<Window::DebugWindow>();
-    Window->SetWindowName(L"调试控制台");
-    mSubWindows.push_back(Move(Window));
+    auto Window = WindowManager::GetWindow<Window::DebugWindow>();
+    if (Window) {
+        Window->SetWindowName(L"调试控制台");
+        Window->SetVisible(Window::EWindowVisiable::Visiable);
+    }
 }
 
 TOOL_NAMESPACE_END

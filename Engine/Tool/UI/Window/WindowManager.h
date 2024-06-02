@@ -1,0 +1,38 @@
+/**
+ * @file WindowManager.h
+ * @author Echo 
+ * @Date 24-5-27
+ * @brief 
+ */
+
+#pragma once
+#include "CoreDef.h"
+#include "Singleton/Singleton.h"
+
+namespace Tool::Window {
+class WindowBase;
+}
+
+class WindowManager : public Singleton<WindowManager> {
+public:
+    // 根据Type获取一个Window
+    // 所有Window都是单例的
+    // 如果有type则返回那个单例，没有则创建一个新的
+    static Tool::Window::WindowBase* GetWindow(Type InType);
+
+    // 销毁Type对应的Window
+    static void DestroyWindow(Type InType);
+
+    template<typename T>
+        requires std::derived_from<T, Tool::Window::WindowBase>
+    static T* GetWindow() {
+        Type WindowType     = GetType<T>();
+        auto WindowInstance = GetWindow(WindowType);
+        return dynamic_cast<T*>(WindowInstance);
+    }
+
+    ~WindowManager();
+
+protected:
+    THashMap<Type, Tool::Window::WindowBase*> mWindowMap;
+};

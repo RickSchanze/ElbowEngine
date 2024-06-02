@@ -6,16 +6,24 @@
  */
 
 #pragma once
-#include "ComponentBase.h"
+#include "Component.h"
 #include "FunctionCommon.h"
 #include "Math/MathTypes.h"
+#include "Transform.generated.h"
 
 FUNCTION_NAMESPACE_BEGIN
 
-class Transform  {
+class REFL Transform  {
+    GENERATED_BODY(Transform)
+
 public:
+    PROPERTY(Serialized)
     FVector3 Position = {0, 0, 0};
+
+    PROPERTY(Serialized)
     FRotator Rotation = {0, 0, 0};
+
+    PROPERTY(Serialized)
     FVector3 Scale    = {1, 1, 1};
 
     FVector3 GetForwardVector() const;

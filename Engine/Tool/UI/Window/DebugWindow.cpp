@@ -8,12 +8,23 @@
 #include "DebugWindow.h"
 
 #include <imgui.h>
-void Tool::Window::DebugWindow::Construct() {
+
+GENERATED_SOURCE()
+
+WINDOW_NAMESPACE_BEGIN
+
+DebugWindow::DebugWindow() {
+    mName = L"Window_DebugWindow";
+}
+
+void DebugWindow::Construct() {
     WindowBase::Construct();
 }
 
-void Tool::Window::DebugWindow::Draw(float InDeltaTime) {
+void DebugWindow::Draw(float InDeltaTime) {
     WindowBase::Draw(InDeltaTime);
     ImGui::Text(U8("帧生成: %f"), InDeltaTime);
     ImGui::Text(U8("帧率: %f"), 1 / InDeltaTime);
 }
+
+WINDOW_NAMESPACE_END

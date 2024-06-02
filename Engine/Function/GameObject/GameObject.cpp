@@ -6,7 +6,7 @@
  */
 
 #include "GameObject.h"
-#include "Component/ComponentBase.h"
+#include "Component/Component.h"
 
 void Function::GameObject::BeginPlay() {
     // 对于已经注册的进行BeginPlay

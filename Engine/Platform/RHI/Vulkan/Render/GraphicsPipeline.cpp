@@ -9,7 +9,6 @@
 
 #include "CommandProducer.h"
 #include "Component/Camera.h"
-#include "Component/TransformComponent.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "Model.h"
