@@ -6,6 +6,7 @@
  */
 
 #include "Transform.h"
+#include "Transform.generated.h"
 
 GENERATED_SOURCE()
 

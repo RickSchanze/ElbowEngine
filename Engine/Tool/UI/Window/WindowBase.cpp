@@ -12,11 +12,13 @@
 #include "Utils/StringUtils.h"
 #include <imgui.h>
 
-RTTR_REGISTRATION{GENERATED_SOURCE_WindowBase_h}
+#include "WindowBase.generated.h"
+
+GENERATED_SOURCE()
 
 WINDOW_NAMESPACE_BEGIN
 
-    bool bClosed;
+bool bClosed;
 
 void WindowBase::Tick(float InDeltaTime) {
     if (bDirty) {

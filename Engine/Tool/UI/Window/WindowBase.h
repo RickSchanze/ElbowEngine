@@ -10,6 +10,7 @@
 #include "Event/Event.h"
 #include "Object/Object.h"
 #include "ToolCommon.h"
+
 #include "WindowBase.generated.h"
 
 namespace Tool::Widget {

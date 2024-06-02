@@ -5,9 +5,15 @@
  * @brief 
  */
 
-#include "DebugWindow.h"
+
 
 #include <imgui.h>
+
+#include "DebugWindow.h"
+
+#include <iostream>
+
+#include "DebugWindow.generated.h"
 
 GENERATED_SOURCE()
 
