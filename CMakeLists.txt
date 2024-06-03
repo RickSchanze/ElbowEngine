@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.27)
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(VCPKG_TARGET_TRIPLET x64-windows)
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
+
 project(ElbowEngine)
 set(CMAKE_CXX_STANDARD 20)
-set(REFLECTION_EXE "D:/Projects/ElbowEngine/CodeGenerator/bin/CodeGenerator.exe")
-set(PYTHON_EXE "D:/Software/Anaconda/python.exe")
+set(REFLECTION_EXE ${CMAKE_SOURCE_DIR}/CodeGenerator/bin/CodeGenerator.exe)
+set(PYTHON_EXE "C:/Users/Echo/AppData/Local/Programs/Python/Python312/python.exe")
 execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGenerator.py
         --reflection-tool-path=${REFLECTION_EXE}
         --output-files-path=${CMAKE_SOURCE_DIR}/Generated
@@ -33,7 +35,7 @@ add_executable(ElbowEngine main.cpp
         Engine/Resource/ResourceManager.h)
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core -WHOLEARCHIVE:$<TARGET_FILE:Engine::Function>)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function -WHOLEARCHIVE:$<TARGET_FILE:Engine::Function>)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Tool -WHOLEARCHIVE:$<TARGET_FILE:Engine::Tool>)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)

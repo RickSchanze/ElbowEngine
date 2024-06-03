@@ -13,7 +13,7 @@ int main() {
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     try {
-        Tool::EngineApplication App{LR"(D:\Projects\ElbowEngine\Content)", L"肘击引擎"};
+        Tool::EngineApplication App{LR"(C:\Users\Echo\BaiduSyncDisk\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};
         App.Initialize();
         App.Run();
         App.Finitialize();

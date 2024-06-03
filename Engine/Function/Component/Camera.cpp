@@ -23,7 +23,9 @@ Function::Camera::Camera() : Component(L"摄像机组件", nullptr) {
 
 void Function::Camera::Tick(const float DeltaTime) {
     Component::Tick(DeltaTime);
-    HandleInput();
+    if (bEnableInput) {
+        HandleInput();
+    }
 }
 
 void Function::Camera::BeginPlay() {

@@ -23,7 +23,8 @@ class REFL Camera : public Component {
     using Component::Component;
 
 public:
-         Camera();
+    Camera();
+
     void Tick(float DeltaTime) override;
 
     void BeginPlay() override;
@@ -43,13 +44,8 @@ protected:
     PROPERTY(Serialized, Name = EnableInput, Label = "启用输入")
     bool bEnableInput = true;
 
-    PROPERTY(Serialized, Name = DoubleClickTime, Label = "双击间隔时间")
-    float mDoubleClickTime = 0.2f;
-
     PROPERTY(Serialized, Name = MouseSensitivity, Label = "鼠标灵敏度")
     float mMouseSensitivity = 0.1f;
-
-    std::chrono::time_point<std::chrono::steady_clock> mLastClickTime;
 
     bool bFocused = false;
 };

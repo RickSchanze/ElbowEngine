@@ -18,30 +18,29 @@ UI_DRAWER_NAMESPACE_BEGIN
 
 FVector3 PropertyDrawer::DrawProperty(const char* InName, const FVector3& InValue) {
     FVector3 Vec = InValue;
-    ImGui::Text(&InName[3]);
     ImGui::DragFloat3(InName, &Vec.x, DRAG_FLOAT_V_SPEED);
     return Vec;
 }
 
 FRotator PropertyDrawer::DrawProperty(const char* InName, const FRotator& InValue) {
     FRotator Rot = InValue;
-    ImGui::AlignTextToFramePadding();
     ImGui::DragFloat3(InName, &Rot.Yaw, DRAG_FLOAT_V_SPEED);
     return Rot;
 }
 
-float PropertyDrawer::DrawProperty(const char* InName, const float InValue) {
-    float NewValue = InValue;
-    ImGui::AlignTextToFramePadding();
-    ImGui::DragFloat(InName, &NewValue, DRAG_FLOAT_V_SPEED);
-    return NewValue;
+float PropertyDrawer::DrawProperty(const char* InName, float InValue) {
+    ImGui::DragFloat(InName, &InValue, DRAG_FLOAT_V_SPEED);
+    return InValue;
 }
 
 bool PropertyDrawer::DrawProperty(const char* InName, bool InValue) {
-    bool NewValue = InValue;
-    ImGui::AlignTextToFramePadding();
-    ImGui::Checkbox(InName, &NewValue);
-    return NewValue;
+    ImGui::Checkbox(InName, &InValue);
+    return InValue;
+}
+
+int PropertyDrawer::DrawProperty(const char* InName, int InValue) {
+    ImGui::DragInt(InName, &InValue);
+    return InValue;
 }
 
 #define VALUE_SETTER(TypeName)                                                             \
@@ -58,16 +57,18 @@ bool PropertyDrawer::DrawProperty(const char* InName, bool InValue) {
     }
 
 void PropertyDrawer::DrawProperty(Property InProp, rttr::instance Obj) {
+    if (ReflUtils::CheckAttribute(InProp, "Hidden")) return;
     VALUE_SETTER(FVector3)
     VALUE_SETTER(FRotator)
     VALUE_SETTER(float)
     VALUE_SETTER(bool)
+    VALUE_SETTER(int)
 }
 
 void PropertyDrawer::DrawTransform(Function::Transform& InTransform) {
     if (ImGui::CollapsingHeader(U8("变换"))) {
         InTransform.Position = DrawProperty(U8("位置(x y z)"), InTransform.Position);
-        InTransform.Rotation = DrawProperty(U8("位置(Yaw Roll Pitch)"), InTransform.Rotation);
+        InTransform.Rotation = DrawProperty(U8("旋转(Yaw Roll Pitch)"), InTransform.Rotation);
         InTransform.Scale    = DrawProperty(U8("缩放(x y z)"), InTransform.Scale);
     }
 }
