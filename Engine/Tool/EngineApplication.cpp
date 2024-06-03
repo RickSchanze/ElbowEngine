@@ -10,10 +10,15 @@
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Application.h"
+
+#include "Utils/ContainerUtils.h"
+
 #include "UI/Window/DebugWindow.h"
+#include "UI/Window/DetailWindow.h"
+#include "UI/Window/OutlineWindow.h"
 #include "UI/Window/WindowBase.h"
 #include "UI/Window/WindowManager.h"
-#include "Utils/ContainerUtils.h"
+
 #include "Window/GLFWWindow.h"
 
 
@@ -120,16 +125,35 @@ void EngineApplication::DrawWindowMenu() {
         if (ImGui::MenuItem(U8("调试控制台"))) {
             OnOpenDebugWindow();
         }
+        if (ImGui::MenuItem(U8("大纲"))) {
+            OnOpenOutlineWindow();
+        }
+        if (ImGui::MenuItem(U8("细节"))) {
+            OnOpenDetailWindow();
+        }
         ImGui::EndMenu();
     }
 }
 
-void EngineApplication::OnOpenDebugWindow() {
-    auto Window = WindowManager::GetWindow<Window::DebugWindow>();
+template<typename T>
+    requires std::is_base_of_v<Window::WindowBase, T>
+void OpenWindow() {
+    auto Window = WindowManager::GetWindow<T>();
     if (Window) {
-        Window->SetWindowName(L"调试控制台");
         Window->SetVisible(Window::EWindowVisiable::Visiable);
     }
+}
+
+void EngineApplication::OnOpenDebugWindow() {
+    OpenWindow<Window::DebugWindow>();
+}
+
+void EngineApplication::OnOpenOutlineWindow() {
+    OpenWindow<Window::OutlineWindow>();
+}
+
+void EngineApplication::OnOpenDetailWindow(){
+    OpenWindow<Window::DetailWindow>();
 }
 
 TOOL_NAMESPACE_END

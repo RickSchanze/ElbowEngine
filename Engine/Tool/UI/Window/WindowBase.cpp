@@ -8,7 +8,6 @@
 #include "WindowBase.h"
 #include "CoreDef.h"
 #include "EngineApplication.h"
-#include "UI/Widget/WidgetBase.h"
 #include "Utils/StringUtils.h"
 #include <imgui.h>
 
@@ -40,12 +39,8 @@ void WindowBase::Construct() {
     if (bConstructed) {
         LOG_WARNING_CATEGORY(UI, L"窗口只能被初始化一次");
         return;
-    }
-}
-
-WindowBase::~WindowBase() {
-    for (auto Widget: mWidgets) {
-        delete Widget;
+    } else {
+        bConstructed = true;
     }
 }
 
@@ -81,9 +76,7 @@ void WindowBase::MarkDirty() {
 }
 
 void WindowBase::Draw(float InDeltaTime) {
-    for (auto Widget: mWidgets) {
-        Widget->Draw(InDeltaTime);
-    }
+    ImGui::Text(U8("未实现"));
 }
 
 WINDOW_NAMESPACE_END

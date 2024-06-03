@@ -273,9 +273,12 @@ void GlfwWindow::Initialize() {
     const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
     mWindowHandle          = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
 
-    mCameraObject = New<Function::GameObject>(L"摄像机");
+    mCameraObject = New<Function::GameObject>(L"摄像机", nullptr);
     mCameraObject->BeginPlay();
-    mCameraObject->AddComponent<Function::Camera>(L"CameraComp");
+    mCameraObject->AddComponent<Function::Camera>();
+    New<Function::GameObject>(L"Dummy对象", mCameraObject);
+    New<Function::GameObject>(L"对象2");
+    New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 }
 
 void GlfwWindow::Finalize() {

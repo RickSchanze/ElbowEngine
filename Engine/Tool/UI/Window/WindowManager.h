@@ -13,6 +13,8 @@ namespace Tool::Window {
 class WindowBase;
 }
 
+// 存储所有Window Object
+// @Note: 存储的所有对象最后由ObjectManager清理
 class WindowManager : public Singleton<WindowManager> {
 public:
     // 根据Type获取一个Window
@@ -30,8 +32,6 @@ public:
         auto WindowInstance = GetWindow(WindowType);
         return dynamic_cast<T*>(WindowInstance);
     }
-
-    ~WindowManager();
 
 protected:
     THashMap<Type, Tool::Window::WindowBase*> mWindowMap;

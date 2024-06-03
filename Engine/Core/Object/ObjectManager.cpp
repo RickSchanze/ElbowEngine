@@ -11,15 +11,20 @@
 
 bool ObjectManager::AddObject(Object* NewObject) {
     if (!IsValid(NewObject)) return false;
-    if (!IsIDValid(NewObject->GetID())) {
+    if (IsIDValid(NewObject->GetID())) {
         mObjects[NewObject->GetID()] = NewObject;
+        return true;
+    } else {
+        auto ValidID = GetNextValidID();
+        ObjectCreateHelper::SetObjectID(NewObject, ValidID);
+        mObjects[ValidID] = NewObject;
         return true;
     }
     return false;
 }
 
 bool ObjectManager::IsIDValid(const uint32 ID) const {
-    return !mObjects.contains(ID);
+    return ID != 0 && !mObjects.contains(ID);
 }
 
 uint32 ObjectManager::GetNextValidID() {
@@ -32,4 +37,10 @@ bool ObjectManager::RemoveObject(const uint32 ID) {
         return true;
     }
     return false;
+}
+ObjectManager::~ObjectManager() {
+    while (!mObjects.empty()) {
+        delete mObjects.begin()->second;
+    }
+    mObjects.clear();
 }

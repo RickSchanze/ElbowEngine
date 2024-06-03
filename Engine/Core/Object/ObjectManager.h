@@ -40,7 +40,25 @@ public:
      */
     bool RemoveObject(uint32 ID);
 
+    // 根据ID获取一个Object，如果不存在则返回nullptr
+    Object* GetObjectById(uint32 ID) {
+        if (mObjects.contains(ID)) {
+            return mObjects[ID];
+        }
+        return nullptr;
+    }
+
+    template<typename T>
+        requires std::derived_from<T, Object>
+    T* GetObjectById(uint32 ID) {
+        return dynamic_cast<T*>(GetObjectById(ID));
+    }
+
+    uint32 GetObjectCount() { return mObjects.size(); }
+
+    ~ObjectManager();
+
 private:
     THashMap<uint32, Object*> mObjects;
-    int32                    mIDCount = 0;
+    uint32                    mIDCount = 1;
 };

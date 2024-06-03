@@ -32,10 +32,9 @@ public:
 
     void Tick(float InDeltaTime);
 
-    // 在这个函数里添加所有的Widget
-    virtual void Construct();
+    void Construct();
 
-    ~WindowBase() override;
+    ~WindowBase() override = default;
 
     void AddWidget(Widget::WidgetBase* Widget) { mWidgets.push_back(Widget); }
 
@@ -44,6 +43,12 @@ public:
     // 设置窗口可见性
     FUNCTION()
     WindowBase& SetVisible(EWindowVisiable InVisible);
+
+    FUNCTION()
+    bool IsVisible() const { return mVisiable == EWindowVisiable::Visiable; }
+
+    FUNCTION()
+    EWindowVisiable GetVisible() const { return mVisiable; }
 
     FUNCTION()
     bool IsValid() const override;

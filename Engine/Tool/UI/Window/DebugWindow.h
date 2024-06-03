@@ -18,7 +18,6 @@ class REFL DebugWindow : public WindowBase {
 
 public:
     DebugWindow();
-    void Construct() override;
     void Draw(float InDeltaTime) override;
 };
 

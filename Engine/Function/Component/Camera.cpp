@@ -13,17 +13,18 @@
 
 #include <glm/ext/matrix_transform.hpp>
 
+#include "Camera.generated.h"
+
 GENERATED_SOURCE()
 
-Function::Camera::Camera() : Component(L"Error", nullptr) {
-    throw NeverEnterException();
+Function::Camera::Camera() : Component(L"摄像机组件", nullptr) {
+    SetName(L"摄像机组件");
 }
 
 void Function::Camera::Tick(const float DeltaTime) {
     Component::Tick(DeltaTime);
     HandleInput();
 }
-
 
 void Function::Camera::BeginPlay() {
     Super::BeginPlay();

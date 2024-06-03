@@ -9,6 +9,7 @@
 
 #include "Log/Logger.h"
 #include "Object/Object.h"
+#include "Object/ObjectManager.h"
 #include "Singleton/Singleton.h"
 
 extern Logger gLogger;
@@ -94,28 +95,31 @@ public:
  * @param Name 对象名称
  * @return
  */
-template<typename T, ENewReturnType Strategy = ENewReturnType::SharedPtr>
+template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename ... Args>
     requires IsObject<T>
-typename NewReturnType<T, Strategy>::Type New(const String& Name = L"") {
+typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&& ... InArgs) {
     // T不能是个单例
     static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
     uint32 AvailableID = ObjectCreateHelper::GetAvailableID();
 
     typename NewReturnType<T, Strategy>::Type Rtn;
     if constexpr (Strategy == ENewReturnType::Raw) {
-        Rtn = new T();
+        Rtn = new T(Forward<Args>(InArgs)...);
     } else if constexpr (Strategy == ENewReturnType::SharedPtr) {
-        Rtn = MakeShared<T>();
+        Rtn = MakeShared<T>(Forward<Args>(InArgs)...);
     } else if constexpr (Strategy == ENewReturnType::UniquePtr) {
-        Rtn = MakeUnique<T>();
+        Rtn = MakeUnique<T>(Forward<Args>(InArgs)...);
     } else {
         return nullptr;
     }
-    if (Name.empty()) {
-        Rtn->SetName(std::vformat(L"Object_{}", std::make_wformat_args(AvailableID)));
-    } else {
-        Rtn->SetName(Name);
+    if (Rtn->GetName().empty()) {
+        if (Name.empty()) {
+            Rtn->SetName(std::vformat(L"Object_{}", std::make_wformat_args(AvailableID)));
+        } else {
+            Rtn->SetName(Name);
+        }
     }
     ObjectCreateHelper::SetObjectID(Rtn, AvailableID);
+    ObjectManager::Get().AddObject(Rtn);
     return Rtn;
 }

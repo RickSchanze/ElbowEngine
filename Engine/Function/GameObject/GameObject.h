@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Component/Transform.h"
+#include "CoreGlobal.h"
 #include "FunctionCommon.h"
 #include "Object/Object.h"
 
@@ -17,14 +18,17 @@ FUNCTION_NAMESPACE_BEGIN
 
 class GameObject : public Object {
 public:
+     GameObject(GameObject* InParent = nullptr);
+    ~GameObject() override;
+
     void BeginPlay();
     void Tick(float DeltaTime) const;
     void EndPlay();
 
     template<typename T>
         requires std::derived_from<T, Component>
-    T* AddComponent(const String& InComponentName) {
-        T* Component = new T(InComponentName, this);
+    T* AddComponent() {
+        T* Component           = New<T>();
         Component->mGameObject = this;
         Component->BeginPlay();
         Component->mTransform = &mTransform;
@@ -43,11 +47,34 @@ public:
         return nullptr;
     }
 
+    // 销毁一个Component
     void DestroyComponent(Component* InComponent);
 
+    // 获取此对象的parent
+    GameObject* GetParent() const { return mParentOject; }
+
+    // 获取这个对象的所有子对象
+    TArray<GameObject*>& GetChildren() { return mSubGameObjects; }
+
+    // 这个对象是否有子对象？
+    bool HasChildren() const { return !mSubGameObjects.empty(); }
+
+    // 获取这个对象的变换 注意：返回非常量引用
+    Transform& GetTransform() { return mTransform; }
+
+    // 获取这个对象的所有Components
+    TArray<Component*>& GetComponents() { return mComponents; }
+
+public:
+    static const TArray<GameObject*>& GetRootGameObjects() { return sRootObjects; }
+
 protected:
-    Transform mTransform = {};
-    TArray<Component*> mComponents;
+    Transform           mTransform = {};
+    TArray<Component*>  mComponents;
+    TArray<GameObject*> mSubGameObjects;
+    GameObject*         mParentOject = nullptr;
+
+    static inline TArray<GameObject*> sRootObjects;
 };
 
 FUNCTION_NAMESPACE_END

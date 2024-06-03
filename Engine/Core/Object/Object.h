@@ -56,7 +56,7 @@ public:
      * 设置对象的名字
      * @param Name
      */
-    void SetName(String Name) { mName = std::move(Name); }
+    void SetName(const String &Name);
 
     /**
      * 对象是否还有效
@@ -66,12 +66,17 @@ public:
 
     EObjectFlag GetObjectFlag() const { return mFlag; }
 
+    const AnsiString& GetCachedAnsiString() const { return mCachedAnsiString; }
+
 protected:
     String mName;                // 对象名字
-    uint32 mID        = -1;      // 对象ID
+    uint32 mID        = 0;      // 对象ID
     bool   mIsGarbage = false;   // 是否是垃圾对象
 
     const EObjectFlag mFlag;
+
+private:
+    AnsiString mCachedAnsiString;  // 缓存的Ansi字符串 用于ImGui绘制
 };
 
 template<typename T>

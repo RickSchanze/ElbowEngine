@@ -8,6 +8,7 @@
 #include "WindowManager.h"
 
 #include "CoreGlobal.h"
+#include "Object/ObjectManager.h"
 #include "Utils/StringUtils.h"
 #include "WindowBase.h"
 
@@ -19,6 +20,8 @@ Tool::Window::WindowBase* WindowManager::GetWindow(Type InType) {
     auto NewWindowInstanceVar = InType.create();
     if (NewWindowInstanceVar) {
         auto Window = NewWindowInstanceVar.get_value<Tool::Window::WindowBase*>();
+        Window->Construct();
+        ObjectManager::Get().AddObject(Window);
         Mgr.mWindowMap[InType] = Window;
         return Window;
     } else {
@@ -34,11 +37,5 @@ void WindowManager::DestroyWindow(Type InType) {
         Mgr.mWindowMap.erase(InType);
     } else {
         LOG_WARNING_CATEGORY(UI, L"试图删除不存在{}类型的Window", StringUtils::FromAnsiStringView(InType.get_name()));
-    }
-}
-
-WindowManager::~WindowManager() {
-    for (const auto& Pair: mWindowMap) {
-        delete Pair.second;
     }
 }

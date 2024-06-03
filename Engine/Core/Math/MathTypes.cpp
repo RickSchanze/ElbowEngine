@@ -11,6 +11,20 @@
 #include <glm/geometric.hpp>
 #include <glm/trigonometric.hpp>
 
+RTTR_REGISTRATION {
+    rttr::registration::class_<FRotator>("FRotator")
+        .constructor<>()
+        .property("Yaw", &FRotator::Yaw)
+        .property("Roll", &FRotator::Roll)
+        .property("Pitch", &FRotator::Pitch);
+
+    rttr::registration::class_<FVector3>("FVector3")
+        .constructor<>()
+        .property("X", &FVector3::x)
+        .property("Y", &FVector3::y)
+        .property("z", &FVector3::z);
+}
+
 String Size2D::ToString() {
     return std::format(L"Width: {}, Height:{}", Width, Height);
 }

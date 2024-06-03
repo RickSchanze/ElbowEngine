@@ -35,11 +35,13 @@ constexpr FVector3 UpVector      = {0, 1, 0};
 
 struct FRotator
 {
-    float Pitch = 0;
     float Yaw = -90;
     float Roll = 0;
+    float Pitch = 0;
 
     FVector3 GetForwardVector() const;
     FVector3 GetUpVector() const;
     FVector3 GetRightVector() const;
 };
+
+

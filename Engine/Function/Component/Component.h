@@ -9,15 +9,21 @@
 #include "FunctionCommon.h"
 #include "Object/Object.h"
 
+#include "Component.generated.h"
+
 namespace Function {
 class GameObject;
 class Transform;
 }
 FUNCTION_NAMESPACE_BEGIN
 
-class Component : public Object {
+class REFL Component : public Object {
+    GENERATED_BODY(Component)
 public:
     friend class GameObject;
+
+    Component();
+
     explicit Component(String InName, GameObject* InGameObject);
 
     virtual void Tick(float DeltaTime) {}

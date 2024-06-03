@@ -57,6 +57,10 @@ protected:
         void DrawWindowMenu();
             // 窗口下的"调试窗口"
             void OnOpenDebugWindow();
+            // 窗口下的"大纲"
+            void OnOpenOutlineWindow();
+            // 窗口下的"细节"
+            void OnOpenDetailWindow();
     // clang-format on
 
 private:

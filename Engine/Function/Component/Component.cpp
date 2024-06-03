@@ -9,6 +9,13 @@
 
 #include "CoreGlobal.h"
 #include "GameObject/GameObject.h"
+#include "Utils/StringUtils.h"
+
+#include "Component.generated.h"
+
+GENERATED_SOURCE()
+
+Function::Component::Component() = default;
 
 Function::Component::Component(String InName, GameObject* InGameObject)
     : Object(EOF_IsComponent), mGameObject(InGameObject) {
@@ -17,7 +24,7 @@ Function::Component::Component(String InName, GameObject* InGameObject)
         LOG_ERROR_CATEGORY(Component, L"创建组件{}失败: 输入组件为空", InName);
         return;
     }
-    mName = InName;
+    SetName(InName);
     // InGameObject 由GameObject的AddComponent设置
 }
 

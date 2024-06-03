@@ -9,6 +9,7 @@
 #include "CoreGlobal.h"
 #include "Log/Logger.h"
 #include "ObjectManager.h"
+#include "Utils/StringUtils.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Object>("Object").constructor<>()(rttr::policy::ctor::as_raw_ptr)
@@ -23,6 +24,11 @@ Object::~Object() {
 
 String Object::ToString() const {
     return std::format(L"[Object] Name: {0}, Id: {1}", mName, mID);
+}
+
+void Object::SetName(const String& Name) {
+    mName = Name;
+    mCachedAnsiString = StringUtils::ToAnsiString(Name);
 }
 
 bool Object::IsValid() const {
