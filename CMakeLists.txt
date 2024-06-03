@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.27)
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(ElbowEngine)
 set(CMAKE_CXX_STANDARD 20)
-set(REFLECTION_EXE "C:/Users/Echo/BaiduSyncDisk/Work/Projects/ElbowEngine/CodeGenerator/bin/CodeGenerator.exe")
-set(PYTHON_EXE "C:/Users/Echo/AppData/Local/Programs/Python/Python312/python.exe")
+set(REFLECTION_EXE "D:/Projects/ElbowEngine/CodeGenerator/bin/CodeGenerator.exe")
+set(PYTHON_EXE "D:/Software/Anaconda/python.exe")
 execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGenerator.py
         --reflection-tool-path=${REFLECTION_EXE}
         --output-files-path=${CMAKE_SOURCE_DIR}/Generated

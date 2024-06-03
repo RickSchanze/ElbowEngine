@@ -18,17 +18,23 @@ GENERATED_SOURCE()
 
 WINDOW_NAMESPACE_BEGIN
 
-bool bClosed;
-
 void WindowBase::Tick(float InDeltaTime) {
     if (bDirty) {
         mCachedAnsiWindowName = StringUtils::ToAnsiString(mWindowName);
         bDirty                = false;
     }
 
-    ImGui::Begin(mCachedAnsiWindowName.c_str(), &bClosed);
-    Draw(InDeltaTime);
-    ImGui::End();
+    if (mImguiShowWindow) {
+        if (!ImGui::Begin(mCachedAnsiWindowName.c_str(), &mImguiShowWindow)) {
+            ImGui::End();
+            SetVisible(EWindowVisiable::Hidden);
+        } else {
+            Draw(InDeltaTime);
+            ImGui::End();
+        }
+    } else {
+        SetVisible(EWindowVisiable::Hidden);
+    }
 }
 void WindowBase::Construct() {
     if (bConstructed) {
@@ -53,10 +59,13 @@ WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible) {
     if (InVisible != mVisiable) {
         auto OldVisiable = mVisiable;
         mVisiable        = InVisible;
+
         if (mVisiable == EWindowVisiable::Visiable) {
             EngineApplication::Get().AddWindow(this);
+            mImguiShowWindow = true;
         } else if (mVisiable == EWindowVisiable::Hidden) {
             EngineApplication::Get().RemoveWindow(this);
+            mImguiShowWindow = false;
         }
 
         OnVisiableChanged.Broadcast(OldVisiable);

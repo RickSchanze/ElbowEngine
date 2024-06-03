@@ -71,6 +71,9 @@ protected:
     bool bConstructed = false;
 
     EWindowVisiable mVisiable = EWindowVisiable::DefaultMax;
+
+private:
+    bool mImguiShowWindow = true;
 };
 
 WINDOW_NAMESPACE_END

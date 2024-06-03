@@ -75,7 +75,7 @@ if __name__ == '__main__':
         command[1] = str(file)
         if check_updated(file, Path(output_files_path), cache):
             # if True:
-            print(subprocess.list2cmdline(command))
+            # print(subprocess.list2cmdline(command))
             proc = subprocess.Popen(command)
             processes.append(proc)
 
