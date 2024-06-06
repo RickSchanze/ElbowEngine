@@ -9,6 +9,7 @@
 
 #include "Path/Path.h"
 #include "RHI/Vulkan/VulkanCommon.h"
+#include "RHI/Vulkan/VulkanContext.h"
 #include "vulkan/vulkan.hpp"
 
 namespace RHI::Vulkan {
@@ -61,7 +62,8 @@ public:
      */
     Shader(Protected, Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderStage);
 
-    static TSharedPtr<Shader> CreateShared(Ref<LogicalDevice> InDevice, const Path& InShaderPath, EShaderStage InShaderType) {
+    static TSharedPtr<Shader> CreateShared(const Path& InShaderPath, EShaderStage InShaderType) {
+        Ref InDevice = *VulkanContext::Get().GetLogicalDevice();
         return MakeShared<Shader>(Protected{}, InDevice, InShaderPath, InShaderType);
     }
 

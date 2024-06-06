@@ -18,8 +18,9 @@ public:
     );
 
     static TSharedPtr<ShaderProgram> CreateShared(
-        Ref<LogicalDevice> InDevice, const TSharedPtr<Shader>& InVertexShader, const TSharedPtr<Shader>& InFragmentShader
+        const TSharedPtr<Shader>& InVertexShader, const TSharedPtr<Shader>& InFragmentShader
     ) {
+        Ref InDevice = *VulkanContext::Get().GetLogicalDevice();
         return MakeShared<ShaderProgram>(InDevice, InVertexShader, InFragmentShader);
     }
 

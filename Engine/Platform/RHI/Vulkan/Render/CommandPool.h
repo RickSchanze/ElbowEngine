@@ -13,15 +13,15 @@ class LogicalDevice;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class CommandProducer {
+class CommandPool {
 protected:
     struct Private
     {};
 
 public:
-    CommandProducer(Private, Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags);
+    CommandPool(Private, Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags);
 
-    static TUniquePtr<CommandProducer> CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags = {});
+    static TUniquePtr<CommandPool> CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags = {});
 
     void CreateCommandPool(vk::CommandPoolCreateFlags InPoolFlags);
     void CleanCommandPool();

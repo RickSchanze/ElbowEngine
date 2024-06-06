@@ -5,7 +5,7 @@
  * @brief 
  */
 
-#include "CommandProducer.h"
+#include "CommandPool.h"
 
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
@@ -14,16 +14,16 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandProducer::CommandProducer(Private, const Ref<TUniquePtr<LogicalDevice>> InDevice, const vk::CommandPoolCreateFlags InPoolFlags) :
+CommandPool::CommandPool(Private, const Ref<TUniquePtr<LogicalDevice>> InDevice, const vk::CommandPoolCreateFlags InPoolFlags) :
     mDevice(InDevice) {
     CreateCommandPool(InPoolFlags);
 }
 
-TUniquePtr<CommandProducer> CommandProducer::CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags) {
-    return MakeUnique<CommandProducer>(Private{}, InDevice, InPoolFlags);
+TUniquePtr<CommandPool> CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> InDevice, vk::CommandPoolCreateFlags InPoolFlags) {
+    return MakeUnique<CommandPool>(Private{}, InDevice, InPoolFlags);
 }
 
-void CommandProducer::CreateCommandPool(const vk::CommandPoolCreateFlags InPoolFlags) {
+void CommandPool::CreateCommandPool(const vk::CommandPoolCreateFlags InPoolFlags) {
     const auto& Device = mDevice.get();
 
     // 获取队列族索引
@@ -36,13 +36,13 @@ void CommandProducer::CreateCommandPool(const vk::CommandPoolCreateFlags InPoolF
     mPool = Device->GetHandle().createCommandPool(CommandPoolCreateInfo);
 }
 
-void CommandProducer::CleanCommandPool() {
+void CommandPool::CleanCommandPool() {
     if (!mPool) return;
     const auto& Device = mDevice.get();
     Device->GetHandle().destroyCommandPool(mPool);
     mPool = nullptr;
 }
-void CommandProducer::TrainsitionImageLayout(
+void CommandPool::TrainsitionImageLayout(
     const vk::Image InImage, vk::Format InFormat, const vk::ImageLayout InOldLayout, const vk::ImageLayout InNewLayout, uint32 InMipLevel
 ) const {
     vk::CommandBuffer      CommandBuffer    = BeginSingleTimeCommands();
@@ -102,7 +102,7 @@ void CommandProducer::TrainsitionImageLayout(
     EndSingleTimeCommands(CommandBuffer);
 }
 
-void CommandProducer::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Image InImage, const uint32 InWidth, const uint32 InHeight)
+void CommandPool::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Image InImage, const uint32 InWidth, const uint32 InHeight)
     const {
     const auto          CommandBuffer = BeginSingleTimeCommands();
     vk::BufferImageCopy Region{};
@@ -119,7 +119,7 @@ void CommandProducer::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Ima
     EndSingleTimeCommands(CommandBuffer);
 }
 
-bool CommandProducer::GenerateMipmaps(
+bool CommandPool::GenerateMipmaps(
     const vk::Image InImage, const vk::Format InImageFormat, const int32 InTexWidth, const int32 InTexHeight, const uint32 InMipLevel
 ) const {
     const auto             CommandBuffer = BeginSingleTimeCommands();
@@ -182,11 +182,11 @@ bool CommandProducer::GenerateMipmaps(
     return true;
 }
 
-void CommandProducer::Finialize() {
+void CommandPool::Finialize() {
     CleanCommandPool();
 }
 
-void CommandProducer::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer InDstBuffer, const uint64_t InSize) const {
+void CommandPool::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer InDstBuffer, const uint64_t InSize) const {
     const auto     CommandBuffer = BeginSingleTimeCommands();
     vk::BufferCopy CopyRegion{};
     CopyRegion.size = InSize;
@@ -194,19 +194,19 @@ void CommandProducer::CopyBuffer(const vk::Buffer InSrcBuffer, const vk::Buffer 
     EndSingleTimeCommands(CommandBuffer);
 }
 
-void CommandProducer::ResetCommandPool() const {
+void CommandPool::ResetCommandPool() const {
     mDevice.get()->GetHandle().resetCommandPool(mPool);
 }
 
-TArray<vk::CommandBuffer> CommandProducer::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const {
+TArray<vk::CommandBuffer> CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& InAllocInfo) const {
     return mDevice.get()->GetHandle().allocateCommandBuffers(InAllocInfo);
 }
 
-void CommandProducer::DestroyCommandBuffers(const TArray<vk::CommandBuffer>& InCommandBuffers) const {
+void CommandPool::DestroyCommandBuffers(const TArray<vk::CommandBuffer>& InCommandBuffers) const {
     mDevice.get()->GetHandle().freeCommandBuffers(mPool, InCommandBuffers);
 }
 
-vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
+vk::CommandBuffer CommandPool::BeginSingleTimeCommands() const {
     vk::CommandBufferAllocateInfo AllocateInfo{};
     AllocateInfo.setCommandPool(mPool);
     AllocateInfo.setLevel(vk::CommandBufferLevel::ePrimary);
@@ -219,7 +219,7 @@ vk::CommandBuffer CommandProducer::BeginSingleTimeCommands() const {
     return CommandBuffer;
 }
 
-void CommandProducer::EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const {
+void CommandPool::EndSingleTimeCommands(vk::CommandBuffer InCommandBuffer) const {
     InCommandBuffer.end();
     const auto&    Device       = mDevice.get();
     const auto     DeviceHandle = Device->GetHandle();

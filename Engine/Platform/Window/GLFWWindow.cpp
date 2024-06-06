@@ -17,6 +17,83 @@
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
+class ImGuiRenderPass : public RHI::Vulkan::RenderPass {
+public:
+protected:
+    void CreateColorImageAttachmentDescription() override {
+        mColorImageAttachment.format         = RHI::Vulkan::VulkanContext::Get().GetSwapChainImageFormat();
+        mColorImageAttachment.samples        = vk::SampleCountFlagBits::e1;
+        mColorImageAttachment.loadOp         = vk::AttachmentLoadOp::eLoad;
+        mColorImageAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
+        mColorImageAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+        mColorImageAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        mColorImageAttachment.initialLayout  = vk::ImageLayout::ePresentSrcKHR;
+        mColorImageAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+
+        vk::AttachmentReference ColorAttachmentRef;
+        ColorAttachmentRef.attachment = 0;
+        ColorAttachmentRef.layout     = vk::ImageLayout::eColorAttachmentOptimal;
+    }
+
+    void CreateSubpassDescription() override {
+        mSubpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+        mSubpass.setColorAttachments(mColorAttchmentRef);
+
+        mDependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
+        mDependency.dstSubpass    = 0;
+        mDependency.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        mDependency.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        mDependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        mDependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+    }
+
+    void Initialize() override {
+        CreateColorImageAttachmentDescription();
+        CreateSubpassDescription();
+
+        TStaticArray<vk::AttachmentDescription, 1> Attachments = {mColorImageAttachment};
+        TStaticArray<vk::SubpassDescription, 1>    Supasses    = {mSubpass};
+        TStaticArray<vk::SubpassDependency, 1>     Dependency  = {mDependency};
+
+        vk::RenderPassCreateInfo RenderPassCreateInfo;
+        RenderPassCreateInfo.setAttachments(Attachments).setSubpasses(Supasses).setDependencies(Dependency);
+        mHandle = RHI::Vulkan::VulkanContext::Get().GetLogicalDevice()->GetHandle().createRenderPass(RenderPassCreateInfo);
+    }
+};
+
+class ImGuiGraphicsPipeline : public IGraphicsPipeline {
+public:
+    explicit ImGuiGraphicsPipeline(Ref<RHI::Vulkan::VulkanContext> InConext);
+
+    void Initialize();
+    void Finialize();
+
+    ~ImGuiGraphicsPipeline() override;
+
+protected:
+    void CreateDescriptorPool();
+    void CreateFramebuffers();
+    void CleanFramebuffers();
+    void CreateCommandBuffers();
+
+public:
+    void SubmitGraphicsQueue(
+        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
+        vk::Fence InFrameFence
+    ) override;
+
+    void Rebuild() override;
+
+private:
+    Ref<RHI::Vulkan::VulkanContext> mContext;
+
+    vk::DescriptorPool                   mDescriptorPool = nullptr;
+    TUniquePtr<RHI::Vulkan::CommandPool> mCommandProducer;
+    RHI::Vulkan::RenderPass*             mRenderPass = nullptr;
+    TArray<vk::CommandBuffer>            mCommandBuffers;
+    TArray<vk::Framebuffer>              mFramebuffers;
+};
+
 void GLFWWindowSurface::Initialize() {
     if (mAttachedInstanceHandle->IsValid()) {
         VkSurfaceKHR   Surface{};
@@ -27,42 +104,6 @@ void GLFWWindowSurface::Initialize() {
         }
         mSurfaceHandle = vk::SurfaceKHR(Surface);
     }
-}
-
-vk::RenderPassCreateInfo ImGuiRenderPassProducer::GetRenderPassCreateInfo() {
-    vk::AttachmentDescription ColorAttachment;
-    ColorAttachment.format         = mSwapchainImageFormat;
-    ColorAttachment.samples        = vk::SampleCountFlagBits::e1;
-    ColorAttachment.loadOp         = vk::AttachmentLoadOp::eLoad;
-    ColorAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
-    ColorAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-    ColorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    ColorAttachment.initialLayout  = vk::ImageLayout::ePresentSrcKHR;
-    ColorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
-
-    vk::AttachmentReference ColorAttachmentRef;
-    ColorAttachmentRef.attachment = 0;
-    ColorAttachmentRef.layout     = vk::ImageLayout::eColorAttachmentOptimal;
-
-    vk::SubpassDescription Subpass;
-    Subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-    Subpass.setColorAttachments(mColorAttachmentRef);
-
-    vk::SubpassDependency Dependency;
-    Dependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
-    Dependency.dstSubpass    = 0;
-    Dependency.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    Dependency.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    Dependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    Dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-    mAttachments  = {ColorAttachment};
-    mSubpasses    = {Subpass};
-    mDependencies = {Dependency};
-
-    vk::RenderPassCreateInfo RenderPassCreateInfo;
-    RenderPassCreateInfo.setAttachments(mAttachments).setSubpasses(mSubpasses).setDependencies(mDependencies);
-    return RenderPassCreateInfo;
 }
 
 ImGuiGraphicsPipeline::ImGuiGraphicsPipeline(const Ref<RHI::Vulkan::VulkanContext> InConext) : mContext(InConext) {
@@ -89,15 +130,13 @@ void ImGuiGraphicsPipeline::Initialize() {
     Info.DescriptorPool = mDescriptorPool;
 
     mCommandProducer =
-        RHI::Vulkan::CommandProducer::CreateUnique(mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-    const auto RenderPassProducer = ImGuiRenderPassProducer::CreateUnique(mContext.get().GetSwapChainImageFormat());
-    const auto RenderPassInfo     = RenderPassProducer->GetRenderPassCreateInfo();
+        RHI::Vulkan::CommandPool::CreateUnique(mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-    mRenderPass = RHI::Vulkan::RenderPass::CreateUnique(*mContext.get().GetLogicalDevice(), RenderPassInfo);
+    mRenderPass = new ImGuiRenderPass();
 
     // CommandBuffers
     vk::CommandBufferAllocateInfo AllocInfo = {};
-    AllocInfo.setCommandPool(mContext.get().GetCommandProducer()->GetCommandPool())
+    AllocInfo.setCommandPool(mContext.get().GetCommandPool()->GetCommandPool())
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandBufferCount(mContext.get().GetSwapChainImageCount());
 
@@ -125,7 +164,8 @@ void ImGuiGraphicsPipeline::Finialize() {
     //     );
     // }
     mCommandProducer->Finialize();
-    mRenderPass->Finialize();
+    mRenderPass->Destroy();
+    delete mRenderPass;
     ImGui_ImplVulkan_Shutdown();
     mContext.get().GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
     mDescriptorPool = nullptr;
@@ -235,15 +275,15 @@ Size2D GlfwWindow::GetWindowSize() {
 void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext) {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
-    mGraphicsPipeline = MakeUnique<ImGuiGraphicsPipeline>(InContext);
+    mGraphicsPipeline = new ImGuiGraphicsPipeline(InContext);
     SetupImGuiFonts();
 }
 
 void GlfwWindow::SetupImGuiFonts() {
-    ImGuiIO&   IO                 = ImGui::GetIO();
-    Path       DefaultFontPath    = L"Fonts/Maple_UI.ttf";
-    AnsiString DefaultFontPathStr = DefaultFontPath.ToAnsiString();
-    ImVector<ImWchar> Ranges;
+    ImGuiIO&                 IO                 = ImGui::GetIO();
+    Path                     DefaultFontPath    = L"Fonts/Maple_UI.ttf";
+    AnsiString               DefaultFontPathStr = DefaultFontPath.ToAnsiString();
+    ImVector<ImWchar>        Ranges;
     ImFontGlyphRangesBuilder Builder;
     Builder.AddRanges(IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     Builder.AddText(U8("帧"));
@@ -283,6 +323,8 @@ void GlfwWindow::Initialize() {
 
 void GlfwWindow::Finalize() {
     mGraphicsPipeline->Finialize();
+    delete mGraphicsPipeline;
+    mGraphicsPipeline = nullptr;
     glfwDestroyWindow(mWindowHandle);
     mWindowHandle = nullptr;
     glfwTerminate();

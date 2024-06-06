@@ -9,7 +9,7 @@
 
 #include "CoreGlobal.h"
 #include "Model.h"
-#include "RHI/Vulkan/Render/CommandProducer.h"
+#include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -39,7 +39,7 @@ Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InC
         mVertexBuffer,
         mVertexBufferMemory
     );
-    mContext.get().GetCommandProducer()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
+    mContext.get().GetCommandPool()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
     mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(VertexStagingBuffer);
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
 
@@ -65,7 +65,7 @@ Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InC
         mIndexBuffer,
         mIndexBufferMemory
     );
-    mContext.get().GetCommandProducer()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
+    mContext.get().GetCommandPool()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
     mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(IndexStagingBuffer);
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
 }

@@ -38,7 +38,6 @@ add_library(Platform
         RHI/Vulkan/Resource/Image.h
         RHI/Vulkan/Render/RenderPass.cpp
         RHI/Vulkan/Render/RenderPass.h
-        RHI/Vulkan/Interface/IRenderPassProducer.h
         RHI/Vulkan/VulkanStringify.cpp
         RHI/Vulkan/VulkanStringify.h
         RHI/Vulkan/Resource/ImageView.cpp
@@ -49,8 +48,10 @@ add_library(Platform
         RHI/Vulkan/Render/GraphicsPipeline.h
         RHI/Vulkan/Render/ShaderProgram.cpp
         RHI/Vulkan/Render/ShaderProgram.h
-        RHI/Vulkan/Render/CommandProducer.cpp
-        RHI/Vulkan/Render/CommandProducer.h
+        RHI/Vulkan/Render/CommandPool.cpp
+        RHI/Vulkan/Render/CommandPool.h
+        RHI/Vulkan/Render/CommandList.h
+        RHI/Vulkan/Render/CommandList.cpp
         RHI/Vulkan/Interface/IGraphicsPipeline.h
         RHI/Vulkan/Resource/VulkanModel.h
         RHI/Vulkan/Resource/VulkanModel.cpp

@@ -16,6 +16,8 @@ add_library(${PROJECT_NAME}
         Input/Input.h
         Component/Camera.cpp
         Component/Camera.h
+        Render/IRenderPipeline.h
+        Render/IRenderPipeline.cpp
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

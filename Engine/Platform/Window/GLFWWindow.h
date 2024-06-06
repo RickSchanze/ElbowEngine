@@ -12,11 +12,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include "Component/Camera.h"
 #include "GLFW/glfw3.h"
-#include "imgui_impl_vulkan.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
-#include "RHI/Vulkan/Interface/IRenderPassProducer.h"
+
 namespace RHI::Vulkan {
 class RenderPass;
 }
@@ -35,64 +34,7 @@ struct GLFWWindowSurface : RHI::Vulkan::SurfaceBase
     GLFWwindow* mWindow;
 };
 
-class ImGuiRenderPassProducer final : public RHI::Vulkan::IRenderPassProducer {
-protected:
-    struct Protected
-    {};
-
-public:
-    static TUniquePtr<IRenderPassProducer> CreateUnique(vk::Format InSwapchainImageFormat) {
-        return MakeUnique<ImGuiRenderPassProducer>(Protected{}, InSwapchainImageFormat);
-    }
-
-    ImGuiRenderPassProducer(Protected, const vk::Format InSwapChainImageFormat) : mSwapchainImageFormat(InSwapChainImageFormat) {}
-
-    vk::RenderPassCreateInfo GetRenderPassCreateInfo() override;
-
-private:
-    // 与引擎渲染使用同一套Swapchain、SwapChainImageFormat以及SampleCount
-    vk::Format mSwapchainImageFormat{};
-
-    // 不需要深度
-    vk::AttachmentReference mColorAttachmentRef{0, vk::ImageLayout::eColorAttachmentOptimal};
-
-    TArray<vk::AttachmentDescription> mAttachments;
-    TArray<vk::SubpassDescription>    mSubpasses;
-    TArray<vk::SubpassDependency>     mDependencies;
-};
-
-class ImGuiGraphicsPipeline : public IGraphicsPipeline {
-public:
-    explicit ImGuiGraphicsPipeline(Ref<RHI::Vulkan::VulkanContext> InConext);
-
-    void Initialize();
-    void Finialize();
-
-    ~ImGuiGraphicsPipeline() override;
-
-protected:
-    void CreateDescriptorPool();
-    void CreateFramebuffers();
-    void CleanFramebuffers();
-    void CreateCommandBuffers();
-
-public:
-    void SubmitGraphicsQueue(
-        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
-        vk::Fence InFrameFence
-    ) override;
-
-    void Rebuild() override;
-
-private:
-    Ref<RHI::Vulkan::VulkanContext> mContext;
-
-    vk::DescriptorPool                       mDescriptorPool = nullptr;
-    TUniquePtr<RHI::Vulkan::CommandProducer> mCommandProducer;
-    TUniquePtr<RHI::Vulkan::RenderPass>      mRenderPass;
-    TArray<vk::CommandBuffer>                mCommandBuffers;
-    TArray<vk::Framebuffer>                  mFramebuffers;
-};
+class ImGuiGraphicsPipeline;
 
 class GlfwWindow {
 public:
@@ -132,7 +74,7 @@ private:
 
     Function::GameObject* mCameraObject;
 
-    TUniquePtr<ImGuiGraphicsPipeline> mGraphicsPipeline;
+    ImGuiGraphicsPipeline* mGraphicsPipeline;
 
     int mWidth;
     int mHeight;

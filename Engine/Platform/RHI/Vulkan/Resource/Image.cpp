@@ -9,7 +9,7 @@
 
 #include "CoreGlobal.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
-#include "RHI/Vulkan/Render/CommandProducer.h"
+#include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/LogicalDevice.h"
 #include "Texture.h"
 
@@ -97,7 +97,7 @@ void Image::CreateImage() {
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
 }
 
-Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) :
+Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture) :
     Image(InDevice) {
     // TODO: 绑定TextureSampler
     vk::Buffer       StagingBuffer;
@@ -157,7 +157,7 @@ Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandProd
 }
 
 TSharedPtr<Texture>
-Texture::Create(const Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture) {
+Texture::Create(const Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture) {
     // 如果InTexture中有对应的RHI Vulkan资源则直接返回
     if (InTexture->GetRHIResource() != nullptr) {
         return std::dynamic_pointer_cast<Texture>(InTexture->GetRHIResource());

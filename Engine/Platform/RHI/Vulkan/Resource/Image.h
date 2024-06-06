@@ -15,7 +15,7 @@ namespace Resource {
 class Texture;
 }
 namespace RHI::Vulkan {
-class CommandProducer;
+class CommandPool;
 }
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -100,9 +100,9 @@ protected:
 
 class Texture : public Image {
 public:
-    Texture(Protected, Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
+    Texture(Protected, Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture);
 
-    static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandProducer& InCommandProducer, Resource::Texture* InTexture);
+    static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture);
 
     int32 GetMipLevel() const { return mMipLevel; }
 

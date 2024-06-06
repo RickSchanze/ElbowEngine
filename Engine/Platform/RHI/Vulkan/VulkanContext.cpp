@@ -10,7 +10,7 @@
 #include "../../../Tool/EngineApplication.h"
 #include "CoreGlobal.h"
 #include "Instance.h"
-#include "Render/CommandProducer.h"
+#include "Render/CommandPool.h"
 #include "Render/GraphicsPipeline.h"
 #include "Render/RenderPass.h"
 #include "Utils/ContainerUtils.h"
@@ -26,13 +26,19 @@ VulkanContext::~VulkanContext() {
     }
 }
 
-TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& InVulkanInstance, TUniquePtr<IRenderPassProducer> Producer) {
+TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& InVulkanInstance) {
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, InVulkanInstance);
-    Rtn->CreateGraphicsPipeline(Move(Producer), *Rtn);
+    Rtn->CreateGraphicsPipeline();
     return Rtn;
 }
 
 VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& InVulkanInstance) {
+    if (sContext == nullptr) {
+        sContext = this;
+    } else {
+        LOG_INFO_CATEGORY(Vulkan, L"多次初始化VulkanContext,忽略本次初始化调用");
+        return;
+    }
     mRendererID = sRendererIDCount++;
     LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", mRendererID, mSwapChainImageCount);
     mVulkanInstance       = InVulkanInstance;
@@ -43,9 +49,15 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& InVulkanInst
     mLogicalDevice   = mPhysicalDevice->CreateLogicalDeviceUnique();
     mSwapChain       = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, 1920, 1080);
     // 初始化命令生产者
-    mCommandProducer = CommandProducer::CreateUnique(mLogicalDevice);
+    mCommandPool = CommandPool::CreateUnique(mLogicalDevice);
     CreateSyncObjecs();
     Initialize();
+}
+VulkanContext& VulkanContext::Get(){
+    if (sContext == nullptr) {
+        throw VulkanException(L"VulkanContext未初始化");
+    }
+    return *sContext;
 }
 
 void VulkanContext::Initialize() {
@@ -55,11 +67,14 @@ void VulkanContext::Initialize() {
 void VulkanContext::Finalize() {
     if (!IsValid()) return;
     CleanSyncObjects();
-    mCommandProducer->Finialize();
+    mCommandPool->Finialize();
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
-    if (mGraphicsPipeline) mGraphicsPipeline->Finalize();
+    if (mGraphicsPipeline) {
+        delete mGraphicsPipeline;
+        mGraphicsPipeline = nullptr;
+    }
     mSwapChain->Finialize();
     mLogicalDevice->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", mRendererID);
@@ -126,7 +141,7 @@ bool VulkanContext::IsValid() const {
     // clang-format off
     return
         mSwapChain && mSwapChain->IsValid() &&
-        mCommandProducer &&
+        mCommandPool &&
         mLogicalDevice && mLogicalDevice->IsValid() &&
         mPhysicalDevice && mPhysicalDevice->IsValid() &&
         mVulkanInstance && mVulkanInstance->IsValid();
@@ -152,26 +167,13 @@ void VulkanContext::RebuildSwapChain() {
     }
 }
 
-void VulkanContext::CreateGraphicsPipeline(TUniquePtr<IRenderPassProducer> Producer, const Ref<VulkanContext> InRenderer) {
+void VulkanContext::CreateGraphicsPipeline() {
     // 创建图形管线
     // 寻找深度图像格式
-    mDepthFormat = mPhysicalDevice->FindSupportFormat(
-        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
-        vk::ImageTiling::eOptimal,
-        vk::FormatFeatureFlagBits::eDepthStencilAttachment
-    );
-    GraphicsPipelineCreateInfo CreateInfo = {};
-    CreateInfo.ViewportSize               = mSwapChain->GetExtent();
-    CreateInfo.MsaaSamples                = vk::SampleCountFlagBits::e1;
-    if (Producer != nullptr) {
-        CreateInfo.RenderPassProducer = Move(Producer);
-    } else {
-        CreateInfo.RenderPassProducer = MakeUnique<DefaultRenderPassProducer>(mSwapChain->GetImageFormat(), mDepthFormat);
-    }
-    CreateInfo.FragmentShaderPath = L"Shaders/frag.spv";
-    CreateInfo.VertexShaderPath   = L"Shaders/vert.spv";
-
-    mGraphicsPipeline = GraphicsPipeline::CreateShared(InRenderer, CreateInfo);
+    PipelineInitializer Initializer;
+    Initializer.ShaderStage.FragmentShaderPath = L"Shaders/frag.spv";
+    Initializer.ShaderStage.VertexShaderPath   = L"Shaders/vert.spv";
+    mGraphicsPipeline = new GraphicsPipeline(Initializer);
 }
 
 // void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {

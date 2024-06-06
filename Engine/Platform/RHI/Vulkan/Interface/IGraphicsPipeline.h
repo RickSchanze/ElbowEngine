@@ -7,7 +7,7 @@
 
 #pragma once
 #include "CoreGlobal.h"
-#include "RHI/Vulkan/Render/CommandProducer.h"
+#include "RHI/Vulkan/Render/CommandPool.h"
 
 interface IGraphicsPipeline {
 public:
