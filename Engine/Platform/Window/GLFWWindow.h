@@ -72,9 +72,9 @@ private:
     GLFWwindow* mWindowHandle = nullptr;
     String      mWindowTitle;
 
-    Function::GameObject* mCameraObject;
+    Function::GameObject* mCameraObject = nullptr;
 
-    ImGuiGraphicsPipeline* mGraphicsPipeline;
+    ImGuiGraphicsPipeline* mGraphicsPipeline = nullptr;
 
     int mWidth;
     int mHeight;

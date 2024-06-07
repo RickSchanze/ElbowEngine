@@ -46,14 +46,14 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& InVulkanInst
     const auto Properties = mPhysicalDevice->GetProperties();
     auto       Name       = StringUtils::FromAnsiString(Properties.deviceName);
     LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", Name);
-    mLogicalDevice   = mPhysicalDevice->CreateLogicalDeviceUnique();
-    mSwapChain       = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, 1920, 1080);
+    mLogicalDevice = mPhysicalDevice->CreateLogicalDeviceUnique();
+    mSwapChain     = mLogicalDevice->CreateSwapChain(mSwapChainImageCount, 1920, 1080);
     // 初始化命令生产者
-    mCommandPool = CommandPool::CreateUnique(mLogicalDevice);
+    mCommandPool   = CommandPool::CreateUnique(mLogicalDevice);
     CreateSyncObjecs();
     Initialize();
 }
-VulkanContext& VulkanContext::Get(){
+VulkanContext& VulkanContext::Get() {
     if (sContext == nullptr) {
         throw VulkanException(L"VulkanContext未初始化");
     }
@@ -81,13 +81,13 @@ void VulkanContext::Finalize() {
 }
 
 void VulkanContext::Draw() {
-    const vk::Device  Device = mLogicalDevice->GetHandle();
+    const vk::Device                 Device = mLogicalDevice->GetHandle();
     // 首先等待当前帧的指令缓冲结束执行
     const TStaticArray<vk::Fence, 1> Fence  = {mInFlightFences[mCurrentFrame]};
-    auto _ = Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
+    auto                             _      = Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
-    uint32   ImageIndex;
-    VkResult AcquireResult =
+    uint32                           ImageIndex;
+    VkResult                         AcquireResult =
         vkAcquireNextImageKHR(Device, mSwapChain->GetHandle(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], nullptr, &ImageIndex);
     if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         // 交换链已经过期，需要重建
@@ -117,8 +117,10 @@ void VulkanContext::Draw() {
 
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
-    TStaticArray        SwapChains  = {mSwapChain->GetHandle()};
-    PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(ImageIndex);
+    TStaticArray       SwapChains  = {mSwapChain->GetHandle()};
+    PresentInfo.setWaitSemaphores(SingalSemaphores)
+        .setSwapchains(SwapChains)
+        .setImageIndices(ImageIndex);
 
     const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(&PresentInfo);
 
@@ -167,13 +169,21 @@ void VulkanContext::RebuildSwapChain() {
     }
 }
 
+vk::Format VulkanContext::GetDepthImageFormat() {
+    return mPhysicalDevice->FindSupportFormat(
+        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+        vk::ImageTiling::eOptimal,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
+}
+
 void VulkanContext::CreateGraphicsPipeline() {
     // 创建图形管线
     // 寻找深度图像格式
     PipelineInitializer Initializer;
     Initializer.ShaderStage.FragmentShaderPath = L"Shaders/frag.spv";
     Initializer.ShaderStage.VertexShaderPath   = L"Shaders/vert.spv";
-    mGraphicsPipeline = new GraphicsPipeline(Initializer);
+    mGraphicsPipeline                          = new GraphicsPipeline(Initializer);
 }
 
 // void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {

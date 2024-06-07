@@ -32,8 +32,7 @@ public:
 
     virtual ~VulkanContext();
 
-    static TUniquePtr<VulkanContext>
-    CreateUnique(const TSharedPtr<Instance>& InVulkanInstance);
+    static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance>& InVulkanInstance);
 
 protected:
     struct Protected
@@ -56,12 +55,17 @@ public:
     // 重建交换链
     void RebuildSwapChain();
 
-    vk::Format                     GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
-    vk::Extent2D                   GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
-    uint32                         GetSwapChainImageCount() const { return mSwapChainImageCount; }
-    TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
+    // 获取交换链图像支持的格式
+    vk::Format GetSwapChainImageFormat() const { return mSwapChain->GetImageFormat(); }
 
-    vk::Format GetDepthFormat() const { return mDepthFormat; }
+    // 获取深度图像支持的格式
+    vk::Format GetDepthImageFormat();
+
+    vk::Extent2D GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
+
+    uint32 GetSwapChainImageCount() const { return mSwapChainImageCount; }
+
+    TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
 
     const TUniquePtr<CommandPool>& GetCommandPool() const { return mCommandPool; }
 
@@ -88,8 +92,6 @@ private:
 
     int32 mMaxFramesInFlight = 2;
     int   mCurrentFrame      = 0;
-
-    vk::Format mDepthFormat = {};
 
     int32 mRendererID = 0;
 

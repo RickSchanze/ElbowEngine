@@ -60,8 +60,10 @@ void VulkanApplication::Initialize() {
 }
 
 void VulkanApplication::Finalize() {
-    mContext->Finalize();
-    mVulkanInstance->Finialize();
+    if (mContext)
+        mContext->Finalize();
+    if (mVulkanInstance)
+        mVulkanInstance->Finialize();
 }
 
 void VulkanApplication::Tick(float DeltaTime) {

@@ -29,6 +29,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 GraphicsPipeline::~GraphicsPipeline() {
     CleanOther(false);
     CleanPipeline();
+    VulkanContext::Get().RemovePipelineFromRender(this);
 }
 
 GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
@@ -36,6 +37,7 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
     mPipelineInfo          = InInitializer;
     CreatePipeline();
     CreateOther(false);
+    Context.AddPipelineToRender(this);
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
@@ -80,6 +82,7 @@ void GraphicsPipeline::CreatePipeline() {
         mRenderPass              = new RenderPass();
         mRenderPass->SampleCount = mPipelineInfo.Multisample.SampleCount;
     }
+    mRenderPass->Initialize();
     /************************* 配置RenderPass结束 ************************/
 
     /************************* 配置Shader ************************/
@@ -223,6 +226,8 @@ void GraphicsPipeline::CleanPipeline() {
         Device->GetHandle().destroyPipeline(mPipeline);
         Device->GetHandle().destroyPipelineLayout(mPipelineLayout);
         Device->GetHandle().destroyDescriptorSetLayout(mDescriptorSetLayout);
+        delete mRenderPass;
+        mRenderPass = nullptr;
         mPipeline            = nullptr;
         mPipelineLayout      = nullptr;
         mDescriptorSetLayout = nullptr;
@@ -347,7 +352,7 @@ void GraphicsPipeline::CreateMsaaColorBuffer() {
 
 void GraphicsPipeline::CreateDepthBuffer() {
     VulkanContext& Context = VulkanContext::Get();
-    const auto      DepthFormat = Context.GetDepthFormat();
+    const auto      DepthFormat = Context.GetDepthImageFormat();
     ImageCreateInfo ImageInfo{};
     ImageInfo.Height = Context.GetSwapChainExtent().height;
     ImageInfo.Width  = Context.GetSwapChainExtent().width;

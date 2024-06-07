@@ -18,10 +18,16 @@ public:
     bool IsValid() const;
 
     RenderPass();
+    ~RenderPass();
 
     virtual void Initialize();
 
     void Destroy() override;
+
+protected:
+    void InternalDestroy();
+
+public:
 
     vk::RenderPass GetHandle() const { return mHandle; }
 
@@ -39,7 +45,7 @@ protected:
     vk::RenderPass mHandle = VK_NULL_HANDLE;
 
     vk::AttachmentDescription mColorImageAttachment;
-    vk::AttachmentReference   mColorAttchmentRef;
+    vk::AttachmentReference   mColorAttachmentRef;
 
     vk::AttachmentDescription mDepthImageAttachment;
     vk::AttachmentReference   mDepthAttachmentRef;

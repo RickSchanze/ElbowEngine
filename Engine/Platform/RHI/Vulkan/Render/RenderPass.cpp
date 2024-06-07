@@ -17,7 +17,11 @@ bool RenderPass::IsValid() const {
     return mHandle != nullptr;
 }
 
-RenderPass::RenderPass() {}
+RenderPass::RenderPass() = default;
+
+RenderPass::~RenderPass() {
+    InternalDestroy();
+}
 
 void RenderPass::Initialize() {
     if (IsValid()) return;
@@ -37,6 +41,10 @@ void RenderPass::Initialize() {
 
 
 void RenderPass::Destroy() {
+    InternalDestroy();
+}
+
+void RenderPass::InternalDestroy() {
     if (IsValid()) {
         VulkanContext& Context = VulkanContext::Get();
         Context.GetLogicalDevice()->GetHandle().destroyRenderPass(mHandle);
@@ -60,13 +68,13 @@ void RenderPass::CreateColorImageAttachmentDescription() {
         .setFinalLayout(
             SampleCount == vk::SampleCountFlagBits::e1 ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eColorAttachmentOptimal
         );
-    mColorAttchmentRef = {0, vk::ImageLayout::eColorAttachmentOptimal};
+    mColorAttachmentRef = {0, vk::ImageLayout::eColorAttachmentOptimal};
 }
 
 void RenderPass::CreateDepthImageAttachmentDescription() {
     // 深度缓冲附着描述
     VulkanContext& Context = VulkanContext::Get();
-    mDepthImageAttachment.setFormat(Context.GetSwapChainImageFormat())
+    mDepthImageAttachment.setFormat(Context.GetDepthImageFormat())
         .setSamples(vk::SampleCountFlagBits::e1)
         .setLoadOp(vk::AttachmentLoadOp::eClear)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -83,7 +91,7 @@ void RenderPass::CreateSubpassDescription() {
     Subpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
-        .setColorAttachments(mColorAttchmentRef)
+        .setColorAttachments(mColorAttachmentRef)
         // 指定引用的深度附着
         .setPDepthStencilAttachment(&mDepthAttachmentRef);
     if (SampleCount != vk::SampleCountFlagBits::e1) {

@@ -30,14 +30,13 @@ protected:
         mColorImageAttachment.initialLayout  = vk::ImageLayout::ePresentSrcKHR;
         mColorImageAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
 
-        vk::AttachmentReference ColorAttachmentRef;
-        ColorAttachmentRef.attachment = 0;
-        ColorAttachmentRef.layout     = vk::ImageLayout::eColorAttachmentOptimal;
+        mColorAttachmentRef.attachment = 0;
+        mColorAttachmentRef.layout     = vk::ImageLayout::eColorAttachmentOptimal;
     }
 
     void CreateSubpassDescription() override {
         mSubpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-        mSubpass.setColorAttachments(mColorAttchmentRef);
+        mSubpass.setColorAttachments(mColorAttachmentRef);
 
         mDependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
         mDependency.dstSubpass    = 0;
@@ -88,7 +87,7 @@ private:
     Ref<RHI::Vulkan::VulkanContext> mContext;
 
     vk::DescriptorPool                   mDescriptorPool = nullptr;
-    TUniquePtr<RHI::Vulkan::CommandPool> mCommandProducer;
+    TUniquePtr<RHI::Vulkan::CommandPool> mCommandPool;
     RHI::Vulkan::RenderPass*             mRenderPass = nullptr;
     TArray<vk::CommandBuffer>            mCommandBuffers;
     TArray<vk::Framebuffer>              mFramebuffers;
@@ -129,10 +128,11 @@ void ImGuiGraphicsPipeline::Initialize() {
     CreateDescriptorPool();
     Info.DescriptorPool = mDescriptorPool;
 
-    mCommandProducer =
+    mCommandPool =
         RHI::Vulkan::CommandPool::CreateUnique(mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
     mRenderPass = new ImGuiRenderPass();
+    mRenderPass->Initialize();
 
     // CommandBuffers
     vk::CommandBufferAllocateInfo AllocInfo = {};
@@ -163,9 +163,9 @@ void ImGuiGraphicsPipeline::Finialize() {
     //         mContext.get().GetCommandProducer()->GetCommandPool(), CommandBuffer
     //     );
     // }
-    mCommandProducer->Finialize();
-    mRenderPass->Destroy();
+    mCommandPool->Finialize();
     delete mRenderPass;
+    mRenderPass = nullptr;
     ImGui_ImplVulkan_Shutdown();
     mContext.get().GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
     mDescriptorPool = nullptr;
@@ -206,7 +206,7 @@ void ImGuiGraphicsPipeline::CleanFramebuffers() {
 void ImGuiGraphicsPipeline::CreateCommandBuffers() {
     vk::CommandBufferAllocateInfo AllocInfo = {};
     AllocInfo.level                         = vk::CommandBufferLevel::ePrimary;
-    AllocInfo.commandPool                   = mCommandProducer->GetCommandPool();
+    AllocInfo.commandPool                   = mCommandPool->GetCommandPool();
     AllocInfo.commandBufferCount            = static_cast<uint32_t>(mFramebuffers.size());
     mCommandBuffers                         = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
 }
@@ -293,8 +293,11 @@ void GlfwWindow::SetupImGuiFonts() {
 }
 
 void GlfwWindow::ShutdownImGui() {
-    if (mGraphicsPipeline) mGraphicsPipeline->Finialize();
-    ImGui_ImplGlfw_Shutdown();
+    if (mGraphicsPipeline) {
+        // 代表ImGui已经初始化
+        mGraphicsPipeline->Finialize();
+        ImGui_ImplGlfw_Shutdown();
+    }
 }
 
 void GlfwWindow::BeginImGuiFrame() {
@@ -322,9 +325,10 @@ void GlfwWindow::Initialize() {
 }
 
 void GlfwWindow::Finalize() {
-    mGraphicsPipeline->Finialize();
-    delete mGraphicsPipeline;
-    mGraphicsPipeline = nullptr;
+    if (mGraphicsPipeline) {
+        delete mGraphicsPipeline;
+        mGraphicsPipeline = nullptr;
+    }
     glfwDestroyWindow(mWindowHandle);
     mWindowHandle = nullptr;
     glfwTerminate();
