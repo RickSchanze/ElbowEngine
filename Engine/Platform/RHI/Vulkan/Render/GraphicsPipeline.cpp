@@ -595,5 +595,4 @@ void GraphicsPipeline::Rebuild() {
     CreateOther(true);
 }
 
-
 RHI_VULKAN_NAMESPACE_END

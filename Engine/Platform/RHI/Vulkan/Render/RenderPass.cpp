@@ -87,15 +87,14 @@ void RenderPass::CreateDepthImageAttachmentDescription() {
 
 void RenderPass::CreateSubpassDescription() {
     // 指定Subpass
-    vk::SubpassDescription Subpass{};
-    Subpass
+    mSubpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
         .setColorAttachments(mColorAttachmentRef)
         // 指定引用的深度附着
         .setPDepthStencilAttachment(&mDepthAttachmentRef);
     if (SampleCount != vk::SampleCountFlagBits::e1) {
-        Subpass.pResolveAttachments = &mColorAttachmentResolveRef;
+        mSubpass.pResolveAttachments = &mColorAttachmentResolveRef;
     }
 
     mDependency
