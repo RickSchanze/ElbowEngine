@@ -11,7 +11,7 @@
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/LogicalDevice.h"
-#include "Texture.h"
+#include "RHI/Vulkan/VulkanContext.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -32,13 +32,16 @@ ImageCreateInfo::ImageCreateInfo(const vk::ImageCreateInfo& InVkImageInfo) {
     MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
 }
 
-Image::Image(Protected, const Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo) :
-    mDevice(InDevice), mCreateInfo(InCreateInfo) {
+Image::Image(Protected, const ImageCreateInfo& InCreateInfo) : mCreateInfo(InCreateInfo) {
     CreateImage();
 }
 
-TSharedPtr<Image> Image::CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo) {
-    return MakeShared<Image>(Protected{}, InDevice, InCreateInfo);
+TSharedPtr<Image> Image::CreateShared(const ImageCreateInfo& InCreateInfo) {
+    return MakeShared<Image>(Protected{}, InCreateInfo);
+}
+
+TUniquePtr<Image> Image::CreateUnique(const ImageCreateInfo& InCreateInfo) {
+    return Move(MakeUnique<Image>(InCreateInfo));
 }
 
 void Image::Destroy() {
@@ -54,20 +57,21 @@ bool Image::IsValid() const {
 }
 
 void Image::Finialize() {
-    const auto& Device = mDevice.get();
+    const auto& DeviceHandle = VulkanContext::Get().GetLogicalDevice()->GetHandle();
     if (mImageHandle != nullptr) {
-        Device.GetHandle().destroyImage(mImageHandle);
+        DeviceHandle.destroyImage(mImageHandle);
         mImageHandle = nullptr;
     }
     if (mImageMemory != nullptr) {
-        Device.GetHandle().freeMemory(mImageMemory);
+        DeviceHandle.freeMemory(mImageMemory);
         mImageMemory = nullptr;
     }
 }
 
 void Image::CreateImage() {
+    VulkanContext&      Context = VulkanContext::Get();
     vk::ImageCreateInfo ImageCreateInfo{};
-    const auto          DeviceHandle = mDevice.get().GetHandle();
+    const auto          DeviceHandle = Context.GetLogicalDevice()->GetHandle();
     ImageCreateInfo.setImageType(mCreateInfo.ImageType);
     const vk::Extent3D Extent{
         static_cast<UInt32>(mCreateInfo.Width),
@@ -90,29 +94,34 @@ void Image::CreateImage() {
     const auto             MemoryRequirements = DeviceHandle.getImageMemoryRequirements(mImageHandle);
     vk::MemoryAllocateInfo MemoryAllocateInfo{};
     MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
-    MemoryAllocateInfo.setMemoryTypeIndex(
-        mDevice.get().GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, mCreateInfo.MemoryProperty)
-    );
+    MemoryAllocateInfo.setMemoryTypeIndex(Context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(
+        MemoryRequirements.memoryTypeBits, mCreateInfo.MemoryProperty
+    ));
     mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
 }
 
-Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture) :
-    Image(InDevice) {
+Texture::Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* InData) : Image() {
+    if (InData == nullptr) {
+        LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: Data为空");
+        return;
+    }
+    if (InWidth <= 0 || InHeight <= 0) {
+        LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: 宽或高不合法");
+        return;
+    }
     // TODO: 绑定TextureSampler
     vk::Buffer       StagingBuffer;
     vk::DeviceMemory StagingBufferMemory;
+    VulkanContext&   Context      = VulkanContext::Get();
+    auto&            Device       = Context.GetLogicalDevice();
+    auto             DeviceHandle = Device->GetHandle();
+    auto&            CommandPool  = Context.GetCommandPool();
 
-    if (!InTexture->IsValid()) {
-        LOG_ERROR_CATEGORY(Vulkan, L"使用了无效的纹理资源请求创建纹理");
-        mImageHandle = nullptr;
-        mImageMemory = nullptr;
-    }
+    const vk::DeviceSize ImageSize = InWidth * InHeight * 4;
+    mMipLevel                      = static_cast<uint32_t>(std::floor(std::log2(std::max(InWidth, InHeight)))) + 1;
 
-    const vk::DeviceSize ImageSize = InTexture->GetWidth() * InTexture->GetHeight() * 4;
-    mMipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(InTexture->GetWidth(), InTexture->GetHeight())))) + 1;
-
-    mDevice.get().CreateBuffer(
+    Device->CreateBuffer(
         ImageSize,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
@@ -120,16 +129,15 @@ Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandPool
         StagingBufferMemory
     );
     void*      Data;
-    const auto Device = mDevice.get().GetHandle();
-    const auto Result = Device.mapMemory(StagingBufferMemory, 0, ImageSize, vk::MemoryMapFlags(), &Data);
+    const auto Result = DeviceHandle.mapMemory(StagingBufferMemory, 0, ImageSize, vk::MemoryMapFlags(), &Data);
     if (Result != vk::Result::eSuccess) {
         LOG_ERROR_CATEGORY(Vulkan, L"映射内存失败");
         return;
     }
-    std::memcpy(Data, InTexture->GetData(), ImageSize);
-    Device.unmapMemory(StagingBufferMemory);
-    mCreateInfo.Width     = InTexture->GetWidth();
-    mCreateInfo.Height    = InTexture->GetHeight();
+    std::memcpy(Data, InData, ImageSize);
+    DeviceHandle.unmapMemory(StagingBufferMemory);
+    mCreateInfo.Width     = InWidth;
+    mCreateInfo.Height    = InHeight;
     mCreateInfo.MipLevels = mMipLevel;
     mCreateInfo.Format    = vk::Format::eR8G8B8A8Unorm;
     // 这里设为Src是为了生成mipmap
@@ -140,32 +148,20 @@ Texture::Texture(Protected, const Ref<LogicalDevice> InDevice, const CommandPool
     CreateImage();
     // 赋值暂存缓冲区数据到纹理图像
     // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
-    InCommandProducer.TrainsitionImageLayout(
+    CommandPool->TrainsitionImageLayout(
         mImageHandle, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mMipLevel
     );
     // 2. 复制缓冲区到图像
-    InCommandProducer.CopyBufferToImage(StagingBuffer, mImageHandle, mCreateInfo.Width, mCreateInfo.Height);
+    CommandPool->CopyBufferToImage(StagingBuffer, mImageHandle, mCreateInfo.Width, mCreateInfo.Height);
     // 3. 生成mipmap
-    if (!InCommandProducer.GenerateMipmaps(mImageHandle, mCreateInfo.Format, mCreateInfo.Width, mCreateInfo.Height, mMipLevel)) {
+    if (!CommandPool->GenerateMipmaps(mImageHandle, mCreateInfo.Format, mCreateInfo.Width, mCreateInfo.Height, mMipLevel)) {
         // 无法生成mipmap就直接传给shader
-        InCommandProducer.TrainsitionImageLayout(
+        CommandPool->TrainsitionImageLayout(
             mImageHandle, mCreateInfo.Format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal
         );
     }
-    Device.destroy(StagingBuffer);
-    Device.freeMemory(StagingBufferMemory);
-}
-
-TSharedPtr<Texture>
-Texture::Create(const Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture) {
-    // 如果InTexture中有对应的RHI Vulkan资源则直接返回
-    if (InTexture->GetRHIResource() != nullptr) {
-        return std::dynamic_pointer_cast<Texture>(InTexture->GetRHIResource());
-    }
-    // 没有则创建一个新的
-    auto NewTexture                = MakeShared<Texture>(Protected{}, InDevice, InCommandProducer, InTexture);
-    InTexture->mTextureRHIResource = NewTexture;
-    return NewTexture;
+    DeviceHandle.destroy(StagingBuffer);
+    DeviceHandle.freeMemory(StagingBufferMemory);
 }
 
 RHI_VULKAN_NAMESPACE_END

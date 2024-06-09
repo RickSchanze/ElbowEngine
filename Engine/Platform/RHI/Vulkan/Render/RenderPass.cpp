@@ -7,6 +7,7 @@
 
 #include "RenderPass.h"
 
+#include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
@@ -17,6 +18,13 @@ bool RenderPass::IsValid() const {
     return mHandle != nullptr;
 }
 
+void RenderPass::SetAttachmentCount(Int32 InCount) {
+    mAttachmentDescs.resize(InCount);
+    mAttahcmentRefs.resize(InCount);
+    mFrameBufferAttachments.resize(gEngineStatistics.ParallelRenderFrameCount);
+    mFramebuffers.resize(gEngineStatistics.ParallelRenderFrameCount);
+}
+
 RenderPass::RenderPass() = default;
 
 RenderPass::~RenderPass() {
@@ -25,6 +33,7 @@ RenderPass::~RenderPass() {
 
 void RenderPass::Initialize() {
     if (IsValid()) return;
+    SetAttachmentCount(SampleCount == vk::SampleCountFlagBits::e1 ? 2 : 3);
 
     CreateColorImageAttachmentDescription();
 
@@ -55,7 +64,7 @@ void RenderPass::InternalDestroy() {
 void RenderPass::CreateColorImageAttachmentDescription() {
     VulkanContext& Context              = VulkanContext::Get();
     vk::Format     SwapchainImageFormat = Context.GetSwapChain()->GetImageFormat();
-    mColorImageAttachment
+    mAttachmentDescs[0]
         .setFormat(SwapchainImageFormat)   // 指定颜色附着的格式
         .setSamples(SampleCount)           // 指定MSAA采样数,如果未使用多重采样，则设置为vk::SampleCountFlagBits::e1
         .setLoadOp(vk::AttachmentLoadOp::eClear
@@ -68,13 +77,14 @@ void RenderPass::CreateColorImageAttachmentDescription() {
         .setFinalLayout(
             SampleCount == vk::SampleCountFlagBits::e1 ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eColorAttachmentOptimal
         );
-    mColorAttachmentRef = {0, vk::ImageLayout::eColorAttachmentOptimal};
+    mAttahcmentRefs[0] = {0, vk::ImageLayout::eColorAttachmentOptimal};
 }
 
 void RenderPass::CreateDepthImageAttachmentDescription() {
     // 深度缓冲附着描述
     VulkanContext& Context = VulkanContext::Get();
-    mDepthImageAttachment.setFormat(Context.GetDepthImageFormat())
+    mAttachmentDescs[1]
+        .setFormat(Context.GetDepthImageFormat())
         .setSamples(vk::SampleCountFlagBits::e1)
         .setLoadOp(vk::AttachmentLoadOp::eClear)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -82,19 +92,20 @@ void RenderPass::CreateDepthImageAttachmentDescription() {
         .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-    mDepthAttachmentRef = {1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    mAttahcmentRefs[1] = {1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
 }
 
 void RenderPass::CreateSubpassDescription() {
+    auto ColorAttachmets = ContainerUtils::Slice(mAttahcmentRefs, 0, 1);
     // 指定Subpass
     mSubpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
-        .setColorAttachments(mColorAttachmentRef)
+        .setColorAttachments(ColorAttachmets)
         // 指定引用的深度附着
-        .setPDepthStencilAttachment(&mDepthAttachmentRef);
+        .setPDepthStencilAttachment(&mAttahcmentRefs[1]);
     if (SampleCount != vk::SampleCountFlagBits::e1) {
-        mSubpass.pResolveAttachments = &mColorAttachmentResolveRef;
+        mSubpass.pResolveAttachments = &mAttahcmentRefs[2];
     }
 
     mDependency
@@ -110,7 +121,8 @@ void RenderPass::CreateSubpassDescription() {
 void RenderPass::CreateMultiSampleAttachmentResolve() {
     VulkanContext& Context = VulkanContext::Get();
     // 多重采样缓冲数据转换
-    mColorAttachmentResolve.setFormat(Context.GetSwapChainImageFormat())
+    mAttachmentDescs[2]
+        .setFormat(Context.GetSwapChainImageFormat())
         .setSamples(vk::SampleCountFlagBits::e1)
         .setLoadOp(vk::AttachmentLoadOp::eDontCare)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -118,21 +130,17 @@ void RenderPass::CreateMultiSampleAttachmentResolve() {
         .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
-    mColorAttachmentResolveRef = {2, vk::ImageLayout::eColorAttachmentOptimal};
+    mAttahcmentRefs[2] = {2, vk::ImageLayout::eColorAttachmentOptimal};
 }
 
 void RenderPass::CreateRenderPass() {
     VulkanContext&                    Context     = VulkanContext::Get();
-    TArray<vk::AttachmentDescription> Attachments = {mColorImageAttachment, mDepthImageAttachment};
-    if (SampleCount != vk::SampleCountFlagBits::e1) {
-        Attachments.push_back(mColorAttachmentResolve);
-    }
 
     TStaticArray<vk::SubpassDescription, 1> Subpasses    = {mSubpass};
     TStaticArray<vk::SubpassDependency, 1> Dependencies = {mDependency};
 
     vk::RenderPassCreateInfo Info{};
-    Info.setAttachments(Attachments).setSubpasses(Subpasses).setDependencies(Dependencies);
+    Info.setAttachments(mAttachmentDescs).setSubpasses(Subpasses).setDependencies(Dependencies);
     mHandle = Context.GetLogicalDevice()->GetHandle().createRenderPass(Info);
 }
 

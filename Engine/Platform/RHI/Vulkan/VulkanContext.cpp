@@ -136,7 +136,7 @@ void VulkanContext::Draw() {
     for (auto& Semaphore: SingalSemaphores) {
         Device.destroySemaphore(Semaphore);
     }
-    mCurrentFrame = (mCurrentFrame + 1) % mMaxFramesInFlight;
+    mCurrentFrame = (mCurrentFrame + 1) % gEngineStatistics.ParallelRenderFrameCount;
 }
 
 bool VulkanContext::IsValid() const {
@@ -195,16 +195,16 @@ void VulkanContext::CreateGraphicsPipeline() {
 // }
 
 void VulkanContext::CreateSyncObjecs() {
-    mImageAvailableSemaphores.resize(mMaxFramesInFlight);
-    mImageRenderFinishedSemaphores.resize(mMaxFramesInFlight);
-    mInFlightFences.resize(mMaxFramesInFlight);
+    mImageAvailableSemaphores.resize(gEngineStatistics.ParallelRenderFrameCount);
+    mImageRenderFinishedSemaphores.resize(gEngineStatistics.ParallelRenderFrameCount);
+    mInFlightFences.resize(gEngineStatistics.ParallelRenderFrameCount);
 
     vk::SemaphoreCreateInfo SemaphoreInfo = {};
     vk::FenceCreateInfo     FenceInfo     = {};
     FenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
     // 为多帧并行渲染创建信号量
-    for (size_t i = 0; i < mMaxFramesInFlight; i++) {
+    for (size_t i = 0; i < gEngineStatistics.ParallelRenderFrameCount; i++) {
         mImageAvailableSemaphores[i]      = mLogicalDevice->GetHandle().createSemaphore(SemaphoreInfo);
         mImageRenderFinishedSemaphores[i] = mLogicalDevice->GetHandle().createSemaphore(SemaphoreInfo);
         mInFlightFences[i]                = mLogicalDevice->GetHandle().createFence(FenceInfo);
@@ -212,7 +212,7 @@ void VulkanContext::CreateSyncObjecs() {
 }
 
 void VulkanContext::CleanSyncObjects() {
-    for (size_t i = 0; i < mMaxFramesInFlight; i++) {
+    for (size_t i = 0; i < gEngineStatistics.ParallelRenderFrameCount; i++) {
         mLogicalDevice->GetHandle().destroySemaphore(mImageAvailableSemaphores[i]);
         mLogicalDevice->GetHandle().destroySemaphore(mImageRenderFinishedSemaphores[i]);
         mLogicalDevice->GetHandle().destroyFence(mInFlightFences[i]);

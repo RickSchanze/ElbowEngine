@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "Framebuffer.h"
 #include "glm/glm.hpp"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
@@ -29,6 +30,12 @@ class Model;
 RHI_VULKAN_NAMESPACE_BEGIN
 class Shader;
 
+enum EPipelineDynamicStateEnabled {
+    EPDSE_None     = 0x1,
+    EPDSE_Viewport = 0x10,
+    EPDSE_Scissor  = 0x100,
+};
+
 // 这里配置如何初始化Pipeline
 struct PipelineInitializer
 {
@@ -46,10 +53,10 @@ struct PipelineInitializer
     // 深度值0到1不允许配置
     struct ViewportConfig
     {
-        float Width = 0.f; // 0将获取交换链图像宽高
-        float Height = 0.f; // 0将获取交换链图像宽高
-        float X     = 0.f;
-        float Y     = 0.f;
+        float Width  = 0.f;   // 0将获取交换链图像宽高
+        float Height = 0.f;   // 0将获取交换链图像宽高
+        float X      = 0.f;
+        float Y      = 0.f;
     };
 
     struct ClippingRectConfig
@@ -62,7 +69,7 @@ struct PipelineInitializer
 
     struct MultisampleConfig
     {
-        bool                 Enable      = false;                         // 默认不启用
+        bool                    Enable      = false;                         // 默认不启用
         vk::SampleCountFlagBits SampleCount = vk::SampleCountFlagBits::e1;   // 默认不启用以及只进行一次
     };
 
@@ -99,7 +106,10 @@ struct PipelineInitializer
     ColorBlendAttachmentStateConfig ColorBlendAttachmentState;
     ColorBlendStageConfig           ColorBlendStage;
     ShaderStageConfig               ShaderStage;
-    RenderPass*                     RenderPass = nullptr;
+    RenderPass*                     RenderPass          = nullptr;
+    // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
+    // 如果位包含了None则不启用
+    Int32                           DynamicStateEnabled = EPDSE_Viewport | EPDSE_Scissor;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline {
@@ -166,13 +176,12 @@ private:
     TSharedPtr<ImageView> mDepthImageView;
 
     // 3.交换链帧缓冲
-    TArray<vk::Framebuffer> mFramebuffers;
+    TArray<TSharedPtr<Framebuffer>> mFramebuffers;
 
     // 4.命令缓冲
     TArray<vk::CommandBuffer> mCommandBuffers;
 
-    TSharedPtr<IRenderPassProducer> mRenderPassProducer;
-    RenderPass* mRenderPass;
+    RenderPass*                     mRenderPass;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统

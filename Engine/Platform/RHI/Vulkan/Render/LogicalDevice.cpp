@@ -91,7 +91,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const UInt32 InSwapChainIma
     return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent);
 }
 
-TSharedPtr<ImageView> LogicalDevice::CreateImageView(
+TSharedPtr<ImageView> LogicalDevice::CreateImageViewShared(
     const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const UInt32 InMipLevels
 ) {
     vk::ImageViewCreateInfo ViewInfo = {};
@@ -109,7 +109,26 @@ TSharedPtr<ImageView> LogicalDevice::CreateImageView(
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return MakeShared<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo), this);
+    return MakeShared<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo));
+}
+
+TUniquePtr<ImageView> LogicalDevice::CreateImageViewUnique(const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags, UInt32 InMipLevels){
+    vk::ImageViewCreateInfo ViewInfo = {};
+    ViewInfo.setImage(InImage.GetHandle())
+        .setViewType(vk::ImageViewType::e2D)
+        .setFormat(InFormat)
+        .setSubresourceRange(vk::ImageSubresourceRange()
+                                 .setAspectMask(InAspectFlags)
+                                 .setBaseMipLevel(0)
+                                 .setLevelCount(InMipLevels)
+                                 .setBaseArrayLayer(0)
+                                 .setLayerCount(1))
+        .setComponents(vk::ComponentMapping()
+                           .setR(vk::ComponentSwizzle::eIdentity)
+                           .setG(vk::ComponentSwizzle::eIdentity)
+                           .setB(vk::ComponentSwizzle::eIdentity)
+                           .setA(vk::ComponentSwizzle::eIdentity));
+    return MakeUnique<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo));
 }
 
 void LogicalDevice::CreateBuffer(

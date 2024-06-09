@@ -52,6 +52,8 @@ add_library(Platform
         RHI/Vulkan/Render/CommandPool.h
         RHI/Vulkan/Render/CommandList.h
         RHI/Vulkan/Render/CommandList.cpp
+        RHI/Vulkan/Render/Framebuffer.h
+        RHI/Vulkan/Render/Framebuffer.cpp
         RHI/Vulkan/Interface/IGraphicsPipeline.h
         RHI/Vulkan/Resource/VulkanModel.h
         RHI/Vulkan/Resource/VulkanModel.cpp
@@ -66,7 +68,7 @@ add_library(Engine::Platform ALIAS Platform)
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function Engine::Resource)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)

@@ -11,7 +11,6 @@
 #include "Component/Camera.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
-#include "Model.h"
 #include "RenderPass.h"
 #include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Resource/ImageView.h"
@@ -21,6 +20,8 @@
 #include "ShaderProgram.h"
 #include "Utils/StringUtils.h"
 
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <iostream>
 #include <ranges>
 
@@ -42,7 +43,7 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
 }
 
 void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&             Context     = VulkanContext::Get();
     static auto                StartTime   = std::chrono::high_resolution_clock::now();
     const auto                 CurrentTime = std::chrono::high_resolution_clock::now();
     const float                Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
@@ -198,6 +199,19 @@ void GraphicsPipeline::CreatePipeline() {
     // 创建管线布局
     mPipelineLayout = Context.GetLogicalDevice()->GetHandle().createPipelineLayout(PipelineLayoutInfo);
 
+    // DynamicState
+    vk::PipelineDynamicStateCreateInfo DynamicStateInfo;
+    TArray<vk::DynamicState>           DynamicStates;
+    if (!(mPipelineInfo.DynamicStateEnabled | EPDSE_None)) {
+        if (mPipelineInfo.DynamicStateEnabled | EPDSE_Scissor) {
+            DynamicStates.emplace_back(vk::DynamicState::eScissor);
+        }
+        if (mPipelineInfo.DynamicStateEnabled | EPDSE_Viewport) {
+            DynamicStates.emplace_back(vk::DynamicState::eViewport);
+        }
+    }
+    DynamicStateInfo.setDynamicStates(DynamicStates);
+
     // 定义管线
     vk::GraphicsPipelineCreateInfo PipelineInfo = {};
     PipelineInfo.setStages(ShaderStages)
@@ -210,7 +224,8 @@ void GraphicsPipeline::CreatePipeline() {
         .setPColorBlendState(&ColorBlendInfo)       // 颜色混合
         .setLayout(mPipelineLayout)                 // 管线布局
         .setRenderPass(mRenderPass->GetHandle())    // RenderPass
-        .setSubpass(0);                             // 子Pass
+        .setSubpass(0)                              // 子Pass
+        .setPDynamicState(&DynamicStateInfo);
 
     auto Pipeline = Context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
     if (Pipeline.result != vk::Result::eSuccess) {
@@ -227,7 +242,7 @@ void GraphicsPipeline::CleanPipeline() {
         Device->GetHandle().destroyPipelineLayout(mPipelineLayout);
         Device->GetHandle().destroyDescriptorSetLayout(mDescriptorSetLayout);
         delete mRenderPass;
-        mRenderPass = nullptr;
+        mRenderPass          = nullptr;
         mPipeline            = nullptr;
         mPipelineLayout      = nullptr;
         mDescriptorSetLayout = nullptr;
@@ -287,7 +302,7 @@ void GraphicsPipeline::EndRecordCommand(const vk::CommandBuffer InBuffer) {
 }
 
 void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam) {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&          Context        = VulkanContext::Get();
     vk::RenderPassBeginInfo RenderPassInfo = {};
     // TODO: 这里或许应该改成mPipelineInfo里的
     RenderPassInfo.setRenderPass(mRenderPass->GetHandle())
@@ -299,6 +314,12 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     RenderPassInfo.setClearValues(ClearValues);
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
+    vk::Viewport NewViewport;
+    NewViewport.x      = 0;
+    NewViewport.y      = 0;
+    NewViewport.width  = gEngineStatistics.WindowSize.Width;
+    NewViewport.height = gEngineStatistics.WindowSize.Height;
+    InBuffer.setViewport(0, NewViewport);
     // 使用顶点缓冲需纳入
 
     int i = 0;
@@ -343,23 +364,23 @@ void GraphicsPipeline::CreateMsaaColorBuffer() {
     ImageInfo.Format      = Context.GetSwapChainImageFormat();
     ImageInfo.Usage       = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
     ImageInfo.SampleCount = mMsaaSamples;
-    mMsaaColorImage       = Image::CreateShared(*Device, ImageInfo);
-    mMsaaColorImageView   = Device->CreateImageView(*mMsaaColorImage, ImageInfo.Format);
+    mMsaaColorImage       = Image::CreateShared(ImageInfo);
+    mMsaaColorImageView   = Device->CreateImageViewShared(*mMsaaColorImage, ImageInfo.Format);
     Context.GetCommandPool()->TrainsitionImageLayout(
         mMsaaColorImage->GetHandle(), ImageInfo.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1
     );
 }
 
 void GraphicsPipeline::CreateDepthBuffer() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&  Context     = VulkanContext::Get();
     const auto      DepthFormat = Context.GetDepthImageFormat();
     ImageCreateInfo ImageInfo{};
     ImageInfo.Height = Context.GetSwapChainExtent().height;
     ImageInfo.Width  = Context.GetSwapChainExtent().width;
     ImageInfo.Format = DepthFormat;
     ImageInfo.Usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-    mDepthImage      = Image::CreateShared(*Context.GetLogicalDevice(), ImageInfo);
-    mDepthImageView  = Context.GetLogicalDevice()->CreateImageView(*mDepthImage, DepthFormat, vk::ImageAspectFlagBits::eDepth);
+    mDepthImage      = Image::CreateShared(ImageInfo);
+    mDepthImageView  = Context.GetLogicalDevice()->CreateImageViewShared(*mDepthImage, DepthFormat, vk::ImageAspectFlagBits::eDepth);
     Context.GetCommandPool()->TrainsitionImageLayout(
         mDepthImage->GetHandle(), DepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1
     );
@@ -394,23 +415,23 @@ void GraphicsPipeline::CreateFramebuffers() {
             .setWidth(Context.GetSwapChainExtent().width)
             .setHeight(Context.GetSwapChainExtent().height)
             .setLayers(1);
-        mFramebuffers[i] = Context.GetLogicalDevice()->GetHandle().createFramebuffer(FramebufferInfo);
+        mFramebuffers[i] = Framebuffer::CreateShared(FramebufferInfo);
     }
 }
 
 void GraphicsPipeline::CleanFramebuffers() {
     VulkanContext& Context = VulkanContext::Get();
-    const auto& Device = Context.GetLogicalDevice();
-    for (const auto& Framebuffer: mFramebuffers) {
-        Device->GetHandle().destroyFramebuffer(Framebuffer);
+    const auto&    Device  = Context.GetLogicalDevice();
+    for (auto& MyFramebuffer: mFramebuffers) {
+        MyFramebuffer->Destroy();
     }
     mFramebuffers.clear();
 }
 
 void GraphicsPipeline::LoadModel() {
-    VulkanContext& Context = VulkanContext::Get();
-    auto ModelResource = Resource::Model::Create(L"Models/AK47/AK47_CS2.fbx");
-    mModel             = Model::CreateUnique(ModelResource, Context);
+    VulkanContext& Context       = VulkanContext::Get();
+    auto           ModelResource = Resource::Model::Create(L"Models/AK47/AK47_CS2.fbx");
+    mModel                       = Model::CreateUnique(ModelResource, Context);
 }
 
 void GraphicsPipeline::CleanModel() const {
@@ -419,9 +440,9 @@ void GraphicsPipeline::CleanModel() const {
 
 void GraphicsPipeline::CreateTextureImageAndView() {
     VulkanContext& Context = VulkanContext::Get();
-    const auto Texture = Resource::Texture::Create(L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-    mTexture           = Texture::Create(*Context.GetLogicalDevice(), *Context.GetCommandPool(), Texture);
-    mTextureView       = Context.GetLogicalDevice()->CreateImageView(
+    const auto     Texture = Resource::Texture::Create(L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
+    mTexture               = Texture::Create(*Context.GetLogicalDevice(), *Context.GetCommandPool(), Texture);
+    mTextureView           = Context.GetLogicalDevice()->CreateImageViewShared(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
     );
     CreateTextureSampler();
@@ -434,7 +455,7 @@ void GraphicsPipeline::CleanTextureImageAndView() const {
 }
 
 void GraphicsPipeline::CreateTextureSampler() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&        Context       = VulkanContext::Get();
     vk::SamplerCreateInfo SamplerInfo   = {};
     SamplerInfo.magFilter               = vk::Filter::eLinear;
     SamplerInfo.minFilter               = vk::Filter::eLinear;
@@ -463,7 +484,7 @@ void GraphicsPipeline::CleanTextureSampler() const {
 }
 
 void GraphicsPipeline::CreateUniformBuffers() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext& Context    = VulkanContext::Get();
     vk::DeviceSize BufferSize = 0;
     for (const auto& [Key, Value]: mShaderProg->GetUniforms()) {
         BufferSize += Value.Size;
@@ -491,7 +512,7 @@ void GraphicsPipeline::CleanUniformBuffers() {
 }
 
 void GraphicsPipeline::CreateDescriptorPool() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&                          Context   = VulkanContext::Get();
     TStaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
     // Uniform Object
     PoolSizes[0].type                                 = vk::DescriptorType::eUniformBuffer;
@@ -512,7 +533,7 @@ void GraphicsPipeline::CleanDescriptorPool() const {
 }
 
 void GraphicsPipeline::CreateDescriptotSets() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&                  Context = VulkanContext::Get();
     TArray<vk::DescriptorSetLayout> Layouts(Context.GetSwapChainImageCount(), mDescriptorSetLayout);
     vk::DescriptorSetAllocateInfo   AllocInfo = {};
     AllocInfo.setDescriptorPool(mDescriptorPool).setSetLayouts(Layouts);
@@ -548,7 +569,7 @@ void GraphicsPipeline::CreateDescriptotSets() {
 }
 
 void GraphicsPipeline::CreateCommandBuffers() {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext&                Context   = VulkanContext::Get();
     vk::CommandBufferAllocateInfo AllocInfo = {};
     AllocInfo.setCommandPool(Context.GetCommandPool()->GetCommandPool())
         .setLevel(vk::CommandBufferLevel::ePrimary)
@@ -561,7 +582,7 @@ void GraphicsPipeline::CreateCommandBuffers() {
         BeginRecordCommand(CommandBuffer);
         {
             CommandRecordingParam Param;
-            Param.FrameBuffer   = mFramebuffers[i];
+            Param.FrameBuffer   = mFramebuffers[i]->GetHandle();
             Param.DescriptorSet = mDescriptorSets[i];
             RecordCommand(CommandBuffer, Param);
         }
@@ -589,9 +610,13 @@ void GraphicsPipeline::SubmitGraphicsQueue(
 }
 
 void GraphicsPipeline::Rebuild() {
+
     CleanOther(true);
-    CleanPipeline();
-    CreatePipeline();
+    if (!(mPipelineInfo.DynamicStateEnabled | EPDSE_None)) {
+        // 启用了DynamicState则通过DynamicState设置
+        CleanPipeline();
+        CreatePipeline();
+    }
     CreateOther(true);
 }
 

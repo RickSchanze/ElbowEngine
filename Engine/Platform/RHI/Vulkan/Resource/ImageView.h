@@ -17,8 +17,8 @@ class ImageView {
 public:
     explicit ImageView() = default;
 
-    explicit ImageView(const vk::ImageView& InViewHandle, LogicalDevice* InLogicalDevice) :
-        mViewHandle(InViewHandle), mAssociatedLogicalDevice(InLogicalDevice) {}
+    explicit ImageView(const vk::ImageView& InViewHandle) :
+        mViewHandle(InViewHandle) {}
 
     ~ImageView();
 
@@ -30,7 +30,6 @@ public:
 
 private:
     vk::ImageView  mViewHandle = VK_NULL_HANDLE;
-    LogicalDevice* mAssociatedLogicalDevice = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -6,9 +6,9 @@
  */
 
 #pragma once
+#include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Resource/ImageView.h"
-#include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
@@ -53,7 +53,12 @@ public:
      * @param InMipLevels
      * @return
      */
-    TSharedPtr<ImageView> CreateImageView(
+    TSharedPtr<ImageView> CreateImageViewShared(
+        const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
+        UInt32 InMipLevels = 1
+    );
+
+    TUniquePtr<ImageView> CreateImageViewUnique(
         const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
         UInt32 InMipLevels = 1
     );

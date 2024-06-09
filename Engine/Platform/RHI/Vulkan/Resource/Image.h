@@ -11,9 +11,6 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace Resource {
-class Texture;
-}
 namespace RHI::Vulkan {
 class CommandPool;
 }
@@ -69,9 +66,10 @@ protected:
 public:
     typedef ImageBase Super;
 
-    explicit Image(Protected, Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
+    explicit Image(Protected, const ImageCreateInfo& InCreateInfo);
 
-    static TSharedPtr<Image> CreateShared(Ref<LogicalDevice> InDevice, const ImageCreateInfo& InCreateInfo);
+    static TSharedPtr<Image> CreateShared(const ImageCreateInfo& InCreateInfo);
+    static TUniquePtr<Image> CreateUnique(const ImageCreateInfo& InCreateInfo);
 
     void Destroy() override;
 
@@ -88,9 +86,7 @@ protected:
     void CreateImage();
 
 protected:
-    explicit Image(const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {}
-
-    Ref<LogicalDevice> mDevice;
+    explicit Image() = default;
 
     vk::DeviceMemory mImageMemory = nullptr;
     ImageCreateInfo  mCreateInfo{};
@@ -98,9 +94,7 @@ protected:
 
 class Texture : public Image {
 public:
-    Texture(Protected, Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture);
-
-    static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture);
+    Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* IData);
 
     Int32 GetMipLevel() const { return mMipLevel; }
 

@@ -90,7 +90,6 @@ protected:
 private:
     Int32 mSwapChainImageCount = 3;
 
-    Int32 mMaxFramesInFlight = 2;
     int   mCurrentFrame      = 0;
 
     Int32 mRendererID = 0;
