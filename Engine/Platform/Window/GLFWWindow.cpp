@@ -21,22 +21,22 @@ class ImGuiRenderPass : public RHI::Vulkan::RenderPass {
 public:
 protected:
     void CreateColorImageAttachmentDescription() override {
-        mColorImageAttachment.format         = RHI::Vulkan::VulkanContext::Get().GetSwapChainImageFormat();
-        mColorImageAttachment.samples        = vk::SampleCountFlagBits::e1;
-        mColorImageAttachment.loadOp         = vk::AttachmentLoadOp::eLoad;
-        mColorImageAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
-        mColorImageAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-        mColorImageAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-        mColorImageAttachment.initialLayout  = vk::ImageLayout::ePresentSrcKHR;
-        mColorImageAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+        mAttachmentDescs[0].format         = RHI::Vulkan::VulkanContext::Get().GetSwapChainImageFormat();
+        mAttachmentDescs[0].samples        = vk::SampleCountFlagBits::e1;
+        mAttachmentDescs[0].loadOp         = vk::AttachmentLoadOp::eLoad;
+        mAttachmentDescs[0].storeOp        = vk::AttachmentStoreOp::eStore;
+        mAttachmentDescs[0].stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+        mAttachmentDescs[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        mAttachmentDescs[0].initialLayout  = vk::ImageLayout::ePresentSrcKHR;
+        mAttachmentDescs[0].finalLayout    = vk::ImageLayout::ePresentSrcKHR;
 
-        mColorAttachmentRef.attachment = 0;
-        mColorAttachmentRef.layout     = vk::ImageLayout::eColorAttachmentOptimal;
+        mAttahcmentRefs[0].attachment = 0;
+        mAttahcmentRefs[0].layout     = vk::ImageLayout::eColorAttachmentOptimal;
     }
 
     void CreateSubpassDescription() override {
         mSubpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-        mSubpass.setColorAttachments(mColorAttachmentRef);
+        mSubpass.setColorAttachments(mAttahcmentRefs);
 
         mDependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
         mDependency.dstSubpass    = 0;
@@ -47,15 +47,15 @@ protected:
     }
 
     void Initialize() override {
+        SetAttachmentCount(1);
         CreateColorImageAttachmentDescription();
         CreateSubpassDescription();
 
-        TStaticArray<vk::AttachmentDescription, 1> Attachments = {mColorImageAttachment};
         TStaticArray<vk::SubpassDescription, 1>    Supasses    = {mSubpass};
         TStaticArray<vk::SubpassDependency, 1>     Dependency  = {mDependency};
 
         vk::RenderPassCreateInfo RenderPassCreateInfo;
-        RenderPassCreateInfo.setAttachments(Attachments).setSubpasses(Supasses).setDependencies(Dependency);
+        RenderPassCreateInfo.setAttachments(mAttachmentDescs).setSubpasses(Supasses).setDependencies(Dependency);
         mHandle = RHI::Vulkan::VulkanContext::Get().GetLogicalDevice()->GetHandle().createRenderPass(RenderPassCreateInfo);
     }
 };
