@@ -39,11 +39,12 @@ public:
 
     bool IsValid() const;
 
+    // 此类自己的Tick 主要用来处理gEngineStatistics中的数据变化
+    void InternalTick();
+
     static EngineApplication& Get() { return *mInstance; }
 
     bool bFrameBufferResized = false;
-
-    void SetMouseVisible(bool InVisible) const;
 
     void AddWindow(Window::WindowBase* InWindow) { mSubWindows.push_back(InWindow); }
     void RemoveWindow(Window::WindowBase* InWindow);
@@ -55,8 +56,8 @@ protected:
     void DrawAppUI();
     // 绘制主菜单上的"窗口"菜单
         void DrawWindowMenu();
-            // 窗口下的"调试窗口"
-            void OnOpenDebugWindow();
+            // 窗口下的"数据窗口"
+            void OnOpenStatisticsWindow();
             // 窗口下的"大纲"
             void OnOpenOutlineWindow();
             // 窗口下的"细节"
@@ -77,6 +78,9 @@ private:
     String mWindowTitle;
 
     TArray<Window::WindowBase*> mSubWindows;
+
+    // TODO: 封装Timer
+    std::chrono::time_point<std::chrono::steady_clock> mLastFrameTime;
 };
 
 TOOL_NAMESPACE_END

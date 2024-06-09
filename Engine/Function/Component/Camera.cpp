@@ -6,18 +6,17 @@
  */
 
 #include "Camera.h"
-#include "EngineApplication.h"
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include "Transform.h"
-
+#include "CoreGlobal.h"
 #include <glm/ext/matrix_transform.hpp>
 
 #include "Camera.generated.h"
 
 GENERATED_SOURCE()
 
-Function::Camera::Camera() : Component(L"摄像机组件", nullptr) {
+Function::Camera::Camera(GameObject* InObject) : Component(L"摄像机组件", InObject) {
     SetName(L"摄像机组件");
 }
 
@@ -41,7 +40,9 @@ glm::mat4 Function::Camera::GetViewMatrix() const {
 
 void Function::Camera::SetWindowFocused(bool InFocused) {
     bFocused = InFocused;
-    Tool::EngineApplication::Get().SetMouseVisible(!InFocused);
+
+    // 如果foucsed（现在是按下了右键）则隐藏鼠标
+    gEngineStatistics.HideMouse = bFocused;
 }
 
 void Function::Camera::HandleInput() {

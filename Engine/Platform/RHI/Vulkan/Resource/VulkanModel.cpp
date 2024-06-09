@@ -17,7 +17,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(InContext) {
     if (InMeshResource == nullptr || !InMeshResource->IsValid()) return;
     // 顶点缓冲
-    mVertexCount                          = static_cast<uint32>(InMeshResource->GetVertices().size());
+    mVertexCount                          = static_cast<UInt32>(InMeshResource->GetVertices().size());
     const vk::DeviceSize VertexBufferSize = sizeof(InMeshResource->GetVertices()[0]) * mVertexCount;
     vk::Buffer           VertexStagingBuffer;
     vk::DeviceMemory     VertexStagingBufferMemory;
@@ -44,7 +44,7 @@ Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InC
     mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
 
     // 索引缓冲
-    mIndexCount                          = static_cast<uint32>(InMeshResource->GetIndices().size());
+    mIndexCount                          = static_cast<UInt32>(InMeshResource->GetIndices().size());
     const vk::DeviceSize IndexBufferSize = sizeof(InMeshResource->GetIndices()[0]) * mIndexCount;
     vk::Buffer           IndexStagingBuffer;
     vk::DeviceMemory     IndexStagingBufferMemory;

@@ -21,7 +21,7 @@ Function::Component::Component(String InName, GameObject* InGameObject)
     : Object(EOF_IsComponent), mGameObject(InGameObject) {
     // Transform由GameObject负责设置
     if (InGameObject == nullptr) {
-        LOG_ERROR_CATEGORY(Component, L"创建组件{}失败: 输入组件为空", InName);
+        LOG_ERROR_CATEGORY(Component, L"创建组件{}失败: 创建组件需要一个不为空的GameObject", InName);
         return;
     }
     SetName(InName);

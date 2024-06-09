@@ -39,7 +39,10 @@ class ImGuiGraphicsPipeline;
 class GlfwWindow {
 public:
     explicit GlfwWindow(String InWindowTitle, const int InWidth, const int InHeight) :
-        mWindowTitle(Move(InWindowTitle)), mWidth(InWidth), mHeight(InHeight) {}
+        mWindowTitle(Move(InWindowTitle)), mWidth(InWidth), mHeight(InHeight) {
+        gEngineStatistics.WindowSize.Height = InHeight;
+        gEngineStatistics.WindowSize.Width  = InWidth;
+    }
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
 
@@ -65,7 +68,7 @@ public:
 
     void Tick(float DeltaTime);
 
-    void SetMouseVisible(bool InVisible)const;
+    void SetMouseVisible(bool InVisible) const;
 
 
 private:

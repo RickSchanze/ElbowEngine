@@ -41,7 +41,7 @@ public:
     // 显示模式（垂直同步？）
     static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes);
     // 分辨率
-    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, uint32 InWidth, uint32 InHeight);
+    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, UInt32 InWidth, UInt32 InHeight);
 
     [[nodiscard]] vk::SwapchainKHR GetHandle() const { return mSwapchainHandle; }
     [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
@@ -55,7 +55,7 @@ public:
     void Initialize();
     void Finialize();
 
-    uint32 GetSwapchainImageCount() const { return static_cast<uint32>(mSwapchainImages.size()); }
+    UInt32 GetSwapchainImageCount() const { return static_cast<UInt32>(mSwapchainImages.size()); }
 
     void   Destroy() override;
 

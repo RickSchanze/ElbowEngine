@@ -70,9 +70,6 @@ public:
 protected:
     void InitializeSurface();
 
-public:
-
-
 private:
     vk::Instance                mVulkanInstanceHandle;
     // 验证层

@@ -38,10 +38,10 @@ public:
 
     ~Texture() override;
 
-    int32  GetWidth() const { return mWidth; }
-    int32  GetHeight() const { return mHeight; }
-    int32  GetChannels() const { return mChannels; }
-    uint8* GetData() const { return mData; }
+    Int32  GetWidth() const { return mWidth; }
+    Int32  GetHeight() const { return mHeight; }
+    Int32  GetChannels() const { return mChannels; }
+    UInt8* GetData() const { return mData; }
     Path   GetPath() const override { return mPath; }
 
     void Load() final;
@@ -50,10 +50,10 @@ public:
 
 protected:
     Path          mPath;
-    int32         mWidth    = 0;
-    int32         mHeight   = 0;
-    int32         mChannels = 0;
-    uint8*        mData     = nullptr;
+    Int32         mWidth    = 0;
+    Int32         mHeight   = 0;
+    Int32         mChannels = 0;
+    UInt8*        mData     = nullptr;
     ETextureUsage mUsage;
 
 private:

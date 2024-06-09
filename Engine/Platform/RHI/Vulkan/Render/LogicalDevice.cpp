@@ -40,7 +40,7 @@ void LogicalDevice::Destroy() {
     Finialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainImageCount, uint32 InWidth, uint32 InHeight) {
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight) {
     const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
     const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
     const auto Surface                  = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
@@ -49,7 +49,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainIma
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
     const auto Extent        = SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities, InWidth, InHeight);
 
-    uint32 ImageCount = InSwapChainImageCount;
+    UInt32 ImageCount = InSwapChainImageCount;
     if (InSwapChainImageCount == 0) {
         ImageCount = SwapChainSupport.Capabilities.minImageCount + 1;
     }
@@ -75,7 +75,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainIma
 
     // 指定在多个队列族中使用交换链图像的方式
     const auto                    Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
-    const TStaticArray<uint32, 2> QueueFamilyIndicies = {
+    const TStaticArray<UInt32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),
     };
@@ -92,7 +92,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32 InSwapChainIma
 }
 
 TSharedPtr<ImageView> LogicalDevice::CreateImageView(
-    const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const uint32 InMipLevels
+    const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const UInt32 InMipLevels
 ) {
     vk::ImageViewCreateInfo ViewInfo = {};
     ViewInfo.setImage(InImage.GetHandle())

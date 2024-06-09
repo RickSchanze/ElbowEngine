@@ -34,7 +34,7 @@ protected:
     void DrawComponent(Function::Component* InComp);
 
     OutlineWindow* mOutlineWindow = nullptr;
-    uint32 mSelectedObjectID = -1;
+    UInt32 mSelectedObjectID = -1;
 };
 
 WINDOW_NAMESPACE_END

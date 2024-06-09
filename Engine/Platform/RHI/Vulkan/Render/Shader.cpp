@@ -47,7 +47,7 @@ Shader::Shader(Protected, const Ref<LogicalDevice> InDevice, const Path& InShade
     ShaderFileStream.read(ShaderCode.data(), ShaderFileSize);
     ShaderFileStream.close();
 
-    auto*  ShaderCodePtr  = reinterpret_cast<uint32*>(ShaderCode.data());
+    auto*  ShaderCodePtr  = reinterpret_cast<UInt32*>(ShaderCode.data());
     size_t ShaderCodeSize = ShaderCode.size() / 4;
     // 解析此Shader的所有参数
     ParseShaderCode(ShaderCodePtr, ShaderCodeSize, InShaderStage);
@@ -62,7 +62,7 @@ Shader::~Shader() {
     Device.GetHandle().destroy(mShaderModule);
 }
 
-void Shader::ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage) {
+void Shader::ParseShaderCode(const UInt32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage) {
     mShaderStage = InShaderStage;
     using namespace spirv_cross;
     Compiler        Compiler(InShderCode, InShderCodeSize);

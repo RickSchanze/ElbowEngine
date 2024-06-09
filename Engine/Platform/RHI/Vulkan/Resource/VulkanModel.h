@@ -34,8 +34,8 @@ public:
 
     vk::Buffer GetVertexBuffer() const { return mVertexBuffer; }
     vk::Buffer GetIndexBuffer() const { return mIndexBuffer; }
-    uint32     GetIndexCount() const { return mIndexCount; }
-    uint32     GetVertexCount() const { return mVertexCount; }
+    UInt32     GetIndexCount() const { return mIndexCount; }
+    UInt32     GetVertexCount() const { return mVertexCount; }
 
 
 private:
@@ -44,8 +44,8 @@ private:
     vk::DeviceMemory mVertexBufferMemory;
     vk::DeviceMemory mIndexBufferMemory;
 
-    uint32 mIndexCount  = 0;
-    uint32 mVertexCount = 0;
+    UInt32 mIndexCount  = 0;
+    UInt32 mVertexCount = 0;
 
     Ref<VulkanContext> mContext;
 };

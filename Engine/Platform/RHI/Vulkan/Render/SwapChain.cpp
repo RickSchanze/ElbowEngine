@@ -69,7 +69,7 @@ vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentMode
     return BestMode;
 }
 
-vk::Extent2D SwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, const uint32 InWidth, const uint32 InHeight) {
+vk::Extent2D SwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, const UInt32 InWidth, const UInt32 InHeight) {
     // 分辨率不是无限的
     if (InCapabilities.currentExtent.width != UINT32_MAX) {
         return InCapabilities.currentExtent;
@@ -91,7 +91,7 @@ void SwapChain::Initialize() {
     std::ranges::transform(SwapchainImages, mSwapchainImages.begin(), [](const auto& ImageHandle) { return MakeShared<SwapChainImage>(ImageHandle); });
 
     mSwapchainImageViews.resize(GetSwapchainImageCount());
-    for (uint32 i = 0; i < GetSwapchainImageCount(); ++i) {
+    for (UInt32 i = 0; i < GetSwapchainImageCount(); ++i) {
         mSwapchainImageViews[i] =
             mAssociatedLogicalDevice->CreateImageView(*mSwapchainImages[i], mSwapchainImageFormat, vk::ImageAspectFlagBits::eColor, 1);
     }

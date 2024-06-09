@@ -14,8 +14,8 @@
 
 struct Size2D
 {
-    int32 Width;
-    int32 Height;
+    Int32 Width;
+    Int32 Height;
 
     String ToString();
 };

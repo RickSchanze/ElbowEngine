@@ -70,9 +70,9 @@ void Image::CreateImage() {
     const auto          DeviceHandle = mDevice.get().GetHandle();
     ImageCreateInfo.setImageType(mCreateInfo.ImageType);
     const vk::Extent3D Extent{
-        static_cast<uint32>(mCreateInfo.Width),
-        static_cast<uint32>(mCreateInfo.Height),
-        static_cast<uint32>(mCreateInfo.ImageType == vk::ImageType::e3D ? 1 : mCreateInfo.Depth)
+        static_cast<UInt32>(mCreateInfo.Width),
+        static_cast<UInt32>(mCreateInfo.Height),
+        static_cast<UInt32>(mCreateInfo.ImageType == vk::ImageType::e3D ? 1 : mCreateInfo.Depth)
     };
     ImageCreateInfo.setExtent(Extent);
     ImageCreateInfo.setArrayLayers(1);

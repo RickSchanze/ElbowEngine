@@ -86,7 +86,7 @@ void VulkanContext::Draw() {
     const TStaticArray<vk::Fence, 1> Fence  = {mInFlightFences[mCurrentFrame]};
     auto                             _      = Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
-    uint32                           ImageIndex;
+    UInt32                           ImageIndex;
     VkResult                         AcquireResult =
         vkAcquireNextImageKHR(Device, mSwapChain->GetHandle(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], nullptr, &ImageIndex);
     if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {

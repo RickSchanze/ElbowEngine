@@ -17,8 +17,8 @@ class Instance;
 
 struct QueueFamilyIndices
 {
-    TOptional<uint32> GraphicsFamily;
-    TOptional<uint32> PresentFamily;
+    TOptional<UInt32> GraphicsFamily;
+    TOptional<UInt32> PresentFamily;
 
     [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
 };
@@ -92,7 +92,7 @@ public:
     vk::Format
     FindSupportFormat(const TArray<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
 
-    uint32 FindMemoryType(uint32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
+    UInt32 FindMemoryType(UInt32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
 
 
     TUniquePtr<LogicalDevice> CreateLogicalDeviceUnique();

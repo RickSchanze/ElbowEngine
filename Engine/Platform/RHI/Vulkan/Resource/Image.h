@@ -48,10 +48,10 @@ struct ImageCreateInfo
 {
     vk::Format              Format{};
     vk::ImageUsageFlags     Usage{};
-    int32                   Width          = 0;
-    int32                   Height         = 0;
-    int32                   Depth          = 1;
-    uint32                  MipLevels      = 1;
+    Int32                   Width          = 0;
+    Int32                   Height         = 0;
+    Int32                   Depth          = 1;
+    UInt32                  MipLevels      = 1;
     vk::ImageTiling         Tiling         = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits SampleCount    = vk::SampleCountFlagBits::e1;
     vk::ImageType           ImageType      = vk::ImageType::e2D;
@@ -80,17 +80,15 @@ public:
     bool IsValid() const override;
     void Finialize();
 
-    uint32 GetWidth() const { return mCreateInfo.Width; }
-    uint32 GetHeight() const { return mCreateInfo.Height; }
-    uint32 GetDepth() const { return mCreateInfo.Depth; }
+    UInt32 GetWidth() const { return mCreateInfo.Width; }
+    UInt32 GetHeight() const { return mCreateInfo.Height; }
+    UInt32 GetDepth() const { return mCreateInfo.Depth; }
 
 protected:
     void CreateImage();
 
 protected:
     explicit Image(const Ref<LogicalDevice> InDevice) : mDevice(InDevice) {}
-
-
 
     Ref<LogicalDevice> mDevice;
 
@@ -104,10 +102,10 @@ public:
 
     static TSharedPtr<Texture> Create(Ref<LogicalDevice> InDevice, const CommandPool& InCommandProducer, Resource::Texture* InTexture);
 
-    int32 GetMipLevel() const { return mMipLevel; }
+    Int32 GetMipLevel() const { return mMipLevel; }
 
 protected:
-    int32 mMipLevel;
+    Int32 mMipLevel;
 };
 
 RHI_VULKAN_NAMESPACE_END

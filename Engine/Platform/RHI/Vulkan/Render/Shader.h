@@ -21,8 +21,8 @@ class GraphicsPipeline;
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-enum class EShaderStage : uint8 { Vertex, Fragment, None };
-enum class EUniformDescriptorType : uint8 { Object, Sampler2D };
+enum class EShaderStage : UInt8 { Vertex, Fragment, None };
+enum class EUniformDescriptorType : UInt8 { Object, Sampler2D };
 
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType InType);
 vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage InStage);
@@ -30,21 +30,21 @@ vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage InStage);
 struct UniformDescriptor
 {
     AnsiString             Name;
-    uint8                  Binding;
+    UInt8                  Binding;
     EUniformDescriptorType Type;
     EShaderStage           Stage;
-    uint8                  Size;
-    uint8                  Offset;
+    UInt8                  Size;
+    UInt8                  Offset;
 };
 
 // 假如声明layout(location = 0) in vec3 inPos;
 struct VertexInAttribute
 {
     AnsiString Name;       // = inPos
-    uint8      Location;   // = 0
-    uint8      Size;       // = 4 * 3 4字节 * 3
-    uint8      Width;      // = 4 浮点数4字节
-    uint8      Offset;     // = 0
+    UInt8      Location;   // = 0
+    UInt8      Size;       // = 4 * 3 4字节 * 3
+    UInt8      Width;      // = 4 浮点数4字节
+    UInt8      Offset;     // = 0
 };
 
 // 输入Spirv文件路径，通过反射获取所有uniform变量
@@ -77,7 +77,7 @@ public:
 
 protected:
     // 解析传入的Shader代码
-    void ParseShaderCode(const uint32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage);
+    void ParseShaderCode(const UInt32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage);
 
 private:
     EShaderStage     mShaderStage = EShaderStage::None;

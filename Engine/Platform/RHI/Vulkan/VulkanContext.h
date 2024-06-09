@@ -63,7 +63,7 @@ public:
 
     vk::Extent2D GetSwapChainExtent() const { return mSwapChain->GetExtent(); }
 
-    uint32 GetSwapChainImageCount() const { return mSwapChainImageCount; }
+    UInt32 GetSwapChainImageCount() const { return mSwapChainImageCount; }
 
     TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return mSwapChain->GetImageViews(); }
 
@@ -88,14 +88,14 @@ protected:
     static inline VulkanContext* sContext = nullptr;
 
 private:
-    int32 mSwapChainImageCount = 3;
+    Int32 mSwapChainImageCount = 3;
 
-    int32 mMaxFramesInFlight = 2;
+    Int32 mMaxFramesInFlight = 2;
     int   mCurrentFrame      = 0;
 
-    int32 mRendererID = 0;
+    Int32 mRendererID = 0;
 
-    static inline int32 sRendererIDCount = 0;
+    static inline Int32 sRendererIDCount = 0;
 
     // TODO: 图形管线和Shader一起属于材质系统
     GraphicsPipeline* mGraphicsPipeline = nullptr;

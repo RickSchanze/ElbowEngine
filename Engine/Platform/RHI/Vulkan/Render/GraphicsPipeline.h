@@ -54,10 +54,10 @@ struct PipelineInitializer
 
     struct ClippingRectConfig
     {
-        int32  OffsetX = 0.f;
-        int32  OffsetY = 0.f;
-        uint32 Width   = 0.f;   // 0代表与视口一致
-        uint32 Height  = 0.f;   // 0代表与视口一致
+        Int32  OffsetX = 0.f;
+        Int32  OffsetY = 0.f;
+        UInt32 Width   = 0.f;   // 0代表与视口一致
+        UInt32 Height  = 0.f;   // 0代表与视口一致
     };
 
     struct MultisampleConfig
@@ -113,9 +113,9 @@ public:
     // 根据Initializer配置的参数初始化一个图形管线
     explicit GraphicsPipeline(const PipelineInitializer& InInitializer);
 
-    void UpdateUniformBuffer(uint32 InCurrentImage) const;
+    void UpdateUniformBuffer(UInt32 InCurrentImage) const;
 
-    vk::CommandBuffer GetCurrentImageCommandBuffer(uint32 InCurrentImage) const;
+    vk::CommandBuffer GetCurrentImageCommandBuffer(UInt32 InCurrentImage) const;
 
     bool IsValid() const { return mPipeline && mPipelineLayout && mDescriptorSetLayout; }
 
@@ -177,7 +177,7 @@ private:
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
     TSharedPtr<Texture>       mTexture;
-    uint32                    mTextureMipLevel;
+    UInt32                    mTextureMipLevel;
     TSharedPtr<ImageView>     mTextureView;
     vk::Sampler               mTextureSampler;
     TSharedPtr<ShaderProgram> mShaderProg;

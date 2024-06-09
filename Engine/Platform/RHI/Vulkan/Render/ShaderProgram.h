@@ -32,7 +32,7 @@ public:
 
     TArray<vk::VertexInputAttributeDescription>    GetVertexInputAttributeDescriptions() const;
     TArray<vk::VertexInputBindingDescription>      GetVertexInputBindingDescription() const;
-    uint32                                        GetStride() const;
+    UInt32                                        GetStride() const;
     const THashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return mUniforms; }
 
 private:

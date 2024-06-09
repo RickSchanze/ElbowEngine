@@ -45,7 +45,7 @@ class Mesh : public IRHIResourceContainer {
 public:
     TArray<Vertex>&   GetVertices() { return mVertices; }
     TArray<Texture*>& GetTextures() { return mTextures; }
-    TArray<uint32>&   GetIndices() { return mIndices; }
+    TArray<UInt32>&   GetIndices() { return mIndices; }
 
     TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
 
@@ -54,7 +54,7 @@ public:
 private:
     TArray<Vertex>   mVertices;
     TArray<Texture*> mTextures;
-    TArray<uint32>   mIndices;
+    TArray<UInt32>   mIndices;
 
     TSharedPtr<RHI::Vulkan::IRHIResource> mMeshRHIResource = nullptr;
 };

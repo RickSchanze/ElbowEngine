@@ -13,12 +13,17 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL DebugWindow : public WindowBase {
-    GENERATED_BODY(DebugWindow)
+class REFL StatisticsWindow : public WindowBase {
+    GENERATED_BODY(StatisticsWindow)
 
 public:
-    DebugWindow();
+    StatisticsWindow();
     void Draw(float InDeltaTime) override;
+
+protected:
+    Float mFpsRefreshTime = 0;
+    Int32 mRecordedFps = 0;
+    Float mRecordedDeltaTime = 0.f;
 };
 
 

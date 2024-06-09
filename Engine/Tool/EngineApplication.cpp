@@ -70,24 +70,23 @@ void EngineApplication::Finitialize() const {
 }
 
 void EngineApplication::Run() {
-    static auto LastFrameTime = std::chrono::high_resolution_clock::now();
+
     while (!glfwWindowShouldClose(mWindow->GetGLFWWindowHandle())) {
-        auto       CurrentFrameTime = std::chrono::high_resolution_clock::now();
-        const auto DeltaTime        = std::chrono::duration<float>(CurrentFrameTime - LastFrameTime).count();
-        LastFrameTime               = CurrentFrameTime;
+        InternalTick();
+
         mWindow->BeginImGuiFrame();
 
         for (auto& SubWindow: mSubWindows) {
-            SubWindow->Tick(DeltaTime);
+            SubWindow->Tick(gEngineStatistics.TimeDelta);
         }
 
         DrawAppUI();
 
         ImGui::ShowDemoWindow();
-        mWindow->Tick(DeltaTime);
+        mWindow->Tick(gEngineStatistics.TimeDelta);
 
         // 这个必须在最后一句 对ImGui的渲染在这里完成
-        mRenderApplication->Tick(DeltaTime);
+        mRenderApplication->Tick(gEngineStatistics.TimeDelta);
     }
 }
 
@@ -97,8 +96,19 @@ bool EngineApplication::IsValid() const {
     return true;
 }
 
-void EngineApplication::SetMouseVisible(const bool InVisible) const {
-    mWindow->SetMouseVisible(InVisible);
+void EngineApplication::InternalTick() {
+    using namespace std::chrono;
+    glfwSetInputMode(mWindow->GetGLFWWindowHandle(), GLFW_CURSOR, gEngineStatistics.HideMouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    {
+        auto CurrentFrameTime       = steady_clock::now();
+        gEngineStatistics.TimeDelta = duration<float>(CurrentFrameTime - mLastFrameTime).count();
+        mLastFrameTime              = CurrentFrameTime;
+        if (gEngineStatistics.TimeDelta > 0)   //
+            gEngineStatistics.Fps = static_cast<Int32>(1.f / gEngineStatistics.TimeDelta);
+    }
+    gEngineStatistics.FrameCount++;
+
+    gEngineStatistics.ObjectCount = ObjectManager::Get().GetObjectCount();
 }
 
 void EngineApplication::RemoveWindow(Window::WindowBase* InWindow) {
@@ -124,8 +134,8 @@ void EngineApplication::DrawAppUI() {
 
 void EngineApplication::DrawWindowMenu() {
     if (ImGui::BeginMenu(U8("窗口"))) {
-        if (ImGui::MenuItem(U8("调试控制台"))) {
-            OnOpenDebugWindow();
+        if (ImGui::MenuItem(U8("引擎数据统计"))) {
+            OnOpenStatisticsWindow();
         }
         if (ImGui::MenuItem(U8("大纲"))) {
             OnOpenOutlineWindow();
@@ -146,8 +156,8 @@ void OpenWindow() {
     }
 }
 
-void EngineApplication::OnOpenDebugWindow() {
-    OpenWindow<Window::DebugWindow>();
+void EngineApplication::OnOpenStatisticsWindow() {
+    OpenWindow<Window::StatisticsWindow>();
 }
 
 void EngineApplication::OnOpenOutlineWindow() {

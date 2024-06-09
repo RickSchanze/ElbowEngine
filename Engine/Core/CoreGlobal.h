@@ -78,10 +78,10 @@ struct NewReturnType<T, ENewReturnType::UniquePtr>
 class ObjectCreateHelper {
 public:
     // 获得可用的ID
-    static uint32 GetAvailableID();
-    static void   SetObjectID(Object* Obj, uint32 ID);
-    static void   SetObjectID(const TSharedPtr<Object>& Obj, uint32 ID);
-    static void   SetObjectID(const TUniquePtr<Object>& Obj, uint32 ID);
+    static UInt32 GetAvailableID();
+    static void   SetObjectID(Object* Obj, UInt32 ID);
+    static void   SetObjectID(const TSharedPtr<Object>& Obj, UInt32 ID);
+    static void   SetObjectID(const TUniquePtr<Object>& Obj, UInt32 ID);
 };
 
 /**
@@ -95,12 +95,12 @@ public:
  * @param Name 对象名称
  * @return
  */
-template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename ... Args>
+template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename... Args>
     requires IsObject<T>
-typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&& ... InArgs) {
+typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&&... InArgs) {
     // T不能是个单例
     static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
-    uint32 AvailableID = ObjectCreateHelper::GetAvailableID();
+    UInt32 AvailableID = ObjectCreateHelper::GetAvailableID();
 
     typename NewReturnType<T, Strategy>::Type Rtn;
     if constexpr (Strategy == ENewReturnType::Raw) {
@@ -123,3 +123,23 @@ typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&& .
     ObjectManager::Get().AddObject(Rtn);
     return Rtn;
 }
+
+// 引擎数据
+struct EngineStatistics
+{
+    struct
+    {
+        Int32 Width = 0;
+        Int32 Height = 0;
+    } WindowSize;
+
+    Float TimeDelta = 0;
+    UInt64 FrameCount = 0;
+    Int32 Fps = 0; // 帧率
+    Bool  HideMouse = false; // 是否隐藏鼠标
+    Int32 ObjectCount = 0; // 当前总对象数
+};
+
+extern EngineStatistics gEngineStatistics;
+
+extern String STRING_NONE;

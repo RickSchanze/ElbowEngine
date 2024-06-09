@@ -76,8 +76,8 @@ TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDe
     return BindingDescs;
 }
 
-uint32 ShaderProgram::GetStride() const {
-    uint32 Stride = 0;
+UInt32 ShaderProgram::GetStride() const {
+    UInt32 Stride = 0;
     for (const auto& Attribute: mVertexInputAttributes) {
         Stride += Attribute.Size;
     }

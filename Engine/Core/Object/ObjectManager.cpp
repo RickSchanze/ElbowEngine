@@ -23,16 +23,16 @@ bool ObjectManager::AddObject(Object* NewObject) {
     return false;
 }
 
-bool ObjectManager::IsIDValid(const uint32 ID) const {
+bool ObjectManager::IsIDValid(const UInt32 ID) const {
     return ID != 0 && !mObjects.contains(ID);
 }
 
-uint32 ObjectManager::GetNextValidID() {
+UInt32 ObjectManager::GetNextValidID() {
     while (!IsIDValid(mIDCount++)) {}
     return mIDCount;
 }
 
-bool ObjectManager::RemoveObject(const uint32 ID) {
+bool ObjectManager::RemoveObject(const UInt32 ID) {
     if (mObjects.erase(ID) != 0) {
         return true;
     }

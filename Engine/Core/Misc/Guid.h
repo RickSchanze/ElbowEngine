@@ -19,5 +19,5 @@ public:
 
 private:
     GUID                  mGuid{};
-    static constexpr int8 mGuidLength = 64;
+    static constexpr Int8 mGuidLength = 64;
 };

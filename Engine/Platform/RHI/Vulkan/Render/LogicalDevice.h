@@ -43,7 +43,7 @@ public:
      * @param InHeight
      * @return
      */
-    TUniquePtr<SwapChain> CreateSwapChain(uint32 InSwapChainImageCount = 0, uint32 InWidth = 0, uint32 InHeight = 0);
+    TUniquePtr<SwapChain> CreateSwapChain(UInt32 InSwapChainImageCount = 0, UInt32 InWidth = 0, UInt32 InHeight = 0);
 
     /**
      * 基于InImage创建一个图像视图
@@ -55,7 +55,7 @@ public:
      */
     TSharedPtr<ImageView> CreateImageView(
         const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
-        uint32 InMipLevels = 1
+        UInt32 InMipLevels = 1
     );
 
     /**

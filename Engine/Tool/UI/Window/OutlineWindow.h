@@ -28,7 +28,7 @@ protected:
     void DrawGameObject(Function::GameObject* InGameObject);
 
 public:
-    uint32 SelectedObjectID = 0;
+    UInt32 SelectedObjectID = 0;
 };
 
 WINDOW_NAMESPACE_END

@@ -23,7 +23,7 @@ class REFL Camera : public Component {
     using Component::Component;
 
 public:
-    Camera();
+    explicit Camera(GameObject* InObject);
 
     void Tick(float DeltaTime) override;
 

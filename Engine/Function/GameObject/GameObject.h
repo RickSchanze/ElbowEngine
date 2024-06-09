@@ -28,7 +28,7 @@ public:
     template<typename T>
         requires std::derived_from<T, Component>
     T* AddComponent() {
-        T* Component           = New<T>();
+        T* Component           = New<T>(STRING_NONE, this);
         Component->mGameObject = this;
         Component->BeginPlay();
         Component->mTransform = &mTransform;

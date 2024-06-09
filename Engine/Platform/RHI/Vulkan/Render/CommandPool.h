@@ -29,12 +29,12 @@ public:
     vk::CommandPool GetCommandPool() const { return mPool; }
 
     void TrainsitionImageLayout(
-        vk::Image InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, uint32 InMipLevel = 1
+        vk::Image InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, UInt32 InMipLevel = 1
     ) const;
 
-    void CopyBufferToImage(vk::Buffer InBuffer, vk::Image InImage, uint32 InWidth, uint32 InHeight) const;
+    void CopyBufferToImage(vk::Buffer InBuffer, vk::Image InImage, UInt32 InWidth, UInt32 InHeight) const;
 
-    bool GenerateMipmaps(vk::Image InImage, vk::Format InImageFormat, int32 InTexWidth, int32 InTexHeight, uint32 InMipLevel) const;
+    bool GenerateMipmaps(vk::Image InImage, vk::Format InImageFormat, Int32 InTexWidth, Int32 InTexHeight, UInt32 InMipLevel) const;
 
     void Finialize();
 

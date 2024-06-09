@@ -41,7 +41,7 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
+void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const {
     VulkanContext& Context = VulkanContext::Get();
     static auto                StartTime   = std::chrono::high_resolution_clock::now();
     const auto                 CurrentTime = std::chrono::high_resolution_clock::now();
@@ -69,7 +69,7 @@ void GraphicsPipeline::UpdateUniformBuffer(const uint32 InCurrentImage) const {
     Context.GetLogicalDevice()->UnmapMemory(mUniformBuffersMemory[InCurrentImage]);
 }
 
-vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const uint32 InCurrentImage) const {
+vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 InCurrentImage) const {
     return mCommandBuffers[InCurrentImage];
 }
 
@@ -312,7 +312,7 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
         // 绑定描述符集
         TArray Set = {InParam.DescriptorSet};
         InBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, Set, {});
-        InBuffer.drawIndexed(static_cast<uint32>(Mesh->GetIndexCount()), 1, 0, 0, 0);
+        InBuffer.drawIndexed(static_cast<UInt32>(Mesh->GetIndexCount()), 1, 0, 0, 0);
     }
     InBuffer.endRenderPass();
 }

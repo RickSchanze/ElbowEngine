@@ -11,18 +11,21 @@
 
 extern Logger gLogger = {};
 
-uint32 ObjectCreateHelper::GetAvailableID() {
+UInt32 ObjectCreateHelper::GetAvailableID() {
     return ObjectManager::Get().GetNextValidID();
 }
 
-void ObjectCreateHelper::SetObjectID(Object* Obj, const uint32 ID) {
+void ObjectCreateHelper::SetObjectID(Object* Obj, const UInt32 ID) {
     Obj->mID = ID;
 }
 
-void ObjectCreateHelper::SetObjectID(const TSharedPtr<Object>& Obj, const uint32 ID) {
+void ObjectCreateHelper::SetObjectID(const TSharedPtr<Object>& Obj, const UInt32 ID) {
     Obj->mID = ID;
 }
 
-void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const uint32 ID) {
+void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const UInt32 ID) {
     Obj->mID = ID;
 }
+
+EngineStatistics gEngineStatistics = {};
+String STRING_NONE;

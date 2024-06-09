@@ -43,7 +43,7 @@ void CommandPool::CleanCommandPool() {
     mPool = nullptr;
 }
 void CommandPool::TrainsitionImageLayout(
-    const vk::Image InImage, vk::Format InFormat, const vk::ImageLayout InOldLayout, const vk::ImageLayout InNewLayout, uint32 InMipLevel
+    const vk::Image InImage, vk::Format InFormat, const vk::ImageLayout InOldLayout, const vk::ImageLayout InNewLayout, UInt32 InMipLevel
 ) const {
     vk::CommandBuffer      CommandBuffer    = BeginSingleTimeCommands();
     // 设置图像内存屏障
@@ -102,7 +102,7 @@ void CommandPool::TrainsitionImageLayout(
     EndSingleTimeCommands(CommandBuffer);
 }
 
-void CommandPool::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Image InImage, const uint32 InWidth, const uint32 InHeight)
+void CommandPool::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Image InImage, const UInt32 InWidth, const UInt32 InHeight)
     const {
     const auto          CommandBuffer = BeginSingleTimeCommands();
     vk::BufferImageCopy Region{};
@@ -120,7 +120,7 @@ void CommandPool::CopyBufferToImage(const vk::Buffer InBuffer, const vk::Image I
 }
 
 bool CommandPool::GenerateMipmaps(
-    const vk::Image InImage, const vk::Format InImageFormat, const int32 InTexWidth, const int32 InTexHeight, const uint32 InMipLevel
+    const vk::Image InImage, const vk::Format InImageFormat, const Int32 InTexWidth, const Int32 InTexHeight, const UInt32 InMipLevel
 ) const {
     const auto             CommandBuffer = BeginSingleTimeCommands();
     // 使用同一个vkImageMemoryBarrier多次对图像布局变换同步只需要设置一次
@@ -133,9 +133,9 @@ bool CommandPool::GenerateMipmaps(
     Barrier.subresourceRange.layerCount     = 1;
     Barrier.subresourceRange.levelCount     = 1;
 
-    int32 MipWidth  = InTexWidth;
-    int32 MipHeight = InTexHeight;
-    for (uint32 i = 1; i < InMipLevel; i++) {
+    Int32 MipWidth  = InTexWidth;
+    Int32 MipHeight = InTexHeight;
+    for (UInt32 i = 1; i < InMipLevel; i++) {
         Barrier.subresourceRange.baseMipLevel = i - 1;
         Barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
         Barrier.newLayout                     = vk::ImageLayout::eTransferSrcOptimal;

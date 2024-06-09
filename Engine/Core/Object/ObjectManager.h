@@ -25,23 +25,23 @@ public:
      * @param ID
      * @return
      */
-    [[nodiscard]] bool IsIDValid(uint32 ID) const;
+    [[nodiscard]] bool IsIDValid(UInt32 ID) const;
 
     /**
      * 获取下一个有效的ID
      * @return
      */
-    uint32 GetNextValidID();
+    UInt32 GetNextValidID();
 
     /**
      * 移除ID对应的对象,此函数不会调用delete
      * @param ID
      * @return 不存在则返回False
      */
-    bool RemoveObject(uint32 ID);
+    bool RemoveObject(UInt32 ID);
 
     // 根据ID获取一个Object，如果不存在则返回nullptr
-    Object* GetObjectById(uint32 ID) {
+    Object* GetObjectById(UInt32 ID) {
         if (mObjects.contains(ID)) {
             return mObjects[ID];
         }
@@ -50,15 +50,15 @@ public:
 
     template<typename T>
         requires std::derived_from<T, Object>
-    T* GetObjectById(uint32 ID) {
+    T* GetObjectById(UInt32 ID) {
         return dynamic_cast<T*>(GetObjectById(ID));
     }
 
-    uint32 GetObjectCount() { return mObjects.size(); }
+    UInt32 GetObjectCount() { return mObjects.size(); }
 
     ~ObjectManager();
 
 private:
-    THashMap<uint32, Object*> mObjects;
-    uint32                    mIDCount = 1;
+    THashMap<UInt32, Object*> mObjects;
+    UInt32                    mIDCount = 1;
 };
