@@ -66,6 +66,13 @@ public:
 
     // 初始化Framebuffer和其Attachment
     virtual void SetupFramebuffer();
+    virtual void CleanFrameBuffer();
+
+    /**
+     * 重置Renderpass
+     * @param bDeep 为true则会 销毁RenderPass否则只销毁Framebuffer及其Attachment
+     */
+    virtual void Rebuild(bool bDeep = false);
 
     void Destroy() override;
 

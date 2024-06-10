@@ -113,6 +113,29 @@ void RenderPass::SetupFramebuffer() {
     }
 }
 
+void RenderPass::CleanFrameBuffer() {
+    // 销毁Framebuffer
+    for (auto& FrameBuffer: mFrameBuffers) {
+        FrameBuffer->Destroy();
+    }
+    mFrameBuffers.clear();
+    for (auto& FrameBufferAttachment: mFrameBufferAttachments) {
+        if (FrameBufferAttachment.View) FrameBufferAttachment.View->Finialize();
+        if (FrameBufferAttachment.Image) FrameBufferAttachment.Image->Destroy();
+    }
+    mFrameBufferAttachments.clear();
+}
+
+void RenderPass::Rebuild(bool bDeep) {
+    if (bDeep) {
+        InternalDestroy();
+        Initialize();
+    } else {
+        CleanFrameBuffer();
+        SetupFramebuffer();
+    }
+}
+
 void RenderPass::Destroy() {
     InternalDestroy();
 }
@@ -121,15 +144,7 @@ void RenderPass::InternalDestroy() {
     if (IsValid()) {
         VulkanContext& Context      = VulkanContext::Get();
         auto           DeviceHandle = Context.GetLogicalDevice()->GetHandle();
-        // 销毁Framebuffer
-        for (auto& FrameBuffer: mFrameBuffers) {
-            FrameBuffer->Destroy();
-        }
-        for (auto& FrameBufferAttachment: mFrameBufferAttachments) {
-            if (FrameBufferAttachment.View) FrameBufferAttachment.View->Finialize();
-            if (FrameBufferAttachment.Image) FrameBufferAttachment.Image->Destroy();
-        }
-
+        CleanFrameBuffer();
         DeviceHandle.destroyRenderPass(mHandle);
         mHandle = nullptr;
     }
