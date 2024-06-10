@@ -8,6 +8,7 @@
 #include "ImageView.h"
 
 #include "RHI/Vulkan/Render/LogicalDevice.h"
+#include "RHI/Vulkan/VulkanContext.h"
 RHI::Vulkan::ImageView::~ImageView() {
     if (IsValid()) {
         Finialize();
@@ -16,7 +17,6 @@ RHI::Vulkan::ImageView::~ImageView() {
 
 void RHI::Vulkan::ImageView::Finialize() {
     if (!IsValid()) return;
-    if (mAssociatedLogicalDevice == nullptr || !mAssociatedLogicalDevice->IsValid()) return;
-    mAssociatedLogicalDevice->GetHandle().destroy(mViewHandle);
+    VulkanContext::Get().GetLogicalDevice()->GetHandle().destroy(mViewHandle);
     mViewHandle = VK_NULL_HANDLE;
 }

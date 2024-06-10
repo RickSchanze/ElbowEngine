@@ -62,6 +62,7 @@ VulkanContext& VulkanContext::Get() {
 
 void VulkanContext::Initialize() {
     LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", mRendererID, mSwapChainImageCount);
+    gEngineStatistics.SwapchainImageCount = GetSwapChainImageCount();
 }
 
 void VulkanContext::Finalize() {

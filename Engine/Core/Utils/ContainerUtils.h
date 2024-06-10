@@ -23,8 +23,11 @@ public:
     template<typename ContainerT, typename Lambda>
     static auto FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())>;
 
-    template <typename ContainerT>
+    template<typename ContainerT>
     static ContainerT Slice(const ContainerT& Container, Int32 Start = 0, Int32 End = 0);
+
+    template<typename ContainerT>
+    static ContainerT Concat(const ContainerT& ContainerA, const ContainerT& ContainerB);
 };
 
 template<typename ContainerT>
@@ -65,12 +68,25 @@ ContainerT ContainerUtils::Slice(const ContainerT& Container, Int32 Start, Int32
 
     // 边界检查
     Start = std::max(0, Start);
-    End = std::min(static_cast<Int32>(containerSize), End);
+    End   = std::min(static_cast<Int32>(containerSize), End);
 
     // 切片操作
     auto startIter = std::next(Container.begin(), Start);
-    auto endIter = std::next(Container.begin(), End);
+    auto endIter   = std::next(Container.begin(), End);
     std::copy(startIter, endIter, std::back_inserter(result));
+
+    return result;
+}
+
+template<typename ContainerT>
+ContainerT ContainerUtils::Concat(const ContainerT& ContainerA, const ContainerT& ContainerB) {
+    ContainerT result;
+
+    // 将容器A的元素添加到结果容器中
+    result.insert(result.end(), ContainerA.begin(), ContainerA.end());
+
+    // 将容器B的元素添加到结果容器中
+    result.insert(result.end(), ContainerB.begin(), ContainerB.end());
 
     return result;
 }

@@ -139,6 +139,7 @@ struct EngineStatistics
     Bool  HideMouse = false; // 是否隐藏鼠标
     Int32 ObjectCount = 0; // 当前总对象数
     const Int32 ParallelRenderFrameCount = 2; // 同时渲染的帧数
+    UInt32 SwapchainImageCount = -1;
 };
 
 extern EngineStatistics gEngineStatistics;
