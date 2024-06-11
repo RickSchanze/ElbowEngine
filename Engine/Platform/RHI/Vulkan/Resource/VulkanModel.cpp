@@ -1,5 +1,5 @@
 /**
- * @file Model.cpp
+ * @file VulkanModel.cpp
  * @author Echo 
  * @Date 24-5-13
  * @brief 
@@ -8,7 +8,6 @@
 #include "VulkanModel.h"
 
 #include "CoreGlobal.h"
-#include "Model.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
@@ -107,39 +106,6 @@ void Mesh::InternalDestroy() {
 
 void Mesh::Destroy() {
     InternalDestroy();
-}
-
-Model::Model(Resource::Model* InModel, VulkanContext& InContext) {
-    if (InModel == nullptr || !InModel->IsValid()) return;
-    for (auto& MeshResource: InModel->GetMeshes()) {
-        auto Mesh = Mesh::Create(InContext, &MeshResource);
-        if (Mesh->IsValid()) {
-            mMeshes.push_back(Mesh);
-        }
-    }
-}
-
-Model::~Model() {
-    Finialize();
-}
-
-TUniquePtr<Model> Model::CreateUnique(Resource::Model* InModel, VulkanContext& InContext) {
-    return MakeUnique<Model>(InModel, InContext);
-}
-
-void Model::Finialize() const {
-    if (!IsValid()) return;
-    for (const auto& Mesh: mMeshes) {
-        Mesh->InternalDestroy();
-    }
-}
-
-bool Model::IsValid() const {
-    return !mMeshes.empty();
-}
-
-void Model::Destroy() {
-    Finialize();
 }
 
 RHI_VULKAN_NAMESPACE_END

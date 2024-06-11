@@ -1,10 +1,10 @@
 project(Function)
 
 add_library(${PROJECT_NAME}
-        Path/Exception.h
-        Path/Exception.cpp
-        Path/Path.cpp
-        Path/Path.h
+        ../Core/Path/Exception.h
+        ../Core/Path/Exception.cpp
+        ../Core/Path/Path.cpp
+        ../Core/Path/Path.h
         Component/Component.cpp
         Component/Component.h
         GameObject/GameObject.cpp

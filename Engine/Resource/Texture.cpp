@@ -9,6 +9,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreGlobal.h"
+#include "PlatformEvents.h"
+#include "ResourceConfig.h"
 #include "ResourceManager.h"
 #include "stb_image.h"
 
@@ -17,8 +19,7 @@ using namespace RHI::Vulkan;
 RESOURCE_NAMESPACE_BEGIN
 
 Texture::Texture(
-    Protected, const Path& InPath, const ETextureUsage InUsage,
-    const SamplerInfo& SamplerInfo
+    Protected, const Path& InPath, const ETextureUsage InUsage, const SamplerInfo& SamplerInfo
 ) : mPath(InPath), mUsage(InUsage), mSamplerInfo(SamplerInfo)
 {
     // 所有的Load操作都发生在没有注册的情况下
@@ -27,9 +28,7 @@ Texture::Texture(
     ResourceManager::Get().RegisterResource(mPath, this);
 }
 
-Texture* Texture::Create(
-    const Path& InPath, ETextureUsage InUsage, const SamplerInfo& SamplerInfo
-)
+Texture* Texture::Create(const Path& InPath, ETextureUsage InUsage, const SamplerInfo& SamplerInfo)
 {
     auto* CachedTexture = ResourceManager::Get().GetResource<Texture>(InPath);
     if (CachedTexture == nullptr)
@@ -68,19 +67,57 @@ void Texture::Load()
 
     // 加载底层RHI资源
     ImageInfo TextureInfo = {};
-    TextureInfo.Height = mHeight;
-    TextureInfo.Width = mWidth;
+    TextureInfo.Height    = mHeight;
+    TextureInfo.Width     = mWidth;
     TextureInfo.ImageType = vk::ImageType::e2D;
-    mRHITexture = RHI::Vulkan::Texture::CreateUnique(TextureInfo, mData);
+    mRHITexture           = RHI::Vulkan::Texture::CreateUnique(TextureInfo, mData);
 
     ImageViewInfo ViewInfo = {};
-    mRHITextureView = mRHITexture->CreateImageViewUnique(ViewInfo);
+    mRHITextureView        = mRHITexture->CreateImageViewUnique(ViewInfo);
 
     mRHISampler = Sampler::Create(mSamplerInfo);
 }
 
-TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource(){
+TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
+{
     return mRHITexture;
 }
 
 RESOURCE_NAMESPACE_END
+
+static void Load_Default_Engine_Texture_Resource(
+    RHI::Vulkan::Texture** OutTexture, RHI::Vulkan::ImageView** OutTextureView
+)
+{
+    // 引擎默认纹理资产的生命周期包含整个程序运行期间
+    if (gResourceConfig.bInitialized)
+    {
+        auto* DefaultLackTexture =
+            ResourceManager::Get().GetResource<Resource::Texture>(gResourceConfig.DefaultLackTexturePath);
+        if (DefaultLackTexture)
+        {
+            *OutTexture     = DefaultLackTexture->GetRHIResource().get();
+            *OutTextureView = DefaultLackTexture->GetTextureView().get();
+        }
+        else
+        {
+            throw Exception(std::format(
+                L"加载默认资产{}失败", gResourceConfig.DefaultLackTexturePath.ToString()
+            ));
+        }
+    }
+    else
+    {
+        throw Exception(L"加载引擎默认资产失败，请确保引擎配置文件已正确设置");
+    }
+}
+
+struct RegisterOnEngineDefaultTextureLoad
+{
+    RegisterOnEngineDefaultTextureLoad()
+    {
+        Platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
+    }
+};
+
+static RegisterOnEngineDefaultTextureLoad Register_On_Engine_Default_Texture_Load;

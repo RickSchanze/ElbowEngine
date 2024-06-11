@@ -7,6 +7,7 @@
 
 #include "Path.h"
 
+#include "CoreEvents.h"
 #include "Exception.h"
 #include "Utils/StringUtils.h"
 
@@ -17,6 +18,9 @@ Path::Path(StringView PathStr) {
     }
     mPath = PathStr;
 }
+
+#undef CreateFile
+#undef CreateDirectory
 
 void Path::SetProjectWorkPath(StringView PathStr) {
     if (PathStr.back() == L'/' || PathStr.back() == L'\\') {
@@ -38,6 +42,8 @@ void Path::SetProjectWorkPath(StringView PathStr) {
             GetProjectMetaFilePath()->CreateFile();
         }
     }
+    OnProjectPathSet.Broadcast();
+    OnProjectPathSet.Clear();
 }
 
 bool Path::IsExist() const {

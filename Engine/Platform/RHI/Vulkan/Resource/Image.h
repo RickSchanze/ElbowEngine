@@ -7,7 +7,6 @@
 
 #pragma once
 #include "ImageView.h"
-#include "Model.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
@@ -23,7 +22,7 @@ struct ImageViewInfo
 {
     vk::Format           Format      = vk::Format::eUndefined;   // 自动选择和Image一样的格式
     vk::ImageAspectFlags AspectFlags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
-    Int32                MipLevels   = 0; // 自动选择Miplevels
+    Int32                MipLevels   = 0;                                 // 自动选择Miplevels
 };
 
 class ImageBase
@@ -144,18 +143,25 @@ struct SamplerInfo
 class Texture : public Image
 {
 public:
-    static TSharedPtr<Texture>
-    CreateShared(const ImageInfo& InImageInfo, const UInt8* InData);
+    static TSharedPtr<Texture> CreateShared(const ImageInfo& InImageInfo, const UInt8* InData);
 
-    static TUniquePtr<Texture>
-    CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData);
+    static TUniquePtr<Texture> CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData);
 
     Texture(Protected, const ImageInfo& InImageInfo, const UInt8* InData);
 
     Int32 GetMipLevel() const { return mMipLevel; }
 
+    static void LoadDefaultTextures();
+
+    static Texture&   GetDefaultLackTexture();
+    static ImageView& GetDefaultLackTextureView();
+
 protected:
     Int32 mMipLevel;
+
+    static inline Texture*   sDefaultLackTexture     = nullptr;
+    static inline ImageView* sDefaultLackTextureView = nullptr;
+    static inline bool       bDefaultTexturesLoaded  = false;
 };
 
 class Sampler : public IRHIResource
@@ -164,6 +170,8 @@ public:
     explicit Sampler(ResourceProtected, const SamplerInfo& InInitializer = {});
 
     static Sampler* Create(const SamplerInfo& InInitializer = {});
+
+    static Sampler& GetDefaultSampler();
 
     static void DestroyAllSamplers();
 
@@ -183,14 +191,3 @@ protected:
 };
 
 RHI_VULKAN_NAMESPACE_END
-
-namespace std
-{
-struct hash<RHI::Vulkan::SamplerInfo>
-{
-    std::size_t operator()(const RHI::Vulkan::SamplerInfo& initializer) const noexcept
-    {
-        return initializer.GetHashCode();
-    }
-};
-}

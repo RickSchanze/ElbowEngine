@@ -8,6 +8,7 @@
 #include "Image.h"
 
 #include "CoreGlobal.h"
+#include "PlatformEvents.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/LogicalDevice.h"
@@ -172,14 +173,12 @@ ImageView* Image::CreateImageView(const ImageViewInfo& InViewInfo) const
     return new ImageView(Context.GetLogicalDevice()->GetHandle().createImageView(ViewInfo));
 }
 
-TSharedPtr<Texture>
-Texture::CreateShared(const ImageInfo& InImageInfo, const UInt8* InData)
+TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& InImageInfo, const UInt8* InData)
 {
     return MakeShared<Texture>(Protected{}, InImageInfo, InData);
 }
 
-TUniquePtr<Texture>
-Texture::CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData)
+TUniquePtr<Texture> Texture::CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData)
 {
     return MakeUnique<Texture>(Protected{}, InImageInfo, InData);
 }
@@ -271,6 +270,30 @@ Texture::Texture(Protected, const ImageInfo& InImageInfo, const UInt8* InData) :
     DeviceHandle.freeMemory(StagingBufferMemory);
 }
 
+void Texture::LoadDefaultTextures()
+{
+    if (!bDefaultTexturesLoaded)
+    {
+        Platform::OnRequestLoadDefaultLackTexture.Broadcast(
+            &sDefaultLackTexture, &sDefaultLackTextureView
+        );
+        bDefaultTexturesLoaded = true;
+        Platform::OnRequestLoadDefaultLackTexture.Clear();
+    }
+}
+
+Texture& Texture::GetDefaultLackTexture()
+{
+    LoadDefaultTextures();
+    return *sDefaultLackTexture;
+}
+
+ImageView& Texture::GetDefaultLackTextureView()
+{
+    LoadDefaultTextures();
+    return *sDefaultLackTextureView;
+}
+
 size_t SamplerInfo::GetHashCode() const
 {
     std::size_t seed = 0;
@@ -330,6 +353,10 @@ Sampler* Sampler::Create(const SamplerInfo& InInitializer)
         return sSamplers[Id];
     }
     return new Sampler(ResourceProtected{}, InInitializer);
+}
+
+Sampler& Sampler::GetDefaultSampler(){
+    return *Create();
 }
 
 void Sampler::DestroyAllSamplers()

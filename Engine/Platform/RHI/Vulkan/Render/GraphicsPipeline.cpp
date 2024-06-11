@@ -11,7 +11,6 @@
 #include "Component/Camera.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
-#include "Model.h"
 #include "RenderPass.h"
 #include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Resource/ImageView.h"
@@ -285,7 +284,6 @@ void GraphicsPipeline::CleanPipeline()
 void GraphicsPipeline::CreateOther(bool bRebuilding)
 {
     // TODO: 重构并整个至材质系统
-    CreateTextureImageAndView();
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptotSets();
@@ -308,7 +306,6 @@ void GraphicsPipeline::CleanOther(bool bRebuilding)
     // TODO: 重构并整合至材质系统
     // 清理纹理
     CleanUniformBuffers();
-    CleanTextureImageAndView();
 }
 
 void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer)
@@ -472,17 +469,22 @@ void GraphicsPipeline::CreateDescriptotSets()
     mDescriptorSets.resize(Context.GetSwapChainImageCount());
     // 描述符池对象销毁时会自动清除描述符集
     mDescriptorSets = Context.GetLogicalDevice()->GetHandle().allocateDescriptorSets(AllocInfo);
+    // 创建材质时首先使用默认丢失的贴图，之后需要调用更新贴图的方法
+    auto& DefaultLackTexture = Texture::GetDefaultLackTexture();
+    auto& DefaultLackTextureView = Texture::GetDefaultLackTextureView();
+    auto& Sampler = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < mDescriptorSets.size(); i++)
     {
         vk::DescriptorBufferInfo BufferInfo = {};
         BufferInfo.setBuffer(mUniformBuffers[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
         vk::DescriptorImageInfo ImageInfo = {};
         ImageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-            .setImageView(mTextureView->GetHandle())
-            .setSampler(mTextureSampler);
+            .setImageView(DefaultLackTextureView.GetHandle())
+            .setSampler(Sampler.GetHandle());
 
         TStaticArray<vk::WriteDescriptorSet, 2> DescriptorWrites = {};
 
+        // TODO: DescriptorSet 应该动态更新而不是写死
         vk::WriteDescriptorSet DescriptorWrite = {};
         DescriptorWrite.setDstSet(mDescriptorSets[i])
             .setDstBinding(0)

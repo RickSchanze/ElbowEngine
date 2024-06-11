@@ -17,6 +17,8 @@ namespace RHI::Vulkan
 {
 class Texture;
 class Image;
+class Sampler;
+class ImageView;
 }   // namespace RHI::Vulkan
 
 RESOURCE_NAMESPACE_BEGIN
@@ -38,7 +40,7 @@ protected:
 public:
     Texture(
         Protected, const Path& InPath, ETextureUsage InUsage,
-        const RHI::Vulkan::SamplerInfo& SamplerInfo
+        const RHI::Vulkan::SamplerInfo& SamplerInfo = {}
     );
 
     static Texture* Create(
@@ -50,12 +52,14 @@ public:
 
     ~Texture() override;
 
-    Int32                 GetWidth() const { return mWidth; }
-    Int32                 GetHeight() const { return mHeight; }
-    Int32                 GetChannels() const { return mChannels; }
-    UInt8*                GetData() const { return mData; }
-    Path                  GetPath() const override { return mPath; }
-    RHI::Vulkan::Sampler* GetSampler() const { return mRHISampler; }
+    Int32  GetWidth() const { return mWidth; }
+    Int32  GetHeight() const { return mHeight; }
+    Int32  GetChannels() const { return mChannels; }
+    UInt8* GetData() const { return mData; }
+    Path   GetPath() const override { return mPath; }
+
+    RHI::Vulkan::Sampler*               GetSampler() const { return mRHISampler; }
+    TUniquePtr<RHI::Vulkan::ImageView>& GetTextureView() { return mRHITextureView; }
 
     void Load() final;
 

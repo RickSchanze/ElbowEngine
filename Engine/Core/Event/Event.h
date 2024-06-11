@@ -100,7 +100,7 @@ public:
             }
             else
             {
-                mfunction(Forward<InvokeArgs...>(args...));
+                mfunction(Forward<InvokeArgs>(args)...);
             }
         }
         else
@@ -143,14 +143,14 @@ public:
 
     /** 使用其他的Delegate或者Lambda来初始化添加Event */
     template <typename DelegateType>
-    void AddListener(DelegateType &&delegate)
+    void Add(DelegateType &&delegate)
     {
         mEventListener.emplace_back(Forward<DelegateType>(delegate));
     }
 
     /** 添加Delegate */
     template <typename ObjectType, typename ClassFunc>
-    void AddObjectListener(String id, ObjectType *obj, ClassFunc func)
+    void AddObject(String id, ObjectType *obj, ClassFunc func)
     {
         mEventListener.emplace_back(id, obj, func);
     }
@@ -158,20 +158,20 @@ public:
     /** 添加Delegate */
     template <typename ObjectType, typename ClassFunc>
         requires(!std::is_same_v<ObjectType, const char>)
-    void AddObjectListener(ObjectType *obj, ClassFunc func)
+    void AddObject(ObjectType *obj, ClassFunc func)
     {
         mEventListener.emplace_back(obj, func);
     }
 
     /** 添加Delegate */
     template <typename Func>
-    void AddListener(String id, Func func)
+    void Add(String id, Func func)
     {
         mEventListener.emplace_back(Move(id), func);
     }
 
     /** 添加Delegate */
-    void RemoveListener(String id)
+    void Remove(String id)
     {
         auto it = std::find_if(mEventListener.begin(), mEventListener.end(),
                                [&id](const TDelegate<Args...> &delegate) { return delegate.GetName() == id; });
@@ -182,7 +182,7 @@ public:
     }
 
     /** 清除所有Delegate */
-    void ClearListener()
+    void Clear()
     {
         mEventListener.clear();
     }
@@ -206,7 +206,7 @@ public:
                 }
                 else
                 {
-                    listener(Forward<InvokeArgs...>(args...));
+                    listener(Forward<InvokeArgs>(args)...);
                 }
             }
             else

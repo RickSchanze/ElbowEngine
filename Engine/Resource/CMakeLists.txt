@@ -8,6 +8,7 @@ add_library(${PROJECT_NAME}
         Model.cpp
         Interface/IResource.h
         Interface/IRHIResourceContainer.h
+        ResourceConfig.h
 )
 
 add_library(Engine::Resource ALIAS ${PROJECT_NAME})

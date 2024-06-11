@@ -166,9 +166,9 @@ private:
     // 4.命令缓冲
     TArray<vk::CommandBuffer> mCommandBuffers;
 
-    vk::SampleCountFlagBits mSampleCount;
+    vk::SampleCountFlagBits mSampleCount = vk::SampleCountFlagBits::e1;
 
-    RenderPass* mRenderPass;
+    RenderPass* mRenderPass = nullptr;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
@@ -184,9 +184,6 @@ private:
     void LoadModel();
 
     void CleanModel() const;
-
-    void CreateTextureImageAndView();
-    void CleanTextureImageAndView() const;
 
     void CreateUniformBuffers();
     void CleanUniformBuffers();

@@ -1,8 +1,7 @@
 #include "CoreGlobal.h"
-#include "Engine/Function/Path/Path.h"
+#include "Path/Path.h"
 #include "Exception/Exception.h"
 #include "Log/Logger.h"
-#include "windows.h"
 #define GLFW_INCLUDE_VULKAN
 #include "EngineApplication.h"
 

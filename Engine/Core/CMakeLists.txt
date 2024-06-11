@@ -25,6 +25,7 @@ add_library(${PROJECT_NAME}
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp
+        CoreEvents.h
         CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
@@ -35,6 +36,10 @@ add_library(${PROJECT_NAME}
         Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
+        Path/Path.h
+        Path/Path.cpp
+        Path/Exception.h
+        Path/Exception.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -55,4 +60,3 @@ find_package(cpptrace CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
-

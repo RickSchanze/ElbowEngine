@@ -32,7 +32,6 @@ LogicalDevice::LogicalDevice(
     const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
 ) : mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice)
 {
-    Initialize();
 }
 
 void LogicalDevice::Finialize()

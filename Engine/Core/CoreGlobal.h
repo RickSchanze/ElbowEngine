@@ -10,6 +10,7 @@
 #include "Log/Logger.h"
 #include "Object/Object.h"
 #include "Object/ObjectManager.h"
+#include "Path/Path.h"
 #include "Singleton/Singleton.h"
 
 extern Logger gLogger;
@@ -17,20 +18,30 @@ extern Logger gLogger;
 // 对Log函数进行宏定义
 #define STRINGIFY(x) #x
 #define LSTRINGIFY(x) L#x
+
 #define LOG_INFO(Text, ...) gLogger.Info(L##Text, __VA_ARGS__)
-#define LOG_INFO_CATEGORY(Category, Text, ...) gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_INFO_CATEGORY(Category, Text, ...) \
+    gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_WARNING(Text, ...) gLogger.Warning(L##Text, __VA_ARGS__)
-#define LOG_WARNING_CATEGORY(Category, Text, ...) gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_WARNING_CATEGORY(Category, Text, ...) \
+    gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_ERROR(Text, ...) gLogger.Error(L##Text, __VA_ARGS__)
-#define LOG_ERROR_CATEGORY(Category, Text, ...) gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY(Category, Text, ...) \
+    gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+
+#define LOG_CRITIAL(Text, ...) gLogger.Critical(L##Text, __VA_ARGS__)
+#define LOG_CRITIAL_CATEGORY(Category, Text, ...) \
+    gLogger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #ifdef ELBOW_DEBUG
 #    define LOG_DEBUG(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#    define LOG_DEBUG_CATEGORY(Category, Text, ...) \
+        gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 #    define LOG_TRACE(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#    define LOG_TRACE_CATEGORY(Category, Text, ...) \
+        gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 #else
 #    define LOG_DEBUG(Text, ...)
 #    define LOG_DEBUG_CATEGORY(Category, Text, ...)
@@ -38,12 +49,22 @@ extern Logger gLogger;
 #    define LOG_TRACE_CATEGORY(Category, Text, ...)
 #endif
 
+#define ASSERTF(Condition, Message) \
+    if (Condition) LOG_CRITIAL(Message)
+
+#define ASSERTF_CATEGORY(Category, Condition, Message) \
+    if (Condition) LOG_CRITIAL_CATEGORY(Category, Message)
+
+#define ASSETC
+
 /** BEGIN IsValid函数族 */
-inline bool IsValid(Object* Obj) {
+inline bool IsValid(Object* Obj)
+{
     return Obj != nullptr && Obj->IsValid();
 }
 
-inline bool IsValid(const Object* Obj) {
+inline bool IsValid(const Object* Obj)
+{
     return Obj != nullptr && Obj->IsValid();
 }
 
@@ -51,7 +72,12 @@ template<typename T>
 bool IsValid(T) = delete;
 /** END IsValid函数族 */
 
-enum class ENewReturnType { Raw, SharedPtr, UniquePtr };
+enum class ENewReturnType
+{
+    Raw,
+    SharedPtr,
+    UniquePtr
+};
 
 template<typename T, ENewReturnType Strategy>
 struct NewReturnType;
@@ -75,7 +101,8 @@ struct NewReturnType<T, ENewReturnType::UniquePtr>
 };
 
 // 使用这个可以不在头文件引入ObjectManager.h
-class ObjectCreateHelper {
+class ObjectCreateHelper
+{
 public:
     // 获得可用的ID
     static UInt32 GetAvailableID();
@@ -97,25 +124,37 @@ public:
  */
 template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename... Args>
     requires IsObject<T>
-typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&&... InArgs) {
+typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&&... InArgs)
+{
     // T不能是个单例
     static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
     UInt32 AvailableID = ObjectCreateHelper::GetAvailableID();
 
     typename NewReturnType<T, Strategy>::Type Rtn;
-    if constexpr (Strategy == ENewReturnType::Raw) {
+    if constexpr (Strategy == ENewReturnType::Raw)
+    {
         Rtn = new T(Forward<Args>(InArgs)...);
-    } else if constexpr (Strategy == ENewReturnType::SharedPtr) {
+    }
+    else if constexpr (Strategy == ENewReturnType::SharedPtr)
+    {
         Rtn = MakeShared<T>(Forward<Args>(InArgs)...);
-    } else if constexpr (Strategy == ENewReturnType::UniquePtr) {
+    }
+    else if constexpr (Strategy == ENewReturnType::UniquePtr)
+    {
         Rtn = MakeUnique<T>(Forward<Args>(InArgs)...);
-    } else {
+    }
+    else
+    {
         return nullptr;
     }
-    if (Rtn->GetName().empty()) {
-        if (Name.empty()) {
+    if (Rtn->GetName().empty())
+    {
+        if (Name.empty())
+        {
             Rtn->SetName(std::vformat(L"Object_{}", std::make_wformat_args(AvailableID)));
-        } else {
+        }
+        else
+        {
             Rtn->SetName(Name);
         }
     }
@@ -129,16 +168,16 @@ struct EngineStatistics
 {
     struct
     {
-        Int32 Width = 0;
+        Int32 Width  = 0;
         Int32 Height = 0;
     } WindowSize;
 
-    Float TimeDelta = 0;
-    UInt64 FrameCount = 0;
-    Int32 Fps = 0; // 帧率
-    Bool  HideMouse = false; // 是否隐藏鼠标
-    Int32 ObjectCount = 0; // 当前总对象数
-    const Int32 ParallelRenderFrameCount = 2; // 同时渲染的帧数
+    Float       TimeDelta                = 0;
+    UInt64      FrameCount               = 0;
+    Int32       Fps                      = 0;       // 帧率
+    Bool        HideMouse                = false;   // 是否隐藏鼠标
+    Int32       ObjectCount              = 0;       // 当前总对象数
+    const Int32 ParallelRenderFrameCount = 2;       // 同时渲染的帧数
     UInt32 SwapchainImageCount = -1;
 };
 
