@@ -17,8 +17,13 @@
 
 RESOURCE_NAMESPACE_BEGIN
 
-TSharedPtr<RHI::Vulkan::IRHIResource> Mesh::GetRHIResource() {
+
+TUniquePtr<RHI::Vulkan::Mesh>& Mesh::GetRHIResource() {
     return mMeshRHIResource;
+}
+
+void Mesh::LoadRHI() {
+    // mMeshRHIResource = RHI::Vulkan::Mesh::Create();
 }
 
 Model::Model(Protected, const Path& InModelPath) : mPath(InModelPath) {

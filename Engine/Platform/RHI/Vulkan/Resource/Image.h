@@ -95,6 +95,7 @@ protected:
 class Texture : public Image {
 public:
     static TSharedPtr<Texture> CreateShared(Int32 InWidth, Int32 InHeight, UInt8* InData);
+    static TUniquePtr<Texture> CreateUnique(Int32 InWidth, Int32 InHeight, UInt8* InData);
 
     Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* InData);
 

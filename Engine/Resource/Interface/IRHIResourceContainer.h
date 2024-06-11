@@ -11,10 +11,16 @@ namespace RHI::Vulkan {
 class IRHIResource;
 }
 
-class IRHIResourceContainer {
+class IRHIResourceContainer1 {
 public:
-    virtual ~IRHIResourceContainer() = default;
+    virtual ~IRHIResourceContainer1() = default;
+};
 
-    // 获取对应的RHIResource
-    virtual TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() = 0;
+template <typename ResourceType>
+class IRHIResourceContainer : public IRHIResourceContainer1
+{
+public:
+    ~IRHIResourceContainer() override = default;
+
+    virtual TUniquePtr<ResourceType>& GetRHIResource() = 0;
 };

@@ -14,14 +14,19 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InContext) : mContext(InContext) {
-    if (InMeshResource == nullptr || !InMeshResource->IsValid()) return;
+Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
+    if (InVertices.empty() || InIndicies.empty()) {
+        LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据或索引数据不合法");
+        return;
+    }
+    VulkanContext& Context            = VulkanContext::Get();
+    auto&          Device             = Context.GetLogicalDevice();
     // 顶点缓冲
-    mVertexCount                          = static_cast<UInt32>(InMeshResource->GetVertices().size());
-    const vk::DeviceSize VertexBufferSize = sizeof(InMeshResource->GetVertices()[0]) * mVertexCount;
-    vk::Buffer           VertexStagingBuffer;
-    vk::DeviceMemory     VertexStagingBufferMemory;
-    mContext.get().GetLogicalDevice()->CreateBuffer(
+    mVertexCount                      = static_cast<UInt32>(InVertices.size());
+    vk::DeviceSize   VertexBufferSize = sizeof(InVertices[0]) * mVertexCount;
+    vk::Buffer       VertexStagingBuffer;
+    vk::DeviceMemory VertexStagingBufferMemory;
+    Device->CreateBuffer(
         VertexBufferSize,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
@@ -29,71 +34,67 @@ Mesh::Mesh(ResourceProtected, Resource::Mesh* InMeshResource, VulkanContext& InC
         VertexStagingBufferMemory
     );
     void* Data;
-    mContext.get().GetLogicalDevice()->MapMemory(VertexStagingBufferMemory, VertexBufferSize, 0, &Data);
-    memcpy(Data, InMeshResource->GetVertices().data(), static_cast<size_t>(VertexBufferSize));
-    mContext.get().GetLogicalDevice()->UnmapMemory(VertexStagingBufferMemory);
-    mContext.get().GetLogicalDevice()->CreateBuffer(
+    Device->MapMemory(VertexStagingBufferMemory, VertexBufferSize, 0, &Data);
+    memcpy(Data, InVertices.data(), VertexBufferSize);
+    Device->UnmapMemory(VertexStagingBufferMemory);
+    Device->CreateBuffer(
         VertexBufferSize,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal,
         mVertexBuffer,
         mVertexBufferMemory
     );
-    mContext.get().GetCommandPool()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(VertexStagingBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(VertexStagingBufferMemory);
+    Context.GetCommandPool()->CopyBuffer(VertexStagingBuffer, mVertexBuffer, VertexBufferSize);
+    Device->GetHandle().destroyBuffer(VertexStagingBuffer);
+    Device->GetHandle().freeMemory(VertexStagingBufferMemory);
 
     // 索引缓冲
-    mIndexCount                          = static_cast<UInt32>(InMeshResource->GetIndices().size());
-    const vk::DeviceSize IndexBufferSize = sizeof(InMeshResource->GetIndices()[0]) * mIndexCount;
-    vk::Buffer           IndexStagingBuffer;
-    vk::DeviceMemory     IndexStagingBufferMemory;
-    mContext.get().GetLogicalDevice()->CreateBuffer(
+    mIndexCount                      = static_cast<UInt32>(InIndicies.size());
+    vk::DeviceSize   IndexBufferSize = sizeof(InIndicies[0]) * mIndexCount;
+    vk::Buffer       IndexStagingBuffer;
+    vk::DeviceMemory IndexStagingBufferMemory;
+    Device->CreateBuffer(
         IndexBufferSize,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
         IndexStagingBuffer,
         IndexStagingBufferMemory
     );
-    mContext.get().GetLogicalDevice()->MapMemory(IndexStagingBufferMemory, IndexBufferSize, 0, &Data);
-    memcpy(Data, InMeshResource->GetIndices().data(), static_cast<size_t>(IndexBufferSize));
-    mContext.get().GetLogicalDevice()->UnmapMemory(IndexStagingBufferMemory);
-    mContext.get().GetLogicalDevice()->CreateBuffer(
+    Device->MapMemory(IndexStagingBufferMemory, IndexBufferSize, 0, &Data);
+    memcpy(Data, InIndicies.data(), IndexBufferSize);
+    Device->UnmapMemory(IndexStagingBufferMemory);
+    Device->CreateBuffer(
         IndexBufferSize,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal,
         mIndexBuffer,
         mIndexBufferMemory
     );
-    mContext.get().GetCommandPool()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(IndexStagingBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(IndexStagingBufferMemory);
+    Context.GetCommandPool()->CopyBuffer(IndexStagingBuffer, mIndexBuffer, IndexBufferSize);
+    Device->GetHandle().destroyBuffer(IndexStagingBuffer);
+    Device->GetHandle().freeMemory(IndexStagingBufferMemory);
 }
 
-TSharedPtr<Mesh> Mesh::Create(VulkanContext& InContext, Resource::Mesh* InMeshResource) {
-    if (InMeshResource->GetRHIResource() != nullptr) {
-        return StaticPointerCast<Mesh>(InMeshResource->GetRHIResource());
-    }
-    auto NewMesh = MakeShared<Mesh>(ResourceProtected{}, InMeshResource, InContext);
-
-    InMeshResource->mMeshRHIResource = NewMesh;
-    return NewMesh;
+TSharedPtr<Mesh> Mesh::Create(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
+    return MakeShared<Mesh>(ResourceProtected{}, InVertices, InIndicies);
 }
 
 Mesh::~Mesh() {
-    Finialize();
+    InternalDestroy();
 }
 
 bool Mesh::IsValid() const {
     return mVertexBuffer && mIndexBuffer;
 }
 
-void Mesh::Finialize() {
+void Mesh::InternalDestroy() {
     if (!IsValid()) return;
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mVertexBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mVertexBufferMemory);
-    mContext.get().GetLogicalDevice()->GetHandle().destroyBuffer(mIndexBuffer);
-    mContext.get().GetLogicalDevice()->GetHandle().freeMemory(mIndexBufferMemory);
+    VulkanContext& Context      = VulkanContext::Get();
+    auto           DeviceHandle = Context.GetLogicalDevice()->GetHandle();
+    DeviceHandle.destroyBuffer(mVertexBuffer);
+    DeviceHandle.freeMemory(mVertexBufferMemory);
+    DeviceHandle.destroyBuffer(mIndexBuffer);
+    DeviceHandle.freeMemory(mIndexBufferMemory);
     mVertexBuffer       = nullptr;
     mIndexBuffer        = nullptr;
     mVertexBufferMemory = nullptr;
@@ -101,7 +102,7 @@ void Mesh::Finialize() {
 }
 
 void Mesh::Destroy() {
-    Finialize();
+    InternalDestroy();
 }
 
 Model::Model(Resource::Model* InModel, VulkanContext& InContext) {
@@ -125,7 +126,7 @@ TUniquePtr<Model> Model::CreateUnique(Resource::Model* InModel, VulkanContext& I
 void Model::Finialize() const {
     if (!IsValid()) return;
     for (const auto& Mesh: mMeshes) {
-        Mesh->Finialize();
+        Mesh->InternalDestroy();
     }
 }
 

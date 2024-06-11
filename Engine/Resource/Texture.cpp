@@ -33,25 +33,30 @@ Texture* Texture::Create(const Path& InPath, ETextureUsage) {
 
 Texture::~Texture() {
     stbi_image_free(mData);
-    if (mTextureRHIResource) mTextureRHIResource->Destroy();
-    mTextureRHIResource = nullptr;
-    mData               = nullptr;
+    if (mRHITexture) mRHITexture->Destroy();
+    mRHITexture = nullptr;
+    mData       = nullptr;
 }
 
 void Texture::Load() {
     if (!mPath.IsExist()) {
         LOG_ERROR_CATEGORY(Resource, L"{}不存在", mPath.ToString());
+        return;
     }
     const AnsiString PathStr = mPath.ToAnsiString();
 
     mData = stbi_load(PathStr.c_str(), &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
     if (!mData) {
         LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", mPath.ToString());
+        return;
     }
+
+    // 加载底层RHI资源
+    mRHITexture = RHI::Vulkan::Texture::CreateUnique(mWidth, mHeight, mData);
 }
 
-TSharedPtr<RHI::Vulkan::IRHIResource> Texture::GetRHIResource() {
-    return mTextureRHIResource;
+TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource(){
+    return mRHITexture;
 }
 
 RESOURCE_NAMESPACE_END

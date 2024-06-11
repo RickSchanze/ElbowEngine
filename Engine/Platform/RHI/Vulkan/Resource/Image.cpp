@@ -105,6 +105,14 @@ TSharedPtr<Texture> Texture::CreateShared(Int32 InWidth, Int32 InHeight, UInt8* 
     return MakeShared<Texture>(Protected{}, InWidth, InHeight, InData);
 }
 
+TUniquePtr<Texture> Texture::CreateUnique(Int32 InWidth, Int32 InHeight, UInt8* InData){
+    return MakeUnique<Texture>(Protected{}, InWidth, InHeight, InData);
+}
+
+Texture* Texture::Create(Int32 InWidth, Int32 InHeight, UInt8* InData){
+    return new Texture(Protected{}, InWidth, InHeight, InData);
+}
+
 Texture::Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* InData) : Image() {
     if (InData == nullptr) {
         LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: Data为空");

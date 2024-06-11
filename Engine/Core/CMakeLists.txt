@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME}
         Event/Event.h
         Misc/Guid.cpp
         Misc/Guid.h
+        Misc/Vertex.h
+        Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
 )

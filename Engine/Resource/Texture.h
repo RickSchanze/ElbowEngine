@@ -11,11 +11,12 @@
 #include "Interface/IRHIResourceContainer.h"
 #include "Path/Path.h"
 #include "ResourceCommon.h"
+#include "RHI/Vulkan/Resource/Image.h"
 
 namespace RHI::Vulkan {
 class Texture;
 class Image;
-}
+}   // namespace RHI::Vulkan
 
 RESOURCE_NAMESPACE_BEGIN
 
@@ -23,8 +24,9 @@ enum class ETextureUsage {
     Diffuse,
 };
 
-class Texture : public IResource, public IRHIResourceContainer {
+class Texture : public IResource, public IRHIResourceContainer<RHI::Vulkan::Texture> {
     friend class RHI::Vulkan::Texture;
+
 protected:
     struct Protected
     {};
@@ -46,7 +48,7 @@ public:
 
     void Load() final;
 
-    TSharedPtr<RHI::Vulkan::IRHIResource> GetRHIResource() override;
+    TUniquePtr<RHI::Vulkan::Texture>& GetRHIResource() override;
 
 protected:
     Path          mPath;
@@ -57,7 +59,7 @@ protected:
     ETextureUsage mUsage;
 
 private:
-    TSharedPtr<RHI::Vulkan::IRHIResource> mTextureRHIResource = nullptr;
+    TUniquePtr<RHI::Vulkan::Texture> mRHITexture = nullptr;
 };
 
 RESOURCE_NAMESPACE_END
