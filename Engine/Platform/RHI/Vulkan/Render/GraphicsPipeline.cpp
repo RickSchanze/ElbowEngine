@@ -1,8 +1,8 @@
 /**
  * @file GraphicsPipeline.cpp
- * @author Echo 
+ * @author Echo
  * @Date 24-4-27
- * @brief 
+ * @brief
  */
 
 #include "GraphicsPipeline.h"
@@ -28,13 +28,15 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-GraphicsPipeline::~GraphicsPipeline() {
+GraphicsPipeline::~GraphicsPipeline()
+{
     CleanOther(false);
     CleanPipeline();
     VulkanContext::Get().RemovePipelineFromRender(this);
 }
 
-GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
+GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer)
+{
     VulkanContext& Context = VulkanContext::Get();
     mPipelineInfo          = InInitializer;
     CreatePipeline();
@@ -43,11 +45,13 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer) {
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const {
-    VulkanContext&             Context     = VulkanContext::Get();
-    static auto                StartTime   = std::chrono::high_resolution_clock::now();
-    const auto                 CurrentTime = std::chrono::high_resolution_clock::now();
-    const float                Time        = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const
+{
+    VulkanContext& Context     = VulkanContext::Get();
+    static auto    StartTime   = std::chrono::high_resolution_clock::now();
+    const auto     CurrentTime = std::chrono::high_resolution_clock::now();
+    const float    Time =
+        std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
     TStaticArray<glm::mat4, 3> UBO;
     UBO[0] = glm::mat4(1.f);
     // TODO: Here
@@ -60,25 +64,31 @@ void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const {
 
     UBO[2] = glm::perspective(
         glm::radians(45.f),
-        static_cast<float>(Context.GetSwapChainExtent().width) / static_cast<float>(Context.GetSwapChainExtent().height),
+        static_cast<float>(Context.GetSwapChainExtent().width) /
+            static_cast<float>(Context.GetSwapChainExtent().height),
         0.1f,
         10.f
     );
     UBO[2][1][1] *= -1;
     void* Data;
-    Context.GetLogicalDevice()->MapMemory(mUniformBuffersMemory[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data);
+    Context.GetLogicalDevice()->MapMemory(
+        mUniformBuffersMemory[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data
+    );
     memcpy(Data, UBO.data(), 3 * sizeof(glm::mat4));
     Context.GetLogicalDevice()->UnmapMemory(mUniformBuffersMemory[InCurrentImage]);
 }
 
-vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 InCurrentImage) const {
+vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 InCurrentImage) const
+{
     return mCommandBuffers[InCurrentImage];
 }
 
-void GraphicsPipeline::CreatePipeline() {
+void GraphicsPipeline::CreatePipeline()
+{
     VulkanContext& Context = VulkanContext::Get();
     /************************* 配置RenderPass ************************/
-    if (mPipelineInfo.RenderPass == nullptr) {
+    if (mPipelineInfo.RenderPass == nullptr)
+    {
         // RenderPass或许可以共用
         // @TODO: 探索RenderPass共用
         mRenderPass              = new RenderPass();
@@ -89,15 +99,21 @@ void GraphicsPipeline::CreatePipeline() {
 
     /************************* 配置Shader ************************/
     // @TODO: 多Shader共用
-    const auto VertShader = Shader::CreateShared(mPipelineInfo.ShaderStage.VertexShaderPath, EShaderStage::Vertex);
-    const auto FragShader = Shader::CreateShared(mPipelineInfo.ShaderStage.FragmentShaderPath, EShaderStage::Fragment);
-    mShaderProg           = ShaderProgram::CreateShared(VertShader, FragShader);
+    const auto VertShader =
+        Shader::CreateShared(mPipelineInfo.ShaderStage.VertexShaderPath, EShaderStage::Vertex);
+    const auto FragShader =
+        Shader::CreateShared(mPipelineInfo.ShaderStage.FragmentShaderPath, EShaderStage::Fragment);
+    mShaderProg = ShaderProgram::CreateShared(VertShader, FragShader);
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
-    VertInfo.setStage(vk::ShaderStageFlagBits::eVertex).setModule(VertShader->GetShaderModule()).setPName("main");
+    VertInfo.setStage(vk::ShaderStageFlagBits::eVertex)
+        .setModule(VertShader->GetShaderModule())
+        .setPName("main");
     vk::PipelineShaderStageCreateInfo FragInfo{};
-    FragInfo.setStage(vk::ShaderStageFlagBits::eFragment).setModule(FragShader->GetShaderModule()).setPName("main");
+    FragInfo.setStage(vk::ShaderStageFlagBits::eFragment)
+        .setModule(FragShader->GetShaderModule())
+        .setPName("main");
     TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
 
     // 配置顶点Shader的输入信息
@@ -117,26 +133,31 @@ void GraphicsPipeline::CreatePipeline() {
     /************************* Shader配置结束 ************************/
 
     /************************* 配置视口 ************************/
-    vk::Viewport ViewportInfo    = {};
-    mPipelineInfo.Viewport.Width = mPipelineInfo.Viewport.Width == 0 ? Context.GetSwapChainExtent().width : mPipelineInfo.Viewport.Width;
-    mPipelineInfo.Viewport.Height =
-        mPipelineInfo.Viewport.Height == 0 ? Context.GetSwapChainExtent().height : mPipelineInfo.Viewport.Height;
-    ViewportInfo.x        = mPipelineInfo.Viewport.X;
-    ViewportInfo.y        = mPipelineInfo.Viewport.Y;
-    ViewportInfo.width    = mPipelineInfo.Viewport.Width;
-    ViewportInfo.height   = mPipelineInfo.Viewport.Height;
-    ViewportInfo.minDepth = 0.f;
-    ViewportInfo.maxDepth = 1.f;
+    vk::Viewport ViewportInfo     = {};
+    mPipelineInfo.Viewport.Width  = mPipelineInfo.Viewport.Width == 0
+                                        ? Context.GetSwapChainExtent().width
+                                        : mPipelineInfo.Viewport.Width;
+    mPipelineInfo.Viewport.Height = mPipelineInfo.Viewport.Height == 0
+                                        ? Context.GetSwapChainExtent().height
+                                        : mPipelineInfo.Viewport.Height;
+    ViewportInfo.x                = mPipelineInfo.Viewport.X;
+    ViewportInfo.y                = mPipelineInfo.Viewport.Y;
+    ViewportInfo.width            = mPipelineInfo.Viewport.Width;
+    ViewportInfo.height           = mPipelineInfo.Viewport.Height;
+    ViewportInfo.minDepth         = 0.f;
+    ViewportInfo.maxDepth         = 1.f;
 
-    mPipelineInfo.ClippingRect.Width =
-        mPipelineInfo.ClippingRect.Width == 0 ? Context.GetSwapChainExtent().width : mPipelineInfo.ClippingRect.Width;
-    mPipelineInfo.ClippingRect.Height =
-        mPipelineInfo.ClippingRect.Height == 0 ? Context.GetSwapChainExtent().height : mPipelineInfo.ClippingRect.Height;
-    vk::Rect2D Scissor    = {};
-    Scissor.offset.x      = mPipelineInfo.ClippingRect.OffsetX;
-    Scissor.offset.y      = mPipelineInfo.ClippingRect.OffsetY;
-    Scissor.extent.width  = mPipelineInfo.ClippingRect.Width;
-    Scissor.extent.height = mPipelineInfo.ClippingRect.Height;
+    mPipelineInfo.ClippingRect.Width  = mPipelineInfo.ClippingRect.Width == 0
+                                            ? Context.GetSwapChainExtent().width
+                                            : mPipelineInfo.ClippingRect.Width;
+    mPipelineInfo.ClippingRect.Height = mPipelineInfo.ClippingRect.Height == 0
+                                            ? Context.GetSwapChainExtent().height
+                                            : mPipelineInfo.ClippingRect.Height;
+    vk::Rect2D Scissor                = {};
+    Scissor.offset.x                  = mPipelineInfo.ClippingRect.OffsetX;
+    Scissor.offset.y                  = mPipelineInfo.ClippingRect.OffsetY;
+    Scissor.extent.width              = mPipelineInfo.ClippingRect.Width;
+    Scissor.extent.height             = mPipelineInfo.ClippingRect.Height;
 
     vk::PipelineViewportStateCreateInfo ViewportStateCreateInfo = {};
     ViewportStateCreateInfo.setViewports({ViewportInfo}).setScissors({Scissor});
@@ -147,13 +168,13 @@ void GraphicsPipeline::CreatePipeline() {
     vk::PipelineRasterizationStateCreateInfo RasterizerInfo = {};
     // clang-format off
     RasterizerInfo
-        .setDepthClampEnable(mPipelineInfo.RasterizationStage.EnableDepthClamp)
-        .setRasterizerDiscardEnable(mPipelineInfo.RasterizationStage.EnableRaterizerDiscard)
+        .setDepthClampEnable(mPipelineInfo.RasterizationStage.bEnableDepthClamp)
+        .setRasterizerDiscardEnable(mPipelineInfo.RasterizationStage.bEnableRaterizerDiscard)
         .setPolygonMode(mPipelineInfo.RasterizationStage.PolygonMode)
         .setLineWidth(mPipelineInfo.RasterizationStage.LineWidth)
         .setCullMode(mPipelineInfo.RasterizationStage.CullMode)
         .setFrontFace(mPipelineInfo.RasterizationStage.FrontFace)
-        .setDepthBiasEnable(mPipelineInfo.RasterizationStage.EnableDepthBias);
+        .setDepthBiasEnable(mPipelineInfo.RasterizationStage.bEnableDepthBias);
     // clang-format on
     /************************* 配置光栅化结束 ************************/
 
@@ -162,28 +183,28 @@ void GraphicsPipeline::CreatePipeline() {
 
     mSampleCount = mPipelineInfo.Multisample.SampleCount;
     MultisampleInfo   //
-        .setSampleShadingEnable(mPipelineInfo.Multisample.Enable)
+        .setSampleShadingEnable(mPipelineInfo.Multisample.bEnable)
         .setRasterizationSamples(mPipelineInfo.Multisample.SampleCount);
     /************************* 配置多重采样结束 ************************/
 
     /************************* 配置深度模版测试 ************************/
     vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
     DepthStencilInfo   //
-        .setDepthTestEnable(mPipelineInfo.DepthStencilStage.EnableDepthTest)
-        .setDepthWriteEnable(mPipelineInfo.DepthStencilStage.EnableDepthWrite)
+        .setDepthTestEnable(mPipelineInfo.DepthStencilStage.bEnableDepthTest)
+        .setDepthWriteEnable(mPipelineInfo.DepthStencilStage.bEnableDepthWrite)
         .setDepthCompareOp(mPipelineInfo.DepthStencilStage.DepthCompareOp)
-        .setDepthBoundsTestEnable(mPipelineInfo.DepthStencilStage.EnableDepthBoundsTest)
-        .setStencilTestEnable(mPipelineInfo.DepthStencilStage.EnableStencilTest);
+        .setDepthBoundsTestEnable(mPipelineInfo.DepthStencilStage.bEnableDepthBoundsTest)
+        .setStencilTestEnable(mPipelineInfo.DepthStencilStage.bEnableStencilTest);
     /************************* 配置深度模版测试结束 ************************/
 
     /************************* 配置颜色混合 ************************/
     vk::PipelineColorBlendAttachmentState ColorBlendAttachment = {};
     ColorBlendAttachment   //
         .setColorWriteMask(
-            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
-            vk::ColorComponentFlagBits::eA
+            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+            vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
         )
-        .setBlendEnable(mPipelineInfo.ColorBlendAttachmentState.Enable);
+        .setBlendEnable(mPipelineInfo.ColorBlendAttachmentState.bEnable);
 
     vk::PipelineColorBlendStateCreateInfo ColorBlendInfo = {};
     ColorBlendInfo   //
@@ -199,16 +220,20 @@ void GraphicsPipeline::CreatePipeline() {
     PipelineLayoutInfo.setSetLayouts({mDescriptorSetLayout});
 
     // 创建管线布局
-    mPipelineLayout = Context.GetLogicalDevice()->GetHandle().createPipelineLayout(PipelineLayoutInfo);
+    mPipelineLayout =
+        Context.GetLogicalDevice()->GetHandle().createPipelineLayout(PipelineLayoutInfo);
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo DynamicStateInfo;
     TArray<vk::DynamicState>           DynamicStates;
-    if (!(mPipelineInfo.DynamicStateEnabled & EPDSE_None)) {
-        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor) {
+    if (!(mPipelineInfo.DynamicStateEnabled & EPDSE_None))
+    {
+        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor)
+        {
             DynamicStates.emplace_back(vk::DynamicState::eScissor);
         }
-        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport) {
+        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport)
+        {
             DynamicStates.emplace_back(vk::DynamicState::eViewport);
         }
     }
@@ -229,17 +254,23 @@ void GraphicsPipeline::CreatePipeline() {
         .setSubpass(0)                              // 子Pass
         .setPDynamicState(&DynamicStateInfo);
 
-    auto Pipeline = Context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
-    if (Pipeline.result != vk::Result::eSuccess) {
+    auto Pipeline =
+        Context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
+    if (Pipeline.result != vk::Result::eSuccess)
+    {
         throw VulkanException(L"创建管线失败");
-    } else {
+    }
+    else
+    {
         mPipeline = Pipeline.value;
     }
 }
 
-void GraphicsPipeline::CleanPipeline() {
+void GraphicsPipeline::CleanPipeline()
+{
     const auto& Device = VulkanContext::Get().GetLogicalDevice();
-    if (Device) {
+    if (Device)
+    {
         Device->GetHandle().destroyPipeline(mPipeline);
         Device->GetHandle().destroyPipelineLayout(mPipelineLayout);
         Device->GetHandle().destroyDescriptorSetLayout(mDescriptorSetLayout);
@@ -251,23 +282,27 @@ void GraphicsPipeline::CleanPipeline() {
     }
 }
 
-void GraphicsPipeline::CreateOther(bool bRebuilding) {
+void GraphicsPipeline::CreateOther(bool bRebuilding)
+{
     // TODO: 重构并整个至材质系统
     CreateTextureImageAndView();
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptotSets();
     // TODO: 模型系统解耦
-    if (!bRebuilding) {
+    if (!bRebuilding)
+    {
         LoadModel();
     }
     CreateCommandBuffers();
 }
 
-void GraphicsPipeline::CleanOther(bool bRebuilding) {
+void GraphicsPipeline::CleanOther(bool bRebuilding)
+{
     CleanDescriptorPool();
     // TODO: 模型系统解耦
-    if (!bRebuilding) {
+    if (!bRebuilding)
+    {
         CleanModel();
     }
     // TODO: 重构并整合至材质系统
@@ -276,17 +311,22 @@ void GraphicsPipeline::CleanOther(bool bRebuilding) {
     CleanTextureImageAndView();
 }
 
-void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer) {
+void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer)
+{
     vk::CommandBufferBeginInfo BeginInfo = {};
     BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
     InBuffer.begin(BeginInfo);
 }
 
-void GraphicsPipeline::EndRecordCommand(const vk::CommandBuffer InBuffer) {
+void GraphicsPipeline::EndRecordCommand(const vk::CommandBuffer InBuffer)
+{
     InBuffer.end();
 }
 
-void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam) {
+void GraphicsPipeline::RecordCommand(
+    vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam
+)
+{
     VulkanContext&          Context        = VulkanContext::Get();
     vk::RenderPassBeginInfo RenderPassInfo = {};
     RenderPassInfo.setRenderPass(mRenderPass->GetHandle())
@@ -298,7 +338,8 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     RenderPassInfo.setClearValues(ClearValues);
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
-    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport) {
+    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport)
+    {
         vk::Viewport NewViewport;
         NewViewport.x      = 0;
         NewViewport.y      = 0;
@@ -306,18 +347,20 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
         NewViewport.height = gEngineStatistics.WindowSize.Height;
         InBuffer.setViewport(0, NewViewport);
     }
-    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor) {
+    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor)
+    {
         vk::Rect2D NewScissor;
-        NewScissor.offset.x = 0;
-        NewScissor.offset.y = 0;
-        NewScissor.extent.width = gEngineStatistics.WindowSize.Width;
+        NewScissor.offset.x      = 0;
+        NewScissor.offset.y      = 0;
+        NewScissor.extent.width  = gEngineStatistics.WindowSize.Width;
         NewScissor.extent.height = gEngineStatistics.WindowSize.Height;
         InBuffer.setScissor(0, NewScissor);
     }
     // 使用顶点缓冲需纳入
 
     int i = 0;
-    for (const auto& Mesh: mModel->GetMeshes()) {
+    for (const auto& Mesh: mModel->GetMeshes())
+    {
         // 绑定顶点缓冲
         i++;
         vk::DeviceSize Offset          = 0;
@@ -332,10 +375,12 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     InBuffer.endRenderPass();
 }
 
-void GraphicsPipeline::CreateDescriptionSetLayout() {
+void GraphicsPipeline::CreateDescriptionSetLayout()
+{
     VulkanContext&                         Context = VulkanContext::Get();
     TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
-    for (const auto& UniformBinding: mShaderProg->GetUniforms() | std::views::values) {
+    for (const auto& UniformBinding: mShaderProg->GetUniforms() | std::views::values)
+    {
         vk::DescriptorSetLayoutBinding Binding;
         Binding.binding         = UniformBinding.Binding;
         Binding.descriptorType  = GetVkDescriptorType(UniformBinding.Type);
@@ -345,73 +390,34 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     }
     vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
     LayoutInfo.setBindings(UniformBindings);
-    mDescriptorSetLayout = Context.GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
+    mDescriptorSetLayout =
+        Context.GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
-void GraphicsPipeline::LoadModel() {
+void GraphicsPipeline::LoadModel()
+{
     VulkanContext& Context       = VulkanContext::Get();
     auto           ModelResource = Resource::Model::Create(L"Models/AK47/AK47_CS2.fbx");
     mModel                       = Model::CreateUnique(ModelResource, Context);
 }
 
-void GraphicsPipeline::CleanModel() const {
+void GraphicsPipeline::CleanModel() const
+{
     mModel->Finialize();
 }
 
-void GraphicsPipeline::CreateTextureImageAndView() {
-    VulkanContext& Context = VulkanContext::Get();
-    const auto     Texture = Resource::Texture::Create(L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-    mTexture               = Texture::CreateShared(Texture->GetWidth(), Texture->GetHeight(), Texture->GetData());
-    mTextureView           = Context.GetLogicalDevice()->CreateImageViewShared(
-        *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
-    );
-    CreateTextureSampler();
-}
-
-void GraphicsPipeline::CleanTextureImageAndView() const {
-    mTextureView->Finialize();
-    mTexture->Finialize();
-    CleanTextureSampler();
-}
-
-void GraphicsPipeline::CreateTextureSampler() {
-    VulkanContext&        Context       = VulkanContext::Get();
-    vk::SamplerCreateInfo SamplerInfo   = {};
-    SamplerInfo.magFilter               = vk::Filter::eLinear;
-    SamplerInfo.minFilter               = vk::Filter::eLinear;
-    SamplerInfo.addressModeU            = vk::SamplerAddressMode::eRepeat;
-    SamplerInfo.addressModeV            = vk::SamplerAddressMode::eRepeat;
-    SamplerInfo.addressModeW            = vk::SamplerAddressMode::eRepeat;
-    SamplerInfo.anisotropyEnable        = true;
-    SamplerInfo.maxAnisotropy           = 16;
-    SamplerInfo.borderColor             = vk::BorderColor::eIntOpaqueBlack;
-    // false则纹理坐标为(0,1)
-    SamplerInfo.unnormalizedCoordinates = false;
-    // 与一个特定值比较，通常阴影贴图会用到
-    SamplerInfo.compareEnable           = false;
-    SamplerInfo.compareOp               = vk::CompareOp::eAlways;
-    // Mipmap
-    SamplerInfo.mipmapMode              = vk::SamplerMipmapMode::eLinear;
-    SamplerInfo.mipLodBias              = 0;
-    SamplerInfo.minLod                  = 0;
-    SamplerInfo.maxLod                  = 0;
-    mTextureSampler                     = Context.GetLogicalDevice()->GetHandle().createSampler(SamplerInfo);
-}
-
-void GraphicsPipeline::CleanTextureSampler() const {
-    VulkanContext& Context = VulkanContext::Get();
-    Context.GetLogicalDevice()->GetHandle().destroy(mTextureSampler);
-}
-
-void GraphicsPipeline::CreateUniformBuffers() {
+void GraphicsPipeline::CreateUniformBuffers()
+{
     VulkanContext& Context    = VulkanContext::Get();
     vk::DeviceSize BufferSize = 0;
-    for (const auto& [Key, Value]: mShaderProg->GetUniforms()) {
+    for (const auto& [Key, Value]: mShaderProg->GetUniforms())
+    {
         BufferSize += Value.Size;
     }
     mUniformBuffers.resize(Context.GetSwapChainImageCount());
     mUniformBuffersMemory.resize(Context.GetSwapChainImageCount());
-    for (size_t i = 0; i < Context.GetSwapChainImageCount(); i++) {
+    for (size_t i = 0; i < Context.GetSwapChainImageCount(); i++)
+    {
         Context.GetLogicalDevice()->CreateBuffer(
             BufferSize,
             vk::BufferUsageFlagBits::eUniformBuffer,
@@ -421,9 +427,12 @@ void GraphicsPipeline::CreateUniformBuffers() {
         );
     }
 }
-void GraphicsPipeline::CleanUniformBuffers() {
+
+void GraphicsPipeline::CleanUniformBuffers()
+{
     VulkanContext& Context = VulkanContext::Get();
-    for (size_t i = 0; i < Context.GetSwapChainImageCount(); i++) {
+    for (size_t i = 0; i < Context.GetSwapChainImageCount(); i++)
+    {
         Context.GetLogicalDevice()->GetHandle().destroyBuffer(mUniformBuffers[i]);
         Context.GetLogicalDevice()->GetHandle().freeMemory(mUniformBuffersMemory[i]);
     }
@@ -431,7 +440,8 @@ void GraphicsPipeline::CleanUniformBuffers() {
     mUniformBuffersMemory.clear();
 }
 
-void GraphicsPipeline::CreateDescriptorPool() {
+void GraphicsPipeline::CreateDescriptorPool()
+{
     VulkanContext&                          Context   = VulkanContext::Get();
     TStaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
     // Uniform Object
@@ -447,12 +457,14 @@ void GraphicsPipeline::CreateDescriptorPool() {
     mDescriptorPool = Context.GetLogicalDevice()->GetHandle().createDescriptorPool(PoolInfo);
 }
 
-void GraphicsPipeline::CleanDescriptorPool() const {
+void GraphicsPipeline::CleanDescriptorPool() const
+{
     VulkanContext& Context = VulkanContext::Get();
     Context.GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
 }
 
-void GraphicsPipeline::CreateDescriptotSets() {
+void GraphicsPipeline::CreateDescriptotSets()
+{
     VulkanContext&                  Context = VulkanContext::Get();
     TArray<vk::DescriptorSetLayout> Layouts(Context.GetSwapChainImageCount(), mDescriptorSetLayout);
     vk::DescriptorSetAllocateInfo   AllocInfo = {};
@@ -460,7 +472,8 @@ void GraphicsPipeline::CreateDescriptotSets() {
     mDescriptorSets.resize(Context.GetSwapChainImageCount());
     // 描述符池对象销毁时会自动清除描述符集
     mDescriptorSets = Context.GetLogicalDevice()->GetHandle().allocateDescriptorSets(AllocInfo);
-    for (size_t i = 0; i < mDescriptorSets.size(); i++) {
+    for (size_t i = 0; i < mDescriptorSets.size(); i++)
+    {
         vk::DescriptorBufferInfo BufferInfo = {};
         BufferInfo.setBuffer(mUniformBuffers[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
         vk::DescriptorImageInfo ImageInfo = {};
@@ -488,7 +501,8 @@ void GraphicsPipeline::CreateDescriptotSets() {
     }
 }
 
-void GraphicsPipeline::CreateCommandBuffers() {
+void GraphicsPipeline::CreateCommandBuffers()
+{
     VulkanContext&                Context   = VulkanContext::Get();
     vk::CommandBufferAllocateInfo AllocInfo = {};
     AllocInfo.setCommandPool(Context.GetCommandPool()->GetCommandPool())
@@ -497,7 +511,8 @@ void GraphicsPipeline::CreateCommandBuffers() {
 
     mCommandBuffers = Context.GetCommandPool()->CreateCommandBuffers(AllocInfo);
 
-    for (size_t i = 0; i < mCommandBuffers.size(); i++) {
+    for (size_t i = 0; i < mCommandBuffers.size(); i++)
+    {
         auto CommandBuffer = mCommandBuffers[i];
         BeginRecordCommand(CommandBuffer);
         {
@@ -510,15 +525,17 @@ void GraphicsPipeline::CreateCommandBuffers() {
     }
 }
 
-void GraphicsPipeline::CleanCommandBuffers() const {
+void GraphicsPipeline::CleanCommandBuffers() const
+{
     VulkanContext& Context = VulkanContext::Get();
     Context.GetCommandPool()->DestroyCommandBuffers(mCommandBuffers);
 }
 
 void GraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
-    vk::Fence InFrameFence
-) {
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
+    TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
+)
+{
     auto                   CmdBuffer  = GetCurrentImageCommandBuffer(CurrentImageIndex);
     vk::SubmitInfo         SubmitInfo = {};
     vk::PipelineStageFlags WaitFlag   = vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -529,8 +546,8 @@ void GraphicsPipeline::SubmitGraphicsQueue(
     InGraphicsQueue.submit(SubmitInfo, InFrameFence);
 }
 
-void GraphicsPipeline::Rebuild() {
-
+void GraphicsPipeline::Rebuild()
+{
     CleanOther(true);
     if (!(mPipelineInfo.DynamicStateEnabled | EPDSE_None)) {
         // 启用了DynamicState则通过DynamicState设置

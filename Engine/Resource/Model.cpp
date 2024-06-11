@@ -23,7 +23,7 @@ TUniquePtr<RHI::Vulkan::Mesh>& Mesh::GetRHIResource() {
 }
 
 void Mesh::LoadRHI() {
-    // mMeshRHIResource = RHI::Vulkan::Mesh::Create();
+    mMeshRHIResource = RHI::Vulkan::Mesh::CreateUnique(mVertices, mIndices);
 }
 
 Model::Model(Protected, const Path& InModelPath) : mPath(InModelPath) {
@@ -79,6 +79,7 @@ void Model::ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutM
             OutMesh.GetIndices().push_back(Face.mIndices[j]);
         }
     }
+    OutMesh.LoadRHI();
     // 纹理
     // 这里直接加载 TODO: 自动解压纹理
     const aiMaterial* Material = InScene->mMaterials[InMesh->mMaterialIndex];

@@ -12,26 +12,33 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class SwapChain;
 }
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class PhysicalDevice;
 }
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class Instance;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class LogicalDevice final : public IRHIResource {
+class LogicalDevice final : public IRHIResource
+{
 public:
     ~LogicalDevice() override;
 
-    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static TUniquePtr<LogicalDevice>
+    CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    explicit LogicalDevice(
+        ResourceProtected, vk::Device InDevice,
+        const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
+    );
 
-    void Initialize();
     void Finialize();
 
     void Destroy() override;
@@ -43,25 +50,8 @@ public:
      * @param InHeight
      * @return
      */
-    TUniquePtr<SwapChain> CreateSwapChain(UInt32 InSwapChainImageCount = 0, UInt32 InWidth = 0, UInt32 InHeight = 0);
-
-    /**
-     * 基于InImage创建一个图像视图
-     * @param InImage
-     * @param InFormat
-     * @param InAspectFlags
-     * @param InMipLevels
-     * @return
-     */
-    TSharedPtr<ImageView> CreateImageViewShared(
-        const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
-        UInt32 InMipLevels = 1
-    );
-
-    TUniquePtr<ImageView> CreateImageViewUnique(
-        const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags = vk::ImageAspectFlagBits::eColor,
-        UInt32 InMipLevels = 1
-    );
+    TUniquePtr<SwapChain>
+    CreateSwapChain(UInt32 InSwapChainImageCount = 0, UInt32 InWidth = 0, UInt32 InHeight = 0);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
@@ -72,15 +62,17 @@ public:
      * @param OutBufferMemory
      */
     void CreateBuffer(
-        vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
-        vk::DeviceMemory& OutBufferMemory
+        vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties,
+        vk::Buffer& OutBuffer, vk::DeviceMemory& OutBufferMemory
     ) const;
 
     vk::Queue GetGraphicsQueue() const { return mGraphicsQueue; }
     vk::Queue GetPresentQueue() const { return mPresentQueue; }
 
-    vk::Result MapMemory(vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData) const;
-    void       UnmapMemory(vk::DeviceMemory InMemory) const;
+    vk::Result MapMemory(
+        vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData
+    ) const;
+    void UnmapMemory(vk::DeviceMemory InMemory) const;
 
     bool            IsValid() const { return static_cast<bool>(mLogicalDeviceHandle); }
     vk::Device      GetHandle() const { return mLogicalDeviceHandle; }

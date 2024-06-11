@@ -24,7 +24,8 @@ class Mesh : public IRHIResource {
 public:
     Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
 
-    static TSharedPtr<Mesh> Create(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
+    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
+    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
 
     ~Mesh() override;
 

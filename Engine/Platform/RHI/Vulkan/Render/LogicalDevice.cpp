@@ -15,45 +15,58 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-LogicalDevice::~LogicalDevice() {
+LogicalDevice::~LogicalDevice()
+{
     Finialize();
 }
 
-TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) {
+TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(
+    vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
+)
+{
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
-LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
-    mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice) {
+LogicalDevice::LogicalDevice(
+    ResourceProtected, const vk::Device InDevice,
+    const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
+) : mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice)
+{
     Initialize();
 }
 
-void LogicalDevice::Initialize() {}
-
-void LogicalDevice::Finialize() {
+void LogicalDevice::Finialize()
+{
     if (!IsValid()) return;
     mLogicalDeviceHandle.destroy();
     mLogicalDeviceHandle = VK_NULL_HANDLE;
 }
 
-void LogicalDevice::Destroy() {
+void LogicalDevice::Destroy()
+{
     Finialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight) {
+TUniquePtr<SwapChain>
+LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight)
+{
     const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
     const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
-    const auto Surface                  = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
+    const auto Surface = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
 
     const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
     const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
-    const auto Extent        = SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities, InWidth, InHeight);
+    const auto Extent =
+        SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities, InWidth, InHeight);
 
     UInt32 ImageCount = InSwapChainImageCount;
-    if (InSwapChainImageCount == 0) {
+    if (InSwapChainImageCount == 0)
+    {
         ImageCount = SwapChainSupport.Capabilities.minImageCount + 1;
     }
-    if (SwapChainSupport.Capabilities.maxImageCount > 0 && ImageCount > SwapChainSupport.Capabilities.maxImageCount) {
+    if (SwapChainSupport.Capabilities.maxImageCount > 0 &&
+        ImageCount > SwapChainSupport.Capabilities.maxImageCount)
+    {
         ImageCount = SwapChainSupport.Capabilities.maxImageCount;
     }
     vk::SwapchainCreateInfoKHR SwapChainInfo = {};
@@ -74,82 +87,56 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const UInt32 InSwapChainIma
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                    Indicies            = AssociatedPhysicalDevice.FindQueueFamilyIndices();
+    const auto                    Indicies = AssociatedPhysicalDevice.FindQueueFamilyIndices();
     const TStaticArray<UInt32, 2> QueueFamilyIndicies = {
         Indicies.GraphicsFamily.value(),
         Indicies.PresentFamily.value(),
     };
-    if (Indicies.GraphicsFamily != Indicies.PresentFamily) {
+    if (Indicies.GraphicsFamily != Indicies.PresentFamily)
+    {
         SwapChainInfo
-            .setImageSharingMode(vk::SharingMode::eConcurrent)   // 图像可以在多个队列族使用而不需要显式改变图像所有权
-            .setQueueFamilyIndices(QueueFamilyIndicies);         // 不是同一队列族时需要指定此项
-    } else {
-        SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive);   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
+            .setImageSharingMode(vk::SharingMode::eConcurrent
+            )   // 图像可以在多个队列族使用而不需要显式改变图像所有权
+            .setQueueFamilyIndices(QueueFamilyIndicies);   // 不是同一队列族时需要指定此项
+    }
+    else
+    {
+        SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive
+        );   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
     mGraphicsQueue = mLogicalDeviceHandle.getQueue(Indicies.GraphicsFamily.value(), 0);
     mPresentQueue  = mLogicalDeviceHandle.getQueue(Indicies.PresentFamily.value(), 0);
-    return SwapChain::CreateUnique(mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent);
-}
-
-TSharedPtr<ImageView> LogicalDevice::CreateImageViewShared(
-    const ImageBase& InImage, const vk::Format InFormat, const vk::ImageAspectFlags InAspectFlags, const UInt32 InMipLevels
-) {
-    vk::ImageViewCreateInfo ViewInfo = {};
-    ViewInfo.setImage(InImage.GetHandle())
-        .setViewType(vk::ImageViewType::e2D)
-        .setFormat(InFormat)
-        .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(InAspectFlags)
-                                 .setBaseMipLevel(0)
-                                 .setLevelCount(InMipLevels)
-                                 .setBaseArrayLayer(0)
-                                 .setLayerCount(1))
-        .setComponents(vk::ComponentMapping()
-                           .setR(vk::ComponentSwizzle::eIdentity)
-                           .setG(vk::ComponentSwizzle::eIdentity)
-                           .setB(vk::ComponentSwizzle::eIdentity)
-                           .setA(vk::ComponentSwizzle::eIdentity));
-    return MakeShared<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo));
-}
-
-TUniquePtr<ImageView> LogicalDevice::CreateImageViewUnique(const ImageBase& InImage, vk::Format InFormat, vk::ImageAspectFlags InAspectFlags, UInt32 InMipLevels){
-    vk::ImageViewCreateInfo ViewInfo = {};
-    ViewInfo.setImage(InImage.GetHandle())
-        .setViewType(vk::ImageViewType::e2D)
-        .setFormat(InFormat)
-        .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(InAspectFlags)
-                                 .setBaseMipLevel(0)
-                                 .setLevelCount(InMipLevels)
-                                 .setBaseArrayLayer(0)
-                                 .setLayerCount(1))
-        .setComponents(vk::ComponentMapping()
-                           .setR(vk::ComponentSwizzle::eIdentity)
-                           .setG(vk::ComponentSwizzle::eIdentity)
-                           .setB(vk::ComponentSwizzle::eIdentity)
-                           .setA(vk::ComponentSwizzle::eIdentity));
-    return MakeUnique<ImageView>(mLogicalDeviceHandle.createImageView(ViewInfo));
+    return SwapChain::CreateUnique(
+        mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent
+    );
 }
 
 void LogicalDevice::CreateBuffer(
-    const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage, const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
+    const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage,
+    const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
     vk::DeviceMemory& OutBufferMemory
-) const {
+) const
+{
     vk::BufferCreateInfo BufferInfo = {};
     BufferInfo.setSize(InSize).setUsage(InUsage).setSharingMode(vk::SharingMode::eExclusive);
-    OutBuffer                              = mLogicalDeviceHandle.createBuffer(BufferInfo);
-    const vk::MemoryRequirements MemReq    = mLogicalDeviceHandle.getBufferMemoryRequirements(OutBuffer);
+    OutBuffer = mLogicalDeviceHandle.createBuffer(BufferInfo);
+    const vk::MemoryRequirements MemReq =
+        mLogicalDeviceHandle.getBufferMemoryRequirements(OutBuffer);
     // 分配内存
-    vk::MemoryAllocateInfo       AllocInfo = {};
+    vk::MemoryAllocateInfo AllocInfo = {};
     AllocInfo.setAllocationSize(MemReq.size)
-        .setMemoryTypeIndex(GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties));
+        .setMemoryTypeIndex(
+            GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties)
+        );
     OutBufferMemory = mLogicalDeviceHandle.allocateMemory(AllocInfo);
     mLogicalDeviceHandle.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 }
 
 vk::Result LogicalDevice::MapMemory(
-    const vk::DeviceMemory InMemory, const vk::DeviceSize InSize, const vk::DeviceSize InOffset, void** OutData
-) const {
+    const vk::DeviceMemory InMemory, const vk::DeviceSize InSize, const vk::DeviceSize InOffset,
+    void** OutData
+) const
+{
     return mLogicalDeviceHandle.mapMemory(InMemory, InOffset, InSize, vk::MemoryMapFlags(), OutData);
 }
 

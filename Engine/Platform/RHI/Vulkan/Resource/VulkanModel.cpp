@@ -75,8 +75,12 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UIn
     Device->GetHandle().freeMemory(IndexStagingBufferMemory);
 }
 
-TSharedPtr<Mesh> Mesh::Create(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
+TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
     return MakeShared<Mesh>(ResourceProtected{}, InVertices, InIndicies);
+}
+
+TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies){
+    return MakeUnique<Mesh>(ResourceProtected{}, InVertices, InIndicies);
 }
 
 Mesh::~Mesh() {

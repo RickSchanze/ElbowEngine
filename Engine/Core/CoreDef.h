@@ -117,6 +117,12 @@ template<
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using THashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
+// std::unordered_set -> HashSet
+#include <unordered_set>
+template <class KeyType, class Hasher = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>,
+    class Alloc = std::allocator<KeyType>>
+using THashSet = std::unordered_set<KeyType, Hasher, KeyEqual, Alloc>;
+
 template<typename T>
 constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
     static_assert(!std::is_lvalue_reference_v<T>, "Can not forward an rvalue as an lvalue.");

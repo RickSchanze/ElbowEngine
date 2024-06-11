@@ -6,30 +6,34 @@
  */
 
 #pragma once
+#include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class LogicalDevice;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class ImageView {
+class ImageView : public IRHIResource
+{
 public:
     explicit ImageView() = default;
 
-    explicit ImageView(const vk::ImageView& InViewHandle) :
-        mViewHandle(InViewHandle) {}
+    explicit ImageView(const vk::ImageView& InViewHandle) : mViewHandle(InViewHandle) {}
 
-    ~ImageView();
+    ~ImageView() override;
 
-    bool          IsValid() const { return static_cast<bool>(mViewHandle); }
+    bool IsValid() const { return static_cast<bool>(mViewHandle); }
+
     vk::ImageView GetHandle() const { return mViewHandle; }
 
-    void Initialize() {}
-    void Finialize();
+    void InternalDestroy();
+
+    void Destroy() override;
 
 private:
-    vk::ImageView  mViewHandle = VK_NULL_HANDLE;
+    vk::ImageView mViewHandle = VK_NULL_HANDLE;
 };
 
 RHI_VULKAN_NAMESPACE_END
