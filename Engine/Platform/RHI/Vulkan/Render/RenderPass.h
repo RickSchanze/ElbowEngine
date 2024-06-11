@@ -60,7 +60,10 @@ public:
 
     ~RenderPass() override;
 
-    virtual void Initialize();
+    void Initialize();
+
+    // 用于创建RenderPass需要的所有Attachment
+    virtual void OnCreateAttachments();
 
     virtual void PostInitialize() {}
 
@@ -72,9 +75,13 @@ public:
      * 重置Renderpass
      * @param bDeep 为true则会 销毁RenderPass否则只销毁Framebuffer及其Attachment
      */
-    virtual void Rebuild(bool bDeep = false);
+    virtual void Rebuild(bool bDeep);
 
     void Destroy() override;
+
+    TUniquePtr<Framebuffer>& GetFrameBuffer(Int32 InIndex) { return mFrameBuffers[InIndex]; }
+
+    TArray<TUniquePtr<Framebuffer>>& GetFrameBuffers() { return mFrameBuffers; }
 
 protected:
     void InternalDestroy();
@@ -105,6 +112,7 @@ protected:
 
     TArray<vk::AttachmentDescription> mAttachmentDescs;
     TArray<vk::AttachmentReference>   mAttahcmentRefs;
+    TArray<vk::AttachmentReference>   mSubpassColorAttachmentRefs;
 
     // 深度附着一个RenderPass最多只允许一个
     Int32 mDepthAttachmentIndex = -1;

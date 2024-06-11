@@ -94,7 +94,9 @@ protected:
 
 class Texture : public Image {
 public:
-    Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* IData);
+    static TSharedPtr<Texture> CreateShared(Int32 InWidth, Int32 InHeight, UInt8* InData);
+
+    Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* InData);
 
     Int32 GetMipLevel() const { return mMipLevel; }
 

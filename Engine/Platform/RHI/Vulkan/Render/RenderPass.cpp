@@ -7,6 +7,7 @@
 
 #include "RenderPass.h"
 
+#include "CommandPool.h"
 #include "CoreGlobal.h"
 #include "Framebuffer.h"
 #include "LogicalDevice.h"
@@ -43,18 +44,31 @@ RenderPass::~RenderPass() {
 void RenderPass::Initialize() {
     if (IsValid()) return;
 
+    OnCreateAttachments();
+
+    CreateSubpassDescription();
+    CreateRenderPass();
+    SetupFramebuffer();
+    PostInitialize();
+}
+
+void RenderPass::OnCreateAttachments() {
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
     RenderPassAttachmentParam SwapchainImageParam{vk::ImageUsageFlagBits::eSampled};
-    SwapchainImageParam.SampleCount = SampleCount;
+    SwapchainImageParam.SampleCount     = SampleCount;
+    SwapchainImageParam.ReferenceLayout = vk::ImageLayout::eColorAttachmentOptimal;
     NewAttachment(SwapchainImageParam, true);
 
     // 深度图像缓冲
     RenderPassAttachmentParam DepthImageParam(vk::ImageUsageFlagBits::eDepthStencilAttachment);
     // @QUESTION: 深度图像是否需要多重采样？
-    DepthImageParam.SampleCount  = SampleCount;
-    DepthImageParam.Format       = VulkanContext::Get().GetDepthImageFormat();
-    DepthImageParam.FinialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    DepthImageParam.SampleCount     = SampleCount;
+    DepthImageParam.LoadOp          = vk::AttachmentLoadOp::eClear;
+    DepthImageParam.StoreOp         = vk::AttachmentStoreOp::eDontCare;
+    DepthImageParam.Format          = VulkanContext::Get().GetDepthImageFormat();
+    DepthImageParam.FinialLayout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    DepthImageParam.ReferenceLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     NewAttachment(DepthImageParam, false, true);
 
     if (SampleCount != vk::SampleCountFlagBits::e1) {
@@ -66,11 +80,6 @@ void RenderPass::Initialize() {
         SampleResolveParam.FinialLayout = vk::ImageLayout::ePresentSrcKHR;
         NewAttachment(SampleResolveParam, false, false, true);
     }
-
-    CreateSubpassDescription();
-    CreateRenderPass();
-    SetupFramebuffer();
-    PostInitialize();
 }
 
 void RenderPass::SetupFramebuffer() {
@@ -83,7 +92,7 @@ void RenderPass::SetupFramebuffer() {
 
     for (size_t i = 0; i < mFrameBufferAttachments.size(); i++) {
         if (i == mSwapchainViewIndex) {
-            mFrameBufferAttachments[i].View = Context.GetSwapChainImageViews()[i];
+            // mFrameBufferAttachments[i].View = Context.GetSwapChainImageViews()[i];
             continue;
         }
         ImageCreateInfo ImageInfo{};
@@ -92,16 +101,25 @@ void RenderPass::SetupFramebuffer() {
         ImageInfo.Usage                  = mFrameBufferAttachmentImageInfos[i].Usage;
         ImageInfo.Format                 = mFrameBufferAttachmentImageInfos[i].Format;
         mFrameBufferAttachments[i].Image = Image::CreateUnique(ImageInfo);
-        mFrameBufferAttachments[i].View =
-            Context.GetLogicalDevice()->CreateImageViewShared(*mFrameBufferAttachments[i].Image, ImageInfo.Format);
-        // 这里可能需要TransitionImageLayout
+        if (i == mDepthAttachmentIndex) {
+            mFrameBufferAttachments[i].View = Context.GetLogicalDevice()->CreateImageViewShared(
+                *mFrameBufferAttachments[i].Image, ImageInfo.Format, vk::ImageAspectFlagBits::eDepth
+            );
+        } else {
+            mFrameBufferAttachments[i].View =
+                Context.GetLogicalDevice()->CreateImageViewShared(*mFrameBufferAttachments[i].Image, ImageInfo.Format);
+        }
     }
 
     mFrameBuffers.resize(Context.GetSwapChainImageCount());
-    for (auto& mFramebuffer: mFrameBuffers) {
+    for (size_t i = 0; i < mFrameBuffers.size(); i++) {
         TArray<vk::ImageView> Attachments;
-        for (const auto& Attachment: mFrameBufferAttachments) {
-            Attachments.emplace_back(Attachment.View->GetHandle());
+        for (size_t j = 0; j < mFrameBufferAttachments.size(); j++) {
+            if (j == mSwapchainViewIndex) {
+                Attachments.emplace_back(Context.GetSwapChainImageViews()[i]->GetHandle());
+            } else {
+                Attachments.emplace_back(mFrameBufferAttachments[j].View->GetHandle());
+            }
         }
         vk::FramebufferCreateInfo FramebufferInfo = {};
         FramebufferInfo.renderPass                = mHandle;
@@ -109,7 +127,7 @@ void RenderPass::SetupFramebuffer() {
         FramebufferInfo.width  = Width;
         FramebufferInfo.height = Height;
         FramebufferInfo.layers = 1;
-        mFramebuffer           = Framebuffer::CreateUnique(FramebufferInfo);
+        mFrameBuffers[i]       = Framebuffer::CreateUnique(FramebufferInfo);
     }
 }
 
@@ -188,14 +206,13 @@ void RenderPass::NewAttachment(RenderPassAttachmentParam& InParam, bool bAttachT
 }
 
 void RenderPass::CreateSubpassDescription() {
-    TArray<vk::AttachmentReference> ColorAttachments;
-    Int32                           SpecialIndexMin = std::min(mDepthAttachmentIndex, mSampleResolveIndex);
-    Int32                           SpecialIndexMax = std::max(mDepthAttachmentIndex, mSampleResolveIndex);
+    Int32 SpecialIndexMin = std::min(mDepthAttachmentIndex, mSampleResolveIndex);
+    Int32 SpecialIndexMax = std::max(mDepthAttachmentIndex, mSampleResolveIndex);
 
     TArray<vk::AttachmentReference> ColorAttachmentA, ColorAttachmentB, ColorAttachmentC;
 
     if (SpecialIndexMax == -1) {
-        ColorAttachments = mAttahcmentRefs;
+        mSubpassColorAttachmentRefs = mAttahcmentRefs;
     } else {
         if (SpecialIndexMin != -1) {
             if (SpecialIndexMin == 0) {
@@ -213,14 +230,14 @@ void RenderPass::CreateSubpassDescription() {
                 ColorAttachmentB = ContainerUtils::Slice(mAttahcmentRefs, SpecialIndexMax + 1, mAttahcmentRefs.size());
             }
         }
-        ColorAttachments = ContainerUtils::Concat(ContainerUtils::Concat(ColorAttachmentA, ColorAttachmentB), ColorAttachmentC);
+        mSubpassColorAttachmentRefs = ContainerUtils::Concat(ContainerUtils::Concat(ColorAttachmentA, ColorAttachmentB), ColorAttachmentC);
     }
 
     // 指定Subpass
     mSubpass
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)   // 显式指定是一个图像渲染的subpass
         // 指定引用的颜色附着 这里设置的颜色附着在数组的索引被片段着色器使用 对应layout(location=0) out vec4 OutColor;
-        .setColorAttachments(ColorAttachments);
+        .setColorAttachments(mSubpassColorAttachmentRefs);
     if (mDepthAttachmentIndex != -1) {
         mSubpass.setPDepthStencilAttachment(&mAttahcmentRefs[mDepthAttachmentIndex]);
     }
@@ -236,9 +253,13 @@ void RenderPass::CreateSubpassDescription() {
         // 指定被依赖的子流程索引和依赖被依赖的子流程索引
         .setSrcSubpass(VK_SUBPASS_EXTERNAL)   // 代表使用渲染流程开始前的隐含子流程
         .setDstSubpass(0)                     // 设为0代表之前创建的子流程所有，必须大于srcSubpass(避免循环依赖)
-        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)                                        // 指定需要等待的管线阶段
-        .setSrcAccessMask(vk::AccessFlagBits::eNone)                                                               // 指定子进行的操作类型
-        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)                                        // 指定等待的管线阶段
+        .setSrcStageMask(
+            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eLateFragmentTests
+        )                                                                     // 指定需要等待的管线阶段
+        .setSrcAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite)   // 指定子进行的操作类型
+        .setDstStageMask(
+            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests
+        )                                                                                                          // 指定等待的管线阶段
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);   // 指定子进行的操作类型
 }
 

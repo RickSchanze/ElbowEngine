@@ -16,11 +16,11 @@ Framebuffer::Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& InC
 }
 
 TSharedPtr<Framebuffer> Framebuffer::CreateShared(const vk::FramebufferCreateInfo& InCreateInfo) {
-    return MakeShared<Framebuffer>(InCreateInfo);
+    return MakeShared<Framebuffer>(ResourceProtected{}, InCreateInfo);
 }
 
 TUniquePtr<Framebuffer> Framebuffer::CreateUnique(const vk::FramebufferCreateInfo& InCreateInfo) {
-    return Move(MakeUnique<Framebuffer>(InCreateInfo));
+    return Move(MakeUnique<Framebuffer>(ResourceProtected{}, InCreateInfo));
 }
 
 void Framebuffer::InternalDestroy() {

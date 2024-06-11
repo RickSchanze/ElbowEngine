@@ -41,7 +41,7 @@ TSharedPtr<Image> Image::CreateShared(const ImageCreateInfo& InCreateInfo) {
 }
 
 TUniquePtr<Image> Image::CreateUnique(const ImageCreateInfo& InCreateInfo) {
-    return Move(MakeUnique<Image>(InCreateInfo));
+    return Move(MakeUnique<Image>(Protected{}, InCreateInfo));
 }
 
 void Image::Destroy() {
@@ -99,6 +99,10 @@ void Image::CreateImage() {
     ));
     mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
     DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
+}
+
+TSharedPtr<Texture> Texture::CreateShared(Int32 InWidth, Int32 InHeight, UInt8* InData) {
+    return MakeShared<Texture>(Protected{}, InWidth, InHeight, InData);
 }
 
 Texture::Texture(Protected, Int32 InWidth, Int32 InHeight, UInt8* InData) : Image() {

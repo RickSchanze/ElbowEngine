@@ -111,17 +111,25 @@ void VulkanContext::Draw() {
     }
 
     for (int i = 0; i < mRenderGraphicsPipelines.size(); i++) {
-        mRenderGraphicsPipelines[i]->SubmitGraphicsQueue(
-            ImageIndex, mLogicalDevice->GetGraphicsQueue(), WaitSemaphores, {SingalSemaphores[i]}, mInFlightFences[mCurrentFrame]
-        );
+        if (i == 0) {
+            mRenderGraphicsPipelines[i]->SubmitGraphicsQueue(
+                ImageIndex, mLogicalDevice->GetGraphicsQueue(), WaitSemaphores, {SingalSemaphores[0]}, mInFlightFences[mCurrentFrame]
+            );
+        } else {
+            mRenderGraphicsPipelines[i]->SubmitGraphicsQueue(
+                ImageIndex,
+                mLogicalDevice->GetGraphicsQueue(),
+                {SingalSemaphores[0]},
+                {SingalSemaphores[1]},
+                mInFlightFences[mCurrentFrame]
+            );
+        }
     }
 
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
     TStaticArray       SwapChains  = {mSwapChain->GetHandle()};
-    PresentInfo.setWaitSemaphores(SingalSemaphores)
-        .setSwapchains(SwapChains)
-        .setImageIndices(ImageIndex);
+    PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(ImageIndex);
 
     const auto Result = mLogicalDevice->GetPresentQueue().presentKHR(&PresentInfo);
 
@@ -134,9 +142,11 @@ void VulkanContext::Draw() {
     }
 
     mLogicalDevice->GetPresentQueue().waitIdle();
+
     for (auto& Semaphore: SingalSemaphores) {
         Device.destroySemaphore(Semaphore);
     }
+
     mCurrentFrame = (mCurrentFrame + 1) % gEngineStatistics.ParallelRenderFrameCount;
 }
 
@@ -181,7 +191,7 @@ vk::Format VulkanContext::GetDepthImageFormat() {
 void VulkanContext::CreateGraphicsPipeline() {
     // 创建图形管线
     // 寻找深度图像格式
-    PipelineInitializer Initializer;
+    PipelineInitializer Initializer{};
     Initializer.ShaderStage.FragmentShaderPath = L"Shaders/frag.spv";
     Initializer.ShaderStage.VertexShaderPath   = L"Shaders/vert.spv";
     mGraphicsPipeline                          = new GraphicsPipeline(Initializer);

@@ -11,6 +11,7 @@
 #include "Component/Camera.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
+#include "Model.h"
 #include "RenderPass.h"
 #include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Resource/ImageView.h"
@@ -158,7 +159,8 @@ void GraphicsPipeline::CreatePipeline() {
 
     /************************* 配置多重采样 ************************/
     vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
-    mMsaaSamples                                           = mPipelineInfo.Multisample.SampleCount;
+
+    mSampleCount = mPipelineInfo.Multisample.SampleCount;
     MultisampleInfo   //
         .setSampleShadingEnable(mPipelineInfo.Multisample.Enable)
         .setRasterizationSamples(mPipelineInfo.Multisample.SampleCount);
@@ -202,11 +204,11 @@ void GraphicsPipeline::CreatePipeline() {
     // DynamicState
     vk::PipelineDynamicStateCreateInfo DynamicStateInfo;
     TArray<vk::DynamicState>           DynamicStates;
-    if (!(mPipelineInfo.DynamicStateEnabled | EPDSE_None)) {
-        if (mPipelineInfo.DynamicStateEnabled | EPDSE_Scissor) {
+    if (!(mPipelineInfo.DynamicStateEnabled & EPDSE_None)) {
+        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor) {
             DynamicStates.emplace_back(vk::DynamicState::eScissor);
         }
-        if (mPipelineInfo.DynamicStateEnabled | EPDSE_Viewport) {
+        if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport) {
             DynamicStates.emplace_back(vk::DynamicState::eViewport);
         }
     }
@@ -250,15 +252,6 @@ void GraphicsPipeline::CleanPipeline() {
 }
 
 void GraphicsPipeline::CreateOther(bool bRebuilding) {
-    // 创建多重采样颜色缓冲区
-    if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
-        CreateMsaaColorBuffer();
-    }
-    // 创建深度缓冲区
-    CreateDepthBuffer();
-    // 创建交换链帧缓冲区
-    CreateFramebuffers();
-
     // TODO: 重构并整个至材质系统
     CreateTextureImageAndView();
     CreateUniformBuffers();
@@ -281,14 +274,6 @@ void GraphicsPipeline::CleanOther(bool bRebuilding) {
     // 清理纹理
     CleanUniformBuffers();
     CleanTextureImageAndView();
-    // 交换链缓冲区销毁
-    CleanFramebuffers();
-    CleanDepthBuffer();
-    // MSAA缓冲销毁
-    if (mMsaaSamples != vk::SampleCountFlagBits::e1) {
-        mMsaaColorImageView->Finialize();
-        mMsaaColorImage->Finialize();
-    }
 }
 
 void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer) {
@@ -304,7 +289,6 @@ void GraphicsPipeline::EndRecordCommand(const vk::CommandBuffer InBuffer) {
 void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam) {
     VulkanContext&          Context        = VulkanContext::Get();
     vk::RenderPassBeginInfo RenderPassInfo = {};
-    // TODO: 这里或许应该改成mPipelineInfo里的
     RenderPassInfo.setRenderPass(mRenderPass->GetHandle())
         .setFramebuffer(InParam.FrameBuffer)
         .setRenderArea({{0, 0}, Context.GetSwapChainExtent()});
@@ -314,12 +298,22 @@ void GraphicsPipeline::RecordCommand(vk::CommandBuffer InBuffer, const CommandRe
     RenderPassInfo.setClearValues(ClearValues);
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
-    vk::Viewport NewViewport;
-    NewViewport.x      = 0;
-    NewViewport.y      = 0;
-    NewViewport.width  = gEngineStatistics.WindowSize.Width;
-    NewViewport.height = gEngineStatistics.WindowSize.Height;
-    InBuffer.setViewport(0, NewViewport);
+    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Viewport) {
+        vk::Viewport NewViewport;
+        NewViewport.x      = 0;
+        NewViewport.y      = 0;
+        NewViewport.width  = gEngineStatistics.WindowSize.Width;
+        NewViewport.height = gEngineStatistics.WindowSize.Height;
+        InBuffer.setViewport(0, NewViewport);
+    }
+    if (mPipelineInfo.DynamicStateEnabled & EPDSE_Scissor) {
+        vk::Rect2D NewScissor;
+        NewScissor.offset.x = 0;
+        NewScissor.offset.y = 0;
+        NewScissor.extent.width = gEngineStatistics.WindowSize.Width;
+        NewScissor.extent.height = gEngineStatistics.WindowSize.Height;
+        InBuffer.setScissor(0, NewScissor);
+    }
     // 使用顶点缓冲需纳入
 
     int i = 0;
@@ -354,80 +348,6 @@ void GraphicsPipeline::CreateDescriptionSetLayout() {
     mDescriptorSetLayout = Context.GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
 }
 
-void GraphicsPipeline::CreateMsaaColorBuffer() {
-    VulkanContext&  Context         = VulkanContext::Get();
-    auto&           Device          = Context.GetLogicalDevice();
-    const auto      SwapchainExtent = Context.GetSwapChainExtent();
-    ImageCreateInfo ImageInfo{};
-    ImageInfo.Height      = SwapchainExtent.height;
-    ImageInfo.Width       = SwapchainExtent.width;
-    ImageInfo.Format      = Context.GetSwapChainImageFormat();
-    ImageInfo.Usage       = vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment;
-    ImageInfo.SampleCount = mMsaaSamples;
-    mMsaaColorImage       = Image::CreateShared(ImageInfo);
-    mMsaaColorImageView   = Device->CreateImageViewShared(*mMsaaColorImage, ImageInfo.Format);
-    Context.GetCommandPool()->TrainsitionImageLayout(
-        mMsaaColorImage->GetHandle(), ImageInfo.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1
-    );
-}
-
-void GraphicsPipeline::CreateDepthBuffer() {
-    VulkanContext&  Context     = VulkanContext::Get();
-    const auto      DepthFormat = Context.GetDepthImageFormat();
-    ImageCreateInfo ImageInfo{};
-    ImageInfo.Height = Context.GetSwapChainExtent().height;
-    ImageInfo.Width  = Context.GetSwapChainExtent().width;
-    ImageInfo.Format = DepthFormat;
-    ImageInfo.Usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-    mDepthImage      = Image::CreateShared(ImageInfo);
-    mDepthImageView  = Context.GetLogicalDevice()->CreateImageViewShared(*mDepthImage, DepthFormat, vk::ImageAspectFlagBits::eDepth);
-    Context.GetCommandPool()->TrainsitionImageLayout(
-        mDepthImage->GetHandle(), DepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1
-    );
-}
-
-void GraphicsPipeline::CleanDepthBuffer() const {
-    mDepthImageView->Finialize();
-    mDepthImage->Finialize();
-}
-
-void GraphicsPipeline::CreateFramebuffers() {
-    VulkanContext& Context = VulkanContext::Get();
-    mFramebuffers.resize(Context.GetSwapChainImageCount());
-    for (size_t i = 0; i < mFramebuffers.size(); i++) {
-        TArray<vk::ImageView> Attachments;
-        if (mMsaaSamples == vk::SampleCountFlagBits::e1) {
-            Attachments = {
-                Context.GetSwapChainImageViews()[i]->GetHandle(),
-                mDepthImageView->GetHandle(),
-            };
-        } else {
-            Attachments = {
-                mMsaaColorImageView->GetHandle(),
-                mDepthImageView->GetHandle(),
-                Context.GetSwapChainImageViews()[i]->GetHandle(),
-            };
-        }
-        vk::FramebufferCreateInfo FramebufferInfo = {};
-        FramebufferInfo   //
-            .setRenderPass(mRenderPass->GetHandle())
-            .setAttachments(Attachments)
-            .setWidth(Context.GetSwapChainExtent().width)
-            .setHeight(Context.GetSwapChainExtent().height)
-            .setLayers(1);
-        mFramebuffers[i] = Framebuffer::CreateShared(FramebufferInfo);
-    }
-}
-
-void GraphicsPipeline::CleanFramebuffers() {
-    VulkanContext& Context = VulkanContext::Get();
-    const auto&    Device  = Context.GetLogicalDevice();
-    for (auto& MyFramebuffer: mFramebuffers) {
-        MyFramebuffer->Destroy();
-    }
-    mFramebuffers.clear();
-}
-
 void GraphicsPipeline::LoadModel() {
     VulkanContext& Context       = VulkanContext::Get();
     auto           ModelResource = Resource::Model::Create(L"Models/AK47/AK47_CS2.fbx");
@@ -441,7 +361,7 @@ void GraphicsPipeline::CleanModel() const {
 void GraphicsPipeline::CreateTextureImageAndView() {
     VulkanContext& Context = VulkanContext::Get();
     const auto     Texture = Resource::Texture::Create(L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-    mTexture               = Texture::Create(*Context.GetLogicalDevice(), *Context.GetCommandPool(), Texture);
+    mTexture               = Texture::CreateShared(Texture->GetWidth(), Texture->GetHeight(), Texture->GetData());
     mTextureView           = Context.GetLogicalDevice()->CreateImageViewShared(
         *mTexture, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, mTexture->GetMipLevel()
     );
@@ -582,7 +502,7 @@ void GraphicsPipeline::CreateCommandBuffers() {
         BeginRecordCommand(CommandBuffer);
         {
             CommandRecordingParam Param;
-            Param.FrameBuffer   = mFramebuffers[i]->GetHandle();
+            Param.FrameBuffer   = mRenderPass->GetFrameBuffer(i)->GetHandle();
             Param.DescriptorSet = mDescriptorSets[i];
             RecordCommand(CommandBuffer, Param);
         }

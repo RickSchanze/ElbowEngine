@@ -31,9 +31,9 @@ RHI_VULKAN_NAMESPACE_BEGIN
 class Shader;
 
 enum EPipelineDynamicStateEnabled {
-    EPDSE_None     = 0x1,
-    EPDSE_Viewport = 0x10,
-    EPDSE_Scissor  = 0x100,
+    EPDSE_None     = 0b1,
+    EPDSE_Viewport = 0b10,
+    EPDSE_Scissor  = 0b100,
 };
 
 // 这里配置如何初始化Pipeline
@@ -61,10 +61,10 @@ struct PipelineInitializer
 
     struct ClippingRectConfig
     {
-        Int32  OffsetX = 0.f;
-        Int32  OffsetY = 0.f;
-        UInt32 Width   = 0.f;   // 0代表与视口一致
-        UInt32 Height  = 0.f;   // 0代表与视口一致
+        Int32  OffsetX = 0;
+        Int32  OffsetY = 0;
+        UInt32 Width   = 0;   // 0代表与视口一致
+        UInt32 Height  = 0;   // 0代表与视口一致
     };
 
     struct MultisampleConfig
@@ -149,14 +149,6 @@ protected:
 
     // 设置Uniform变量
     void CreateDescriptionSetLayout();
-    // 创建多重采样需要的颜色缓冲区
-    void CreateMsaaColorBuffer();
-    // 创建深度图像缓冲区
-    void CreateDepthBuffer();
-    void CleanDepthBuffer() const;
-    // 创建交换链帧缓冲区
-    void CreateFramebuffers();
-    void CleanFramebuffers();
 
 private:
     PipelineInitializer mPipelineInfo;
@@ -165,23 +157,12 @@ private:
     vk::Pipeline            mPipeline;
     vk::DescriptorSetLayout mDescriptorSetLayout;
 
-    // 各种缓冲
-    // 1.多重采样缓存
-    TSharedPtr<Image>       mMsaaColorImage;
-    TSharedPtr<ImageView>   mMsaaColorImageView;
-    vk::SampleCountFlagBits mMsaaSamples;
-
-    // 2.深度缓存
-    TSharedPtr<Image>     mDepthImage;
-    TSharedPtr<ImageView> mDepthImageView;
-
-    // 3.交换链帧缓冲
-    TArray<TSharedPtr<Framebuffer>> mFramebuffers;
-
     // 4.命令缓冲
     TArray<vk::CommandBuffer> mCommandBuffers;
 
-    RenderPass*                     mRenderPass;
+    vk::SampleCountFlagBits mSampleCount;
+
+    RenderPass* mRenderPass;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
