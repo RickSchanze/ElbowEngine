@@ -30,6 +30,7 @@ protected:
 
     // 创建与交换链图像数量相等的DescriptorSet
     void CreateDescriptorSets();
+    // descriptor_sets会在descriptor_pool被销毁时自动被销毁
     void CleanupDescriptorSets();
 
     // 创建DescriptorPool

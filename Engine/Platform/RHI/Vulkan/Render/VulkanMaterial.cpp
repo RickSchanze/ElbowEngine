@@ -14,18 +14,15 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-void VulkanMaterial::CreateUniformBuffers()
-{
+void VulkanMaterial::CreateUniformBuffers() {
     const auto&    device      = VulkanContext::Get().GetLogicalDevice();
     vk::DeviceSize buffer_size = 0;
-    for (const auto& value: shader_program_->GetUniforms() | std::views::values)
-    {
+    for (const auto& value: shader_program_->GetUniforms() | std::views::values) {
         buffer_size += value.size;
     }
     uniform_buffers_.resize(g_engine_statistics.swapchain_image_count);
     uniform_buffers_memory_.resize(g_engine_statistics.swapchain_image_count);
-    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
-    {
+    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++) {
         device->CreateBuffer(
             buffer_size,
             vk::BufferUsageFlagBits::eUniformBuffer,
@@ -36,11 +33,9 @@ void VulkanMaterial::CreateUniformBuffers()
     }
 }
 
-void VulkanMaterial::CleanupUniformBuffers()
-{
+void VulkanMaterial::CleanupUniformBuffers() {
     const auto& device = VulkanContext::Get().GetLogicalDevice();
-    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
-    {
+    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++) {
         device->DestroyBuffer(uniform_buffers_[i]);
         device->FreeMemory(uniform_buffers_memory_[i]);
     }
@@ -48,8 +43,7 @@ void VulkanMaterial::CleanupUniformBuffers()
     uniform_buffers_memory_.clear();
 }
 
-void VulkanMaterial::CreateDescriptorSets()
-{
+void VulkanMaterial::CreateDescriptorSets() {
     VulkanContext&                context = VulkanContext::Get();
     TArray                        layouts(context.GetSwapChainImageCount(), descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
@@ -60,8 +54,7 @@ void VulkanMaterial::CreateDescriptorSets()
     // 创建材质时首先使用默认丢失的贴图，之后需要调用更新贴图的方法
     const auto& default_lack_texture_view = Texture::GetDefaultLackTextureView();
     const auto& sampler                   = Sampler::GetDefaultSampler();
-    for (size_t i = 0; i < descriptor_sets_.size(); i++)
-    {
+    for (size_t i = 0; i < descriptor_sets_.size(); i++) {
         vk::DescriptorBufferInfo buffer_info = {};
         buffer_info.setBuffer(uniform_buffers_[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
         vk::DescriptorImageInfo image_info = {};
@@ -90,15 +83,13 @@ void VulkanMaterial::CreateDescriptorSets()
     }
 }
 
-void VulkanMaterial::CleanupDescriptorSets()
-{
+void VulkanMaterial::CleanupDescriptorSets() {
     const auto& device = VulkanContext::Get().GetLogicalDevice();
     device->FreeDescriptorSets(descriptor_pool_, descriptor_sets_);
     descriptor_sets_.clear();
 }
 
-void VulkanMaterial::CreateDescriptorPool()
-{
+void VulkanMaterial::CreateDescriptorPool() {
     const auto&                             device     = VulkanContext::Get().GetLogicalDevice();
     TStaticArray<vk::DescriptorPoolSize, 2> pool_sizes = {};
     const auto swapchain_image_count                   = g_engine_statistics.swapchain_image_count;
@@ -111,25 +102,22 @@ void VulkanMaterial::CreateDescriptorPool()
     pool_sizes[1].type            = vk::DescriptorType::eCombinedImageSampler;
     pool_sizes[1].descriptorCount = swapchain_image_count;
 
-    vk::DescriptorPoolCreateInfo PoolInfo = {};
-    PoolInfo.setPoolSizes(pool_sizes).setMaxSets(swapchain_image_count);
-    descriptor_pool_ = device->CreateDescriptorPool(PoolInfo);
+    vk::DescriptorPoolCreateInfo pool_info = {};
+    pool_info.setPoolSizes(pool_sizes).setMaxSets(swapchain_image_count);
+    descriptor_pool_ = device->CreateDescriptorPool(pool_info);
 }
 
-void VulkanMaterial::CleanupDescriptorPool()
-{
+void VulkanMaterial::CleanupDescriptorPool() {
     const auto& device = VulkanContext::Get().GetLogicalDevice();
     device->DestroyDescriptorPool(descriptor_pool_);
     descriptor_pool_ = nullptr;
 }
 
-void VulkanMaterial::CreateDescriptorSetLayout()
-{
+void VulkanMaterial::CreateDescriptorSetLayout() {
     const auto& device = VulkanContext::Get().GetLogicalDevice();
 
     TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
-    for (const auto& uniform_binding: shader_program_->GetUniforms() | std::views::values)
-    {
+    for (const auto& uniform_binding: shader_program_->GetUniforms() | std::views::values) {
         vk::DescriptorSetLayoutBinding binding;
         binding.binding         = uniform_binding.binding;
         binding.descriptorType  = GetVkDescriptorType(uniform_binding.type);
@@ -142,8 +130,7 @@ void VulkanMaterial::CreateDescriptorSetLayout()
     descriptor_set_layout_ = device->CreateDescriptorSetLayout(LayoutInfo);
 }
 
-void VulkanMaterial::CleanupDescriptorSetLayout()
-{
+void VulkanMaterial::CleanupDescriptorSetLayout() {
     const auto& device = VulkanContext::Get().GetLogicalDevice();
 
     device->DestroyDescriptorSetLayout(descriptor_set_layout_);
