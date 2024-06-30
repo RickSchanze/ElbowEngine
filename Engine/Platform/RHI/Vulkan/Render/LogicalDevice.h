@@ -66,24 +66,36 @@ public:
         vk::Buffer& OutBuffer, vk::DeviceMemory& OutBufferMemory
     ) const;
 
-    vk::Queue GetGraphicsQueue() const { return mGraphicsQueue; }
-    vk::Queue GetPresentQueue() const { return mPresentQueue; }
+    void DestroyBuffer(vk::Buffer buffer) const;
+
+    void FreeMemory(vk::DeviceMemory memory) const;
+
+    vk::DescriptorPool CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const;
+    void               DestroyDescriptorPool(vk::DescriptorPool pool) const;
+
+    vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
+    vk::Queue GetPresentQueue() const { return present_queue_; }
+
+    void UpdateDescriptorSets(
+        const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
+        const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies = nullptr
+    )const;
 
     vk::Result MapMemory(
         vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData
     ) const;
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
-    bool            IsValid() const { return static_cast<bool>(mLogicalDeviceHandle); }
-    vk::Device      GetHandle() const { return mLogicalDeviceHandle; }
-    PhysicalDevice& GetAssociatedPhysicalDevice() const { return mAssociatedPhysicalDevice; }
+    bool            IsValid() const { return static_cast<bool>(handle_); }
+    vk::Device      GetHandle() const { return handle_; }
+    PhysicalDevice& GetAssociatedPhysicalDevice() const { return associated_physical_device_; }
 
 private:
-    vk::Device          mLogicalDeviceHandle = VK_NULL_HANDLE;
-    Ref<PhysicalDevice> mAssociatedPhysicalDevice;
+    vk::Device          handle_ = VK_NULL_HANDLE;
+    Ref<PhysicalDevice> associated_physical_device_;
 
-    vk::Queue mGraphicsQueue;
-    vk::Queue mPresentQueue;
+    vk::Queue graphics_queue_;
+    vk::Queue present_queue_;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -54,6 +54,8 @@ add_library(Platform
         RHI/Vulkan/Render/CommandList.cpp
         RHI/Vulkan/Render/Framebuffer.h
         RHI/Vulkan/Render/Framebuffer.cpp
+        RHI/Vulkan/Render/VulkanMaterial.h
+        RHI/Vulkan/Render/VulkanMaterial.cpp
         RHI/Vulkan/Interface/IGraphicsPipeline.h
         RHI/Vulkan/Resource/VulkanModel.h
         RHI/Vulkan/Resource/VulkanModel.cpp

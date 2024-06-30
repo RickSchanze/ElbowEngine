@@ -16,107 +16,130 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType InType) {
-    switch (InType) {
+vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType InType)
+{
+    switch (InType)
+    {
     case EUniformDescriptorType::Object: return vk::DescriptorType::eUniformBuffer;
     case EUniformDescriptorType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
     }
     return vk::DescriptorType::eUniformBuffer;
 }
 
-vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage InStage) {
-    switch (InStage) {
+vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage InStage)
+{
+    switch (InStage)
+    {
     case EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
     case EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
     default: return vk::ShaderStageFlagBits::eVertex;
     }
 }
 
-Shader::Shader(Protected, const Ref<LogicalDevice> InDevice, const Path& InShaderPath, const EShaderStage InShaderStage) :
-    mShaderStage(InShaderStage), mShaderPath(InShaderPath), mDevice(InDevice) {
+Shader::Shader(
+    Protected, const Ref<LogicalDevice> device, const Path& shader_path,
+    const EShaderStage shader_stage
+) : shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
+{
     // 加载Shader文件
-    FileInputStream ShaderFileStream{InShaderPath.ToString(), std::ios::ate | std::ios::binary};
-    if (!ShaderFileStream.is_open()) {
-        throw VulkanException(std::format(
-            L"加载Shader文件失败:{}, 异常码:{}, 异常消息: {}", InShaderPath.ToString(), errno, StringUtils::ErrorCodeToString(errno)
-        ));
+    FileInputStream shader_file_stream{shader_path.ToString(), std::ios::ate | std::ios::binary};
+    if (!shader_file_stream.is_open())
+    {
+        LOG_ERROR_CATEGORY(
+            Vulkan.Shader,
+            L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}",
+            shader_path.ToString(),
+            errno,
+            StringUtils::ErrorCodeToString(errno)
+        );
+        return;
     }
-    auto              ShaderFileSize = ShaderFileStream.tellg();
-    std::vector<char> ShaderCode(ShaderFileSize);
-    ShaderFileStream.seekg(0);
-    ShaderFileStream.read(ShaderCode.data(), ShaderFileSize);
-    ShaderFileStream.close();
+    auto              shader_file_size = shader_file_stream.tellg();
+    std::vector<char> shader_code(shader_file_size);
+    shader_file_stream.seekg(0);
+    shader_file_stream.read(shader_code.data(), shader_file_size);
+    shader_file_stream.close();
 
-    auto*  ShaderCodePtr  = reinterpret_cast<UInt32*>(ShaderCode.data());
-    size_t ShaderCodeSize = ShaderCode.size() / 4;
+    auto*  shader_code_ptr  = reinterpret_cast<UInt32*>(shader_code.data());
+    size_t shader_code_size = shader_code.size() / 4;
     // 解析此Shader的所有参数
-    ParseShaderCode(ShaderCodePtr, ShaderCodeSize, InShaderStage);
+    ParseShaderCode(shader_code_ptr, shader_code_size, shader_stage);
     // 创建ShaderModule
-    vk::ShaderModuleCreateInfo CreateInfo = {};
-    CreateInfo.setCodeSize(ShaderCodeSize * 4).setPCode(ShaderCodePtr);
-    mShaderModule = InDevice.get().GetHandle().createShaderModule(CreateInfo);
+    vk::ShaderModuleCreateInfo create_info = {};
+    create_info.setCodeSize(shader_code_size * 4).setPCode(shader_code_ptr);
+    shader_module_ = device.get().GetHandle().createShaderModule(create_info);
 }
 
-Shader::~Shader() {
-    const auto& Device = mDevice.get();
-    Device.GetHandle().destroy(mShaderModule);
+Shader::~Shader()
+{
+    const auto& device = device_.get();
+    device.GetHandle().destroy(shader_module_);
 }
 
-void Shader::ParseShaderCode(const UInt32* InShderCode, size_t InShderCodeSize, EShaderStage InShaderStage) {
-    mShaderStage = InShaderStage;
+void Shader::ParseShaderCode(
+    const UInt32* shader_code, size_t shader_code_size, EShaderStage shader_stage
+)
+{
+    shader_stage_ = shader_stage;
     using namespace spirv_cross;
-    Compiler        Compiler(InShderCode, InShderCodeSize);
-    ShaderResources Res = Compiler.get_shader_resources();
+    Compiler        compiler(shader_code, shader_code_size);
+    ShaderResources res = compiler.get_shader_resources();
     // 收集所有UniformBuffer信息
     {
-        size_t Offset = 0;
+        size_t offset = 0;
 
-        for (const auto& UBO: Res.uniform_buffers) {
-            UniformDescriptor Obj;
-            Obj.Stage   = InShaderStage;
-            Obj.Name    = Compiler.get_name(UBO.id);
-            // Obj.Set     = Compiler.get_decoration(UBO.id, spv::DecorationDescriptorSet);
-            Obj.Binding = Compiler.get_decoration(UBO.id, spv::DecorationBinding);
-            Obj.Size    = Compiler.get_declared_struct_size(Compiler.get_type(UBO.type_id));
-            Obj.Offset  = Offset;
-            Obj.Type    = EUniformDescriptorType::Object;
-            Offset += Obj.Size;
-            mUniformDescriptors.push_back(Obj);
+        for (const auto& UBO: res.uniform_buffers)
+        {
+            UniformDescriptor obj;
+            obj.stage   = shader_stage;
+            obj.name    = compiler.get_name(UBO.id);
+            obj.binding = compiler.get_decoration(UBO.id, spv::DecorationBinding);
+            obj.size    = compiler.get_declared_struct_size(compiler.get_type(UBO.type_id));
+            obj.offset  = offset;
+            obj.type    = EUniformDescriptorType::Object;
+            offset += obj.size;
+            uniform_descriptors_.push_back(obj);
         }
     }
     // 收集所有Sampler2D信息
     {
-        for (const auto& Sampler: Res.sampled_images) {
-            UniformDescriptor SamplerDesc;
-            SamplerDesc.Name    = Compiler.get_name(Sampler.id);
-            SamplerDesc.Binding = Compiler.get_decoration(Sampler.id, spv::DecorationBinding);
-            SamplerDesc.Stage   = InShaderStage;
-            SamplerDesc.Type    = EUniformDescriptorType::Sampler2D;
-            mUniformDescriptors.push_back(SamplerDesc);
+        for (const auto& sampler: res.sampled_images)
+        {
+            UniformDescriptor sampler_desc;
+            sampler_desc.name    = compiler.get_name(sampler.id);
+            sampler_desc.binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
+            sampler_desc.stage   = shader_stage;
+            sampler_desc.type    = EUniformDescriptorType::Sampler2D;
+            uniform_descriptors_.push_back(sampler_desc);
         }
     }
     // 收集所有layout(location = 0) in vec3 inPos;信息
     {
         // 只有顶点输入需要在管线建立
-        if (mShaderStage != EShaderStage::Vertex) {
+        if (shader_stage_ != EShaderStage::Vertex)
+        {
             return;
         }
 
-        for (const auto& In: Res.stage_inputs) {
-            VertexInAttribute InAttr;
-            InAttr.Name     = Compiler.get_name(In.id);
-            InAttr.Location = Compiler.get_decoration(In.id, spv::DecorationLocation);
-            auto t          = Compiler.get_type(In.type_id);
-            InAttr.Width    = t.width / 8;
-            InAttr.Size     = InAttr.Width * t.vecsize;
-            mInAttributes.push_back(InAttr);
+        for (const auto& In: res.stage_inputs)
+        {
+            VertexInAttribute in_attr;
+            in_attr.name     = compiler.get_name(In.id);
+            in_attr.location = compiler.get_decoration(In.id, spv::DecorationLocation);
+            auto t          = compiler.get_type(In.type_id);
+            in_attr.width    = t.width / 8;
+            in_attr.size     = in_attr.width * t.vecsize;
+            in_attributes_.push_back(in_attr);
         }
-        std::ranges::sort(mInAttributes, [](const auto& Lhs, const auto& Rhs) { return Lhs.Location < Rhs.Location;});
+        std::ranges::sort(in_attributes_, [](const auto& Lhs, const auto& Rhs) {
+            return Lhs.location < Rhs.location;
+        });
         // 计算偏移
-        size_t Offset = 0;
-        for (auto& InAttr: mInAttributes) {
-            InAttr.Offset = Offset;
-            Offset += InAttr.Size;
+        size_t offset = 0;
+        for (auto& InAttr: in_attributes_)
+        {
+            InAttr.offset = offset;
+            offset += InAttr.size;
         }
     }
 }

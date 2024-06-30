@@ -30,15 +30,15 @@ TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(
 LogicalDevice::LogicalDevice(
     ResourceProtected, const vk::Device InDevice,
     const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-) : mLogicalDeviceHandle(InDevice), mAssociatedPhysicalDevice(InAssociatedPhysicalDevice)
+) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
 {
 }
 
 void LogicalDevice::Finialize()
 {
     if (!IsValid()) return;
-    mLogicalDeviceHandle.destroy();
-    mLogicalDeviceHandle = VK_NULL_HANDLE;
+    handle_.destroy();
+    handle_ = VK_NULL_HANDLE;
 }
 
 void LogicalDevice::Destroy()
@@ -49,7 +49,7 @@ void LogicalDevice::Destroy()
 TUniquePtr<SwapChain>
 LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight)
 {
-    const auto AssociatedPhysicalDevice = mAssociatedPhysicalDevice.get();
+    const auto AssociatedPhysicalDevice = associated_physical_device_.get();
     const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
     const auto Surface = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
 
@@ -103,10 +103,10 @@ LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidt
         SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive
         );   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
-    mGraphicsQueue = mLogicalDeviceHandle.getQueue(Indicies.GraphicsFamily.value(), 0);
-    mPresentQueue  = mLogicalDeviceHandle.getQueue(Indicies.PresentFamily.value(), 0);
+    graphics_queue_ = handle_.getQueue(Indicies.GraphicsFamily.value(), 0);
+    present_queue_  = handle_.getQueue(Indicies.PresentFamily.value(), 0);
     return SwapChain::CreateUnique(
-        mLogicalDeviceHandle.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent
+        handle_.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent
     );
 }
 
@@ -118,17 +118,45 @@ void LogicalDevice::CreateBuffer(
 {
     vk::BufferCreateInfo BufferInfo = {};
     BufferInfo.setSize(InSize).setUsage(InUsage).setSharingMode(vk::SharingMode::eExclusive);
-    OutBuffer = mLogicalDeviceHandle.createBuffer(BufferInfo);
-    const vk::MemoryRequirements MemReq =
-        mLogicalDeviceHandle.getBufferMemoryRequirements(OutBuffer);
+    OutBuffer                              = handle_.createBuffer(BufferInfo);
+    const vk::MemoryRequirements MemReq    = handle_.getBufferMemoryRequirements(OutBuffer);
     // 分配内存
-    vk::MemoryAllocateInfo AllocInfo = {};
+    vk::MemoryAllocateInfo       AllocInfo = {};
     AllocInfo.setAllocationSize(MemReq.size)
         .setMemoryTypeIndex(
             GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties)
         );
-    OutBufferMemory = mLogicalDeviceHandle.allocateMemory(AllocInfo);
-    mLogicalDeviceHandle.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
+    OutBufferMemory = handle_.allocateMemory(AllocInfo);
+    handle_.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
+}
+
+void LogicalDevice::DestroyBuffer(const vk::Buffer buffer) const
+{
+    handle_.destroy(buffer);
+}
+
+void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const
+{
+    handle_.freeMemory(memory);
+}
+
+vk::DescriptorPool
+LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const
+{
+    return handle_.createDescriptorPool(create_info);
+}
+
+void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const
+{
+    handle_.destroyDescriptorPool(pool);
+}
+
+void LogicalDevice::UpdateDescriptorSets(
+    const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
+    const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies
+) const
+{
+    handle_.updateDescriptorSets(descriptor_writes, descriptor_copies);
 }
 
 vk::Result LogicalDevice::MapMemory(
@@ -136,11 +164,11 @@ vk::Result LogicalDevice::MapMemory(
     void** OutData
 ) const
 {
-    return mLogicalDeviceHandle.mapMemory(InMemory, InOffset, InSize, vk::MemoryMapFlags(), OutData);
+    return handle_.mapMemory(InMemory, InOffset, InSize, vk::MemoryMapFlags(), OutData);
 }
 
 void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const{
-    mLogicalDeviceHandle.unmapMemory(InMemory);
+    handle_.unmapMemory(InMemory);
 }
 
 RHI_VULKAN_NAMESPACE_END

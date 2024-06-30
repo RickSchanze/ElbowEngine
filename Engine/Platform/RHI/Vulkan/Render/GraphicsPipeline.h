@@ -133,7 +133,7 @@ public:
 
     vk::CommandBuffer GetCurrentImageCommandBuffer(UInt32 InCurrentImage) const;
 
-    bool IsValid() const { return mPipeline && mPipelineLayout && mDescriptorSetLayout; }
+    bool IsValid() const { return pipeline_ && pipeline_layout_ && descriptor_set_layout_; }
 
 protected:
     void CreatePipeline();
@@ -147,8 +147,8 @@ protected:
 
     struct CommandRecordingParam
     {
-        vk::Framebuffer   FrameBuffer;
-        vk::DescriptorSet DescriptorSet;
+        vk::Framebuffer   frame_buffer;
+        vk::DescriptorSet descriptor_set;
     };
 
     virtual void RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam);
@@ -157,29 +157,29 @@ protected:
     void CreateDescriptionSetLayout();
 
 private:
-    PipelineInitializer mPipelineInfo;
+    PipelineInitializer pipeline_info_;
 
-    vk::PipelineLayout      mPipelineLayout;
-    vk::Pipeline            mPipeline;
-    vk::DescriptorSetLayout mDescriptorSetLayout;
+    vk::PipelineLayout      pipeline_layout_;
+    vk::Pipeline            pipeline_;
+    vk::DescriptorSetLayout descriptor_set_layout_;
 
     // 4.命令缓冲
-    TArray<vk::CommandBuffer> mCommandBuffers;
+    TArray<vk::CommandBuffer> command_buffers_;
 
-    vk::SampleCountFlagBits mSampleCount = vk::SampleCountFlagBits::e1;
+    vk::SampleCountFlagBits sample_count_ = vk::SampleCountFlagBits::e1;
 
-    RenderPass* mRenderPass = nullptr;
+    RenderPass* render_pass_ = nullptr;
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
-    TSharedPtr<ShaderProgram> mShaderProg;
-    TArray<vk::Buffer>        mUniformBuffers;
-    TArray<vk::DeviceMemory>  mUniformBuffersMemory;
-    TArray<vk::DescriptorSet> mDescriptorSets;
+    TSharedPtr<ShaderProgram> m_shader_prog_;
+    TArray<vk::Buffer>        uniform_buffers_;
+    TArray<vk::DeviceMemory>  uniform_buffers_memory_;
+    TArray<vk::DescriptorSet> descriptor_sets_;
 
     // TODO: 模型系统
-    TUniquePtr<Model>  mModel;
-    vk::DescriptorPool mDescriptorPool;
+    TUniquePtr<Model>  model;
+    vk::DescriptorPool descriptor_pool_;
 
     void LoadModel();
 

@@ -19,7 +19,7 @@ public:
      * @param func 代理的function
      */
     TDelegate(String id, TFunction<void(Args...)> func)
-        : mfunction(Move(func)), mId(Move(id)), mValid(true)
+        : m_function(Move(func)), m_id(Move(id)), m_valid(true)
     {
     }
 
@@ -32,20 +32,20 @@ public:
      * @param func 对象的方法
      */
     template <typename ObjectType, typename FuncType>
-    TDelegate(String id, ObjectType *object, FuncType func) : mId(Move(id))
+    TDelegate(String id, ObjectType *object, FuncType func) : m_id(Move(id))
     {
-        mfunction = [object, func](Args... args) { (object->*func)(args...); };
-        mValid = true;
+        m_function = [object, func](Args... args) { (object->*func)(args...); };
+        m_valid = true;
     }
 
     /**
      * 构造一个Delegate,id由GUID生成
      * @param func
      */
-    explicit TDelegate(TFunction<void(Args...)> func) : mId(Guid().ToString())
+    explicit TDelegate(TFunction<void(Args...)> func) : m_id(Guid().ToString())
     {
-        mfunction = Move(func);
-        mValid = true;
+        m_function = Move(func);
+        m_valid = true;
     }
 
     /**
@@ -60,10 +60,10 @@ public:
      */
     template <typename ObjectType, typename FuncType>
         requires(!std::is_same_v<ObjectType, const char>)
-    TDelegate(ObjectType *object, FuncType func) : mId(Guid().ToString())
+    TDelegate(ObjectType *object, FuncType func) : m_id(Guid().ToString())
     {
-        mfunction = [object, func](Args... args) { (object->*func)(args...); };
-        mValid = true;
+        m_function = [object, func](Args... args) { (object->*func)(args...); };
+        m_valid = true;
     }
 
     /**
@@ -72,9 +72,9 @@ public:
      */
     TDelegate(TDelegate &&other) noexcept
     {
-        mfunction = Move(other.mfunction);
-        mId = Guid().ToString();
-        mValid = other.mValid;
+        m_function = Move(other.m_function);
+        m_id = Guid().ToString();
+        m_valid = other.mValid;
         other.mValid = false;
     }
 
@@ -84,52 +84,52 @@ public:
      */
     TDelegate(const TDelegate &other)
     {
-        mfunction = other.mfunction;
-        mId = Guid().ToString();
-        mValid = other.mValid;
+        m_function = other.m_function;
+        m_id = Guid().ToString();
+        m_valid = other.mValid;
     }
 
     template <class... InvokeArgs>
     void operator()(InvokeArgs &&...args) const
     {
-        if (mValid)
+        if (m_valid)
         {
             if constexpr (sizeof...(InvokeArgs) == 0)
             {
-                mfunction();
+                m_function();
             }
             else
             {
-                mfunction(Forward<InvokeArgs>(args)...);
+                m_function(Forward<InvokeArgs>(args)...);
             }
         }
         else
         {
-            LOG_WARNING_CATEGORY(Event, L"失效的Delegate: {}", mId);
+            LOG_WARNING_CATEGORY(Event, L"失效的Delegate: {}", m_id);
         }
     }
 
     auto operator<=>(const TDelegate &rhs) const
     {
-        return mId <=> rhs.mId;
+        return m_id <=> rhs.mId;
     }
 
     /** 获取Delegate id */
     String GetID() const
     {
-        return mId;
+        return m_id;
     }
 
     /** 此Delegate是否有效 */
     bool IsValid() const
     {
-        return mValid;
+        return m_valid;
     }
 
 private:
-    TFunction<void(Args...)> mfunction;
-    String mId;
-    bool mValid;
+    TFunction<void(Args...)> m_function;
+    String m_id;
+    bool m_valid;
 };
 
 template <typename... Args>
@@ -145,14 +145,14 @@ public:
     template <typename DelegateType>
     void Add(DelegateType &&delegate)
     {
-        mEventListener.emplace_back(Forward<DelegateType>(delegate));
+        m_event_listener.emplace_back(Forward<DelegateType>(delegate));
     }
 
     /** 添加Delegate */
     template <typename ObjectType, typename ClassFunc>
     void AddObject(String id, ObjectType *obj, ClassFunc func)
     {
-        mEventListener.emplace_back(id, obj, func);
+        m_event_listener.emplace_back(id, obj, func);
     }
 
     /** 添加Delegate */
@@ -160,31 +160,31 @@ public:
         requires(!std::is_same_v<ObjectType, const char>)
     void AddObject(ObjectType *obj, ClassFunc func)
     {
-        mEventListener.emplace_back(obj, func);
+        m_event_listener.emplace_back(obj, func);
     }
 
     /** 添加Delegate */
     template <typename Func>
     void Add(String id, Func func)
     {
-        mEventListener.emplace_back(Move(id), func);
+        m_event_listener.emplace_back(Move(id), func);
     }
 
     /** 添加Delegate */
     void Remove(String id)
     {
-        auto it = std::find_if(mEventListener.begin(), mEventListener.end(),
+        auto it = std::find_if(m_event_listener.begin(), m_event_listener.end(),
                                [&id](const TDelegate<Args...> &delegate) { return delegate.GetName() == id; });
-        if (it != mEventListener.end())
+        if (it != m_event_listener.end())
         {
-            mEventListener.erase(it);
+            m_event_listener.erase(it);
         }
     }
 
     /** 清除所有Delegate */
     void Clear()
     {
-        mEventListener.clear();
+        m_event_listener.clear();
     }
 
     /**
@@ -196,7 +196,7 @@ public:
     template <typename... InvokeArgs>
     void Broadcast(InvokeArgs &&...args)
     {
-        for (auto &listener : mEventListener)
+        for (auto &listener : m_event_listener)
         {
             if (listener.IsValid())
             {
@@ -216,8 +216,8 @@ public:
         }
     }
 
-    [[nodiscard]] size_t Size() const { return mEventListener.size(); }
+    [[nodiscard]] size_t Size() const { return m_event_listener.size(); }
 
 private:
-    TArray<TDelegate<Args...>> mEventListener;
+    TArray<TDelegate<Args...>> m_event_listener;
 };

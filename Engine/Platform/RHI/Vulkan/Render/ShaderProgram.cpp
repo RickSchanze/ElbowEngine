@@ -13,27 +13,30 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 ShaderProgram::ShaderProgram(
-    const Ref<LogicalDevice> InDevice, const TSharedPtr<Shader>& InVertexShader, const TSharedPtr<Shader>& InFragmentShader
-) : mDevice(InDevice) {
-    mVertexInputAttributes = InVertexShader->GetInAttributes();
+    const Ref<LogicalDevice> device, const Shader* vert, const Shader* frag
+) : device_(device)
+{
+    vertex_input_attributes_ = vert->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
-    if (!CheckAndUpdateUniforms(InVertexShader)) {
+    if (!CheckAndUpdateUniforms(vert))
+    {
         return;
     }
-    if (!CheckAndUpdateUniforms(InFragmentShader)) {
+    if (!CheckAndUpdateUniforms(frag))
+    {
         return;
     }
 }
 
-bool ShaderProgram::CheckAndUpdateUniforms(const TSharedPtr<Shader>& InShader) {
-    for (const auto& Uniform: InShader->GetUniformObjects()) {
-        if (mUniforms.contains(Uniform.Name)) {
-            if (Uniform.Binding != mUniforms[Uniform.Name].Binding) {
-                LOG_ERROR_CATEGORY(Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(Uniform.Name));
+bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader) {
+    for (const auto& uniform: shader->GetUniformObjects()) {
+        if (uniforms_.contains(uniform.name)) {
+            if (uniform.binding != uniforms_[uniform.name].binding) {
+                LOG_ERROR_CATEGORY(Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(uniform.name));
                 return false;
             }
         } else {
-            mUniforms[Uniform.Name] = Uniform;
+            uniforms_[uniform.name] = uniform;
         }
     }
     return true;
@@ -41,20 +44,20 @@ bool ShaderProgram::CheckAndUpdateUniforms(const TSharedPtr<Shader>& InShader) {
 
 TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const {
     TArray<vk::VertexInputAttributeDescription> AttributeDesc;
-    for (const auto& Attribute: mVertexInputAttributes) {
+    for (const auto& Attribute: vertex_input_attributes_) {
         vk::VertexInputAttributeDescription Desc;
         // clang-format off
         Desc
             .setBinding(0)
-            .setLocation(Attribute.Location)
-            .setOffset(Attribute.Offset);
-        if (Attribute.Size == 4) {
+            .setLocation(Attribute.location)
+            .setOffset(Attribute.offset);
+        if (Attribute.size == 4) {
             Desc.setFormat(vk::Format::eR32Sfloat);
-        } else if (Attribute.Size == 8) {
+        } else if (Attribute.size == 8) {
             Desc.setFormat(vk::Format::eR32G32Sfloat);
-        } else if (Attribute.Size == 12) {
+        } else if (Attribute.size == 12) {
             Desc.setFormat(vk::Format::eR32G32B32Sfloat);
-        } else if (Attribute.Size == 16) {
+        } else if (Attribute.size == 16) {
             Desc.setFormat(vk::Format::eR32G32B32A32Sfloat);
         }
         // clang-format on
@@ -78,8 +81,8 @@ TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDe
 
 UInt32 ShaderProgram::GetStride() const {
     UInt32 Stride = 0;
-    for (const auto& Attribute: mVertexInputAttributes) {
-        Stride += Attribute.Size;
+    for (const auto& Attribute: vertex_input_attributes_) {
+        Stride += Attribute.size;
     }
     return Stride;
 }
