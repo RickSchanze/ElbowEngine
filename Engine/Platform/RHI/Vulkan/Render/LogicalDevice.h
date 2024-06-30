@@ -12,24 +12,28 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan
-{
+namespace RHI::Vulkan {
 class SwapChain;
 }
-namespace RHI::Vulkan
-{
+namespace RHI::Vulkan {
 class PhysicalDevice;
 }
-namespace RHI::Vulkan
-{
+namespace RHI::Vulkan {
 class Instance;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class LogicalDevice final : public IRHIResource
-{
+class LogicalDevice final : public IRHIResource {
 public:
     ~LogicalDevice() override;
+
+    TArray<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info
+    ) const;
+
+    void FreeDescriptorSets(
+        vk::DescriptorPool                                                  descriptor_pool,
+        const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
+    ) const;
 
     static TUniquePtr<LogicalDevice>
     CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
@@ -71,7 +75,13 @@ public:
     void FreeMemory(vk::DeviceMemory memory) const;
 
     vk::DescriptorPool CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const;
-    void               DestroyDescriptorPool(vk::DescriptorPool pool) const;
+
+    void DestroyDescriptorPool(vk::DescriptorPool pool) const;
+
+    vk::DescriptorSetLayout
+    CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const;
+
+    void DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const;
 
     vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
     vk::Queue GetPresentQueue() const { return present_queue_; }
@@ -79,7 +89,7 @@ public:
     void UpdateDescriptorSets(
         const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
         const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies = nullptr
-    )const;
+    ) const;
 
     vk::Result MapMemory(
         vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData

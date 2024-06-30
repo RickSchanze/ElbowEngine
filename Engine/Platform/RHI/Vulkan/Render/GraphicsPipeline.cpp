@@ -272,12 +272,10 @@ void GraphicsPipeline::CleanPipeline()
     {
         Device->GetHandle().destroyPipeline(pipeline_);
         Device->GetHandle().destroyPipelineLayout(pipeline_layout_);
-        Device->GetHandle().destroyDescriptorSetLayout(descriptor_set_layout_);
         delete render_pass_;
         render_pass_           = nullptr;
         pipeline_              = nullptr;
         pipeline_layout_       = nullptr;
-        descriptor_set_layout_ = nullptr;
     }
 }
 
@@ -340,8 +338,8 @@ void GraphicsPipeline::RecordCommand(
         vk::Viewport NewViewport;
         NewViewport.x      = 0;
         NewViewport.y      = 0;
-        NewViewport.width  = gEngineStatistics.WindowSize.Width;
-        NewViewport.height = gEngineStatistics.WindowSize.Height;
+        NewViewport.width  = g_engine_statistics.window_size.width;
+        NewViewport.height = g_engine_statistics.window_size.height;
         InBuffer.setViewport(0, NewViewport);
     }
     if (pipeline_info_.DynamicStateEnabled & EPDSE_Scissor)
@@ -349,8 +347,8 @@ void GraphicsPipeline::RecordCommand(
         vk::Rect2D NewScissor;
         NewScissor.offset.x      = 0;
         NewScissor.offset.y      = 0;
-        NewScissor.extent.width  = gEngineStatistics.WindowSize.Width;
-        NewScissor.extent.height = gEngineStatistics.WindowSize.Height;
+        NewScissor.extent.width  = g_engine_statistics.window_size.width;
+        NewScissor.extent.height = g_engine_statistics.window_size.height;
         InBuffer.setScissor(0, NewScissor);
     }
     // 使用顶点缓冲需纳入
@@ -401,108 +399,6 @@ void GraphicsPipeline::LoadModel()
 void GraphicsPipeline::CleanModel() const
 {
     model->Finialize();
-}
-
-void GraphicsPipeline::CreateUniformBuffers()
-{
-    VulkanContext& context     = VulkanContext::Get();
-    vk::DeviceSize buffer_size = 0;
-    for (const auto& value: m_shader_prog_->GetUniforms() | std::views::values)
-    {
-        buffer_size += value.size;
-    }
-    uniform_buffers_.resize(context.GetSwapChainImageCount());
-    uniform_buffers_memory_.resize(context.GetSwapChainImageCount());
-    for (size_t i = 0; i < context.GetSwapChainImageCount(); i++)
-    {
-        context.GetLogicalDevice()->CreateBuffer(
-            buffer_size,
-            vk::BufferUsageFlagBits::eUniformBuffer,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            uniform_buffers_[i],
-            uniform_buffers_memory_[i]
-        );
-    }
-}
-
-void GraphicsPipeline::CleanUniformBuffers()
-{
-    VulkanContext& Context = VulkanContext::Get();
-    for (size_t i = 0; i < Context.GetSwapChainImageCount(); i++)
-    {
-        Context.GetLogicalDevice()->DestroyBuffer(uniform_buffers_[i]);
-        Context.GetLogicalDevice()->FreeMemory(uniform_buffers_memory_[i]);
-    }
-    uniform_buffers_.clear();
-    uniform_buffers_memory_.clear();
-}
-
-void GraphicsPipeline::CreateDescriptorPool()
-{
-    VulkanContext&                          Context   = VulkanContext::Get();
-    TStaticArray<vk::DescriptorPoolSize, 2> PoolSizes = {};
-    // Uniform Object
-    PoolSizes[0].type                                 = vk::DescriptorType::eUniformBuffer;
-    PoolSizes[0].descriptorCount                      = Context.GetSwapChainImageCount();
-
-    // 纹理采样器
-    PoolSizes[1].type            = vk::DescriptorType::eCombinedImageSampler;
-    PoolSizes[1].descriptorCount = Context.GetSwapChainImageCount();
-
-    vk::DescriptorPoolCreateInfo PoolInfo = {};
-    PoolInfo.setPoolSizes(PoolSizes).setMaxSets(Context.GetSwapChainImageCount());
-    descriptor_pool_ = Context.GetLogicalDevice()->CreateDescriptorPool(PoolInfo);
-}
-
-void GraphicsPipeline::CleanDescriptorPool() const
-{
-    VulkanContext& Context = VulkanContext::Get();
-    Context.GetLogicalDevice()->DestroyDescriptorPool(descriptor_pool_);
-}
-
-void GraphicsPipeline::CreateDescriptotSets()
-{
-    VulkanContext&                  context = VulkanContext::Get();
-    TArray<vk::DescriptorSetLayout> layouts(
-        context.GetSwapChainImageCount(), descriptor_set_layout_
-    );
-    vk::DescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
-    descriptor_sets_.resize(context.GetSwapChainImageCount());
-    // 描述符池对象销毁时会自动清除描述符集
-    descriptor_sets_ = context.GetLogicalDevice()->GetHandle().allocateDescriptorSets(alloc_info);
-    // 创建材质时首先使用默认丢失的贴图，之后需要调用更新贴图的方法
-    auto& default_lack_texture      = Texture::GetDefaultLackTexture();
-    auto& default_lack_texture_view = Texture::GetDefaultLackTextureView();
-    auto& sampler                   = Sampler::GetDefaultSampler();
-    for (size_t i = 0; i < descriptor_sets_.size(); i++)
-    {
-        vk::DescriptorBufferInfo buffer_info = {};
-        buffer_info.setBuffer(uniform_buffers_[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
-        vk::DescriptorImageInfo image_info = {};
-        image_info.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-            .setImageView(default_lack_texture_view.GetHandle())
-            .setSampler(sampler.GetHandle());
-
-        TStaticArray<vk::WriteDescriptorSet, 2> descriptor_writes = {};
-
-        // TODO: DescriptorSet 应该动态更新而不是写死
-        vk::WriteDescriptorSet descriptor_write = {};
-        descriptor_write.setDstSet(descriptor_sets_[i])
-            .setDstBinding(0)
-            .setDstArrayElement(0)
-            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(1)
-            .setPBufferInfo(&buffer_info);
-        descriptor_writes[0]                 = descriptor_write;
-        descriptor_writes[1].dstSet          = descriptor_sets_[i];
-        descriptor_writes[1].dstBinding      = 1;
-        descriptor_writes[1].dstArrayElement = 0;
-        descriptor_writes[1].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
-        descriptor_writes[1].descriptorCount = 1;
-        descriptor_writes[1].pImageInfo      = &image_info;
-        context.GetLogicalDevice()->UpdateDescriptorSets(descriptor_writes);
-    }
 }
 
 void GraphicsPipeline::CreateCommandBuffers()

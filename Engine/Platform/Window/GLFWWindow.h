@@ -40,8 +40,8 @@ class GlfwWindow {
 public:
     explicit GlfwWindow(String InWindowTitle, const int InWidth, const int InHeight) :
         mWindowTitle(Move(InWindowTitle)), mWidth(InWidth), mHeight(InHeight) {
-        gEngineStatistics.WindowSize.Height = InHeight;
-        gEngineStatistics.WindowSize.Width  = InWidth;
+        g_engine_statistics.window_size.height = InHeight;
+        g_engine_statistics.window_size.width  = InWidth;
     }
 
     [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }

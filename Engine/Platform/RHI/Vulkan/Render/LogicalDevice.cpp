@@ -15,98 +15,99 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-LogicalDevice::~LogicalDevice()
-{
+LogicalDevice::~LogicalDevice() {
     Finialize();
+}
+
+TArray<vk::DescriptorSet>
+LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const {
+    return handle_.allocateDescriptorSets(alloc_info);
+}
+
+void LogicalDevice::FreeDescriptorSets(
+    vk::DescriptorPool                                                  descriptor_pool,
+    const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
+) const {
+    handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
 TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(
     vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-)
-{
+) {
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
 LogicalDevice::LogicalDevice(
     ResourceProtected, const vk::Device InDevice,
     const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
-{
-}
+) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice) {}
 
-void LogicalDevice::Finialize()
-{
+void LogicalDevice::Finialize() {
     if (!IsValid()) return;
     handle_.destroy();
     handle_ = VK_NULL_HANDLE;
 }
 
-void LogicalDevice::Destroy()
-{
+void LogicalDevice::Destroy() {
     Finialize();
 }
 
-TUniquePtr<SwapChain>
-LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight)
-{
-    const auto AssociatedPhysicalDevice = associated_physical_device_.get();
-    const auto SwapChainSupport         = AssociatedPhysicalDevice.QuerySwapChainSupport();
-    const auto Surface = AssociatedPhysicalDevice.GetAttachedInstance()->GetSurfaceHandle();
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(
+    const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight
+) {
+    const auto physical_device    = associated_physical_device_.get();
+    const auto swap_chain_support = physical_device.QuerySwapChainSupport();
+    const auto surface            = physical_device.GetAttachedInstance()->GetSurfaceHandle();
 
-    const auto SurfaceFormat = SwapChain::ChooseSwapSurfaceFormat(SwapChainSupport.Formats);
-    const auto PresentMode   = SwapChain::ChooseSwapPresentMode(SwapChainSupport.PresentModes);
-    const auto Extent =
-        SwapChain::ChooseSwapExtent(SwapChainSupport.Capabilities, InWidth, InHeight);
+    const auto surface_format = SwapChain::ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const auto present_mode   = SwapChain::ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const auto extent =
+        SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
 
     UInt32 ImageCount = InSwapChainImageCount;
-    if (InSwapChainImageCount == 0)
-    {
-        ImageCount = SwapChainSupport.Capabilities.minImageCount + 1;
+    if (InSwapChainImageCount == 0) {
+        ImageCount = swap_chain_support.capabilities.minImageCount + 1;
     }
-    if (SwapChainSupport.Capabilities.maxImageCount > 0 &&
-        ImageCount > SwapChainSupport.Capabilities.maxImageCount)
-    {
-        ImageCount = SwapChainSupport.Capabilities.maxImageCount;
+    if (swap_chain_support.capabilities.maxImageCount > 0 &&
+        ImageCount > swap_chain_support.capabilities.maxImageCount) {
+        ImageCount = swap_chain_support.capabilities.maxImageCount;
     }
-    vk::SwapchainCreateInfoKHR SwapChainInfo = {};
+    vk::SwapchainCreateInfoKHR swap_chain_info = {};
     // clang-format off
-    SwapChainInfo
-        .setSurface(Surface)                                             // 设置表面
+    swap_chain_info
+        .setSurface(surface)                                             // 设置表面
         .setMinImageCount(ImageCount)                                    // 设置交换链图像数量
-        .setImageFormat(SurfaceFormat.format)                            // 设置图像格式
-        .setImageColorSpace(SurfaceFormat.colorSpace)                    // 设置颜色空间
-        .setImageExtent(Extent)                                          // 设置图像大小(分辨率)
+        .setImageFormat(surface_format.format)                            // 设置图像格式
+        .setImageColorSpace(surface_format.colorSpace)                    // 设置颜色空间
+        .setImageExtent(extent)                                          // 设置图像大小(分辨率)
         .setImageArrayLayers(1)                                          // 每个图像包含的层次 通常是1 对于VR应用可能更多
         .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)         // 将图像作为颜色附着
-        .setPreTransform(SwapChainSupport.Capabilities.currentTransform) // 指定一个固定的图像变换操作（需要交换链具有supportedTransforms特性）例如旋转90度
+        .setPreTransform(swap_chain_support.capabilities.currentTransform) // 指定一个固定的图像变换操作（需要交换链具有supportedTransforms特性）例如旋转90度
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)       // 指定alhpa通道是否和窗口系统中其他窗口混合，通常使用这个值忽略alpha通道
-        .setPresentMode(PresentMode)                                     // 设置呈现模式
+        .setPresentMode(present_mode)                                     // 设置呈现模式
         .setClipped(true)                                                // 不关心窗口系统中其他窗口遮挡的颜色
         .setOldSwapchain(VK_NULL_HANDLE);                                // 如果交换链需要重新创建，可以指定一个旧的交换链
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                    Indicies = AssociatedPhysicalDevice.FindQueueFamilyIndices();
-    const TStaticArray<UInt32, 2> QueueFamilyIndicies = {
-        Indicies.GraphicsFamily.value(),
-        Indicies.PresentFamily.value(),
+    const auto                    indicies             = physical_device.FindQueueFamilyIndices();
+    const TStaticArray<UInt32, 2> queue_family_indices = {
+        indicies.graphics_family.value(),
+        indicies.present_family.value(),
     };
-    if (Indicies.GraphicsFamily != Indicies.PresentFamily)
-    {
-        SwapChainInfo
+    if (indicies.graphics_family != indicies.present_family) {
+        swap_chain_info
             .setImageSharingMode(vk::SharingMode::eConcurrent
             )   // 图像可以在多个队列族使用而不需要显式改变图像所有权
-            .setQueueFamilyIndices(QueueFamilyIndicies);   // 不是同一队列族时需要指定此项
-    }
-    else
-    {
-        SwapChainInfo.setImageSharingMode(vk::SharingMode::eExclusive
+            .setQueueFamilyIndices(queue_family_indices);   // 不是同一队列族时需要指定此项
+    } else {
+        swap_chain_info.setImageSharingMode(vk::SharingMode::eExclusive
         );   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
-    graphics_queue_ = handle_.getQueue(Indicies.GraphicsFamily.value(), 0);
-    present_queue_  = handle_.getQueue(Indicies.PresentFamily.value(), 0);
+    graphics_queue_ = handle_.getQueue(indicies.graphics_family.value(), 0);
+    present_queue_  = handle_.getQueue(indicies.present_family.value(), 0);
     return SwapChain::CreateUnique(
-        handle_.createSwapchainKHR(SwapChainInfo), this, SurfaceFormat.format, Extent
+        handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent
     );
 }
 
@@ -114,8 +115,7 @@ void LogicalDevice::CreateBuffer(
     const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage,
     const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
     vk::DeviceMemory& OutBufferMemory
-) const
-{
+) const {
     vk::BufferCreateInfo BufferInfo = {};
     BufferInfo.setSize(InSize).setUsage(InUsage).setSharingMode(vk::SharingMode::eExclusive);
     OutBuffer                              = handle_.createBuffer(BufferInfo);
@@ -130,32 +130,37 @@ void LogicalDevice::CreateBuffer(
     handle_.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 }
 
-void LogicalDevice::DestroyBuffer(const vk::Buffer buffer) const
-{
+void LogicalDevice::DestroyBuffer(const vk::Buffer buffer) const {
     handle_.destroy(buffer);
 }
 
-void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const
-{
+void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const {
     handle_.freeMemory(memory);
 }
 
 vk::DescriptorPool
-LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const
-{
+LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const {
     return handle_.createDescriptorPool(create_info);
 }
 
-void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const
-{
+void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const {
     handle_.destroyDescriptorPool(pool);
+}
+
+vk::DescriptorSetLayout LogicalDevice::CreateDescriptorSetLayout(
+    const vk::DescriptorSetLayoutCreateInfo& create_info
+) const {
+    return handle_.createDescriptorSetLayout(create_info);
+}
+
+void LogicalDevice::DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const {
+    handle_.destroyDescriptorSetLayout(layout);
 }
 
 void LogicalDevice::UpdateDescriptorSets(
     const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
     const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies
-) const
-{
+) const {
     handle_.updateDescriptorSets(descriptor_writes, descriptor_copies);
 }
 

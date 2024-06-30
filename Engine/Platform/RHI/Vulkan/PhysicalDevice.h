@@ -15,44 +15,52 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 class Instance;
 
-struct QueueFamilyIndices
-{
-    TOptional<UInt32> GraphicsFamily;
-    TOptional<UInt32> PresentFamily;
+struct QueueFamilyIndices {
+    TOptional<UInt32> graphics_family;
+    TOptional<UInt32> present_family;
 
-    [[nodiscard]] bool IsValid() const { return GraphicsFamily.has_value() && PresentFamily.has_value(); }
+    [[nodiscard]] bool IsValid() const {
+        return graphics_family.has_value() && present_family.has_value();
+    }
 };
 
 class PhysicalDevice {
 public:
-    static inline TArray<const char*> sDeviceRequiredExtensions = {
+    static inline TArray<const char*> s_device_required_extensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
-    static TArray<const char*> GetDeviceRequiredExtensions() { return sDeviceRequiredExtensions; }
+    static TArray<const char*> GetDeviceRequiredExtensions() {
+        return s_device_required_extensions;
+    }
 
-    struct SwapChainSupportDetails
-    {
-        vk::SurfaceCapabilitiesKHR  Capabilities;
-        TArray<vk::SurfaceFormatKHR> Formats;
-        TArray<vk::PresentModeKHR>   PresentModes;
+    struct SwapChainSupportDetails {
+        vk::SurfaceCapabilitiesKHR   capabilities;
+        TArray<vk::SurfaceFormatKHR> formats;
+        TArray<vk::PresentModeKHR>   present_modes;
     };
 
 public:
     typedef PhysicalDevice ThisClass;
-    explicit               PhysicalDevice(Instance* InAttachedInstance) : mAttachedInstance(InAttachedInstance) {}
-    explicit               operator vk::PhysicalDevice() const { return mDeviceHandle; }
-    explicit               operator bool() const { return IsValid(); }
-    [[nodiscard]] bool     IsValid() const { return static_cast<bool>(mDeviceHandle) && mAttachedInstance != nullptr; }
+
+    explicit PhysicalDevice(Instance* InAttachedInstance) : instance_(InAttachedInstance) {}
+
+    explicit operator vk::PhysicalDevice() const { return handle_; }
+
+    explicit operator bool() const { return IsValid(); }
+
+    bool IsValid() const { return static_cast<bool>(handle_) && instance_ != nullptr; }
 
     /**
      * 使用Instance选择合适的物理设备
-     * @param InAttachedInstance 此物理设备附着的Instance
-     * @param PickFunc 用来确定一个设备是否合适
+     * @param instance 此物理设备附着的Instance
+     * @param pick_func 用来确定一个设备是否合适
      * @return
      */
-    static TUniquePtr<PhysicalDevice>
-    PickPhysicalDevice(Instance* InAttachedInstance, const TFunction<bool(const PhysicalDevice&)>& PickFunc = &ThisClass::IsDeviceSuitable);
+    static TUniquePtr<PhysicalDevice> PickPhysicalDevice(
+        Instance*                                     instance,
+        const TFunction<bool(const PhysicalDevice&)>& pick_func = &ThisClass::IsDeviceSuitable
+    );
 
     /**
      * 判断一个Device是否合适
@@ -61,20 +69,20 @@ public:
      */
     static bool IsDeviceSuitable(const PhysicalDevice& InDevice);
 
-    PhysicalDevice& SetVulkanPhysicalDevice(vk::PhysicalDevice InDevice);
+    PhysicalDevice& SetVulkanPhysicalDevice(vk::PhysicalDevice device);
 
     /**
      * 寻找此物理设备支持的FamilyIndices
      * @return 支持的FamilyIndices
      */
-    [[nodiscard]] QueueFamilyIndices FindQueueFamilyIndices() const;
+    QueueFamilyIndices FindQueueFamilyIndices() const;
 
     /**
      * 看此物理是被是否支持所有需要的扩展
-     * @param RequiredExtensions
+     * @param required_extensions
      * @return
      */
-    [[nodiscard]] bool CheckExtensionSupport(const TArray<const char*>& RequiredExtensions) const;
+    bool CheckExtensionSupport(const TArray<const char*>& required_extensions) const;
 
     /**
      * 查询此物理设备对交换链的支持情况
@@ -84,36 +92,38 @@ public:
 
     /**
      * 在InCandidates中找到一个支持InTiling和InFeatures的格式
-     * @param InCandidates
-     * @param InTiling
-     * @param InFeatures
+     * @param candidates
+     * @param tiling
+     * @param features
      * @return
      */
-    vk::Format
-    FindSupportFormat(const TArray<vk::Format>& InCandidates, vk::ImageTiling InTiling, vk::FormatFeatureFlagBits InFeatures) const;
+    vk::Format FindSupportFormat(
+        const TArray<vk::Format>& candidates, vk::ImageTiling tiling,
+        vk::FormatFeatureFlagBits features
+    ) const;
 
-    UInt32 FindMemoryType(UInt32 InTypeFilter, vk::MemoryPropertyFlags InProperties) const;
+    UInt32 FindMemoryType(UInt32 type_filter, vk::MemoryPropertyFlags properties) const;
 
 
     TUniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
-    vk::Device               CreateLogicalDeviceHandle() const;
+    vk::Device                CreateLogicalDeviceHandle() const;
 
-    [[nodiscard]] Instance* GetAttachedInstance() const { return mAttachedInstance; }
+    [[nodiscard]] Instance* GetAttachedInstance() const { return instance_; }
 
     // 一些转发函数
     // clang-format off
-    [[nodiscard]] vk::PhysicalDevice GetHandle() const { return mDeviceHandle; }
-    [[nodiscard]] vk::PhysicalDeviceProperties GetProperties() const { return mDeviceHandle.getProperties(); }
-    [[nodiscard]] vk::PhysicalDeviceFeatures GetFeatures() const { return mDeviceHandle.getFeatures(); }
+    [[nodiscard]] vk::PhysicalDevice GetHandle() const { return handle_; }
+    [[nodiscard]] vk::PhysicalDeviceProperties GetProperties() const { return handle_.getProperties(); }
+    [[nodiscard]] vk::PhysicalDeviceFeatures GetFeatures() const { return handle_.getFeatures(); }
     // clang-format on
 
 private:
     // 实际的vkPhysicalDevice
-    vk::PhysicalDevice            mDeviceHandle;
+    vk::PhysicalDevice            handle_;
     // 附着的VkInstance实例
-    Instance*                     mAttachedInstance = nullptr;
+    Instance*                     instance_ = nullptr;
     // 支持的FamilyIndices
-    QueueFamilyIndices            mSupportedQueueFamilyIndices;
+    QueueFamilyIndices            supported_queue_family_indices_;
 };
 
 RHI_VULKAN_NAMESPACE_END

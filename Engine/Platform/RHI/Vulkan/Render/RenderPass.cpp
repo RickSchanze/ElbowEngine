@@ -100,8 +100,8 @@ void RenderPass::SetupFramebuffer()
 
     mFrameBufferAttachments.resize(mAttachmentDescs.size());
 
-    auto Height = gEngineStatistics.WindowSize.Height;
-    auto Width  = gEngineStatistics.WindowSize.Width;
+    auto Height = g_engine_statistics.window_size.height;
+    auto Width  = g_engine_statistics.window_size.width;
 
     for (size_t i = 0; i < mFrameBufferAttachments.size(); i++)
     {

@@ -42,7 +42,7 @@ void Function::Camera::SetWindowFocused(bool InFocused) {
     bFocused = InFocused;
 
     // 如果foucsed（现在是按下了右键）则隐藏鼠标
-    gEngineStatistics.HideMouse = bFocused;
+    g_engine_statistics.is_hide_mouse = bFocused;
 }
 
 void Function::Camera::HandleInput() {

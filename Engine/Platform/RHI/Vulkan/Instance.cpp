@@ -57,7 +57,7 @@ void Instance::Finialize() {
     mVulkanInstanceHandle = VK_NULL_HANDLE;
 }
 
-void Instance::Destroy(){
+void Instance::Destroy() {
     Finialize();
 }
 

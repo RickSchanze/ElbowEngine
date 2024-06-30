@@ -77,16 +77,16 @@ void EngineApplication::Run() {
         mWindow->BeginImGuiFrame();
 
         for (auto& SubWindow: mSubWindows) {
-            SubWindow->Tick(gEngineStatistics.TimeDelta);
+            SubWindow->Tick(g_engine_statistics.time_delta);
         }
 
         DrawAppUI();
 
         ImGui::ShowDemoWindow();
-        mWindow->Tick(gEngineStatistics.TimeDelta);
+        mWindow->Tick(g_engine_statistics.time_delta);
 
         // 这个必须在最后一句 对ImGui的渲染在这里完成
-        mRenderApplication->Tick(gEngineStatistics.TimeDelta);
+        mRenderApplication->Tick(g_engine_statistics.time_delta);
     }
 }
 
@@ -98,17 +98,17 @@ bool EngineApplication::IsValid() const {
 
 void EngineApplication::InternalTick() {
     using namespace std::chrono;
-    glfwSetInputMode(mWindow->GetGLFWWindowHandle(), GLFW_CURSOR, gEngineStatistics.HideMouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(mWindow->GetGLFWWindowHandle(), GLFW_CURSOR, g_engine_statistics.is_hide_mouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     {
         auto CurrentFrameTime       = steady_clock::now();
-        gEngineStatistics.TimeDelta = duration<float>(CurrentFrameTime - mLastFrameTime).count();
+        g_engine_statistics.time_delta = duration<float>(CurrentFrameTime - mLastFrameTime).count();
         mLastFrameTime              = CurrentFrameTime;
-        if (gEngineStatistics.TimeDelta > 0)   //
-            gEngineStatistics.Fps = static_cast<Int32>(1.f / gEngineStatistics.TimeDelta);
+        if (g_engine_statistics.time_delta > 0)   //
+            g_engine_statistics.fps = static_cast<Int32>(1.f / g_engine_statistics.time_delta);
     }
-    gEngineStatistics.FrameCount++;
+    g_engine_statistics.frame_count++;
 
-    gEngineStatistics.ObjectCount = ObjectManager::Get().GetObjectCount();
+    g_engine_statistics.object_count = ObjectManager::Get().GetObjectCount();
 }
 
 void EngineApplication::RemoveWindow(Window::WindowBase* InWindow) {

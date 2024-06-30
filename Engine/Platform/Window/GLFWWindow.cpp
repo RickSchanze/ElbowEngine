@@ -95,7 +95,7 @@ void ImGuiGraphicsPipeline::Initialize() {
     Info.Instance       = mContext.get().GetVulkanInstance()->GetHandle();
     Info.PhysicalDevice = mContext.get().GetPhysicalDevice()->GetHandle();
     Info.Device         = mContext.get().GetLogicalDevice()->GetHandle();
-    Info.QueueFamily    = mContext.get().GetPhysicalDevice()->FindQueueFamilyIndices().GraphicsFamily.value();
+    Info.QueueFamily    = mContext.get().GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
     Info.Queue          = mContext.get().GetLogicalDevice()->GetGraphicsQueue();
     Info.PipelineCache  = nullptr;
     Info.DescriptorPool = nullptr;   // 后面进行填充

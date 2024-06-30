@@ -23,9 +23,15 @@ void ObjectCreateHelper::SetObjectID(const TSharedPtr<Object>& Obj, const UInt32
     Obj->mID = ID;
 }
 
-void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const UInt32 ID) {
+void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object> &Obj, const UInt32 ID)
+{
     Obj->mID = ID;
 }
 
-EngineStatistics gEngineStatistics = {};
+void EngineStatistics::IncreaseFrameIndex()
+{
+    current_image_index = (current_image_index + 1) % parallel_render_frame_count;
+}
+
+EngineStatistics g_engine_statistics = {};
 String STRING_NONE;

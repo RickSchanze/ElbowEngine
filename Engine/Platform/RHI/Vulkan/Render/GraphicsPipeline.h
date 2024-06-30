@@ -161,7 +161,6 @@ private:
 
     vk::PipelineLayout      pipeline_layout_;
     vk::Pipeline            pipeline_;
-    vk::DescriptorSetLayout descriptor_set_layout_;
 
     // 4.命令缓冲
     TArray<vk::CommandBuffer> command_buffers_;
@@ -184,14 +183,6 @@ private:
     void LoadModel();
 
     void CleanModel() const;
-
-    void CreateUniformBuffers();
-    void CleanUniformBuffers();
-
-    void CreateDescriptorPool();
-    void CleanDescriptorPool() const;
-
-    void CreateDescriptotSets();
 
     void CreateCommandBuffers();
     void CleanCommandBuffers() const;

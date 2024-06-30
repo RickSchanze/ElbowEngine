@@ -13,13 +13,13 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 
 TUniquePtr<PhysicalDevice>
-PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const TFunction<bool(const PhysicalDevice&)>& PickFunc) {
-    auto        Rtn     = MakeUnique<PhysicalDevice>(InAttachedInstance);
-    const TArray Devices = InAttachedInstance->EnumeratePhysicalDevices();
+PhysicalDevice::PickPhysicalDevice(Instance* instance, const TFunction<bool(const PhysicalDevice&)>& pick_func) {
+    auto        Rtn     = MakeUnique<PhysicalDevice>(instance);
+    const TArray Devices = instance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices) {
-        PhysicalDevice TempDevice(InAttachedInstance);
+        PhysicalDevice TempDevice(instance);
         TempDevice.SetVulkanPhysicalDevice(Device);
-        if (PickFunc(TempDevice)) {
+        if (pick_func(TempDevice)) {
             Rtn->SetVulkanPhysicalDevice(Device);
             break;
         }
@@ -31,10 +31,10 @@ PhysicalDevice::PickPhysicalDevice(Instance* InAttachedInstance, const TFunction
 
 bool PhysicalDevice::IsDeviceSuitable(const PhysicalDevice& InDevice) {
     // 检查扩展支持
-    if (!InDevice.CheckExtensionSupport(sDeviceRequiredExtensions)) return false;
+    if (!InDevice.CheckExtensionSupport(s_device_required_extensions)) return false;
     // 检查交换链支持
     const auto SwapChainSupport = InDevice.QuerySwapChainSupport();
-    if (SwapChainSupport.Formats.empty() || SwapChainSupport.PresentModes.empty()) return false;
+    if (SwapChainSupport.formats.empty() || SwapChainSupport.present_modes.empty()) return false;
     // 检查队列族支持
     const QueueFamilyIndices Indices = InDevice.FindQueueFamilyIndices();
     if (!Indices.IsValid()) return false;
@@ -46,25 +46,25 @@ bool PhysicalDevice::IsDeviceSuitable(const PhysicalDevice& InDevice) {
            DeviceFeatures.samplerAnisotropy;                                   // 支持各向异性采样
 }
 
-PhysicalDevice& PhysicalDevice::SetVulkanPhysicalDevice(const vk::PhysicalDevice InDevice) {
-    mDeviceHandle = InDevice;
+PhysicalDevice& PhysicalDevice::SetVulkanPhysicalDevice(const vk::PhysicalDevice device) {
+    handle_ = device;
     return *this;
 }
 
 QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
-    THROW_IF_NOT(VULKAN_CHECK_PTR(mAttachedInstance), L"Physical::FindQueueFamilyIndices: 查找队列族索引时mAttachedInstance无效");
-    const TArray        QueueFamilies = mDeviceHandle.getQueueFamilyProperties();
+    THROW_IF_NOT(VULKAN_CHECK_PTR(instance_), L"Physical::FindQueueFamilyIndices: 查找队列族索引时mAttachedInstance无效");
+    const TArray        QueueFamilies = handle_.getQueueFamilyProperties();
     // 查找需要的队列族索引
     QueueFamilyIndices Rtn{};
     for (int i = 0; i < QueueFamilies.size(); i++) {
         auto& QueueFamily = QueueFamilies[i];
         // 检查支不支持图形管线
         if (QueueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-            Rtn.GraphicsFamily = i;
+            Rtn.graphics_family = i;
         }
         // 检查支不支持Surface
-        if (mDeviceHandle.getSurfaceSupportKHR(i, mAttachedInstance->GetSurfaceHandle())) {
-            Rtn.PresentFamily = i;
+        if (handle_.getSurfaceSupportKHR(i, instance_->GetSurfaceHandle())) {
+            Rtn.present_family = i;
         }
         if (Rtn.IsValid()) {
             return Rtn;
@@ -73,9 +73,9 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const {
     return {};
 }
 
-bool PhysicalDevice::CheckExtensionSupport(const TArray<const char*, std::allocator<const char*>>& RequiredExtensions) const {
-    const TArray      Extensions           = mDeviceHandle.enumerateDeviceExtensionProperties();
-    TSet<const char*> MyRequiredExtensions = {RequiredExtensions.begin(), RequiredExtensions.end()};
+bool PhysicalDevice::CheckExtensionSupport(const TArray<const char*, std::allocator<const char*>>& required_extensions) const {
+    const TArray      Extensions           = handle_.enumerateDeviceExtensionProperties();
+    TSet<const char*> MyRequiredExtensions = {required_extensions.begin(), required_extensions.end()};
     for (const auto& Extension: Extensions) {
         MyRequiredExtensions.erase(Extension.extensionName);
     }
@@ -83,21 +83,21 @@ bool PhysicalDevice::CheckExtensionSupport(const TArray<const char*, std::alloca
 }
 
 PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() const {
-    THROW_IF_NOT(VULKAN_CHECK_PTR(mAttachedInstance), L"Physical::FindQueueFamilyIndices: 查询交换链支持情况mAttachedInstance无效");
+    THROW_IF_NOT(VULKAN_CHECK_PTR(instance_), L"Physical::FindQueueFamilyIndices: 查询交换链支持情况mAttachedInstance无效");
     SwapChainSupportDetails RtnDetails;
-    RtnDetails.Capabilities = mDeviceHandle.getSurfaceCapabilitiesKHR(mAttachedInstance->GetSurfaceHandle());
-    RtnDetails.Formats      = mDeviceHandle.getSurfaceFormatsKHR(mAttachedInstance->GetSurfaceHandle());
-    RtnDetails.PresentModes = mDeviceHandle.getSurfacePresentModesKHR(mAttachedInstance->GetSurfaceHandle());
+    RtnDetails.capabilities = handle_.getSurfaceCapabilitiesKHR(instance_->GetSurfaceHandle());
+    RtnDetails.formats      = handle_.getSurfaceFormatsKHR(instance_->GetSurfaceHandle());
+    RtnDetails.present_modes = handle_.getSurfacePresentModesKHR(instance_->GetSurfaceHandle());
     return RtnDetails;
 }
 
 vk::Format PhysicalDevice::FindSupportFormat(
-    const TArray<vk::Format>& InCandidates, const vk::ImageTiling InTiling, const vk::FormatFeatureFlagBits InFeatures
+    const TArray<vk::Format>& candidates, const vk::ImageTiling tiling, const vk::FormatFeatureFlagBits features
 ) const {
-    for (const vk::Format& Format: InCandidates) {
-        const auto Props = mDeviceHandle.getFormatProperties(Format);
+    for (const vk::Format& Format: candidates) {
+        const auto Props = handle_.getFormatProperties(Format);
         // 图形布局经过优化
-        if (InTiling == vk::ImageTiling::eOptimal && (Props.optimalTilingFeatures & InFeatures) == InFeatures) {
+        if (tiling == vk::ImageTiling::eOptimal && (Props.optimalTilingFeatures & features) == features) {
             return Format;
         }
         // if (InTiling == vk::ImageTiling::eLinear && (Props.linearTilingFeatures & InFeatures) == InFeatures) {
@@ -108,10 +108,10 @@ vk::Format PhysicalDevice::FindSupportFormat(
     throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
 }
 
-UInt32 PhysicalDevice::FindMemoryType(const UInt32 InTypeFilter, const vk::MemoryPropertyFlags InProperties) const {
-    const auto MemProperties = mDeviceHandle.getMemoryProperties();
+UInt32 PhysicalDevice::FindMemoryType(const UInt32 type_filter, const vk::MemoryPropertyFlags properties) const {
+    const auto MemProperties = handle_.getMemoryProperties();
     for (UInt32 i = 0; i < MemProperties.memoryTypeCount; i++) {
-        if ((InTypeFilter & (1 << i)) && (MemProperties.memoryTypes[i].propertyFlags & InProperties) == InProperties) {
+        if ((type_filter & (1 << i)) && (MemProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
@@ -126,7 +126,7 @@ TUniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique() {
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {
     QueueFamilyIndices               Indices = FindQueueFamilyIndices();
     TArray<vk::DeviceQueueCreateInfo> QueueCreateInfos;
-    TSet<uint32_t>                    UniqueQueueFamilies = {Indices.GraphicsFamily.value(), Indices.PresentFamily.value()};
+    TSet<uint32_t>                    UniqueQueueFamilies = {Indices.graphics_family.value(), Indices.present_family.value()};
     float                            QueuePriority       = 1.0f;
     for (uint32_t QueueFamily: UniqueQueueFamilies) {
         vk::DeviceQueueCreateInfo QueueCreateInfo{};
@@ -146,13 +146,13 @@ vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const {
     DeviceInfo
         .setQueueCreateInfos(QueueCreateInfos)                   // 设置队列创建信息
         .setPEnabledFeatures(&DeviceFeatures)                    // 设置要求的设备特性
-        .setPEnabledExtensionNames(sDeviceRequiredExtensions);   // 设置启用的扩展名
+        .setPEnabledExtensionNames(s_device_required_extensions);   // 设置启用的扩展名
     // 校验层
     auto ValidationLayers = ValidationLayer::GetValidationLayerNames();
     if (ValidationLayer::IsEnable()) {
         DeviceInfo.setEnabledLayerCount(ValidationLayers.size()).setPpEnabledLayerNames(ValidationLayers.data());
     }
-    auto LogicalDeviceHandle = mDeviceHandle.createDevice(DeviceInfo);
+    auto LogicalDeviceHandle = handle_.createDevice(DeviceInfo);
     return LogicalDeviceHandle;
 }
 

@@ -1,8 +1,8 @@
 /**
  * @file CoreGlobal.h
- * @author Echo 
+ * @author Echo
  * @Date 24-4-7
- * @brief 
+ * @brief
  */
 
 #pragma once
@@ -20,56 +20,51 @@ extern Logger gLogger;
 #define LSTRINGIFY(x) L#x
 
 #define LOG_INFO(Text, ...) gLogger.Info(L##Text, __VA_ARGS__)
-#define LOG_INFO_CATEGORY(Category, Text, ...) \
-    gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_INFO_CATEGORY(Category, Text, ...) gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_WARNING(Text, ...) gLogger.Warning(L##Text, __VA_ARGS__)
-#define LOG_WARNING_CATEGORY(Category, Text, ...) \
-    gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_WARNING_CATEGORY(Category, Text, ...) gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_ERROR(Text, ...) gLogger.Error(L##Text, __VA_ARGS__)
-#define LOG_ERROR_CATEGORY(Category, Text, ...) \
-    gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY(Category, Text, ...) gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define LOG_CRITIAL(Text, ...) gLogger.Critical(L##Text, __VA_ARGS__)
-#define LOG_CRITIAL_CATEGORY(Category, Text, ...) \
-    gLogger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_CRITIAL_CATEGORY(Category, Text, ...) gLogger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #ifdef ELBOW_DEBUG
-#    define LOG_DEBUG(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...) \
-        gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#    define LOG_TRACE(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...) \
-        gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_DEBUG(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
+#define LOG_DEBUG_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_TRACE(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
+#define LOG_TRACE_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 #else
-#    define LOG_DEBUG(Text, ...)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...)
-#    define LOG_TRACE(Text, ...)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...)
+#define LOG_DEBUG(Text, ...)
+#define LOG_DEBUG_CATEGORY(Category, Text, ...)
+#define LOG_TRACE(Text, ...)
+#define LOG_TRACE_CATEGORY(Category, Text, ...)
 #endif
 
-#define ASSERTF(Condition, Message) \
-    if (Condition) LOG_CRITIAL(Message)
+#define ASSERTF(Condition, Message)                                                                                    \
+    if (Condition)                                                                                                     \
+    LOG_CRITIAL(Message)
 
-#define ASSERTF_CATEGORY(Category, Condition, Message) \
-    if (Condition) LOG_CRITIAL_CATEGORY(Category, Message)
+#define ASSERTF_CATEGORY(Category, Condition, Message)                                                                 \
+    if (Condition)                                                                                                     \
+    LOG_CRITIAL_CATEGORY(Category, Message)
 
 #define ASSETC
 
 /** BEGIN IsValid函数族 */
-inline bool IsValid(Object* Obj)
+inline bool IsValid(Object *Obj)
 {
     return Obj != nullptr && Obj->IsValid();
 }
 
-inline bool IsValid(const Object* Obj)
+inline bool IsValid(const Object *Obj)
 {
     return Obj != nullptr && Obj->IsValid();
 }
 
-template<typename T>
-bool IsValid(T) = delete;
+template <typename T> bool IsValid(T) = delete;
 /** END IsValid函数族 */
 
 enum class ENewReturnType
@@ -79,23 +74,19 @@ enum class ENewReturnType
     UniquePtr
 };
 
-template<typename T, ENewReturnType Strategy>
-struct NewReturnType;
+template <typename T, ENewReturnType Strategy> struct NewReturnType;
 
-template<typename T>
-struct NewReturnType<T, ENewReturnType::Raw>
+template <typename T> struct NewReturnType<T, ENewReturnType::Raw>
 {
-    using Type = T*;
+    using Type = T *;
 };
 
-template<typename T>
-struct NewReturnType<T, ENewReturnType::SharedPtr>
+template <typename T> struct NewReturnType<T, ENewReturnType::SharedPtr>
 {
     using Type = TSharedPtr<T>;
 };
 
-template<typename T>
-struct NewReturnType<T, ENewReturnType::UniquePtr>
+template <typename T> struct NewReturnType<T, ENewReturnType::UniquePtr>
 {
     using Type = TUniquePtr<T>;
 };
@@ -106,9 +97,9 @@ class ObjectCreateHelper
 public:
     // 获得可用的ID
     static UInt32 GetAvailableID();
-    static void   SetObjectID(Object* Obj, UInt32 ID);
-    static void   SetObjectID(const TSharedPtr<Object>& Obj, UInt32 ID);
-    static void   SetObjectID(const TUniquePtr<Object>& Obj, UInt32 ID);
+    static void SetObjectID(Object *Obj, UInt32 ID);
+    static void SetObjectID(const TSharedPtr<Object> &Obj, UInt32 ID);
+    static void SetObjectID(const TUniquePtr<Object> &Obj, UInt32 ID);
 };
 
 /**
@@ -119,48 +110,48 @@ public:
  * ReturnSharedPtr: 返回SharedPtr
  * ReturnUniquePtr: 返回UniquePtr
  * 默认为ReturnRaw
- * @param Name 对象名称
+ * @param name 对象名称
  * @return
  */
-template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename... Args>
+template <typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename... Args>
     requires IsObject<T>
-typename NewReturnType<T, Strategy>::Type New(const String& Name = L"", Args&&... InArgs)
+typename NewReturnType<T, Strategy>::Type New(const String &name = L"", Args &&...args)
 {
     // T不能是个单例
     static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
-    UInt32 AvailableID = ObjectCreateHelper::GetAvailableID();
+    UInt32 available_id = ObjectCreateHelper::GetAvailableID();
 
-    typename NewReturnType<T, Strategy>::Type Rtn;
+    typename NewReturnType<T, Strategy>::Type rtn;
     if constexpr (Strategy == ENewReturnType::Raw)
     {
-        Rtn = new T(Forward<Args>(InArgs)...);
+        rtn = new T(Forward<Args>(args)...);
     }
     else if constexpr (Strategy == ENewReturnType::SharedPtr)
     {
-        Rtn = MakeShared<T>(Forward<Args>(InArgs)...);
+        rtn = MakeShared<T>(Forward<Args>(args)...);
     }
     else if constexpr (Strategy == ENewReturnType::UniquePtr)
     {
-        Rtn = MakeUnique<T>(Forward<Args>(InArgs)...);
+        rtn = MakeUnique<T>(Forward<Args>(args)...);
     }
     else
     {
         return nullptr;
     }
-    if (Rtn->GetName().empty())
+    if (rtn->GetName().empty())
     {
-        if (Name.empty())
+        if (name.empty())
         {
-            Rtn->SetName(std::vformat(L"Object_{}", std::make_wformat_args(AvailableID)));
+            rtn->SetName(std::vformat(L"Object_{}", std::make_wformat_args(available_id)));
         }
         else
         {
-            Rtn->SetName(Name);
+            rtn->SetName(name);
         }
     }
-    ObjectCreateHelper::SetObjectID(Rtn, AvailableID);
-    ObjectManager::Get().AddObject(Rtn);
-    return Rtn;
+    ObjectCreateHelper::SetObjectID(rtn, available_id);
+    ObjectManager::Get().AddObject(rtn);
+    return rtn;
 }
 
 // 引擎数据
@@ -168,19 +159,24 @@ struct EngineStatistics
 {
     struct
     {
-        Int32 Width  = 0;
-        Int32 Height = 0;
-    } WindowSize;
+        Int32 width = 0;
+        Int32 height = 0;
+    } window_size;
 
-    Float       TimeDelta                = 0;
-    UInt64      FrameCount               = 0;
-    Int32       Fps                      = 0;       // 帧率
-    Bool        HideMouse                = false;   // 是否隐藏鼠标
-    Int32       ObjectCount              = 0;       // 当前总对象数
-    const Int32 ParallelRenderFrameCount = 2;       // 同时渲染的帧数
-    UInt32 SwapchainImageCount = -1;
+    Float time_delta = 0;
+    UInt64 frame_count = 0;
+    Int32 fps = 0;                         // 帧率
+    Bool is_hide_mouse = false;            // 是否隐藏鼠标
+    Int32 object_count = 0;                // 当前总对象数
+    Int32 parallel_render_frame_count = 2; // 同时渲染的帧数
+    UInt32 swapchain_image_count = -1;     // 交换链图像数量
+    UInt32 current_image_index = 0;        // 当前交换链索引
+    UInt32 current_frame_index = 0;        // 当前渲染帧索引
+
+    // current_frame_index++
+    void IncreaseFrameIndex();
 };
 
-extern EngineStatistics gEngineStatistics;
+extern EngineStatistics g_engine_statistics;
 
 extern String STRING_NONE;

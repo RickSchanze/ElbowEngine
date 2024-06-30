@@ -39,7 +39,7 @@ void CommandPool::CreateCommandPool(const vk::CommandPoolCreateFlags InPoolFlags
     // 命令池创建
     vk::CommandPoolCreateInfo CommandPoolCreateInfo{};
     CommandPoolCreateInfo.setFlags(InPoolFlags);
-    CommandPoolCreateInfo.setQueueFamilyIndex(QueueFamilyIndices.GraphicsFamily.value());
+    CommandPoolCreateInfo.setQueueFamilyIndex(QueueFamilyIndices.graphics_family.value());
     mPool = Device->GetHandle().createCommandPool(CommandPoolCreateInfo);
 }
 
