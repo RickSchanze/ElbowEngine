@@ -17,8 +17,8 @@ UI_DRAWER_NAMESPACE_BEGIN
 
 class PropertyDrawer {
 public:
-    static FVector3 DrawProperty(const char* InName, const FVector3& InValue);
-    static FRotator DrawProperty(const char* InName, const FRotator& InValue);
+    static Vector3 DrawProperty(const char* InName, const Vector3& InValue);
+    static Rotator DrawProperty(const char* InName, const Rotator& InValue);
     static float    DrawProperty(const char* InName, float InValue);
     static bool     DrawProperty(const char* InName, bool InValue);
     static int      DrawProperty(const char* InName, int InValue);

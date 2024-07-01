@@ -12,36 +12,36 @@
 #include <glm/trigonometric.hpp>
 
 RTTR_REGISTRATION {
-    rttr::registration::class_<FRotator>("FRotator")
+    rttr::registration::class_<Rotator>("FRotator")
         .constructor<>()
-        .property("Yaw", &FRotator::Yaw)
-        .property("Roll", &FRotator::Roll)
-        .property("Pitch", &FRotator::Pitch);
+        .property("Yaw", &Rotator::yaw)
+        .property("Roll", &Rotator::roll)
+        .property("Pitch", &Rotator::pitch);
 
-    rttr::registration::class_<FVector3>("FVector3")
+    rttr::registration::class_<Vector3>("FVector3")
         .constructor<>()
-        .property("X", &FVector3::x)
-        .property("Y", &FVector3::y)
-        .property("z", &FVector3::z);
+        .property("X", &Vector3::x)
+        .property("Y", &Vector3::y)
+        .property("z", &Vector3::z);
 }
 
 String Size2D::ToString() {
-    return std::format(L"Width: {}, Height:{}", Width, Height);
+    return std::format(L"Width: {}, Height:{}", width, height);
 }
 
 
-FVector3 FRotator::GetForwardVector() const {
-    FVector3 Forward;
-    Forward.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    Forward.y = sin(glm::radians(Pitch));
-    Forward.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+Vector3 Rotator::GetForwardVector() const {
+    Vector3 Forward;
+    Forward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    Forward.y = sin(glm::radians(pitch));
+    Forward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     return normalize(Forward);
 }
 
-FVector3 FRotator::GetUpVector() const {
+Vector3 Rotator::GetUpVector() const {
     return cross(GetRightVector(), GetForwardVector());
 }
 
-FVector3 FRotator::GetRightVector() const {
+Vector3 Rotator::GetRightVector() const {
     return cross(GetForwardVector(), Constant::UpVector);
 }

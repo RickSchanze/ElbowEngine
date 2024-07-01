@@ -25,11 +25,11 @@ bool Input::IsKeyReleased(KeyCode InCode) {
     return ImGui::IsKeyReleased(static_cast<ImGuiKey>(static_cast<int>(InCode)));
 }
 
-FVector2 Input::GetMousePosition() {
+Vector2 Input::GetMousePosition() {
     ImGuiIO& IO = ImGui::GetIO();
     return {IO.MousePos.x, IO.MousePos.y};
 }
 
-FVector2 Input::GetMouseDelta() {
+Vector2 Input::GetMouseDelta() {
     return GetMousePosition() - sLastFrameMousePos;
 }

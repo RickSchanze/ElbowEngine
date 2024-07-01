@@ -3,7 +3,7 @@
 
 # 语言: None, Cpp, Java, JavaScript, ObjC, Proto, TableGen, TextProto
 Language: Cpp
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 # 访问说明符(public、private等)的偏移
 AccessModifierOffset: -4
 # 左括号(左圆括号、左尖括号、左方括号)后的对齐: Align, DontAlign, AlwaysBreak(总是在左括号后换行)

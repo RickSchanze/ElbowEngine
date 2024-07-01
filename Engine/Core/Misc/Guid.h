@@ -10,7 +10,8 @@
 
 #include <objbase.h>
 
-class Guid {
+class Guid
+{
 public:
     Guid();
 
@@ -18,6 +19,6 @@ public:
     String     ToString() const;
 
 private:
-    GUID                  mGuid{};
-    static constexpr Int8 mGuidLength = 64;
+    GUID                  guid_{};
+    static constexpr Int8 length = 64;
 };

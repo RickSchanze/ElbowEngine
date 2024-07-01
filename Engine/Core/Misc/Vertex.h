@@ -14,17 +14,17 @@
 
 struct Vertex
 {
-    glm::vec3 Pos;
-    glm::vec3 Normal;
-    glm::vec2 UV;
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 uv;
 
-    bool operator==(const Vertex& Other) const { return Pos == Other.Pos && UV == Other.UV; }
+    bool operator==(const Vertex& Other) const { return position == Other.position && uv == Other.uv; }
 };
 
 template<>
 struct std::hash<Vertex>
 {
     size_t operator()(Vertex const& vertex) const noexcept {
-        return ((hash<glm::vec3>()(vertex.Pos) ^ (hash<glm::vec2>()(vertex.UV) << 1)));
+        return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec2>()(vertex.uv) << 1)));
     }
 };   // namespace std

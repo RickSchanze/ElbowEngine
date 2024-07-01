@@ -23,7 +23,7 @@ class Object {
 
 public:
     Object() : Object(EOF_IsGameObject) {}
-    Object(const EObjectFlag InFlag) : mFlag(InFlag) {}
+    explicit Object(const EObjectFlag flag) : flag_(flag) {}
 
     virtual ~Object();
 
@@ -38,7 +38,7 @@ public:
      * 获取对象名字
      * @return
      */
-    String GetName() const { return mName; }
+    String GetName() const { return name_; }
 
     /**
      * 获取对象的字符串表示
@@ -50,13 +50,13 @@ public:
      * 获取对象ID
      * @return
      */
-    UInt32 GetID() const { return mID; }
+    UInt32 GetID() const { return id_; }
 
     /**
      * 设置对象的名字
-     * @param Name
+     * @param name
      */
-    void SetName(const String &Name);
+    void SetName(const String &name);
 
     /**
      * 对象是否还有效
@@ -64,19 +64,19 @@ public:
      */
     virtual bool IsValid() const;
 
-    EObjectFlag GetObjectFlag() const { return mFlag; }
+    EObjectFlag GetObjectFlag() const { return flag_; }
 
-    const AnsiString& GetCachedAnsiString() const { return mCachedAnsiString; }
+    const AnsiString& GetCachedAnsiString() const { return cached_ansi_string_; }
 
 protected:
-    String mName;                // 对象名字
-    UInt32 mID        = 0;      // 对象ID
-    bool   mIsGarbage = false;   // 是否是垃圾对象
+    String name_;                // 对象名字
+    UInt32 id_        = 0;      // 对象ID
+    bool   is_garbage_ = false;   // 是否是垃圾对象
 
-    const EObjectFlag mFlag;
+    const EObjectFlag flag_;
 
 private:
-    AnsiString mCachedAnsiString;  // 缓存的Ansi字符串 用于ImGui绘制
+    AnsiString cached_ansi_string_;  // 缓存的Ansi字符串 用于ImGui绘制
 };
 
 template<typename T>

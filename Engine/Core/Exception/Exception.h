@@ -16,42 +16,42 @@ class Exception : public std::exception {
 public:
     ~Exception() override = default;
 
-    explicit Exception(String Message) : mMessage(std::move(Message)) {
-        mStackTrace = cpptrace::generate_trace();
+    explicit Exception(String Message) : message_(std::move(Message)) {
+        stack_trace_ = cpptrace::generate_trace();
     }
 
     [[nodiscard]] virtual String What() const { return L"Exception"; }
-    [[nodiscard]] AnsiString     GetStackTrace() const { return mStackTrace.to_string(); }
+    [[nodiscard]] AnsiString     GetStackTrace() const { return stack_trace_.to_string(); }
 
 protected:
     [[nodiscard]] char const* what() const override { return ""; }
 
-    cpptrace::stacktrace mStackTrace;
-    String               mMessage;
+    cpptrace::stacktrace stack_trace_;
+    String               message_;
 };
 
 class FileOpenException final : public Exception {
 public:
     /**
      * @param Filepath 打开失败的文件路径
-     * @param Errno 打开失败的错误码
-     * @param Message 此错误的具体描述
+     * @param errno_in 打开失败的错误码
+     * @param message 此错误的具体描述
      */
-    explicit FileOpenException(String Filepath, const Int32 Errno, const String& Message = L"") :
-        Exception(Message), Errno{Errno}, Filepath{std::move(Filepath)} {}
+    explicit FileOpenException(String Filepath, const Int32 errno_in, const String& message = L"") :
+        Exception(message), errno_{errno_in}, filepath_{std::move(Filepath)} {}
 
     [[nodiscard]] String What() const override;
-    [[nodiscard]] Int32  GetErrno() const { return Errno; }
-    [[nodiscard]] String GetFilepath() const { return Filepath; }
+    [[nodiscard]] Int32  GetErrno() const { return errno_; }
+    [[nodiscard]] String GetFilepath() const { return filepath_; }
 
 private:
-    Int32  Errno;
-    String Filepath;
+    Int32  errno_;
+    String filepath_;
 };
 
 class NeverEnterException final : public Exception
 {
 public:
-    explicit NeverEnterException(const String& InMessage) : Exception(InMessage) {}
+    explicit NeverEnterException(const String& message) : Exception(message) {}
     explicit NeverEnterException() : NeverEnterException(L"不可调用的代码被执行") {}
 };

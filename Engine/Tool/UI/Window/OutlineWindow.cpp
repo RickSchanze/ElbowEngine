@@ -18,7 +18,7 @@ WINDOW_NAMESPACE_BEGIN
 static bool TreeNodeHasSelected = false;
 
 OutlineWindow::OutlineWindow() {
-    mName       = L"Window_OutlineWindow";
+    name_       = L"Window_OutlineWindow";
     mWindowName = L"世界大纲";
 }
 

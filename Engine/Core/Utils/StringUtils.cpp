@@ -46,6 +46,6 @@ String StringUtils::FromAnsiStringView(const rttr::string_view& AnsiStrView) {
     return FromAnsiString(Str);
 }
 
-String StringUtils::ToString(FVector3 InVec) {
+String StringUtils::ToString(Vector3 InVec) {
     return std::format(L"({0}, {1}, {2})", InVec.x, InVec.y, InVec.z);
 }

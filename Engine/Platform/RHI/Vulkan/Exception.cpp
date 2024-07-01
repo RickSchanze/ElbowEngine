@@ -9,5 +9,5 @@
 
 #include <format>
 String VulkanException::What() const {
-    return std::format(L"VulkanException: {}", mMessage);
+    return std::format(L"VulkanException: {}", message_);
 }

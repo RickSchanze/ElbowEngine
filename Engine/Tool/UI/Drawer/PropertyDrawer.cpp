@@ -16,15 +16,15 @@
 
 UI_DRAWER_NAMESPACE_BEGIN
 
-FVector3 PropertyDrawer::DrawProperty(const char* InName, const FVector3& InValue) {
-    FVector3 Vec = InValue;
+Vector3 PropertyDrawer::DrawProperty(const char* InName, const Vector3& InValue) {
+    Vector3 Vec = InValue;
     ImGui::DragFloat3(InName, &Vec.x, DRAG_FLOAT_V_SPEED);
     return Vec;
 }
 
-FRotator PropertyDrawer::DrawProperty(const char* InName, const FRotator& InValue) {
-    FRotator Rot = InValue;
-    ImGui::DragFloat3(InName, &Rot.Yaw, DRAG_FLOAT_V_SPEED);
+Rotator PropertyDrawer::DrawProperty(const char* InName, const Rotator& InValue) {
+    Rotator Rot = InValue;
+    ImGui::DragFloat3(InName, &Rot.yaw, DRAG_FLOAT_V_SPEED);
     return Rot;
 }
 
@@ -58,8 +58,8 @@ int PropertyDrawer::DrawProperty(const char* InName, int InValue) {
 
 void PropertyDrawer::DrawProperty(Property InProp, rttr::instance Obj) {
     if (ReflUtils::CheckAttribute(InProp, "Hidden")) return;
-    VALUE_SETTER(FVector3)
-    VALUE_SETTER(FRotator)
+    VALUE_SETTER(Vector3)
+    VALUE_SETTER(Rotator)
     VALUE_SETTER(float)
     VALUE_SETTER(bool)
     VALUE_SETTER(int)

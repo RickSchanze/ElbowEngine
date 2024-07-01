@@ -14,34 +14,34 @@
 
 struct Size2D
 {
-    Int32 Width;
-    Int32 Height;
+    Int32 width;
+    Int32 height;
 
     String ToString();
 };
 
 
-typedef glm::vec3 FVector3;
-typedef glm::vec2 FVector2;
+typedef glm::vec3 Vector3;
+typedef glm::vec2 Vector2;
 typedef glm::vec3 Color;
 
 namespace Constant {
-constexpr FVector3 ZeroVector    = {0, 0, 0};
-constexpr FVector3 OneVector     = {1, 1, 1};
-constexpr FVector3 ForwardVector = {0, 0, 1};
-constexpr FVector3 RightVector   = {1, 0, 0};
-constexpr FVector3 UpVector      = {0, 1, 0};
+constexpr Vector3 ZeroVector    = {0, 0, 0};
+constexpr Vector3 OneVector     = {1, 1, 1};
+constexpr Vector3 ForwardVector = {0, 0, 1};
+constexpr Vector3 RightVector   = {1, 0, 0};
+constexpr Vector3 UpVector      = {0, 1, 0};
 }   // namespace Constant
 
-struct FRotator
+struct Rotator
 {
-    float Yaw = -90;
-    float Roll = 0;
-    float Pitch = 0;
+    float yaw = -90;
+    float roll = 0;
+    float pitch = 0;
 
-    FVector3 GetForwardVector() const;
-    FVector3 GetUpVector() const;
-    FVector3 GetRightVector() const;
+    Vector3 GetForwardVector() const;
+    Vector3 GetUpVector() const;
+    Vector3 GetRightVector() const;
 };
 
 

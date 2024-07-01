@@ -18,17 +18,17 @@ class REFL Transform  {
 
 public:
     PROPERTY(Serialized)
-    FVector3 Position = {0, 0, 0};
+    Vector3 Position = {0, 0, 0};
 
     PROPERTY(Serialized)
-    FRotator Rotation = {0, 0, 0};
+    Rotator Rotation = {0, 0, 0};
 
     PROPERTY(Serialized)
-    FVector3 Scale    = {1, 1, 1};
+    Vector3 Scale    = {1, 1, 1};
 
-    FVector3 GetForwardVector() const;
-    FVector3 GetUpVector() const;
-    FVector3 GetRightVector() const;
+    Vector3 GetForwardVector() const;
+    Vector3 GetUpVector() const;
+    Vector3 GetRightVector() const;
 };
 
 FUNCTION_NAMESPACE_END

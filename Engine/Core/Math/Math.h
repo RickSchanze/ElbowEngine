@@ -8,10 +8,10 @@
 #pragma once
 
 
-class FMath {
+class Math {
 public:
-    static bool  ApproximatelyEqual(float A, float B, float Tolerance = 1.e-4f);
-    static bool  IsNearlyZero(float Value, float Tolerance = 1.e-4f);
-    static float Clamp(float Value, float Min, float Max);
-    static float Clamp01(float Value);
+    static bool  ApproximatelyEqual(float a, float b, float tolerance = 1.e-4f);
+    static bool  IsNearlyZero(float value, float tolerance = 1.e-4f);
+    static float Clamp(float value, float min, float max);
+    static float Clamp01(float value);
 };

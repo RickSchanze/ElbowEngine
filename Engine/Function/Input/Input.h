@@ -26,9 +26,9 @@ public:
     static bool IsKeyDown(KeyCode InCode);
     static bool IsKeyPressed(KeyCode InCode);
     static bool IsKeyReleased(KeyCode InCode);
-    static FVector2 GetMousePosition();
-    static FVector2 GetMouseDelta();
+    static Vector2 GetMousePosition();
+    static Vector2 GetMouseDelta();
 
 private:
-    static inline FVector2 sLastFrameMousePos;
+    static inline Vector2 sLastFrameMousePos;
 };

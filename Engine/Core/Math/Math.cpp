@@ -10,18 +10,18 @@
 
 #include <algorithm>
 
-bool FMath::ApproximatelyEqual(float A, float B, float Tolerance) {
-    return std::fabs(A - B) <= Tolerance;
+bool Math::ApproximatelyEqual(float a, float b, float tolerance) {
+    return std::fabs(a - b) <= tolerance;
 }
 
-bool FMath::IsNearlyZero(float Value, float Tolerance) {
-    return ApproximatelyEqual(Value, 0.f, Tolerance);
+bool Math::IsNearlyZero(float value, float tolerance) {
+    return ApproximatelyEqual(value, 0.f, tolerance);
 }
 
-float FMath::Clamp(float Value, float Min, float Max) {
-    return std::clamp(Value, Min, Max);
+float Math::Clamp(float value, float min, float max) {
+    return std::clamp(value, min, max);
 }
 
-float FMath::Clamp01(float Value) {
-    return Clamp(Value, 0, 1);
+float Math::Clamp01(float value) {
+    return Clamp(value, 0, 1);
 }

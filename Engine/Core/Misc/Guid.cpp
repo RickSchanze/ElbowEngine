@@ -10,45 +10,45 @@
 #include "Utils/StringUtils.h"
 
 Guid::Guid() {
-    CoCreateGuid(&mGuid);
+    CoCreateGuid(&guid_);
 }
 
 AnsiString Guid::ToAnsiString() const {
-    char buffer[mGuidLength] = {0};
+    char buffer[length] = {0};
     sprintf_s(
         buffer,
         "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-        mGuid.Data1,
-        mGuid.Data2,
-        mGuid.Data3,
-        mGuid.Data4[0],
-        mGuid.Data4[1],
-        mGuid.Data4[2],
-        mGuid.Data4[3],
-        mGuid.Data4[4],
-        mGuid.Data4[5],
-        mGuid.Data4[6],
-        mGuid.Data4[7]
+        guid_.Data1,
+        guid_.Data2,
+        guid_.Data3,
+        guid_.Data4[0],
+        guid_.Data4[1],
+        guid_.Data4[2],
+        guid_.Data4[3],
+        guid_.Data4[4],
+        guid_.Data4[5],
+        guid_.Data4[6],
+        guid_.Data4[7]
     );
     return {buffer};
 }
 
 String Guid::ToString() const {
-    char buffer[mGuidLength] = {0};
+    char buffer[length] = {0};
     sprintf_s(
         buffer,
         "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-        mGuid.Data1,
-        mGuid.Data2,
-        mGuid.Data3,
-        mGuid.Data4[0],
-        mGuid.Data4[1],
-        mGuid.Data4[2],
-        mGuid.Data4[3],
-        mGuid.Data4[4],
-        mGuid.Data4[5],
-        mGuid.Data4[6],
-        mGuid.Data4[7]
+        guid_.Data1,
+        guid_.Data2,
+        guid_.Data3,
+        guid_.Data4[0],
+        guid_.Data4[1],
+        guid_.Data4[2],
+        guid_.Data4[3],
+        guid_.Data4[4],
+        guid_.Data4[5],
+        guid_.Data4[6],
+        guid_.Data4[7]
     );
     return StringUtils::FromAnsiString(buffer);
 }

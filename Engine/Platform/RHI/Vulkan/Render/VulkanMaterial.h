@@ -18,6 +18,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 /**
  * 主要持有Shader以及设置各种变量
+ * Shader对象由此对象释放
  */
 class VulkanMaterial {
 public:

@@ -10,13 +10,13 @@
 
 GENERATED_SOURCE()
 
-FVector3 Function::Transform::GetForwardVector() const {
+Vector3 Function::Transform::GetForwardVector() const {
     return Rotation.GetForwardVector();
 }
-FVector3 Function::Transform::GetUpVector() const {
+Vector3 Function::Transform::GetUpVector() const {
     return Rotation.GetUpVector();
 }
 
-FVector3 Function::Transform::GetRightVector() const {
+Vector3 Function::Transform::GetRightVector() const {
     return Rotation.GetRightVector();
 }

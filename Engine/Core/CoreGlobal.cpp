@@ -16,16 +16,16 @@ UInt32 ObjectCreateHelper::GetAvailableID() {
 }
 
 void ObjectCreateHelper::SetObjectID(Object* Obj, const UInt32 ID) {
-    Obj->mID = ID;
+    Obj->id_ = ID;
 }
 
 void ObjectCreateHelper::SetObjectID(const TSharedPtr<Object>& Obj, const UInt32 ID) {
-    Obj->mID = ID;
+    Obj->id_ = ID;
 }
 
 void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object> &Obj, const UInt32 ID)
 {
-    Obj->mID = ID;
+    Obj->id_ = ID;
 }
 
 void EngineStatistics::IncreaseFrameIndex()

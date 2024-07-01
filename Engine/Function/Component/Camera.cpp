@@ -69,11 +69,11 @@ void Function::Camera::HandleInput() {
             mTransform->Position -= MovementSpeed * mTransform->GetUpVector();
         }
         SetWindowFocused(true);
-        FVector2 MouseDelta = Input::GetMouseDelta();
+        Vector2 MouseDelta = Input::GetMouseDelta();
         MouseDelta *= mMouseSensitivity;
-        mTransform->Rotation.Yaw += MouseDelta.x;
-        mTransform->Rotation.Pitch -= MouseDelta.y;
-        mTransform->Rotation.Pitch = FMath::Clamp(mTransform->Rotation.Pitch, -89.0f, 89.0f);
+        mTransform->Rotation.yaw += MouseDelta.x;
+        mTransform->Rotation.pitch -= MouseDelta.y;
+        mTransform->Rotation.pitch = Math::Clamp(mTransform->Rotation.pitch, -89.0f, 89.0f);
     } else {
         SetWindowFocused(false);
     }

@@ -19,7 +19,7 @@ public:
      * @param func 代理的function
      */
     TDelegate(String id, TFunction<void(Args...)> func)
-        : m_function(Move(func)), m_id(Move(id)), m_valid(true)
+        : function_(Move(func)), id_(Move(id)), valid_(true)
     {
     }
 
@@ -32,20 +32,20 @@ public:
      * @param func 对象的方法
      */
     template <typename ObjectType, typename FuncType>
-    TDelegate(String id, ObjectType *object, FuncType func) : m_id(Move(id))
+    TDelegate(String id, ObjectType *object, FuncType func) : id_(Move(id))
     {
-        m_function = [object, func](Args... args) { (object->*func)(args...); };
-        m_valid = true;
+        function_ = [object, func](Args... args) { (object->*func)(args...); };
+        valid_ = true;
     }
 
     /**
      * 构造一个Delegate,id由GUID生成
      * @param func
      */
-    explicit TDelegate(TFunction<void(Args...)> func) : m_id(Guid().ToString())
+    explicit TDelegate(TFunction<void(Args...)> func) : id_(Guid().ToString())
     {
-        m_function = Move(func);
-        m_valid = true;
+        function_ = Move(func);
+        valid_ = true;
     }
 
     /**
@@ -60,10 +60,10 @@ public:
      */
     template <typename ObjectType, typename FuncType>
         requires(!std::is_same_v<ObjectType, const char>)
-    TDelegate(ObjectType *object, FuncType func) : m_id(Guid().ToString())
+    TDelegate(ObjectType *object, FuncType func) : id_(Guid().ToString())
     {
-        m_function = [object, func](Args... args) { (object->*func)(args...); };
-        m_valid = true;
+        function_ = [object, func](Args... args) { (object->*func)(args...); };
+        valid_ = true;
     }
 
     /**
@@ -72,10 +72,10 @@ public:
      */
     TDelegate(TDelegate &&other) noexcept
     {
-        m_function = Move(other.m_function);
-        m_id = Guid().ToString();
-        m_valid = other.mValid;
-        other.mValid = false;
+        function_ = Move(other.function_);
+        id_ = Guid().ToString();
+        valid_ = other.valid_;
+        other.valid_ = false;
     }
 
     /**
@@ -84,52 +84,52 @@ public:
      */
     TDelegate(const TDelegate &other)
     {
-        m_function = other.m_function;
-        m_id = Guid().ToString();
-        m_valid = other.mValid;
+        function_ = other.function_;
+        id_ = Guid().ToString();
+        valid_ = other.valid_;
     }
 
     template <class... InvokeArgs>
     void operator()(InvokeArgs &&...args) const
     {
-        if (m_valid)
+        if (valid_)
         {
             if constexpr (sizeof...(InvokeArgs) == 0)
             {
-                m_function();
+                function_();
             }
             else
             {
-                m_function(Forward<InvokeArgs>(args)...);
+                function_(Forward<InvokeArgs>(args)...);
             }
         }
         else
         {
-            LOG_WARNING_CATEGORY(Event, L"失效的Delegate: {}", m_id);
+            LOG_WARNING_CATEGORY(Event, L"失效的Delegate: {}", id_);
         }
     }
 
     auto operator<=>(const TDelegate &rhs) const
     {
-        return m_id <=> rhs.mId;
+        return id_ <=> rhs.id_;
     }
 
     /** 获取Delegate id */
     String GetID() const
     {
-        return m_id;
+        return id_;
     }
 
     /** 此Delegate是否有效 */
     bool IsValid() const
     {
-        return m_valid;
+        return valid_;
     }
 
 private:
-    TFunction<void(Args...)> m_function;
-    String m_id;
-    bool m_valid;
+    TFunction<void(Args...)> function_;
+    String id_;
+    bool valid_;
 };
 
 template <typename... Args>

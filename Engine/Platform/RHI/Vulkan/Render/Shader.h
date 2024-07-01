@@ -35,8 +35,8 @@ enum class EUniformDescriptorType : UInt8
     Sampler2D
 };
 
-vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType InType);
-vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage InStage);
+vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType type);
+vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage stage);
 
 struct UniformDescriptor
 {

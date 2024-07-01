@@ -23,7 +23,7 @@ GENERATED_SOURCE()
 WINDOW_NAMESPACE_BEGIN
 
 DetailWindow::DetailWindow() {
-    mName       = L"Window_DetailWindow";
+    name_       = L"Window_DetailWindow";
     mWindowName = L"细节";
 }
 

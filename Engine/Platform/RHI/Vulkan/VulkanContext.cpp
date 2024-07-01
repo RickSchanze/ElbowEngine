@@ -191,7 +191,7 @@ void VulkanContext::RebuildSwapChain()
 {
     // TODO: 使用PipelineCache
     auto Size = Tool::EngineApplication::Get().GetWindowSize();
-    while (Size.Width == 0 || Size.Height == 0)
+    while (Size.width == 0 || Size.height == 0)
     {
         Size = Tool::EngineApplication::Get().GetWindowSize();
         glfwWaitEvents();
@@ -201,7 +201,7 @@ void VulkanContext::RebuildSwapChain()
     logical_device_->GetHandle().waitIdle();
 
     swap_chain_->Finialize();
-    swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, Size.Width, Size.Height);
+    swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, Size.width, Size.height);
 
     for (const auto &Pipeline : render_graphics_pipelines_)
     {

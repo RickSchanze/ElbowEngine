@@ -20,7 +20,7 @@ GENERATED_SOURCE()
 WINDOW_NAMESPACE_BEGIN
 
 StatisticsWindow::StatisticsWindow() {
-    mName       = L"Window_Statistics";
+    name_       = L"Window_Statistics";
     mWindowName = L"引擎数据统计";
 }
 

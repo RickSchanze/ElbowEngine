@@ -17,9 +17,9 @@ String FileOpenException::What() const {
         L"  错误码: {}\n"
         L"  错误消息: {}\n"
         L"  文件名: {}",
-        mMessage,
-        Errno,
-        StringUtils::FromAnsiString(strerror(Errno)),
-        Filepath
+        message_,
+        errno_,
+        StringUtils::FromAnsiString(strerror(errno_)),
+        filepath_
     );
 }

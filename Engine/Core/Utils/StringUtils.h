@@ -61,7 +61,7 @@ public:
         return Result;
     }
 
-    static String ToString(FVector3 InVec);
+    static String ToString(Vector3 InVec);
 };
 
 template<>

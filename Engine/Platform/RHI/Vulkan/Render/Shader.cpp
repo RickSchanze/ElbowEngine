@@ -16,9 +16,9 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType InType)
+vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType type)
 {
-    switch (InType)
+    switch (type)
     {
     case EUniformDescriptorType::Object: return vk::DescriptorType::eUniformBuffer;
     case EUniformDescriptorType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
@@ -26,9 +26,9 @@ vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType InType)
     return vk::DescriptorType::eUniformBuffer;
 }
 
-vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage InStage)
+vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
 {
-    switch (InStage)
+    switch (stage)
     {
     case EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
     case EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;

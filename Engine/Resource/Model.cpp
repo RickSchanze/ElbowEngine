@@ -55,19 +55,19 @@ void Model::ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutM
     for (UInt32 i = 0; i < InMesh->mNumVertices; i++) {
         Vertex Vertex{};
         // 位置
-        Vertex.Pos.x = InMesh->mVertices[i].x;
-        Vertex.Pos.y = InMesh->mVertices[i].y;
-        Vertex.Pos.z = InMesh->mVertices[i].z;
+        Vertex.position.x = InMesh->mVertices[i].x;
+        Vertex.position.y = InMesh->mVertices[i].y;
+        Vertex.position.z = InMesh->mVertices[i].z;
         // 法线
         if (InMesh->HasNormals()) {
-            Vertex.Normal.x = InMesh->mNormals[i].x;
-            Vertex.Normal.y = InMesh->mNormals[i].y;
-            Vertex.Normal.z = InMesh->mNormals[i].z;
+            Vertex.normal.x = InMesh->mNormals[i].x;
+            Vertex.normal.y = InMesh->mNormals[i].y;
+            Vertex.normal.z = InMesh->mNormals[i].z;
         }
         // UV
         if (InMesh->HasTextureCoords(0)) {
-            Vertex.UV.x = InMesh->mTextureCoords[0][i].x;
-            Vertex.UV.y = InMesh->mTextureCoords[0][i].y;
+            Vertex.uv.x = InMesh->mTextureCoords[0][i].x;
+            Vertex.uv.y = InMesh->mTextureCoords[0][i].y;
             // TODO: 切线、副切线
         }
         OutMesh.GetVertices().push_back(Vertex);
