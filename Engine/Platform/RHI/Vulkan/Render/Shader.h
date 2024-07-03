@@ -77,12 +77,6 @@ public:
         Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage
     );
 
-    static TSharedPtr<Shader> CreateShared(const Path& path, const EShaderStage type)
-    {
-        const Ref device = *VulkanContext::Get().GetLogicalDevice();
-        return MakeShared<Shader>(Protected{}, device, path, type);
-    }
-
     static Shader* Create(const Path& path, const EShaderStage type)
     {
         const Ref device = *VulkanContext::Get().GetLogicalDevice();
