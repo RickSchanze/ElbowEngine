@@ -13,8 +13,9 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 ShaderProgram::ShaderProgram(
-    const Ref<LogicalDevice> device, const Shader* vert, const Shader* frag
-) : device_(device)
+    const Ref<LogicalDevice> device, Shader* vert, Shader* frag,
+    const EShaderDestroyTime destroy_time
+) : vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
 {
     vertex_input_attributes_ = vert->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
@@ -28,23 +29,41 @@ ShaderProgram::ShaderProgram(
     }
 }
 
-bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader) {
-    for (const auto& uniform: shader->GetUniformObjects()) {
-        if (uniforms_.contains(uniform.name)) {
-            if (uniform.binding != uniforms_[uniform.name].binding) {
-                LOG_ERROR_CATEGORY(Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(uniform.name));
+ShaderProgram::~ShaderProgram()
+{
+    DestroyShaders();
+}
+
+bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
+{
+    for (const auto& uniform: shader->GetUniformObjects())
+    {
+        if (uniforms_.contains(uniform.name))
+        {
+            if (uniform.binding != uniforms_[uniform.name].binding)
+            {
+                LOG_ERROR_CATEGORY(
+                    Vulkan,
+                    L"Uniform变量Binding不一致: Name: {}",
+                    StringUtils::FromAnsiString(uniform.name)
+                );
                 return false;
             }
-        } else {
+        }
+        else
+        {
             uniforms_[uniform.name] = uniform;
         }
     }
     return true;
 }
 
-TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const {
+TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions(
+) const
+{
     TArray<vk::VertexInputAttributeDescription> AttributeDesc;
-    for (const auto& Attribute: vertex_input_attributes_) {
+    for (const auto& Attribute: vertex_input_attributes_)
+    {
         vk::VertexInputAttributeDescription Desc;
         // clang-format off
         Desc
@@ -66,9 +85,10 @@ TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribu
     return AttributeDesc;
 }
 
-TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const {
+TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
+{
     TArray<vk::VertexInputBindingDescription> BindingDescs;
-    vk::VertexInputBindingDescription        Desc{};
+    vk::VertexInputBindingDescription         Desc{};
     // clang-format off
     Desc
         .setBinding(0)
@@ -79,12 +99,28 @@ TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDe
     return BindingDescs;
 }
 
-UInt32 ShaderProgram::GetStride() const {
+UInt32 ShaderProgram::GetStride() const
+{
     UInt32 Stride = 0;
-    for (const auto& Attribute: vertex_input_attributes_) {
+    for (const auto& Attribute: vertex_input_attributes_)
+    {
         Stride += Attribute.size;
     }
     return Stride;
+}
+
+void ShaderProgram::DestroyShaders()
+{
+    if (vert_shader_)
+    {
+        delete vert_shader_;
+        vert_shader_ = nullptr;
+    }
+    if (frag_shader_)
+    {
+        delete frag_shader_;
+        frag_shader_ = nullptr;
+    }
 }
 
 RHI_VULKAN_NAMESPACE_END

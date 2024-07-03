@@ -83,6 +83,8 @@ public:
 
     void DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const;
 
+    void DestroyShaderModule(vk::ShaderModule module)const;
+
     vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
     vk::Queue GetPresentQueue() const { return present_queue_; }
 

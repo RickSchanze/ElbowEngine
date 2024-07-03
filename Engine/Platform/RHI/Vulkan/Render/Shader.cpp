@@ -73,7 +73,7 @@ Shader::Shader(
 Shader::~Shader()
 {
     const auto& device = device_.get();
-    device.GetHandle().destroy(shader_module_);
+    device.DestroyShaderModule(shader_module_);
 }
 
 void Shader::ParseShaderCode(
@@ -126,14 +126,17 @@ void Shader::ParseShaderCode(
             VertexInAttribute in_attr;
             in_attr.name     = compiler.get_name(In.id);
             in_attr.location = compiler.get_decoration(In.id, spv::DecorationLocation);
-            auto t          = compiler.get_type(In.type_id);
+            auto t           = compiler.get_type(In.type_id);
             in_attr.width    = t.width / 8;
             in_attr.size     = in_attr.width * t.vecsize;
             in_attributes_.push_back(in_attr);
         }
-        std::ranges::sort(in_attributes_, [](const auto& Lhs, const auto& Rhs) {
-            return Lhs.location < Rhs.location;
-        });
+        std::ranges::sort(
+            in_attributes_,
+            [](const VertexInAttribute& lhs, const VertexInAttribute& rhs) {
+                return lhs.location < rhs.location;
+            }
+        );
         // 计算偏移
         size_t offset = 0;
         for (auto& InAttr: in_attributes_)

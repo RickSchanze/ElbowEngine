@@ -15,17 +15,17 @@ class ObjectManager : public Singleton<ObjectManager> {
 public:
     /**
      * 向对象管理器中添加一个对象
-     * @param NewObject 对象
+     * @param new_object 对象
      * @return
      */
-    bool AddObject(Object* NewObject);
+    bool AddObject(Object* new_object);
 
     /**
      * 此ID是否可用
-     * @param ID
+     * @param id
      * @return
      */
-    [[nodiscard]] bool IsIDValid(UInt32 ID) const;
+    bool IsIDValid(UInt32 id) const;
 
     /**
      * 获取下一个有效的ID
@@ -35,30 +35,30 @@ public:
 
     /**
      * 移除ID对应的对象,此函数不会调用delete
-     * @param ID
+     * @param id
      * @return 不存在则返回False
      */
-    bool RemoveObject(UInt32 ID);
+    bool RemoveObject(UInt32 id);
 
     // 根据ID获取一个Object，如果不存在则返回nullptr
-    Object* GetObjectById(UInt32 ID) {
-        if (mObjects.contains(ID)) {
-            return mObjects[ID];
+    Object* GetObjectById(const UInt32 id) {
+        if (objects_.contains(id)) {
+            return objects_[id];
         }
         return nullptr;
     }
 
     template<typename T>
         requires std::derived_from<T, Object>
-    T* GetObjectById(UInt32 ID) {
-        return dynamic_cast<T*>(GetObjectById(ID));
+    T* GetObjectById(const UInt32 id) {
+        return dynamic_cast<T*>(GetObjectById(id));
     }
 
-    UInt32 GetObjectCount() { return mObjects.size(); }
+    UInt32 GetObjectCount()const { return objects_.size(); }
 
     ~ObjectManager();
 
 private:
-    THashMap<UInt32, Object*> mObjects;
-    UInt32                    mIDCount = 1;
+    THashMap<UInt32, Object*> objects_;
+    UInt32                    id_count_ = 1;
 };

@@ -143,18 +143,23 @@ LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_i
     return handle_.createDescriptorPool(create_info);
 }
 
-void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const {
+void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const
+{
     handle_.destroyDescriptorPool(pool);
 }
 
-vk::DescriptorSetLayout LogicalDevice::CreateDescriptorSetLayout(
-    const vk::DescriptorSetLayoutCreateInfo& create_info
-) const {
+vk::DescriptorSetLayout
+LogicalDevice::CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const
+{
     return handle_.createDescriptorSetLayout(create_info);
 }
 
 void LogicalDevice::DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const {
     handle_.destroyDescriptorSetLayout(layout);
+}
+
+void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module)const{
+    handle_.destroyShaderModule(module);
 }
 
 void LogicalDevice::UpdateDescriptorSets(

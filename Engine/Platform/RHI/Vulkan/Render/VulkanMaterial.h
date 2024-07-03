@@ -22,7 +22,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
  */
 class VulkanMaterial {
 public:
-    VulkanMaterial(Shader);
+    explicit VulkanMaterial(Shader);
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer
