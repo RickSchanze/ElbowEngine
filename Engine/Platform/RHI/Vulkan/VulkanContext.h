@@ -104,18 +104,22 @@ public:
     {
         return swap_chain_;
     }
+
     TUniquePtr<CommandPool> &GetCommandPool()
     {
         return command_pool_;
     }
+
     TUniquePtr<LogicalDevice> &GetLogicalDevice()
     {
         return logical_device_;
     }
+
     TUniquePtr<PhysicalDevice> &GetPhysicalDevice()
     {
         return physical_device_;
     }
+
     TSharedPtr<Instance> GetVulkanInstance()
     {
         return vulkan_instance_;

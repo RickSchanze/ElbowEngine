@@ -31,10 +31,10 @@ GraphicsPipeline::~GraphicsPipeline()
     VulkanContext::Get().RemovePipelineFromRender(this);
 }
 
-GraphicsPipeline::GraphicsPipeline(const PipelineInfo& InInitializer)
+GraphicsPipeline::GraphicsPipeline(const PipelineInfo& pipeline_info)
 {
     VulkanContext& Context = VulkanContext::Get();
-    pipeline_info_         = InInitializer;
+    pipeline_info_         = pipeline_info;
     CreatePipeline();
     CreateOther(false);
     Context.AddPipelineToRender(this);
@@ -43,35 +43,29 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInfo& InInitializer)
 
 void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const
 {
-    VulkanContext& Context     = VulkanContext::Get();
-    static auto    StartTime   = std::chrono::high_resolution_clock::now();
-    const auto     CurrentTime = std::chrono::high_resolution_clock::now();
-    const float    Time =
-        std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
-    TStaticArray<glm::mat4, 3> UBO;
-    UBO[0] = glm::mat4(1.f);
+    VulkanContext& context      = VulkanContext::Get();
+    static auto    start_time   = std::chrono::high_resolution_clock::now();
+    const auto     current_time = std::chrono::high_resolution_clock::now();
+    const float    time         = std::chrono::duration<float>(current_time - start_time).count();
+    TStaticArray<glm::mat4, 3> ubo;
+    ubo[0] = glm::mat4(1.f);
     // TODO: Here
-    UBO[0] = rotate(UBO[0], glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+    ubo[0] = rotate(ubo[0], glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
     // 缩放
-    UBO[0] = scale(UBO[0], glm::vec3(0.05f, 0.05f, 0.05f));
+    ubo[0] = scale(ubo[0], glm::vec3(0.05f, 0.05f, 0.05f));
     // 绕X转90度
-    UBO[0] = rotate(UBO[0], glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
-    UBO[1] = Function::Camera::Main->GetViewMatrix();
+    ubo[0] = rotate(ubo[0], glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
+    ubo[1] = Function::Camera::Main->GetViewMatrix();
 
-    UBO[2] = glm::perspective(
+    ubo[2] = glm::perspective(
         glm::radians(45.f),
-        static_cast<float>(Context.GetSwapChainExtent().width) /
-            static_cast<float>(Context.GetSwapChainExtent().height),
+        static_cast<float>(context.GetSwapChainExtent().width) /
+            static_cast<float>(context.GetSwapChainExtent().height),
         0.1f,
         10.f
     );
-    UBO[2][1][1] *= -1;
-    void* Data;
-    Context.GetLogicalDevice()->MapMemory(
-        uniform_buffers_memory_[InCurrentImage], 3 * sizeof(glm::mat4), 0, &Data
-    );
-    memcpy(Data, UBO.data(), 3 * sizeof(glm::mat4));
-    Context.GetLogicalDevice()->UnmapMemory(uniform_buffers_memory_[InCurrentImage]);
+    ubo[2][1][1] *= -1;
+    shader_program_->SetUniformBufferObject(ubo[0], ubo[1], ubo[2]);
 }
 
 vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 InCurrentImage) const

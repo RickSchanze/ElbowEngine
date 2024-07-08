@@ -9,6 +9,8 @@
 #include "CoreDef.h"
 #include "Shader.h"
 
+#include <glm/fwd.hpp>
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 enum class EShaderDestroyTime
@@ -75,6 +77,9 @@ public:
     const THashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return uniforms_; }
 
     void DestroyShaders();
+
+    // 设置UBO
+    bool SetUniformBufferObject(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer

@@ -126,7 +126,7 @@ public:
     ~GraphicsPipeline() override;
 
     // 根据Initializer配置的参数初始化一个图形管线
-    explicit GraphicsPipeline(const PipelineInfo& InInitializer);
+    explicit GraphicsPipeline(const PipelineInfo& pipeline_info);
 
     void UpdateUniformBuffer(UInt32 InCurrentImage) const;
 
@@ -171,10 +171,6 @@ private:
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
     ShaderProgram*            shader_program_;
-    TSharedPtr<ShaderProgram> m_shader_prog_;
-    TArray<vk::Buffer>        uniform_buffers_;
-    TArray<vk::DeviceMemory>  uniform_buffers_memory_;
-    TArray<vk::DescriptorSet> descriptor_sets_;
 
     // TODO: 模型系统
     TUniquePtr<Model>  model;
