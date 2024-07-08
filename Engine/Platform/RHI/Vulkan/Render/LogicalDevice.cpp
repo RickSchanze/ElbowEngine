@@ -15,46 +15,54 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-LogicalDevice::~LogicalDevice() {
+LogicalDevice::~LogicalDevice()
+{
     Finialize();
 }
 
 TArray<vk::DescriptorSet>
-LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const {
+LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
+{
     return handle_.allocateDescriptorSets(alloc_info);
 }
 
 void LogicalDevice::FreeDescriptorSets(
     vk::DescriptorPool                                                  descriptor_pool,
     const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
-) const {
+) const
+{
     handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
 TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(
     vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-) {
+)
+{
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
 LogicalDevice::LogicalDevice(
     ResourceProtected, const vk::Device InDevice,
     const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice) {}
+) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
+{
+}
 
-void LogicalDevice::Finialize() {
+void LogicalDevice::Finialize()
+{
     if (!IsValid()) return;
     handle_.destroy();
     handle_ = VK_NULL_HANDLE;
 }
 
-void LogicalDevice::Destroy() {
+void LogicalDevice::Destroy()
+{
     Finialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(
-    const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight
-) {
+TUniquePtr<SwapChain>
+LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight)
+{
     const auto physical_device    = associated_physical_device_.get();
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
     const auto surface            = physical_device.GetAttachedInstance()->GetSurfaceHandle();
@@ -65,11 +73,13 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(
         SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
 
     UInt32 ImageCount = InSwapChainImageCount;
-    if (InSwapChainImageCount == 0) {
+    if (InSwapChainImageCount == 0)
+    {
         ImageCount = swap_chain_support.capabilities.minImageCount + 1;
     }
     if (swap_chain_support.capabilities.maxImageCount > 0 &&
-        ImageCount > swap_chain_support.capabilities.maxImageCount) {
+        ImageCount > swap_chain_support.capabilities.maxImageCount)
+    {
         ImageCount = swap_chain_support.capabilities.maxImageCount;
     }
     vk::SwapchainCreateInfoKHR swap_chain_info = {};
@@ -95,12 +105,15 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(
         indicies.graphics_family.value(),
         indicies.present_family.value(),
     };
-    if (indicies.graphics_family != indicies.present_family) {
+    if (indicies.graphics_family != indicies.present_family)
+    {
         swap_chain_info
             .setImageSharingMode(vk::SharingMode::eConcurrent
             )   // 图像可以在多个队列族使用而不需要显式改变图像所有权
             .setQueueFamilyIndices(queue_family_indices);   // 不是同一队列族时需要指定此项
-    } else {
+    }
+    else
+    {
         swap_chain_info.setImageSharingMode(vk::SharingMode::eExclusive
         );   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
@@ -115,7 +128,8 @@ void LogicalDevice::CreateBuffer(
     const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage,
     const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
     vk::DeviceMemory& OutBufferMemory
-) const {
+) const
+{
     vk::BufferCreateInfo BufferInfo = {};
     BufferInfo.setSize(InSize).setUsage(InUsage).setSharingMode(vk::SharingMode::eExclusive);
     OutBuffer                              = handle_.createBuffer(BufferInfo);
@@ -130,16 +144,19 @@ void LogicalDevice::CreateBuffer(
     handle_.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 }
 
-void LogicalDevice::DestroyBuffer(const vk::Buffer buffer) const {
+void LogicalDevice::DestroyBuffer(const vk::Buffer buffer) const
+{
     handle_.destroy(buffer);
 }
 
-void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const {
+void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const
+{
     handle_.freeMemory(memory);
 }
 
 vk::DescriptorPool
-LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const {
+LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const
+{
     return handle_.createDescriptorPool(create_info);
 }
 
@@ -154,18 +171,27 @@ LogicalDevice::CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo
     return handle_.createDescriptorSetLayout(create_info);
 }
 
-void LogicalDevice::DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const {
+void LogicalDevice::DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const
+{
     handle_.destroyDescriptorSetLayout(layout);
 }
 
-void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module)const{
+void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module) const
+{
     handle_.destroyShaderModule(module);
+}
+
+vk::PipelineLayout
+LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info) const
+{
+    return handle_.createPipelineLayout(create_info);
 }
 
 void LogicalDevice::UpdateDescriptorSets(
     const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
     const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies
-) const {
+) const
+{
     handle_.updateDescriptorSets(descriptor_writes, descriptor_copies);
 }
 

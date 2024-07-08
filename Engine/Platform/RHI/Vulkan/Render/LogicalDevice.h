@@ -12,18 +12,22 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class SwapChain;
 }
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class PhysicalDevice;
 }
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class Instance;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class LogicalDevice final : public IRHIResource {
+class LogicalDevice final : public IRHIResource
+{
 public:
     ~LogicalDevice() override;
 
@@ -83,7 +87,9 @@ public:
 
     void DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const;
 
-    void DestroyShaderModule(vk::ShaderModule module)const;
+    void DestroyShaderModule(vk::ShaderModule module) const;
+
+    vk::PipelineLayout CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info) const;
 
     vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
     vk::Queue GetPresentQueue() const { return present_queue_; }

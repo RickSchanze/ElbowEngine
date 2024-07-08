@@ -86,7 +86,7 @@ public:
     ~Shader();
 
     const Path&                      GetShaderPath() const { return shader_path_; }
-    const vk::ShaderModule&          GetShaderModule() const { return shader_module_; }
+    const vk::ShaderModule&          GetHandle() const { return shader_module_; }
     const EShaderStage&              GetShaderType() const { return shader_stage_; }
     const TArray<UniformDescriptor>& GetUniformObjects() const { return uniform_descriptors_; }
     const TArray<VertexInAttribute>& GetInAttributes() const { return in_attributes_; }

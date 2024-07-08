@@ -220,9 +220,9 @@ void VulkanContext::CreateGraphicsPipeline()
 {
     // 创建图形管线
     // 寻找深度图像格式
-    PipelineInitializer Initializer{};
-    Initializer.ShaderStage.FragmentShaderPath = L"Shaders/frag.spv";
-    Initializer.ShaderStage.VertexShaderPath = L"Shaders/vert.spv";
+    PipelineInfo Initializer{};
+    Initializer.shader_stage.FragmentShaderPath = L"Shaders/frag.spv";
+    Initializer.shader_stage.VertexShaderPath = L"Shaders/vert.spv";
     graphics_pipeline_ = new GraphicsPipeline(Initializer);
 }
 

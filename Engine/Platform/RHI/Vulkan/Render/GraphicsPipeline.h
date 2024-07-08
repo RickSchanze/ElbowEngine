@@ -39,82 +39,81 @@ enum EPipelineDynamicStateEnabled
 };
 
 // 这里配置如何初始化Pipeline
-struct PipelineInitializer
+struct PipelineInfo
 {
+    // clang-format off
     struct RasterizationStageConfig
     {
-        bool bEnableDepthClamp       = false;   // 深度裁剪 true则将近平面和远平面裁剪到0到1之间
-        bool bEnableRaterizerDiscard = false;   // 光栅化丢弃 true则所有图元都不能通过光栅化阶段
-        bool bEnableDepthBias =
-            false;   // 深度偏移 true则在片段深度值上增加一个常量值或者基于片段的斜率
-        float             LineWidth   = 1.0f;                               // 线宽
-        vk::PolygonMode   PolygonMode = vk::PolygonMode::eFill;             // 多边形模式
-        vk::CullModeFlags CullMode    = vk::CullModeFlagBits::eBack;        // 剔除模式
-        vk::FrontFace     FrontFace   = vk::FrontFace::eCounterClockwise;   // 正面顺时针还是逆时针
+        bool enable_depth_clamp        = false;   // 深度裁剪 true则将近平面和远平面裁剪到0到1之间
+        bool enable_raterizer_discard  = false;   // 光栅化丢弃 true则所有图元都不能通过光栅化阶段
+        bool enable_depth_bias         = false;   // 深度偏移 true则在片段深度值上增加一个常量值或者基于片段的斜率
+        float             line_width   = 1.0f;                               // 线宽
+        vk::PolygonMode   polygon_mode = vk::PolygonMode::eFill;             // 多边形模式
+        vk::CullModeFlags cull_mode    = vk::CullModeFlagBits::eBack;        // 剔除模式
+        vk::FrontFace     front_face   = vk::FrontFace::eCounterClockwise;   // 正面顺时针还是逆时针
     };
+    // clang-format on
 
     // 深度值0到1不允许配置
     struct ViewportConfig
     {
-        float Width  = 0.f;   // 0将获取交换链图像宽高
-        float Height = 0.f;   // 0将获取交换链图像宽高
-        float X      = 0.f;
-        float Y      = 0.f;
+        float width  = 0.f;   // 0将获取交换链图像宽高
+        float height = 0.f;   // 0将获取交换链图像宽高
+        float x      = 0.f;
+        float y      = 0.f;
     };
 
     struct ClippingRectConfig
     {
-        Int32  OffsetX = 0;
-        Int32  OffsetY = 0;
-        UInt32 Width   = 0;   // 0代表与视口一致
-        UInt32 Height  = 0;   // 0代表与视口一致
+        Int32  offset_x = 0;
+        Int32  offset_y = 0;
+        UInt32 width    = 0;   // 0代表与视口一致
+        UInt32 height   = 0;   // 0代表与视口一致
     };
 
     struct MultisampleConfig
     {
-        bool                    bEnable = false;   // 默认不启用
-        vk::SampleCountFlagBits SampleCount =
+        bool                    enabled = false;   // 默认不启用
+        vk::SampleCountFlagBits sample_count =
             vk::SampleCountFlagBits::e1;   // 默认不启用以及只进行一次
     };
 
     struct DepthStencilStageConfig
     {
-        bool          bEnableDepthTest       = true;
-        bool          bEnableDepthWrite      = true;
-        vk::CompareOp DepthCompareOp         = vk::CompareOp::eLess;
-        bool          bEnableDepthBoundsTest = false;   // DBT目前还不知道用来干啥 @TODO: 了解DBT
-
-        bool bEnableStencilTest = false;   // 暂时不开启模版测试 @TODO: 将模版测试加入
+        bool          enable_depth_test        = true;
+        bool          enable_depth_write       = true;
+        vk::CompareOp depth_compare_op         = vk::CompareOp::eLess;
+        bool          enable_depth_bounds_test = false;   // DBT目前还不知道用来干啥 @TODO: 了解DBT
+        bool          enable_stencil_test = false;   // 暂时不开启模版测试 @TODO: 将模版测试加入
     };
 
     struct ColorBlendAttachmentStateConfig
     {
-        bool bEnable = false;   // 暂时不开启颜色混合
+        bool enabled = false;   // 暂时不开启颜色混合
     };
 
     struct ColorBlendStageConfig
     {
     };
 
-    // @TODO: 改为Material
     struct ShaderStageConfig
     {
-        Path VertexShaderPath   = L"Shaders/Shader.vert";
-        Path FragmentShaderPath = L"Shaders/Shader.frag";
+        Shader* vert = nullptr;
+        Shader* frag = nullptr;
     };
 
-    RasterizationStageConfig        RasterizationStage;
-    ViewportConfig                  Viewport;
-    ClippingRectConfig              ClippingRect;
-    MultisampleConfig               Multisample;
-    DepthStencilStageConfig         DepthStencilStage;
-    ColorBlendAttachmentStateConfig ColorBlendAttachmentState;
-    ColorBlendStageConfig           ColorBlendStage;
-    ShaderStageConfig               ShaderStage;
-    RenderPass*                     RenderPass          = nullptr;
+    RasterizationStageConfig        rasterization_stage;
+    ViewportConfig                  viewport;
+    ClippingRectConfig              clipping_rect;
+    MultisampleConfig               multisample;
+    DepthStencilStageConfig         depth_stencil_stage;
+    ColorBlendAttachmentStateConfig color_blend_attachment_state;
+    ColorBlendStageConfig           color_blend_stage;
+    ShaderStageConfig               shader_stage;
+    RenderPass*                     render_pass           = nullptr;
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
-    Int32                           DynamicStateEnabled = EPDSE_Viewport | EPDSE_Scissor;
+    Int32                           dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline
@@ -127,7 +126,7 @@ public:
     ~GraphicsPipeline() override;
 
     // 根据Initializer配置的参数初始化一个图形管线
-    explicit GraphicsPipeline(const PipelineInitializer& InInitializer);
+    explicit GraphicsPipeline(const PipelineInfo& InInitializer);
 
     void UpdateUniformBuffer(UInt32 InCurrentImage) const;
 
@@ -157,10 +156,10 @@ protected:
     void CreateDescriptionSetLayout();
 
 private:
-    PipelineInitializer pipeline_info_;
+    PipelineInfo pipeline_info_;
 
-    vk::PipelineLayout      pipeline_layout_;
-    vk::Pipeline            pipeline_;
+    vk::PipelineLayout pipeline_layout_;
+    vk::Pipeline       pipeline_;
 
     // 4.命令缓冲
     TArray<vk::CommandBuffer> command_buffers_;
@@ -171,6 +170,7 @@ private:
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
+    ShaderProgram*            shader_program_;
     TSharedPtr<ShaderProgram> m_shader_prog_;
     TArray<vk::Buffer>        uniform_buffers_;
     TArray<vk::DeviceMemory>  uniform_buffers_memory_;

@@ -12,11 +12,8 @@
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RenderPass.h"
-#include "RHI/Vulkan/Resource/Image.h"
-#include "RHI/Vulkan/Resource/ImageView.h"
 #include "RHI/Vulkan/Resource/VulkanModel.h"
 #include "RHI/Vulkan/VulkanContext.h"
-#include "Shader.h"
 #include "ShaderProgram.h"
 #include "Utils/StringUtils.h"
 
@@ -34,7 +31,7 @@ GraphicsPipeline::~GraphicsPipeline()
     VulkanContext::Get().RemovePipelineFromRender(this);
 }
 
-GraphicsPipeline::GraphicsPipeline(const PipelineInitializer& InInitializer)
+GraphicsPipeline::GraphicsPipeline(const PipelineInfo& InInitializer)
 {
     VulkanContext& Context = VulkanContext::Get();
     pipeline_info_         = InInitializer;
@@ -84,34 +81,38 @@ vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 In
 
 void GraphicsPipeline::CreatePipeline()
 {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext& context = VulkanContext::Get();
     /************************* 配置RenderPass ************************/
-    if (pipeline_info_.RenderPass == nullptr)
+    if (pipeline_info_.render_pass == nullptr)
     {
         // RenderPass或许可以共用
         // @TODO: 探索RenderPass共用
         render_pass_              = new RenderPass();
-        render_pass_->SampleCount = pipeline_info_.Multisample.SampleCount;
+        render_pass_->SampleCount = pipeline_info_.multisample.sample_count;
     }
     render_pass_->Initialize();
     /************************* 配置RenderPass结束 ************************/
 
     /************************* 配置Shader ************************/
-    // @TODO: 多Shader共用
-    const auto VertShader =
-        Shader::CreateShared(pipeline_info_.ShaderStage.VertexShaderPath, EShaderStage::Vertex);
-    const auto FragShader =
-        Shader::CreateShared(pipeline_info_.ShaderStage.FragmentShaderPath, EShaderStage::Fragment);
-    m_shader_prog_ = ShaderProgram::CreateShared(VertShader, FragShader);
+    if (pipeline_info_.shader_stage.frag == nullptr || pipeline_info_.shader_stage.vert == nullptr)
+    {
+        // TODO: 加载引擎默认shader
+        LOG_CRITIAL_CATEGORY(Vulkan.Shader, L"顶点或片元着色器不能为空");
+    }
+
+    // TODO: Shader管理器
+    m_shader_prog_ = ShaderProgram::CreateShared(
+        pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.vert
+    );
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
     VertInfo.setStage(vk::ShaderStageFlagBits::eVertex)
-        .setModule(VertShader->GetShaderModule())
+        .setModule(shader_program_->GetVertShaderHandle())
         .setPName("main");
     vk::PipelineShaderStageCreateInfo FragInfo{};
     FragInfo.setStage(vk::ShaderStageFlagBits::eFragment)
-        .setModule(FragShader->GetShaderModule())
+        .setModule(shader_program_->GetFragShaderHandle())
         .setPName("main");
     TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
 
@@ -132,68 +133,68 @@ void GraphicsPipeline::CreatePipeline()
     /************************* Shader配置结束 ************************/
 
     /************************* 配置视口 ************************/
-    vk::Viewport ViewportInfo      = {};
-    pipeline_info_.Viewport.Width  = pipeline_info_.Viewport.Width == 0
-                                         ? Context.GetSwapChainExtent().width
-                                         : pipeline_info_.Viewport.Width;
-    pipeline_info_.Viewport.Height = pipeline_info_.Viewport.Height == 0
-                                         ? Context.GetSwapChainExtent().height
-                                         : pipeline_info_.Viewport.Height;
-    ViewportInfo.x                 = pipeline_info_.Viewport.X;
-    ViewportInfo.y                 = pipeline_info_.Viewport.Y;
-    ViewportInfo.width             = pipeline_info_.Viewport.Width;
-    ViewportInfo.height            = pipeline_info_.Viewport.Height;
-    ViewportInfo.minDepth          = 0.f;
-    ViewportInfo.maxDepth          = 1.f;
+    vk::Viewport viewport_info     = {};
+    pipeline_info_.viewport.width  = pipeline_info_.viewport.width == 0
+                                         ? context.GetSwapChainExtent().width
+                                         : pipeline_info_.viewport.width;
+    pipeline_info_.viewport.height = pipeline_info_.viewport.height == 0
+                                         ? context.GetSwapChainExtent().height
+                                         : pipeline_info_.viewport.height;
+    viewport_info.x                = pipeline_info_.viewport.x;
+    viewport_info.y                = pipeline_info_.viewport.y;
+    viewport_info.width            = pipeline_info_.viewport.width;
+    viewport_info.height           = pipeline_info_.viewport.height;
+    viewport_info.minDepth         = 0.f;
+    viewport_info.maxDepth         = 1.f;
 
-    pipeline_info_.ClippingRect.Width  = pipeline_info_.ClippingRect.Width == 0
-                                             ? Context.GetSwapChainExtent().width
-                                             : pipeline_info_.ClippingRect.Width;
-    pipeline_info_.ClippingRect.Height = pipeline_info_.ClippingRect.Height == 0
-                                             ? Context.GetSwapChainExtent().height
-                                             : pipeline_info_.ClippingRect.Height;
-    vk::Rect2D Scissor                 = {};
-    Scissor.offset.x                   = pipeline_info_.ClippingRect.OffsetX;
-    Scissor.offset.y                   = pipeline_info_.ClippingRect.OffsetY;
-    Scissor.extent.width               = pipeline_info_.ClippingRect.Width;
-    Scissor.extent.height              = pipeline_info_.ClippingRect.Height;
+    pipeline_info_.clipping_rect.width  = pipeline_info_.clipping_rect.width == 0
+                                              ? context.GetSwapChainExtent().width
+                                              : pipeline_info_.clipping_rect.width;
+    pipeline_info_.clipping_rect.height = pipeline_info_.clipping_rect.height == 0
+                                              ? context.GetSwapChainExtent().height
+                                              : pipeline_info_.clipping_rect.height;
+    vk::Rect2D scissor                  = {};
+    scissor.offset.x                    = pipeline_info_.clipping_rect.offset_x;
+    scissor.offset.y                    = pipeline_info_.clipping_rect.offset_y;
+    scissor.extent.width                = pipeline_info_.clipping_rect.width;
+    scissor.extent.height               = pipeline_info_.clipping_rect.height;
 
-    vk::PipelineViewportStateCreateInfo ViewportStateCreateInfo = {};
-    ViewportStateCreateInfo.setViewports({ViewportInfo}).setScissors({Scissor});
+    vk::PipelineViewportStateCreateInfo viewport_state_create_info = {};
+    viewport_state_create_info.setViewports({viewport_info}).setScissors({scissor});
     /************************* 配置视口结束 ************************/
 
     /************************* 配置光栅化 ************************/
     // 光栅化设置 将顶点着色器构成的几何图形转化为片段交给片段着色器着色
-    vk::PipelineRasterizationStateCreateInfo RasterizerInfo = {};
+    vk::PipelineRasterizationStateCreateInfo rasterizer_info = {};
     // clang-format off
-    RasterizerInfo
-        .setDepthClampEnable(pipeline_info_.RasterizationStage.bEnableDepthClamp)
-        .setRasterizerDiscardEnable(pipeline_info_.RasterizationStage.bEnableRaterizerDiscard)
-        .setPolygonMode(pipeline_info_.RasterizationStage.PolygonMode)
-        .setLineWidth(pipeline_info_.RasterizationStage.LineWidth)
-        .setCullMode(pipeline_info_.RasterizationStage.CullMode)
-        .setFrontFace(pipeline_info_.RasterizationStage.FrontFace)
-        .setDepthBiasEnable(pipeline_info_.RasterizationStage.bEnableDepthBias);
+    rasterizer_info
+        .setDepthClampEnable(pipeline_info_.rasterization_stage.enable_depth_clamp)
+        .setRasterizerDiscardEnable(pipeline_info_.rasterization_stage.enable_raterizer_discard)
+        .setPolygonMode(pipeline_info_.rasterization_stage.polygon_mode)
+        .setLineWidth(pipeline_info_.rasterization_stage.line_width)
+        .setCullMode(pipeline_info_.rasterization_stage.cull_mode)
+        .setFrontFace(pipeline_info_.rasterization_stage.front_face)
+        .setDepthBiasEnable(pipeline_info_.rasterization_stage.enable_depth_bias);
     // clang-format on
     /************************* 配置光栅化结束 ************************/
 
     /************************* 配置多重采样 ************************/
     vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
 
-    sample_count_ = pipeline_info_.Multisample.SampleCount;
+    sample_count_ = pipeline_info_.multisample.sample_count;
     MultisampleInfo   //
-        .setSampleShadingEnable(pipeline_info_.Multisample.bEnable)
-        .setRasterizationSamples(pipeline_info_.Multisample.SampleCount);
+        .setSampleShadingEnable(pipeline_info_.multisample.enabled)
+        .setRasterizationSamples(pipeline_info_.multisample.sample_count);
     /************************* 配置多重采样结束 ************************/
 
     /************************* 配置深度模版测试 ************************/
     vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
     DepthStencilInfo   //
-        .setDepthTestEnable(pipeline_info_.DepthStencilStage.bEnableDepthTest)
-        .setDepthWriteEnable(pipeline_info_.DepthStencilStage.bEnableDepthWrite)
-        .setDepthCompareOp(pipeline_info_.DepthStencilStage.DepthCompareOp)
-        .setDepthBoundsTestEnable(pipeline_info_.DepthStencilStage.bEnableDepthBoundsTest)
-        .setStencilTestEnable(pipeline_info_.DepthStencilStage.bEnableStencilTest);
+        .setDepthTestEnable(pipeline_info_.depth_stencil_stage.enable_depth_test)
+        .setDepthWriteEnable(pipeline_info_.depth_stencil_stage.enable_depth_write)
+        .setDepthCompareOp(pipeline_info_.depth_stencil_stage.depth_compare_op)
+        .setDepthBoundsTestEnable(pipeline_info_.depth_stencil_stage.enable_depth_bounds_test)
+        .setStencilTestEnable(pipeline_info_.depth_stencil_stage.enable_stencil_test);
     /************************* 配置深度模版测试结束 ************************/
 
     /************************* 配置颜色混合 ************************/
@@ -203,7 +204,7 @@ void GraphicsPipeline::CreatePipeline()
             vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
             vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
         )
-        .setBlendEnable(pipeline_info_.ColorBlendAttachmentState.bEnable);
+        .setBlendEnable(pipeline_info_.color_blend_attachment_state.enabled);
 
     vk::PipelineColorBlendStateCreateInfo ColorBlendInfo = {};
     ColorBlendInfo   //
@@ -216,45 +217,46 @@ void GraphicsPipeline::CreatePipeline()
 
     // 指定管线布局(uniform)
     vk::PipelineLayoutCreateInfo PipelineLayoutInfo = {};
-    PipelineLayoutInfo.setSetLayouts({descriptor_set_layout_});
+    TStaticArray                 layout             = {shader_program_->GetDescriptorSetLayout()};
+    PipelineLayoutInfo.setSetLayouts(layout);
 
     // 创建管线布局
-    pipeline_layout_ =
-        Context.GetLogicalDevice()->GetHandle().createPipelineLayout(PipelineLayoutInfo);
+    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(PipelineLayoutInfo);
 
     // DynamicState
-    vk::PipelineDynamicStateCreateInfo DynamicStateInfo;
-    TArray<vk::DynamicState>           DynamicStates;
-    if (!(pipeline_info_.DynamicStateEnabled & EPDSE_None))
+    vk::PipelineDynamicStateCreateInfo dynamic_state_info;
+    TArray<vk::DynamicState>           dynamic_states;
+    if (!(pipeline_info_.dynamic_state_enabled & EPDSE_None))
     {
-        if (pipeline_info_.DynamicStateEnabled & EPDSE_Scissor)
+        if (pipeline_info_.dynamic_state_enabled & EPDSE_Scissor)
         {
-            DynamicStates.emplace_back(vk::DynamicState::eScissor);
+            dynamic_states.emplace_back(vk::DynamicState::eScissor);
         }
-        if (pipeline_info_.DynamicStateEnabled & EPDSE_Viewport)
+        if (pipeline_info_.dynamic_state_enabled & EPDSE_Viewport)
         {
-            DynamicStates.emplace_back(vk::DynamicState::eViewport);
+            dynamic_states.emplace_back(vk::DynamicState::eViewport);
         }
     }
-    DynamicStateInfo.setDynamicStates(DynamicStates);
+    dynamic_state_info.setDynamicStates(dynamic_states);
 
     // 定义管线
-    vk::GraphicsPipelineCreateInfo PipelineInfo = {};
-    PipelineInfo.setStages(ShaderStages)
+    vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
+    pipeline_create_info.setStages(ShaderStages)
         .setPVertexInputState(&VertexInputInfo)
         .setPInputAssemblyState(&InputAssemblyInfo)
-        .setPViewportState(&ViewportStateCreateInfo)
-        .setPRasterizationState(&RasterizerInfo)
+        .setPViewportState(&viewport_state_create_info)
+        .setPRasterizationState(&rasterizer_info)
         .setPMultisampleState(&MultisampleInfo)
         .setPDepthStencilState(&DepthStencilInfo)   // 深度和模版测试
         .setPColorBlendState(&ColorBlendInfo)       // 颜色混合
         .setLayout(pipeline_layout_)                // 管线布局
         .setRenderPass(render_pass_->GetHandle())   // RenderPass
         .setSubpass(0)                              // 子Pass
-        .setPDynamicState(&DynamicStateInfo);
+        .setPDynamicState(&dynamic_state_info);
 
-    auto Pipeline =
-        Context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(nullptr, PipelineInfo);
+    auto Pipeline = context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(
+        nullptr, pipeline_create_info
+    );
     if (Pipeline.result != vk::Result::eSuccess)
     {
         throw VulkanException(L"创建管线失败");
@@ -273,37 +275,24 @@ void GraphicsPipeline::CleanPipeline()
         Device->GetHandle().destroyPipeline(pipeline_);
         Device->GetHandle().destroyPipelineLayout(pipeline_layout_);
         delete render_pass_;
-        render_pass_           = nullptr;
-        pipeline_              = nullptr;
-        pipeline_layout_       = nullptr;
+        render_pass_     = nullptr;
+        pipeline_        = nullptr;
+        pipeline_layout_ = nullptr;
     }
 }
 
 void GraphicsPipeline::CreateOther(bool bRebuilding)
 {
-    // TODO: 重构并整个至材质系统
-    CreateUniformBuffers();
-    CreateDescriptorPool();
-    CreateDescriptotSets();
-    // TODO: 模型系统解耦
-    if (!bRebuilding)
-    {
-        LoadModel();
-    }
     CreateCommandBuffers();
 }
 
 void GraphicsPipeline::CleanOther(bool bRebuilding)
 {
-    CleanDescriptorPool();
     // TODO: 模型系统解耦
     if (!bRebuilding)
     {
         CleanModel();
     }
-    // TODO: 重构并整合至材质系统
-    // 清理纹理
-    CleanUniformBuffers();
 }
 
 void GraphicsPipeline::BeginRecordCommand(const vk::CommandBuffer InBuffer)
@@ -333,7 +322,7 @@ void GraphicsPipeline::RecordCommand(
     RenderPassInfo.setClearValues(ClearValues);
     InBuffer.beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
     InBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_);
-    if (pipeline_info_.DynamicStateEnabled & EPDSE_Viewport)
+    if (pipeline_info_.dynamic_state_enabled & EPDSE_Viewport)
     {
         vk::Viewport NewViewport;
         NewViewport.x      = 0;
@@ -342,7 +331,7 @@ void GraphicsPipeline::RecordCommand(
         NewViewport.height = g_engine_statistics.window_size.height;
         InBuffer.setViewport(0, NewViewport);
     }
-    if (pipeline_info_.DynamicStateEnabled & EPDSE_Scissor)
+    if (pipeline_info_.dynamic_state_enabled & EPDSE_Scissor)
     {
         vk::Rect2D NewScissor;
         NewScissor.offset.x      = 0;
@@ -370,25 +359,6 @@ void GraphicsPipeline::RecordCommand(
     InBuffer.endRenderPass();
 }
 
-void GraphicsPipeline::CreateDescriptionSetLayout()
-{
-    VulkanContext&                         Context = VulkanContext::Get();
-    TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
-    for (const auto& UniformBinding: m_shader_prog_->GetUniforms() | std::views::values)
-    {
-        vk::DescriptorSetLayoutBinding binding;
-        binding.binding         = UniformBinding.binding;
-        binding.descriptorType  = GetVkDescriptorType(UniformBinding.type);
-        binding.descriptorCount = 1;
-        binding.stageFlags      = GetVkShaderStage(UniformBinding.stage);
-        UniformBindings.push_back(binding);
-    }
-    vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
-    LayoutInfo.setBindings(UniformBindings);
-    descriptor_set_layout_ =
-        Context.GetLogicalDevice()->GetHandle().createDescriptorSetLayout(LayoutInfo);
-}
-
 void GraphicsPipeline::LoadModel()
 {
     VulkanContext& Context       = VulkanContext::Get();
@@ -403,7 +373,7 @@ void GraphicsPipeline::CleanModel() const
 
 void GraphicsPipeline::CreateCommandBuffers()
 {
-    VulkanContext&                context   = VulkanContext::Get();
+    VulkanContext&                context    = VulkanContext::Get();
     vk::CommandBufferAllocateInfo alloc_info = {};
     alloc_info.setCommandPool(context.GetCommandPool()->GetCommandPool())
         .setLevel(vk::CommandBufferLevel::ePrimary)
@@ -449,7 +419,7 @@ void GraphicsPipeline::SubmitGraphicsQueue(
 void GraphicsPipeline::Rebuild()
 {
     CleanOther(true);
-    if (!(pipeline_info_.DynamicStateEnabled | EPDSE_None)) {
+    if (!(pipeline_info_.dynamic_state_enabled | EPDSE_None)) {
         // 启用了DynamicState则通过DynamicState设置
         CleanPipeline();
         CreatePipeline();
