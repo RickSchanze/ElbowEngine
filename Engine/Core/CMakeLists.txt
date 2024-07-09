@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
         Path/Path.cpp
         Path/Exception.h
         Path/Exception.cpp
+        Interface/IStringify.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

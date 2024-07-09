@@ -38,22 +38,22 @@ class ImGuiGraphicsPipeline;
 
 class GlfwWindow {
 public:
-    explicit GlfwWindow(String InWindowTitle, const int InWidth, const int InHeight) :
-        mWindowTitle(Move(InWindowTitle)), mWidth(InWidth), mHeight(InHeight) {
-        g_engine_statistics.window_size.height = InHeight;
-        g_engine_statistics.window_size.width  = InWidth;
+    explicit GlfwWindow(String window_title, const int width, const int height) :
+        window_title_(Move(window_title)), width_(width), height_(height) {
+        g_engine_statistics.window_size.height = height;
+        g_engine_statistics.window_size.width  = width;
     }
 
-    [[nodiscard]] bool IsValid() const { return mWindowHandle != nullptr; }
+    [[nodiscard]] bool IsValid() const { return window_handle_ != nullptr; }
 
     TUniquePtr<GLFWWindowSurface> GetWindowSurface();
     TArray<const char*>           GetRequiredExtensions() const;
-    GLFWwindow*                   GetGLFWWindowHandle() const { return mWindowHandle; }
+    GLFWwindow*                   GetGLFWWindowHandle() const { return window_handle_; }
 
     Size2D GetWindowSize();
 
     void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const {
-        glfwSetFramebufferSizeCallback(mWindowHandle, Callback);
+        glfwSetFramebufferSizeCallback(window_handle_, Callback);
     }
 
     void InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext);
@@ -72,15 +72,15 @@ public:
 
 
 private:
-    GLFWwindow* mWindowHandle = nullptr;
-    String      mWindowTitle;
+    GLFWwindow* window_handle_ = nullptr;
+    String      window_title_;
 
-    Function::GameObject* mCameraObject = nullptr;
+    Function::GameObject* camera_object_ = nullptr;
 
-    ImGuiGraphicsPipeline* mGraphicsPipeline = nullptr;
+    ImGuiGraphicsPipeline* imgui_graphics_pipeline_ = nullptr;
 
-    int mWidth;
-    int mHeight;
+    int width_;
+    int height_;
 };
 
 PLATFORM_WINDOW_NAMESPACE_END

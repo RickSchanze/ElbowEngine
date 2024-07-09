@@ -27,18 +27,18 @@ VulkanContext::~VulkanContext()
     }
 }
 
-TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance> &InVulkanInstance)
+TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& instance)
 {
-    auto Rtn = MakeUnique<VulkanContext>(Protected{}, InVulkanInstance);
+    auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
     Rtn->CreateGraphicsPipeline();
     return Rtn;
 }
 
-VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance> &InVulkanInstance)
+VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
 {
-    if (sContext == nullptr)
+    if (s_context_ == nullptr)
     {
-        sContext = this;
+        s_context_ = this;
     }
     else
     {
@@ -47,26 +47,26 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance> &InVulkanInst
     }
     renderer_id_ = s_renderer_id_count_++;
     LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", renderer_id_, swap_chain_image_count_);
-    vulkan_instance_ = InVulkanInstance;
-    physical_device_ = vulkan_instance_->PickPhysicalDevice();
+    vulkan_instance_      = instance;
+    physical_device_      = vulkan_instance_->PickPhysicalDevice();
     const auto Properties = physical_device_->GetProperties();
-    auto Name = StringUtils::FromAnsiString(Properties.deviceName);
+    auto       Name       = StringUtils::FromAnsiString(Properties.deviceName);
     LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", Name);
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
-    swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, 1920, 1080);
+    swap_chain_     = logical_device_->CreateSwapChain(swap_chain_image_count_, 1920, 1080);
     // 初始化命令生产者
-    command_pool_ = CommandPool::CreateUnique(logical_device_);
+    command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
     CreateSyncObjecs();
     Initialize();
 }
 
-VulkanContext &VulkanContext::Get()
+VulkanContext& VulkanContext::Get()
 {
-    if (sContext == nullptr)
+    if (s_context_ == nullptr)
     {
         throw VulkanException(L"VulkanContext未初始化");
     }
-    return *sContext;
+    return *s_context_;
 }
 
 void VulkanContext::Initialize()
@@ -77,8 +77,7 @@ void VulkanContext::Initialize()
 
 void VulkanContext::Finalize()
 {
-    if (!IsValid())
-        return;
+    if (!IsValid()) return;
     CleanSyncObjects();
     command_pool_->Finialize();
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
@@ -96,16 +95,21 @@ void VulkanContext::Finalize()
 
 void VulkanContext::Draw()
 {
-    const vk::Device device = logical_device_->GetHandle();
+    const vk::Device device              = logical_device_->GetHandle();
     // 首先等待当前帧的指令缓冲结束执行
-    const auto current_frame_index = g_engine_statistics.current_frame_index;
+    const auto       current_frame_index = g_engine_statistics.current_frame_index;
 
     const TStaticArray<vk::Fence, 1> fences = {in_flight_fences_[current_frame_index]};
-    auto _ = device.waitForFences(fences, VK_TRUE, UINT64_MAX);
+    auto                             _      = device.waitForFences(fences, VK_TRUE, UINT64_MAX);
     // 获取可用图像索引
-    if (VkResult acquire_result = vkAcquireNextImageKHR(device, swap_chain_->GetHandle(), UINT64_MAX,
-                                                        image_available_semaphores_[current_frame_index], nullptr,
-                                                        &g_engine_statistics.current_image_index);
+    if (VkResult acquire_result = vkAcquireNextImageKHR(
+            device,
+            swap_chain_->GetHandle(),
+            UINT64_MAX,
+            image_available_semaphores_[current_frame_index],
+            nullptr,
+            &g_engine_statistics.current_image_index
+        );
 
         acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -122,11 +126,11 @@ void VulkanContext::Draw()
     // 这里更新UniformBuffer
     graphics_pipeline_->UpdateUniformBuffer(g_engine_statistics.current_image_index);
 
-    TArray WaitSemaphores = {image_available_semaphores_[current_frame_index]};
+    TArray                WaitSemaphores   = {image_available_semaphores_[current_frame_index]};
     TArray<vk::Semaphore> SingalSemaphores = {};
 
     constexpr vk::SemaphoreCreateInfo SemaphoreInfo = {};
-    for (auto &Pipeline : render_graphics_pipelines_)
+    for (auto& Pipeline: render_graphics_pipelines_)
     {
         SingalSemaphores.push_back(device.createSemaphore(SemaphoreInfo));
     }
@@ -135,21 +139,29 @@ void VulkanContext::Draw()
     {
         if (i == 0)
         {
-            render_graphics_pipelines_[i]->SubmitGraphicsQueue(image_index, logical_device_->GetGraphicsQueue(),
-                                                               WaitSemaphores, {SingalSemaphores[0]},
-                                                               in_flight_fences_[current_frame_index]);
+            render_graphics_pipelines_[i]->SubmitGraphicsQueue(
+                image_index,
+                logical_device_->GetGraphicsQueue(),
+                WaitSemaphores,
+                {SingalSemaphores[0]},
+                in_flight_fences_[current_frame_index]
+            );
         }
         else
         {
-            render_graphics_pipelines_[i]->SubmitGraphicsQueue(image_index, logical_device_->GetGraphicsQueue(),
-                                                               {SingalSemaphores[0]}, {SingalSemaphores[1]},
-                                                               in_flight_fences_[current_frame_index]);
+            render_graphics_pipelines_[i]->SubmitGraphicsQueue(
+                image_index,
+                logical_device_->GetGraphicsQueue(),
+                {SingalSemaphores[0]},
+                {SingalSemaphores[1]},
+                in_flight_fences_[current_frame_index]
+            );
         }
     }
 
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
-    TStaticArray SwapChains = {swap_chain_->GetHandle()};
+    TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
     PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(image_index);
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
@@ -167,7 +179,7 @@ void VulkanContext::Draw()
 
     logical_device_->GetPresentQueue().waitIdle();
 
-    for (auto &Semaphore : SingalSemaphores)
+    for (auto& Semaphore: SingalSemaphores)
     {
         device.destroySemaphore(Semaphore);
     }
@@ -203,7 +215,7 @@ void VulkanContext::RebuildSwapChain()
     swap_chain_->Finialize();
     swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, Size.width, Size.height);
 
-    for (const auto &Pipeline : render_graphics_pipelines_)
+    for (const auto& Pipeline: render_graphics_pipelines_)
     {
         Pipeline->Rebuild();
     }
@@ -212,8 +224,10 @@ void VulkanContext::RebuildSwapChain()
 vk::Format VulkanContext::GetDepthImageFormat()
 {
     return physical_device_->FindSupportFormat(
-        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal,
-        vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+        vk::ImageTiling::eOptimal,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
 }
 
 void VulkanContext::CreateGraphicsPipeline()
@@ -222,8 +236,8 @@ void VulkanContext::CreateGraphicsPipeline()
     // 寻找深度图像格式
     PipelineInfo Initializer{};
     Initializer.shader_stage.FragmentShaderPath = L"Shaders/frag.spv";
-    Initializer.shader_stage.VertexShaderPath = L"Shaders/vert.spv";
-    graphics_pipeline_ = new GraphicsPipeline(Initializer);
+    Initializer.shader_stage.VertexShaderPath   = L"Shaders/vert.spv";
+    graphics_pipeline_                          = new GraphicsPipeline(Initializer);
 }
 
 // void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
@@ -241,15 +255,15 @@ void VulkanContext::CreateSyncObjecs()
     in_flight_fences_.resize(g_engine_statistics.parallel_render_frame_count);
 
     vk::SemaphoreCreateInfo SemaphoreInfo = {};
-    vk::FenceCreateInfo FenceInfo = {};
+    vk::FenceCreateInfo     FenceInfo     = {};
     FenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
     // 为多帧并行渲染创建信号量
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
-        image_available_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
+        image_available_semaphores_[i]       = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
         image_render_finished_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
-        in_flight_fences_[i] = logical_device_->GetHandle().createFence(FenceInfo);
+        in_flight_fences_[i]                 = logical_device_->GetHandle().createFence(FenceInfo);
     }
 }
 

@@ -34,7 +34,7 @@ public:
 
     virtual ~VulkanContext();
 
-    static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance> &InVulkanInstance);
+    static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance> &instance);
 
 protected:
     struct Protected
@@ -43,7 +43,7 @@ protected:
 
 public:
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanContext(Protected, const TSharedPtr<Instance> &InVulkanInstance);
+    explicit VulkanContext(Protected, const TSharedPtr<Instance> &instance);
 
     // 获取全局单例
     static VulkanContext &Get();
@@ -90,14 +90,14 @@ public:
     virtual void CreateGraphicsPipeline();
 
     // 向渲染器提交命令缓冲区
-    void AddPipelineToRender(IGraphicsPipeline *InPipeline)
+    void AddPipelineToRender(IGraphicsPipeline *pipeline)
     {
-        render_graphics_pipelines_.push_back(InPipeline);
+        render_graphics_pipelines_.push_back(pipeline);
     }
 
-    void RemovePipelineFromRender(IGraphicsPipeline *InPipeline)
+    void RemovePipelineFromRender(IGraphicsPipeline *pipeline)
     {
-        ContainerUtils::Remove(render_graphics_pipelines_, InPipeline);
+        ContainerUtils::Remove(render_graphics_pipelines_, pipeline);
     }
 
     TUniquePtr<SwapChain> &GetSwapChain()
@@ -129,7 +129,7 @@ protected:
     void CreateSyncObjecs();
     void CleanSyncObjects();
 
-    static inline VulkanContext *sContext = nullptr;
+    static inline VulkanContext *s_context_ = nullptr;
 
 private:
     Int32 swap_chain_image_count_ = 3;

@@ -73,9 +73,8 @@ struct PipelineInfo
 
     struct MultisampleConfig
     {
-        bool                    enabled = false;   // 默认不启用
-        vk::SampleCountFlagBits sample_count =
-            vk::SampleCountFlagBits::e1;   // 默认不启用以及只进行一次
+        bool                    enabled      = false;                         // 默认不启用
+        vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1;   // 默认不启用以及只进行一次
     };
 
     struct DepthStencilStageConfig
@@ -84,7 +83,7 @@ struct PipelineInfo
         bool          enable_depth_write       = true;
         vk::CompareOp depth_compare_op         = vk::CompareOp::eLess;
         bool          enable_depth_bounds_test = false;   // DBT目前还不知道用来干啥 @TODO: 了解DBT
-        bool          enable_stencil_test = false;   // 暂时不开启模版测试 @TODO: 将模版测试加入
+        bool          enable_stencil_test      = false;   // 暂时不开启模版测试 @TODO: 将模版测试加入
     };
 
     struct ColorBlendAttachmentStateConfig
@@ -132,28 +131,15 @@ public:
 
     vk::CommandBuffer GetCurrentImageCommandBuffer(UInt32 InCurrentImage) const;
 
-    bool IsValid() const { return pipeline_ && pipeline_layout_ && descriptor_set_layout_; }
+    bool IsValid() const
+    {
+        return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr &&
+               shader_program_ != nullptr;
+    }
 
 protected:
     void CreatePipeline();
-    void CleanPipeline();
-
-    void CreateOther(bool bRebuilding);
-    void CleanOther(bool bRebuilding);
-
-    void BeginRecordCommand(vk::CommandBuffer InBuffer);
-    void EndRecordCommand(vk::CommandBuffer InBuffer);
-
-    struct CommandRecordingParam
-    {
-        vk::Framebuffer   frame_buffer;
-        vk::DescriptorSet descriptor_set;
-    };
-
-    virtual void RecordCommand(vk::CommandBuffer InBuffer, const CommandRecordingParam& InParam);
-
-    // 设置Uniform变量
-    void CreateDescriptionSetLayout();
+    void DestroyPipeline();
 
 private:
     PipelineInfo pipeline_info_;
@@ -170,18 +156,10 @@ private:
 
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
-    ShaderProgram*            shader_program_;
-
-    // TODO: 模型系统
-    TUniquePtr<Model>  model;
-    vk::DescriptorPool descriptor_pool_;
-
-    void LoadModel();
-
-    void CleanModel() const;
+    ShaderProgram* shader_program_ = nullptr;
 
     void CreateCommandBuffers();
-    void CleanCommandBuffers() const;
+    void DestroyCommandBuffers() const;
 
 public:
     // clang-format off

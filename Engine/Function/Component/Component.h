@@ -11,9 +11,10 @@
 
 #include "Component.generated.h"
 
+struct Transform;
+
 namespace Function {
 class GameObject;
-class Transform;
 }
 FUNCTION_NAMESPACE_BEGIN
 

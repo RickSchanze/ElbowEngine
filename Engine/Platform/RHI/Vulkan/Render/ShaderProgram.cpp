@@ -129,7 +129,7 @@ void ShaderProgram::DestroyShaders()
     }
 }
 
-bool ShaderProgram::SetUniformBufferObject(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 {
     const TStaticArray<glm::mat4, 3> ubo    = {model, view, projection};
     const LogicalDevice&             device = device_.get();

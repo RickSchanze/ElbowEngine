@@ -18,23 +18,26 @@
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
-class ImGuiRenderPass : public RHI::Vulkan::RenderPass {
+class ImGuiRenderPass : public RHI::Vulkan::RenderPass
+{
 
 protected:
-    void OnCreateAttachments() override {
+    void OnCreateAttachments() override
+    {
         RHI::Vulkan::RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
         Param.InitialLayout   = vk::ImageLayout::ePresentSrcKHR;
         Param.FinialLayout    = vk::ImageLayout::ePresentSrcKHR;
         Param.ReferenceLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        Param.StoreOp = vk::AttachmentStoreOp::eStore;
-        Param.LoadOp = vk::AttachmentLoadOp::eDontCare;
+        Param.StoreOp         = vk::AttachmentStoreOp::eStore;
+        Param.LoadOp          = vk::AttachmentLoadOp::eDontCare;
         NewAttachment(Param, true);
     }
 
     void CreateSubpassDescription() override;
 };
 
-class ImGuiGraphicsPipeline : public IGraphicsPipeline {
+class ImGuiGraphicsPipeline : public IGraphicsPipeline
+{
 public:
     explicit ImGuiGraphicsPipeline(Ref<RHI::Vulkan::VulkanContext> InConext);
 
@@ -49,8 +52,8 @@ protected:
 
 public:
     void SubmitGraphicsQueue(
-        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
-        vk::Fence InFrameFence
+        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
+        TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
     ) override;
 
     void Rebuild() override;
@@ -64,11 +67,15 @@ private:
     TArray<vk::CommandBuffer>            mCommandBuffers;
 };
 
-void GLFWWindowSurface::Initialize() {
-    if (mAttachedInstanceHandle->IsValid()) {
+void GLFWWindowSurface::Initialize()
+{
+    if (mAttachedInstanceHandle->IsValid())
+    {
         VkSurfaceKHR   Surface{};
-        const VkResult Result = glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &Surface);
-        if (Result != VK_SUCCESS) {
+        const VkResult Result =
+            glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &Surface);
+        if (Result != VK_SUCCESS)
+        {
             String ErrorStr = StringUtils::FromAnsiString(string_VkResult(Result));
             throw VulkanException(std::format(L"创建窗口表面失败: {}", ErrorStr));
         }
@@ -76,7 +83,8 @@ void GLFWWindowSurface::Initialize() {
     }
 }
 
-void ImGuiRenderPass::CreateSubpassDescription() {
+void ImGuiRenderPass::CreateSubpassDescription()
+{
     RenderPass::CreateSubpassDescription();
     mDependency.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     mDependency.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -84,12 +92,14 @@ void ImGuiRenderPass::CreateSubpassDescription() {
     mDependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 }
 
-ImGuiGraphicsPipeline::ImGuiGraphicsPipeline(const Ref<RHI::Vulkan::VulkanContext> InConext) : mContext(InConext) {
+ImGuiGraphicsPipeline::ImGuiGraphicsPipeline(const Ref<RHI::Vulkan::VulkanContext> InConext) : mContext(InConext)
+{
     Initialize();
     mContext.get().AddPipelineToRender(this);
 }
 
-void ImGuiGraphicsPipeline::Initialize() {
+void ImGuiGraphicsPipeline::Initialize()
+{
     if (mDescriptorPool != nullptr) return;
     ImGui_ImplVulkan_InitInfo Info{};
     Info.Instance       = mContext.get().GetVulkanInstance()->GetHandle();
@@ -107,15 +117,16 @@ void ImGuiGraphicsPipeline::Initialize() {
     CreateDescriptorPool();
     Info.DescriptorPool = mDescriptorPool;
 
-    mCommandPool =
-        RHI::Vulkan::CommandPool::CreateUnique(mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    mCommandPool = RHI::Vulkan::CommandPool::CreateUnique(
+        mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer
+    );
 
     mRenderPass = new ImGuiRenderPass();
     mRenderPass->Initialize();
 
     // CommandBuffers
     vk::CommandBufferAllocateInfo AllocInfo = {};
-    AllocInfo.setCommandPool(mContext.get().GetCommandPool()->GetCommandPool())
+    AllocInfo.setCommandPool(mContext.get().GetCommandPool()->GetHandle())
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandBufferCount(mContext.get().GetSwapChainImageCount());
 
@@ -123,7 +134,9 @@ void ImGuiGraphicsPipeline::Initialize() {
 
     // 初始化Imgui
     ImGui_ImplVulkan_LoadFunctions(
-        [](const char* Name, void* UserData) { return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name); },
+        [](const char* Name, void* UserData) {
+            return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name);
+        },
         mContext.get().GetVulkanInstance()->GetHandle()
     );
     ImGui_ImplVulkan_Init(&Info, mRenderPass->GetHandle());
@@ -131,7 +144,8 @@ void ImGuiGraphicsPipeline::Initialize() {
     CreateCommandBuffers();
 }
 
-void ImGuiGraphicsPipeline::Finialize() {
+void ImGuiGraphicsPipeline::Finialize()
+{
     if (mDescriptorPool == nullptr) return;
     mCommandPool->Finialize();
     delete mRenderPass;
@@ -141,34 +155,37 @@ void ImGuiGraphicsPipeline::Finialize() {
     mDescriptorPool = nullptr;
 }
 
-ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline() {
+ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline()
+{
     Finialize();
     mContext.get().RemovePipelineFromRender(this);
 }
 
-void ImGuiGraphicsPipeline::CreateCommandBuffers() {
+void ImGuiGraphicsPipeline::CreateCommandBuffers()
+{
     vk::CommandBufferAllocateInfo AllocInfo = {};
     AllocInfo.level                         = vk::CommandBufferLevel::ePrimary;
-    AllocInfo.commandPool                   = mCommandPool->GetCommandPool();
+    AllocInfo.commandPool                   = mCommandPool->GetHandle();
     AllocInfo.commandBufferCount            = static_cast<uint32_t>(mRenderPass->GetFrameBuffers().size());
-    mCommandBuffers                         = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
+    mCommandBuffers = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
 }
 
 void ImGuiGraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
-    vk::Fence InFrameFence
-) {
-    vk::CommandBufferBeginInfo BeginInfo = {};
-    BeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    mCommandBuffers[CurrentImageIndex].begin(&BeginInfo);
-    vk::RenderPassBeginInfo         RenderPassInfo = {};
-    TStaticArray<vk::ClearValue, 1> ClearValues    = {};
-    RenderPassInfo.renderPass                      = mRenderPass->GetHandle();
-    RenderPassInfo.framebuffer                     = mRenderPass->GetFrameBuffer(CurrentImageIndex)->GetHandle();
-    RenderPassInfo.renderArea                      = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
-    RenderPassInfo.clearValueCount                 = static_cast<uint32_t>(ClearValues.size());
-    RenderPassInfo.pClearValues                    = ClearValues.data();
-    mCommandBuffers[CurrentImageIndex].beginRenderPass(RenderPassInfo, vk::SubpassContents::eInline);
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
+    TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
+)
+{
+    vk::CommandBufferBeginInfo begin_info = {};
+    begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    mCommandBuffers[CurrentImageIndex].begin(&begin_info);
+    vk::RenderPassBeginInfo         render_pass_info = {};
+    TStaticArray<vk::ClearValue, 1> clear_values    = {};
+    render_pass_info.renderPass                      = mRenderPass->GetHandle();
+    render_pass_info.framebuffer                     = mRenderPass->GetFrameBuffer(CurrentImageIndex)->GetHandle();
+    render_pass_info.renderArea                      = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
+    render_pass_info.clearValueCount                 = static_cast<uint32_t>(clear_values.size());
+    render_pass_info.pClearValues                    = clear_values.data();
+    mCommandBuffers[CurrentImageIndex].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[CurrentImageIndex]);
     mCommandBuffers[CurrentImageIndex].endRenderPass();
@@ -182,45 +199,53 @@ void ImGuiGraphicsPipeline::SubmitGraphicsQueue(
     InGraphicsQueue.submit(Info);
 }
 
-void ImGuiGraphicsPipeline::Rebuild() {
+void ImGuiGraphicsPipeline::Rebuild()
+{
     mRenderPass->Rebuild(false);
 }
 
-void ImGuiGraphicsPipeline::CreateDescriptorPool() {
+void ImGuiGraphicsPipeline::CreateDescriptorPool()
+{
     vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
     vk::DescriptorPoolCreateInfo PoolCreateInfo;
     PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(1).setPoolSizes(PoolSizes);
     mDescriptorPool = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 
-TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface() {
-    auto Surface = MakeUnique<GLFWWindowSurface>(nullptr, mWindowHandle);
+TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
+{
+    auto Surface = MakeUnique<GLFWWindowSurface>(nullptr, window_handle_);
     return Surface;
 }
 
-TArray<const char*> GlfwWindow::GetRequiredExtensions() const {
+TArray<const char*> GlfwWindow::GetRequiredExtensions() const
+{
     TArray<const char*> Extensions;
     uint32_t            Count = 0;
     const char**        Names = glfwGetRequiredInstanceExtensions(&Count);
-    for (uint32_t i = 0; i < Count; ++i) {
+    for (uint32_t i = 0; i < Count; ++i)
+    {
         Extensions.emplace_back(Names[i]);
     }
     return Extensions;
 }
 
-Size2D GlfwWindow::GetWindowSize() {
-    glfwGetFramebufferSize(mWindowHandle, &mWidth, &mHeight);
-    return Size2D(mWidth, mHeight);
+Size2D GlfwWindow::GetWindowSize()
+{
+    glfwGetFramebufferSize(window_handle_, &width_, &height_);
+    return {width_, height_};
 }
 
-void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext) {
+void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext)
+{
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
-    mGraphicsPipeline = new ImGuiGraphicsPipeline(InContext);
+    ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
+    imgui_graphics_pipeline_ = new ImGuiGraphicsPipeline(InContext);
     SetupImGuiFonts();
 }
 
-void GlfwWindow::SetupImGuiFonts() {
+void GlfwWindow::SetupImGuiFonts()
+{
     ImGuiIO&                 IO                 = ImGui::GetIO();
     Path                     DefaultFontPath    = L"Fonts/Maple_UI.ttf";
     AnsiString               DefaultFontPathStr = DefaultFontPath.ToAnsiString();
@@ -233,56 +258,65 @@ void GlfwWindow::SetupImGuiFonts() {
     ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-void GlfwWindow::ShutdownImGui() {
-    if (mGraphicsPipeline) {
+void GlfwWindow::ShutdownImGui()
+{
+    if (imgui_graphics_pipeline_)
+    {
         // 代表ImGui已经初始化
-        mGraphicsPipeline->Finialize();
+        imgui_graphics_pipeline_->Finialize();
         ImGui_ImplGlfw_Shutdown();
     }
 }
 
-void GlfwWindow::BeginImGuiFrame() {
+void GlfwWindow::BeginImGuiFrame()
+{
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
-void GlfwWindow::EndImGuiFrame() {
+void GlfwWindow::EndImGuiFrame()
+{
     // ImGui::Render();
 }
 
-void GlfwWindow::Initialize() {
+void GlfwWindow::Initialize()
+{
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    const AnsiString Title = StringUtils::ToAnsiString(mWindowTitle);
-    mWindowHandle          = glfwCreateWindow(mWidth, mHeight, Title.c_str(), nullptr, nullptr);
+    const AnsiString Title = StringUtils::ToAnsiString(window_title_);
+    window_handle_          = glfwCreateWindow(width_, height_, Title.c_str(), nullptr, nullptr);
 
-    mCameraObject = New<Function::GameObject>(L"摄像机", nullptr);
-    mCameraObject->BeginPlay();
-    mCameraObject->AddComponent<Function::Camera>();
-    New<Function::GameObject>(L"Dummy对象", mCameraObject);
+    camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
+    camera_object_->BeginPlay();
+    camera_object_->AddComponent<Function::Camera>();
+    New<Function::GameObject>(L"Dummy对象", camera_object_);
     New<Function::GameObject>(L"对象2");
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 }
 
-void GlfwWindow::Finalize() {
-    if (mGraphicsPipeline) {
-        delete mGraphicsPipeline;
-        mGraphicsPipeline = nullptr;
+void GlfwWindow::Finalize()
+{
+    if (imgui_graphics_pipeline_)
+    {
+        delete imgui_graphics_pipeline_;
+        imgui_graphics_pipeline_ = nullptr;
     }
-    glfwDestroyWindow(mWindowHandle);
-    mWindowHandle = nullptr;
+    glfwDestroyWindow(window_handle_);
+    window_handle_ = nullptr;
     glfwTerminate();
 }
 
-void GlfwWindow::Tick(float DeltaTime) {
-    mCameraObject->Tick(DeltaTime);
+void GlfwWindow::Tick(float DeltaTime)
+{
+    camera_object_->Tick(DeltaTime);
     glfwPollEvents();
     Input::InternalTick();
 }
 
-void GlfwWindow::SetMouseVisible(const bool InVisible) const {
-    glfwSetInputMode(mWindowHandle, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+void GlfwWindow::SetMouseVisible(const bool InVisible) const
+{
+    glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 PLATFORM_WINDOW_NAMESPACE_END
