@@ -17,14 +17,14 @@ struct CommandExecutor
 {
     static void TransitionImageLayout(
         CommandPool& InPool, Image& InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout,
-        UInt32 InMipLevel = 1
+       int32_t InMipLevel = 1
     ) {
         InPool.TrainsitionImageLayout(InImage.GetHandle(), InFormat, InOldLayout, InNewLayout, InMipLevel);
     }
 };
 
 void CommandList::TransitionImageLayout(
-    Image& InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, UInt32 InMipLevel, ECommandExecuteTime InExecuteTime
+    Image& InImage, vk::Format InFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout,int32_t InMipLevel, ECommandExecuteTime InExecuteTime
 ) {
     Initialize();
     switch (InExecuteTime) {

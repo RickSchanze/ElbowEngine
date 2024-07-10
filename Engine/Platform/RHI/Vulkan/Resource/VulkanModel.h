@@ -22,10 +22,10 @@ class VulkanContext;
 
 class Mesh : public IRHIResource {
 public:
-    Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
+    Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies);
 
-    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
-    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies);
+    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies);
+    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies);
 
     ~Mesh() override;
 
@@ -36,8 +36,8 @@ public:
 
     vk::Buffer GetVertexBuffer() const { return mVertexBuffer; }
     vk::Buffer GetIndexBuffer() const { return mIndexBuffer; }
-    UInt32     GetIndexCount() const { return mIndexCount; }
-    UInt32     GetVertexCount() const { return mVertexCount; }
+   int32_t     GetIndexCount() const { return mIndexCount; }
+   int32_t     GetVertexCount() const { return mVertexCount; }
 
 private:
     vk::Buffer       mVertexBuffer;
@@ -45,8 +45,8 @@ private:
     vk::DeviceMemory mVertexBufferMemory;
     vk::DeviceMemory mIndexBufferMemory;
 
-    UInt32 mIndexCount  = 0;
-    UInt32 mVertexCount = 0;
+   int32_t mIndexCount  = 0;
+   int32_t mVertexCount = 0;
 };
 
 RHI_VULKAN_NAMESPACE_END

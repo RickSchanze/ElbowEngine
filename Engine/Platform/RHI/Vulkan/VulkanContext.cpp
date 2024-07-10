@@ -93,6 +93,41 @@ void VulkanContext::Finalize()
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
+void VulkanContext::PrepareFrame()
+{
+    // 等待当前帧的指令缓冲结束执行
+    const TStaticArray fences      = {in_flight_fences_[g_engine_statistics.current_frame_index]};
+    vk::Result         wait_result = logical_device_->WaitForFences(fences);
+    if (wait_result != vk::Result::eSuccess)
+    {
+        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"等待指令缓冲执行失败");
+        return;
+    }
+    // 获取可用图像索引
+    VkResult acquire_result = vkAcquireNextImageKHR(
+        logical_device_->GetHandle(),
+        swap_chain_->GetHandle(),
+        UINT64_MAX,
+        image_available_semaphores_[g_engine_statistics.current_frame_index],
+        nullptr,
+        &g_engine_statistics.current_image_index
+    );
+    if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        // 交换链过期，重建交换链
+        // TODO: 加上交换链过期事件
+        RebuildSwapChain();
+        return;
+    }
+    if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
+    {
+        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"无法获取交换链图像");
+        return;
+    }
+    // 重置当前帧的Fence
+    logical_device_->ResetFences(fences);
+}
+
 void VulkanContext::Draw()
 {
     const vk::Device device              = logical_device_->GetHandle();
@@ -123,8 +158,7 @@ void VulkanContext::Draw()
     }
     auto image_index = g_engine_statistics.current_image_index;
     device.resetFences(fences);
-    // 这里更新UniformBuffer
-    graphics_pipeline_->UpdateUniformBuffer(g_engine_statistics.current_image_index);
+
 
     TArray                WaitSemaphores   = {image_available_semaphores_[current_frame_index]};
     TArray<vk::Semaphore> SingalSemaphores = {};
@@ -140,21 +174,13 @@ void VulkanContext::Draw()
         if (i == 0)
         {
             render_graphics_pipelines_[i]->SubmitGraphicsQueue(
-                image_index,
-                logical_device_->GetGraphicsQueue(),
-                WaitSemaphores,
-                {SingalSemaphores[0]},
-                in_flight_fences_[current_frame_index]
+                image_index, logical_device_->GetGraphicsQueue(), WaitSemaphores, {SingalSemaphores[0]}, in_flight_fences_[current_frame_index]
             );
         }
         else
         {
             render_graphics_pipelines_[i]->SubmitGraphicsQueue(
-                image_index,
-                logical_device_->GetGraphicsQueue(),
-                {SingalSemaphores[0]},
-                {SingalSemaphores[1]},
-                in_flight_fences_[current_frame_index]
+                image_index, logical_device_->GetGraphicsQueue(), {SingalSemaphores[0]}, {SingalSemaphores[1]}, in_flight_fences_[current_frame_index]
             );
         }
     }
@@ -166,8 +192,7 @@ void VulkanContext::Draw()
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
 
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR ||
-        Tool::EngineApplication::Get().bFrameBufferResized)
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().bFrameBufferResized)
     {
         RebuildSwapChain();
         Tool::EngineApplication::Get().bFrameBufferResized = false;

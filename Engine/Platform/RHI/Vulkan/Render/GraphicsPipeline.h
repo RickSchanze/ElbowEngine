@@ -9,10 +9,15 @@
 #include "CoreDef.h"
 #include "Framebuffer.h"
 #include "glm/glm.hpp"
+#include "Math/MathTypes.h"
 #include "Path/Path.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
+namespace RHI::Vulkan
+{
+class Mesh;
+}
 namespace RHI::Vulkan
 {
 class Texture;
@@ -65,10 +70,10 @@ struct PipelineInfo
 
     struct ClippingRectConfig
     {
-        Int32  offset_x = 0;
-        Int32  offset_y = 0;
-        UInt32 width    = 0;   // 0代表与视口一致
-        UInt32 height   = 0;   // 0代表与视口一致
+        int32_t offset_x = 0;
+        int32_t offset_y = 0;
+        int32_t width    = 0;   // 0代表与视口一致
+        int32_t height   = 0;   // 0代表与视口一致
     };
 
     struct MultisampleConfig
@@ -112,7 +117,7 @@ struct PipelineInfo
     RenderPass*                     render_pass           = nullptr;
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
-    Int32                           dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
+    int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline
@@ -127,15 +132,36 @@ public:
     // 根据Initializer配置的参数初始化一个图形管线
     explicit GraphicsPipeline(const PipelineInfo& pipeline_info);
 
-    void UpdateUniformBuffer(UInt32 InCurrentImage) const;
+    vk::CommandBuffer GetCurrentImageCommandBuffer() const;
 
-    vk::CommandBuffer GetCurrentImageCommandBuffer(UInt32 InCurrentImage) const;
+    void BeginCommandBuffer(vk::CommandBuffer buffer);
+    void EndCommandBuffer();
 
-    bool IsValid() const
-    {
-        return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr &&
-               shader_program_ != nullptr;
-    }
+    void BeginRenderPass(Color clear_color = Color::Red()) const;
+    void EndRenderPass() const;
+
+    void BindPipeline() const;
+
+    void UpdateViewport(float width = 0, float height = 0, float x = 0, float y = 0) const;
+    void UpdateScissor(uint32_t width = 0, uint32_t height = 0, float offset_x = 0, float offset_y = 0) const;
+
+    // TODO: TArrayView?
+    void BindVertexBuffers(vk::ArrayProxy<vk::Buffer> buffers, vk::ArrayProxy<vk::DeviceSize> offsets = {}) const;
+    void BindIndexBuffer(vk::Buffer buffer, vk::DeviceSize offset = 0) const;
+    void BindMesh(const Mesh& mesh) const;
+
+    void BindDescriptiorSets(
+        const vk::ArrayProxy<vk::DescriptorSet>& descriptor_sets,                                      // 描述符集
+        vk::PipelineBindPoint                    bind_point      = vk::PipelineBindPoint::eGraphics,   // 管线绑定点
+        uint32_t                                 first_set       = 0,                                  // 第一个描述符集的索引
+        vk::ArrayProxy<uint32_t>                 dynamic_offsets = nullptr
+    ) const;
+
+    void DrawIndexed(
+        uint32_t index_count, uint32_t instance_count = 1, uint32_t first_index = 0, int32_t vertex_offset = 0, uint32_t first_instance = 0
+    ) const;
+
+    bool IsValid() const { return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr && shader_program_ != nullptr; }
 
 protected:
     void CreatePipeline();
@@ -157,6 +183,8 @@ private:
     // 下面所有的东西都应该是材质
     // TODO: 重构整合材质系统
     ShaderProgram* shader_program_ = nullptr;
+
+    vk::CommandBuffer binded_buffer_ = nullptr;
 
     void CreateCommandBuffers();
     void DestroyCommandBuffers() const;

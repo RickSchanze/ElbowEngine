@@ -7,8 +7,6 @@
 
 #pragma once
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/Resource/Image.h"
-#include "RHI/Vulkan/Resource/ImageView.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
@@ -31,21 +29,13 @@ class LogicalDevice final : public IRHIResource
 public:
     ~LogicalDevice() override;
 
-    TArray<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info
-    ) const;
+    TArray<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const;
 
-    void FreeDescriptorSets(
-        vk::DescriptorPool                                                  descriptor_pool,
-        const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
-    ) const;
+    void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
 
-    static TUniquePtr<LogicalDevice>
-    CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
-    explicit LogicalDevice(
-        ResourceProtected, vk::Device InDevice,
-        const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-    );
+    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
 
     void Finialize();
 
@@ -58,8 +48,7 @@ public:
      * @param InHeight
      * @return
      */
-    TUniquePtr<SwapChain>
-    CreateSwapChain(UInt32 InSwapChainImageCount = 0, UInt32 InWidth = 0, UInt32 InHeight = 0);
+    TUniquePtr<SwapChain> CreateSwapChain(uint32_t InSwapChainImageCount = 0,int32_t InWidth = 0,int32_t InHeight = 0);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
@@ -70,8 +59,8 @@ public:
      * @param OutBufferMemory
      */
     void CreateBuffer(
-        vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties,
-        vk::Buffer& OutBuffer, vk::DeviceMemory& OutBufferMemory
+        vk::DeviceSize InSize, vk::BufferUsageFlags InUsage, vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
+        vk::DeviceMemory& OutBufferMemory
     ) const;
 
     void DestroyBuffer(vk::Buffer buffer) const;
@@ -82,8 +71,7 @@ public:
 
     void DestroyDescriptorPool(vk::DescriptorPool pool) const;
 
-    vk::DescriptorSetLayout
-    CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const;
+    vk::DescriptorSetLayout CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const;
 
     void DestroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const;
 
@@ -99,10 +87,12 @@ public:
         const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies = nullptr
     ) const;
 
-    vk::Result MapMemory(
-        vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData
-    ) const;
+    vk::Result MapMemory(vk::DeviceMemory InMemory, vk::DeviceSize InSize, vk::DeviceSize InOffset, void** OutData) const;
+
     void UnmapMemory(vk::DeviceMemory InMemory) const;
+
+    vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
+    void       ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
 
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }

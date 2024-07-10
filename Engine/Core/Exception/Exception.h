@@ -37,15 +37,15 @@ public:
      * @param errno_in 打开失败的错误码
      * @param message 此错误的具体描述
      */
-    explicit FileOpenException(String Filepath, const Int32 errno_in, const String& message = L"") :
+    explicit FileOpenException(String Filepath, const int32_t errno_in, const String& message = L"") :
         Exception(message), errno_{errno_in}, filepath_{std::move(Filepath)} {}
 
     [[nodiscard]] String What() const override;
-    [[nodiscard]] Int32  GetErrno() const { return errno_; }
+    [[nodiscard]] int32_t  GetErrno() const { return errno_; }
     [[nodiscard]] String GetFilepath() const { return filepath_; }
 
 private:
-    Int32  errno_;
+    int32_t  errno_;
     String filepath_;
 };
 

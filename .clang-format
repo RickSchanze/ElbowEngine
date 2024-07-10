@@ -96,7 +96,7 @@ BreakBeforeTernaryOperators: true
 # 要使用的构造函数初始化式样式
 BreakConstructorInitializers: AfterColon
 # 每行字符的限制，0表示没有限制
-ColumnLimit: 120
+ColumnLimit: 150
 # 如果为true，则连续的名称空间声明将在同一行上。如果为false，则在新行上声明每个名称空间。
 CompactNamespaces: false
 # 构造函数的初始化列表的缩进宽度

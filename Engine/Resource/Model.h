@@ -37,7 +37,7 @@ class Mesh : public IRHIResourceContainer<RHI::Vulkan::Mesh> {
 public:
     TArray<Vertex>&   GetVertices() { return mVertices; }
     TArray<Texture*>& GetTextures() { return mTextures; }
-    TArray<UInt32>&   GetIndices() { return mIndices; }
+    TArray<uint32_t>&   GetIndices() { return mIndices; }
 
     bool IsValid() const { return !mVertices.empty(); }
 
@@ -49,7 +49,7 @@ public:
 private:
     TArray<Vertex>   mVertices;
     TArray<Texture*> mTextures;
-    TArray<UInt32>   mIndices;
+    TArray<uint32_t>   mIndices;
 
     TUniquePtr<RHI::Vulkan::Mesh> mMeshRHIResource = nullptr;
 };

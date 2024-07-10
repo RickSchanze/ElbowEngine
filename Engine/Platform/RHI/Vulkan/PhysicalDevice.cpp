@@ -108,9 +108,9 @@ vk::Format PhysicalDevice::FindSupportFormat(
     throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
 }
 
-UInt32 PhysicalDevice::FindMemoryType(const UInt32 type_filter, const vk::MemoryPropertyFlags properties) const {
+uint32_t PhysicalDevice::FindMemoryType(const uint32_t type_filter, const vk::MemoryPropertyFlags properties) const {
     const auto MemProperties = handle_.getMemoryProperties();
-    for (UInt32 i = 0; i < MemProperties.memoryTypeCount; i++) {
+    for (uint32_t i = 0; i < MemProperties.memoryTypeCount; i++) {
         if ((type_filter & (1 << i)) && (MemProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }

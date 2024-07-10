@@ -51,6 +51,8 @@ public:
     void Initialize();
     void Finalize();
 
+    virtual void PrepareFrame();
+
     void Draw();
 
     bool IsValid() const;
@@ -72,7 +74,7 @@ public:
         return swap_chain_->GetExtent();
     }
 
-    UInt32 GetSwapChainImageCount() const
+   int32_t GetSwapChainImageCount() const
     {
         return swap_chain_image_count_;
     }
@@ -103,6 +105,7 @@ public:
     TUniquePtr<SwapChain> &GetSwapChain()
     {
         return swap_chain_;
+        return swap_chain_;
     }
 
     TUniquePtr<CommandPool> &GetCommandPool()
@@ -132,11 +135,11 @@ protected:
     static inline VulkanContext *s_context_ = nullptr;
 
 private:
-    Int32 swap_chain_image_count_ = 3;
+    int32_t swap_chain_image_count_ = 3;
 
-    Int32 renderer_id_ = 0;
+    int32_t renderer_id_ = 0;
 
-    static inline Int32 s_renderer_id_count_ = 0;
+    static inline int32_t s_renderer_id_count_ = 0;
 
     // TODO: 图形管线和Shader一起属于材质系统
     GraphicsPipeline *graphics_pipeline_ = nullptr;

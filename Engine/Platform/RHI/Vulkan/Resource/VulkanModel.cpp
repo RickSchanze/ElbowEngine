@@ -13,7 +13,7 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
+Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies) {
     if (InVertices.empty() || InIndicies.empty()) {
         LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据或索引数据不合法");
         return;
@@ -21,7 +21,7 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UIn
     VulkanContext& Context            = VulkanContext::Get();
     auto&          Device             = Context.GetLogicalDevice();
     // 顶点缓冲
-    mVertexCount                      = static_cast<UInt32>(InVertices.size());
+    mVertexCount                      = static_cast<uint32_t>(InVertices.size());
     vk::DeviceSize   VertexBufferSize = sizeof(InVertices[0]) * mVertexCount;
     vk::Buffer       VertexStagingBuffer;
     vk::DeviceMemory VertexStagingBufferMemory;
@@ -48,7 +48,7 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UIn
     Device->GetHandle().freeMemory(VertexStagingBufferMemory);
 
     // 索引缓冲
-    mIndexCount                      = static_cast<UInt32>(InIndicies.size());
+    mIndexCount                      = static_cast<uint32_t>(InIndicies.size());
     vk::DeviceSize   IndexBufferSize = sizeof(InIndicies[0]) * mIndexCount;
     vk::Buffer       IndexStagingBuffer;
     vk::DeviceMemory IndexStagingBufferMemory;
@@ -74,11 +74,11 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& InVertices, const TArray<UIn
     Device->GetHandle().freeMemory(IndexStagingBufferMemory);
 }
 
-TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies) {
+TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies) {
     return MakeShared<Mesh>(ResourceProtected{}, InVertices, InIndicies);
 }
 
-TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& InVertices, const TArray<UInt32>& InIndicies){
+TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& InVertices, const TArray<uint32_t>& InIndicies){
     return MakeUnique<Mesh>(ResourceProtected{}, InVertices, InIndicies);
 }
 

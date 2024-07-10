@@ -98,7 +98,7 @@ SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePr
 }
 
 vk::Extent2D SwapChain::ChooseSwapExtent(
-    const vk::SurfaceCapabilitiesKHR& InCapabilities, const UInt32 InWidth, const UInt32 InHeight
+    const vk::SurfaceCapabilitiesKHR& InCapabilities, const uint32_t InWidth, const uint32_t InHeight
 )
 {
     // 分辨率不是无限的
@@ -135,7 +135,7 @@ void SwapChain::Initialize()
     });
 
     mSwapchainImageViews.resize(GetSwapchainImageCount());
-    for (UInt32 i = 0; i < GetSwapchainImageCount(); ++i)
+    for (uint32_t i = 0; i < GetSwapchainImageCount(); ++i)
     {
         mSwapchainImageViews[i] = mSwapchainImages[i]->CreateImageViewShared(ImageViewInfo{});
     }

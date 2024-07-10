@@ -20,5 +20,5 @@ public:
 
 private:
     GUID                  guid_{};
-    static constexpr Int8 length = 64;
+    static constexpr int8_t length = 64;
 };

@@ -20,31 +20,24 @@ LogicalDevice::~LogicalDevice()
     Finialize();
 }
 
-TArray<vk::DescriptorSet>
-LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
+TArray<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
 {
     return handle_.allocateDescriptorSets(alloc_info);
 }
 
-void LogicalDevice::FreeDescriptorSets(
-    vk::DescriptorPool                                                  descriptor_pool,
-    const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
-) const
+void LogicalDevice::FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array)
+    const
 {
     handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
-TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(
-    vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-)
+TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice)
 {
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
 }
 
-LogicalDevice::LogicalDevice(
-    ResourceProtected, const vk::Device InDevice,
-    const Ref<PhysicalDevice>& InAssociatedPhysicalDevice
-) : handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
+LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
+    handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
 {
 }
 
@@ -60,8 +53,7 @@ void LogicalDevice::Destroy()
     Finialize();
 }
 
-TUniquePtr<SwapChain>
-LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidth, UInt32 InHeight)
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainImageCount,int32_t InWidth,int32_t InHeight)
 {
     const auto physical_device    = associated_physical_device_.get();
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
@@ -69,16 +61,14 @@ LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidt
 
     const auto surface_format = SwapChain::ChooseSwapSurfaceFormat(swap_chain_support.formats);
     const auto present_mode   = SwapChain::ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const auto extent =
-        SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
+    const auto extent         = SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
 
-    UInt32 ImageCount = InSwapChainImageCount;
+   int32_t ImageCount = InSwapChainImageCount;
     if (InSwapChainImageCount == 0)
     {
         ImageCount = swap_chain_support.capabilities.minImageCount + 1;
     }
-    if (swap_chain_support.capabilities.maxImageCount > 0 &&
-        ImageCount > swap_chain_support.capabilities.maxImageCount)
+    if (swap_chain_support.capabilities.maxImageCount > 0 && ImageCount > swap_chain_support.capabilities.maxImageCount)
     {
         ImageCount = swap_chain_support.capabilities.maxImageCount;
     }
@@ -101,32 +91,27 @@ LogicalDevice::CreateSwapChain(const UInt32 InSwapChainImageCount, UInt32 InWidt
 
     // 指定在多个队列族中使用交换链图像的方式
     const auto                    indicies             = physical_device.FindQueueFamilyIndices();
-    const TStaticArray<UInt32, 2> queue_family_indices = {
+    const TStaticArray<uint32_t, 2> queue_family_indices = {
         indicies.graphics_family.value(),
         indicies.present_family.value(),
     };
     if (indicies.graphics_family != indicies.present_family)
     {
         swap_chain_info
-            .setImageSharingMode(vk::SharingMode::eConcurrent
-            )   // 图像可以在多个队列族使用而不需要显式改变图像所有权
-            .setQueueFamilyIndices(queue_family_indices);   // 不是同一队列族时需要指定此项
+            .setImageSharingMode(vk::SharingMode::eConcurrent)   // 图像可以在多个队列族使用而不需要显式改变图像所有权
+            .setQueueFamilyIndices(queue_family_indices);        // 不是同一队列族时需要指定此项
     }
     else
     {
-        swap_chain_info.setImageSharingMode(vk::SharingMode::eExclusive
-        );   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
+        swap_chain_info.setImageSharingMode(vk::SharingMode::eExclusive);   // 图像同一时间只能被一个队列族用于，此时无需指定FamilyIndices
     }
     graphics_queue_ = handle_.getQueue(indicies.graphics_family.value(), 0);
     present_queue_  = handle_.getQueue(indicies.present_family.value(), 0);
-    return SwapChain::CreateUnique(
-        handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent
-    );
+    return SwapChain::CreateUnique(handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent);
 }
 
 void LogicalDevice::CreateBuffer(
-    const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage,
-    const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
+    const vk::DeviceSize InSize, const vk::BufferUsageFlags InUsage, const vk::MemoryPropertyFlags InProperties, vk::Buffer& OutBuffer,
     vk::DeviceMemory& OutBufferMemory
 ) const
 {
@@ -136,10 +121,7 @@ void LogicalDevice::CreateBuffer(
     const vk::MemoryRequirements MemReq    = handle_.getBufferMemoryRequirements(OutBuffer);
     // 分配内存
     vk::MemoryAllocateInfo       AllocInfo = {};
-    AllocInfo.setAllocationSize(MemReq.size)
-        .setMemoryTypeIndex(
-            GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties)
-        );
+    AllocInfo.setAllocationSize(MemReq.size).setMemoryTypeIndex(GetAssociatedPhysicalDevice().FindMemoryType(MemReq.memoryTypeBits, InProperties));
     OutBufferMemory = handle_.allocateMemory(AllocInfo);
     handle_.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 }
@@ -154,8 +136,7 @@ void LogicalDevice::FreeMemory(const vk::DeviceMemory memory) const
     handle_.freeMemory(memory);
 }
 
-vk::DescriptorPool
-LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const
+vk::DescriptorPool LogicalDevice::CreateDescriptorPool(const vk::DescriptorPoolCreateInfo& create_info) const
 {
     return handle_.createDescriptorPool(create_info);
 }
@@ -165,8 +146,7 @@ void LogicalDevice::DestroyDescriptorPool(vk::DescriptorPool pool) const
     handle_.destroyDescriptorPool(pool);
 }
 
-vk::DescriptorSetLayout
-LogicalDevice::CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const
+vk::DescriptorSetLayout LogicalDevice::CreateDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& create_info) const
 {
     return handle_.createDescriptorSetLayout(create_info);
 }
@@ -181,30 +161,35 @@ void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module) const
     handle_.destroyShaderModule(module);
 }
 
-vk::PipelineLayout
-LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info) const
+vk::PipelineLayout LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info) const
 {
     return handle_.createPipelineLayout(create_info);
 }
 
 void LogicalDevice::UpdateDescriptorSets(
-    const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes,
-    const vk::ArrayProxy<vk::CopyDescriptorSet>&        descriptor_copies
+    const vk::ArrayProxy<const vk::WriteDescriptorSet>& descriptor_writes, const vk::ArrayProxy<vk::CopyDescriptorSet>& descriptor_copies
 ) const
 {
     handle_.updateDescriptorSets(descriptor_writes, descriptor_copies);
 }
 
-vk::Result LogicalDevice::MapMemory(
-    const vk::DeviceMemory InMemory, const vk::DeviceSize InSize, const vk::DeviceSize InOffset,
-    void** OutData
-) const
+vk::Result LogicalDevice::MapMemory(const vk::DeviceMemory InMemory, const vk::DeviceSize InSize, const vk::DeviceSize InOffset, void** OutData) const
 {
     return handle_.mapMemory(InMemory, InOffset, InSize, vk::MemoryMapFlags(), OutData);
 }
 
-void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const{
+void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
+{
     handle_.unmapMemory(InMemory);
+}
+
+vk::Result LogicalDevice::WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all, uint64_t timeout) const {
+    return handle_.waitForFences(fences, wait_all, timeout);
+}
+
+void LogicalDevice::ResetFences(const vk::ArrayProxy<vk::Fence> fences) const
+{
+    handle_.resetFences(fences);
 }
 
 RHI_VULKAN_NAMESPACE_END

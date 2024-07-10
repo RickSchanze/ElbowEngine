@@ -7,7 +7,6 @@
 
 #include "PropertyDrawer.h"
 
-#include "Component/Transform.h"
 #include "Utils/ReflUtils.h"
 
 #include <imgui.h>
@@ -16,39 +15,46 @@
 
 UI_DRAWER_NAMESPACE_BEGIN
 
-Vector3 PropertyDrawer::DrawProperty(const char* InName, const Vector3& InValue) {
+Vector3 PropertyDrawer::DrawProperty(const char* InName, const Vector3& InValue)
+{
     Vector3 Vec = InValue;
     ImGui::DragFloat3(InName, &Vec.x, DRAG_FLOAT_V_SPEED);
     return Vec;
 }
 
-Rotator PropertyDrawer::DrawProperty(const char* InName, const Rotator& InValue) {
+Rotator PropertyDrawer::DrawProperty(const char* InName, const Rotator& InValue)
+{
     Rotator Rot = InValue;
     ImGui::DragFloat3(InName, &Rot.yaw, DRAG_FLOAT_V_SPEED);
     return Rot;
 }
 
-float PropertyDrawer::DrawProperty(const char* InName, float InValue) {
+float PropertyDrawer::DrawProperty(const char* InName, float InValue)
+{
     ImGui::DragFloat(InName, &InValue, DRAG_FLOAT_V_SPEED);
     return InValue;
 }
 
-bool PropertyDrawer::DrawProperty(const char* InName, bool InValue) {
+bool PropertyDrawer::DrawProperty(const char* InName, bool InValue)
+{
     ImGui::Checkbox(InName, &InValue);
     return InValue;
 }
 
-int PropertyDrawer::DrawProperty(const char* InName, int InValue) {
+int PropertyDrawer::DrawProperty(const char* InName, int InValue)
+{
     ImGui::DragInt(InName, &InValue);
     return InValue;
 }
 
 #define VALUE_SETTER(TypeName)                                                             \
-    if (InProp.get_type().get_name() == #TypeName) {                                       \
+    if (InProp.get_type().get_name() == #TypeName)                                         \
+    {                                                                                      \
         auto       Vec                 = InProp.get_value(Obj);                            \
         auto       LabelName           = InProp.get_name().data();                         \
         const auto RegisteredLabelName = ReflUtils::GetPropertyAttribute(InProp, "Label"); \
-        if (!RegisteredLabelName.empty()) {                                                \
+        if (!RegisteredLabelName.empty())                                                  \
+        {                                                                                  \
             LabelName = RegisteredLabelName.c_str();                                       \
         }                                                                                  \
         auto Value = Vec.get_value<TypeName>();                                            \
@@ -56,7 +62,8 @@ int PropertyDrawer::DrawProperty(const char* InName, int InValue) {
         bool _     = InProp.set_value(Obj, Value);                                         \
     }
 
-void PropertyDrawer::DrawProperty(Property InProp, rttr::instance Obj) {
+void PropertyDrawer::DrawProperty(Property InProp, const rttr::instance& Obj)
+{
     if (ReflUtils::CheckAttribute(InProp, "Hidden")) return;
     VALUE_SETTER(Vector3)
     VALUE_SETTER(Rotator)
@@ -65,11 +72,13 @@ void PropertyDrawer::DrawProperty(Property InProp, rttr::instance Obj) {
     VALUE_SETTER(int)
 }
 
-void PropertyDrawer::DrawTransform(Function::Transform& InTransform) {
-    if (ImGui::CollapsingHeader(U8("变换"))) {
-        InTransform.Position = DrawProperty(U8("位置(x y z)"), InTransform.Position);
-        InTransform.Rotation = DrawProperty(U8("旋转(Yaw Roll Pitch)"), InTransform.Rotation);
-        InTransform.Scale    = DrawProperty(U8("缩放(x y z)"), InTransform.Scale);
+void PropertyDrawer::DrawTransform(Transform& transform)
+{
+    if (ImGui::CollapsingHeader(U8("变换")))
+    {
+        transform.location = DrawProperty(U8("位置(x y z)"), transform.location);
+        transform.rotation = DrawProperty(U8("旋转(Yaw Roll Pitch)"), transform.rotation);
+        transform.scale    = DrawProperty(U8("缩放(x y z)"), transform.scale);
     }
 }
 

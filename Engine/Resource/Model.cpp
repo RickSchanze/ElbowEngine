@@ -52,7 +52,7 @@ void Model::Load() {
 
 void Model::ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutMesh) const {
     // 遍历Mesh顶点
-    for (UInt32 i = 0; i < InMesh->mNumVertices; i++) {
+    for (uint32_t i = 0; i < InMesh->mNumVertices; i++) {
         Vertex Vertex{};
         // 位置
         Vertex.position.x = InMesh->mVertices[i].x;
@@ -73,9 +73,9 @@ void Model::ProcessMesh(const aiMesh* InMesh, const aiScene* InScene, Mesh& OutM
         OutMesh.GetVertices().push_back(Vertex);
     }
     // 遍历索引
-    for (UInt32 i = 0; i < InMesh->mNumFaces; i++) {
+    for (uint32_t i = 0; i < InMesh->mNumFaces; i++) {
         const aiFace Face = InMesh->mFaces[i];
-        for (UInt32 j = 0; j < Face.mNumIndices; j++) {
+        for (uint32_t j = 0; j < Face.mNumIndices; j++) {
             OutMesh.GetIndices().push_back(Face.mIndices[j]);
         }
     }
@@ -94,7 +94,7 @@ aiTextureType GetTextureType(const ETextureUsage InUsage) {
 }
 
 void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMaterial, TArray<Texture*>& OutTextures) const {
-    for (UInt32 i = 0; i < InMaterial->GetTextureCount(GetTextureType(InUsage)); i++) {
+    for (uint32_t i = 0; i < InMaterial->GetTextureCount(GetTextureType(InUsage)); i++) {
         aiString MyPath;
         InMaterial->GetTexture(aiTextureType_DIFFUSE, i, &MyPath);
         Path     TexturePath = mPath.GetParentPath() / Path(StringUtils::FromAnsiString(MyPath.C_Str()));
@@ -104,12 +104,12 @@ void Model::LoadTextures(const ETextureUsage InUsage, const aiMaterial* InMateri
 }
 
 void Model::ProcessNode(const aiNode* InNode, const aiScene* InScene) {
-    for (UInt32 i = 0; i < InNode->mNumMeshes; i++) {
+    for (uint32_t i = 0; i < InNode->mNumMeshes; i++) {
         const aiMesh* AiMesh = InScene->mMeshes[InNode->mMeshes[i]];
         mMeshes.emplace_back();
         ProcessMesh(AiMesh, InScene, mMeshes.back());
     }
-    for (UInt32 i = 0; i < InNode->mNumChildren; i++) {
+    for (uint32_t i = 0; i < InNode->mNumChildren; i++) {
         ProcessNode(InNode->mChildren[i], InScene);
     }
 }

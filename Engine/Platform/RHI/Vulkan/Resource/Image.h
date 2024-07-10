@@ -22,7 +22,7 @@ struct ImageViewInfo
 {
     vk::Format           Format      = vk::Format::eUndefined;   // 自动选择和Image一样的格式
     vk::ImageAspectFlags AspectFlags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
-    Int32                MipLevels   = 0;                                 // 自动选择Miplevels
+    int32_t                MipLevels   = 0;                                 // 自动选择Miplevels
 };
 
 class ImageBase
@@ -63,10 +63,10 @@ struct ImageInfo
 {
     vk::Format              Format = vk::Format::eUndefined;
     vk::ImageUsageFlags     Usage{};
-    Int32                   Width          = 0;
-    Int32                   Height         = 0;
-    Int32                   Depth          = 1;
-    UInt32                  MipLevels      = 1;
+    int32_t                   Width          = 0;
+    int32_t                   Height         = 0;
+    int32_t                   Depth          = 1;
+   int32_t                  MipLevels      = 1;
     vk::ImageTiling         Tiling         = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits SampleCount    = vk::SampleCountFlagBits::e1;
     vk::ImageType           ImageType      = vk::ImageType::e2D;
@@ -99,9 +99,9 @@ public:
     bool IsValid() const override;
     void Finialize();
 
-    UInt32 GetWidth() const { return mImageInfo.Width; }
-    UInt32 GetHeight() const { return mImageInfo.Height; }
-    UInt32 GetDepth() const { return mImageInfo.Depth; }
+   int32_t GetWidth() const { return mImageInfo.Width; }
+   int32_t GetHeight() const { return mImageInfo.Height; }
+   int32_t GetDepth() const { return mImageInfo.Depth; }
 
 protected:
     void CreateImage();
@@ -126,16 +126,16 @@ struct SamplerInfo
     vk::SamplerAddressMode AddressModeV             = vk::SamplerAddressMode::eRepeat;
     vk::SamplerAddressMode AddressModeW             = vk::SamplerAddressMode::eRepeat;
     bool                   bEnableAnisotropy        = true;
-    Float                  MaxAnisotropy            = 16.0f;
+    float                  MaxAnisotropy            = 16.0f;
     vk::BorderColor        BorderColor              = vk::BorderColor::eIntOpaqueBlack;
     // false将纹理坐标标准化到(0,1)
     bool                   bUnnormalizedCoordinates = false;
     bool                   bEnableCompare           = false;
     // Mipmap
     vk::SamplerMipmapMode  MipmapMode               = vk::SamplerMipmapMode::eLinear;
-    Float                  MipLodBias               = 0.0f;
-    Float                  MinLod                   = 0.0f;
-    Float                  MaxLod                   = 0.f;
+    float                  MipLodBias               = 0.0f;
+    float                  MinLod                   = 0.0f;
+    float                  MaxLod                   = 0.f;
 
     size_t GetHashCode() const;
 };
@@ -143,13 +143,13 @@ struct SamplerInfo
 class Texture : public Image
 {
 public:
-    static TSharedPtr<Texture> CreateShared(const ImageInfo& InImageInfo, const UInt8* InData);
+    static TSharedPtr<Texture> CreateShared(const ImageInfo& InImageInfo, const uint8_t* InData);
 
-    static TUniquePtr<Texture> CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData);
+    static TUniquePtr<Texture> CreateUnique(const ImageInfo& InImageInfo, const uint8_t* InData);
 
-    Texture(Protected, const ImageInfo& InImageInfo, const UInt8* InData);
+    Texture(Protected, const ImageInfo& InImageInfo, const uint8_t* InData);
 
-    Int32 GetMipLevel() const { return mMipLevel; }
+    int32_t GetMipLevel() const { return mMipLevel; }
 
     static void LoadDefaultTextures();
 
@@ -157,7 +157,7 @@ public:
     static ImageView& GetDefaultLackTextureView();
 
 protected:
-    Int32 mMipLevel;
+    int32_t mMipLevel;
 
     static inline Texture*   sDefaultLackTexture     = nullptr;
     static inline ImageView* sDefaultLackTextureView = nullptr;

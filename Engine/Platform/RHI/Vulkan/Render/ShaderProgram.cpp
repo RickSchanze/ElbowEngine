@@ -16,9 +16,8 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-ShaderProgram::ShaderProgram(
-    const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time
-) : vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
+ShaderProgram::ShaderProgram(const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time) :
+    vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
 {
     vertex_input_attributes_ = vert->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
@@ -51,9 +50,7 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
         {
             if (uniform.binding != uniforms_[uniform.name].binding)
             {
-                LOG_ERROR_CATEGORY(
-                    Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(uniform.name)
-                );
+                LOG_ERROR_CATEGORY(Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(uniform.name));
                 return false;
             }
         }
@@ -105,9 +102,9 @@ TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDe
     return BindingDescs;
 }
 
-UInt32 ShaderProgram::GetStride() const
+uint32_t ShaderProgram::GetStride() const
 {
-    UInt32 Stride = 0;
+    uint32_t Stride = 0;
     for (const auto& Attribute: vertex_input_attributes_)
     {
         Stride += Attribute.size;
@@ -129,7 +126,7 @@ void ShaderProgram::DestroyShaders()
     }
 }
 
-bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const
 {
     const TStaticArray<glm::mat4, 3> ubo    = {model, view, projection};
     const LogicalDevice&             device = device_.get();
@@ -140,11 +137,7 @@ bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const 
         auto  map_res = device.MapMemory(uniform_buffers_memory_[i], 3 * sizeof(glm::mat4), 0, &data);
         if (map_res != vk::Result::eSuccess)
         {
-            LOG_ERROR_CATEGORY(
-                Vulkan.Shader,
-                L"设置Shader UBO: Map memory失败: {}",
-                StringUtils::FromAnsiString(vk::to_string(map_res))
-            );
+            LOG_ERROR_CATEGORY(Vulkan.Shader, L"设置Shader UBO: Map memory失败: {}", StringUtils::FromAnsiString(vk::to_string(map_res)));
             return false;
         }
         memcpy(data, ubo.data(), 3 * sizeof(glm::mat4));

@@ -6,27 +6,27 @@
  */
 
 #pragma once
-#include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
+#include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan {
+namespace RHI::Vulkan
+{
 class LogicalDevice;
 }
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class SwapChain final : public IRHIResource {
+class SwapChain final : public IRHIResource
+{
 public:
     SwapChain();
 
     static TUniquePtr<SwapChain> CreateUnique(
-        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
-        vk::Extent2D InSwapchainExtent
+        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
     );
     static TSharedPtr<SwapChain> CreateShared(
-        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
-        vk::Extent2D InSwapchainExtent
+        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
     );
 
     explicit SwapChain(
@@ -41,30 +41,30 @@ public:
     // 显示模式（垂直同步？）
     static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes);
     // 分辨率
-    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, UInt32 InWidth, UInt32 InHeight);
+    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, uint32_t InWidth, uint32_t InHeight);
 
     [[nodiscard]] vk::SwapchainKHR GetHandle() const { return mSwapchainHandle; }
     [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
 
     [[nodiscard]] bool IsValid() const;
 
-    vk::Format                   GetImageFormat() const { return mSwapchainImageFormat; }
-    vk::Extent2D                 GetExtent() const { return mSwapchainExtent; }
+    vk::Format                     GetImageFormat() const { return mSwapchainImageFormat; }
+    vk::Extent2D                   GetExtent() const { return mSwapchainExtent; }
     TArray<TSharedPtr<ImageView>>& GetImageViews() { return mSwapchainImageViews; }
 
     void Initialize();
     void Finialize();
 
-    UInt32 GetSwapchainImageCount() const { return static_cast<UInt32>(mSwapchainImages.size()); }
+    int32_t GetSwapchainImageCount() const { return static_cast<uint32_t>(mSwapchainImages.size()); }
 
-    void   Destroy() override;
+    void Destroy() override;
 
 private:
-    vk::SwapchainKHR                 mSwapchainHandle;
+    vk::SwapchainKHR                   mSwapchainHandle;
     TArray<TSharedPtr<SwapChainImage>> mSwapchainImages;
     TArray<TSharedPtr<ImageView>>      mSwapchainImageViews;
-    vk::Format                       mSwapchainImageFormat;
-    vk::Extent2D                     mSwapchainExtent;
+    vk::Format                         mSwapchainImageFormat;
+    vk::Extent2D                       mSwapchainExtent;
 
     LogicalDevice* mAssociatedLogicalDevice = nullptr;
 };

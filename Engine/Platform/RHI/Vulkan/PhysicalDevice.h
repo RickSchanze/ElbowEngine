@@ -15,26 +15,25 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 class Instance;
 
-struct QueueFamilyIndices {
-    TOptional<UInt32> graphics_family;
-    TOptional<UInt32> present_family;
+struct QueueFamilyIndices
+{
+    TOptional<uint32_t> graphics_family;
+    TOptional<uint32_t> present_family;
 
-    [[nodiscard]] bool IsValid() const {
-        return graphics_family.has_value() && present_family.has_value();
-    }
+    [[nodiscard]] bool IsValid() const { return graphics_family.has_value() && present_family.has_value(); }
 };
 
-class PhysicalDevice {
+class PhysicalDevice
+{
 public:
     static inline TArray<const char*> s_device_required_extensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
-    static TArray<const char*> GetDeviceRequiredExtensions() {
-        return s_device_required_extensions;
-    }
+    static TArray<const char*> GetDeviceRequiredExtensions() { return s_device_required_extensions; }
 
-    struct SwapChainSupportDetails {
+    struct SwapChainSupportDetails
+    {
         vk::SurfaceCapabilitiesKHR   capabilities;
         TArray<vk::SurfaceFormatKHR> formats;
         TArray<vk::PresentModeKHR>   present_modes;
@@ -57,10 +56,8 @@ public:
      * @param pick_func 用来确定一个设备是否合适
      * @return
      */
-    static TUniquePtr<PhysicalDevice> PickPhysicalDevice(
-        Instance*                                     instance,
-        const TFunction<bool(const PhysicalDevice&)>& pick_func = &ThisClass::IsDeviceSuitable
-    );
+    static TUniquePtr<PhysicalDevice>
+    PickPhysicalDevice(Instance* instance, const TFunction<bool(const PhysicalDevice&)>& pick_func = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -97,12 +94,9 @@ public:
      * @param features
      * @return
      */
-    vk::Format FindSupportFormat(
-        const TArray<vk::Format>& candidates, vk::ImageTiling tiling,
-        vk::FormatFeatureFlagBits features
-    ) const;
+    vk::Format FindSupportFormat(const TArray<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features) const;
 
-    UInt32 FindMemoryType(UInt32 type_filter, vk::MemoryPropertyFlags properties) const;
+    uint32_t FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags properties) const;
 
 
     TUniquePtr<LogicalDevice> CreateLogicalDeviceUnique();

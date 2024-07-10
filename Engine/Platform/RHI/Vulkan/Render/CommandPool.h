@@ -1,5 +1,5 @@
 /**
- * @file CommandProducer.h
+ * @file CommandPool.h
  * @author Echo 
  * @Date 24-5-2
  * @brief 
@@ -22,31 +22,21 @@ protected:
     };
 
 public:
-    CommandPool(
-        Private, Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags
-    );
+    CommandPool(Private, Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags);
 
-    static TUniquePtr<CommandPool> CreateUnique(
-        Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {}
-    );
+    static TUniquePtr<CommandPool> CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {});
 
     void CreateCommandPool(vk::CommandPoolCreateFlags pool_flags);
     void CleanCommandPool();
 
     vk::CommandPool GetHandle() const { return pool_; }
 
-    void TrainsitionImageLayout(
-        vk::Image image, vk::Format format, vk::ImageLayout old_layout,
-        vk::ImageLayout new_layout, UInt32 mip_level = 1
-    ) const;
+    void
+    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, int32_t mip_level = 1) const;
 
-    void CopyBufferToImage(vk::Buffer buffer, vk::Image image, UInt32 width, UInt32 height)
-        const;
+    void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) const;
 
-    bool GenerateMipmaps(
-        vk::Image image, vk::Format image_format, Int32 tex_width, Int32 tex_height,
-        UInt32 mip_level
-    ) const;
+    bool GenerateMipmaps(vk::Image image, vk::Format image_format, int32_t tex_width, int32_t tex_height, uint32_t mip_level) const;
 
     void Finialize();
 
@@ -54,8 +44,7 @@ public:
 
     void ResetCommandPool() const;
 
-    TArray<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info
-    ) const;
+    TArray<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info) const;
 
     void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const;
 

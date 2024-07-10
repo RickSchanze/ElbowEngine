@@ -50,7 +50,7 @@ public:
      * 获取对象ID
      * @return
      */
-    UInt32 GetID() const { return id_; }
+   int32_t GetID() const { return id_; }
 
     /**
      * 设置对象的名字
@@ -70,7 +70,7 @@ public:
 
 protected:
     String name_;                // 对象名字
-    UInt32 id_        = 0;      // 对象ID
+   int32_t id_        = 0;      // 对象ID
     bool   is_garbage_ = false;   // 是否是垃圾对象
 
     const EObjectFlag flag_;

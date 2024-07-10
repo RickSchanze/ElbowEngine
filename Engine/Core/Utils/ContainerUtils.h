@@ -24,7 +24,7 @@ public:
     static auto FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())>;
 
     template<typename ContainerT>
-    static ContainerT Slice(const ContainerT& Container, Int32 Start = 0, Int32 End = 0);
+    static ContainerT Slice(const ContainerT& Container, int32_t Start = 0, int32_t End = 0);
 
     template<typename ContainerT>
     static ContainerT Concat(const ContainerT& ContainerA, const ContainerT& ContainerB);
@@ -54,7 +54,7 @@ auto ContainerUtils::FindFirstIf(ContainerT& Container, const Lambda& Value) -> 
 }
 
 template<typename ContainerT>
-ContainerT ContainerUtils::Slice(const ContainerT& Container, Int32 Start, Int32 End) {
+ContainerT ContainerUtils::Slice(const ContainerT& Container, int32_t Start, int32_t End) {
     ContainerT result;
 
     // 处理负数索引和默认参数
@@ -68,7 +68,7 @@ ContainerT ContainerUtils::Slice(const ContainerT& Container, Int32 Start, Int32
 
     // 边界检查
     Start = std::max(0, Start);
-    End   = std::min(static_cast<Int32>(containerSize), End);
+    End   = std::min(static_cast<int32_t>(containerSize), End);
 
     // 切片操作
     auto startIter = std::next(Container.begin(), Start);

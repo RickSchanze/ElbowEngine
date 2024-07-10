@@ -86,10 +86,10 @@ void GLFWWindowSurface::Initialize()
 void ImGuiRenderPass::CreateSubpassDescription()
 {
     RenderPass::CreateSubpassDescription();
-    mDependency.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    mDependency.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    mDependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    mDependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+    dependency_.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependency_.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependency_.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+    dependency_.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 }
 
 ImGuiGraphicsPipeline::ImGuiGraphicsPipeline(const Ref<RHI::Vulkan::VulkanContext> InConext) : mContext(InConext)

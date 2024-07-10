@@ -31,7 +31,7 @@ Function::Component::Component(String InName, GameObject* InGameObject)
 void Function::Component::BeginPlay() {}
 
 Transform& Function::Component::GetTransform() const {
-    return *mTransform;
+    return *transform_;
 }
 
 void Function::Component::Destroy() {

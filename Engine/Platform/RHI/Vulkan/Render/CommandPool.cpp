@@ -1,5 +1,5 @@
 /**
- * @file CommandProducer.cpp
+ * @file CommandPool.cpp
  * @author Echo 
  * @Date 24-5-2
  * @brief 
@@ -14,17 +14,12 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandPool::CommandPool(
-    Private, const Ref<TUniquePtr<LogicalDevice>> device,
-    const vk::CommandPoolCreateFlags pool_flags
-) : device_(device)
+CommandPool::CommandPool(Private, const Ref<TUniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags) : device_(device)
 {
     CreateCommandPool(pool_flags);
 }
 
-TUniquePtr<CommandPool> CommandPool::CreateUnique(
-    Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags
-)
+TUniquePtr<CommandPool> CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags)
 {
     return MakeUnique<CommandPool>(Private{}, device, pool_flags);
 }
@@ -51,8 +46,7 @@ void CommandPool::CleanCommandPool()
     pool_ = nullptr;
 }
 void CommandPool::TrainsitionImageLayout(
-    const vk::Image image, vk::Format format, const vk::ImageLayout old_layout,
-    const vk::ImageLayout new_layout, UInt32 mip_level
+    const vk::Image image, vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, int32_t mip_level
 ) const
 {
     vk::CommandBuffer      CommandBuffer    = BeginSingleTimeCommands();
@@ -89,8 +83,7 @@ void CommandPool::TrainsitionImageLayout(
     {
         Barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
     }
-    if (old_layout == vk::ImageLayout::eUndefined &&
-        new_layout == vk::ImageLayout::eTransferDstOptimal)
+    if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal)
     {
         Barrier.srcAccessMask = {};
         Barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
@@ -107,18 +100,16 @@ void CommandPool::TrainsitionImageLayout(
     else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
     {
         Barrier.srcAccessMask = {};
-        Barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead |
-                                vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-        SourceStage      = vk::PipelineStageFlagBits::eTopOfPipe;
-        DestinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        Barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        SourceStage           = vk::PipelineStageFlagBits::eTopOfPipe;
+        DestinationStage      = vk::PipelineStageFlagBits::eEarlyFragmentTests;
     }
     else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eColorAttachmentOptimal)
     {
         Barrier.srcAccessMask = {};
-        Barrier.dstAccessMask =
-            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
-        SourceStage      = vk::PipelineStageFlagBits::eTopOfPipe;
-        DestinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        Barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+        SourceStage           = vk::PipelineStageFlagBits::eTopOfPipe;
+        DestinationStage      = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     }
     else
     {
@@ -128,9 +119,7 @@ void CommandPool::TrainsitionImageLayout(
     EndSingleTimeCommands(CommandBuffer);
 }
 
-void CommandPool::CopyBufferToImage(
-    const vk::Buffer buffer, const vk::Image image, const UInt32 width, const UInt32 height
-) const
+void CommandPool::CopyBufferToImage(const vk::Buffer buffer, const vk::Image image, const uint32_t width, const uint32_t height) const
 {
     const auto          CommandBuffer = BeginSingleTimeCommands();
     vk::BufferImageCopy Region{};
@@ -143,15 +132,12 @@ void CommandPool::CopyBufferToImage(
     Region.imageSubresource.layerCount     = 1;
     Region.imageOffset                     = vk::Offset3D{0, 0, 0};
     Region.imageExtent                     = vk::Extent3D{width, height, 1};
-    CommandBuffer.copyBufferToImage(
-        buffer, image, vk::ImageLayout::eTransferDstOptimal, {Region}
-    );
+    CommandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, {Region});
     EndSingleTimeCommands(CommandBuffer);
 }
 
 bool CommandPool::GenerateMipmaps(
-    const vk::Image image, const vk::Format image_format, const Int32 tex_width,
-    const Int32 tex_height, const UInt32 mip_level
+    const vk::Image image, const vk::Format image_format, const int32_t tex_width, const int32_t tex_height, const uint32_t mip_level
 ) const
 {
     const auto             CommandBuffer = BeginSingleTimeCommands();
@@ -165,9 +151,9 @@ bool CommandPool::GenerateMipmaps(
     Barrier.subresourceRange.layerCount     = 1;
     Barrier.subresourceRange.levelCount     = 1;
 
-    Int32 MipWidth  = tex_width;
-    Int32 MipHeight = tex_height;
-    for (UInt32 i = 1; i < mip_level; i++)
+    int32_t MipWidth  = tex_width;
+    int32_t MipHeight = tex_height;
+    for (uint32_t i = 1; i < mip_level; i++)
     {
         Barrier.subresourceRange.baseMipLevel = i - 1;
         Barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
@@ -176,14 +162,7 @@ bool CommandPool::GenerateMipmaps(
         Barrier.dstAccessMask                 = vk::AccessFlagBits::eTransferRead;
         Barrier.srcQueueFamilyIndex           = VK_QUEUE_FAMILY_IGNORED;
         Barrier.dstQueueFamilyIndex           = VK_QUEUE_FAMILY_IGNORED;
-        CommandBuffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eTransfer,
-            {},
-            {},
-            {},
-            {Barrier}
-        );
+        CommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, {Barrier});
         vk::ImageBlit Blit{};
         Blit.srcOffsets[0]                 = vk::Offset3D{0, 0, 0};
         Blit.srcOffsets[1]                 = vk::Offset3D{MipWidth, MipHeight, 1};
@@ -192,33 +171,20 @@ bool CommandPool::GenerateMipmaps(
         Blit.srcSubresource.baseArrayLayer = 0;
         Blit.srcSubresource.layerCount     = 1;
         Blit.dstOffsets[0]                 = vk::Offset3D{0, 0, 0};
-        Blit.dstOffsets[1] =
-            vk::Offset3D{MipWidth > 1 ? MipWidth / 2 : 1, MipHeight > 1 ? MipHeight / 2 : 1, 1};
+        Blit.dstOffsets[1]                 = vk::Offset3D{MipWidth > 1 ? MipWidth / 2 : 1, MipHeight > 1 ? MipHeight / 2 : 1, 1};
         Blit.dstSubresource.aspectMask     = vk::ImageAspectFlagBits::eColor;
         Blit.dstSubresource.mipLevel       = i;
         Blit.dstSubresource.baseArrayLayer = 0;
         Blit.dstSubresource.layerCount     = 1;
         CommandBuffer.blitImage(
-            image,
-            vk::ImageLayout::eTransferSrcOptimal,
-            image,
-            vk::ImageLayout::eTransferDstOptimal,
-            {Blit},
-            vk::Filter::eLinear
+            image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, {Blit}, vk::Filter::eLinear
         );
         // 将细化界别为i-1的图像布局转换到ShaderReadOnlyOptimal
         Barrier.oldLayout     = vk::ImageLayout::eTransferSrcOptimal;
         Barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
         Barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
         Barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-        CommandBuffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eFragmentShader,
-            {},
-            {},
-            {},
-            {Barrier}
-        );
+        CommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, {Barrier});
         if (MipWidth > 1) MipWidth /= 2;
         if (MipHeight > 1) MipHeight /= 2;
     }
@@ -228,14 +194,7 @@ bool CommandPool::GenerateMipmaps(
     Barrier.newLayout                     = vk::ImageLayout::eShaderReadOnlyOptimal;
     Barrier.srcAccessMask                 = vk::AccessFlagBits::eTransferWrite;
     Barrier.dstAccessMask                 = vk::AccessFlagBits::eShaderRead;
-    CommandBuffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eTransfer,
-        vk::PipelineStageFlagBits::eFragmentShader,
-        {},
-        {},
-        {},
-        {Barrier}
-    );
+    CommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, {Barrier});
     EndSingleTimeCommands(CommandBuffer);
     return true;
 }
@@ -245,9 +204,7 @@ void CommandPool::Finialize()
     CleanCommandPool();
 }
 
-void CommandPool::CopyBuffer(
-    const vk::Buffer src_buffer, const vk::Buffer dst_buffer, const uint64_t size
-) const
+void CommandPool::CopyBuffer(const vk::Buffer src_buffer, const vk::Buffer dst_buffer, const uint64_t size) const
 {
     const auto     CommandBuffer = BeginSingleTimeCommands();
     vk::BufferCopy CopyRegion{};
@@ -261,8 +218,7 @@ void CommandPool::ResetCommandPool() const
     device_.get()->GetHandle().resetCommandPool(pool_);
 }
 
-TArray<vk::CommandBuffer>
-CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info) const
+TArray<vk::CommandBuffer> CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info) const
 {
     return device_.get()->GetHandle().allocateCommandBuffers(alloc_info);
 }

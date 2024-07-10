@@ -104,7 +104,7 @@ void EngineApplication::InternalTick() {
         g_engine_statistics.time_delta = duration<float>(CurrentFrameTime - mLastFrameTime).count();
         mLastFrameTime              = CurrentFrameTime;
         if (g_engine_statistics.time_delta > 0)   //
-            g_engine_statistics.fps = static_cast<Int32>(1.f / g_engine_statistics.time_delta);
+            g_engine_statistics.fps = static_cast<int32_t>(1.f / g_engine_statistics.time_delta);
     }
     g_engine_statistics.frame_count++;
 

@@ -17,8 +17,6 @@
 #include "ShaderProgram.h"
 #include "Utils/StringUtils.h"
 
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
 #include <iostream>
 #include <ranges>
 
@@ -41,33 +39,118 @@ GraphicsPipeline::GraphicsPipeline(const PipelineInfo& pipeline_info)
     LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-void GraphicsPipeline::UpdateUniformBuffer(const UInt32 InCurrentImage) const
+vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer() const
 {
-    VulkanContext&             context = VulkanContext::Get();
-    TStaticArray<glm::mat4, 3> ubo;
-    ubo[0] = glm::mat4(1.f);
-    // TODO: Here
-    ubo[0] = rotate(ubo[0], glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
-    // 缩放
-    ubo[0] = scale(ubo[0], glm::vec3(0.05f, 0.05f, 0.05f));
-    // 绕X转90度
-    ubo[0] = rotate(ubo[0], glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
-    ubo[1] = Function::Camera::Main->GetViewMatrix();
-
-    ubo[2] = glm::perspective(
-        glm::radians(45.f),
-        static_cast<float>(context.GetSwapChainExtent().width) /
-            static_cast<float>(context.GetSwapChainExtent().height),
-        0.1f,
-        10.f
-    );
-    ubo[2][1][1] *= -1;
-    shader_program_->SetMVP(ubo[0], ubo[1], ubo[2]);
+    return command_buffers_[g_engine_statistics.current_image_index];
 }
 
-vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer(const UInt32 InCurrentImage) const
+void GraphicsPipeline::BeginCommandBuffer(vk::CommandBuffer buffer)
 {
-    return command_buffers_[InCurrentImage];
+    binded_buffer_ = buffer;
+    vk::CommandBufferBeginInfo begin_info;
+    begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+    buffer.begin(begin_info);
+}
+
+void GraphicsPipeline::EndCommandBuffer()
+{
+    binded_buffer_.end();
+    binded_buffer_ = nullptr;
+}
+
+void GraphicsPipeline::BeginRenderPass(const Color clear_color) const
+{
+    if (render_pass_ == nullptr)
+    {
+        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"RenderPass不能为空");
+        return;
+    }
+
+    TStaticArray<vk::ClearValue, 2> clear_values;
+    clear_values[0].color        = vk::ClearColorValue{{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
+
+    vk::RenderPassBeginInfo render_pass_info;
+    render_pass_info.renderPass        = render_pass_->GetHandle();
+    render_pass_info.framebuffer       = render_pass_->GetCurrentFrameBufferHandle();
+    render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
+    render_pass_info.renderArea.extent = VulkanContext::Get().GetSwapChainExtent();
+    render_pass_info.setClearValues(clear_values);
+    binded_buffer_.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+}
+
+void GraphicsPipeline::EndRenderPass() const
+{
+    binded_buffer_.endRenderPass();
+}
+
+void GraphicsPipeline::BindPipeline() const
+{
+    binded_buffer_.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_);
+}
+
+void GraphicsPipeline::UpdateViewport(float width, float height, float x, float y) const
+{
+    vk::Viewport viewport;
+    viewport.x        = x;
+    viewport.y        = y;
+    viewport.width    = width == 0 ? g_engine_statistics.window_size.width : width;
+    viewport.height   = height == 0 ? g_engine_statistics.window_size.height : height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    binded_buffer_.setViewport(0, viewport);
+}
+
+void GraphicsPipeline::UpdateScissor(uint32_t width, uint32_t height, float offset_x, float offset_y) const
+{
+    vk::Rect2D scisor;
+    scisor.offset = vk::Offset2D{0, 0};
+    if (width == 0 || height == 0)
+    {
+        scisor.extent = VulkanContext::Get().GetSwapChainExtent();
+    }
+    else
+    {
+        scisor.extent = vk::Extent2D{width, height};
+    }
+    binded_buffer_.setScissor(0, scisor);
+}
+
+void GraphicsPipeline::BindVertexBuffers(const vk::ArrayProxy<vk::Buffer> buffers, const vk::ArrayProxy<vk::DeviceSize> offsets) const
+{
+    vk::ArrayProxy<vk::DeviceSize> my_offsets = offsets;
+    if (offsets.empty())
+    {
+        my_offsets = TArray<vk::DeviceSize>(offsets.size(), 0);
+    }
+    binded_buffer_.bindVertexBuffers(0, buffers, my_offsets);
+}
+
+void GraphicsPipeline::BindIndexBuffer(const vk::Buffer buffer, const vk::DeviceSize offset) const
+{
+    binded_buffer_.bindIndexBuffer(buffer, offset, vk::IndexType::eUint32);
+}
+
+void GraphicsPipeline::BindMesh(const Mesh& mesh) const
+{
+    BindVertexBuffers(mesh.GetVertexBuffer());
+    BindIndexBuffer(mesh.GetIndexBuffer());
+}
+
+void GraphicsPipeline::BindDescriptiorSets(
+    const vk::ArrayProxy<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
+    const vk::ArrayProxy<uint32_t> dynamic_offsets
+) const
+{
+    binded_buffer_.bindDescriptorSets(bind_point, pipeline_layout_, first_set, descriptor_sets, dynamic_offsets);
+}
+
+void GraphicsPipeline::DrawIndexed(
+    const uint32_t index_count, const uint32_t instance_count, const uint32_t first_index, const int32_t vertex_offset, const uint32_t first_instance
+) const
+{
+    binded_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+    g_engine_statistics.IncreaseDrawCall();
 }
 
 void GraphicsPipeline::CreatePipeline()
@@ -96,13 +179,9 @@ void GraphicsPipeline::CreatePipeline()
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
-    VertInfo.setStage(vk::ShaderStageFlagBits::eVertex)
-        .setModule(shader_program_->GetVertShaderHandle())
-        .setPName("main");
+    VertInfo.setStage(vk::ShaderStageFlagBits::eVertex).setModule(shader_program_->GetVertShaderHandle()).setPName("main");
     vk::PipelineShaderStageCreateInfo FragInfo{};
-    FragInfo.setStage(vk::ShaderStageFlagBits::eFragment)
-        .setModule(shader_program_->GetFragShaderHandle())
-        .setPName("main");
+    FragInfo.setStage(vk::ShaderStageFlagBits::eFragment).setModule(shader_program_->GetFragShaderHandle()).setPName("main");
     TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
 
     // 配置顶点Shader的输入信息
@@ -122,28 +201,25 @@ void GraphicsPipeline::CreatePipeline()
     /************************* Shader配置结束 ************************/
 
     /************************* 配置视口 ************************/
-    vk::Viewport viewport_info = {};
-    pipeline_info_.viewport.width =
-        pipeline_info_.viewport.width == 0 ? context.GetSwapChainExtent().width : pipeline_info_.viewport.width;
-    pipeline_info_.viewport.height =
-        pipeline_info_.viewport.height == 0 ? context.GetSwapChainExtent().height : pipeline_info_.viewport.height;
-    viewport_info.x        = pipeline_info_.viewport.x;
-    viewport_info.y        = pipeline_info_.viewport.y;
-    viewport_info.width    = pipeline_info_.viewport.width;
-    viewport_info.height   = pipeline_info_.viewport.height;
-    viewport_info.minDepth = 0.f;
-    viewport_info.maxDepth = 1.f;
+    vk::Viewport viewport_info     = {};
+    pipeline_info_.viewport.width  = pipeline_info_.viewport.width == 0 ? context.GetSwapChainExtent().width : pipeline_info_.viewport.width;
+    pipeline_info_.viewport.height = pipeline_info_.viewport.height == 0 ? context.GetSwapChainExtent().height : pipeline_info_.viewport.height;
+    viewport_info.x                = pipeline_info_.viewport.x;
+    viewport_info.y                = pipeline_info_.viewport.y;
+    viewport_info.width            = pipeline_info_.viewport.width;
+    viewport_info.height           = pipeline_info_.viewport.height;
+    viewport_info.minDepth         = 0.f;
+    viewport_info.maxDepth         = 1.f;
 
-    pipeline_info_.clipping_rect.width  = pipeline_info_.clipping_rect.width == 0 ? context.GetSwapChainExtent().width
-                                                                                  : pipeline_info_.clipping_rect.width;
-    pipeline_info_.clipping_rect.height = pipeline_info_.clipping_rect.height == 0
-                                              ? context.GetSwapChainExtent().height
-                                              : pipeline_info_.clipping_rect.height;
-    vk::Rect2D scissor                  = {};
-    scissor.offset.x                    = pipeline_info_.clipping_rect.offset_x;
-    scissor.offset.y                    = pipeline_info_.clipping_rect.offset_y;
-    scissor.extent.width                = pipeline_info_.clipping_rect.width;
-    scissor.extent.height               = pipeline_info_.clipping_rect.height;
+    pipeline_info_.clipping_rect.width =
+        pipeline_info_.clipping_rect.width == 0 ? context.GetSwapChainExtent().width : pipeline_info_.clipping_rect.width;
+    pipeline_info_.clipping_rect.height =
+        pipeline_info_.clipping_rect.height == 0 ? context.GetSwapChainExtent().height : pipeline_info_.clipping_rect.height;
+    vk::Rect2D scissor    = {};
+    scissor.offset.x      = pipeline_info_.clipping_rect.offset_x;
+    scissor.offset.y      = pipeline_info_.clipping_rect.offset_y;
+    scissor.extent.width  = pipeline_info_.clipping_rect.width;
+    scissor.extent.height = pipeline_info_.clipping_rect.height;
 
     vk::PipelineViewportStateCreateInfo viewport_state_create_info = {};
     viewport_state_create_info.setViewports({viewport_info}).setScissors({scissor});
@@ -187,8 +263,7 @@ void GraphicsPipeline::CreatePipeline()
     vk::PipelineColorBlendAttachmentState ColorBlendAttachment = {};
     ColorBlendAttachment   //
         .setColorWriteMask(
-            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
-            vk::ColorComponentFlagBits::eA
+            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
         )
         .setBlendEnable(pipeline_info_.color_blend_attachment_state.enabled);
 
@@ -282,17 +357,14 @@ void GraphicsPipeline::DestroyCommandBuffers() const
 }
 
 void GraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
-    TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
+    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
+    vk::Fence InFrameFence
 )
 {
-    auto                   CmdBuffer  = GetCurrentImageCommandBuffer(CurrentImageIndex);
+    auto                   CmdBuffer  = GetCurrentImageCommandBuffer();
     vk::SubmitInfo         SubmitInfo = {};
     vk::PipelineStageFlags WaitFlag   = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    SubmitInfo.setCommandBuffers(CmdBuffer)
-        .setWaitSemaphores(InWaitSemaphores)
-        .setSignalSemaphores(InSingalSemaphores)
-        .setWaitDstStageMask(WaitFlag);
+    SubmitInfo.setCommandBuffers(CmdBuffer).setWaitSemaphores(InWaitSemaphores).setSignalSemaphores(InSingalSemaphores).setWaitDstStageMask(WaitFlag);
     InGraphicsQueue.submit(SubmitInfo, InFrameFence);
 }
 

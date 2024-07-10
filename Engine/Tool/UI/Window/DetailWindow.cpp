@@ -16,6 +16,7 @@
 
 #include "UI/Drawer/PropertyDrawer.h"
 
+#include "Component/Component.h"
 #include "DetailWindow.generated.h"
 
 GENERATED_SOURCE()

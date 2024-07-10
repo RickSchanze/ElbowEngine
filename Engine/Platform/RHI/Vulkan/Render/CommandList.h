@@ -25,7 +25,7 @@ class CommandList {
 public:
     // 变换图像布局 默认是立即调用
     void TransitionImageLayout(
-        Image& InImage, vk::Format InImageFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout, UInt32 InMipLevel = 1,
+        Image& InImage, vk::Format InImageFormat, vk::ImageLayout InOldLayout, vk::ImageLayout InNewLayout,int32_t InMipLevel = 1,
         ECommandExecuteTime InExecuteTime = ECommandExecuteTime::Immediate
     );
 

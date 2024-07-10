@@ -17,15 +17,16 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class REFL Camera : public Component {
+class REFL Camera : public Component
+{
     GENERATED_BODY(Camera)
 
     using Component::Component;
 
 public:
-    explicit Camera(GameObject* InObject);
+    explicit Camera(GameObject* object);
 
-    void Tick(float DeltaTime) override;
+    void Tick(float delta_time) override;
 
     void BeginPlay() override;
 
@@ -33,21 +34,21 @@ public:
 
     glm::mat4 GetViewMatrix() const;
 
-    void SetWindowFocused(bool InFocused);
+    void SetWindowFocused(bool focused);
 
 protected:
     void HandleInput();
 
-    PROPERTY(Serialized, Label = "摄像机移动速度")
-    float MovementSpeed = 0.001;
+    PROPERTY(Serialized, Name = movement_speed, Label = "摄像机移动速度")
+    float movement_speed_ = 0.001;
 
-    PROPERTY(Serialized, Name = EnableInput, Label = "启用输入")
-    bool bEnableInput = true;
+    PROPERTY(Serialized, Name = enable_input, Label = "启用输入")
+    bool enable_input_ = true;
 
-    PROPERTY(Serialized, Name = MouseSensitivity, Label = "鼠标灵敏度")
-    float mMouseSensitivity = 0.1f;
+    PROPERTY(Serialized, Name = mouse_sensitity, Label = "鼠标灵敏度")
+    float mouse_sensitivity_ = 0.1f;
 
-    bool bFocused = false;
+    bool focused_ = false;
 };
 
 FUNCTION_NAMESPACE_END

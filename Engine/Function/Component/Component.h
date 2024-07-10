@@ -36,7 +36,7 @@ public:
     void Destroy();
 
 protected:
-    Transform* mTransform = nullptr;
+    Transform* transform_ = nullptr;
     GameObject* mGameObject = nullptr;
 };
 

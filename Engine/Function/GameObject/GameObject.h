@@ -31,7 +31,7 @@ public:
         T* Component           = New<T>(STRING_NONE, this);
         Component->mGameObject = this;
         Component->BeginPlay();
-        Component->mTransform = &mTransform;
+        Component->transform_ = &mTransform;
         mComponents.push_back(Component);
         return Component;
     }

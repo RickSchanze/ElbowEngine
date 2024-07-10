@@ -25,8 +25,8 @@ variant YamlDeserializer::ExtractBasicTypes(const YAML::Node& Node, const Type& 
         auto IntVal = StringUtils::ConvertTo<int64_t>(Str);
         if (IntVal) return IntVal.value();
 
-        auto FloatVal = StringUtils::ConvertTo<double>(Str);
-        if (FloatVal) return FloatVal.value();
+        auto floatVal = StringUtils::ConvertTo<double>(Str);
+        if (floatVal) return floatVal.value();
 
         auto UIntVal = StringUtils::ConvertTo<uint64_t>(Str);
         if (UIntVal) return UIntVal.value();

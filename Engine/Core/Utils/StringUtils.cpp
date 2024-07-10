@@ -21,7 +21,7 @@ String StringUtils::FromAnsiString(const std::string& Str, const EStringEncoding
     if (Str.empty()) return {String()};
     const int SizeNeeded = MultiByteToWideChar(CP_UTF8, 0, Str.c_str(), static_cast<int>(Str.size()), nullptr, 0);
     String    StrRtn(SizeNeeded, 0);
-    UInt32    CodePage = CP_UTF8;
+   int32_t    CodePage = CP_UTF8;
     switch (SourceStringEncoding) {
     case EStringEncoding::UTF8: CodePage = CP_UTF8; break;
     case EStringEncoding::GBK: CodePage = CP_ACP; break;

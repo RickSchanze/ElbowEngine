@@ -52,7 +52,8 @@ struct RenderPassAttachmentImageInfo
 
 // 基本RenderPass 基本RenderPass包含一个ColorAttachment 一个DepthAttachment和一个Multismaple使用的Attachment
 // RenderPass同时还包含了对应的Framebuffer
-class RenderPass : public IRHIResource {
+class RenderPass : public IRHIResource
+{
 public:
     bool IsValid() const;
 
@@ -79,15 +80,19 @@ public:
 
     void Destroy() override;
 
-    TUniquePtr<Framebuffer>& GetFrameBuffer(Int32 InIndex) { return mFrameBuffers[InIndex]; }
+    TUniquePtr<Framebuffer>& GetFrameBuffer(int32_t InIndex) { return frame_buffers_[InIndex]; }
 
-    TArray<TUniquePtr<Framebuffer>>& GetFrameBuffers() { return mFrameBuffers; }
+    TArray<TUniquePtr<Framebuffer>>& GetFrameBuffers() { return frame_buffers_; }
+
+    TUniquePtr<Framebuffer>& GetCurrentFrameBuffer() { return frame_buffers_[0]; }
+
+    vk::Framebuffer GetCurrentFrameBufferHandle();
 
 protected:
     void InternalDestroy();
 
 public:
-    vk::RenderPass GetHandle() const { return mHandle; }
+    vk::RenderPass GetHandle() const { return handle_; }
 
     // Config
     vk::SampleCountFlagBits SampleCount = vk::SampleCountFlagBits::e1;
@@ -95,37 +100,38 @@ public:
 protected:
     /**
      * 为这个RenderPass新加一个Attachment
-     * @param InParam Attachment参数
-     * @param bAttachToSwapchain 这个Attachment是不是要附着到交换链Index
-     * @param bIsDepth 这个Attachment是不是深度Attachment
-     * @param bIsSampleResolve 这个Attachment是不是用来转换多重采样
+     * @param param Attachment参数
+     * @param attach_to_swapchain 这个Attachment是不是要附着到交换链Index
+     * @param is_depth 这个Attachment是不是深度Attachment
+     * @param is_sample_resolve 这个Attachment是不是用来转换多重采样
      */
     void NewAttachment(
-        RenderPassAttachmentParam& InParam, bool bAttachToSwapchain = false, bool bIsDepth = false, bool bIsSampleResolve = false
+        RenderPassAttachmentParam& param, bool attach_to_swapchain = false, bool is_depth = false,
+        bool is_sample_resolve = false
     );
 
     virtual void CreateSubpassDescription();
 
     void CreateRenderPass();
 
-    vk::RenderPass mHandle = VK_NULL_HANDLE;
+    vk::RenderPass handle_ = VK_NULL_HANDLE;
 
-    TArray<vk::AttachmentDescription> mAttachmentDescs;
-    TArray<vk::AttachmentReference>   mAttahcmentRefs;
-    TArray<vk::AttachmentReference>   mSubpassColorAttachmentRefs;
+    TArray<vk::AttachmentDescription> attachment_descs_;
+    TArray<vk::AttachmentReference>   attahcment_refs_;
+    TArray<vk::AttachmentReference>   subpass_color_attachment_refs_;
 
     // 深度附着一个RenderPass最多只允许一个
-    Int32 mDepthAttachmentIndex = -1;
-    Int32 mSampleResolveIndex   = -1;
+    int32_t depth_attachment_index_ = -1;
+    int32_t sample_resolve_index_   = -1;
     // 附着到交换链的图像Index
-    Int32 mSwapchainViewIndex   = -1;
+    int32_t swapchain_view_index_   = -1;
 
-    TArray<RenderPassAttachmentImageInfo> mFrameBufferAttachmentImageInfos;
-    TArray<FramebufferAttachment>         mFrameBufferAttachments;
-    TArray<TUniquePtr<Framebuffer>>       mFrameBuffers;
+    TArray<RenderPassAttachmentImageInfo> frame_buffer_attachment_image_infos_;
+    TArray<FramebufferAttachment>         frame_buffer_attachments_;
+    TArray<TUniquePtr<Framebuffer>>       frame_buffers_;
 
-    vk::SubpassDescription mSubpass;
-    vk::SubpassDependency  mDependency;
+    vk::SubpassDescription subpass_;
+    vk::SubpassDependency  dependency_;
 };
 
 RHI_VULKAN_NAMESPACE_END

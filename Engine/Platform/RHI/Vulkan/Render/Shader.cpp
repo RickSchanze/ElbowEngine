@@ -36,21 +36,15 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-Shader::Shader(
-    Protected, const Ref<LogicalDevice> device, const Path& shader_path,
-    const EShaderStage shader_stage
-) : shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
+Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage) :
+    shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
     FileInputStream shader_file_stream{shader_path.ToString(), std::ios::ate | std::ios::binary};
     if (!shader_file_stream.is_open())
     {
         LOG_ERROR_CATEGORY(
-            Vulkan.Shader,
-            L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}",
-            shader_path.ToString(),
-            errno,
-            StringUtils::ErrorCodeToString(errno)
+            Vulkan.Shader, L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}", shader_path.ToString(), errno, StringUtils::ErrorCodeToString(errno)
         );
         return;
     }
@@ -60,7 +54,7 @@ Shader::Shader(
     shader_file_stream.read(shader_code.data(), shader_file_size);
     shader_file_stream.close();
 
-    auto*  shader_code_ptr  = reinterpret_cast<UInt32*>(shader_code.data());
+    auto*  shader_code_ptr  = reinterpret_cast<uint32_t*>(shader_code.data());
     size_t shader_code_size = shader_code.size() / 4;
     // 解析此Shader的所有参数
     ParseShaderCode(shader_code_ptr, shader_code_size, shader_stage);
@@ -76,9 +70,7 @@ Shader::~Shader()
     device.DestroyShaderModule(shader_module_);
 }
 
-void Shader::ParseShaderCode(
-    const UInt32* shader_code, size_t shader_code_size, EShaderStage shader_stage
-)
+void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_size, EShaderStage shader_stage)
 {
     shader_stage_ = shader_stage;
     using namespace spirv_cross;
@@ -131,12 +123,7 @@ void Shader::ParseShaderCode(
             in_attr.size     = in_attr.width * t.vecsize;
             in_attributes_.push_back(in_attr);
         }
-        std::ranges::sort(
-            in_attributes_,
-            [](const VertexInAttribute& lhs, const VertexInAttribute& rhs) {
-                return lhs.location < rhs.location;
-            }
-        );
+        std::ranges::sort(in_attributes_, [](const VertexInAttribute& lhs, const VertexInAttribute& rhs) { return lhs.location < rhs.location; });
         // 计算偏移
         size_t offset = 0;
         for (auto& InAttr: in_attributes_)

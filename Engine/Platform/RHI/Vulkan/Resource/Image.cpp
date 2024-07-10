@@ -118,9 +118,9 @@ void Image::CreateImage()
     const auto          DeviceHandle = Context.GetLogicalDevice()->GetHandle();
     ImageCreateInfo.setImageType(mImageInfo.ImageType);
     const vk::Extent3D Extent{
-        static_cast<UInt32>(mImageInfo.Width),
-        static_cast<UInt32>(mImageInfo.Height),
-        static_cast<UInt32>(mImageInfo.ImageType == vk::ImageType::e3D ? 1 : mImageInfo.Depth)
+        static_cast<uint32_t>(mImageInfo.Width),
+        static_cast<uint32_t>(mImageInfo.Height),
+        static_cast<uint32_t>(mImageInfo.ImageType == vk::ImageType::e3D ? 1 : mImageInfo.Depth)
     };
     ImageCreateInfo.setExtent(Extent);
     ImageCreateInfo.setArrayLayers(1);
@@ -173,17 +173,17 @@ ImageView* Image::CreateImageView(const ImageViewInfo& InViewInfo) const
     return new ImageView(Context.GetLogicalDevice()->GetHandle().createImageView(ViewInfo));
 }
 
-TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& InImageInfo, const UInt8* InData)
+TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& InImageInfo, const uint8_t* InData)
 {
     return MakeShared<Texture>(Protected{}, InImageInfo, InData);
 }
 
-TUniquePtr<Texture> Texture::CreateUnique(const ImageInfo& InImageInfo, const UInt8* InData)
+TUniquePtr<Texture> Texture::CreateUnique(const ImageInfo& InImageInfo, const uint8_t* InData)
 {
     return MakeUnique<Texture>(Protected{}, InImageInfo, InData);
 }
 
-Texture::Texture(Protected, const ImageInfo& InImageInfo, const UInt8* InData) : Image(InImageInfo)
+Texture::Texture(Protected, const ImageInfo& InImageInfo, const uint8_t* InData) : Image(InImageInfo)
 {
     if (InData == nullptr)
     {
