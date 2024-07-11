@@ -13,18 +13,25 @@
 #include "UI/Window/WindowBase.h"
 #include "Window/GLFWWindow.h"
 
-namespace RHI::Vulkan {
+namespace Function
+{
+class RenderContext;
+}
+namespace RHI::Vulkan
+{
 class VulkanApplication;
 }
 
 TOOL_NAMESPACE_BEGIN
 
-class EngineApplication {
+class EngineApplication
+{
 public:
-    typedef EngineApplication This;
+    typedef EngineApplication ThisClass;
     // TODO: 自定义设定启动应用的名字、窗口大小、版本等
     // EngineApplication() = default;
-                              EngineApplication(const String& ProjectPath, const String& WindowTitle);
+
+    EngineApplication(const String& project_path, const String& window_title);
 
     ~EngineApplication() { Finitialize(); }
 
@@ -42,13 +49,13 @@ public:
     // 此类自己的Tick 主要用来处理gEngineStatistics中的数据变化
     void InternalTick();
 
-    static EngineApplication& Get() { return *mInstance; }
+    static EngineApplication& Get() { return *instance_; }
 
-    bool bFrameBufferResized = false;
+    bool frame_buffer_resized = false;
 
-    void AddWindow(Window::WindowBase* InWindow) { mSubWindows.push_back(InWindow); }
-    void RemoveWindow(Window::WindowBase* InWindow);
-    void RemoveWindow(Type InType);
+    void AddWindow(Window::WindowBase* window) { sub_windows_.push_back(window); }
+    void RemoveWindow(Window::WindowBase* window);
+    void RemoveWindow(Type type);
 
 protected:
     // clang-format off
@@ -65,22 +72,24 @@ protected:
     // clang-format on
 
 private:
-    static void FrameBufferResizeCallback(GLFWwindow* Window, int Width, int Height) {
-        auto& App               = Get();
-        App.bFrameBufferResized = true;
+    static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+    {
+        auto& app               = Get();
+        app.frame_buffer_resized = true;
     }
 
-    TUniquePtr<RHI::Vulkan::VulkanApplication> mRenderApplication;
-    TUniquePtr<Platform::Window::GlfwWindow>   mWindow;
+    TUniquePtr<RHI::Vulkan::VulkanApplication> render_application_;
+    TUniquePtr<Platform::Window::GlfwWindow>   window_;
+    Function::RenderContext*        render_context_;
 
-    static inline EngineApplication* mInstance = nullptr;
+    static inline EngineApplication* instance_ = nullptr;
 
-    String mWindowTitle;
+    String window_title_;
 
-    TArray<Window::WindowBase*> mSubWindows;
+    TArray<Window::WindowBase*> sub_windows_;
 
     // TODO: 封装Timer
-    std::chrono::time_point<std::chrono::steady_clock> mLastFrameTime;
+    std::chrono::time_point<std::chrono::steady_clock> last_frame_time_;
 };
 
 TOOL_NAMESPACE_END

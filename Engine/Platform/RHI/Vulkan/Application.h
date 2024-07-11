@@ -13,50 +13,49 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-class VulkanApplication {
+class VulkanApplication
+{
 public:
     typedef VulkanApplication ThisClass;
 
     ~VulkanApplication();
 
-    VulkanApplication& SetAppName(const String& InAppName) noexcept;
-    VulkanApplication& SetEngineName(const String& InEngineName) noexcept;
-    VulkanApplication& SetAppVersion(uint32_t InAppVersion) noexcept;
-    VulkanApplication& SetEngineVersion(uint32_t InEngineVersion) noexcept;
-    VulkanApplication& SetApiVersion(uint32_t InApiVersion) noexcept;
-    VulkanApplication& SetExtensions(const TArray<const char*>& InExtensions) noexcept;
-    VulkanApplication& SetWindowSurface(TUniquePtr<SurfaceBase> InSurface) noexcept;
+    VulkanApplication& SetAppName(const String& app_name) noexcept;
+    VulkanApplication& SetEngineName(const String& engine_name) noexcept;
+    VulkanApplication& SetAppVersion(uint32_t app_version) noexcept;
+    VulkanApplication& SetEngineVersion(uint32_t engine_version) noexcept;
+    VulkanApplication& SetApiVersion(uint32_t api_version) noexcept;
+    VulkanApplication& SetExtensions(const TArray<const char*>& extensions) noexcept;
+    VulkanApplication& SetWindowSurface(TUniquePtr<SurfaceBase> surface) noexcept;
 
     void Initialize();
     void Finalize();
 
-    void Tick(float DeltaTime);
-
-    const String&       GetAppName() const noexcept { return mAppName; }
-    const String&       GetEngineName() const noexcept { return mEngineName; }
-    uint32_t            GetAppVersion() const noexcept { return mAppVersion; }
-    uint32_t            GetEngineVersion() const noexcept { return mEngineVersion; }
-    uint32_t            GetApiVersion() const noexcept { return mApiVersion; }
-    TSharedPtr<Instance> GetVulkanInstance() noexcept { return mVulkanInstance; }
-    bool                IsValid() const noexcept { return mVulkanInstance->IsValid(); }
-    VulkanContext&      GetContext() const noexcept { return *mContext; }
+    const String&        GetAppName() const noexcept { return app_name_; }
+    const String&        GetEngineName() const noexcept { return engine_name_; }
+    uint32_t             GetAppVersion() const noexcept { return app_version_; }
+    uint32_t             GetEngineVersion() const noexcept { return engine_version_; }
+    uint32_t             GetApiVersion() const noexcept { return api_version_; }
+    TSharedPtr<Instance> GetVulkanInstance() noexcept { return vulkan_instance_; }
+    bool                 IsValid() const noexcept { return vulkan_instance_->IsValid(); }
+    VulkanContext&       GetContext() const noexcept { return *vulkan_context_; }
 
 protected:
     // 初始化Instance
     void CreateInstance();
 
 private:
-    String   mAppName       = L"Elbow Engine Editor";
-    String   mEngineName    = L"Elbow Engine";
-    uint32_t mAppVersion    = VK_MAKE_VERSION(1, 0, 0);
-    uint32_t mEngineVersion = VK_MAKE_VERSION(1, 0, 0);
-    uint32_t mApiVersion    = VK_API_VERSION_1_3;
+    String   app_name_       = L"Elbow Engine Editor";
+    String   engine_name_    = L"Elbow Engine";
+    uint32_t app_version_    = VK_MAKE_VERSION(1, 0, 0);
+    uint32_t engine_version_ = VK_MAKE_VERSION(1, 0, 0);
+    uint32_t api_version_    = VK_API_VERSION_1_3;
 
-    TSharedPtr<Instance>      mVulkanInstance;
-    TUniquePtr<SurfaceBase>   mSurface;
-    TSharedPtr<VulkanContext> mContext;
+    TSharedPtr<Instance>      vulkan_instance_;
+    TUniquePtr<SurfaceBase>   surface_;
+    TSharedPtr<VulkanContext> vulkan_context_;
 
-    TArray<const char*> Extensions;
+    TArray<const char*> extensions_;
 };
 
 RHI_VULKAN_NAMESPACE_END

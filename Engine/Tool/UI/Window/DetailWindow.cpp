@@ -28,40 +28,40 @@ DetailWindow::DetailWindow() {
     mWindowName = L"细节";
 }
 
-void DetailWindow::Draw(float InDeltaTime) {
+void DetailWindow::Draw(float delta_time) {
     // 存储ObjectID 并每帧查找防止使用野指针
-    if (mOutlineWindow == nullptr) {
-        mOutlineWindow = WindowManager::GetWindow<OutlineWindow>();
+    if (outline_window_ == nullptr) {
+        outline_window_ = WindowManager::GetWindow<OutlineWindow>();
     }
-    if (mOutlineWindow->IsValid()) {
-        if (mOutlineWindow->SelectedObjectID != -1) {
-            mSelectedObjectID = mOutlineWindow->SelectedObjectID;
+    if (outline_window_->IsValid()) {
+        if (outline_window_->SelectedObjectID != -1) {
+            selected_object_id_ = outline_window_->SelectedObjectID;
         }
     }
-    Function::GameObject* mObjectToDraw = nullptr;
-    if (mSelectedObjectID != 0) {
-        mObjectToDraw = ObjectManager::Get().GetObjectById<Function::GameObject>(mSelectedObjectID);
+    Function::GameObject* object_to_draw = nullptr;
+    if (selected_object_id_ != 0) {
+        object_to_draw = ObjectManager::Get()->GetObjectById<Function::GameObject>(selected_object_id_);
     }
-    if (mObjectToDraw) {
-        DrawSelectedObject(mObjectToDraw);
-    }
-}
-
-void DetailWindow::DrawSelectedObject(Function::GameObject* InGameObject) {
-    ImGui::Text(U8("对象名: %s, ID: %d"), InGameObject->GetCachedAnsiString().c_str(), InGameObject->GetID());
-    Drawer::PropertyDrawer::DrawTransform(InGameObject->GetTransform());
-    const auto& Components = InGameObject->GetComponents();
-    for (auto* Comp : Components) {
-        DrawComponent(Comp);
+    if (object_to_draw) {
+        DrawSelectedObject(object_to_draw);
     }
 }
 
-void DetailWindow::DrawComponent(Function::Component* InComp) {
-    if (InComp == nullptr || !InComp->IsValid()) return;
-    if (ImGui::CollapsingHeader(InComp->GetCachedAnsiString().c_str())) {
-        Type CompType = InComp->get_type();
-        for (auto Prop : CompType.get_properties()) {
-            Drawer::PropertyDrawer::DrawProperty(Prop, InComp);
+void DetailWindow::DrawSelectedObject(Function::GameObject* game_object) {
+    ImGui::Text(U8("对象名: %s, ID: %d"), game_object->GetCachedAnsiString().c_str(), game_object->GetID());
+    Drawer::PropertyDrawer::DrawTransform(game_object->GetTransform());
+    const auto& components = game_object->GetComponents();
+    for (auto* comp : components) {
+        DrawComponent(comp);
+    }
+}
+
+void DetailWindow::DrawComponent(Function::Component* comp) {
+    if (comp == nullptr || !comp->IsValid()) return;
+    if (ImGui::CollapsingHeader(comp->GetCachedAnsiString().c_str())) {
+        Type comp_type = comp->get_type();
+        for (auto Prop : comp_type.get_properties()) {
+            Drawer::PropertyDrawer::DrawProperty(Prop, comp);
         }
     }
 }

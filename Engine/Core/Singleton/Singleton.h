@@ -8,15 +8,18 @@
 #pragma once
 
 template<typename T>
-class Singleton {
+class Singleton
+{
     friend T;
-public:
-    static T& Get();
-    ~Singleton() = default;
-};
 
-template<typename T>
-T& Singleton<T>::Get() {
-    static T Instance;
-    return Instance;
-}
+public:
+    static T* Get() { return instance_; }
+
+    virtual ~Singleton() = default;
+
+    virtual void Intialize() {}
+    virtual void Finalize() {}
+
+protected:
+    static inline T* instance_;
+};

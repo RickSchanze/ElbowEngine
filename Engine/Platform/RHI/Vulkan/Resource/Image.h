@@ -11,70 +11,68 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan
-{
-class CommandPool;
-}
-
 RHI_VULKAN_NAMESPACE_BEGIN
+
+class CommandPool;
 
 struct ImageViewInfo
 {
-    vk::Format           Format      = vk::Format::eUndefined;   // 自动选择和Image一样的格式
-    vk::ImageAspectFlags AspectFlags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
-    int32_t                MipLevels   = 0;                                 // 自动选择Miplevels
+    vk::Format           format       = vk::Format::eUndefined;            // 自动选择和Image一样的格式
+    vk::ImageAspectFlags aspect_flags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
+    int32_t              mip_levels   = 0;                                 // 自动选择Miplevels
 };
 
 class ImageBase
 {
 public:
-             ImageBase() = default;
+    ImageBase() = default;
+
     virtual ~ImageBase();
 
     // 使用一个hanlde来初始化此Image
-    explicit ImageBase(const vk::Image& InImgHandle) : mImageHandle(InImgHandle) {}
+    explicit ImageBase(const vk::Image& img_handle) : image_handle_(img_handle) {}
 
-    virtual bool IsValid() const { return static_cast<bool>(mImageHandle); }
+    virtual bool IsValid() const { return static_cast<bool>(image_handle_); }
 
-    vk::Image GetHandle() const { return mImageHandle; }
+    vk::Image GetHandle() const { return image_handle_; }
 
-    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& InViewInfo) const;
+    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const;
 
-    TUniquePtr<ImageView> CreateImageViewUnique(const ImageViewInfo& InViewInfo) const;
+    TUniquePtr<ImageView> CreateImageViewUnique(const ImageViewInfo& view_info) const;
 
-    virtual ImageView* CreateImageView(const ImageViewInfo& InViewInfo) const = 0;
+    virtual ImageView* CreateImageView(const ImageViewInfo& view_info) const = 0;
 
 protected:
-    vk::Image mImageHandle = VK_NULL_HANDLE;
+    vk::Image image_handle_ = VK_NULL_HANDLE;
 };
 
 // SwapChainImage不需要自己销毁 SwapChain销毁时会自动销毁
 class SwapChainImage final : public ImageBase
 {
 public:
-    explicit SwapChainImage(const vk::Image& InImgHandle) : ImageBase(InImgHandle) {}
+    explicit SwapChainImage(const vk::Image& img_handle) : ImageBase(img_handle) {}
 
     SwapChainImage() = default;
 
-    ImageView* CreateImageView(const ImageViewInfo& InViewInfo) const override;
+    ImageView* CreateImageView(const ImageViewInfo& view_info) const override;
 };
 
 struct ImageInfo
 {
-    vk::Format              Format = vk::Format::eUndefined;
-    vk::ImageUsageFlags     Usage{};
-    int32_t                   Width          = 0;
-    int32_t                   Height         = 0;
-    int32_t                   Depth          = 1;
-   int32_t                  MipLevels      = 1;
-    vk::ImageTiling         Tiling         = vk::ImageTiling::eOptimal;
-    vk::SampleCountFlagBits SampleCount    = vk::SampleCountFlagBits::e1;
-    vk::ImageType           ImageType      = vk::ImageType::e2D;
-    vk::MemoryPropertyFlags MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
+    vk::Format              format = vk::Format::eUndefined;
+    vk::ImageUsageFlags     usage{};
+    int32_t                 width           = 0;
+    int32_t                 height          = 0;
+    int32_t                 depth           = 1;
+    int32_t                 mip_levels      = 1;
+    vk::ImageTiling         tiling          = vk::ImageTiling::eOptimal;
+    vk::SampleCountFlagBits sample_count    = vk::SampleCountFlagBits::e1;
+    vk::ImageType           image_type      = vk::ImageType::e2D;
+    vk::MemoryPropertyFlags memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
 
     ImageInfo() = default;
 
-    explicit ImageInfo(const vk::ImageCreateInfo& InVkImageInfo);
+    explicit ImageInfo(const vk::ImageCreateInfo& image_info);
 };
 
 class Image : public ImageBase, public IRHIResource
@@ -87,10 +85,10 @@ protected:
 public:
     typedef ImageBase Super;
 
-    explicit Image(Protected, const ImageInfo& InCreateInfo);
+    explicit Image(Protected, const ImageInfo& create_info);
 
-    static TSharedPtr<Image> CreateShared(const ImageInfo& InCreateInfo);
-    static TUniquePtr<Image> CreateUnique(const ImageInfo& InCreateInfo);
+    static TSharedPtr<Image> CreateShared(const ImageInfo& create_info);
+    static TUniquePtr<Image> CreateUnique(const ImageInfo& create_info);
 
     void Destroy() override;
 
@@ -99,43 +97,43 @@ public:
     bool IsValid() const override;
     void Finialize();
 
-   int32_t GetWidth() const { return mImageInfo.Width; }
-   int32_t GetHeight() const { return mImageInfo.Height; }
-   int32_t GetDepth() const { return mImageInfo.Depth; }
+    int32_t GetWidth() const { return image_info_.width; }
+    int32_t GetHeight() const { return image_info_.height; }
+    int32_t GetDepth() const { return image_info_.depth; }
 
 protected:
     void CreateImage();
 
 protected:
     explicit Image() = default;
-    explicit Image(const ImageInfo& InImageInfo) : mImageInfo(InImageInfo) {}
+    explicit Image(const ImageInfo& InImageInfo) : image_info_(InImageInfo) {}
 
 public:
-    ImageView* CreateImageView(const ImageViewInfo& InViewInfo) const override;
+    ImageView* CreateImageView(const ImageViewInfo& view_info) const override;
 
 protected:
-    vk::DeviceMemory mImageMemory = nullptr;
-    ImageInfo        mImageInfo{};
+    vk::DeviceMemory image_memory_ = nullptr;
+    ImageInfo        image_info_{};
 };
 
 struct SamplerInfo
 {
-    vk::Filter             MagFilter                = vk::Filter::eLinear;
-    vk::Filter             MinFilter                = vk::Filter::eLinear;
-    vk::SamplerAddressMode AddressModeU             = vk::SamplerAddressMode::eRepeat;
-    vk::SamplerAddressMode AddressModeV             = vk::SamplerAddressMode::eRepeat;
-    vk::SamplerAddressMode AddressModeW             = vk::SamplerAddressMode::eRepeat;
-    bool                   bEnableAnisotropy        = true;
-    float                  MaxAnisotropy            = 16.0f;
-    vk::BorderColor        BorderColor              = vk::BorderColor::eIntOpaqueBlack;
+    vk::Filter             mag_filter               = vk::Filter::eLinear;
+    vk::Filter             min_filter               = vk::Filter::eLinear;
+    vk::SamplerAddressMode address_mode_u           = vk::SamplerAddressMode::eRepeat;
+    vk::SamplerAddressMode address_mode_v           = vk::SamplerAddressMode::eRepeat;
+    vk::SamplerAddressMode address_mode_w           = vk::SamplerAddressMode::eRepeat;
+    bool                   enable_anisotropy        = true;
+    float                  max_anisotropy           = 16.0f;
+    vk::BorderColor        border_color             = vk::BorderColor::eIntOpaqueBlack;
     // false将纹理坐标标准化到(0,1)
-    bool                   bUnnormalizedCoordinates = false;
-    bool                   bEnableCompare           = false;
+    bool                   unnormalized_coordinates = false;
+    bool                   enable_compare           = false;
     // Mipmap
-    vk::SamplerMipmapMode  MipmapMode               = vk::SamplerMipmapMode::eLinear;
-    float                  MipLodBias               = 0.0f;
-    float                  MinLod                   = 0.0f;
-    float                  MaxLod                   = 0.f;
+    vk::SamplerMipmapMode  mipmap_mode              = vk::SamplerMipmapMode::eLinear;
+    float                  mip_lod_bias             = 0.0f;
+    float                  min_lod                  = 0.0f;
+    float                  max_lod                  = 0.f;
 
     size_t GetHashCode() const;
 };
@@ -143,13 +141,13 @@ struct SamplerInfo
 class Texture : public Image
 {
 public:
-    static TSharedPtr<Texture> CreateShared(const ImageInfo& InImageInfo, const uint8_t* InData);
+    static TSharedPtr<Texture> CreateShared(const ImageInfo& image_info, const uint8_t* data);
 
-    static TUniquePtr<Texture> CreateUnique(const ImageInfo& InImageInfo, const uint8_t* InData);
+    static TUniquePtr<Texture> CreateUnique(const ImageInfo& image_info, const uint8_t* data);
 
-    Texture(Protected, const ImageInfo& InImageInfo, const uint8_t* InData);
+    Texture(Protected, const ImageInfo& image_info, const uint8_t* data);
 
-    int32_t GetMipLevel() const { return mMipLevel; }
+    int32_t GetMipLevel() const { return mip_level_; }
 
     static void LoadDefaultTextures();
 
@@ -157,19 +155,19 @@ public:
     static ImageView& GetDefaultLackTextureView();
 
 protected:
-    int32_t mMipLevel;
+    int32_t mip_level_;
 
-    static inline Texture*   sDefaultLackTexture     = nullptr;
-    static inline ImageView* sDefaultLackTextureView = nullptr;
-    static inline bool       bDefaultTexturesLoaded  = false;
+    static inline Texture*   s_default_lack_texture_      = nullptr;
+    static inline ImageView* s_default_lack_texture_view_ = nullptr;
+    static inline bool       default_textures_loaded_     = false;
 };
 
 class Sampler : public IRHIResource
 {
 public:
-    explicit Sampler(ResourceProtected, const SamplerInfo& InInitializer = {});
+    explicit Sampler(ResourceProtected, const SamplerInfo& info = {});
 
-    static Sampler* Create(const SamplerInfo& InInitializer = {});
+    static Sampler* Create(const SamplerInfo& info = {});
 
     static Sampler& GetDefaultSampler();
 
@@ -179,15 +177,15 @@ public:
 
     void Destroy() override { InternalDestroy(); }
 
-    vk::Sampler GetHandle() const { return mHandle; }
+    vk::Sampler GetHandle() const { return handle_; }
 
-    bool IsValid() const { return mHandle != nullptr; }
+    bool IsValid() const { return handle_ != nullptr; }
 
 protected:
-    vk::Sampler mHandle;
-    size_t      mId;
+    vk::Sampler handle_;
+    size_t      id_;
 
-    static inline THashMap<size_t, Sampler*> sSamplers;
+    static inline THashMap<size_t, Sampler*> samplers_;
 };
 
 RHI_VULKAN_NAMESPACE_END

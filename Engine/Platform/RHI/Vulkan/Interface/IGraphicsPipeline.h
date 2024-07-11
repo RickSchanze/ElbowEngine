@@ -1,27 +1,27 @@
 /**
  * @file IGraphicsPipeline.h
  * @author Echo 
- * @Date 24-5-10
+ * @Date 24-7-11
  * @brief 
  */
 
 #pragma once
-#include "CoreGlobal.h"
-#include "RHI/Vulkan/Render/CommandPool.h"
+#include "RHI/Vulkan/VulkanCommon.h"
 
-interface IGraphicsPipeline {
+RHI_VULKAN_NAMESPACE_BEGIN
+
+class IGraphicsPipeline
+{
 public:
-    virtual ~IGraphicsPipeline()                                                        = default;
-    // clang-format off
-    virtual void SubmitGraphicsQueue(
-        int       CurrentImageIndex,
-        vk::Queue InGraphicsQueue,
-        TArray<vk::Semaphore> InWaitSemaphores,
-        TArray<vk::Semaphore> InSingalSemaphores,
-        vk::Fence InFrameFence
-    ) = 0;
-    // clang-format on
+    virtual ~IGraphicsPipeline() = default;
 
-    // 窗口大小改变时需要调用此函数
-    virtual void Rebuild() = 0;
+    virtual vk::CommandBuffer GetCurrentCommandBuffer() const = 0;
 };
+
+class ImguiGraphicsPipeline : public IGraphicsPipeline
+{
+public:
+    virtual void Draw() = 0;
+};
+
+RHI_VULKAN_NAMESPACE_END

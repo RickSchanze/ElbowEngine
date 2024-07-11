@@ -11,30 +11,35 @@
 
 #include "DetailWindow.generated.h"
 
-namespace Function {
+namespace Function
+{
 class Component;
 }
-namespace Function {
+namespace Function
+{
 class GameObject;
 }
-namespace Tool::Window {
+namespace Tool::Window
+{
 class OutlineWindow;
 }
 WINDOW_NAMESPACE_BEGIN
 
-class REFL DetailWindow : public WindowBase {
+class REFL DetailWindow : public WindowBase
+{
     GENERATED_BODY(DetailWindow)
 
 public:
     DetailWindow();
-    void Draw(float InDeltaTime) override;
+
+    void Draw(float delta_time) override;
 
 protected:
-    void DrawSelectedObject(Function::GameObject* InGameObject);
-    void DrawComponent(Function::Component* InComp);
+    void DrawSelectedObject(Function::GameObject* game_object);
+    void DrawComponent(Function::Component* comp);
 
-    OutlineWindow* mOutlineWindow = nullptr;
-   int32_t mSelectedObjectID = -1;
+    OutlineWindow* outline_window_     = nullptr;
+    int32_t        selected_object_id_ = -1;
 };
 
 WINDOW_NAMESPACE_END

@@ -11,23 +11,28 @@
 #include "imgui_impl_vulkan.h"
 #include "Input/Input.h"
 #include "Path/Path.h"
+#include "Render/Event.h"
+#include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/Framebuffer.h"
+#include "RHI/Vulkan/Render/GraphicsPipeline.h"
+#include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vk_enum_string_helper.h"
 
+using namespace RHI::Vulkan;
+
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
-class ImGuiRenderPass : public RHI::Vulkan::RenderPass
+class ImGuiRenderPass : public RenderPass
 {
-
 protected:
     void OnCreateAttachments() override
     {
-        RHI::Vulkan::RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
+        RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
         Param.InitialLayout   = vk::ImageLayout::ePresentSrcKHR;
-        Param.FinialLayout    = vk::ImageLayout::ePresentSrcKHR;
-        Param.ReferenceLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
+        Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
         Param.StoreOp         = vk::AttachmentStoreOp::eStore;
         Param.LoadOp          = vk::AttachmentLoadOp::eDontCare;
         NewAttachment(Param, true);
@@ -36,10 +41,10 @@ protected:
     void CreateSubpassDescription() override;
 };
 
-class ImGuiGraphicsPipeline : public IGraphicsPipeline
+class ImGuiGraphicsPipeline : public ImguiGraphicsPipeline
 {
 public:
-    explicit ImGuiGraphicsPipeline(Ref<RHI::Vulkan::VulkanContext> InConext);
+    explicit ImGuiGraphicsPipeline();
 
     void Initialize();
     void Finialize();
@@ -51,20 +56,19 @@ protected:
     void CreateCommandBuffers();
 
 public:
-    void SubmitGraphicsQueue(
-        int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
-        TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
-    ) override;
+    void Draw() override;
 
-    void Rebuild() override;
+    void Rebuild();
+
+    vk::CommandBuffer GetCurrentCommandBuffer() const override;
 
 private:
-    Ref<RHI::Vulkan::VulkanContext> mContext;
+    VulkanContext* context_;
 
-    vk::DescriptorPool                   mDescriptorPool = nullptr;
-    TUniquePtr<RHI::Vulkan::CommandPool> mCommandPool;
-    RHI::Vulkan::RenderPass*             mRenderPass = nullptr;
-    TArray<vk::CommandBuffer>            mCommandBuffers;
+    vk::DescriptorPool        descriptor_pool_ = nullptr;
+    TUniquePtr<CommandPool>   command_pool_;
+    RenderPass*               render_pass_ = nullptr;
+    TArray<vk::CommandBuffer> command_buffers_;
 };
 
 void GLFWWindowSurface::Initialize()
@@ -72,8 +76,7 @@ void GLFWWindowSurface::Initialize()
     if (mAttachedInstanceHandle->IsValid())
     {
         VkSurfaceKHR   Surface{};
-        const VkResult Result =
-            glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &Surface);
+        const VkResult Result = glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &Surface);
         if (Result != VK_SUCCESS)
         {
             String ErrorStr = StringUtils::FromAnsiString(string_VkResult(Result));
@@ -92,116 +95,115 @@ void ImGuiRenderPass::CreateSubpassDescription()
     dependency_.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 }
 
-ImGuiGraphicsPipeline::ImGuiGraphicsPipeline(const Ref<RHI::Vulkan::VulkanContext> InConext) : mContext(InConext)
+ImGuiGraphicsPipeline::ImGuiGraphicsPipeline()
 {
+    context_ = VulkanContext::Get();
     Initialize();
-    mContext.get().AddPipelineToRender(this);
 }
 
 void ImGuiGraphicsPipeline::Initialize()
 {
-    if (mDescriptorPool != nullptr) return;
+    if (descriptor_pool_ != nullptr) return;
     ImGui_ImplVulkan_InitInfo Info{};
-    Info.Instance       = mContext.get().GetVulkanInstance()->GetHandle();
-    Info.PhysicalDevice = mContext.get().GetPhysicalDevice()->GetHandle();
-    Info.Device         = mContext.get().GetLogicalDevice()->GetHandle();
-    Info.QueueFamily    = mContext.get().GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
-    Info.Queue          = mContext.get().GetLogicalDevice()->GetGraphicsQueue();
+    Info.Instance       = context_->GetVulkanInstance()->GetHandle();
+    Info.PhysicalDevice = context_->GetPhysicalDevice()->GetHandle();
+    Info.Device         = context_->GetLogicalDevice()->GetHandle();
+    Info.QueueFamily    = context_->GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
+    Info.Queue          = context_->GetLogicalDevice()->GetGraphicsQueue();
+    // TODO: 填充PipelineCache和DescriptorPool
     Info.PipelineCache  = nullptr;
-    Info.DescriptorPool = nullptr;   // 后面进行填充
+    Info.DescriptorPool = nullptr;
     Info.Subpass        = 0;
-    Info.MinImageCount  = mContext.get().GetSwapChainImageCount();
-    Info.ImageCount     = mContext.get().GetSwapChainImageCount();
+    Info.MinImageCount  = context_->GetSwapChainImageCount();
+    Info.ImageCount     = context_->GetSwapChainImageCount();
     Info.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
 
     CreateDescriptorPool();
-    Info.DescriptorPool = mDescriptorPool;
+    Info.DescriptorPool = descriptor_pool_;
 
-    mCommandPool = RHI::Vulkan::CommandPool::CreateUnique(
-        mContext.get().GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer
-    );
+    command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-    mRenderPass = new ImGuiRenderPass();
-    mRenderPass->Initialize();
+    render_pass_ = new ImGuiRenderPass();
+    render_pass_->Initialize();
 
     // CommandBuffers
     vk::CommandBufferAllocateInfo AllocInfo = {};
-    AllocInfo.setCommandPool(mContext.get().GetCommandPool()->GetHandle())
+    AllocInfo.setCommandPool(context_->GetCommandPool()->GetHandle())
         .setLevel(vk::CommandBufferLevel::ePrimary)
-        .setCommandBufferCount(mContext.get().GetSwapChainImageCount());
+        .setCommandBufferCount(context_->GetSwapChainImageCount());
 
-    mCommandBuffers = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
+    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(AllocInfo);
 
     // 初始化Imgui
     ImGui_ImplVulkan_LoadFunctions(
-        [](const char* Name, void* UserData) {
-            return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name);
-        },
-        mContext.get().GetVulkanInstance()->GetHandle()
+        [](const char* Name, void* UserData) { return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name); },
+        context_->GetVulkanInstance()->GetHandle()
     );
-    ImGui_ImplVulkan_Init(&Info, mRenderPass->GetHandle());
+    ImGui_ImplVulkan_Init(&Info, render_pass_->GetHandle());
     // 字体纹理
     CreateCommandBuffers();
 }
 
 void ImGuiGraphicsPipeline::Finialize()
 {
-    if (mDescriptorPool == nullptr) return;
-    mCommandPool->Finialize();
-    delete mRenderPass;
-    mRenderPass = nullptr;
+    if (descriptor_pool_ == nullptr) return;
+    command_pool_->Finialize();
+    delete render_pass_;
+    render_pass_ = nullptr;
     ImGui_ImplVulkan_Shutdown();
-    mContext.get().GetLogicalDevice()->GetHandle().destroyDescriptorPool(mDescriptorPool);
-    mDescriptorPool = nullptr;
+    context_->GetLogicalDevice()->DestroyDescriptorPool(descriptor_pool_);
+    descriptor_pool_ = nullptr;
 }
 
 ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline()
 {
     Finialize();
-    mContext.get().RemovePipelineFromRender(this);
 }
 
 void ImGuiGraphicsPipeline::CreateCommandBuffers()
 {
     vk::CommandBufferAllocateInfo AllocInfo = {};
     AllocInfo.level                         = vk::CommandBufferLevel::ePrimary;
-    AllocInfo.commandPool                   = mCommandPool->GetHandle();
-    AllocInfo.commandBufferCount            = static_cast<uint32_t>(mRenderPass->GetFrameBuffers().size());
-    mCommandBuffers = mContext.get().GetLogicalDevice()->GetHandle().allocateCommandBuffers(AllocInfo);
+    AllocInfo.commandPool                   = command_pool_->GetHandle();
+    AllocInfo.commandBufferCount            = static_cast<uint32_t>(render_pass_->GetFrameBuffers().size());
+    command_buffers_                        = context_->GetLogicalDevice()->AllocateCommandBuffers(AllocInfo);
 }
 
-void ImGuiGraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores,
-    TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
-)
+void ImGuiGraphicsPipeline::Draw()
 {
-    vk::CommandBufferBeginInfo begin_info = {};
+    vk::CommandBufferBeginInfo begin_info          = {};
+    int32_t                    current_image_index = g_engine_statistics.current_image_index;
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    mCommandBuffers[CurrentImageIndex].begin(&begin_info);
+    command_buffers_[current_image_index].begin(&begin_info);
     vk::RenderPassBeginInfo         render_pass_info = {};
-    TStaticArray<vk::ClearValue, 1> clear_values    = {};
-    render_pass_info.renderPass                      = mRenderPass->GetHandle();
-    render_pass_info.framebuffer                     = mRenderPass->GetFrameBuffer(CurrentImageIndex)->GetHandle();
-    render_pass_info.renderArea                      = vk::Rect2D{{0, 0}, mContext.get().GetSwapChainExtent()};
+    TStaticArray<vk::ClearValue, 1> clear_values     = {};
+    render_pass_info.renderPass                      = render_pass_->GetHandle();
+    render_pass_info.framebuffer                     = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
+    render_pass_info.renderArea                      = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
     render_pass_info.clearValueCount                 = static_cast<uint32_t>(clear_values.size());
     render_pass_info.pClearValues                    = clear_values.data();
-    mCommandBuffers[CurrentImageIndex].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+    command_buffers_[current_image_index].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[CurrentImageIndex]);
-    mCommandBuffers[CurrentImageIndex].endRenderPass();
-    mCommandBuffers[CurrentImageIndex].end();
-    vk::PipelineStageFlags WaitFlag = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    vk::SubmitInfo         Info     = {};
-    Info.setSignalSemaphores(InSingalSemaphores)
-        .setWaitSemaphores(InWaitSemaphores)
-        .setCommandBuffers(mCommandBuffers[CurrentImageIndex])
-        .setWaitDstStageMask(WaitFlag);
-    InGraphicsQueue.submit(Info);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffers_[current_image_index]);
+    command_buffers_[current_image_index].endRenderPass();
+    command_buffers_[current_image_index].end();
+    // vk::PipelineStageFlags WaitFlag = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    // vk::SubmitInfo         Info     = {};
+    // Info.setSignalSemaphores(InSingalSemaphores)
+    //     .setWaitSemaphores(InWaitSemaphores)
+    //     .setCommandBuffers(command_buffers_[current_image_index])
+    //     .setWaitDstStageMask(WaitFlag);
+    // InGraphicsQueue.submit(Info);
 }
 
 void ImGuiGraphicsPipeline::Rebuild()
 {
-    mRenderPass->Rebuild(false);
+    render_pass_->Rebuild(false);
+}
+
+vk::CommandBuffer ImGuiGraphicsPipeline::GetCurrentCommandBuffer() const
+{
+    return command_buffers_[g_engine_statistics.current_image_index];
 }
 
 void ImGuiGraphicsPipeline::CreateDescriptorPool()
@@ -209,7 +211,7 @@ void ImGuiGraphicsPipeline::CreateDescriptorPool()
     vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
     vk::DescriptorPoolCreateInfo PoolCreateInfo;
     PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(1).setPoolSizes(PoolSizes);
-    mDescriptorPool = mContext.get().GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
+    descriptor_pool_ = context_->GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 
 TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
@@ -236,11 +238,12 @@ Size2D GlfwWindow::GetWindowSize()
     return {width_, height_};
 }
 
-void GlfwWindow::InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext)
+void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
-    imgui_graphics_pipeline_ = new ImGuiGraphicsPipeline(InContext);
+    imgui_graphics_pipeline_ = new ImGuiGraphicsPipeline();
+    Function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
 
@@ -285,7 +288,7 @@ void GlfwWindow::Initialize()
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     const AnsiString Title = StringUtils::ToAnsiString(window_title_);
-    window_handle_          = glfwCreateWindow(width_, height_, Title.c_str(), nullptr, nullptr);
+    window_handle_         = glfwCreateWindow(width_, height_, Title.c_str(), nullptr, nullptr);
 
     camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
     camera_object_->BeginPlay();
@@ -317,6 +320,10 @@ void GlfwWindow::Tick(float DeltaTime)
 void GlfwWindow::SetMouseVisible(const bool InVisible) const
 {
     glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+}
+
+void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline){
+    *pipeline = imgui_graphics_pipeline_;
 }
 
 PLATFORM_WINDOW_NAMESPACE_END

@@ -132,9 +132,9 @@ public:
     // 根据Initializer配置的参数初始化一个图形管线
     explicit GraphicsPipeline(const PipelineInfo& pipeline_info);
 
-    vk::CommandBuffer GetCurrentImageCommandBuffer() const;
+    vk::CommandBuffer GetCurrentCommandBuffer() const override;
 
-    void BeginCommandBuffer(vk::CommandBuffer buffer);
+    void BeginCommandBuffer();
     void EndCommandBuffer();
 
     void BeginRenderPass(Color clear_color = Color::Red()) const;
@@ -143,7 +143,7 @@ public:
     void BindPipeline() const;
 
     void UpdateViewport(float width = 0, float height = 0, float x = 0, float y = 0) const;
-    void UpdateScissor(uint32_t width = 0, uint32_t height = 0, float offset_x = 0, float offset_y = 0) const;
+    void UpdateScissor(uint32_t width = 0, uint32_t height = 0, int32_t offset_x = 0, int32_t offset_y = 0) const;
 
     // TODO: TArrayView?
     void BindVertexBuffers(vk::ArrayProxy<vk::Buffer> buffers, vk::ArrayProxy<vk::DeviceSize> offsets = {}) const;
@@ -190,15 +190,8 @@ private:
     void DestroyCommandBuffers() const;
 
 public:
-    // clang-format off
-    void SubmitGraphicsQueue(
-        int CurrentImageIndex,
-        vk::Queue InGraphicsQueue,
-        TArray<vk::Semaphore> InWaitSemaphores,
-        TArray<vk::Semaphore> InSingalSemaphores, vk::Fence InFrameFence
-    ) override;
     // clang-format on
-    void Rebuild() override;
+    void Rebuild();
 };
 
 RHI_VULKAN_NAMESPACE_END

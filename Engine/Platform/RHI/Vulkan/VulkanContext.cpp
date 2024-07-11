@@ -30,7 +30,6 @@ VulkanContext::~VulkanContext()
 TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& instance)
 {
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
-    Rtn->CreateGraphicsPipeline();
     return Rtn;
 }
 
@@ -60,13 +59,13 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
     Initialize();
 }
 
-VulkanContext& VulkanContext::Get()
+VulkanContext* VulkanContext::Get()
 {
     if (s_context_ == nullptr)
     {
         throw VulkanException(L"VulkanContext未初始化");
     }
-    return *s_context_;
+    return s_context_;
 }
 
 void VulkanContext::Initialize()
@@ -83,17 +82,23 @@ void VulkanContext::Finalize()
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
-    if (graphics_pipeline_)
-    {
-        delete graphics_pipeline_;
-        graphics_pipeline_ = nullptr;
-    }
     swap_chain_->Finialize();
     logical_device_->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
-void VulkanContext::PrepareFrame()
+void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline)
+{
+    vk::Queue         graphics_queue = logical_device_->GetGraphicsQueue();
+    vk::CommandBuffer cb             = pipeline->GetCurrentCommandBuffer();
+    vk::SubmitInfo    submit_info;
+    submit_info.setCommandBuffers(cb);
+    // TODO: 这里等待的信号量需要再看看
+    submit_info.setWaitSemaphores({image_available_semaphores_[g_engine_statistics.current_frame_index]});
+    graphics_queue.submit(submit_info);
+}
+
+void VulkanContext::PrepareFrameRender()
 {
     // 等待当前帧的指令缓冲结束执行
     const TStaticArray fences      = {in_flight_fences_[g_engine_statistics.current_frame_index]};
@@ -112,6 +117,7 @@ void VulkanContext::PrepareFrame()
         nullptr,
         &g_engine_statistics.current_image_index
     );
+
     if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         // 交换链过期，重建交换链
@@ -126,6 +132,31 @@ void VulkanContext::PrepareFrame()
     }
     // 重置当前帧的Fence
     logical_device_->ResetFences(fences);
+}
+
+void VulkanContext::PostFrameRender()
+{
+    // 呈现
+    vk::PresentInfoKHR PresentInfo = {};
+    TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
+    // TODO: 这里需要等待的信号量需要再看看
+    PresentInfo.setSwapchains(SwapChains).setImageIndices(g_engine_statistics.current_image_index);
+
+    const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
+
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().frame_buffer_resized)
+    {
+        RebuildSwapChain();
+        Tool::EngineApplication::Get().frame_buffer_resized = false;
+    }
+    else if (Result != vk::Result::eSuccess)
+    {
+        throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
+    }
+
+    logical_device_->GetPresentQueue().waitIdle();
+
+    g_engine_statistics.IncreaseFrameIndex();
 }
 
 void VulkanContext::Draw()
@@ -163,28 +194,6 @@ void VulkanContext::Draw()
     TArray                WaitSemaphores   = {image_available_semaphores_[current_frame_index]};
     TArray<vk::Semaphore> SingalSemaphores = {};
 
-    constexpr vk::SemaphoreCreateInfo SemaphoreInfo = {};
-    for (auto& Pipeline: render_graphics_pipelines_)
-    {
-        SingalSemaphores.push_back(device.createSemaphore(SemaphoreInfo));
-    }
-
-    for (int i = 0; i < render_graphics_pipelines_.size(); i++)
-    {
-        if (i == 0)
-        {
-            render_graphics_pipelines_[i]->SubmitGraphicsQueue(
-                image_index, logical_device_->GetGraphicsQueue(), WaitSemaphores, {SingalSemaphores[0]}, in_flight_fences_[current_frame_index]
-            );
-        }
-        else
-        {
-            render_graphics_pipelines_[i]->SubmitGraphicsQueue(
-                image_index, logical_device_->GetGraphicsQueue(), {SingalSemaphores[0]}, {SingalSemaphores[1]}, in_flight_fences_[current_frame_index]
-            );
-        }
-    }
-
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
     TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
@@ -192,10 +201,10 @@ void VulkanContext::Draw()
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
 
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().bFrameBufferResized)
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().frame_buffer_resized)
     {
         RebuildSwapChain();
-        Tool::EngineApplication::Get().bFrameBufferResized = false;
+        Tool::EngineApplication::Get().frame_buffer_resized = false;
     }
     else if (Result != vk::Result::eSuccess)
     {
@@ -239,30 +248,15 @@ void VulkanContext::RebuildSwapChain()
 
     swap_chain_->Finialize();
     swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, Size.width, Size.height);
-
-    for (const auto& Pipeline: render_graphics_pipelines_)
-    {
-        Pipeline->Rebuild();
-    }
 }
 
-vk::Format VulkanContext::GetDepthImageFormat()
+vk::Format VulkanContext::GetDepthImageFormat() const
 {
     return physical_device_->FindSupportFormat(
         {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
         vk::ImageTiling::eOptimal,
         vk::FormatFeatureFlagBits::eDepthStencilAttachment
     );
-}
-
-void VulkanContext::CreateGraphicsPipeline()
-{
-    // 创建图形管线
-    // 寻找深度图像格式
-    PipelineInfo Initializer{};
-    Initializer.shader_stage.FragmentShaderPath = L"Shaders/frag.spv";
-    Initializer.shader_stage.VertexShaderPath   = L"Shaders/vert.spv";
-    graphics_pipeline_                          = new GraphicsPipeline(Initializer);
 }
 
 // void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
@@ -292,7 +286,7 @@ void VulkanContext::CreateSyncObjecs()
     }
 }
 
-void VulkanContext::CleanSyncObjects()
+void VulkanContext::CleanSyncObjects() const
 {
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {

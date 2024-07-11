@@ -17,7 +17,7 @@ RHI::Vulkan::ImageView::~ImageView()
 void RHI::Vulkan::ImageView::InternalDestroy()
 {
     if (!IsValid()) return;
-    VulkanContext::Get().GetLogicalDevice()->GetHandle().destroy(mViewHandle);
+    VulkanContext::Get()->GetLogicalDevice()->GetHandle().destroy(mViewHandle);
     mViewHandle = VK_NULL_HANDLE;
 }
 

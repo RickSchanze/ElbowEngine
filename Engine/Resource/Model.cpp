@@ -31,7 +31,7 @@ Model::Model(Protected, const Path& InModelPath) : mPath(InModelPath) {
 }
 
 Model* Model::Create(const Path& InModelPath) {
-    auto* CachedModel = ResourceManager::Get().GetResource<Model>(InModelPath);
+    auto* CachedModel = ResourceManager::Get()->GetResource<Model>(InModelPath);
     if (CachedModel == nullptr) {
         CachedModel = new Model(Protected{}, InModelPath);
     }

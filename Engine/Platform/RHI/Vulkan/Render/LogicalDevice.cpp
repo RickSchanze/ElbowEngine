@@ -53,7 +53,7 @@ void LogicalDevice::Destroy()
     Finialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainImageCount,int32_t InWidth,int32_t InHeight)
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainImageCount, int32_t InWidth, int32_t InHeight)
 {
     const auto physical_device    = associated_physical_device_.get();
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
@@ -63,7 +63,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainI
     const auto present_mode   = SwapChain::ChooseSwapPresentMode(swap_chain_support.present_modes);
     const auto extent         = SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
 
-   int32_t ImageCount = InSwapChainImageCount;
+    int32_t ImageCount = InSwapChainImageCount;
     if (InSwapChainImageCount == 0)
     {
         ImageCount = swap_chain_support.capabilities.minImageCount + 1;
@@ -90,7 +90,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainI
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                    indicies             = physical_device.FindQueueFamilyIndices();
+    const auto                      indicies             = physical_device.FindQueueFamilyIndices();
     const TStaticArray<uint32_t, 2> queue_family_indices = {
         indicies.graphics_family.value(),
         indicies.present_family.value(),
@@ -183,13 +183,22 @@ void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
     handle_.unmapMemory(InMemory);
 }
 
-vk::Result LogicalDevice::WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all, uint64_t timeout) const {
+vk::Result LogicalDevice::WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all, uint64_t timeout) const
+{
     return handle_.waitForFences(fences, wait_all, timeout);
 }
 
 void LogicalDevice::ResetFences(const vk::ArrayProxy<vk::Fence> fences) const
 {
     handle_.resetFences(fences);
+}
+
+TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(const vk::CommandBufferAllocateInfo &allocate_info)const{
+    return handle_.allocateCommandBuffers(allocate_info);
+}
+
+void LogicalDevice::DestroySampler(vk::Sampler sampler) const{
+    handle_.destroySampler(sampler);
 }
 
 RHI_VULKAN_NAMESPACE_END

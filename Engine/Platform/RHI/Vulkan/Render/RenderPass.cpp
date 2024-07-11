@@ -17,24 +17,24 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 void RenderPassAttachmentParam::Init()
 {
-    if (FinialLayout == vk::ImageLayout::eUndefined)
+    if (finial_layout == vk::ImageLayout::eUndefined)
     {
-        if (SampleCount == vk::SampleCountFlagBits::e1)
+        if (sample_count == vk::SampleCountFlagBits::e1)
         {
-            FinialLayout = vk::ImageLayout::ePresentSrcKHR;
+            finial_layout = vk::ImageLayout::ePresentSrcKHR;
         }
         else
         {
-            FinialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+            finial_layout = vk::ImageLayout::eColorAttachmentOptimal;
         }
     }
-    if (Format == vk::Format::eUndefined)
+    if (format == vk::Format::eUndefined)
     {
-        Format = VulkanContext::Get().GetSwapChainImageFormat();
+        format = VulkanContext::Get()->GetSwapChainImageFormat();
     }
-    if (ReferenceLayout == vk::ImageLayout::eUndefined)
+    if (reference_layout == vk::ImageLayout::eUndefined)
     {
-        ReferenceLayout = FinialLayout;
+        reference_layout = finial_layout;
     }
 }
 
@@ -67,41 +67,39 @@ void RenderPass::OnCreateAttachments()
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
     RenderPassAttachmentParam SwapchainImageParam{vk::ImageUsageFlagBits::eSampled};
-    SwapchainImageParam.SampleCount     = SampleCount;
-    SwapchainImageParam.ReferenceLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    SwapchainImageParam.sample_count     = SampleCount;
+    SwapchainImageParam.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
     NewAttachment(SwapchainImageParam, true);
 
     // 深度图像缓冲
     RenderPassAttachmentParam DepthImageParam(vk::ImageUsageFlagBits::eDepthStencilAttachment);
     // @QUESTION: 深度图像是否需要多重采样？
-    DepthImageParam.SampleCount     = SampleCount;
-    DepthImageParam.LoadOp          = vk::AttachmentLoadOp::eClear;
-    DepthImageParam.StoreOp         = vk::AttachmentStoreOp::eDontCare;
-    DepthImageParam.Format          = VulkanContext::Get().GetDepthImageFormat();
-    DepthImageParam.FinialLayout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    DepthImageParam.ReferenceLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    DepthImageParam.sample_count     = SampleCount;
+    DepthImageParam.LoadOp           = vk::AttachmentLoadOp::eClear;
+    DepthImageParam.StoreOp          = vk::AttachmentStoreOp::eDontCare;
+    DepthImageParam.format           = VulkanContext::Get()->GetDepthImageFormat();
+    DepthImageParam.finial_layout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    DepthImageParam.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     NewAttachment(DepthImageParam, false, true);
 
     if (SampleCount != vk::SampleCountFlagBits::e1)
     {
         // 多重采样Resolve
-        RenderPassAttachmentParam SampleResolveParam(
-            vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment
-        );
-        SampleResolveParam.SampleCount  = SampleCount;
-        SampleResolveParam.FinialLayout = vk::ImageLayout::ePresentSrcKHR;
+        RenderPassAttachmentParam SampleResolveParam(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment);
+        SampleResolveParam.sample_count  = SampleCount;
+        SampleResolveParam.finial_layout = vk::ImageLayout::ePresentSrcKHR;
         NewAttachment(SampleResolveParam, false, false, true);
     }
 }
 
 void RenderPass::SetupFramebuffer()
 {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext& context = *VulkanContext::Get();
 
     frame_buffer_attachments_.resize(attachment_descs_.size());
 
-    auto Height = g_engine_statistics.window_size.height;
-    auto Width  = g_engine_statistics.window_size.width;
+    auto height = g_engine_statistics.window_size.height;
+    auto width  = g_engine_statistics.window_size.width;
 
     for (size_t i = 0; i < frame_buffer_attachments_.size(); i++)
     {
@@ -109,50 +107,50 @@ void RenderPass::SetupFramebuffer()
         {
             continue;
         }
-        ImageInfo ImageInfo{};
-        ImageInfo.Height                   = Height;
-        ImageInfo.Width                    = Width;
-        ImageInfo.Usage                    = frame_buffer_attachment_image_infos_[i].Usage;
-        ImageInfo.Format                   = frame_buffer_attachment_image_infos_[i].Format;
-        frame_buffer_attachments_[i].Image = Image::CreateUnique(ImageInfo);
+        ImageInfo image_info{};
+        image_info.height                  = height;
+        image_info.width                   = width;
+        image_info.usage                   = frame_buffer_attachment_image_infos_[i].Usage;
+        image_info.format                  = frame_buffer_attachment_image_infos_[i].Format;
+        frame_buffer_attachments_[i].Image = Image::CreateUnique(image_info);
 
-        ImageViewInfo ViewInfo = {};
+        ImageViewInfo view_info = {};
         if (i == depth_attachment_index_)
         {
-            ViewInfo.Format                   = ImageInfo.Format;
-            ViewInfo.AspectFlags              = vk::ImageAspectFlagBits::eDepth;
-            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(ViewInfo);
+            view_info.format                  = image_info.format;
+            view_info.aspect_flags            = vk::ImageAspectFlagBits::eDepth;
+            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
         else
         {
-            ViewInfo.AspectFlags              = vk::ImageAspectFlagBits::eColor;
-            ViewInfo.Format                   = ImageInfo.Format;
-            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(ViewInfo);
+            view_info.aspect_flags            = vk::ImageAspectFlagBits::eColor;
+            view_info.format                  = image_info.format;
+            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
     }
 
-    frame_buffers_.resize(Context.GetSwapChainImageCount());
+    frame_buffers_.resize(context.GetSwapChainImageCount());
     for (size_t i = 0; i < frame_buffers_.size(); i++)
     {
-        TArray<vk::ImageView> Attachments;
+        TArray<vk::ImageView> attachments;
         for (size_t j = 0; j < frame_buffer_attachments_.size(); j++)
         {
             if (j == swapchain_view_index_)
             {
-                Attachments.emplace_back(Context.GetSwapChainImageViews()[i]->GetHandle());
+                attachments.emplace_back(context.GetSwapChainImageViews()[i]->GetHandle());
             }
             else
             {
-                Attachments.emplace_back(frame_buffer_attachments_[j].View->GetHandle());
+                attachments.emplace_back(frame_buffer_attachments_[j].View->GetHandle());
             }
         }
-        vk::FramebufferCreateInfo FramebufferInfo = {};
-        FramebufferInfo.renderPass                = handle_;
-        FramebufferInfo.setAttachments(Attachments);
-        FramebufferInfo.width  = Width;
-        FramebufferInfo.height = Height;
-        FramebufferInfo.layers = 1;
-        frame_buffers_[i]      = Framebuffer::CreateUnique(FramebufferInfo);
+        vk::FramebufferCreateInfo framebuffer_info = {};
+        framebuffer_info.renderPass                = handle_;
+        framebuffer_info.setAttachments(attachments);
+        framebuffer_info.width  = width;
+        framebuffer_info.height = height;
+        framebuffer_info.layers = 1;
+        frame_buffers_[i]       = Framebuffer::CreateUnique(framebuffer_info);
     }
 }
 
@@ -200,17 +198,15 @@ void RenderPass::InternalDestroy()
 {
     if (IsValid())
     {
-        VulkanContext& Context      = VulkanContext::Get();
-        auto           DeviceHandle = Context.GetLogicalDevice()->GetHandle();
+        VulkanContext& context       = *VulkanContext::Get();
+        auto           device_handle = context.GetLogicalDevice()->GetHandle();
         CleanFrameBuffer();
-        DeviceHandle.destroyRenderPass(handle_);
+        device_handle.destroyRenderPass(handle_);
         handle_ = nullptr;
     }
 }
 
-void RenderPass::NewAttachment(
-    RenderPassAttachmentParam& param, bool attach_to_swapchain, bool is_depth, bool is_sample_resolve
-)
+void RenderPass::NewAttachment(RenderPassAttachmentParam& param, bool attach_to_swapchain, bool is_depth, bool is_sample_resolve)
 {
     param.Init();
     if (is_depth)
@@ -227,10 +223,10 @@ void RenderPass::NewAttachment(
     }
 
     vk::AttachmentDescription NewAttachmentDesc{};
-    NewAttachmentDesc.format         = param.Format;
-    NewAttachmentDesc.samples        = param.SampleCount;
+    NewAttachmentDesc.format         = param.format;
+    NewAttachmentDesc.samples        = param.sample_count;
     NewAttachmentDesc.initialLayout  = param.InitialLayout;
-    NewAttachmentDesc.finalLayout    = param.FinialLayout;
+    NewAttachmentDesc.finalLayout    = param.finial_layout;
     NewAttachmentDesc.loadOp         = param.LoadOp;
     NewAttachmentDesc.storeOp        = param.StoreOp;
     NewAttachmentDesc.stencilLoadOp  = param.StencilLoadOp;
@@ -238,16 +234,16 @@ void RenderPass::NewAttachment(
 
     vk::AttachmentReference NewAttachmentRef{};
     NewAttachmentRef.attachment = attachment_descs_.size();
-    NewAttachmentRef.layout     = param.ReferenceLayout;
+    NewAttachmentRef.layout     = param.reference_layout;
 
     attachment_descs_.emplace_back(NewAttachmentDesc);
     attahcment_refs_.emplace_back(NewAttachmentRef);
 
     RenderPassAttachmentImageInfo NewImageInfo;
     NewImageInfo.Usage         = param.ImageUsage;
-    NewImageInfo.Format        = param.Format;
+    NewImageInfo.Format        = param.format;
     NewImageInfo.InitialLayout = param.InitialLayout;
-    NewImageInfo.FinalLayout   = param.FinialLayout;
+    NewImageInfo.FinalLayout   = param.finial_layout;
     frame_buffer_attachment_image_infos_.emplace_back(NewImageInfo);
 }
 
@@ -286,12 +282,10 @@ void RenderPass::CreateSubpassDescription()
             else
             {
                 ColorAttachmentA = ContainerUtils::Slice(attahcment_refs_, 0, SpecialIndexMax);
-                ColorAttachmentB =
-                    ContainerUtils::Slice(attahcment_refs_, SpecialIndexMax + 1, attahcment_refs_.size());
+                ColorAttachmentB = ContainerUtils::Slice(attahcment_refs_, SpecialIndexMax + 1, attahcment_refs_.size());
             }
         }
-        subpass_color_attachment_refs_ =
-            ContainerUtils::Concat(ContainerUtils::Concat(ColorAttachmentA, ColorAttachmentB), ColorAttachmentC);
+        subpass_color_attachment_refs_ = ContainerUtils::Concat(ContainerUtils::Concat(ColorAttachmentA, ColorAttachmentB), ColorAttachmentC);
     }
 
     // 指定Subpass
@@ -321,24 +315,20 @@ void RenderPass::CreateSubpassDescription()
             vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eLateFragmentTests
         )                                                                     // 指定需要等待的管线阶段
         .setSrcAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite)   // 指定子进行的操作类型
-        .setDstStageMask(
-            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests
-        )   // 指定等待的管线阶段
-        .setDstAccessMask(
-            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
-        );   // 指定子进行的操作类型
+        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)   // 指定等待的管线阶段
+        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);               // 指定子进行的操作类型
 }
 
 void RenderPass::CreateRenderPass()
 {
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext& context = *VulkanContext::Get();
 
-    TStaticArray<vk::SubpassDescription, 1> Subpasses    = {subpass_};
-    TStaticArray<vk::SubpassDependency, 1>  Dependencies = {dependency_};
+    TStaticArray<vk::SubpassDescription, 1> subpasses    = {subpass_};
+    TStaticArray<vk::SubpassDependency, 1>  dependencies = {dependency_};
 
     vk::RenderPassCreateInfo Info{};
-    Info.setAttachments(attachment_descs_).setSubpasses(Subpasses).setDependencies(Dependencies);
-    handle_ = Context.GetLogicalDevice()->GetHandle().createRenderPass(Info);
+    Info.setAttachments(attachment_descs_).setSubpasses(subpasses).setDependencies(dependencies);
+    handle_ = context.GetLogicalDevice()->GetHandle().createRenderPass(Info);
 }
 
 RHI_VULKAN_NAMESPACE_END

@@ -48,7 +48,7 @@ public:
      * @param InHeight
      * @return
      */
-    TUniquePtr<SwapChain> CreateSwapChain(uint32_t InSwapChainImageCount = 0,int32_t InWidth = 0,int32_t InHeight = 0);
+    TUniquePtr<SwapChain> CreateSwapChain(uint32_t InSwapChainImageCount = 0, int32_t InWidth = 0, int32_t InHeight = 0);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
@@ -92,7 +92,12 @@ public:
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
     vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
-    void       ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
+
+    void ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
+
+    TArray<vk::CommandBuffer> AllocateCommandBuffers(const vk::CommandBufferAllocateInfo& allocate_info) const;
+
+    void DestroySampler(vk::Sampler sampler) const;
 
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }

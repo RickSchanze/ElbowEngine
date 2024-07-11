@@ -12,7 +12,7 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 Framebuffer::Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& InCreateInfo) {
-    mHandle = VulkanContext::Get().GetLogicalDevice()->GetHandle().createFramebuffer(InCreateInfo);
+    mHandle = VulkanContext::Get()->GetLogicalDevice()->GetHandle().createFramebuffer(InCreateInfo);
 }
 
 TSharedPtr<Framebuffer> Framebuffer::CreateShared(const vk::FramebufferCreateInfo& InCreateInfo) {
@@ -25,7 +25,7 @@ TUniquePtr<Framebuffer> Framebuffer::CreateUnique(const vk::FramebufferCreateInf
 
 void Framebuffer::InternalDestroy() {
     if (IsValid()) {
-        VulkanContext& Context = VulkanContext::Get();
+        VulkanContext& Context = *VulkanContext::Get();
         Context.GetLogicalDevice()->GetHandle().destroyFramebuffer(mHandle);
         mHandle = nullptr;
     }

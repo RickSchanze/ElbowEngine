@@ -50,13 +50,12 @@ add_library(Platform
         RHI/Vulkan/Render/ShaderProgram.h
         RHI/Vulkan/Render/CommandPool.cpp
         RHI/Vulkan/Render/CommandPool.h
-        RHI/Vulkan/Render/CommandList.h
-        RHI/Vulkan/Render/CommandList.cpp
         RHI/Vulkan/Render/Framebuffer.h
         RHI/Vulkan/Render/Framebuffer.cpp
-        RHI/Vulkan/Interface/IGraphicsPipeline.h
         RHI/Vulkan/Resource/VulkanModel.h
         RHI/Vulkan/Resource/VulkanModel.cpp
+        RHI/Vulkan/Interface/IGraphicsPipeline.h
+        RHI/Vulkan/Interface/IGraphicsPipeline.cpp
         PlatformEvents.h
 )
 

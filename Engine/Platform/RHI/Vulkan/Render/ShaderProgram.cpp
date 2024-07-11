@@ -153,7 +153,7 @@ bool ShaderProgram::IsValid() const
 
 void ShaderProgram::CreateUniformBuffers()
 {
-    const auto&    device      = VulkanContext::Get().GetLogicalDevice();
+    const auto&    device      = *VulkanContext::Get()->GetLogicalDevice();
     vk::DeviceSize buffer_size = 0;
     for (const auto& value: GetUniforms() | std::views::values)
     {
@@ -163,7 +163,7 @@ void ShaderProgram::CreateUniformBuffers()
     uniform_buffers_memory_.resize(g_engine_statistics.swapchain_image_count);
     for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
     {
-        device->CreateBuffer(
+        device.CreateBuffer(
             buffer_size,
             vk::BufferUsageFlagBits::eUniformBuffer,
             vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
@@ -175,7 +175,7 @@ void ShaderProgram::CreateUniformBuffers()
 
 void ShaderProgram::DestroyUniformBuffers()
 {
-    const auto& device = VulkanContext::Get().GetLogicalDevice();
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
     for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
     {
         device->DestroyBuffer(uniform_buffers_[i]);
@@ -187,7 +187,7 @@ void ShaderProgram::DestroyUniformBuffers()
 
 void ShaderProgram::CreateDescriptorSets()
 {
-    VulkanContext&                context = VulkanContext::Get();
+    VulkanContext&                context = *VulkanContext::Get();
     TArray                        layouts(context.GetSwapChainImageCount(), descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
@@ -229,14 +229,14 @@ void ShaderProgram::CreateDescriptorSets()
 
 void ShaderProgram::DestroyDescriptorSets()
 {
-    const auto& device = VulkanContext::Get().GetLogicalDevice();
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
     device->FreeDescriptorSets(descriptor_pool_, descriptor_sets_);
     descriptor_sets_.clear();
 }
 
 void ShaderProgram::CreateDescriptorPool()
 {
-    const auto&                             device                = VulkanContext::Get().GetLogicalDevice();
+    const auto&                             device                = VulkanContext::Get()->GetLogicalDevice();
     TStaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
     const auto                              swapchain_image_count = g_engine_statistics.swapchain_image_count;
 
@@ -255,14 +255,14 @@ void ShaderProgram::CreateDescriptorPool()
 
 void ShaderProgram::DestroyDescriptorPool()
 {
-    const auto& device = VulkanContext::Get().GetLogicalDevice();
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
     device->DestroyDescriptorPool(descriptor_pool_);
     descriptor_pool_ = nullptr;
 }
 
 void ShaderProgram::CreateDescriptorSetLayout()
 {
-    const auto& device = VulkanContext::Get().GetLogicalDevice();
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
 
     TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
     for (const auto& uniform_binding: GetUniforms() | std::views::values)
@@ -281,7 +281,7 @@ void ShaderProgram::CreateDescriptorSetLayout()
 
 void ShaderProgram::DestroyDescriptorSetLayout()
 {
-    const auto& device = VulkanContext::Get().GetLogicalDevice();
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
 
     device->DestroyDescriptorSetLayout(descriptor_set_layout_);
     descriptor_set_layout_ = nullptr;

@@ -24,16 +24,16 @@ struct FramebufferAttachment
 
 struct RenderPassAttachmentParam
 {
-    vk::Format              Format          = vk::Format::eUndefined;   // Undefined则会使用交换链图像格式
-    vk::SampleCountFlagBits SampleCount     = vk::SampleCountFlagBits::e1;
+    vk::Format              format          = vk::Format::eUndefined;   // Undefined则会使用交换链图像格式
+    vk::SampleCountFlagBits sample_count     = vk::SampleCountFlagBits::e1;
     vk::AttachmentLoadOp    LoadOp          = vk::AttachmentLoadOp::eClear;
     vk::AttachmentStoreOp   StoreOp         = vk::AttachmentStoreOp::eStore;
     vk::AttachmentLoadOp    StencilLoadOp   = vk::AttachmentLoadOp::eDontCare;
     vk::AttachmentStoreOp   StencilStoreOp  = vk::AttachmentStoreOp::eDontCare;
     vk::ImageLayout         InitialLayout   = vk::ImageLayout::eUndefined;
     // 自动决定，如果SampleCount不为e1则是ColorAttachmentOptimal 否则 ePresentSrcKHR
-    vk::ImageLayout         FinialLayout    = vk::ImageLayout::eUndefined;
-    vk::ImageLayout         ReferenceLayout = vk::ImageLayout::eUndefined;
+    vk::ImageLayout         finial_layout    = vk::ImageLayout::eUndefined;
+    vk::ImageLayout         reference_layout = vk::ImageLayout::eUndefined;
 
     vk::ImageUsageFlags ImageUsage;
 

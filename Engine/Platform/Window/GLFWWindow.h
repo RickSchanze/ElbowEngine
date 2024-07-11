@@ -14,14 +14,14 @@
 #include "GLFW/glfw3.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
-#include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 
 namespace RHI::Vulkan {
 class RenderPass;
-}
-namespace RHI::Vulkan {
+class IGraphicsPipeline;
 class VulkanContext;
+class ImguiGraphicsPipeline;
 }
+
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
 struct GLFWWindowSurface : RHI::Vulkan::SurfaceBase
@@ -38,6 +38,7 @@ class ImGuiGraphicsPipeline;
 
 class GlfwWindow {
 public:
+    typedef GlfwWindow ThisClass;
     explicit GlfwWindow(String window_title, const int width, const int height) :
         window_title_(Move(window_title)), width_(width), height_(height) {
         g_engine_statistics.window_size.height = height;
@@ -69,6 +70,8 @@ public:
     void Tick(float DeltaTime);
 
     void SetMouseVisible(bool InVisible) const;
+
+    void RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline);
 
 
 private:

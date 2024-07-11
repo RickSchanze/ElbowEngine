@@ -13,7 +13,7 @@ extern Logger gLogger = {};
 
 uint32_t ObjectCreateHelper::GetAvailableID()
 {
-    return ObjectManager::Get().GetNextValidID();
+    return ObjectManager::Get()->GetNextValidID();
 }
 
 void ObjectCreateHelper::SetObjectID(Object* Obj, const uint32_t ID)

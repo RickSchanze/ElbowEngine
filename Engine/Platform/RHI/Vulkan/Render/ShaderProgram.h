@@ -25,20 +25,21 @@ class ShaderProgram
 {
 public:
     bool IsValid() const;
-         ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time);
+
+    ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time);
 
     ~ShaderProgram();
 
     static TSharedPtr<ShaderProgram> CreateShared(Shader* vert, Shader* frag, EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered)
     {
-        Ref device = *VulkanContext::Get().GetLogicalDevice();
+        Ref device = *VulkanContext::Get()->GetLogicalDevice();
         return MakeShared<ShaderProgram>(device, vert, frag, destroy_time);
     }
 
     static ShaderProgram* Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered)
     {
-        const Ref device  = *VulkanContext::Get().GetLogicalDevice();
-        auto*     program = new ShaderProgram(device, vert, frag, destroy_time);
+        Ref   device  = *VulkanContext::Get()->GetLogicalDevice();
+        auto* program = new ShaderProgram(device, vert, frag, destroy_time);
         return program;
     }
 
@@ -74,7 +75,7 @@ public:
     void DestroyShaders();
 
     // 设置MVP矩阵
-    bool SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)const;
+    bool SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const;
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer

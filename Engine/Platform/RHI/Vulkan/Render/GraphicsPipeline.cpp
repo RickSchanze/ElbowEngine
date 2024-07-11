@@ -26,30 +26,26 @@ GraphicsPipeline::~GraphicsPipeline()
 {
     DestroyCommandBuffers();
     DestroyPipeline();
-    VulkanContext::Get().RemovePipelineFromRender(this);
 }
 
 GraphicsPipeline::GraphicsPipeline(const PipelineInfo& pipeline_info)
 {
-    VulkanContext& Context = VulkanContext::Get();
     pipeline_info_         = pipeline_info;
     CreatePipeline();
     CreateCommandBuffers();
-    Context.AddPipelineToRender(this);
-    LOG_INFO_CATEGORY(Vulkan, L"图形管线初始化完成");
 }
 
-vk::CommandBuffer GraphicsPipeline::GetCurrentImageCommandBuffer() const
+vk::CommandBuffer GraphicsPipeline::GetCurrentCommandBuffer() const
 {
     return command_buffers_[g_engine_statistics.current_image_index];
 }
 
-void GraphicsPipeline::BeginCommandBuffer(vk::CommandBuffer buffer)
+void GraphicsPipeline::BeginCommandBuffer()
 {
-    binded_buffer_ = buffer;
+    binded_buffer_ = command_buffers_[g_engine_statistics.current_image_index];
     vk::CommandBufferBeginInfo begin_info;
     begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-    buffer.begin(begin_info);
+    binded_buffer_.begin(begin_info);
 }
 
 void GraphicsPipeline::EndCommandBuffer()
@@ -60,21 +56,17 @@ void GraphicsPipeline::EndCommandBuffer()
 
 void GraphicsPipeline::BeginRenderPass(const Color clear_color) const
 {
-    if (render_pass_ == nullptr)
-    {
-        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"RenderPass不能为空");
-        return;
-    }
+    ASSERT_CATEGORY(Vulkan.Render, render_pass_ != nullptr, L"RenderPass不能为空");
 
     TStaticArray<vk::ClearValue, 2> clear_values;
-    clear_values[0].color        = vk::ClearColorValue{{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    clear_values[0].color        = vk::ClearColorValue{TStaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
     clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
     vk::RenderPassBeginInfo render_pass_info;
     render_pass_info.renderPass        = render_pass_->GetHandle();
     render_pass_info.framebuffer       = render_pass_->GetCurrentFrameBufferHandle();
     render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
-    render_pass_info.renderArea.extent = VulkanContext::Get().GetSwapChainExtent();
+    render_pass_info.renderArea.extent = VulkanContext::Get()->GetSwapChainExtent();
     render_pass_info.setClearValues(clear_values);
     binded_buffer_.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
 }
@@ -89,7 +81,7 @@ void GraphicsPipeline::BindPipeline() const
     binded_buffer_.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_);
 }
 
-void GraphicsPipeline::UpdateViewport(float width, float height, float x, float y) const
+void GraphicsPipeline::UpdateViewport(const float width, const float height, const float x, const float y) const
 {
     vk::Viewport viewport;
     viewport.x        = x;
@@ -101,13 +93,13 @@ void GraphicsPipeline::UpdateViewport(float width, float height, float x, float 
     binded_buffer_.setViewport(0, viewport);
 }
 
-void GraphicsPipeline::UpdateScissor(uint32_t width, uint32_t height, float offset_x, float offset_y) const
+void GraphicsPipeline::UpdateScissor(const uint32_t width, const uint32_t height, const int offset_x, const int offset_y) const
 {
     vk::Rect2D scisor;
-    scisor.offset = vk::Offset2D{0, 0};
+    scisor.offset = vk::Offset2D{offset_x, offset_y};
     if (width == 0 || height == 0)
     {
-        scisor.extent = VulkanContext::Get().GetSwapChainExtent();
+        scisor.extent = VulkanContext::Get()->GetSwapChainExtent();
     }
     else
     {
@@ -155,7 +147,7 @@ void GraphicsPipeline::DrawIndexed(
 
 void GraphicsPipeline::CreatePipeline()
 {
-    VulkanContext& context = VulkanContext::Get();
+    VulkanContext& context = *VulkanContext::Get();
     /************************* 配置RenderPass ************************/
     if (pipeline_info_.render_pass == nullptr)
     {
@@ -326,11 +318,11 @@ void GraphicsPipeline::CreatePipeline()
 
 void GraphicsPipeline::DestroyPipeline()
 {
-    const auto& Device = VulkanContext::Get().GetLogicalDevice();
-    if (Device)
+    const auto& device = VulkanContext::Get()->GetLogicalDevice();
+    if (device)
     {
-        Device->GetHandle().destroyPipeline(pipeline_);
-        Device->GetHandle().destroyPipelineLayout(pipeline_layout_);
+        device->GetHandle().destroyPipeline(pipeline_);
+        device->GetHandle().destroyPipelineLayout(pipeline_layout_);
         delete render_pass_;
         render_pass_     = nullptr;
         pipeline_        = nullptr;
@@ -340,7 +332,7 @@ void GraphicsPipeline::DestroyPipeline()
 
 void GraphicsPipeline::CreateCommandBuffers()
 {
-    VulkanContext& context = VulkanContext::Get();
+    VulkanContext& context = *VulkanContext::Get();
     const auto&    pool    = context.GetCommandPool();
 
     vk::CommandBufferAllocateInfo alloc_info = {};
@@ -352,20 +344,8 @@ void GraphicsPipeline::CreateCommandBuffers()
 
 void GraphicsPipeline::DestroyCommandBuffers() const
 {
-    VulkanContext& Context = VulkanContext::Get();
-    Context.GetCommandPool()->DestroyCommandBuffers(command_buffers_);
-}
-
-void GraphicsPipeline::SubmitGraphicsQueue(
-    int CurrentImageIndex, vk::Queue InGraphicsQueue, TArray<vk::Semaphore> InWaitSemaphores, TArray<vk::Semaphore> InSingalSemaphores,
-    vk::Fence InFrameFence
-)
-{
-    auto                   CmdBuffer  = GetCurrentImageCommandBuffer();
-    vk::SubmitInfo         SubmitInfo = {};
-    vk::PipelineStageFlags WaitFlag   = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    SubmitInfo.setCommandBuffers(CmdBuffer).setWaitSemaphores(InWaitSemaphores).setSignalSemaphores(InSingalSemaphores).setWaitDstStageMask(WaitFlag);
-    InGraphicsQueue.submit(SubmitInfo, InFrameFence);
+    VulkanContext& context = *VulkanContext::Get();
+    context.GetCommandPool()->DestroyCommandBuffers(command_buffers_);
 }
 
 void GraphicsPipeline::Rebuild()

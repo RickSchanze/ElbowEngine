@@ -25,12 +25,12 @@ Texture::Texture(
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
     Load();
-    ResourceManager::Get().RegisterResource(mPath, this);
+    ResourceManager::Get()->RegisterResource(mPath, this);
 }
 
 Texture* Texture::Create(const Path& InPath, ETextureUsage InUsage, const SamplerInfo& SamplerInfo)
 {
-    auto* CachedTexture = ResourceManager::Get().GetResource<Texture>(InPath);
+    auto* CachedTexture = ResourceManager::Get()->GetResource<Texture>(InPath);
     if (CachedTexture == nullptr)
     {
         // 指针由ResourceManager管理
@@ -67,9 +67,9 @@ void Texture::Load()
 
     // 加载底层RHI资源
     ImageInfo TextureInfo = {};
-    TextureInfo.Height    = mHeight;
-    TextureInfo.Width     = mWidth;
-    TextureInfo.ImageType = vk::ImageType::e2D;
+    TextureInfo.height    = mHeight;
+    TextureInfo.width     = mWidth;
+    TextureInfo.image_type = vk::ImageType::e2D;
     mRHITexture           = RHI::Vulkan::Texture::CreateUnique(TextureInfo, mData);
 
     ImageViewInfo ViewInfo = {};
@@ -86,18 +86,18 @@ TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
 RESOURCE_NAMESPACE_END
 
 static void Load_Default_Engine_Texture_Resource(
-    RHI::Vulkan::Texture** OutTexture, RHI::Vulkan::ImageView** OutTextureView
+    Texture** out_texture, ImageView** out_texture_view
 )
 {
     // 引擎默认纹理资产的生命周期包含整个程序运行期间
     if (gResourceConfig.bInitialized)
     {
         auto* DefaultLackTexture =
-            ResourceManager::Get().GetResource<Resource::Texture>(gResourceConfig.DefaultLackTexturePath);
+            ResourceManager::Get()->GetResource<Resource::Texture>(gResourceConfig.DefaultLackTexturePath);
         if (DefaultLackTexture)
         {
-            *OutTexture     = DefaultLackTexture->GetRHIResource().get();
-            *OutTextureView = DefaultLackTexture->GetTextureView().get();
+            *out_texture     = DefaultLackTexture->GetRHIResource().get();
+            *out_texture_view = DefaultLackTexture->GetTextureView().get();
         }
         else
         {

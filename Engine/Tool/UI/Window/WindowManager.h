@@ -20,10 +20,10 @@ public:
     // 根据Type获取一个Window
     // 所有Window都是单例的
     // 如果有type则返回那个单例，没有则创建一个新的
-    static Tool::Window::WindowBase* GetWindow(Type InType);
+    static Tool::Window::WindowBase* GetWindow(Type type);
 
     // 销毁Type对应的Window
-    static void DestroyWindow(Type InType);
+    static void DestroyWindow(Type type);
 
     template<typename T>
         requires std::derived_from<T, Tool::Window::WindowBase>

@@ -43,11 +43,11 @@ extern Logger gLogger;
 #    define LOG_TRACE_CATEGORY(Category, Text, ...)
 #endif
 
-#define ASSERTF(Condition, Message) \
+#define ASSERT(Condition, Message) \
     if (Condition) LOG_CRITIAL(Message)
 
-#define ASSERTF_CATEGORY(Category, Condition, Message) \
-    if (Condition) LOG_CRITIAL_CATEGORY(Category, Message)
+#define ASSERT_CATEGORY(Category, Condition, Message, ...) \
+    if (Condition) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
 
 #define ASSETC
 
@@ -153,7 +153,7 @@ typename NewReturnType<T, Strategy>::Type New(const String& name = L"", Args&&..
         }
     }
     ObjectCreateHelper::SetObjectID(rtn, available_id);
-    ObjectManager::Get().AddObject(rtn);
+    ObjectManager::Get()->AddObject(rtn);
     return rtn;
 }
 

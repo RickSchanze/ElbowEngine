@@ -18,30 +18,30 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 ImageBase::~ImageBase()
 {
-    mImageHandle = VK_NULL_HANDLE;
+    image_handle_ = VK_NULL_HANDLE;
 }
 
-TSharedPtr<ImageView> ImageBase::CreateImageViewShared(const ImageViewInfo& InViewInfo) const
+TSharedPtr<ImageView> ImageBase::CreateImageViewShared(const ImageViewInfo& view_info) const
 {
-    return TSharedPtr<ImageView>{CreateImageView(InViewInfo)};
+    return TSharedPtr<ImageView>{CreateImageView(view_info)};
 }
 
-TUniquePtr<ImageView> ImageBase::CreateImageViewUnique(const ImageViewInfo& InViewInfo) const
+TUniquePtr<ImageView> ImageBase::CreateImageViewUnique(const ImageViewInfo& view_info) const
 {
-    return TUniquePtr<ImageView>{CreateImageView(InViewInfo)};
+    return TUniquePtr<ImageView>{CreateImageView(view_info)};
 }
 
-ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& InViewInfo) const
+ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
 {
-    VulkanContext&          Context  = VulkanContext::Get();
-    vk::ImageViewCreateInfo ViewInfo = {};
-    ViewInfo.setImage(mImageHandle)
+    VulkanContext&          context               = *VulkanContext::Get();
+    vk::ImageViewCreateInfo view_info_create_info = {};
+    view_info_create_info.setImage(image_handle_)
         .setViewType(vk::ImageViewType::e2D)
-        .setFormat(Context.GetSwapChainImageFormat())
+        .setFormat(context.GetSwapChainImageFormat())
         .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(InViewInfo.AspectFlags)
+                                 .setAspectMask(view_info.aspect_flags)
                                  .setBaseMipLevel(0)
-                                 .setLevelCount(InViewInfo.MipLevels)
+                                 .setLevelCount(view_info.mip_levels)
                                  .setBaseArrayLayer(0)
                                  .setLayerCount(1))
         .setComponents(vk::ComponentMapping()
@@ -49,36 +49,36 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& InViewInfo) cons
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(Context.GetLogicalDevice()->GetHandle().createImageView(ViewInfo));
+    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info));
 }
 
-ImageInfo::ImageInfo(const vk::ImageCreateInfo& InVkImageInfo)
+ImageInfo::ImageInfo(const vk::ImageCreateInfo& image_info)
 {
-    Format         = InVkImageInfo.format;
-    Usage          = InVkImageInfo.usage;
-    Width          = InVkImageInfo.extent.width;
-    Height         = InVkImageInfo.extent.height;
-    Depth          = InVkImageInfo.extent.depth;
-    MipLevels      = InVkImageInfo.mipLevels;
-    Tiling         = InVkImageInfo.tiling;
-    SampleCount    = InVkImageInfo.samples;
-    ImageType      = InVkImageInfo.imageType;
-    MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
+    format          = image_info.format;
+    usage           = image_info.usage;
+    width           = image_info.extent.width;
+    height          = image_info.extent.height;
+    depth           = image_info.extent.depth;
+    mip_levels      = image_info.mipLevels;
+    tiling          = image_info.tiling;
+    sample_count    = image_info.samples;
+    image_type      = image_info.imageType;
+    memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
 }
 
-Image::Image(Protected, const ImageInfo& InCreateInfo) : mImageInfo(InCreateInfo)
+Image::Image(Protected, const ImageInfo& create_info) : image_info_(create_info)
 {
     CreateImage();
 }
 
-TSharedPtr<Image> Image::CreateShared(const ImageInfo& InCreateInfo)
+TSharedPtr<Image> Image::CreateShared(const ImageInfo& create_info)
 {
-    return MakeShared<Image>(Protected{}, InCreateInfo);
+    return MakeShared<Image>(Protected{}, create_info);
 }
 
-TUniquePtr<Image> Image::CreateUnique(const ImageInfo& InCreateInfo)
+TUniquePtr<Image> Image::CreateUnique(const ImageInfo& create_info)
 {
-    return Move(MakeUnique<Image>(Protected{}, InCreateInfo));
+    return Move(MakeUnique<Image>(Protected{}, create_info));
 }
 
 void Image::Destroy()
@@ -93,76 +93,69 @@ Image::~Image()
 
 bool Image::IsValid() const
 {
-    return Super::IsValid() && mImageMemory != nullptr;
+    return Super::IsValid() && image_memory_ != nullptr;
 }
 
 void Image::Finialize()
 {
-    const auto& DeviceHandle = VulkanContext::Get().GetLogicalDevice()->GetHandle();
-    if (mImageHandle != nullptr)
+    const auto& DeviceHandle = VulkanContext::Get()->GetLogicalDevice()->GetHandle();
+    if (image_handle_ != nullptr)
     {
-        DeviceHandle.destroyImage(mImageHandle);
-        mImageHandle = nullptr;
+        DeviceHandle.destroyImage(image_handle_);
+        image_handle_ = nullptr;
     }
-    if (mImageMemory != nullptr)
+    if (image_memory_ != nullptr)
     {
-        DeviceHandle.freeMemory(mImageMemory);
-        mImageMemory = nullptr;
+        DeviceHandle.freeMemory(image_memory_);
+        image_memory_ = nullptr;
     }
 }
 
 void Image::CreateImage()
 {
-    VulkanContext&      Context = VulkanContext::Get();
-    vk::ImageCreateInfo ImageCreateInfo{};
-    const auto          DeviceHandle = Context.GetLogicalDevice()->GetHandle();
-    ImageCreateInfo.setImageType(mImageInfo.ImageType);
+    VulkanContext&      context = *VulkanContext::Get();
+    vk::ImageCreateInfo image_create_info{};
+    const auto          device_handle = context.GetLogicalDevice()->GetHandle();
+    image_create_info.setImageType(image_info_.image_type);
     const vk::Extent3D Extent{
-        static_cast<uint32_t>(mImageInfo.Width),
-        static_cast<uint32_t>(mImageInfo.Height),
-        static_cast<uint32_t>(mImageInfo.ImageType == vk::ImageType::e3D ? 1 : mImageInfo.Depth)
+        static_cast<uint32_t>(image_info_.width),
+        static_cast<uint32_t>(image_info_.height),
+        static_cast<uint32_t>(image_info_.image_type == vk::ImageType::e3D ? 1 : image_info_.depth)
     };
-    ImageCreateInfo.setExtent(Extent);
-    ImageCreateInfo.setArrayLayers(1);
-    ImageCreateInfo.setFormat(mImageInfo.Format);
-    ImageCreateInfo.setTiling(mImageInfo.Tiling);
-    ImageCreateInfo.setInitialLayout(vk::ImageLayout::eUndefined);
-    ImageCreateInfo.setUsage(mImageInfo.Usage);
-    ImageCreateInfo.setSamples(mImageInfo.SampleCount);
-    ImageCreateInfo.setMipLevels(mImageInfo.MipLevels);
+    image_create_info.setExtent(Extent);
+    image_create_info.setArrayLayers(1);
+    image_create_info.setFormat(image_info_.format);
+    image_create_info.setTiling(image_info_.tiling);
+    image_create_info.setInitialLayout(vk::ImageLayout::eUndefined);
+    image_create_info.setUsage(image_info_.usage);
+    image_create_info.setSamples(image_info_.sample_count);
+    image_create_info.setMipLevels(image_info_.mip_levels);
     // 只被一个队列族使用
-    ImageCreateInfo.setSharingMode(vk::SharingMode::eExclusive);
+    image_create_info.setSharingMode(vk::SharingMode::eExclusive);
 
-    mImageHandle                  = DeviceHandle.createImage(ImageCreateInfo);
+    image_handle_                             = device_handle.createImage(image_create_info);
     // 为图像分配内存
-    const auto MemoryRequirements = DeviceHandle.getImageMemoryRequirements(mImageHandle);
+    const auto             MemoryRequirements = device_handle.getImageMemoryRequirements(image_handle_);
     vk::MemoryAllocateInfo MemoryAllocateInfo{};
     MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
     MemoryAllocateInfo.setMemoryTypeIndex(
-        Context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(
-            MemoryRequirements.memoryTypeBits, mImageInfo.MemoryProperty
-        )
+        context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, image_info_.memory_property)
     );
-    mImageMemory = DeviceHandle.allocateMemory(MemoryAllocateInfo);
-    DeviceHandle.bindImageMemory(mImageHandle, mImageMemory, 0);
+    image_memory_ = device_handle.allocateMemory(MemoryAllocateInfo);
+    device_handle.bindImageMemory(image_handle_, image_memory_, 0);
 }
 
-ImageView* Image::CreateImageView(const ImageViewInfo& InViewInfo) const
+ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
 {
-    VulkanContext&          Context  = VulkanContext::Get();
-    vk::ImageViewCreateInfo ViewInfo = {};
-    ViewInfo.setImage(mImageHandle)
+    VulkanContext&          context          = *VulkanContext::Get();
+    vk::ImageViewCreateInfo view_create_info = {};
+    view_create_info.setImage(image_handle_)
         .setViewType(vk::ImageViewType::e2D)
-        .setFormat(
-            InViewInfo.Format == vk::Format::eUndefined ? mImageInfo.Format : InViewInfo.Format
-        )
+        .setFormat(view_info.format == vk::Format::eUndefined ? image_info_.format : view_info.format)
         .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(InViewInfo.AspectFlags)
+                                 .setAspectMask(view_info.aspect_flags)
                                  .setBaseMipLevel(0)
-                                 .setLevelCount(
-                                     InViewInfo.MipLevels == 0 ? mImageInfo.MipLevels
-                                                               : InViewInfo.MipLevels
-                                 )
+                                 .setLevelCount(view_info.mip_levels == 0 ? image_info_.mip_levels : view_info.mip_levels)
                                  .setBaseArrayLayer(0)
                                  .setLayerCount(1))
         .setComponents(vk::ComponentMapping()
@@ -170,114 +163,98 @@ ImageView* Image::CreateImageView(const ImageViewInfo& InViewInfo) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(Context.GetLogicalDevice()->GetHandle().createImageView(ViewInfo));
+    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info));
 }
 
-TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& InImageInfo, const uint8_t* InData)
+TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& image_info, const uint8_t* data)
 {
-    return MakeShared<Texture>(Protected{}, InImageInfo, InData);
+    return MakeShared<Texture>(Protected{}, image_info, data);
 }
 
-TUniquePtr<Texture> Texture::CreateUnique(const ImageInfo& InImageInfo, const uint8_t* InData)
+TUniquePtr<Texture> Texture::CreateUnique(const ImageInfo& image_info, const uint8_t* data)
 {
-    return MakeUnique<Texture>(Protected{}, InImageInfo, InData);
+    return MakeUnique<Texture>(Protected{}, image_info, data);
 }
 
-Texture::Texture(Protected, const ImageInfo& InImageInfo, const uint8_t* InData) : Image(InImageInfo)
+Texture::Texture(Protected, const ImageInfo& image_info, const uint8_t* data) : Image(image_info)
 {
-    if (InData == nullptr)
+    if (data == nullptr)
     {
         LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: Data为空");
         return;
     }
-    if (mImageInfo.Width <= 0 || mImageInfo.Height <= 0)
+    if (image_info_.width <= 0 || image_info_.height <= 0)
     {
         LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: 宽或高不合法");
         return;
     }
     // TODO: 绑定TextureSampler
-    vk::Buffer       StagingBuffer;
-    vk::DeviceMemory StagingBufferMemory;
-    VulkanContext&   Context      = VulkanContext::Get();
-    auto&            Device       = Context.GetLogicalDevice();
-    auto             DeviceHandle = Device->GetHandle();
-    auto&            CommandPool  = Context.GetCommandPool();
+    vk::Buffer       staging_buffer;
+    vk::DeviceMemory staging_buffer_memory;
+    VulkanContext&   context      = *VulkanContext::Get();
+    auto&            device       = context.GetLogicalDevice();
+    auto             device_handle = device->GetHandle();
+    auto&            command_pool  = context.GetCommandPool();
 
-    auto Width  = mImageInfo.Width;
-    auto Height = mImageInfo.Height;
+    auto width  = image_info_.width;
+    auto height = image_info_.height;
 
-    const vk::DeviceSize ImageSize = Width * Height * 4;
-    mMipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(Width, Height)))) + 1;
+    const vk::DeviceSize image_size = width * height * 4;
+    mip_level_                      = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
-    Device->CreateBuffer(
-        ImageSize,
+    device->CreateBuffer(
+        image_size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-        StagingBuffer,
-        StagingBufferMemory
+        staging_buffer,
+        staging_buffer_memory
     );
-    void*      Data;
-    const auto Result =
-        DeviceHandle.mapMemory(StagingBufferMemory, 0, ImageSize, vk::MemoryMapFlags(), &Data);
-    if (Result != vk::Result::eSuccess)
+    void*      map_data;
+    const auto result = device_handle.mapMemory(staging_buffer_memory, 0, image_size, vk::MemoryMapFlags(), &map_data);
+    if (result != vk::Result::eSuccess)
     {
         LOG_ERROR_CATEGORY(Vulkan, L"映射内存失败");
         return;
     }
-    std::memcpy(Data, InData, ImageSize);
-    DeviceHandle.unmapMemory(StagingBufferMemory);
-    // TODO: 这里不应该硬编码
-    mImageInfo.Width  = Width;
-    mImageInfo.Height = Height;
-    if (mImageInfo.Format == vk::Format::eUndefined)
+    std::memcpy(map_data, data, image_size);
+    device_handle.unmapMemory(staging_buffer_memory);
+    image_info_.width  = width;
+    image_info_.height = height;
+    if (image_info_.format == vk::Format::eUndefined)
     {
-        mImageInfo.Format = vk::Format::eR8G8B8A8Unorm;
+        image_info_.format = vk::Format::eR8G8B8A8Unorm;
     }
     // 这里设为Src是为了生成mipmap
-    mImageInfo.Usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled |
-                       vk::ImageUsageFlagBits::eTransferSrc;
-    mImageInfo.Tiling         = vk::ImageTiling::eOptimal;
-    mImageInfo.MemoryProperty = vk::MemoryPropertyFlagBits::eDeviceLocal;
-    mImageInfo.SampleCount    = vk::SampleCountFlagBits::e1;
+    image_info_.usage           = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+    image_info_.tiling          = vk::ImageTiling::eOptimal;
+    image_info_.memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
+    image_info_.sample_count    = vk::SampleCountFlagBits::e1;
     CreateImage();
     // 赋值暂存缓冲区数据到纹理图像
     // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
-    CommandPool->TrainsitionImageLayout(
-        mImageHandle,
-        vk::Format::eR8G8B8A8Unorm,
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eTransferDstOptimal,
-        mMipLevel
+    command_pool->TrainsitionImageLayout(
+        image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mip_level_
     );
     // 2. 复制缓冲区到图像
-    CommandPool->CopyBufferToImage(
-        StagingBuffer, mImageHandle, mImageInfo.Width, mImageInfo.Height
-    );
+    command_pool->CopyBufferToImage(staging_buffer, image_handle_, image_info_.width, image_info_.height);
     // 3. 生成mipmap
-    if (!CommandPool->GenerateMipmaps(
-            mImageHandle, mImageInfo.Format, mImageInfo.Width, mImageInfo.Height, mMipLevel
-        ))
+    if (!command_pool->GenerateMipmaps(image_handle_, image_info_.format, image_info_.width, image_info_.height, mip_level_))
     {
         // 无法生成mipmap就直接传给shader
-        CommandPool->TrainsitionImageLayout(
-            mImageHandle,
-            mImageInfo.Format,
-            vk::ImageLayout::eTransferDstOptimal,
-            vk::ImageLayout::eShaderReadOnlyOptimal
+        command_pool->TrainsitionImageLayout(
+            image_handle_, image_info_.format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal
         );
     }
-    DeviceHandle.destroy(StagingBuffer);
-    DeviceHandle.freeMemory(StagingBufferMemory);
+    device_handle.destroy(staging_buffer);
+    device_handle.freeMemory(staging_buffer_memory);
 }
 
 void Texture::LoadDefaultTextures()
 {
-    if (!bDefaultTexturesLoaded)
+    if (!default_textures_loaded_)
     {
-        Platform::OnRequestLoadDefaultLackTexture.Broadcast(
-            &sDefaultLackTexture, &sDefaultLackTextureView
-        );
-        bDefaultTexturesLoaded = true;
+        Platform::OnRequestLoadDefaultLackTexture.Broadcast(&s_default_lack_texture_, &s_default_lack_texture_view_);
+        default_textures_loaded_ = true;
         Platform::OnRequestLoadDefaultLackTexture.Clear();
     }
 }
@@ -285,13 +262,13 @@ void Texture::LoadDefaultTextures()
 Texture& Texture::GetDefaultLackTexture()
 {
     LoadDefaultTextures();
-    return *sDefaultLackTexture;
+    return *s_default_lack_texture_;
 }
 
 ImageView& Texture::GetDefaultLackTextureView()
 {
     LoadDefaultTextures();
-    return *sDefaultLackTextureView;
+    return *s_default_lack_texture_view_;
 }
 
 size_t SamplerInfo::GetHashCode() const
@@ -299,84 +276,81 @@ size_t SamplerInfo::GetHashCode() const
     std::size_t seed = 0;
 
     // 使用std::hash来计算每个成员变量的哈希值，并将其组合到最终的哈希值中
-    seed ^= std::hash<int>{}(static_cast<int>(MagFilter)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<int>{}(static_cast<int>(MinFilter)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^=
-        std::hash<int>{}(static_cast<int>(AddressModeU)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^=
-        std::hash<int>{}(static_cast<int>(AddressModeV)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^=
-        std::hash<int>{}(static_cast<int>(AddressModeW)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<bool>{}(bEnableAnisotropy) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<float>{}(MaxAnisotropy) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^=
-        std::hash<int>{}(static_cast<int>(BorderColor)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<bool>{}(bUnnormalizedCoordinates) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<bool>{}(bEnableCompare) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<int>{}(static_cast<int>(MipmapMode)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<float>{}(MipLodBias) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<float>{}(MinLod) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<float>{}(MaxLod) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(mag_filter)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(min_filter)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(address_mode_u)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(address_mode_v)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(address_mode_w)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<bool>{}(enable_anisotropy) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<float>{}(max_anisotropy) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(border_color)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<bool>{}(unnormalized_coordinates) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<bool>{}(enable_compare) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>{}(static_cast<int>(mipmap_mode)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<float>{}(mip_lod_bias) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<float>{}(min_lod) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<float>{}(max_lod) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 
     return seed;
 }
 
-Sampler::Sampler(ResourceProtected, const SamplerInfo& InInitializer)
+Sampler::Sampler(ResourceProtected, const SamplerInfo& info)
 {
     vk::SamplerCreateInfo CreateInfo{};
-    CreateInfo.anisotropyEnable        = InInitializer.bEnableAnisotropy;
-    CreateInfo.borderColor             = InInitializer.BorderColor;
-    CreateInfo.compareEnable           = InInitializer.bEnableCompare;
-    CreateInfo.magFilter               = InInitializer.MagFilter;
-    CreateInfo.maxAnisotropy           = InInitializer.MaxAnisotropy;
-    CreateInfo.maxLod                  = InInitializer.MaxLod;
-    CreateInfo.minLod                  = InInitializer.MinLod;
-    CreateInfo.mipmapMode              = InInitializer.MipmapMode;
-    CreateInfo.unnormalizedCoordinates = InInitializer.bUnnormalizedCoordinates;
-    CreateInfo.addressModeU            = InInitializer.AddressModeU;
-    CreateInfo.addressModeV            = InInitializer.AddressModeV;
-    CreateInfo.addressModeW            = InInitializer.AddressModeW;
-    CreateInfo.mipLodBias              = InInitializer.MipLodBias;
+    CreateInfo.anisotropyEnable        = info.enable_anisotropy;
+    CreateInfo.borderColor             = info.border_color;
+    CreateInfo.compareEnable           = info.enable_compare;
+    CreateInfo.magFilter               = info.mag_filter;
+    CreateInfo.maxAnisotropy           = info.max_anisotropy;
+    CreateInfo.maxLod                  = info.max_lod;
+    CreateInfo.minLod                  = info.min_lod;
+    CreateInfo.mipmapMode              = info.mipmap_mode;
+    CreateInfo.unnormalizedCoordinates = info.unnormalized_coordinates;
+    CreateInfo.addressModeU            = info.address_mode_u;
+    CreateInfo.addressModeV            = info.address_mode_v;
+    CreateInfo.addressModeW            = info.address_mode_w;
+    CreateInfo.mipLodBias              = info.mip_lod_bias;
 
-    VulkanContext& Context = VulkanContext::Get();
+    VulkanContext& context = *VulkanContext::Get();
 
-    mHandle        = Context.GetLogicalDevice()->GetHandle().createSampler(CreateInfo);
-    mId            = InInitializer.GetHashCode();
-    sSamplers[mId] = this;
+    handle_        = context.GetLogicalDevice()->GetHandle().createSampler(CreateInfo);
+    id_            = info.GetHashCode();
+    samplers_[id_] = this;
 }
 
-Sampler* Sampler::Create(const SamplerInfo& InInitializer)
+Sampler* Sampler::Create(const SamplerInfo& info)
 {
-    const auto Id = InInitializer.GetHashCode();
-    if (sSamplers.contains(Id))
+    const auto Id = info.GetHashCode();
+    if (samplers_.contains(Id))
     {
-        return sSamplers[Id];
+        return samplers_[Id];
     }
-    return new Sampler(ResourceProtected{}, InInitializer);
+    return new Sampler(ResourceProtected{}, info);
 }
 
-Sampler& Sampler::GetDefaultSampler(){
+Sampler& Sampler::GetDefaultSampler()
+{
     return *Create();
 }
 
 void Sampler::DestroyAllSamplers()
 {
-    while (!sSamplers.empty())
+    while (!samplers_.empty())
     {
-        sSamplers.begin()->second->Destroy();
+        samplers_.begin()->second->Destroy();
     }
-    sSamplers.clear();
+    samplers_.clear();
 }
 
 void Sampler::InternalDestroy() const
 {
     if (IsValid())
     {
-        VulkanContext& Context = VulkanContext::Get();
-        Context.GetLogicalDevice()->GetHandle().destroySampler(mHandle);
-        if (sSamplers.contains(mId))
+        VulkanContext& context = *VulkanContext::Get();
+        context.GetLogicalDevice()->DestroySampler(handle_);
+        if (samplers_.contains(id_))
         {
-            sSamplers.erase(mId);
+            samplers_.erase(id_);
         }
     }
 }

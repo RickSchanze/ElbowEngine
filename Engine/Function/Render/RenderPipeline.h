@@ -6,25 +6,40 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+#include "FunctionCommon.h"
 
-namespace RHI::Vulkan {
-class Framebuffer;
-}
-namespace RHI::Vulkan {
-class GraphicsPipeline;
+namespace Function
+{
+class RenderContext;
 }
 
-class RenderPipeline {
+namespace RHI::Vulkan
+{
+class IGraphicsPipeline;
+class ImguiGraphicsPipeline;
+}
+
+FUNCTION_NAMESPACE_BEGIN
+
+class RenderPipeline
+{
 public:
+    RenderPipeline();
+
+    virtual ~RenderPipeline() = default;
+
+    virtual void Draw()  = 0;
+    virtual void Build() = 0;
 
 protected:
-    TArray<RHI::Vulkan::GraphicsPipeline*> mPipelines;
+    void Submit(const RHI::Vulkan::IGraphicsPipeline* pipeline) const;
 
-    /**
-     * 一个FrameBuffer对应一个Pipeline
-     * 但是同时又有多帧在并行渲染，假设当前有2帧同时渲染，有2个Pipeline则
-     * mFramebuffers[CurrentFrame][CurrentPipeline]表示当前帧当前管线对应的FrameBuffer
-     */
-    TArray<TArray<TSharedPtr<RHI::Vulkan::Framebuffer>>> mFramebuffers;
+    void AddImGuiGraphicsPipeline();
+    void DrawImGuiPipeline() const;
+    void SubmitImGuiPipelne() const;
+
+    RenderContext*     context_        = nullptr;
+    RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
 };
+
+FUNCTION_NAMESPACE_END

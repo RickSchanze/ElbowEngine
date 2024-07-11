@@ -77,7 +77,7 @@ public:
 
     static Shader* Create(const Path& path, const EShaderStage type)
     {
-        const Ref device = *VulkanContext::Get().GetLogicalDevice();
+        const Ref device = *VulkanContext::Get()->GetLogicalDevice();
         return new Shader(Protected{}, device, path, type);
     }
 

@@ -18,7 +18,7 @@ RTTR_REGISTRATION {
 }
 
 Object::~Object() {
-    ObjectManager::Get().RemoveObject(id_);
+    ObjectManager::Get()->RemoveObject(id_);
     gLogger.Info(L"Delete Object {}", name_);
 }
 
