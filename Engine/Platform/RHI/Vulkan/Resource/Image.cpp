@@ -37,11 +37,11 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
     vk::ImageViewCreateInfo view_info_create_info = {};
     view_info_create_info.setImage(image_handle_)
         .setViewType(vk::ImageViewType::e2D)
-        .setFormat(context.GetSwapChainImageFormat())
+        .setFormat(view_info.format == vk::Format::eUndefined ? context.GetSwapChainImageFormat() : view_info.format)
         .setSubresourceRange(vk::ImageSubresourceRange()
                                  .setAspectMask(view_info.aspect_flags)
                                  .setBaseMipLevel(0)
-                                 .setLevelCount(view_info.mip_levels)
+                                 .setLevelCount(view_info.mip_levels == 0 ? 1 : view_info.mip_levels)
                                  .setBaseArrayLayer(0)
                                  .setLayerCount(1))
         .setComponents(vk::ComponentMapping()

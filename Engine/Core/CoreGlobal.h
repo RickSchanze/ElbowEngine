@@ -44,10 +44,10 @@ extern Logger gLogger;
 #endif
 
 #define ASSERT(Condition, Message) \
-    if (Condition) LOG_CRITIAL(Message)
+    if (!(Condition)) LOG_CRITIAL(Message)
 
 #define ASSERT_CATEGORY(Category, Condition, Message, ...) \
-    if (Condition) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
+    if (!(Condition)) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
 
 #define ASSETC
 

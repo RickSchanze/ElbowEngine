@@ -25,7 +25,7 @@ RenderContext::RenderContext()
 
 void RenderContext::Draw()
 {
-    ASSERT_CATEGORY(Function.Render, L"未建立Vulkan环境");
+    ASSERT_CATEGORY(Function.Render, vulkan_context_ != nullptr, L"未建立Vulkan环境");
     vulkan_context_->PrepareFrameRender();
     if (render_pipeline_)
     {

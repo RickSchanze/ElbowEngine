@@ -23,50 +23,53 @@ public:
     SwapChain();
 
     static TUniquePtr<SwapChain> CreateUnique(
-        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
+        vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
     static TSharedPtr<SwapChain> CreateShared(
-        vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
+        vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
 
     explicit SwapChain(
-        ResourceProtected, vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice, vk::Format InSwapchainFormat,
-        vk::Extent2D InSwapchainExtent
+        ResourceProtected, vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format,
+        vk::Extent2D swapchain_extent
     );
 
     ~SwapChain() override;
 
     // 表面格式
-    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& InAvailableFormats);
+    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& available_formats);
     // 显示模式（垂直同步？）
-    static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes);
+    static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& available_present_modes);
     // 分辨率
-    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& InCapabilities, uint32_t InWidth, uint32_t InHeight);
+    static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height);
 
-    [[nodiscard]] vk::SwapchainKHR GetHandle() const { return mSwapchainHandle; }
-    [[nodiscard]] LogicalDevice&   GetAssociatedLogicalDevice() const { return *mAssociatedLogicalDevice; }
+    vk::SwapchainKHR GetHandle() const { return swapchain_handle_; }
 
-    [[nodiscard]] bool IsValid() const;
+    LogicalDevice& GetAssociatedLogicalDevice() const { return *associated_logical_device_; }
 
-    vk::Format                     GetImageFormat() const { return mSwapchainImageFormat; }
-    vk::Extent2D                   GetExtent() const { return mSwapchainExtent; }
-    TArray<TSharedPtr<ImageView>>& GetImageViews() { return mSwapchainImageViews; }
+    bool IsValid() const;
+
+    vk::Format GetImageFormat() const { return swapchain_image_format_; }
+
+    vk::Extent2D GetExtent() const { return swapchain_extent_; }
+
+    TArray<TSharedPtr<ImageView>>& GetImageViews() { return swapchain_image_views_; }
 
     void Initialize();
     void Finialize();
 
-    int32_t GetSwapchainImageCount() const { return static_cast<uint32_t>(mSwapchainImages.size()); }
+    int32_t GetSwapchainImageCount() const { return static_cast<uint32_t>(swap_chain_images_.size()); }
 
     void Destroy() override;
 
 private:
-    vk::SwapchainKHR                   mSwapchainHandle;
-    TArray<TSharedPtr<SwapChainImage>> mSwapchainImages;
-    TArray<TSharedPtr<ImageView>>      mSwapchainImageViews;
-    vk::Format                         mSwapchainImageFormat;
-    vk::Extent2D                       mSwapchainExtent;
+    vk::SwapchainKHR                   swapchain_handle_;
+    TArray<TSharedPtr<SwapChainImage>> swap_chain_images_;
+    TArray<TSharedPtr<ImageView>>      swapchain_image_views_;
+    vk::Format                         swapchain_image_format_;
+    vk::Extent2D                       swapchain_extent_;
 
-    LogicalDevice* mAssociatedLogicalDevice = nullptr;
+    LogicalDevice* associated_logical_device_ = nullptr;
 };
 
 RHI_VULKAN_NAMESPACE_END

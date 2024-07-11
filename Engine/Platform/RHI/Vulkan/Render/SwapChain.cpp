@@ -14,40 +14,25 @@
 RHI_VULKAN_NAMESPACE_BEGIN
 
 TUniquePtr<SwapChain> SwapChain::CreateUnique(
-    vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice,
-    vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
+    vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return MakeUnique<SwapChain>(
-        ResourceProtected{},
-        InSwapchainHandle,
-        InAssociatedLogicalDevice,
-        InSwapchainFormat,
-        InSwapchainExtent
-    );
+    return MakeUnique<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
 TSharedPtr<SwapChain> SwapChain::CreateShared(
-    vk::SwapchainKHR InSwapchainHandle, LogicalDevice* InAssociatedLogicalDevice,
-    vk::Format InSwapchainFormat, vk::Extent2D InSwapchainExtent
+    vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return MakeShared<SwapChain>(
-        ResourceProtected{},
-        InSwapchainHandle,
-        InAssociatedLogicalDevice,
-        InSwapchainFormat,
-        InSwapchainExtent
-    );
+    return MakeShared<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
 SwapChain::SwapChain(
-    ResourceProtected, const vk::SwapchainKHR InSwapchainHandle,
-    LogicalDevice* InAssociatedLogicalDevice, const vk::Format InSwapchainFormat,
-    const vk::Extent2D InSwapchainExtent
+    ResourceProtected, const vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, const vk::Format swapchain_format,
+    const vk::Extent2D swapchain_extent
 ) :
-    mSwapchainHandle(InSwapchainHandle), mSwapchainImageFormat(InSwapchainFormat),
-    mSwapchainExtent(InSwapchainExtent), mAssociatedLogicalDevice(InAssociatedLogicalDevice)
+    swapchain_handle_(swapchain_handle), swapchain_image_format_(swapchain_format), swapchain_extent_(swapchain_extent),
+    associated_logical_device_(associated_logical_device)
 {
     Initialize();
 }
@@ -60,28 +45,25 @@ SwapChain::~SwapChain()
     }
 }
 
-vk::SurfaceFormatKHR
-SwapChain::ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& InAvailableFormats)
+vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& available_formats)
 {
     // 看看设定的格式在不在列表
-    for (const auto& AvailableFormat: InAvailableFormats)
+    for (const auto& AvailableFormat: available_formats)
     {
-        if (AvailableFormat.format == vk::Format::eB8G8R8Unorm &&
-            AvailableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+        if (AvailableFormat.format == vk::Format::eB8G8R8Unorm && AvailableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
         {
             return AvailableFormat;
         }
     }
     // 找不到直接返回第一个
-    return InAvailableFormats[0];
+    return available_formats[0];
 }
 
-vk::PresentModeKHR
-SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePresentModes)
+vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& available_present_modes)
 {
     // FIFO: 垂直同步
     auto BestMode = vk::PresentModeKHR::eFifo;
-    for (const auto& AvailablePresentMode: InAvailablePresentModes)
+    for (const auto& AvailablePresentMode: available_present_modes)
     {
         // Mailbox 混合垂直同步和非垂直同步
         if (AvailablePresentMode == vk::PresentModeKHR::eMailbox)
@@ -97,67 +79,54 @@ SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& InAvailablePr
     return BestMode;
 }
 
-vk::Extent2D SwapChain::ChooseSwapExtent(
-    const vk::SurfaceCapabilitiesKHR& InCapabilities, const uint32_t InWidth, const uint32_t InHeight
-)
+vk::Extent2D SwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const uint32_t width, const uint32_t height)
 {
     // 分辨率不是无限的
-    if (InCapabilities.currentExtent.width != UINT32_MAX)
+    if (capabilities.currentExtent.width != UINT32_MAX)
     {
-        return InCapabilities.currentExtent;
+        return capabilities.currentExtent;
     }
-    VkExtent2D ActualExtent = {InWidth, InHeight};
-    ActualExtent.width      = std::clamp(
-        ActualExtent.width, InCapabilities.minImageExtent.width, InCapabilities.maxImageExtent.width
-    );
-    ActualExtent.height = std::clamp(
-        ActualExtent.height,
-        InCapabilities.minImageExtent.height,
-        InCapabilities.maxImageExtent.height
-    );
+    VkExtent2D ActualExtent = {width, height};
+    ActualExtent.width      = std::clamp(ActualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+    ActualExtent.height     = std::clamp(ActualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     return ActualExtent;
 }
 
 bool SwapChain::IsValid() const
 {
-    return mSwapchainHandle && mAssociatedLogicalDevice && mAssociatedLogicalDevice->IsValid() &&
-           !mSwapchainImages.empty();
+    return swapchain_handle_ && associated_logical_device_ && associated_logical_device_->IsValid() && !swap_chain_images_.empty();
 }
 
 void SwapChain::Initialize()
 {
     if (IsValid()) return;
-    auto SwapchainImages =
-        mAssociatedLogicalDevice->GetHandle().getSwapchainImagesKHR(mSwapchainHandle);
-    mSwapchainImages.resize(SwapchainImages.size());
-    std::ranges::transform(SwapchainImages, mSwapchainImages.begin(), [](const auto& ImageHandle) {
+    auto swapchain_images = associated_logical_device_->GetHandle().getSwapchainImagesKHR(swapchain_handle_);
+    swap_chain_images_.resize(swapchain_images.size());
+    std::ranges::transform(swapchain_images, swap_chain_images_.begin(), [](const auto& ImageHandle) {
         return MakeShared<SwapChainImage>(ImageHandle);
     });
 
-    mSwapchainImageViews.resize(GetSwapchainImageCount());
+    swapchain_image_views_.resize(GetSwapchainImageCount());
     for (uint32_t i = 0; i < GetSwapchainImageCount(); ++i)
     {
-        mSwapchainImageViews[i] = mSwapchainImages[i]->CreateImageViewShared(ImageViewInfo{});
+        ImageViewInfo view_info;
+        view_info.format = swapchain_image_format_;
+        swapchain_image_views_[i] = swap_chain_images_[i]->CreateImageViewShared(view_info);
     }
 
-    LOG_INFO_CATEGORY(
-        VULKAN,
-        L"交换链创建完成, 交换链图像数: {}, 范围: {}",
-        mSwapchainImages.size(),
-        VulkanStringify::ToString(mSwapchainExtent)
-    );
+    LOG_INFO_CATEGORY(VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", swap_chain_images_.size(), VulkanStringify::ToString(swapchain_extent_));
 }
 
 void SwapChain::Finialize()
 {
     if (!IsValid()) return;
-    for (const auto& ImageView: mSwapchainImageViews)
+    for (const auto& ImageView: swapchain_image_views_)
     {
         ImageView->InternalDestroy();
     }
-    mAssociatedLogicalDevice->GetHandle().destroy(mSwapchainHandle);
-    mSwapchainHandle = VK_NULL_HANDLE;
-    mSwapchainImages.clear();
+    associated_logical_device_->GetHandle().destroy(swapchain_handle_);
+    swapchain_handle_ = VK_NULL_HANDLE;
+    swap_chain_images_.clear();
     LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");
 }
 
