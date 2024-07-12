@@ -99,6 +99,16 @@ public:
 
     void DestroySampler(vk::Sampler sampler) const;
 
+    void DestroySwapChain(vk::SwapchainKHR swap_chain) const;
+
+    vk::Semaphore CreateSemaphore(const vk::SemaphoreCreateInfo& create_info) const;
+
+    void DestroySemaphore(vk::Semaphore semaphore) const;
+
+    vk::Fence CreateFence(const vk::FenceCreateInfo& create_info) const;
+
+    void DestroyFence(vk::Fence fence) const;
+
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }
     PhysicalDevice& GetAssociatedPhysicalDevice() const { return associated_physical_device_; }

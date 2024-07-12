@@ -12,23 +12,45 @@
 
 #include <ranges>
 
-ResourceManager::~ResourceManager() {
-    for (const auto& Resource: mResourceMap | std::views::values) {
+RESOURCE_NAMESPACE_BEGIN
+
+ResourceManager::~ResourceManager()
+{
+    for (const auto& Resource: resource_map_ | std::views::values)
+    {
         delete Resource;
     }
 }
 
-void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource) {
-    if (InResource == nullptr || !InResource->IsValid()) {
+void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource)
+{
+    if (InResource == nullptr || !InResource->IsValid())
+    {
         LOG_WARNING_CATEGORY(Resource, L"注册资产失败, {}对应的资产无效.", InResourcePath.ToString());
         return;
     }
-    if (mResourceMap.contains(InResourcePath)) {
+    if (resource_map_.contains(InResourcePath))
+    {
         LOG_WARNING_CATEGORY(Resource, L"{}对应资产已存在,执行替换.", InResourcePath.ToString());
     }
-    mResourceMap[InResourcePath] = InResource;
+    resource_map_[InResourcePath] = InResource;
 }
 
-IResource* ResourceManager::GetResource(const Path& InResourcePath) {
-    return mResourceMap.contains(InResourcePath) ? mResourceMap[InResourcePath] : nullptr;
+IResource* ResourceManager::GetResource(const Path& InResourcePath)
+{
+    return resource_map_.contains(InResourcePath) ? resource_map_[InResourcePath] : nullptr;
 }
+
+Texture* ResourceManager::GetOrCreateTexture(const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info)
+{
+    auto* texture = GetResource<Texture>(path);
+    if (texture == nullptr)
+    {
+        Texture* new_texture = Texture::Create(path, usage, sampler_info);
+        return new_texture;
+    }
+
+    return texture;
+}
+
+RESOURCE_NAMESPACE_END

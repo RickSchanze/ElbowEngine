@@ -87,14 +87,14 @@ void VulkanContext::Finalize()
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
-void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline)
-{
+void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, const GraphicsQueueSubmitParams& submit_params) const{
     vk::Queue         graphics_queue = logical_device_->GetGraphicsQueue();
     vk::CommandBuffer cb             = pipeline->GetCurrentCommandBuffer();
     vk::SubmitInfo    submit_info;
     submit_info.setCommandBuffers(cb);
-    // TODO: 这里等待的信号量需要再看看
-    submit_info.setWaitSemaphores({image_available_semaphores_[g_engine_statistics.current_frame_index]});
+    submit_info.setWaitSemaphores(submit_params.semaphores_to_wait);
+    submit_info.setSignalSemaphores(submit_params.semaphores_to_singal);
+    submit_info.setWaitDstStageMask(submit_params.wait_stages);
     graphics_queue.submit(submit_info);
 }
 
@@ -140,7 +140,10 @@ void VulkanContext::PostFrameRender()
     vk::PresentInfoKHR PresentInfo = {};
     TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
     // TODO: 这里需要等待的信号量需要再看看
-    PresentInfo.setSwapchains(SwapChains).setImageIndices(g_engine_statistics.current_image_index);
+    PresentInfo
+        .setSwapchains(SwapChains)                                                                        //
+        .setImageIndices(g_engine_statistics.current_image_index)                                         //
+        .setWaitSemaphores(image_render_finished_semaphores_[g_engine_statistics.current_frame_index]);   //
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
 
@@ -155,68 +158,6 @@ void VulkanContext::PostFrameRender()
     }
 
     logical_device_->GetPresentQueue().waitIdle();
-
-    g_engine_statistics.IncreaseFrameIndex();
-}
-
-void VulkanContext::Draw()
-{
-    const vk::Device device              = logical_device_->GetHandle();
-    // 首先等待当前帧的指令缓冲结束执行
-    const auto       current_frame_index = g_engine_statistics.current_frame_index;
-
-    const TStaticArray<vk::Fence, 1> fences = {in_flight_fences_[current_frame_index]};
-    auto                             _      = device.waitForFences(fences, VK_TRUE, UINT64_MAX);
-    // 获取可用图像索引
-    if (VkResult acquire_result = vkAcquireNextImageKHR(
-            device,
-            swap_chain_->GetHandle(),
-            UINT64_MAX,
-            image_available_semaphores_[current_frame_index],
-            nullptr,
-            &g_engine_statistics.current_image_index
-        );
-
-        acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-        // 交换链已经过期，需要重建
-        RebuildSwapChain();
-        return;
-    }
-    else if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
-    {
-        throw VulkanException(L"无法获取交换链图像");
-    }
-    auto image_index = g_engine_statistics.current_image_index;
-    device.resetFences(fences);
-
-
-    TArray                WaitSemaphores   = {image_available_semaphores_[current_frame_index]};
-    TArray<vk::Semaphore> SingalSemaphores = {};
-
-    // 呈现
-    vk::PresentInfoKHR PresentInfo = {};
-    TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
-    PresentInfo.setWaitSemaphores(SingalSemaphores).setSwapchains(SwapChains).setImageIndices(image_index);
-
-    const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
-
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().frame_buffer_resized)
-    {
-        RebuildSwapChain();
-        Tool::EngineApplication::Get().frame_buffer_resized = false;
-    }
-    else if (Result != vk::Result::eSuccess)
-    {
-        throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
-    }
-
-    logical_device_->GetPresentQueue().waitIdle();
-
-    for (auto& Semaphore: SingalSemaphores)
-    {
-        device.destroySemaphore(Semaphore);
-    }
 
     g_engine_statistics.IncreaseFrameIndex();
 }
@@ -258,14 +199,6 @@ vk::Format VulkanContext::GetDepthImageFormat() const
         vk::FormatFeatureFlagBits::eDepthStencilAttachment
     );
 }
-
-// void VulkanContext::AddPipelineToRender(IGraphicsPipeline* InPipeline) {
-//     mRenderGraphicsPipelines.push_back(InPipeline);
-// }
-//
-// void VulkanContext::RemovePipelineFromRender(IGraphicsPipeline* InPipeline) {
-//     ContainerUtils::Remove(mRenderGraphicsPipelines, InPipeline);
-// }
 
 void VulkanContext::CreateSyncObjecs()
 {

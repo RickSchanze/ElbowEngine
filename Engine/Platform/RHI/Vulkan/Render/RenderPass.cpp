@@ -67,14 +67,14 @@ void RenderPass::OnCreateAttachments()
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
     RenderPassAttachmentParam SwapchainImageParam{vk::ImageUsageFlagBits::eSampled};
-    SwapchainImageParam.sample_count     = SampleCount;
+    SwapchainImageParam.sample_count     = sample_count;
     SwapchainImageParam.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
     NewAttachment(SwapchainImageParam, true);
 
     // 深度图像缓冲
     RenderPassAttachmentParam DepthImageParam(vk::ImageUsageFlagBits::eDepthStencilAttachment);
     // @QUESTION: 深度图像是否需要多重采样？
-    DepthImageParam.sample_count     = SampleCount;
+    DepthImageParam.sample_count     = sample_count;
     DepthImageParam.LoadOp           = vk::AttachmentLoadOp::eClear;
     DepthImageParam.StoreOp          = vk::AttachmentStoreOp::eDontCare;
     DepthImageParam.format           = VulkanContext::Get()->GetDepthImageFormat();
@@ -82,11 +82,11 @@ void RenderPass::OnCreateAttachments()
     DepthImageParam.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     NewAttachment(DepthImageParam, false, true);
 
-    if (SampleCount != vk::SampleCountFlagBits::e1)
+    if (sample_count != vk::SampleCountFlagBits::e1)
     {
         // 多重采样Resolve
         RenderPassAttachmentParam SampleResolveParam(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment);
-        SampleResolveParam.sample_count  = SampleCount;
+        SampleResolveParam.sample_count  = sample_count;
         SampleResolveParam.finial_layout = vk::ImageLayout::ePresentSrcKHR;
         NewAttachment(SampleResolveParam, false, false, true);
     }
@@ -302,7 +302,7 @@ void RenderPass::CreateSubpassDescription()
         subpass_.setPResolveAttachments(&attahcment_refs_[sample_resolve_index_]);
     }
 
-    if (SampleCount != vk::SampleCountFlagBits::e1)
+    if (sample_count != vk::SampleCountFlagBits::e1)
     {
         subpass_.pResolveAttachments = &attahcment_refs_[2];
     }

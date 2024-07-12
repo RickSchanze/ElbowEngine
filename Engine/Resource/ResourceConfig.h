@@ -13,7 +13,7 @@
 struct RuntimeResoureConfig
 {
     bool bInitialized = false;
-    Path DefaultLackTexturePath;
+    Path default_lack_texture_path;
 };
 
 struct ResourceConfig
@@ -26,7 +26,7 @@ inline RuntimeResoureConfig gResourceConfig;
 
 static void OnProjectPathSetHandler()
 {
-    gResourceConfig.DefaultLackTexturePath = Path(gStaticResourceConfig.DefaultLackTexturePath);
+    gResourceConfig.default_lack_texture_path = Path(gStaticResourceConfig.DefaultLackTexturePath);
     gResourceConfig.bInitialized           = true;
 }
 

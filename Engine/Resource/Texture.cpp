@@ -28,13 +28,13 @@ Texture::Texture(
     ResourceManager::Get()->RegisterResource(mPath, this);
 }
 
-Texture* Texture::Create(const Path& InPath, ETextureUsage InUsage, const SamplerInfo& SamplerInfo)
+Texture* Texture::Create(const Path& path, ETextureUsage usage, const SamplerInfo& sampler_info)
 {
-    auto* CachedTexture = ResourceManager::Get()->GetResource<Texture>(InPath);
+    auto* CachedTexture = ResourceManager::Get()->GetResource<Texture>(path);
     if (CachedTexture == nullptr)
     {
         // 指针由ResourceManager管理
-        CachedTexture = new Texture(Protected{}, InPath, InUsage, SamplerInfo);
+        CachedTexture = new Texture(Protected{}, path, usage, sampler_info);
     }
     return CachedTexture;
 }
@@ -93,7 +93,7 @@ static void Load_Default_Engine_Texture_Resource(
     if (gResourceConfig.bInitialized)
     {
         auto* DefaultLackTexture =
-            ResourceManager::Get()->GetResource<Resource::Texture>(gResourceConfig.DefaultLackTexturePath);
+            Resource::ResourceManager::Get()->GetOrCreateTexture(gResourceConfig.default_lack_texture_path);
         if (DefaultLackTexture)
         {
             *out_texture     = DefaultLackTexture->GetRHIResource().get();
@@ -102,7 +102,7 @@ static void Load_Default_Engine_Texture_Resource(
         else
         {
             throw Exception(std::format(
-                L"加载默认资产{}失败", gResourceConfig.DefaultLackTexturePath.ToString()
+                L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToString()
             ));
         }
     }

@@ -10,6 +10,7 @@
 #include "Event.h"
 #include "RenderContext.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
+#include "RHI/Vulkan/VulkanContext.h"
 
 FUNCTION_NAMESPACE_BEGIN
 RenderPipeline::RenderPipeline()
@@ -17,9 +18,9 @@ RenderPipeline::RenderPipeline()
     context_ = RenderContext::Get();
 }
 
-void RenderPipeline::Submit(const RHI::Vulkan::IGraphicsPipeline* pipeline) const
+void RenderPipeline::Submit(const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const
 {
-    context_->SubmitPipeline(pipeline);
+    context_->SubmitPipeline(pipeline, submit_params);
 }
 
 void RenderPipeline::AddImGuiGraphicsPipeline()
@@ -34,7 +35,8 @@ void RenderPipeline::DrawImGuiPipeline() const
 
 void RenderPipeline::SubmitImGuiPipelne() const
 {
-    Submit(imgui_pipeline_);
+    RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
+    Submit(imgui_pipeline_, submit_params);
 }
 
 FUNCTION_NAMESPACE_END

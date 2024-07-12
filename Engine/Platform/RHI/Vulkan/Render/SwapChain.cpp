@@ -124,7 +124,7 @@ void SwapChain::Finialize()
     {
         ImageView->InternalDestroy();
     }
-    associated_logical_device_->GetHandle().destroy(swapchain_handle_);
+    associated_logical_device_->DestroySwapChain(swapchain_handle_);
     swapchain_handle_ = VK_NULL_HANDLE;
     swap_chain_images_.clear();
     LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");

@@ -13,11 +13,8 @@
 class Logger
 {
 public:
-    Logger()
-    {
-        logger_ = spdlog::stdout_color_mt("ElbowEngine");
-        logger_->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
-    }
+    Logger();
+
 
     /** 输出Info级别的信息 */
     template<typename... ArgsT>

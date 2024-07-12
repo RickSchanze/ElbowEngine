@@ -6,7 +6,9 @@
  */
 
 #pragma once
+#include "CoreDef.h"
 #include "FunctionCommon.h"
+#include "RenderContext.h"
 
 namespace Function
 {
@@ -17,7 +19,7 @@ namespace RHI::Vulkan
 {
 class IGraphicsPipeline;
 class ImguiGraphicsPipeline;
-}
+}   // namespace RHI::Vulkan
 
 FUNCTION_NAMESPACE_BEGIN
 
@@ -28,17 +30,19 @@ public:
 
     virtual ~RenderPipeline() = default;
 
-    virtual void Draw()  = 0;
+    virtual void Draw(const RenderContextDrawParam& draw_param) {}
     virtual void Build() = 0;
 
 protected:
-    void Submit(const RHI::Vulkan::IGraphicsPipeline* pipeline) const;
+    void Submit(
+        const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params
+    ) const;
 
     void AddImGuiGraphicsPipeline();
     void DrawImGuiPipeline() const;
     void SubmitImGuiPipelne() const;
 
-    RenderContext*     context_        = nullptr;
+    RenderContext*                      context_        = nullptr;
     RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
 };
 

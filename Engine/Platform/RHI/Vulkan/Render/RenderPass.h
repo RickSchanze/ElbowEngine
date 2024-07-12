@@ -95,7 +95,7 @@ public:
     vk::RenderPass GetHandle() const { return handle_; }
 
     // Config
-    vk::SampleCountFlagBits SampleCount = vk::SampleCountFlagBits::e1;
+    vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1;
 
 protected:
     /**

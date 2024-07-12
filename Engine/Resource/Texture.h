@@ -44,8 +44,8 @@ public:
     );
 
     static Texture* Create(
-        const Path& InPath, ETextureUsage InUsage = ETextureUsage::Diffuse,
-        const RHI::Vulkan::SamplerInfo& SamplerInfo = {}
+        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse,
+        const RHI::Vulkan::SamplerInfo& sampler_info = {}
     );
 
     bool IsValid() const override { return mData != nullptr; }

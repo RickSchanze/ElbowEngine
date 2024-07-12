@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Interface/IGraphicsPipeline.h"
 #include "Render/LogicalDevice.h"
 #include "Render/SwapChain.h"
 #include "Utils/ContainerUtils.h"
@@ -26,6 +27,13 @@ class RenderPass;
 RHI_VULKAN_NAMESPACE_BEGIN
 class IGraphicsPipeline;
 // VulkanContext应该具有全局唯一单例
+struct GraphicsQueueSubmitParams
+{
+    TArray<vk::Semaphore>          semaphores_to_wait;
+    TArray<vk::Semaphore>          semaphores_to_singal;
+    TArray<vk::PipelineStageFlags> wait_stages;
+};
+
 class VulkanContext
 {
 public:
@@ -50,12 +58,13 @@ public:
     void Initialize();
     void Finalize();
 
-    void SubmitGraphicsQueue(const IGraphicsPipeline* pipeline);
+    void SubmitGraphicsQueue(
+        const IGraphicsPipeline*         pipeline,       // 管线
+        const GraphicsQueueSubmitParams& submit_params   // 提交参数
+    ) const;
 
     virtual void PrepareFrameRender();
     virtual void PostFrameRender();
-
-    void Draw();
 
     bool IsValid() const;
 
@@ -66,7 +75,7 @@ public:
     vk::Format GetSwapChainImageFormat() const { return swap_chain_->GetImageFormat(); }
 
     // 获取深度图像支持的格式
-    vk::Format GetDepthImageFormat()const;
+    vk::Format GetDepthImageFormat() const;
 
     vk::Extent2D GetSwapChainExtent() const { return swap_chain_->GetExtent(); }
 
@@ -76,11 +85,7 @@ public:
 
     const TUniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
 
-    TUniquePtr<SwapChain>& GetSwapChain()
-    {
-        return swap_chain_;
-        return swap_chain_;
-    }
+    TUniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
 
     TUniquePtr<CommandPool>& GetCommandPool() { return command_pool_; }
 
@@ -90,9 +95,12 @@ public:
 
     TSharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
 
+    vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
+    vk::Semaphore GetRenderEndSingalSemphore() const { return image_render_finished_semaphores_[g_engine_statistics.current_frame_index]; }
+
 protected:
     void CreateSyncObjecs();
-    void CleanSyncObjects()const;
+    void CleanSyncObjects() const;
 
     static inline VulkanContext* s_context_ = nullptr;
 

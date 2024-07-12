@@ -103,6 +103,10 @@ public:
         return NewPath;
     }
 
+    std::string ToAbsoluteString() const;
+
+    std::string ToRelativeString() const;
+
 private:
     std::filesystem::path GetStdFullPath() const;
 

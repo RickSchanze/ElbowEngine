@@ -84,6 +84,9 @@ void EngineApplication::Run()
     {
         InternalTick();
 
+        ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
+        render_context_->PrepareFrameRender();
+
         window_->BeginImGuiFrame();
 
         for (auto& sub_window: sub_windows_)
@@ -96,8 +99,9 @@ void EngineApplication::Run()
         ImGui::ShowDemoWindow();
         window_->Tick(g_engine_statistics.time_delta);
 
-        // 这个必须在最后一句 对ImGui的渲染在这里完成
         render_context_->Draw();
+
+        render_context_->PostFrameRender();
     }
 }
 
@@ -113,9 +117,9 @@ void EngineApplication::InternalTick()
     using namespace std::chrono;
     glfwSetInputMode(window_->GetGLFWWindowHandle(), GLFW_CURSOR, g_engine_statistics.is_hide_mouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     {
-        auto current_frame_time          = steady_clock::now();
+        auto current_frame_time        = steady_clock::now();
         g_engine_statistics.time_delta = duration<float>(current_frame_time - last_frame_time_).count();
-        last_frame_time_                 = current_frame_time;
+        last_frame_time_               = current_frame_time;
         if (g_engine_statistics.time_delta > 0)   //
             g_engine_statistics.fps = static_cast<int32_t>(1.f / g_engine_statistics.time_delta);
     }
@@ -191,7 +195,8 @@ void EngineApplication::OnOpenOutlineWindow()
     OpenWindow<Window::OutlineWindow>();
 }
 
-void EngineApplication::OnOpenDetailWindow(){
+void EngineApplication::OnOpenDetailWindow()
+{
     OpenWindow<Window::DetailWindow>();
 }
 

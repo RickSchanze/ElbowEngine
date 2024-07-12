@@ -30,7 +30,7 @@ GraphicsPipeline::~GraphicsPipeline()
 
 GraphicsPipeline::GraphicsPipeline(const PipelineInfo& pipeline_info)
 {
-    pipeline_info_         = pipeline_info;
+    pipeline_info_ = pipeline_info;
     CreatePipeline();
     CreateCommandBuffers();
 }
@@ -151,11 +151,10 @@ void GraphicsPipeline::CreatePipeline()
     /************************* 配置RenderPass ************************/
     if (pipeline_info_.render_pass == nullptr)
     {
-        // RenderPass或许可以共用
-        // @TODO: 探索RenderPass共用
-        render_pass_              = new RenderPass();
-        render_pass_->SampleCount = pipeline_info_.multisample.sample_count;
+        // TODO: 加载引擎默认RenderPass
+        LOG_CRITIAL_CATEGORY(Vulkan.RenderPass, L"RenderPass不能为空");
     }
+    render_pass_ = pipeline_info_.render_pass;
     render_pass_->Initialize();
     /************************* 配置RenderPass结束 ************************/
 

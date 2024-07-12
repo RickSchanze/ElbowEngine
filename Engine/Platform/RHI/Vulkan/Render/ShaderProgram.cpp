@@ -187,8 +187,12 @@ void ShaderProgram::DestroyUniformBuffers()
 
 void ShaderProgram::CreateDescriptorSets()
 {
+    if (descriptor_set_layout_ == nullptr)
+    {
+        CreateDescriptorSetLayout();
+    }
     VulkanContext&                context = *VulkanContext::Get();
-    TArray                        layouts(context.GetSwapChainImageCount(), descriptor_set_layout_);
+    TArray                        layouts(g_engine_statistics.parallel_render_frame_count, descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     descriptor_sets_.resize(context.GetSwapChainImageCount());

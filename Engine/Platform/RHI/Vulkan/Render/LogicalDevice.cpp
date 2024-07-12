@@ -193,12 +193,37 @@ void LogicalDevice::ResetFences(const vk::ArrayProxy<vk::Fence> fences) const
     handle_.resetFences(fences);
 }
 
-TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(const vk::CommandBufferAllocateInfo &allocate_info)const{
+TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(const vk::CommandBufferAllocateInfo& allocate_info) const
+{
     return handle_.allocateCommandBuffers(allocate_info);
 }
 
-void LogicalDevice::DestroySampler(vk::Sampler sampler) const{
+void LogicalDevice::DestroySampler(vk::Sampler sampler) const
+{
     handle_.destroySampler(sampler);
+}
+
+void LogicalDevice::DestroySwapChain(const vk::SwapchainKHR swap_chain) const
+{
+    handle_.destroySwapchainKHR(swap_chain);
+}
+
+vk::Semaphore LogicalDevice::CreateSemaphoreA(const vk::SemaphoreCreateInfo& create_info) const
+{
+    return handle_.createSemaphore(create_info);
+}
+
+void LogicalDevice::DestroySemaphore(const vk::Semaphore semaphore) const
+{
+    handle_.destroySemaphore(semaphore);
+}
+
+vk::Fence LogicalDevice::CreateFence(const vk::FenceCreateInfo& create_info) const{
+    return handle_.createFence(create_info);
+}
+
+void LogicalDevice::DestroyFence(const vk::Fence fence) const{
+    handle_.destroyFence(fence);
 }
 
 RHI_VULKAN_NAMESPACE_END

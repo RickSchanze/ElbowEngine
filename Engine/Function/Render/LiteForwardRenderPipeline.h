@@ -7,6 +7,7 @@
 
 #pragma once
 #include "FunctionCommon.h"
+#include "RenderContext.h"
 #include "RenderPipeline.h"
 
 namespace RHI::Vulkan
@@ -18,7 +19,7 @@ FUNCTION_NAMESPACE_BEGIN
 
 class LiteForwardRenderPipeline : public RenderPipeline {
 public:
-    void Draw() override;
+    void Draw(const RenderContextDrawParam& draw_param) override;
     void Build() override;
 
 private:
