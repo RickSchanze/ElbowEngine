@@ -59,8 +59,9 @@ public:
     void Finalize();
 
     void SubmitGraphicsQueue(
-        const IGraphicsPipeline*         pipeline,       // 管线
-        const GraphicsQueueSubmitParams& submit_params   // 提交参数
+        const IGraphicsPipeline*         pipeline,          // 管线
+        const GraphicsQueueSubmitParams& submit_params,     // 提交参数
+        vk::Fence                        fence_to_trigger   // 这次提交需要触发的fence
     ) const;
 
     virtual void PrepareFrameRender();
@@ -97,6 +98,7 @@ public:
 
     vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
     vk::Semaphore GetRenderEndSingalSemphore() const { return image_render_finished_semaphores_[g_engine_statistics.current_frame_index]; }
+    vk::Fence     GetInFlightFence() const { return in_flight_fences_[g_engine_statistics.current_frame_index]; }
 
 protected:
     void CreateSyncObjecs();

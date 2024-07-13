@@ -39,6 +39,7 @@ void RenderContext::Draw()
     RenderContextDrawParam draw_param;
     draw_param.render_begin_semaphore = vulkan_context_->GetRenderBeginWaitSemphore();
     draw_param.render_end_semaphore   = vulkan_context_->GetRenderEndSingalSemphore();
+    draw_param.render_end_fence       = vulkan_context_->GetInFlightFence();
     render_pipeline_->Draw(draw_param);
 }
 
@@ -54,9 +55,16 @@ void RenderContext::SetRenderPipeline(RenderPipeline* new_render_pipeline)
     render_pipeline_->Build();
 }
 
-void RenderContext::SubmitPipeline(const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param) const
+void RenderContext::SubmitPipeline(
+    const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, const vk::Fence fence_to_trigger
+) const
 {
-    vulkan_context_->SubmitGraphicsQueue(pipeline, draw_param);
+    vulkan_context_->SubmitGraphicsQueue(pipeline, draw_param, fence_to_trigger);
+}
+
+vk::Fence RenderContext::GetInFlightFence() const
+{
+    return vulkan_context_->GetInFlightFence();
 }
 
 

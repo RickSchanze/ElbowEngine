@@ -87,15 +87,16 @@ void VulkanContext::Finalize()
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
-void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, const GraphicsQueueSubmitParams& submit_params) const{
+void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, const GraphicsQueueSubmitParams& submit_params,vk::Fence fence_to_trigger) const
+{
     vk::Queue         graphics_queue = logical_device_->GetGraphicsQueue();
     vk::CommandBuffer cb             = pipeline->GetCurrentCommandBuffer();
     vk::SubmitInfo    submit_info;
     submit_info.setCommandBuffers(cb);
     submit_info.setWaitSemaphores(submit_params.semaphores_to_wait);
     submit_info.setSignalSemaphores(submit_params.semaphores_to_singal);
-    submit_info.setWaitDstStageMask(submit_params.wait_stages);
-    graphics_queue.submit(submit_info);
+    submit_info.pWaitDstStageMask = submit_params.wait_stages.data();
+    graphics_queue.submit(submit_info, fence_to_trigger);
 }
 
 void VulkanContext::PrepareFrameRender()

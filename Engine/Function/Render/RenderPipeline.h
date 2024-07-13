@@ -28,14 +28,15 @@ class RenderPipeline
 public:
     RenderPipeline();
 
-    virtual ~RenderPipeline() = default;
+    virtual ~RenderPipeline();
 
     virtual void Draw(const RenderContextDrawParam& draw_param) {}
     virtual void Build() = 0;
 
 protected:
     void Submit(
-        const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params
+        const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params,
+        vk::Fence fence_to_trigger = nullptr
     ) const;
 
     void AddImGuiGraphicsPipeline();

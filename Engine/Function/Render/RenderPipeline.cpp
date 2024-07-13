@@ -17,10 +17,21 @@ RenderPipeline::RenderPipeline()
 {
     context_ = RenderContext::Get();
 }
-
-void RenderPipeline::Submit(const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const
+RenderPipeline::~RenderPipeline()
 {
-    context_->SubmitPipeline(pipeline, submit_params);
+    if (imgui_pipeline_)
+    {
+        delete imgui_pipeline_;
+        imgui_pipeline_ = nullptr;
+    }
+}
+
+void RenderPipeline::Submit(
+    const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params,
+    const vk::Fence fence_to_trigger
+) const
+{
+    context_->SubmitPipeline(pipeline, submit_params, fence_to_trigger);
 }
 
 void RenderPipeline::AddImGuiGraphicsPipeline()
@@ -36,6 +47,7 @@ void RenderPipeline::DrawImGuiPipeline() const
 void RenderPipeline::SubmitImGuiPipelne() const
 {
     RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
+    submit_params.wait_stages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     Submit(imgui_pipeline_, submit_params);
 }
 

@@ -27,7 +27,7 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     submit_params.semaphores_to_singal = {draw_param.render_end_semaphore};
     submit_params.semaphores_to_wait   = {draw_param.render_begin_semaphore};
     submit_params.wait_stages          = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-    Submit(forward_pipeline_, submit_params);
+    Submit(forward_pipeline_, submit_params, context_->GetInFlightFence());
 
     DrawImGuiPipeline();
     SubmitImGuiPipelne();
@@ -42,6 +42,15 @@ void LiteForwardRenderPipeline::Build()
 
     forward_pipeline_ = new GraphicsPipeline(pipeline_info);
     AddImGuiGraphicsPipeline();
+}
+
+LiteForwardRenderPipeline::~LiteForwardRenderPipeline()
+{
+    if (forward_pipeline_)
+    {
+        delete forward_pipeline_;
+        forward_pipeline_ = nullptr;
+    }
 }
 
 FUNCTION_NAMESPACE_END
