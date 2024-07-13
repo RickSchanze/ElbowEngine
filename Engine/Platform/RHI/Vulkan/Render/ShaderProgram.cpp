@@ -62,6 +62,11 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
     return true;
 }
 
+uint32_t ShaderProgram::GetUniformBufferSize(uint32_t i) const
+{
+    return 0;
+}
+
 TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
 {
     TArray<vk::VertexInputAttributeDescription> AttributeDesc;
@@ -203,30 +208,30 @@ void ShaderProgram::CreateDescriptorSets()
     const auto& sampler                   = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < descriptor_sets_.size(); i++)
     {
+        TStaticArray<vk::WriteDescriptorSet, 1> descriptor_writes = {};
+
         vk::DescriptorBufferInfo buffer_info = {};
         buffer_info.setBuffer(uniform_buffers_[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
+        // TODO: DescriptorSet 应该动态更新而不是写死
+        descriptor_writes[0].dstSet          = descriptor_sets_[i];
+        descriptor_writes[0].dstBinding      = 0;
+        descriptor_writes[0].dstArrayElement = 0;
+        descriptor_writes[0].descriptorType  = vk::DescriptorType::eUniformBuffer;
+        descriptor_writes[0].descriptorCount = 1;
+        descriptor_writes[0].pBufferInfo     = &buffer_info;
+        descriptor_writes[0].pImageInfo      = nullptr;
+
         vk::DescriptorImageInfo image_info = {};
         image_info.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
             .setImageView(default_lack_texture_view.GetHandle())
             .setSampler(sampler.GetHandle());
-
-        TStaticArray<vk::WriteDescriptorSet, 2> descriptor_writes = {};
-
-        // TODO: DescriptorSet 应该动态更新而不是写死
-        vk::WriteDescriptorSet descriptor_write = {};
-        descriptor_write.setDstSet(descriptor_sets_[i])
-            .setDstBinding(0)
-            .setDstArrayElement(0)
-            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(1)
-            .setPBufferInfo(&buffer_info);
-        descriptor_writes[0]                 = descriptor_write;
-        descriptor_writes[1].dstSet          = descriptor_sets_[i];
-        descriptor_writes[1].dstBinding      = 1;
-        descriptor_writes[1].dstArrayElement = 0;
-        descriptor_writes[1].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
-        descriptor_writes[1].descriptorCount = 1;
-        descriptor_writes[1].pImageInfo      = &image_info;
+        descriptor_writes[0].dstSet          = descriptor_sets_[i];
+        descriptor_writes[0].dstBinding      = 1;
+        descriptor_writes[0].dstArrayElement = 0;
+        descriptor_writes[0].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
+        descriptor_writes[0].descriptorCount = 1;
+        descriptor_writes[0].pBufferInfo     = nullptr;
+        descriptor_writes[0].pImageInfo      = &image_info;
         context.GetLogicalDevice()->UpdateDescriptorSets(descriptor_writes);
     }
 }
@@ -268,7 +273,7 @@ void ShaderProgram::CreateDescriptorSetLayout()
 {
     const auto& device = VulkanContext::Get()->GetLogicalDevice();
 
-    TArray<vk::DescriptorSetLayoutBinding> UniformBindings;
+    TArray<vk::DescriptorSetLayoutBinding> uniform_bindings;
     for (const auto& uniform_binding: GetUniforms() | std::views::values)
     {
         vk::DescriptorSetLayoutBinding binding;
@@ -276,11 +281,11 @@ void ShaderProgram::CreateDescriptorSetLayout()
         binding.descriptorType  = GetVkDescriptorType(uniform_binding.type);
         binding.descriptorCount = 1;
         binding.stageFlags      = GetVkShaderStage(uniform_binding.stage);
-        UniformBindings.push_back(binding);
+        uniform_bindings.push_back(binding);
     }
-    vk::DescriptorSetLayoutCreateInfo LayoutInfo{};
-    LayoutInfo.setBindings(UniformBindings);
-    descriptor_set_layout_ = device->CreateDescriptorSetLayout(LayoutInfo);
+    vk::DescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.setBindings(uniform_bindings);
+    descriptor_set_layout_ = device->CreateDescriptorSetLayout(layout_info);
 }
 
 void ShaderProgram::DestroyDescriptorSetLayout()

@@ -36,8 +36,8 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 void LiteForwardRenderPipeline::Build()
 {
     PipelineInfo pipeline_info;
-    pipeline_info.shader_stage.frag = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex);
-    pipeline_info.shader_stage.vert = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment);
+    pipeline_info.shader_stage.frag = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment);
+    pipeline_info.shader_stage.vert = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex);
     pipeline_info.render_pass       = new RenderPass();
 
     forward_pipeline_ = new GraphicsPipeline(pipeline_info);

@@ -80,13 +80,13 @@ void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_siz
     {
         size_t offset = 0;
 
-        for (const auto& UBO: res.uniform_buffers)
+        for (const auto& ubo: res.uniform_buffers)
         {
             UniformDescriptor obj;
             obj.stage   = shader_stage;
-            obj.name    = compiler.get_name(UBO.id);
-            obj.binding = compiler.get_decoration(UBO.id, spv::DecorationBinding);
-            obj.size    = compiler.get_declared_struct_size(compiler.get_type(UBO.type_id));
+            obj.name    = compiler.get_name(ubo.id);
+            obj.binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
+            obj.size    = compiler.get_declared_struct_size(compiler.get_type(ubo.type_id));
             obj.offset  = offset;
             obj.type    = EUniformDescriptorType::Object;
             offset += obj.size;

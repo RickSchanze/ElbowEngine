@@ -24,6 +24,8 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 GraphicsPipeline::~GraphicsPipeline()
 {
+    delete shader_program_;
+    shader_program_ = nullptr;
     DestroyCommandBuffers();
     DestroyPipeline();
 }
@@ -166,7 +168,7 @@ void GraphicsPipeline::CreatePipeline()
     }
 
     // TODO: Shader管理器
-    shader_program_ = ShaderProgram::Create(pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.vert);
+    shader_program_ = ShaderProgram::Create(pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.frag);
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};

@@ -147,7 +147,7 @@ public:
 
     Texture(Protected, const ImageInfo& image_info, const uint8_t* data);
 
-    int32_t GetMipLevel() const { return mip_level_; }
+    int32_t GetMipLevel() const { return image_info_.mip_levels; }
 
     static void LoadDefaultTextures();
 
@@ -155,8 +155,6 @@ public:
     static ImageView& GetDefaultLackTextureView();
 
 protected:
-    int32_t mip_level_;
-
     static inline Texture*   s_default_lack_texture_      = nullptr;
     static inline ImageView* s_default_lack_texture_view_ = nullptr;
     static inline bool       default_textures_loaded_     = false;

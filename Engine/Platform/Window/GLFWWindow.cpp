@@ -18,7 +18,7 @@
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
-#include "vulkan/vk_enum_string_helper.h"
+#include "vulkan/vulkan_to_string.hpp"
 
 using namespace RHI::Vulkan;
 
@@ -30,11 +30,11 @@ protected:
     void OnCreateAttachments() override
     {
         RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
-        Param.InitialLayout   = vk::ImageLayout::ePresentSrcKHR;
+        Param.InitialLayout    = vk::ImageLayout::ePresentSrcKHR;
         Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-        Param.StoreOp         = vk::AttachmentStoreOp::eStore;
-        Param.LoadOp          = vk::AttachmentLoadOp::eDontCare;
+        Param.StoreOp          = vk::AttachmentStoreOp::eStore;
+        Param.LoadOp           = vk::AttachmentLoadOp::eDontCare;
         NewAttachment(Param, true);
     }
 
@@ -58,7 +58,7 @@ protected:
 public:
     void Draw() override;
 
-    void Rebuild();
+    void Rebuild() const;
 
     vk::CommandBuffer GetCurrentCommandBuffer() const override;
 
@@ -75,14 +75,14 @@ void GLFWWindowSurface::Initialize()
 {
     if (mAttachedInstanceHandle->IsValid())
     {
-        VkSurfaceKHR   Surface{};
-        const VkResult Result = glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &Surface);
-        if (Result != VK_SUCCESS)
+        VkSurfaceKHR   surface{};
+        const VkResult result = glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &surface);
+        if (result != VK_SUCCESS)
         {
-            String ErrorStr = StringUtils::FromAnsiString(string_VkResult(Result));
-            throw VulkanException(std::format(L"创建窗口表面失败: {}", ErrorStr));
+            String error_str = StringUtils::FromAnsiString(to_string(static_cast<vk::Result>(result)));
+            throw VulkanException(std::format(L"创建窗口表面失败: {}", error_str));
         }
-        mSurfaceHandle = vk::SurfaceKHR(Surface);
+        mSurfaceHandle = vk::SurfaceKHR(surface);
     }
 }
 
@@ -196,7 +196,7 @@ void ImGuiGraphicsPipeline::Draw()
     // InGraphicsQueue.submit(Info);
 }
 
-void ImGuiGraphicsPipeline::Rebuild()
+void ImGuiGraphicsPipeline::Rebuild() const
 {
     render_pass_->Rebuild(false);
 }
@@ -261,7 +261,7 @@ void GlfwWindow::SetupImGuiFonts()
     ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-void GlfwWindow::ShutdownImGui()
+void GlfwWindow::ShutdownImGui() const
 {
     if (imgui_graphics_pipeline_)
     {
@@ -322,7 +322,8 @@ void GlfwWindow::SetMouseVisible(const bool InVisible) const
     glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline){
+void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline)
+{
     *pipeline = imgui_graphics_pipeline_;
 }
 

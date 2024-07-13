@@ -2,8 +2,6 @@ project(Platform)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.280.0")
-
 if (MSVC)
     add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
     add_compile_options("/wd4996")
@@ -65,10 +63,10 @@ endif ()
 
 add_library(Engine::Platform ALIAS Platform)
 
-find_package(Vulkan REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
-
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
+
+find_package(Vulkan REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
@@ -85,5 +83,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-core)
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}  PRIVATE imgui::imgui)
 
-target_include_directories(${PROJECT_NAME} PUBLIC "C:/VulkanSDK/1.3.280.0/Include")
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})

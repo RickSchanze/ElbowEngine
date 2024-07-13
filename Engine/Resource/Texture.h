@@ -38,47 +38,41 @@ protected:
     };
 
 public:
-    Texture(
-        Protected, const Path& InPath, ETextureUsage InUsage,
-        const RHI::Vulkan::SamplerInfo& SamplerInfo = {}
-    );
+    Texture(Protected, const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info = {});
 
-    static Texture* Create(
-        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse,
-        const RHI::Vulkan::SamplerInfo& sampler_info = {}
-    );
+    static Texture* Create(const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {});
 
-    bool IsValid() const override { return mData != nullptr; }
+    bool IsValid() const override { return data_ != nullptr; }
 
     ~Texture() override;
 
-    int32_t  GetWidth() const { return mWidth; }
-    int32_t  GetHeight() const { return mHeight; }
-    int32_t  GetChannels() const { return mChannels; }
-    uint8_t* GetData() const { return mData; }
-    Path   GetPath() const override { return mPath; }
+    int32_t  GetWidth() const { return width_; }
+    int32_t  GetHeight() const { return height_; }
+    int32_t  GetChannels() const { return channels_; }
+    uint8_t* GetData() const { return data_; }
+    Path     GetPath() const override { return path_; }
 
-    RHI::Vulkan::Sampler*               GetSampler() const { return mRHISampler; }
-    TUniquePtr<RHI::Vulkan::ImageView>& GetTextureView() { return mRHITextureView; }
+    RHI::Vulkan::Sampler*               GetSampler() const { return rhi_sampler_; }
+    TUniquePtr<RHI::Vulkan::ImageView>& GetTextureView() { return rhi_texture_view_; }
 
     void Load() final;
 
     TUniquePtr<RHI::Vulkan::Texture>& GetRHIResource() override;
 
 protected:
-    Path          mPath;
-    int32_t         mWidth    = 0;
-    int32_t         mHeight   = 0;
-    int32_t         mChannels = 0;
-    uint8_t*        mData     = nullptr;
-    ETextureUsage mUsage;
+    Path          path_;
+    int32_t       width_    = 0;
+    int32_t       height_   = 0;
+    int32_t       channels_ = 0;
+    uint8_t*      data_     = nullptr;
+    ETextureUsage usage_;
 
 private:
-    TUniquePtr<RHI::Vulkan::Texture>   mRHITexture     = nullptr;
-    TUniquePtr<RHI::Vulkan::ImageView> mRHITextureView = nullptr;
-    RHI::Vulkan::Sampler*              mRHISampler     = nullptr;
+    TUniquePtr<RHI::Vulkan::Texture>   rhi_texture_      = nullptr;
+    TUniquePtr<RHI::Vulkan::ImageView> rhi_texture_view_ = nullptr;
+    RHI::Vulkan::Sampler*              rhi_sampler_      = nullptr;
 
-    RHI::Vulkan::SamplerInfo mSamplerInfo;
+    RHI::Vulkan::SamplerInfo sampler_info_;
 };
 
 RESOURCE_NAMESPACE_END

@@ -19,13 +19,13 @@ using namespace RHI::Vulkan;
 RESOURCE_NAMESPACE_BEGIN
 
 Texture::Texture(
-    Protected, const Path& InPath, const ETextureUsage InUsage, const SamplerInfo& SamplerInfo
-) : mPath(InPath), mUsage(InUsage), mSamplerInfo(SamplerInfo)
+    Protected, const Path& path, const ETextureUsage usage, const SamplerInfo& sampler_info
+) : path_(path), usage_(usage), sampler_info_(sampler_info)
 {
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
     Load();
-    ResourceManager::Get()->RegisterResource(mPath, this);
+    ResourceManager::Get()->RegisterResource(path_, this);
 }
 
 Texture* Texture::Create(const Path& path, ETextureUsage usage, const SamplerInfo& sampler_info)
@@ -41,46 +41,46 @@ Texture* Texture::Create(const Path& path, ETextureUsage usage, const SamplerInf
 
 Texture::~Texture()
 {
-    stbi_image_free(mData);
-    if (mRHITexture) mRHITexture->Destroy();
-    if (mRHITextureView) mRHITextureView->InternalDestroy();
-    mRHITexture = nullptr;
-    mData       = nullptr;
-    mData       = nullptr;
+    stbi_image_free(data_);
+    if (rhi_texture_) rhi_texture_->Destroy();
+    if (rhi_texture_view_) rhi_texture_view_->InternalDestroy();
+    rhi_texture_ = nullptr;
+    data_       = nullptr;
+    data_       = nullptr;
 }
 
 void Texture::Load()
 {
-    if (!mPath.IsExist())
+    if (!path_.IsExist())
     {
-        LOG_ERROR_CATEGORY(Resource, L"{}不存在", mPath.ToString());
+        LOG_ERROR_CATEGORY(Resource, L"{}不存在", path_.ToString());
         return;
     }
-    const AnsiString PathStr = mPath.ToAnsiString();
+    const AnsiString PathStr = path_.ToAnsiString();
 
-    mData = stbi_load(PathStr.c_str(), &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
-    if (!mData)
+    data_ = stbi_load(PathStr.c_str(), &width_, &height_, &channels_, STBI_rgb_alpha);
+    if (!data_)
     {
-        LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", mPath.ToString());
+        LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", path_.ToString());
         return;
     }
 
     // 加载底层RHI资源
     ImageInfo TextureInfo = {};
-    TextureInfo.height    = mHeight;
-    TextureInfo.width     = mWidth;
+    TextureInfo.height    = height_;
+    TextureInfo.width     = width_;
     TextureInfo.image_type = vk::ImageType::e2D;
-    mRHITexture           = RHI::Vulkan::Texture::CreateUnique(TextureInfo, mData);
+    rhi_texture_           = RHI::Vulkan::Texture::CreateUnique(TextureInfo, data_);
 
     ImageViewInfo ViewInfo = {};
-    mRHITextureView        = mRHITexture->CreateImageViewUnique(ViewInfo);
+    rhi_texture_view_        = rhi_texture_->CreateImageViewUnique(ViewInfo);
 
-    mRHISampler = Sampler::Create(mSamplerInfo);
+    rhi_sampler_ = Sampler::Create(sampler_info_);
 }
 
 TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
 {
-    return mRHITexture;
+    return rhi_texture_;
 }
 
 RESOURCE_NAMESPACE_END

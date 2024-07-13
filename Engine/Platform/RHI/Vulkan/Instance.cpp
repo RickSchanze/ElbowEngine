@@ -35,16 +35,16 @@ void SurfaceBase::Destroy() {
 }
 
 Instance::Instance() {
-    mVulkanInstanceHandle = VK_NULL_HANDLE;
+    vulkan_instance_handle_ = VK_NULL_HANDLE;
 }
 
 void Instance::Initialize() {
     if (IsValid()) return;
-    mVulkanInstanceHandle = createInstance(mInstanceCreateInfo);
-    mDynamicDispatcher    = {mVulkanInstanceHandle, vkGetInstanceProcAddr};
+    vulkan_instance_handle_ = createInstance(mInstanceCreateInfo);
+    dynamic_dispatcher_    = {vulkan_instance_handle_, vkGetInstanceProcAddr};
     // 初始化验证层
-    mValidationLayer      = MakeUnique<ValidationLayer>(this);
-    mValidationLayer->Initialize();
+    validation_layer_      = MakeUnique<ValidationLayer>(this);
+    validation_layer_->Initialize();
     // 初始化窗口表面
     InitializeSurface();
 }
@@ -52,9 +52,9 @@ void Instance::Initialize() {
 void Instance::Finialize() {
     if (!IsValid()) return;
     mSurface->Finialize();
-    mValidationLayer->Finialize();
-    mVulkanInstanceHandle.destroy();
-    mVulkanInstanceHandle = VK_NULL_HANDLE;
+    validation_layer_->Finialize();
+    vulkan_instance_handle_.destroy();
+    vulkan_instance_handle_ = VK_NULL_HANDLE;
 }
 
 void Instance::Destroy() {
@@ -62,7 +62,7 @@ void Instance::Destroy() {
 }
 
 const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
-    return mDynamicDispatcher;
+    return dynamic_dispatcher_;
 }
 
 Instance& Instance::SetSurface(TUniquePtr<SurfaceBase> InSurface) {
@@ -72,7 +72,7 @@ Instance& Instance::SetSurface(TUniquePtr<SurfaceBase> InSurface) {
 }
 
 TArray<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
-    return mVulkanInstanceHandle.enumeratePhysicalDevices();
+    return vulkan_instance_handle_.enumeratePhysicalDevices();
 }
 
 void Instance::InitializeSurface() {

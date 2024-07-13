@@ -61,6 +61,9 @@ public:
     // 获取片段着色器的handle
     vk::ShaderModule GetFragShaderHandle() const { return frag_shader_->GetHandle(); }
 
+    // 获得第i个uniform buffer object的大小
+    uint32_t GetUniformBufferSize(uint32_t i) const;
+
     vk::DescriptorSetLayout GetDescriptorSetLayout() const { return descriptor_set_layout_; }
 
     const TArray<vk::DescriptorSet>& GetDescriptorSets() const { return descriptor_sets_; }

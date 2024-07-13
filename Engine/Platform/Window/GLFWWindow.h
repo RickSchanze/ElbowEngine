@@ -59,7 +59,7 @@ public:
 
     void InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext);
     void SetupImGuiFonts();
-    void ShutdownImGui();
+    void ShutdownImGui() const;
 
     void BeginImGuiFrame();
     void EndImGuiFrame();

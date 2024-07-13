@@ -191,8 +191,8 @@ Texture::Texture(Protected, const ImageInfo& image_info, const uint8_t* data) : 
     // TODO: 绑定TextureSampler
     vk::Buffer       staging_buffer;
     vk::DeviceMemory staging_buffer_memory;
-    VulkanContext&   context      = *VulkanContext::Get();
-    auto&            device       = context.GetLogicalDevice();
+    VulkanContext&   context       = *VulkanContext::Get();
+    auto&            device        = context.GetLogicalDevice();
     auto             device_handle = device->GetHandle();
     auto&            command_pool  = context.GetCommandPool();
 
@@ -200,7 +200,7 @@ Texture::Texture(Protected, const ImageInfo& image_info, const uint8_t* data) : 
     auto height = image_info_.height;
 
     const vk::DeviceSize image_size = width * height * 4;
-    mip_level_                      = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    image_info_.mip_levels          = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
     device->CreateBuffer(
         image_size,
@@ -233,12 +233,12 @@ Texture::Texture(Protected, const ImageInfo& image_info, const uint8_t* data) : 
     // 赋值暂存缓冲区数据到纹理图像
     // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
     command_pool->TrainsitionImageLayout(
-        image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mip_level_
+        image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, image_info_.mip_levels
     );
     // 2. 复制缓冲区到图像
     command_pool->CopyBufferToImage(staging_buffer, image_handle_, image_info_.width, image_info_.height);
     // 3. 生成mipmap
-    if (!command_pool->GenerateMipmaps(image_handle_, image_info_.format, image_info_.width, image_info_.height, mip_level_))
+    if (!command_pool->GenerateMipmaps(image_handle_, image_info_.format, image_info_.width, image_info_.height, image_info_.mip_levels))
     {
         // 无法生成mipmap就直接传给shader
         command_pool->TrainsitionImageLayout(
