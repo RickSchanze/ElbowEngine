@@ -44,10 +44,8 @@ void RenderPipeline::DrawImGuiPipeline() const
     imgui_pipeline_->Draw();
 }
 
-void RenderPipeline::SubmitImGuiPipelne() const
+void RenderPipeline::SubmitImGuiPipelne(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const
 {
-    RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
-    submit_params.wait_stages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     Submit(imgui_pipeline_, submit_params);
 }
 

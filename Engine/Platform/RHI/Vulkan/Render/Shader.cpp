@@ -13,6 +13,7 @@
 #include "Utils/StringUtils.h"
 
 #include <iostream>
+#include <utility>
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -36,7 +37,7 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage) :
+Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, AnsiString debug_shader_name) :
     shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
@@ -62,6 +63,13 @@ Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_pa
     vk::ShaderModuleCreateInfo create_info = {};
     create_info.setCodeSize(shader_code_size * 4).setPCode(shader_code_ptr);
     shader_module_ = device.get().GetHandle().createShaderModule(create_info);
+#ifdef ELBOW_DEBUG
+    debug_shader_name_ = std::move(debug_shader_name);
+    if (!debug_shader_name_.empty())
+    {
+        device.get().SetShaderModuleDebugName(shader_module_, debug_shader_name_.data());
+    }
+#endif
 }
 
 Shader::~Shader()

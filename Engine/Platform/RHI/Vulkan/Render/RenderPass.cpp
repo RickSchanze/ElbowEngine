@@ -7,6 +7,8 @@
 
 #include "RenderPass.h"
 
+#include <utility>
+
 #include "CommandPool.h"
 #include "CoreGlobal.h"
 #include "Framebuffer.h"
@@ -43,7 +45,12 @@ bool RenderPass::IsValid() const
     return handle_ != nullptr;
 }
 
-RenderPass::RenderPass() = default;
+RenderPass::RenderPass(const AnsiString& debug_name)
+{
+#ifdef ELBOW_DEBUG
+    render_pass_debug_name_ = debug_name;
+#endif
+}
 
 RenderPass::~RenderPass()
 {
@@ -66,29 +73,31 @@ void RenderPass::OnCreateAttachments()
 {
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
-    RenderPassAttachmentParam SwapchainImageParam{vk::ImageUsageFlagBits::eSampled};
-    SwapchainImageParam.sample_count     = sample_count;
-    SwapchainImageParam.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-    NewAttachment(SwapchainImageParam, true);
+    RenderPassAttachmentParam swapchain_image_param{vk::ImageUsageFlagBits::eSampled};
+    swapchain_image_param.load_op          = vk::AttachmentLoadOp::eClear;
+    swapchain_image_param.store_op         = vk::AttachmentStoreOp::eStore;
+    swapchain_image_param.sample_count     = sample_count;
+    swapchain_image_param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
+    NewAttachment(swapchain_image_param, true);
 
     // 深度图像缓冲
-    RenderPassAttachmentParam DepthImageParam(vk::ImageUsageFlagBits::eDepthStencilAttachment);
+    RenderPassAttachmentParam depth_image_param(vk::ImageUsageFlagBits::eDepthStencilAttachment);
     // @QUESTION: 深度图像是否需要多重采样？
-    DepthImageParam.sample_count     = sample_count;
-    DepthImageParam.LoadOp           = vk::AttachmentLoadOp::eClear;
-    DepthImageParam.StoreOp          = vk::AttachmentStoreOp::eDontCare;
-    DepthImageParam.format           = VulkanContext::Get()->GetDepthImageFormat();
-    DepthImageParam.finial_layout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    DepthImageParam.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    NewAttachment(DepthImageParam, false, true);
+    depth_image_param.sample_count     = sample_count;
+    depth_image_param.load_op          = vk::AttachmentLoadOp::eClear;
+    depth_image_param.store_op         = vk::AttachmentStoreOp::eDontCare;
+    depth_image_param.format           = VulkanContext::Get()->GetDepthImageFormat();
+    depth_image_param.finial_layout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    depth_image_param.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    NewAttachment(depth_image_param, false, true);
 
     if (sample_count != vk::SampleCountFlagBits::e1)
     {
         // 多重采样Resolve
-        RenderPassAttachmentParam SampleResolveParam(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment);
-        SampleResolveParam.sample_count  = sample_count;
-        SampleResolveParam.finial_layout = vk::ImageLayout::ePresentSrcKHR;
-        NewAttachment(SampleResolveParam, false, false, true);
+        RenderPassAttachmentParam sample_resolve_param(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment);
+        sample_resolve_param.sample_count  = sample_count;
+        sample_resolve_param.finial_layout = vk::ImageLayout::ePresentSrcKHR;
+        NewAttachment(sample_resolve_param, false, false, true);
     }
 }
 
@@ -110,22 +119,37 @@ void RenderPass::SetupFramebuffer()
         ImageInfo image_info{};
         image_info.height                  = height;
         image_info.width                   = width;
-        image_info.usage                   = frame_buffer_attachment_image_infos_[i].Usage;
-        image_info.format                  = frame_buffer_attachment_image_infos_[i].Format;
+        image_info.usage                   = frame_buffer_attachment_image_infos_[i].usage;
+        image_info.format                  = frame_buffer_attachment_image_infos_[i].format;
         frame_buffer_attachments_[i].Image = Image::CreateUnique(image_info);
+#ifdef ELBOW_DEBUG
+        // context.GetLogicalDevice()->SetImageDebugName(
+        //     frame_buffer_attachments_[i].Image->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_name
+        // );
+#endif
 
         ImageViewInfo view_info = {};
         if (i == depth_attachment_index_)
         {
             view_info.format                  = image_info.format;
             view_info.aspect_flags            = vk::ImageAspectFlagBits::eDepth;
-            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
+            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
+#ifdef ELBOW_DEBUG
+            context.GetLogicalDevice()->SetImageViewDebugName(
+                frame_buffer_attachments_[i].view->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_view_name
+            );
+#endif
         }
         else
         {
             view_info.aspect_flags            = vk::ImageAspectFlagBits::eColor;
             view_info.format                  = image_info.format;
-            frame_buffer_attachments_[i].View = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
+            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
+#ifdef ELBOW_DEBUG
+            context.GetLogicalDevice()->SetImageViewDebugName(
+                frame_buffer_attachments_[i].view->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_view_name
+            );
+#endif
         }
     }
 
@@ -141,7 +165,7 @@ void RenderPass::SetupFramebuffer()
             }
             else
             {
-                attachments.emplace_back(frame_buffer_attachments_[j].View->GetHandle());
+                attachments.emplace_back(frame_buffer_attachments_[j].view->GetHandle());
             }
         }
         vk::FramebufferCreateInfo framebuffer_info = {};
@@ -151,6 +175,11 @@ void RenderPass::SetupFramebuffer()
         framebuffer_info.height = height;
         framebuffer_info.layers = 1;
         frame_buffers_[i]       = Framebuffer::CreateUnique(framebuffer_info);
+#ifdef ELBOW_DEBUG
+        const AnsiString frame_buffer_name = render_pass_debug_name_ + "_FrameBuffer_" + std::to_string(i);
+        debug_frame_buffer_names_.push_back(frame_buffer_name);
+        context.GetLogicalDevice()->SetFramebufferDebugName(frame_buffers_[i]->GetHandle(), frame_buffer_name.data());
+#endif
     }
 }
 
@@ -164,7 +193,7 @@ void RenderPass::CleanFrameBuffer()
     frame_buffers_.clear();
     for (auto& FrameBufferAttachment: frame_buffer_attachments_)
     {
-        if (FrameBufferAttachment.View) FrameBufferAttachment.View->InternalDestroy();
+        if (FrameBufferAttachment.view) FrameBufferAttachment.view->InternalDestroy();
         if (FrameBufferAttachment.Image) FrameBufferAttachment.Image->Destroy();
     }
     frame_buffer_attachments_.clear();
@@ -198,15 +227,16 @@ void RenderPass::InternalDestroy()
 {
     if (IsValid())
     {
-        VulkanContext& context       = *VulkanContext::Get();
-        auto           device_handle = context.GetLogicalDevice()->GetHandle();
+        VulkanContext& context = *VulkanContext::Get();
         CleanFrameBuffer();
-        device_handle.destroyRenderPass(handle_);
+        context.GetLogicalDevice()->DestroyRenderPass(handle_);
         handle_ = nullptr;
     }
 }
 
-void RenderPass::NewAttachment(RenderPassAttachmentParam& param, bool attach_to_swapchain, bool is_depth, bool is_sample_resolve)
+void RenderPass::NewAttachment(
+    RenderPassAttachmentParam& param, bool attach_to_swapchain, bool is_depth, bool is_sample_resolve, AnsiString attchemnt_debug_name
+)
 {
     param.Init();
     if (is_depth)
@@ -222,29 +252,58 @@ void RenderPass::NewAttachment(RenderPassAttachmentParam& param, bool attach_to_
         swapchain_view_index_ = attachment_descs_.size();
     }
 
-    vk::AttachmentDescription NewAttachmentDesc{};
-    NewAttachmentDesc.format         = param.format;
-    NewAttachmentDesc.samples        = param.sample_count;
-    NewAttachmentDesc.initialLayout  = param.InitialLayout;
-    NewAttachmentDesc.finalLayout    = param.finial_layout;
-    NewAttachmentDesc.loadOp         = param.LoadOp;
-    NewAttachmentDesc.storeOp        = param.StoreOp;
-    NewAttachmentDesc.stencilLoadOp  = param.StencilLoadOp;
-    NewAttachmentDesc.stencilStoreOp = param.StencilStoreOp;
+    vk::AttachmentDescription new_attachment_desc{};
+    new_attachment_desc.format         = param.format;
+    new_attachment_desc.samples        = param.sample_count;
+    new_attachment_desc.initialLayout  = param.InitialLayout;
+    new_attachment_desc.finalLayout    = param.finial_layout;
+    new_attachment_desc.loadOp         = param.load_op;
+    new_attachment_desc.storeOp        = param.store_op;
+    new_attachment_desc.stencilLoadOp  = param.StencilLoadOp;
+    new_attachment_desc.stencilStoreOp = param.StencilStoreOp;
 
-    vk::AttachmentReference NewAttachmentRef{};
-    NewAttachmentRef.attachment = attachment_descs_.size();
-    NewAttachmentRef.layout     = param.reference_layout;
+    vk::AttachmentReference new_attachment_ref{};
+    new_attachment_ref.attachment = attachment_descs_.size();
+    new_attachment_ref.layout     = param.reference_layout;
 
-    attachment_descs_.emplace_back(NewAttachmentDesc);
-    attahcment_refs_.emplace_back(NewAttachmentRef);
+    attachment_descs_.emplace_back(new_attachment_desc);
+    attahcment_refs_.emplace_back(new_attachment_ref);
 
-    RenderPassAttachmentImageInfo NewImageInfo;
-    NewImageInfo.Usage         = param.ImageUsage;
-    NewImageInfo.Format        = param.format;
-    NewImageInfo.InitialLayout = param.InitialLayout;
-    NewImageInfo.FinalLayout   = param.finial_layout;
-    frame_buffer_attachment_image_infos_.emplace_back(NewImageInfo);
+    RenderPassAttachmentImageInfo new_image_info;
+    new_image_info.usage         = param.image_usage;
+    new_image_info.format        = param.format;
+    new_image_info.InitialLayout = param.InitialLayout;
+    new_image_info.FinalLayout   = param.finial_layout;
+#ifdef ELBOW_DEBUG
+    // 如果attachment_debug_name为空 给转换一下
+    if (attchemnt_debug_name.empty())
+    {
+        if (is_depth)
+        {
+            attchemnt_debug_name = "Depth";
+        }
+        else if (is_sample_resolve)
+        {
+            attchemnt_debug_name = "SampleResolve";
+        }
+        else if (attach_to_swapchain)
+        {
+            attchemnt_debug_name = "SwapchainAttached";
+        }
+        else
+        {
+            attchemnt_debug_name = std::to_string(frame_buffer_attachment_image_infos_.size());
+        }
+    }
+    const AnsiString new_ansi_string            = render_pass_debug_name_ + "_" + attchemnt_debug_name;
+    const AnsiString new_image_ansi_string      = new_ansi_string + "_Image";
+    const AnsiString new_image_view_ansi_string = new_ansi_string + "_ImageView";
+    debug_image_names_.push_back(new_image_ansi_string);
+    debug_image_view_names_.push_back(new_image_view_ansi_string);
+    new_image_info.debug_image_name      = debug_image_names_.back().data();
+    new_image_info.debug_image_view_name = debug_image_view_names_.back().data();
+#endif
+    frame_buffer_attachment_image_infos_.emplace_back(new_image_info);
 }
 
 void RenderPass::CreateSubpassDescription()
@@ -328,7 +387,13 @@ void RenderPass::CreateRenderPass()
 
     vk::RenderPassCreateInfo Info{};
     Info.setAttachments(attachment_descs_).setSubpasses(subpasses).setDependencies(dependencies);
-    handle_ = context.GetLogicalDevice()->GetHandle().createRenderPass(Info);
+    handle_ = context.GetLogicalDevice()->CreateRenderPass(Info);
+#ifdef ELBOW_DEBUG
+    if (!render_pass_debug_name_.empty())
+    {
+        context.GetLogicalDevice()->SetRenderPassDebugName(handle_, render_pass_debug_name_.data());
+    }
+#endif
 }
 
 RHI_VULKAN_NAMESPACE_END

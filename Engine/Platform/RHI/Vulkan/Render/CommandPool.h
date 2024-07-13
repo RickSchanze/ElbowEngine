@@ -32,11 +32,11 @@ public:
     vk::CommandPool GetHandle() const { return pool_; }
 
     void
-    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, int32_t mip_level = 1) const;
+    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1) const;
 
     void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) const;
 
-    bool GenerateMipmaps(vk::Image image, vk::Format image_format, int32_t tex_width, int32_t tex_height, uint32_t mip_level) const;
+    bool GenerateMipmaps(vk::Image image, vk::Format image_format, const uint32_t tex_width, const uint32_t tex_height, uint32_t mip_level) const;
 
     void Finialize();
 

@@ -33,9 +33,9 @@ public:
 
     void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
 
-    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
 
-    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice);
+    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
 
     void Finialize();
 
@@ -109,9 +109,24 @@ public:
 
     void DestroyFence(vk::Fence fence) const;
 
+    vk::RenderPass CreateRenderPass(const vk::RenderPassCreateInfo& create_info) const;
+    void           DestroyRenderPass(vk::RenderPass render_pass) const;
+
+    void SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const;
+    void SetCommandBufferDebugName(vk::CommandBuffer handle, const char* name) const;
+    void SetImageDebugName(vk::Image handle, const char* name) const;
+    void SetImageViewDebugName(vk::ImageView handle, const char* name) const;
+    void SetRenderPassDebugName(vk::RenderPass handle, const char* name) const;
+    void SetFramebufferDebugName(vk::Framebuffer handle, const char* name) const;
+    void SetShaderModuleDebugName(vk::ShaderModule handle, const char* name) const;
+    void SetBufferDebugName(vk::Buffer handle, const char* name) const;
+    void SetBufferMemoryDebugName(vk::DeviceMemory handle, const char* name) const;
+
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }
     PhysicalDevice& GetAssociatedPhysicalDevice() const { return associated_physical_device_; }
+
+    void InitializePFNs();
 
 private:
     vk::Device          handle_ = VK_NULL_HANDLE;
@@ -119,6 +134,10 @@ private:
 
     vk::Queue graphics_queue_;
     vk::Queue present_queue_;
+
+#ifdef ELBOW_DEBUG
+    PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT_ = nullptr;
+#endif
 };
 
 RHI_VULKAN_NAMESPACE_END

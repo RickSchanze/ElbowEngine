@@ -73,7 +73,7 @@ public:
      * @param shader_stage Shader类型
      * @param device Shader所属的管线
      */
-    Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage);
+    Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, AnsiString debug_shader_name);
 
     static Shader* Create(const Path& path, const EShaderStage type)
     {
@@ -104,6 +104,10 @@ private:
     TArray<VertexInAttribute> in_attributes_;
 
     Ref<LogicalDevice> device_; // 使用此Shader的管线
+
+#ifdef ELBOW_DEBUG
+    AnsiString debug_shader_name_;
+#endif
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -46,12 +46,12 @@ void CommandPool::CleanCommandPool()
     pool_ = nullptr;
 }
 void CommandPool::TrainsitionImageLayout(
-    const vk::Image image, vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, int32_t mip_level
+    const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level
 ) const
 {
-    vk::CommandBuffer      cb    = BeginSingleTimeCommands();
+    const vk::CommandBuffer cb              = BeginSingleTimeCommands();
     // 设置图像内存屏障
-    vk::ImageMemoryBarrier barrier          = {};
+    vk::ImageMemoryBarrier  barrier         = {};
     barrier.oldLayout                       = old_layout;
     barrier.newLayout                       = new_layout;
     // 不进行队列所有权传递则必须设为这两个值
@@ -87,29 +87,29 @@ void CommandPool::TrainsitionImageLayout(
     {
         barrier.srcAccessMask = {};
         barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-        source_stage           = vk::PipelineStageFlagBits::eTopOfPipe;
-        destination_stage      = vk::PipelineStageFlagBits::eTransfer;
+        source_stage          = vk::PipelineStageFlagBits::eTopOfPipe;
+        destination_stage     = vk::PipelineStageFlagBits::eTransfer;
     }
     else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal)
     {
         barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
         barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-        source_stage           = vk::PipelineStageFlagBits::eTransfer;
-        destination_stage      = vk::PipelineStageFlagBits::eFragmentShader;
+        source_stage          = vk::PipelineStageFlagBits::eTransfer;
+        destination_stage     = vk::PipelineStageFlagBits::eFragmentShader;
     }
     else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
     {
         barrier.srcAccessMask = {};
         barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-        source_stage           = vk::PipelineStageFlagBits::eTopOfPipe;
-        destination_stage      = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        source_stage          = vk::PipelineStageFlagBits::eTopOfPipe;
+        destination_stage     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
     }
     else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eColorAttachmentOptimal)
     {
         barrier.srcAccessMask = {};
         barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
-        source_stage           = vk::PipelineStageFlagBits::eTopOfPipe;
-        destination_stage      = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        source_stage          = vk::PipelineStageFlagBits::eTopOfPipe;
+        destination_stage     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     }
     else
     {
@@ -137,7 +137,7 @@ void CommandPool::CopyBufferToImage(const vk::Buffer buffer, const vk::Image ima
 }
 
 bool CommandPool::GenerateMipmaps(
-    const vk::Image image, const vk::Format image_format, const int32_t tex_width, const int32_t tex_height, const uint32_t mip_level
+    const vk::Image image, const vk::Format image_format, const uint32_t tex_width, const uint32_t tex_height, const uint32_t mip_level
 ) const
 {
     const auto             cb = BeginSingleTimeCommands();
@@ -176,9 +176,7 @@ bool CommandPool::GenerateMipmaps(
         Blit.dstSubresource.mipLevel       = i;
         Blit.dstSubresource.baseArrayLayer = 0;
         Blit.dstSubresource.layerCount     = 1;
-        cb.blitImage(
-            image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, {Blit}, vk::Filter::eLinear
-        );
+        cb.blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, {Blit}, vk::Filter::eLinear);
         // 将细化界别为i-1的图像布局转换到ShaderReadOnlyOptimal
         barrier.oldLayout     = vk::ImageLayout::eTransferSrcOptimal;
         barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;

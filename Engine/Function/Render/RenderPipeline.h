@@ -41,7 +41,7 @@ protected:
 
     void AddImGuiGraphicsPipeline();
     void DrawImGuiPipeline() const;
-    void SubmitImGuiPipelne() const;
+    void SubmitImGuiPipelne(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const;
 
     RenderContext*                      context_        = nullptr;
     RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;

@@ -10,6 +10,7 @@
 #include "CoreGlobal.h"
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
+#include "RHI/Vulkan/VulkanContext.h"
 #include "SwapChain.h"
 #include "vulkan/vulkan.hpp"
 
@@ -31,14 +32,15 @@ void LogicalDevice::FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const
     handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
-TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice)
+TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device)
 {
-    return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, InAssociatedPhysicalDevice);
+    return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, associated_physical_device);
 }
 
-LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& InAssociatedPhysicalDevice) :
-    handle_(InDevice), associated_physical_device_(InAssociatedPhysicalDevice)
+LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device) :
+    handle_(InDevice), associated_physical_device_(associated_physical_device)
 {
+    InitializePFNs();
 }
 
 void LogicalDevice::Finialize()
@@ -218,12 +220,99 @@ void LogicalDevice::DestroySemaphore(const vk::Semaphore semaphore) const
     handle_.destroySemaphore(semaphore);
 }
 
-vk::Fence LogicalDevice::CreateFence(const vk::FenceCreateInfo& create_info) const{
+vk::Fence LogicalDevice::CreateFence(const vk::FenceCreateInfo& create_info) const
+{
     return handle_.createFence(create_info);
 }
 
-void LogicalDevice::DestroyFence(const vk::Fence fence) const{
+void LogicalDevice::DestroyFence(const vk::Fence fence) const
+{
     handle_.destroyFence(fence);
+}
+
+vk::RenderPass LogicalDevice::CreateRenderPass(const vk::RenderPassCreateInfo& create_info) const
+{
+    return handle_.createRenderPass(create_info);
+}
+
+void LogicalDevice::DestroyRenderPass(vk::RenderPass render_pass) const
+{
+    handle_.destroyRenderPass(render_pass);
+}
+
+void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const
+{
+#ifdef ELBOW_DEBUG
+    const VkDebugUtilsObjectNameInfoEXT name_info_ext = name_info;
+    vkSetDebugUtilsObjectNameEXT_(handle_, &name_info_ext);
+#endif
+}
+
+#define SET_DEBUG_NAME_BODY(obj_type_enum, obj_type)                                    \
+    vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
+    name_info.pObjectName  = name;                                                      \
+    name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
+    name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
+    SetObjectDebugName(name_info);
+
+void LogicalDevice::SetCommandBufferDebugName(const vk::CommandBuffer handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eCommandBuffer, VkCommandBuffer);
+#endif
+}
+
+void LogicalDevice::SetImageDebugName(const vk::Image handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eImage, VkImage);
+#endif
+}
+
+void LogicalDevice::SetImageViewDebugName(const vk::ImageView handle, const char* name) const
+{
+#if ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eImageView, VkImageView)
+#endif
+}
+
+void LogicalDevice::SetRenderPassDebugName(const vk::RenderPass handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eRenderPass, VkRenderPass)
+#endif
+}
+
+void LogicalDevice::SetFramebufferDebugName(const vk::Framebuffer handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eFramebuffer, VkFramebuffer)
+#endif
+}
+
+void LogicalDevice::SetShaderModuleDebugName(const vk::ShaderModule handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eShaderModule, VkShaderModule)
+#endif
+}
+
+void LogicalDevice::SetBufferDebugName(vk::Buffer handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eBuffer, VkBuffer)
+#endif
+}
+
+void LogicalDevice::SetBufferMemoryDebugName(vk::DeviceMemory handle, const char* name) const
+{
+#ifdef ELBOW_DEBUG
+    SET_DEBUG_NAME_BODY(eDeviceMemory, VkDeviceMemory)
+#endif
+}
+
+void LogicalDevice::InitializePFNs(){
+    vkSetDebugUtilsObjectNameEXT_ = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(VulkanContext::Get()->GetVulkanInstance()->GetHandle(), "vkSetDebugUtilsObjectNameEXT"));
 }
 
 RHI_VULKAN_NAMESPACE_END

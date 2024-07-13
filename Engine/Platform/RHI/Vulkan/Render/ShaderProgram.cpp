@@ -16,8 +16,9 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-ShaderProgram::ShaderProgram(const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time) :
-    vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
+ShaderProgram::ShaderProgram(
+    const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const AnsiString& debug_name
+) : vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
 {
     vertex_input_attributes_ = vert->GetInAttributes();
     // 校验VertexShader和FragmentShader的uniform变量
@@ -29,6 +30,9 @@ ShaderProgram::ShaderProgram(const Ref<LogicalDevice> device, Shader* vert, Shad
     {
         return;
     }
+#ifdef ELBOW_DEBUG
+    debug_name_ = debug_name;
+#endif
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -166,6 +170,8 @@ void ShaderProgram::CreateUniformBuffers()
     }
     uniform_buffers_.resize(g_engine_statistics.swapchain_image_count);
     uniform_buffers_memory_.resize(g_engine_statistics.swapchain_image_count);
+    uniform_buffer_debug_names_.resize(g_engine_statistics.swapchain_image_count);
+    uniform_buffer_memory_debug_names_.resize(g_engine_statistics.swapchain_image_count);
     for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
     {
         device.CreateBuffer(
@@ -175,6 +181,15 @@ void ShaderProgram::CreateUniformBuffers()
             uniform_buffers_[i],
             uniform_buffers_memory_[i]
         );
+#ifdef ELBOW_DEBUG
+        if (!debug_name_.empty())
+        {
+            uniform_buffer_debug_names_[i] = debug_name_ + "_UniformBuffer_" + std::to_string(i);
+            device.SetBufferDebugName(uniform_buffers_[i], uniform_buffer_debug_names_[i].data());
+            uniform_buffer_memory_debug_names_[i] = debug_name_ + "_UniformBufferMemory_" + std::to_string(i);
+            device.SetBufferMemoryDebugName(uniform_buffers_memory_[i], uniform_buffer_memory_debug_names_[i].data());
+        }
+#endif
     }
 }
 

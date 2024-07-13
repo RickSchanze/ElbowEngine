@@ -33,8 +33,8 @@ protected:
         Param.InitialLayout    = vk::ImageLayout::ePresentSrcKHR;
         Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-        Param.StoreOp          = vk::AttachmentStoreOp::eStore;
-        Param.LoadOp           = vk::AttachmentLoadOp::eDontCare;
+        Param.store_op          = vk::AttachmentStoreOp::eStore;
+        Param.load_op           = vk::AttachmentLoadOp::eDontCare;
         NewAttachment(Param, true);
     }
 
@@ -187,13 +187,6 @@ void ImGuiGraphicsPipeline::Draw()
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffers_[current_image_index]);
     command_buffers_[current_image_index].endRenderPass();
     command_buffers_[current_image_index].end();
-    // vk::PipelineStageFlags WaitFlag = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    // vk::SubmitInfo         Info     = {};
-    // Info.setSignalSemaphores(InSingalSemaphores)
-    //     .setWaitSemaphores(InWaitSemaphores)
-    //     .setCommandBuffers(command_buffers_[current_image_index])
-    //     .setWaitDstStageMask(WaitFlag);
-    // InGraphicsQueue.submit(Info);
 }
 
 void ImGuiGraphicsPipeline::Rebuild() const

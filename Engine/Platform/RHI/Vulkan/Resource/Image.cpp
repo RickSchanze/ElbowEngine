@@ -49,7 +49,14 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info));
+    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info));
+#ifdef ELBOW_DEBUG
+    if (view_info.debug_name != nullptr)
+    {
+        context.GetLogicalDevice()->SetImageViewDebugName(view->GetHandle(), view_info.debug_name);
+    }
+#endif
+    return view;
 }
 
 ImageInfo::ImageInfo(const vk::ImageCreateInfo& image_info)

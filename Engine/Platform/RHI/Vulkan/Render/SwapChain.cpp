@@ -9,6 +9,7 @@
 
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
+#include "RHI/Vulkan/VulkanContext.h"
 #include "RHI/Vulkan/VulkanStringify.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -99,18 +100,42 @@ bool SwapChain::IsValid() const
 
 void SwapChain::Initialize()
 {
+#ifdef ELBOW_DEBUG
+    // clang-format off
+    static const char* s_swap_chain_image_view_debug_name[3] = {
+        "SwapchainImageView_0",
+        "SwapchainImageView_1",
+        "SwapchainImageView_2"
+    };
+
+    static const char* s_swap_chain_image_debug_name[3] = {
+        "SwapchainImage_0",
+        "SwapchainImage_1",
+        "SwapchainImage_2",
+    };
+    // clang-format on
+#endif
+
     if (IsValid()) return;
     auto swapchain_images = associated_logical_device_->GetHandle().getSwapchainImagesKHR(swapchain_handle_);
     swap_chain_images_.resize(swapchain_images.size());
-    std::ranges::transform(swapchain_images, swap_chain_images_.begin(), [](const auto& ImageHandle) {
-        return MakeShared<SwapChainImage>(ImageHandle);
-    });
+
+    for (int i = 0; i < swapchain_images.size(); i++)
+    {
+        swap_chain_images_[i] = MakeShared<SwapChainImage>(swapchain_images[i]);
+#ifdef ELBOW_DEBUG
+        VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(swapchain_images[i], s_swap_chain_image_debug_name[i]);
+#endif
+    }
 
     swapchain_image_views_.resize(GetSwapchainImageCount());
     for (uint32_t i = 0; i < GetSwapchainImageCount(); ++i)
     {
         ImageViewInfo view_info;
         view_info.format = swapchain_image_format_;
+#ifdef ELBOW_DEBUG
+        view_info.debug_name = s_swap_chain_image_view_debug_name[i];
+#endif
         swapchain_image_views_[i] = swap_chain_images_[i]->CreateImageViewShared(view_info);
     }
 

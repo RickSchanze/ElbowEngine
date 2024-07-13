@@ -19,35 +19,39 @@ class Image;
 struct FramebufferAttachment
 {
     TUniquePtr<Image>     Image;
-    TSharedPtr<ImageView> View;
+    TSharedPtr<ImageView> view;
 };
 
 struct RenderPassAttachmentParam
 {
-    vk::Format              format          = vk::Format::eUndefined;   // Undefined则会使用交换链图像格式
+    vk::Format              format           = vk::Format::eUndefined;   // Undefined则会使用交换链图像格式
     vk::SampleCountFlagBits sample_count     = vk::SampleCountFlagBits::e1;
-    vk::AttachmentLoadOp    LoadOp          = vk::AttachmentLoadOp::eClear;
-    vk::AttachmentStoreOp   StoreOp         = vk::AttachmentStoreOp::eStore;
-    vk::AttachmentLoadOp    StencilLoadOp   = vk::AttachmentLoadOp::eDontCare;
-    vk::AttachmentStoreOp   StencilStoreOp  = vk::AttachmentStoreOp::eDontCare;
-    vk::ImageLayout         InitialLayout   = vk::ImageLayout::eUndefined;
+    vk::AttachmentLoadOp    load_op          = vk::AttachmentLoadOp::eClear;
+    vk::AttachmentStoreOp   store_op         = vk::AttachmentStoreOp::eStore;
+    vk::AttachmentLoadOp    StencilLoadOp    = vk::AttachmentLoadOp::eDontCare;
+    vk::AttachmentStoreOp   StencilStoreOp   = vk::AttachmentStoreOp::eDontCare;
+    vk::ImageLayout         InitialLayout    = vk::ImageLayout::eUndefined;
     // 自动决定，如果SampleCount不为e1则是ColorAttachmentOptimal 否则 ePresentSrcKHR
     vk::ImageLayout         finial_layout    = vk::ImageLayout::eUndefined;
     vk::ImageLayout         reference_layout = vk::ImageLayout::eUndefined;
 
-    vk::ImageUsageFlags ImageUsage;
+    vk::ImageUsageFlags image_usage;
 
     void Init();
 
-    explicit RenderPassAttachmentParam(vk::ImageUsageFlags InImageUsage) { ImageUsage = InImageUsage; }
+    explicit RenderPassAttachmentParam(vk::ImageUsageFlags InImageUsage) { image_usage = InImageUsage; }
 };
 
 struct RenderPassAttachmentImageInfo
 {
-    vk::ImageUsageFlags Usage;
-    vk::Format          Format;
+    vk::ImageUsageFlags usage;
+    vk::Format          format;
     vk::ImageLayout     InitialLayout;
     vk::ImageLayout     FinalLayout;
+#ifdef ELBOW_DEBUG
+    const char* debug_image_name;
+    const char* debug_image_view_name;
+#endif
 };
 
 // 基本RenderPass 基本RenderPass包含一个ColorAttachment 一个DepthAttachment和一个Multismaple使用的Attachment
@@ -57,7 +61,7 @@ class RenderPass : public IRHIResource
 public:
     bool IsValid() const;
 
-    RenderPass();
+    explicit RenderPass(const AnsiString &debug_name = "");
 
     ~RenderPass() override;
 
@@ -80,7 +84,7 @@ public:
 
     void Destroy() override;
 
-    TUniquePtr<Framebuffer>& GetFrameBuffer(int32_t InIndex) { return frame_buffers_[InIndex]; }
+    TUniquePtr<Framebuffer>& GetFrameBuffer(int32_t index) { return frame_buffers_[index]; }
 
     TArray<TUniquePtr<Framebuffer>>& GetFrameBuffers() { return frame_buffers_; }
 
@@ -104,10 +108,11 @@ protected:
      * @param attach_to_swapchain 这个Attachment是不是要附着到交换链Index
      * @param is_depth 这个Attachment是不是深度Attachment
      * @param is_sample_resolve 这个Attachment是不是用来转换多重采样
+     * @param attchemnt_debug_name 这个attachment的debug name
      */
     void NewAttachment(
-        RenderPassAttachmentParam& param, bool attach_to_swapchain = false, bool is_depth = false,
-        bool is_sample_resolve = false
+        RenderPassAttachmentParam& param, bool attach_to_swapchain = false, bool is_depth = false, bool is_sample_resolve = false,
+        AnsiString attchemnt_debug_name = ""
     );
 
     virtual void CreateSubpassDescription();
@@ -132,6 +137,13 @@ protected:
 
     vk::SubpassDescription subpass_;
     vk::SubpassDependency  dependency_;
+
+#ifdef ELBOW_DEBUG
+    AnsiString render_pass_debug_name_;
+    TArray<std::string> debug_image_names_;
+    TArray<std::string> debug_image_view_names_;
+    TArray<std::string> debug_frame_buffer_names_;
+#endif
 };
 
 RHI_VULKAN_NAMESPACE_END

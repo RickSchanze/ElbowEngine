@@ -26,20 +26,22 @@ class ShaderProgram
 public:
     bool IsValid() const;
 
-    ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time);
+    ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time, const AnsiString &debug_name);
 
     ~ShaderProgram();
 
-    static TSharedPtr<ShaderProgram> CreateShared(Shader* vert, Shader* frag, EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered)
+    static TSharedPtr<ShaderProgram>
+    CreateShared(Shader* vert, Shader* frag, EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString& debug_name = "")
     {
         Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        return MakeShared<ShaderProgram>(device, vert, frag, destroy_time);
+        return MakeShared<ShaderProgram>(device, vert, frag, destroy_time, debug_name);
     }
 
-    static ShaderProgram* Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered)
+    static ShaderProgram*
+    Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString &debug_name = "")
     {
         Ref   device  = *VulkanContext::Get()->GetLogicalDevice();
-        auto* program = new ShaderProgram(device, vert, frag, destroy_time);
+        auto* program = new ShaderProgram(device, vert, frag, destroy_time, debug_name);
         return program;
     }
 
@@ -115,6 +117,12 @@ private:
     vk::DescriptorSetLayout   descriptor_set_layout_;
 
     Ref<LogicalDevice> device_;
+
+#ifdef ELBOW_DEBUG
+    AnsiString debug_name_;
+    TArray<AnsiString> uniform_buffer_debug_names_;
+    TArray<AnsiString> uniform_buffer_memory_debug_names_;
+#endif
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -20,6 +20,9 @@ struct ImageViewInfo
     vk::Format           format       = vk::Format::eUndefined;            // 自动选择和Image一样的格式
     vk::ImageAspectFlags aspect_flags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
     int32_t              mip_levels   = 0;                                 // 自动选择Miplevels
+#ifdef ELBOW_DEBUG
+    const char*          debug_name   = nullptr;
+#endif
 };
 
 class ImageBase
@@ -61,10 +64,10 @@ struct ImageInfo
 {
     vk::Format              format = vk::Format::eUndefined;
     vk::ImageUsageFlags     usage{};
-    int32_t                 width           = 0;
-    int32_t                 height          = 0;
-    int32_t                 depth           = 1;
-    int32_t                 mip_levels      = 1;
+    uint32_t                 width           = 0;
+    uint32_t                 height          = 0;
+    uint32_t                 depth           = 1;
+    uint32_t                 mip_levels      = 1;
     vk::ImageTiling         tiling          = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits sample_count    = vk::SampleCountFlagBits::e1;
     vk::ImageType           image_type      = vk::ImageType::e2D;
