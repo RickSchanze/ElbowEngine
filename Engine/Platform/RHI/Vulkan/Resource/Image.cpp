@@ -49,13 +49,7 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info));
-#ifdef ELBOW_DEBUG
-    if (view_info.debug_name != nullptr)
-    {
-        context.GetLogicalDevice()->SetImageViewDebugName(view->GetHandle(), view_info.debug_name);
-    }
-#endif
+    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info), view_info.debug_name);
     return view;
 }
 
@@ -140,15 +134,29 @@ void Image::CreateImage()
     // 只被一个队列族使用
     image_create_info.setSharingMode(vk::SharingMode::eExclusive);
 
-    image_handle_                             = device_handle.createImage(image_create_info);
+    image_handle_ = device_handle.createImage(image_create_info);
+#ifdef ELBOW_DEBUG
+    if (!image_info_.debug_name.empty())
+    {
+        image_info_.debug_image_name = image_info_.debug_name + "_Image";
+        context.GetLogicalDevice()->SetImageDebugName(image_handle_, image_info_.debug_image_name.c_str());
+    }
+#endif
     // 为图像分配内存
-    const auto             MemoryRequirements = device_handle.getImageMemoryRequirements(image_handle_);
-    vk::MemoryAllocateInfo MemoryAllocateInfo{};
-    MemoryAllocateInfo.setAllocationSize(MemoryRequirements.size);
-    MemoryAllocateInfo.setMemoryTypeIndex(
-        context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(MemoryRequirements.memoryTypeBits, image_info_.memory_property)
+    const auto             memory_requirements = device_handle.getImageMemoryRequirements(image_handle_);
+    vk::MemoryAllocateInfo memory_allocate_info{};
+    memory_allocate_info.setAllocationSize(memory_requirements.size);
+    memory_allocate_info.setMemoryTypeIndex(
+        context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(memory_requirements.memoryTypeBits, image_info_.memory_property)
     );
-    image_memory_ = device_handle.allocateMemory(MemoryAllocateInfo);
+    image_memory_ = device_handle.allocateMemory(memory_allocate_info);
+#ifdef ELBOW_DEBUG
+    if (!image_info_.debug_name.empty())
+    {
+        image_info_.debug_image_memory_name = image_info_.debug_name + "_ImageMemory";
+        context.GetLogicalDevice()->SetDeviceMemoryDebugName(image_memory_, image_info_.debug_image_memory_name.c_str());
+    }
+#endif
     device_handle.bindImageMemory(image_handle_, image_memory_, 0);
 }
 
@@ -170,7 +178,7 @@ ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info));
+    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.debug_name);
 }
 
 TSharedPtr<Texture> Texture::CreateShared(const ImageInfo& image_info, const uint8_t* data)

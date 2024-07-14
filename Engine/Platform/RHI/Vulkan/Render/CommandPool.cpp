@@ -14,28 +14,31 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-CommandPool::CommandPool(Private, const Ref<TUniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags) : device_(device)
+CommandPool::CommandPool(
+    Private, const Ref<TUniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name
+) : device_(device)
 {
+    debug_name_ = debug_name;
     CreateCommandPool(pool_flags);
 }
 
-TUniquePtr<CommandPool> CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags)
+TUniquePtr<CommandPool> CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
 {
-    return MakeUnique<CommandPool>(Private{}, device, pool_flags);
+    return MakeUnique<CommandPool>(Private{}, device, pool_flags, debug_name);
 }
 
 void CommandPool::CreateCommandPool(const vk::CommandPoolCreateFlags pool_flags)
 {
-    const auto& Device = device_.get();
+    const auto& device = device_.get();
 
     // 获取队列族索引
-    const auto QueueFamilyIndices = Device->GetAssociatedPhysicalDevice().FindQueueFamilyIndices();
+    const auto queue_family_indices = device->GetAssociatedPhysicalDevice().FindQueueFamilyIndices();
 
     // 命令池创建
-    vk::CommandPoolCreateInfo CommandPoolCreateInfo{};
-    CommandPoolCreateInfo.setFlags(pool_flags);
-    CommandPoolCreateInfo.setQueueFamilyIndex(QueueFamilyIndices.graphics_family.value());
-    pool_ = Device->GetHandle().createCommandPool(CommandPoolCreateInfo);
+    vk::CommandPoolCreateInfo command_pool_create_info{};
+    command_pool_create_info.setFlags(pool_flags);
+    command_pool_create_info.setQueueFamilyIndex(queue_family_indices.graphics_family.value());
+    pool_ = device->CreateCommandPool(command_pool_create_info, debug_name_.c_str());
 }
 
 void CommandPool::CleanCommandPool()
@@ -217,9 +220,10 @@ void CommandPool::ResetCommandPool() const
     device_.get()->GetHandle().resetCommandPool(pool_);
 }
 
-TArray<vk::CommandBuffer> CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info) const
+TArray<vk::CommandBuffer>
+CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name, TArray<AnsiString>* out_debug_names) const
 {
-    return device_.get()->GetHandle().allocateCommandBuffers(alloc_info);
+    return device_.get()->AllocateCommandBuffers(alloc_info, debug_name, out_debug_names);
 }
 
 void CommandPool::DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const

@@ -122,6 +122,8 @@ struct PipelineInfo
 #ifdef ELBOW_DEBUG
     AnsiString debug_name;
     TArray<AnsiString> debug_command_buffer_names;
+    AnsiString debug_pipeline_layout_name_;
+    AnsiString debug_pipeline_name_;
 #endif
 };
 
@@ -184,9 +186,6 @@ private:
     vk::SampleCountFlagBits sample_count_ = vk::SampleCountFlagBits::e1;
 
     RenderPass* render_pass_ = nullptr;
-
-    // 下面所有的东西都应该是材质
-    // TODO: 重构整合材质系统
     ShaderProgram* shader_program_ = nullptr;
 
     vk::CommandBuffer binded_buffer_ = nullptr;

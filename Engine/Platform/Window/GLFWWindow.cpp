@@ -26,15 +26,18 @@ PLATFORM_WINDOW_NAMESPACE_BEGIN
 
 class ImGuiRenderPass : public RenderPass
 {
+public:
+    explicit ImGuiRenderPass(const AnsiString& debug_name) : RenderPass(debug_name) {}
+
 protected:
     void OnCreateAttachments() override
     {
         RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
-        Param.initial_layout    = vk::ImageLayout::ePresentSrcKHR;
+        Param.initial_layout   = vk::ImageLayout::ePresentSrcKHR;
         Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-        Param.store_op          = vk::AttachmentStoreOp::eStore;
-        Param.load_op           = vk::AttachmentLoadOp::eDontCare;
+        Param.store_op         = vk::AttachmentStoreOp::eStore;
+        Param.load_op          = vk::AttachmentLoadOp::eDontCare;
         NewAttachment(Param, true);
     }
 
@@ -69,6 +72,9 @@ private:
     TUniquePtr<CommandPool>   command_pool_;
     RenderPass*               render_pass_ = nullptr;
     TArray<vk::CommandBuffer> command_buffers_;
+#ifdef ELBOW_DEBUG
+    TArray<AnsiString> command_buffer_debug_names;
+#endif
 };
 
 void GLFWWindowSurface::Initialize()
@@ -121,18 +127,12 @@ void ImGuiGraphicsPipeline::Initialize()
     CreateDescriptorPool();
     Info.DescriptorPool = descriptor_pool_;
 
-    command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
 
-    render_pass_ = new ImGuiRenderPass();
+    render_pass_ = new ImGuiRenderPass("ImGuiRenderPass");
     render_pass_->Initialize();
 
-    // CommandBuffers
-    vk::CommandBufferAllocateInfo alloc_info = {};
-    alloc_info.setCommandPool(context_->GetCommandPool()->GetHandle())
-        .setLevel(vk::CommandBufferLevel::ePrimary)
-        .setCommandBufferCount(context_->GetSwapChainImageCount());
-
-    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info);
+    CreateCommandBuffers();
 
     // 初始化Imgui
     ImGui_ImplVulkan_LoadFunctions(
@@ -140,8 +140,6 @@ void ImGuiGraphicsPipeline::Initialize()
         context_->GetVulkanInstance()->GetHandle()
     );
     ImGui_ImplVulkan_Init(&Info, render_pass_->GetHandle());
-    // 字体纹理
-    CreateCommandBuffers();
 }
 
 void ImGuiGraphicsPipeline::Finialize()
@@ -162,11 +160,11 @@ ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline()
 
 void ImGuiGraphicsPipeline::CreateCommandBuffers()
 {
-    vk::CommandBufferAllocateInfo AllocInfo = {};
-    AllocInfo.level                         = vk::CommandBufferLevel::ePrimary;
-    AllocInfo.commandPool                   = command_pool_->GetHandle();
-    AllocInfo.commandBufferCount            = static_cast<uint32_t>(render_pass_->GetFrameBuffers().size());
-    command_buffers_                        = context_->GetLogicalDevice()->AllocateCommandBuffers(AllocInfo);
+    vk::CommandBufferAllocateInfo alloc_info = {};
+    alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
+    alloc_info.commandPool                   = command_pool_->GetHandle();
+    alloc_info.commandBufferCount            = static_cast<uint32_t>(render_pass_->GetFrameBuffers().size());
+    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info, "ImGuiGraphicsPipeline_CommandBuffer", &command_buffer_debug_names);
 }
 
 void ImGuiGraphicsPipeline::Draw()
@@ -175,10 +173,10 @@ void ImGuiGraphicsPipeline::Draw()
     int32_t                    current_image_index = g_engine_statistics.current_image_index;
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     command_buffers_[current_image_index].begin(&begin_info);
-    vk::RenderPassBeginInfo         render_pass_info = {};
-    render_pass_info.renderPass                      = render_pass_->GetHandle();
-    render_pass_info.framebuffer                     = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
-    render_pass_info.renderArea                      = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
+    vk::RenderPassBeginInfo render_pass_info = {};
+    render_pass_info.renderPass              = render_pass_->GetHandle();
+    render_pass_info.framebuffer             = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
+    render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
     command_buffers_[current_image_index].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffers_[current_image_index]);

@@ -77,7 +77,7 @@ public:
 
     void DestroyShaderModule(vk::ShaderModule module) const;
 
-    vk::PipelineLayout CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info) const;
+    vk::PipelineLayout CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const AnsiString& debug_name = nullptr) const;
 
     vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
     vk::Queue GetPresentQueue() const { return present_queue_; }
@@ -95,7 +95,9 @@ public:
 
     void ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
 
-    TArray<vk::CommandBuffer> AllocateCommandBuffers(const vk::CommandBufferAllocateInfo& allocate_info) const;
+    TArray<vk::CommandBuffer> AllocateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name = nullptr, TArray<AnsiString>* out_debug_names = {}
+    ) const;
 
     void DestroySampler(vk::Sampler sampler) const;
 
@@ -112,6 +114,11 @@ public:
     vk::RenderPass CreateRenderPass(const vk::RenderPassCreateInfo& create_info) const;
     void           DestroyRenderPass(vk::RenderPass render_pass) const;
 
+    vk::CommandPool CreateCommandPool(const vk::CommandPoolCreateInfo& create_info, const char* debug_name = "") const;
+    void            DestroyCommandPool(vk::CommandPool command_pool) const;
+
+    vk::Pipeline CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name = "") const;
+
     void SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const;
     void SetCommandBufferDebugName(vk::CommandBuffer handle, const char* name) const;
     void SetImageDebugName(vk::Image handle, const char* name) const;
@@ -121,6 +128,13 @@ public:
     void SetShaderModuleDebugName(vk::ShaderModule handle, const char* name) const;
     void SetBufferDebugName(vk::Buffer handle, const char* name) const;
     void SetBufferMemoryDebugName(vk::DeviceMemory handle, const char* name) const;
+    void SetDescriptionSetLayoutDebugName(vk::DescriptorSetLayout handle, const char* name) const;
+    void SetDescriptorSetDebugName(vk::DescriptorSet handle, const char* name) const;
+    void SetDescriptorPoolDebugName(vk::DescriptorPool handle, const char* name) const;
+    void SetPipelineDebugName(vk::Pipeline handle, const char* name) const;
+    void SetPipelineLayoutDebugName(vk::PipelineLayout handle, const char* name) const;
+    void SetDeviceMemoryDebugName(vk::DeviceMemory handle, const char* name) const;
+    void SetCommandPoolDebugName(vk::CommandPool handle, const char* name) const;
 
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }

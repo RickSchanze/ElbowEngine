@@ -13,6 +13,7 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
+// TODO: 延迟销毁特性
 enum class EShaderDestroyTime
 {
     BindOnce,   // 被管线绑定一次后就销毁
@@ -26,7 +27,7 @@ class ShaderProgram
 public:
     bool IsValid() const;
 
-    ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time, const AnsiString &debug_name);
+    ShaderProgram(Ref<LogicalDevice> device, Shader* vert, Shader* frag, EShaderDestroyTime destroy_time, const AnsiString& debug_name);
 
     ~ShaderProgram();
 
@@ -38,7 +39,7 @@ public:
     }
 
     static ShaderProgram*
-    Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString &debug_name = "")
+    Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString& debug_name = "")
     {
         Ref   device  = *VulkanContext::Get()->GetLogicalDevice();
         auto* program = new ShaderProgram(device, vert, frag, destroy_time, debug_name);
@@ -62,9 +63,6 @@ public:
 
     // 获取片段着色器的handle
     vk::ShaderModule GetFragShaderHandle() const { return frag_shader_->GetHandle(); }
-
-    // 获得第i个uniform buffer object的大小
-    uint32_t GetUniformBufferSize(uint32_t i) const;
 
     vk::DescriptorSetLayout GetDescriptorSetLayout() const { return descriptor_set_layout_; }
 
@@ -119,9 +117,12 @@ private:
     Ref<LogicalDevice> device_;
 
 #ifdef ELBOW_DEBUG
-    AnsiString debug_name_;
+    AnsiString         debug_name_;
     TArray<AnsiString> uniform_buffer_debug_names_;
     TArray<AnsiString> uniform_buffer_memory_debug_names_;
+    AnsiString         debug_descriptor_set_layout_name_;
+    AnsiString         debug_descriptor_pool_name_;
+    TArray<AnsiString> debug_descriptor_set_names_;
 #endif
 };
 

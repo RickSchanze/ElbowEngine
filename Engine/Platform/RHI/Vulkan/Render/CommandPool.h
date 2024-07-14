@@ -22,9 +22,10 @@ protected:
     };
 
 public:
-    CommandPool(Private, Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags);
+    CommandPool(Private, Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name = nullptr);
 
-    static TUniquePtr<CommandPool> CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {});
+    static TUniquePtr<CommandPool>
+    CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {}, const AnsiString& debug_name = nullptr);
 
     void CreateCommandPool(vk::CommandPoolCreateFlags pool_flags);
     void CleanCommandPool();
@@ -44,7 +45,9 @@ public:
 
     void ResetCommandPool() const;
 
-    TArray<vk::CommandBuffer> CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info) const;
+    TArray<vk::CommandBuffer> CreateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name = nullptr, TArray<AnsiString>* out_debug_names = nullptr
+    ) const;
 
     void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const;
 
@@ -56,6 +59,8 @@ private:
     vk::CommandPool pool_ = nullptr;
 
     Ref<TUniquePtr<LogicalDevice>> device_;
+
+    AnsiString debug_name_;
 };
 
 RHI_VULKAN_NAMESPACE_END

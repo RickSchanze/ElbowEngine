@@ -168,7 +168,9 @@ void GraphicsPipeline::CreatePipeline()
     }
 
     // TODO: Shader管理器
-    shader_program_ = ShaderProgram::Create(pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.frag);
+    shader_program_ = ShaderProgram::Create(
+        pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.frag, EShaderDestroyTime::Defered, pipeline_info_.debug_name + "_ShaderProgram"
+    );
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo VertInfo{};
@@ -269,11 +271,16 @@ void GraphicsPipeline::CreatePipeline()
 
     // 指定管线布局(uniform)
     vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
-    TStaticArray                 layout             = {shader_program_->GetDescriptorSetLayout()};
+    TStaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
     pipeline_layout_info.setSetLayouts(layout);
-
+#ifdef ELBOW_DEBUG
+    if (!pipeline_info_.debug_name.empty())
+    {
+        pipeline_info_.debug_pipeline_layout_name_ = pipeline_info_.debug_name + "_PipelineLayout";
+    }
+#endif
     // 创建管线布局
-    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(pipeline_layout_info);
+    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(pipeline_layout_info, pipeline_info_.debug_pipeline_layout_name_);
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo dynamic_state_info;
@@ -301,20 +308,19 @@ void GraphicsPipeline::CreatePipeline()
         .setPMultisampleState(&multisample_info)
         .setPDepthStencilState(&depth_stencil_info)   // 深度和模版测试
         .setPColorBlendState(&color_blend_info)       // 颜色混合
-        .setLayout(pipeline_layout_)                // 管线布局
-        .setRenderPass(render_pass_->GetHandle())   // RenderPass
-        .setSubpass(0)                              // 子Pass
+        .setLayout(pipeline_layout_)                  // 管线布局
+        .setRenderPass(render_pass_->GetHandle())     // RenderPass
+        .setSubpass(0)                                // 子Pass
         .setPDynamicState(&dynamic_state_info);
 
-    auto Pipeline = context.GetLogicalDevice()->GetHandle().createGraphicsPipeline(nullptr, pipeline_create_info);
-    if (Pipeline.result != vk::Result::eSuccess)
+#ifdef ELBOW_DEBUG
+    if (!pipeline_info_.debug_name.empty())
     {
-        throw VulkanException(L"创建管线失败");
+        pipeline_info_.debug_pipeline_name_ = pipeline_info_.debug_name + "_Pipeline";
     }
-    else
-    {
-        pipeline_ = Pipeline.value;
-    }
+#endif
+
+    pipeline_ = context.GetLogicalDevice()->CreateGraphicsPipeline(nullptr, pipeline_create_info, pipeline_info_.debug_pipeline_name_);
 }
 
 void GraphicsPipeline::DestroyPipeline()
@@ -340,15 +346,10 @@ void GraphicsPipeline::CreateCommandBuffers()
     alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
     alloc_info.commandPool                   = pool->GetHandle();
     alloc_info.commandBufferCount            = g_engine_statistics.swapchain_image_count;
-    command_buffers_                         = pool->CreateCommandBuffers(alloc_info);
 #ifdef ELBOW_DEBUG
-    for (int i = 0; i < g_engine_statistics.swapchain_image_count; ++i)
-    {
-        AnsiString new_debug_cb_name = pipeline_info_.debug_name + "_CommandBuffer_" + std::to_string(i);
-        pipeline_info_.debug_command_buffer_names.push_back(new_debug_cb_name);
-        context.GetLogicalDevice()->SetCommandBufferDebugName(command_buffers_[i], pipeline_info_.debug_command_buffer_names.back().data());
-    }
+    AnsiString debug_command_buffer_name = pipeline_info_.debug_name + "_Command_Buffer";
 #endif
+    command_buffers_ = pool->CreateCommandBuffers(alloc_info, debug_command_buffer_name.c_str(), &pipeline_info_.debug_command_buffer_names);
 }
 
 void GraphicsPipeline::DestroyCommandBuffers()

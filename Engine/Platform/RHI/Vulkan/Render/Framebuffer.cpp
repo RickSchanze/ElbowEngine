@@ -11,23 +11,23 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Framebuffer::Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& InCreateInfo) {
-    mHandle = VulkanContext::Get()->GetLogicalDevice()->GetHandle().createFramebuffer(InCreateInfo);
+Framebuffer::Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& create_info) {
+    handle_ = VulkanContext::Get()->GetLogicalDevice()->GetHandle().createFramebuffer(create_info);
 }
 
-TSharedPtr<Framebuffer> Framebuffer::CreateShared(const vk::FramebufferCreateInfo& InCreateInfo) {
-    return MakeShared<Framebuffer>(ResourceProtected{}, InCreateInfo);
+TSharedPtr<Framebuffer> Framebuffer::CreateShared(const vk::FramebufferCreateInfo& create_info) {
+    return MakeShared<Framebuffer>(ResourceProtected{}, create_info);
 }
 
-TUniquePtr<Framebuffer> Framebuffer::CreateUnique(const vk::FramebufferCreateInfo& InCreateInfo) {
-    return Move(MakeUnique<Framebuffer>(ResourceProtected{}, InCreateInfo));
+TUniquePtr<Framebuffer> Framebuffer::CreateUnique(const vk::FramebufferCreateInfo& create_info) {
+    return Move(MakeUnique<Framebuffer>(ResourceProtected{}, create_info));
 }
 
 void Framebuffer::InternalDestroy() {
     if (IsValid()) {
         VulkanContext& Context = *VulkanContext::Get();
-        Context.GetLogicalDevice()->GetHandle().destroyFramebuffer(mHandle);
-        mHandle = nullptr;
+        Context.GetLogicalDevice()->GetHandle().destroyFramebuffer(handle_);
+        handle_ = nullptr;
     }
 }
 Framebuffer::~Framebuffer() {

@@ -67,11 +67,6 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
     return true;
 }
 
-uint32_t ShaderProgram::GetUniformBufferSize(uint32_t i) const
-{
-    return 0;
-}
-
 TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
 {
     TArray<vk::VertexInputAttributeDescription> AttributeDesc;
@@ -218,7 +213,17 @@ void ShaderProgram::CreateDescriptorSets()
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     descriptor_sets_.resize(context.GetSwapChainImageCount());
     // 描述符池对象销毁时会自动清除描述符集
-    descriptor_sets_                      = context.GetLogicalDevice()->AllocateDescriptorSets(alloc_info);
+    descriptor_sets_ = context.GetLogicalDevice()->AllocateDescriptorSets(alloc_info);
+#ifdef ELBOW_DEBUG
+    if (!debug_name_.empty())
+    {
+        for (size_t i = 0; i < descriptor_sets_.size(); i++)
+        {
+            debug_descriptor_set_names_.emplace_back(debug_name_ + "_DescriptorSet_" + std::to_string(i));
+            context.GetLogicalDevice()->SetDescriptorSetDebugName(descriptor_sets_[i], debug_descriptor_set_names_.back().data());
+        }
+    }
+#endif
     // 创建材质时首先使用默认丢失的贴图，之后需要调用更新贴图的方法
     const auto& default_lack_texture_view = Texture::GetDefaultLackTextureView();
     const auto& sampler                   = Sampler::GetDefaultSampler();
@@ -255,6 +260,9 @@ void ShaderProgram::CreateDescriptorSets()
 void ShaderProgram::DestroyDescriptorSets()
 {
     descriptor_sets_.clear();
+#ifdef ELBOW_DEBUG
+    debug_descriptor_set_names_.clear();
+#endif
 }
 
 void ShaderProgram::CreateDescriptorPool()
@@ -274,6 +282,10 @@ void ShaderProgram::CreateDescriptorPool()
     vk::DescriptorPoolCreateInfo pool_info = {};
     pool_info.setPoolSizes(pool_sizes).setMaxSets(swapchain_image_count);
     descriptor_pool_ = device->CreateDescriptorPool(pool_info);
+#ifdef ELBOW_DEBUG
+    debug_descriptor_pool_name_ = debug_name_ + "_DescriptorPool";
+    device->SetDescriptorPoolDebugName(descriptor_pool_, debug_descriptor_pool_name_.data());
+#endif
 }
 
 void ShaderProgram::DestroyDescriptorPool()
@@ -300,6 +312,13 @@ void ShaderProgram::CreateDescriptorSetLayout()
     vk::DescriptorSetLayoutCreateInfo layout_info{};
     layout_info.setBindings(uniform_bindings);
     descriptor_set_layout_ = device->CreateDescriptorSetLayout(layout_info);
+#ifdef ELBOW_DEBUG
+    if (!debug_name_.empty())
+    {
+        debug_descriptor_set_layout_name_ = debug_name_ + "_DescriptorSetLayout";
+        device->SetDescriptionSetLayoutDebugName(descriptor_set_layout_, debug_descriptor_set_layout_name_.data());
+    }
+#endif
 }
 
 void ShaderProgram::DestroyDescriptorSetLayout()

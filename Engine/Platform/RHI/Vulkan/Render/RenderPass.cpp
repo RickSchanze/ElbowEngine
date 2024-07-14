@@ -123,9 +123,9 @@ void RenderPass::SetupFramebuffer()
         image_info.format                  = frame_buffer_attachment_image_infos_[i].format;
         frame_buffer_attachments_[i].Image = Image::CreateUnique(image_info);
 #ifdef ELBOW_DEBUG
-        // context.GetLogicalDevice()->SetImageDebugName(
-        //     frame_buffer_attachments_[i].Image->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_name
-        // );
+        context.GetLogicalDevice()->SetImageDebugName(
+            frame_buffer_attachments_[i].Image->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_name
+        );
 #endif
 
         ImageViewInfo view_info = {};
@@ -133,23 +133,19 @@ void RenderPass::SetupFramebuffer()
         {
             view_info.format                  = image_info.format;
             view_info.aspect_flags            = vk::ImageAspectFlagBits::eDepth;
-            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
 #ifdef ELBOW_DEBUG
-            context.GetLogicalDevice()->SetImageViewDebugName(
-                frame_buffer_attachments_[i].view->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_view_name
-            );
+            view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
 #endif
+            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
         else
         {
             view_info.aspect_flags            = vk::ImageAspectFlagBits::eColor;
             view_info.format                  = image_info.format;
-            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
 #ifdef ELBOW_DEBUG
-            context.GetLogicalDevice()->SetImageViewDebugName(
-                frame_buffer_attachments_[i].view->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_view_name
-            );
+            view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
 #endif
+            frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
     }
 
@@ -176,9 +172,12 @@ void RenderPass::SetupFramebuffer()
         framebuffer_info.layers = 1;
         frame_buffers_[i]       = Framebuffer::CreateUnique(framebuffer_info);
 #ifdef ELBOW_DEBUG
-        const AnsiString frame_buffer_name = render_pass_debug_name_ + "_FrameBuffer_" + std::to_string(i);
-        debug_frame_buffer_names_.push_back(frame_buffer_name);
-        context.GetLogicalDevice()->SetFramebufferDebugName(frame_buffers_[i]->GetHandle(), frame_buffer_name.data());
+        if (!render_pass_debug_name_.empty())
+        {
+            const AnsiString frame_buffer_name = render_pass_debug_name_ + "_FrameBuffer_" + std::to_string(i);
+            debug_frame_buffer_names_.push_back(frame_buffer_name);
+            context.GetLogicalDevice()->SetFramebufferDebugName(frame_buffers_[i]->GetHandle(), frame_buffer_name.data());
+        }
 #endif
     }
 }
@@ -368,14 +367,12 @@ void RenderPass::CreateSubpassDescription()
 
     dependency_
         // 指定被依赖的子流程索引和依赖被依赖的子流程索引
-        .setSrcSubpass(VK_SUBPASS_EXTERNAL)   // 代表使用渲染流程开始前的隐含子流程
-        .setDstSubpass(0)                     // 设为0代表之前创建的子流程所有，必须大于srcSubpass(避免循环依赖)
-        .setSrcStageMask(
-            vk::PipelineStageFlagBits::eColorAttachmentOutput
-        )                                                                     // 指定需要等待的管线阶段
-        .setSrcAccessMask(vk::AccessFlagBits::eNone)   // 指定子进行的操作类型
+        .setSrcSubpass(VK_SUBPASS_EXTERNAL)                                   // 代表使用渲染流程开始前的隐含子流程
+        .setDstSubpass(0)                                                     // 设为0代表之前创建的子流程所有，必须大于srcSubpass(避免循环依赖)
+        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定需要等待的管线阶段
+        .setSrcAccessMask(vk::AccessFlagBits::eNone)                          // 指定子进行的操作类型
         .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定等待的管线阶段
-        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);               // 指定子进行的操作类型
+        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);   // 指定子进行的操作类型
 }
 
 void RenderPass::CreateRenderPass()

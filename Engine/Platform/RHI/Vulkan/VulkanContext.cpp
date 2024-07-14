@@ -54,7 +54,7 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
     swap_chain_     = logical_device_->CreateSwapChain(swap_chain_image_count_, 1920, 1080);
     // 初始化命令生产者
-    command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
     CreateSyncObjecs();
     Initialize();
 }

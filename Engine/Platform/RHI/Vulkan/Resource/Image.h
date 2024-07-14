@@ -21,7 +21,7 @@ struct ImageViewInfo
     vk::ImageAspectFlags aspect_flags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
     int32_t              mip_levels   = 0;                                 // 自动选择Miplevels
 #ifdef ELBOW_DEBUG
-    const char*          debug_name   = nullptr;
+    const char* debug_name = nullptr;
 #endif
 };
 
@@ -64,14 +64,19 @@ struct ImageInfo
 {
     vk::Format              format = vk::Format::eUndefined;
     vk::ImageUsageFlags     usage{};
-    uint32_t                 width           = 0;
-    uint32_t                 height          = 0;
-    uint32_t                 depth           = 1;
-    uint32_t                 mip_levels      = 1;
+    uint32_t                width           = 0;
+    uint32_t                height          = 0;
+    uint32_t                depth           = 1;
+    uint32_t                mip_levels      = 1;
     vk::ImageTiling         tiling          = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits sample_count    = vk::SampleCountFlagBits::e1;
     vk::ImageType           image_type      = vk::ImageType::e2D;
     vk::MemoryPropertyFlags memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
+#ifdef ELBOW_DEBUG
+    AnsiString debug_name;
+    AnsiString debug_image_name;
+    AnsiString debug_image_memory_name;
+#endif
 
     ImageInfo() = default;
 
@@ -109,7 +114,7 @@ protected:
 
 protected:
     explicit Image() = default;
-    explicit Image(const ImageInfo& InImageInfo) : image_info_(InImageInfo) {}
+    explicit Image(const ImageInfo& image_info) : image_info_(image_info) {}
 
 public:
     ImageView* CreateImageView(const ImageViewInfo& view_info) const override;

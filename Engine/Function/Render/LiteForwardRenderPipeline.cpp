@@ -24,8 +24,8 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     forward_pipeline_->EndCommandBuffer();
     //
     GraphicsQueueSubmitParams submit_params;
-    submit_params.semaphores_to_wait   = {draw_param.render_begin_semaphore};
-    submit_params.wait_stages          = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+    submit_params.semaphores_to_wait = {draw_param.render_begin_semaphore};
+    submit_params.wait_stages        = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
     Submit(forward_pipeline_, submit_params, context_->GetInFlightFence());
 
     DrawImGuiPipeline();
@@ -37,9 +37,10 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 void LiteForwardRenderPipeline::Build()
 {
     PipelineInfo pipeline_info;
-    pipeline_info.shader_stage.frag = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment);
-    pipeline_info.shader_stage.vert = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex);
+    pipeline_info.shader_stage.frag = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment, "LiteForwardFragShader");
+    pipeline_info.shader_stage.vert = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex, "LiteForwardVertShader");
     pipeline_info.render_pass       = new RenderPass("LiteForwardRenderPass");
+    pipeline_info.debug_name        = "LiteForwardGraphicsPipeline";
 
     forward_pipeline_ = new GraphicsPipeline(pipeline_info);
     AddImGuiGraphicsPipeline();

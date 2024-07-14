@@ -12,15 +12,15 @@
 #include "PlatformEvents.h"
 #include "ResourceConfig.h"
 #include "ResourceManager.h"
+#include "RHI/Vulkan/VulkanContext.h"
 #include "stb_image.h"
 
 using namespace RHI::Vulkan;
 
 RESOURCE_NAMESPACE_BEGIN
 
-Texture::Texture(
-    Protected, const Path& path, const ETextureUsage usage, const SamplerInfo& sampler_info
-) : path_(path), usage_(usage), sampler_info_(sampler_info)
+Texture::Texture(Protected, const Path& path, const ETextureUsage usage, const SamplerInfo& sampler_info) :
+    path_(path), usage_(usage), sampler_info_(sampler_info)
 {
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
@@ -45,8 +45,8 @@ Texture::~Texture()
     if (rhi_texture_) rhi_texture_->Destroy();
     if (rhi_texture_view_) rhi_texture_view_->InternalDestroy();
     rhi_texture_ = nullptr;
-    data_       = nullptr;
-    data_       = nullptr;
+    data_        = nullptr;
+    data_        = nullptr;
 }
 
 void Texture::Load()
@@ -66,14 +66,17 @@ void Texture::Load()
     }
 
     // 加载底层RHI资源
-    ImageInfo TextureInfo = {};
-    TextureInfo.height    = height_;
-    TextureInfo.width     = width_;
-    TextureInfo.image_type = vk::ImageType::e2D;
-    rhi_texture_           = RHI::Vulkan::Texture::CreateUnique(TextureInfo, data_);
+    ImageInfo texture_info  = {};
+    texture_info.height     = height_;
+    texture_info.width      = width_;
+    texture_info.image_type = vk::ImageType::e2D;
+#ifdef ELBOW_DEBUG
+    texture_info.debug_name = path_.ToAnsiString();
+#endif
+    rhi_texture_            = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
 
-    ImageViewInfo ViewInfo = {};
-    rhi_texture_view_        = rhi_texture_->CreateImageViewUnique(ViewInfo);
+    ImageViewInfo view_info = {};
+    rhi_texture_view_       = rhi_texture_->CreateImageViewUnique(view_info);
 
     rhi_sampler_ = Sampler::Create(sampler_info_);
 }
@@ -85,25 +88,30 @@ TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
 
 RESOURCE_NAMESPACE_END
 
-static void Load_Default_Engine_Texture_Resource(
-    Texture** out_texture, ImageView** out_texture_view
-)
+static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageView** out_texture_view)
 {
     // 引擎默认纹理资产的生命周期包含整个程序运行期间
     if (gResourceConfig.bInitialized)
     {
-        auto* DefaultLackTexture =
-            Resource::ResourceManager::Get()->GetOrCreateTexture(gResourceConfig.default_lack_texture_path);
+        auto* DefaultLackTexture = Resource::ResourceManager::Get()->GetOrCreateTexture(gResourceConfig.default_lack_texture_path);
         if (DefaultLackTexture)
         {
-            *out_texture     = DefaultLackTexture->GetRHIResource().get();
+            *out_texture      = DefaultLackTexture->GetRHIResource().get();
             *out_texture_view = DefaultLackTexture->GetTextureView().get();
+#ifdef ELBOW_DEBUG
+            static const char* default_lack_image_debug_name      = "DefaultLackImage";
+            static const char* default_lack_image_debug_view_name = "DefaultLackImageView";
+            VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(
+                DefaultLackTexture->GetRHIResource()->GetHandle(), default_lack_image_debug_name
+            );
+            VulkanContext::Get()->GetLogicalDevice()->SetImageViewDebugName(
+                DefaultLackTexture->GetTextureView()->GetHandle(), default_lack_image_debug_view_name
+            );
+#endif
         }
         else
         {
-            throw Exception(std::format(
-                L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToString()
-            ));
+            throw Exception(std::format(L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToString()));
         }
     }
     else
@@ -114,9 +122,7 @@ static void Load_Default_Engine_Texture_Resource(
 
 struct RegisterOnEngineDefaultTextureLoad
 {
-    RegisterOnEngineDefaultTextureLoad()
-    {
-        Platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
+    RegisterOnEngineDefaultTextureLoad() { Platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
     }
 };
 
