@@ -30,7 +30,7 @@ protected:
     void OnCreateAttachments() override
     {
         RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
-        Param.InitialLayout    = vk::ImageLayout::ePresentSrcKHR;
+        Param.initial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
         Param.store_op          = vk::AttachmentStoreOp::eStore;

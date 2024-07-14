@@ -27,7 +27,8 @@ RESOURCE_NAMESPACE_BEGIN
 class ResourceManager : public Singleton<ResourceManager>
 {
 public:
-     ResourceManager() = default;
+    ResourceManager() = default;
+
     ~ResourceManager() override;
 
     // 注册一个资产（向mReourceMap中添加已经加载完成的资产）
@@ -44,9 +45,9 @@ public:
         return dynamic_cast<T*>(GetResource(resource_path));
     }
 
-    Texture* GetOrCreateTexture(
-        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {}
-    );
+    Texture* GetOrCreateTexture(const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+
+    void DestroyAllResources();
 
 private:
     // TODO: Resource与Vulkan GPU Resource的映射

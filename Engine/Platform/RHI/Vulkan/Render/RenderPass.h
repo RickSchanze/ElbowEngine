@@ -30,7 +30,7 @@ struct RenderPassAttachmentParam
     vk::AttachmentStoreOp   store_op         = vk::AttachmentStoreOp::eStore;
     vk::AttachmentLoadOp    StencilLoadOp    = vk::AttachmentLoadOp::eDontCare;
     vk::AttachmentStoreOp   StencilStoreOp   = vk::AttachmentStoreOp::eDontCare;
-    vk::ImageLayout         InitialLayout    = vk::ImageLayout::eUndefined;
+    vk::ImageLayout         initial_layout    = vk::ImageLayout::eUndefined;
     // 自动决定，如果SampleCount不为e1则是ColorAttachmentOptimal 否则 ePresentSrcKHR
     vk::ImageLayout         finial_layout    = vk::ImageLayout::eUndefined;
     vk::ImageLayout         reference_layout = vk::ImageLayout::eUndefined;
@@ -88,7 +88,7 @@ public:
 
     TArray<TUniquePtr<Framebuffer>>& GetFrameBuffers() { return frame_buffers_; }
 
-    TUniquePtr<Framebuffer>& GetCurrentFrameBuffer() { return frame_buffers_[0]; }
+    TUniquePtr<Framebuffer>& GetCurrentFrameBuffer() { return frame_buffers_[g_engine_statistics.current_image_index]; }
 
     vk::Framebuffer GetCurrentFrameBufferHandle();
 

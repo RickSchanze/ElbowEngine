@@ -24,7 +24,6 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     forward_pipeline_->EndCommandBuffer();
     //
     GraphicsQueueSubmitParams submit_params;
-    submit_params.semaphores_to_singal = {draw_param.render_end_semaphore};
     submit_params.semaphores_to_wait   = {draw_param.render_begin_semaphore};
     submit_params.wait_stages          = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
     Submit(forward_pipeline_, submit_params, context_->GetInFlightFence());

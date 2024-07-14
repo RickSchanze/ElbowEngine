@@ -45,6 +45,7 @@ void CommandPool::CleanCommandPool()
     Device->GetHandle().destroyCommandPool(pool_);
     pool_ = nullptr;
 }
+
 void CommandPool::TrainsitionImageLayout(
     const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level
 ) const

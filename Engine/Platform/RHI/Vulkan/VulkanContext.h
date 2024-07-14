@@ -32,6 +32,7 @@ struct GraphicsQueueSubmitParams
     TArray<vk::Semaphore>          semaphores_to_wait;
     TArray<vk::Semaphore>          semaphores_to_singal;
     TArray<vk::PipelineStageFlags> wait_stages;
+    bool                           has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
 };
 
 class VulkanContext
@@ -58,11 +59,13 @@ public:
     void Initialize();
     void Finalize();
 
-    void SubmitGraphicsQueue(
-        const IGraphicsPipeline*         pipeline,          // 管线
-        const GraphicsQueueSubmitParams& submit_params,     // 提交参数
-        vk::Fence                        fence_to_trigger   // 这次提交需要触发的fence
-    ) const;
+    vk::Semaphore SubmitGraphicsQueue(
+        const IGraphicsPipeline*  pipeline,
+        // 管线
+        GraphicsQueueSubmitParams submit_params,
+        // 提交参数
+        vk::Fence                 fence_to_trigger   // 这次提交需要触发的fence
+    );
 
     virtual void PrepareFrameRender();
     virtual void PostFrameRender();
@@ -97,7 +100,6 @@ public:
     TSharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
 
     vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
-    vk::Semaphore GetRenderEndSingalSemphore() const { return image_render_finished_semaphores_[g_engine_statistics.current_frame_index]; }
     vk::Fence     GetInFlightFence() const { return in_flight_fences_[g_engine_statistics.current_frame_index]; }
 
 protected:
@@ -122,8 +124,10 @@ private:
     TSharedPtr<Instance>       vulkan_instance_;
 
     TArray<vk::Semaphore> image_available_semaphores_;
-    TArray<vk::Semaphore> image_render_finished_semaphores_;
     TArray<vk::Fence>     in_flight_fences_;
+
+    // 一次QueuePresent提交时需要等待的所有 Semaphore
+    TArray<vk::Semaphore> all_wait_semaphores_;
 };
 
 RHI_VULKAN_NAMESPACE_END

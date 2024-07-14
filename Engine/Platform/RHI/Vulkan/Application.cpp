@@ -71,8 +71,14 @@ void VulkanApplication::Initialize()
 
 void VulkanApplication::Finalize()
 {
+    DestroyDefaultLoadedResource();
     if (vulkan_context_) vulkan_context_->Finalize();
     if (vulkan_instance_) vulkan_instance_->Finialize();
+}
+
+void VulkanApplication::DestroyDefaultLoadedResource()
+{
+
 }
 
 void VulkanApplication::CreateInstance()

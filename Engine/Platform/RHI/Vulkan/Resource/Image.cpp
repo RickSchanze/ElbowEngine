@@ -105,15 +105,15 @@ bool Image::IsValid() const
 
 void Image::Finialize()
 {
-    const auto& DeviceHandle = VulkanContext::Get()->GetLogicalDevice()->GetHandle();
+    const auto& device_handle = VulkanContext::Get()->GetLogicalDevice()->GetHandle();
     if (image_handle_ != nullptr)
     {
-        DeviceHandle.destroyImage(image_handle_);
+        device_handle.destroyImage(image_handle_);
         image_handle_ = nullptr;
     }
     if (image_memory_ != nullptr)
     {
-        DeviceHandle.freeMemory(image_memory_);
+        device_handle.freeMemory(image_memory_);
         image_memory_ = nullptr;
     }
 }

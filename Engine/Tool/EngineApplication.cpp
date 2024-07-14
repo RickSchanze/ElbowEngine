@@ -7,6 +7,7 @@
 
 #include "EngineApplication.h"
 
+#include "../Resource/ResourceManager.h"
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "Render/RenderContext.h"
@@ -66,14 +67,16 @@ void EngineApplication::Initialize()
     render_application_->SetExtensions(window_->GetRequiredExtensions());
     render_application_->Initialize();
     window_->InitImGui(render_application_->GetContext());
-    render_context_ = Function::RenderContext::Get();
+    render_context_ = new Function::RenderContext();
 }
 
 void EngineApplication::Finitialize() const
 {
     if (!IsValid()) return;
+    delete render_context_;
     window_->ShutdownImGui();
-
+    // vulkan device失效前释放所有资产
+    Resource::ResourceManager::Get()->DestroyAllResources();
     if (render_application_->IsValid()) render_application_->Finalize();
     if (window_->IsValid()) window_->Finalize();
 }

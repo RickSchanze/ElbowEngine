@@ -77,6 +77,8 @@ void VulkanContext::Initialize()
 void VulkanContext::Finalize()
 {
     if (!IsValid()) return;
+    // 清理所有的Sampler
+    Sampler::DestroyAllSamplers();
     CleanSyncObjects();
     command_pool_->Finialize();
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
@@ -87,16 +89,29 @@ void VulkanContext::Finalize()
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
-void VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, const GraphicsQueueSubmitParams& submit_params,vk::Fence fence_to_trigger) const
+vk::Semaphore
+VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, GraphicsQueueSubmitParams submit_params, vk::Fence fence_to_trigger)
 {
     vk::Queue         graphics_queue = logical_device_->GetGraphicsQueue();
     vk::CommandBuffer cb             = pipeline->GetCurrentCommandBuffer();
     vk::SubmitInfo    submit_info;
+
+    vk::Semaphore rtn_semaphore = nullptr;
+
     submit_info.setCommandBuffers(cb);
     submit_info.setWaitSemaphores(submit_params.semaphores_to_wait);
+    if (submit_params.has_self_semaphore)
+    {
+        // 如果这次提交需要自己生成一个信号量触发
+        constexpr vk::SemaphoreCreateInfo create_info;
+        rtn_semaphore = logical_device_->CreateDeviceSemaphore(create_info);
+        submit_params.semaphores_to_singal.push_back(rtn_semaphore);
+        all_wait_semaphores_.push_back(rtn_semaphore);
+    }
     submit_info.setSignalSemaphores(submit_params.semaphores_to_singal);
     submit_info.pWaitDstStageMask = submit_params.wait_stages.data();
     graphics_queue.submit(submit_info, fence_to_trigger);
+    return rtn_semaphore;
 }
 
 void VulkanContext::PrepareFrameRender()
@@ -142,9 +157,9 @@ void VulkanContext::PostFrameRender()
     TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
     // TODO: 这里需要等待的信号量需要再看看
     PresentInfo
-        .setSwapchains(SwapChains)                                                                        //
-        .setImageIndices(g_engine_statistics.current_image_index)                                         //
-        .setWaitSemaphores(image_render_finished_semaphores_[g_engine_statistics.current_frame_index]);   //
+        .setSwapchains(SwapChains)                                  //
+        .setImageIndices(g_engine_statistics.current_image_index)   //
+        .setWaitSemaphores(all_wait_semaphores_);                   //
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
 
@@ -159,6 +174,12 @@ void VulkanContext::PostFrameRender()
     }
 
     logical_device_->GetPresentQueue().waitIdle();
+
+    for (auto& semaphore: all_wait_semaphores_)
+    {
+        logical_device_->DestroySemaphore(semaphore);
+    }
+    all_wait_semaphores_.clear();
 
     g_engine_statistics.IncreaseFrameIndex();
 }
@@ -204,7 +225,6 @@ vk::Format VulkanContext::GetDepthImageFormat() const
 void VulkanContext::CreateSyncObjecs()
 {
     image_available_semaphores_.resize(g_engine_statistics.parallel_render_frame_count);
-    image_render_finished_semaphores_.resize(g_engine_statistics.parallel_render_frame_count);
     in_flight_fences_.resize(g_engine_statistics.parallel_render_frame_count);
 
     vk::SemaphoreCreateInfo SemaphoreInfo = {};
@@ -214,9 +234,8 @@ void VulkanContext::CreateSyncObjecs()
     // 为多帧并行渲染创建信号量
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
-        image_available_semaphores_[i]       = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
-        image_render_finished_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
-        in_flight_fences_[i]                 = logical_device_->GetHandle().createFence(FenceInfo);
+        image_available_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
+        in_flight_fences_[i]           = logical_device_->GetHandle().createFence(FenceInfo);
     }
 }
 
@@ -225,7 +244,6 @@ void VulkanContext::CleanSyncObjects() const
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
         logical_device_->GetHandle().destroySemaphore(image_available_semaphores_[i]);
-        logical_device_->GetHandle().destroySemaphore(image_render_finished_semaphores_[i]);
         logical_device_->GetHandle().destroyFence(in_flight_fences_[i]);
     }
 }

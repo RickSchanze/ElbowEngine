@@ -85,7 +85,7 @@ void RenderPass::OnCreateAttachments()
     // @QUESTION: 深度图像是否需要多重采样？
     depth_image_param.sample_count     = sample_count;
     depth_image_param.load_op          = vk::AttachmentLoadOp::eClear;
-    depth_image_param.store_op         = vk::AttachmentStoreOp::eDontCare;
+    depth_image_param.store_op         = vk::AttachmentStoreOp::eStore;
     depth_image_param.format           = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_param.finial_layout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     depth_image_param.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
@@ -255,7 +255,7 @@ void RenderPass::NewAttachment(
     vk::AttachmentDescription new_attachment_desc{};
     new_attachment_desc.format         = param.format;
     new_attachment_desc.samples        = param.sample_count;
-    new_attachment_desc.initialLayout  = param.InitialLayout;
+    new_attachment_desc.initialLayout  = param.initial_layout;
     new_attachment_desc.finalLayout    = param.finial_layout;
     new_attachment_desc.loadOp         = param.load_op;
     new_attachment_desc.storeOp        = param.store_op;
@@ -272,7 +272,7 @@ void RenderPass::NewAttachment(
     RenderPassAttachmentImageInfo new_image_info;
     new_image_info.usage         = param.image_usage;
     new_image_info.format        = param.format;
-    new_image_info.InitialLayout = param.InitialLayout;
+    new_image_info.InitialLayout = param.initial_layout;
     new_image_info.FinalLayout   = param.finial_layout;
 #ifdef ELBOW_DEBUG
     // 如果attachment_debug_name为空 给转换一下
@@ -371,10 +371,10 @@ void RenderPass::CreateSubpassDescription()
         .setSrcSubpass(VK_SUBPASS_EXTERNAL)   // 代表使用渲染流程开始前的隐含子流程
         .setDstSubpass(0)                     // 设为0代表之前创建的子流程所有，必须大于srcSubpass(避免循环依赖)
         .setSrcStageMask(
-            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eLateFragmentTests
+            vk::PipelineStageFlagBits::eColorAttachmentOutput
         )                                                                     // 指定需要等待的管线阶段
-        .setSrcAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite)   // 指定子进行的操作类型
-        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)   // 指定等待的管线阶段
+        .setSrcAccessMask(vk::AccessFlagBits::eNone)   // 指定子进行的操作类型
+        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定等待的管线阶段
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);               // 指定子进行的操作类型
 }
 

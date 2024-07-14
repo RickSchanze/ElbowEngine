@@ -34,7 +34,7 @@ public:
     virtual void Build() = 0;
 
 protected:
-    void Submit(
+    vk::Semaphore Submit(
         const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params,
         vk::Fence fence_to_trigger = nullptr
     ) const;

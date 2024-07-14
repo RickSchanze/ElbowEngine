@@ -31,6 +31,9 @@ public:
     void Initialize();
     void Finalize();
 
+    // 删除所有默认加载的资产
+    void DestroyDefaultLoadedResource();
+
     const String&        GetAppName() const noexcept { return app_name_; }
     const String&        GetEngineName() const noexcept { return engine_name_; }
     uint32_t             GetAppVersion() const noexcept { return app_version_; }

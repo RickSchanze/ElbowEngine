@@ -210,7 +210,7 @@ void LogicalDevice::DestroySwapChain(const vk::SwapchainKHR swap_chain) const
     handle_.destroySwapchainKHR(swap_chain);
 }
 
-vk::Semaphore LogicalDevice::CreateSemaphoreA(const vk::SemaphoreCreateInfo& create_info) const
+vk::Semaphore LogicalDevice::CreateDeviceSemaphore(const vk::SemaphoreCreateInfo& create_info) const
 {
     return handle_.createSemaphore(create_info);
 }

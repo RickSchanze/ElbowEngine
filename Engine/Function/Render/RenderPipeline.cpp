@@ -17,21 +17,23 @@ RenderPipeline::RenderPipeline()
 {
     context_ = RenderContext::Get();
 }
+
 RenderPipeline::~RenderPipeline()
 {
     if (imgui_pipeline_)
     {
-        delete imgui_pipeline_;
+        // !!!注意!!!: 这里不能delete imgui_pipeline由GlfwWindow管理 生命周期为整个程序运行期间
+        // delete imgui_pipeline_;
         imgui_pipeline_ = nullptr;
     }
 }
 
-void RenderPipeline::Submit(
+vk::Semaphore RenderPipeline::Submit(
     const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params,
     const vk::Fence fence_to_trigger
 ) const
 {
-    context_->SubmitPipeline(pipeline, submit_params, fence_to_trigger);
+    return context_->SubmitPipeline(pipeline, submit_params, fence_to_trigger);
 }
 
 void RenderPipeline::AddImGuiGraphicsPipeline()

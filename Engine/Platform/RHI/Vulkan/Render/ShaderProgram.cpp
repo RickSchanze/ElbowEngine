@@ -42,6 +42,7 @@ ShaderProgram::~ShaderProgram()
 {
     DestroyShaders();
     DestroyDescriptorSets();
+    DestroyDescriptorSetLayout();
     DestroyDescriptorPool();
     DestroyUniformBuffers();
 }
@@ -253,8 +254,6 @@ void ShaderProgram::CreateDescriptorSets()
 
 void ShaderProgram::DestroyDescriptorSets()
 {
-    const auto& device = VulkanContext::Get()->GetLogicalDevice();
-    device->FreeDescriptorSets(descriptor_pool_, descriptor_sets_);
     descriptor_sets_.clear();
 }
 

@@ -25,15 +25,14 @@ class RenderPipeline;
 
 struct RenderContextDrawParam
 {
-    vk::Semaphore render_end_semaphore   = nullptr;   // 管线结束后必须触发的semphore
     vk::Semaphore render_begin_semaphore = nullptr;   // 管线开始前需要等待的semphore
     vk::Fence     render_end_fence       = nullptr;   // 渲染一帧完成后需要触发的fence
 };
 
-class RenderContext : public Singleton<RenderContext>
+class RenderContext
 {
 public:
-    ~RenderContext() override;
+    ~RenderContext();
 
     RenderContext();
 
@@ -41,9 +40,11 @@ public:
     void Draw();
     void PostFrameRender() const;
 
+    static RenderContext* Get() { return s_render_context_; }
+
     void SetRenderPipeline(RenderPipeline* new_render_pipeline);
 
-    void SubmitPipeline(
+    vk::Semaphore SubmitPipeline(
         const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr
     ) const;
 
@@ -56,6 +57,8 @@ public:
 private:
     RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;
+
+    static inline RenderContext* s_render_context_ = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

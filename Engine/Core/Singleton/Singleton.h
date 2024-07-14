@@ -13,22 +13,11 @@ class Singleton
     friend T;
 
 public:
+    virtual ~Singleton() = default;
+
     static T* Get()
     {
-        if (instance_ == nullptr)
-        {
-            instance_ = new T();
-        }
-        return instance_;
+        static T instance_;
+        return &instance_;
     }
-
-    virtual ~Singleton()
-    {
-        delete instance_;
-        instance_ = nullptr;
-    }
-
-
-protected:
-    static inline T* instance_;
 };

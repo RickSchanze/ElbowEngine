@@ -101,7 +101,7 @@ public:
 
     void DestroySwapChain(vk::SwapchainKHR swap_chain) const;
 
-    vk::Semaphore CreateSemaphore(const vk::SemaphoreCreateInfo& create_info) const;
+    vk::Semaphore CreateDeviceSemaphore(const vk::SemaphoreCreateInfo& create_info) const;
 
     void DestroySemaphore(vk::Semaphore semaphore) const;
 

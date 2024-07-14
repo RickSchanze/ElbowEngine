@@ -16,10 +16,6 @@ RESOURCE_NAMESPACE_BEGIN
 
 ResourceManager::~ResourceManager()
 {
-    for (const auto& Resource: resource_map_ | std::views::values)
-    {
-        delete Resource;
-    }
 }
 
 void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource)
@@ -51,6 +47,15 @@ Texture* ResourceManager::GetOrCreateTexture(const Path& path, ETextureUsage usa
     }
 
     return texture;
+}
+
+void ResourceManager::DestroyAllResources()
+{
+    for (const auto& resource: resource_map_ | std::views::values)
+    {
+        delete resource;
+    }
+    resource_map_.clear();
 }
 
 RESOURCE_NAMESPACE_END

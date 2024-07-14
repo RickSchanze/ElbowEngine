@@ -234,17 +234,17 @@ void GraphicsPipeline::CreatePipeline()
     /************************* 配置光栅化结束 ************************/
 
     /************************* 配置多重采样 ************************/
-    vk::PipelineMultisampleStateCreateInfo MultisampleInfo = {};
+    vk::PipelineMultisampleStateCreateInfo multisample_info = {};
 
     sample_count_ = pipeline_info_.multisample.sample_count;
-    MultisampleInfo   //
+    multisample_info   //
         .setSampleShadingEnable(pipeline_info_.multisample.enabled)
         .setRasterizationSamples(pipeline_info_.multisample.sample_count);
     /************************* 配置多重采样结束 ************************/
 
     /************************* 配置深度模版测试 ************************/
-    vk::PipelineDepthStencilStateCreateInfo DepthStencilInfo = {};
-    DepthStencilInfo   //
+    vk::PipelineDepthStencilStateCreateInfo depth_stencil_info = {};
+    depth_stencil_info   //
         .setDepthTestEnable(pipeline_info_.depth_stencil_stage.enable_depth_test)
         .setDepthWriteEnable(pipeline_info_.depth_stencil_stage.enable_depth_write)
         .setDepthCompareOp(pipeline_info_.depth_stencil_stage.depth_compare_op)
@@ -253,27 +253,27 @@ void GraphicsPipeline::CreatePipeline()
     /************************* 配置深度模版测试结束 ************************/
 
     /************************* 配置颜色混合 ************************/
-    vk::PipelineColorBlendAttachmentState ColorBlendAttachment = {};
-    ColorBlendAttachment   //
+    vk::PipelineColorBlendAttachmentState color_blend_attachment = {};
+    color_blend_attachment   //
         .setColorWriteMask(
             vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
         )
         .setBlendEnable(pipeline_info_.color_blend_attachment_state.enabled);
 
-    vk::PipelineColorBlendStateCreateInfo ColorBlendInfo = {};
-    ColorBlendInfo   //
+    vk::PipelineColorBlendStateCreateInfo color_blend_info = {};
+    color_blend_info   //
         .setLogicOpEnable(false)
         .setLogicOp(vk::LogicOp::eCopy)   // 逻辑操作
-        .setAttachments({ColorBlendAttachment});
+        .setAttachments({color_blend_attachment});
     /************************* 配置颜色混合结束 ************************/
 
     // 指定管线布局(uniform)
-    vk::PipelineLayoutCreateInfo PipelineLayoutInfo = {};
+    vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
     TStaticArray                 layout             = {shader_program_->GetDescriptorSetLayout()};
-    PipelineLayoutInfo.setSetLayouts(layout);
+    pipeline_layout_info.setSetLayouts(layout);
 
     // 创建管线布局
-    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(PipelineLayoutInfo);
+    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(pipeline_layout_info);
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo dynamic_state_info;
@@ -298,9 +298,9 @@ void GraphicsPipeline::CreatePipeline()
         .setPInputAssemblyState(&InputAssemblyInfo)
         .setPViewportState(&viewport_state_create_info)
         .setPRasterizationState(&rasterizer_info)
-        .setPMultisampleState(&MultisampleInfo)
-        .setPDepthStencilState(&DepthStencilInfo)   // 深度和模版测试
-        .setPColorBlendState(&ColorBlendInfo)       // 颜色混合
+        .setPMultisampleState(&multisample_info)
+        .setPDepthStencilState(&depth_stencil_info)   // 深度和模版测试
+        .setPColorBlendState(&color_blend_info)       // 颜色混合
         .setLayout(pipeline_layout_)                // 管线布局
         .setRenderPass(render_pass_->GetHandle())   // RenderPass
         .setSubpass(0)                              // 子Pass
