@@ -56,7 +56,7 @@ void DetailWindow::DrawSelectedObject(Function::GameObject* game_object) {
     }
 }
 
-void DetailWindow::DrawComponent(Function::Component* comp) {
+void DetailWindow::DrawComponent(Function::Comp::Component* comp) {
     if (comp == nullptr || !comp->IsValid()) return;
     if (ImGui::CollapsingHeader(comp->GetCachedAnsiString().c_str())) {
         Type comp_type = comp->get_type();

@@ -1,5 +1,5 @@
 /**
- * @file ComponentBase.h
+ * @file Component.h
  * @author Echo 
  * @Date 24-5-15
  * @brief 
@@ -16,7 +16,8 @@ struct Transform;
 namespace Function {
 class GameObject;
 }
-FUNCTION_NAMESPACE_BEGIN
+
+FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
 class REFL Component : public Object {
     GENERATED_BODY(Component)
@@ -25,11 +26,13 @@ public:
 
     Component();
 
-    explicit Component(String InName, GameObject* InGameObject);
-
     virtual void Tick(float DeltaTime) {}
     virtual void BeginPlay();
-    virtual void EndPlay() {}
+    virtual void EndPlay();
+    virtual void OnEnable() {}
+    virtual void OnDisable() {}
+
+    void SetEnabled(bool enable);
 
     Transform& GetTransform() const;
 
@@ -37,7 +40,8 @@ public:
 
 protected:
     Transform* transform_ = nullptr;
-    GameObject* mGameObject = nullptr;
+    GameObject* game_object_ = nullptr;
+    bool enabled_ = true;
 };
 
 FUNCTION_NAMESPACE_END

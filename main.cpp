@@ -17,13 +17,13 @@ int main() {
         App.Run();
         App.Finitialize();
     } catch (const Exception& e) {
-        gLogger.Exception(e);
+        g_logger.Exception(e);
         return -1;
     } catch (const std::exception& e) {
-        gLogger.StdException(e);
+        g_logger.StdException(e);
         return -1;
     } catch (...) {
-        gLogger.Error(L"捕获到了未处理的未知异常");
+        g_logger.Error(L"捕获到了未处理的未知异常");
         return -1;
     }
     return 0;

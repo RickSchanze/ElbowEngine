@@ -12,8 +12,8 @@
 #include "VulkanModel.h"
 
 namespace Resource {
-class Model;
 class Mesh;
+class SubMesh;
 }   // namespace Resource
 
 RHI_VULKAN_NAMESPACE_BEGIN

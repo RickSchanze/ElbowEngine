@@ -71,5 +71,20 @@ vk::Fence RenderContext::GetInFlightFence() const
     return vulkan_context_->GetInFlightFence();
 }
 
+void RenderContext::RegisterDrawMesh(Comp::Mesh* mesh)
+{
+    mesh_to_draw_.insert(mesh);
+}
+
+void RenderContext::UnregisterDrawMesh(Comp::Mesh* mesh)
+{
+    ContainerUtils::Remove(mesh_to_draw_, mesh);
+}
+
+void RenderContext::UnregisterAllDrawMesh()
+{
+    mesh_to_draw_.clear();
+}
+
 
 FUNCTION_NAMESPACE_END

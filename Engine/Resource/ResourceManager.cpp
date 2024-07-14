@@ -9,14 +9,13 @@
 
 #include "CoreGlobal.h"
 #include "Interface/IResource.h"
+#include "Mesh.h"
 
 #include <ranges>
 
 RESOURCE_NAMESPACE_BEGIN
 
-ResourceManager::~ResourceManager()
-{
-}
+ResourceManager::~ResourceManager() {}
 
 void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource)
 {
@@ -35,18 +34,6 @@ void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* In
 IResource* ResourceManager::GetResource(const Path& InResourcePath)
 {
     return resource_map_.contains(InResourcePath) ? resource_map_[InResourcePath] : nullptr;
-}
-
-Texture* ResourceManager::GetOrCreateTexture(const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info)
-{
-    auto* texture = GetResource<Texture>(path);
-    if (texture == nullptr)
-    {
-        Texture* new_texture = Texture::Create(path, usage, sampler_info);
-        return new_texture;
-    }
-
-    return texture;
 }
 
 void ResourceManager::DestroyAllResources()

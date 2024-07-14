@@ -7,11 +7,16 @@
 
 #pragma once
 
+#include "CoreDef.h"
 #include "FunctionCommon.h"
 #include "Singleton/Singleton.h"
 
 #include <vulkan/vulkan.hpp>
 
+namespace Function::Comp
+{
+class Mesh;
+}
 namespace RHI::Vulkan
 {
 struct GraphicsQueueSubmitParams;
@@ -54,9 +59,19 @@ public:
      */
     vk::Fence GetInFlightFence() const;
 
+    void RegisterDrawMesh(Comp::Mesh* mesh);
+
+    void UnregisterDrawMesh(Comp::Mesh* mesh);
+
+    void UnregisterAllDrawMesh();
+
+    TSet<Comp::Mesh*> GetDrawMeshes() const { return mesh_to_draw_; }
+
 private:
     RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;
+
+    TSet<Comp::Mesh*> mesh_to_draw_;
 
     static inline RenderContext* s_render_context_ = nullptr;
 };

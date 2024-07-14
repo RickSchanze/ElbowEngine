@@ -9,7 +9,7 @@
 #include "Object/Object.h"
 #include "Object/ObjectManager.h"
 
-extern Logger gLogger = {};
+extern Logger g_logger = {};
 
 uint32_t ObjectCreateHelper::GetAvailableID()
 {

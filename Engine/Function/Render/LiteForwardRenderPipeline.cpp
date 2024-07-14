@@ -7,6 +7,8 @@
 
 #include "LiteForwardRenderPipeline.h"
 
+#include "Component/Mesh/Mesh.h"
+#include "Mesh.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
@@ -20,6 +22,18 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
     forward_pipeline_->BeginCommandBuffer();
     forward_pipeline_->BeginRenderPass({1, 0, 0, 1});
+
+    auto meshes_to_draw = context_->GetDrawMeshes();
+    forward_pipeline_->BindPipeline();
+    for (auto mesh: meshes_to_draw)
+    {
+        for (auto& to_draw: mesh->GetSubMeshes())
+        {
+            forward_pipeline_->BindMesh(*to_draw.GetRHIResource());
+            forward_pipeline_->DrawIndexed(to_draw.GetIndices().size());
+        }
+    }
+
     forward_pipeline_->EndRenderPass();
     forward_pipeline_->EndCommandBuffer();
     //

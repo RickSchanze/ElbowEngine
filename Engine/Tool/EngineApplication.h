@@ -74,13 +74,13 @@ protected:
 private:
     static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
     {
-        auto& app               = Get();
+        auto& app                = Get();
         app.frame_buffer_resized = true;
     }
 
     TUniquePtr<RHI::Vulkan::VulkanApplication> render_application_;
     TUniquePtr<Platform::Window::GlfwWindow>   window_;
-    Function::RenderContext*        render_context_;
+    Function::RenderContext*                   render_context_ = nullptr;
 
     static inline EngineApplication* instance_ = nullptr;
 
@@ -90,6 +90,9 @@ private:
 
     // TODO: 封装Timer
     std::chrono::time_point<std::chrono::steady_clock> last_frame_time_;
+
+    // 暂时测试
+    Function::GameObject* camera_object_ = nullptr;
 };
 
 TOOL_NAMESPACE_END

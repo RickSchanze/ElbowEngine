@@ -7,7 +7,7 @@
 
 #include "EngineApplication.h"
 
-#include "../Resource/ResourceManager.h"
+#include "GameObject/GameObject.h"
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "Render/RenderContext.h"
@@ -20,12 +20,18 @@
 #include "UI/Window/OutlineWindow.h"
 #include "UI/Window/WindowBase.h"
 #include "UI/Window/WindowManager.h"
+#include "ResourceManager.h"
+#include "Component/Mesh/StaticMesh.h"
 
 #include "Window/GLFWWindow.h"
 
 #include <imgui.h>
 
 
+namespace Function::Comp
+{
+class StaticMesh;
+}
 TOOL_NAMESPACE_BEGIN
 
 EngineApplication::EngineApplication(const String& project_path, const String& window_title)
@@ -68,6 +74,16 @@ void EngineApplication::Initialize()
     render_application_->Initialize();
     window_->InitImGui(render_application_->GetContext());
     render_context_ = new Function::RenderContext();
+
+    camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
+    camera_object_->BeginPlay();
+    camera_object_->AddComponent<Function::Comp::Camera>();
+    New<Function::GameObject>(L"Dummy对象", camera_object_);
+    auto mesh_obj  = New<Function::GameObject>(L"网格体对象");
+    auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
+    mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
+
+    New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 }
 
 void EngineApplication::Finitialize() const

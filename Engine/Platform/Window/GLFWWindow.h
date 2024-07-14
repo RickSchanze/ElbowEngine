@@ -78,8 +78,6 @@ private:
     GLFWwindow* window_handle_ = nullptr;
     String      window_title_;
 
-    Function::GameObject* camera_object_ = nullptr;
-
     ImGuiGraphicsPipeline* imgui_graphics_pipeline_ = nullptr;
 
     int width_;

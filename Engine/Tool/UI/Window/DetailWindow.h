@@ -13,16 +13,18 @@
 
 namespace Function
 {
+class GameObject;
+namespace Comp
+{
 class Component;
 }
-namespace Function
-{
-class GameObject;
-}
+}   // namespace Function
+
 namespace Tool::Window
 {
 class OutlineWindow;
 }
+
 WINDOW_NAMESPACE_BEGIN
 
 class REFL DetailWindow : public WindowBase
@@ -36,7 +38,7 @@ public:
 
 protected:
     void DrawSelectedObject(Function::GameObject* game_object);
-    void DrawComponent(Function::Component* comp);
+    void DrawComponent(Function::Comp::Component* comp);
 
     OutlineWindow* outline_window_     = nullptr;
     int32_t        selected_object_id_ = -1;

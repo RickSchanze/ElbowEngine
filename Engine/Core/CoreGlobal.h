@@ -13,29 +13,29 @@
 #include "Path/Path.h"
 #include "Singleton/Singleton.h"
 
-extern Logger gLogger;
+extern Logger g_logger;
 
 // 对Log函数进行宏定义
 #define STRINGIFY(x) #x
 #define LSTRINGIFY(x) L#x
 
-#define LOG_INFO(Text, ...) gLogger.Info(L##Text, __VA_ARGS__)
-#define LOG_INFO_CATEGORY(Category, Text, ...) gLogger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_INFO(Text, ...) g_logger.Info(L##Text, __VA_ARGS__)
+#define LOG_INFO_CATEGORY(Category, Text, ...) g_logger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
-#define LOG_WARNING(Text, ...) gLogger.Warning(L##Text, __VA_ARGS__)
-#define LOG_WARNING_CATEGORY(Category, Text, ...) gLogger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_WARNING(Text, ...) g_logger.Warning(L##Text, __VA_ARGS__)
+#define LOG_WARNING_CATEGORY(Category, Text, ...) g_logger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
-#define LOG_ERROR(Text, ...) gLogger.Error(L##Text, __VA_ARGS__)
-#define LOG_ERROR_CATEGORY(Category, Text, ...) gLogger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_ERROR(Text, ...) g_logger.Error(L##Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY(Category, Text, ...) g_logger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
-#define LOG_CRITIAL(Text, ...) gLogger.Critical(L##Text, __VA_ARGS__)
-#define LOG_CRITIAL_CATEGORY(Category, Text, ...) gLogger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_CRITIAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
+#define LOG_CRITIAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #ifdef ELBOW_DEBUG
-#    define LOG_DEBUG(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#    define LOG_TRACE(Text, ...) gLogger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...) gLogger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#    define LOG_DEBUG(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
+#    define LOG_DEBUG_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#    define LOG_TRACE(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
+#    define LOG_TRACE_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 #else
 #    define LOG_DEBUG(Text, ...)
 #    define LOG_DEBUG_CATEGORY(Category, Text, ...)
@@ -50,6 +50,9 @@ extern Logger gLogger;
     if (!(Condition)) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
 
 #define ASSETC
+
+#define NEVER_ENTRY_CRITICAL() g_logger.Critical("This function should never be executed {}:{}", __FILE__, __LINE__);
+#define NEVER_ENTRY_WARNING() g_logger.Warning("This function should never be executed {}:{}", __FILE__, __LINE__);
 
 /** BEGIN IsValid函数族 */
 inline bool IsValid(Object* Obj)

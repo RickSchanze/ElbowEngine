@@ -4,8 +4,10 @@ add_library(${PROJECT_NAME}
         Texture.h
         Texture.cpp
         ResourceCommon.h
-        Model.h
-        Model.cpp
+        Mesh.h
+        Mesh.cpp
+        ResourceManager.h
+        ResourceManager.cpp
         Interface/IResource.h
         Interface/IRHIResourceContainer.h
         ResourceConfig.h
@@ -27,6 +29,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         Engine::Core
-        Engine::Function
         Engine::Platform
 )

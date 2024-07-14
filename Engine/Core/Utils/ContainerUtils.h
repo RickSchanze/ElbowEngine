@@ -12,7 +12,8 @@
 
 #include <algorithm>
 
-class ContainerUtils {
+class ContainerUtils
+{
 public:
     template<typename ContainerT>
     static void Remove(ContainerT& Container, const typename ContainerT::value_type& Value);
@@ -31,38 +32,47 @@ public:
 };
 
 template<typename ContainerT>
-void ContainerUtils::Remove(ContainerT& Container, const typename ContainerT::value_type& Value) {
-    if (auto Iter = std::find(Container.begin(), Container.end(), Value); Iter != Container.end()) {
+void ContainerUtils::Remove(ContainerT& Container, const typename ContainerT::value_type& Value)
+{
+    if (auto Iter = std::find(Container.begin(), Container.end(), Value); Iter != Container.end())
+    {
         Container.erase(Iter);
     }
 }
 
 template<typename ContainerT, typename Lambda>
-void ContainerUtils::RemoveIf(ContainerT& Container, const Lambda& Value) {
-    if (auto Iter = std::find_if(Container.begin(), Container.end(), Value); Iter != Container.end()) {
+void ContainerUtils::RemoveIf(ContainerT& Container, const Lambda& Value)
+{
+    if (auto Iter = std::find_if(Container.begin(), Container.end(), Value); Iter != Container.end())
+    {
         Container.erase(Iter);
     }
 }
 
 template<typename ContainerT, typename Lambda>
-auto ContainerUtils::FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())> {
+auto ContainerUtils::FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())>
+{
     auto Iter = std::find_if(Container.begin(), Container.end(), Value);
-    if (Iter != Container.end()) {
+    if (Iter != Container.end())
+    {
         return Iter;
     }
     return std::nullopt;
 }
 
 template<typename ContainerT>
-ContainerT ContainerUtils::Slice(const ContainerT& Container, int32_t Start, int32_t End) {
+ContainerT ContainerUtils::Slice(const ContainerT& Container, int32_t Start, int32_t End)
+{
     ContainerT result;
 
     // 处理负数索引和默认参数
     auto containerSize = std::distance(Container.begin(), Container.end());
-    if (Start < 0) {
+    if (Start < 0)
+    {
         Start += containerSize;
     }
-    if (End <= 0) {
+    if (End <= 0)
+    {
         End += containerSize;
     }
 
@@ -79,7 +89,8 @@ ContainerT ContainerUtils::Slice(const ContainerT& Container, int32_t Start, int
 }
 
 template<typename ContainerT>
-ContainerT ContainerUtils::Concat(const ContainerT& ContainerA, const ContainerT& ContainerB) {
+ContainerT ContainerUtils::Concat(const ContainerT& ContainerA, const ContainerT& ContainerB)
+{
     ContainerT result;
 
     // 将容器A的元素添加到结果容器中

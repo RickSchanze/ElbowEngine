@@ -115,7 +115,7 @@ void GraphicsPipeline::BindVertexBuffers(const vk::ArrayProxy<vk::Buffer> buffer
     vk::ArrayProxy<vk::DeviceSize> my_offsets = offsets;
     if (offsets.empty())
     {
-        my_offsets = TArray<vk::DeviceSize>(offsets.size(), 0);
+        my_offsets = TArray<vk::DeviceSize>(buffers.size(), 0);
     }
     binded_buffer_.bindVertexBuffers(0, buffers, my_offsets);
 }

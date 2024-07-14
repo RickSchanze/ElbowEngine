@@ -8,6 +8,7 @@
 #include "ObjectManager.h"
 #include "CoreGlobal.h"
 #include "Object.h"
+#include "Utils/ContainerUtils.h"
 
 bool ObjectManager::AddObject(Object* new_object)
 {
@@ -45,11 +46,15 @@ bool ObjectManager::RemoveObject(const uint32_t id)
     }
     return false;
 }
+
 ObjectManager::~ObjectManager()
 {
     while (!objects_.empty())
     {
-        delete objects_.begin()->second;
+        auto obj_to_del = objects_.begin()->second;
+        // 组件由对象自己释放
+        if (!obj_to_del->IsComponent()) delete objects_.begin()->second;
+        objects_.erase(objects_.begin());
     }
     objects_.clear();
 }

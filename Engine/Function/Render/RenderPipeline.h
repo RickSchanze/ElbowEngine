@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+
 #include "FunctionCommon.h"
 #include "RenderContext.h"
 

@@ -6,6 +6,7 @@
  */
 
 #include "GLFWWindow.h"
+#include "Component/Mesh/StaticMesh.h"
 #include "GameObject/GameObject.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
@@ -164,7 +165,8 @@ void ImGuiGraphicsPipeline::CreateCommandBuffers()
     alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
     alloc_info.commandPool                   = command_pool_->GetHandle();
     alloc_info.commandBufferCount            = static_cast<uint32_t>(render_pass_->GetFrameBuffers().size());
-    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info, "ImGuiGraphicsPipeline_CommandBuffer", &command_buffer_debug_names);
+    command_buffers_ =
+        context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info, "ImGuiGraphicsPipeline_CommandBuffer", &command_buffer_debug_names);
 }
 
 void ImGuiGraphicsPipeline::Draw()
@@ -277,13 +279,6 @@ void GlfwWindow::Initialize()
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     const AnsiString Title = StringUtils::ToAnsiString(window_title_);
     window_handle_         = glfwCreateWindow(width_, height_, Title.c_str(), nullptr, nullptr);
-
-    camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
-    camera_object_->BeginPlay();
-    camera_object_->AddComponent<Function::Camera>();
-    New<Function::GameObject>(L"Dummy对象", camera_object_);
-    New<Function::GameObject>(L"对象2");
-    New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 }
 
 void GlfwWindow::Finalize()
@@ -300,7 +295,6 @@ void GlfwWindow::Finalize()
 
 void GlfwWindow::Tick(float DeltaTime)
 {
-    camera_object_->Tick(DeltaTime);
     glfwPollEvents();
     Input::InternalTick();
 }

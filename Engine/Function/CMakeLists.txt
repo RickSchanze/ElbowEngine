@@ -10,6 +10,10 @@ add_library(${PROJECT_NAME}
         Input/Input.h
         Component/Camera.cpp
         Component/Camera.h
+        Component/Mesh/Mesh.h
+        Component/Mesh/Mesh.cpp
+        Component/Mesh/StaticMesh.h
+        Component/Mesh/StaticMesh.cpp
         Render/RenderContext.h
         Render/RenderContext.cpp
         Render/LiteForwardRenderPipeline.h

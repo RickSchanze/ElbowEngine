@@ -30,13 +30,13 @@ Texture::Texture(Protected, const Path& path, const ETextureUsage usage, const S
 
 Texture* Texture::Create(const Path& path, ETextureUsage usage, const SamplerInfo& sampler_info)
 {
-    auto* CachedTexture = ResourceManager::Get()->GetResource<Texture>(path);
-    if (CachedTexture == nullptr)
+    auto* cached_texture = ResourceManager::Get()->GetResource<Texture>(path);
+    if (cached_texture == nullptr)
     {
         // 指针由ResourceManager管理
-        CachedTexture = new Texture(Protected{}, path, usage, sampler_info);
+        cached_texture = new Texture(Protected{}, path, usage, sampler_info);
     }
-    return CachedTexture;
+    return cached_texture;
 }
 
 Texture::~Texture()
@@ -73,7 +73,7 @@ void Texture::Load()
 #ifdef ELBOW_DEBUG
     texture_info.debug_name = path_.ToAnsiString();
 #endif
-    rhi_texture_            = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
+    rhi_texture_ = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
 
     ImageViewInfo view_info = {};
     rhi_texture_view_       = rhi_texture_->CreateImageViewUnique(view_info);
@@ -93,7 +93,7 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
     // 引擎默认纹理资产的生命周期包含整个程序运行期间
     if (gResourceConfig.bInitialized)
     {
-        auto* DefaultLackTexture = Resource::ResourceManager::Get()->GetOrCreateTexture(gResourceConfig.default_lack_texture_path);
+        auto* DefaultLackTexture = Resource::Texture::Create(gResourceConfig.default_lack_texture_path);
         if (DefaultLackTexture)
         {
             *out_texture      = DefaultLackTexture->GetRHIResource().get();

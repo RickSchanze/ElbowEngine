@@ -15,25 +15,46 @@
 
 GENERATED_SOURCE()
 
-Function::Component::Component() = default;
+FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-Function::Component::Component(String InName, GameObject* InGameObject)
-    : Object(EOF_IsComponent), mGameObject(InGameObject) {
-    // Transform由GameObject负责设置
-    if (InGameObject == nullptr) {
-        LOG_ERROR_CATEGORY(Component, L"创建组件{}失败: 创建组件需要一个不为空的GameObject", InName);
-        return;
-    }
-    SetName(InName);
-    // InGameObject 由GameObject的AddComponent设置
+Component::Component() : Object(EOF_IsComponent)
+{
 }
 
-void Function::Component::BeginPlay() {}
+void Component::BeginPlay()
+{
+    OnEnable();
+}
 
-Transform& Function::Component::GetTransform() const {
+void Component::EndPlay()
+{
+    OnDisable();
+}
+
+void Component::SetEnabled(const bool enable)
+{
+    if (enabled_ != enable)
+    {
+        enabled_ = enable;
+        if (enabled_)
+        {
+            OnEnable();
+        }
+        else
+        {
+            OnDisable();
+        }
+    }
+}
+
+Transform& Component::GetTransform() const
+{
     return *transform_;
 }
 
-void Function::Component::Destroy() {
-    mGameObject->DestroyComponent(this);
+void Component::Destroy()
+{
+    game_object_->DestroyComponent(this);
 }
+
+FUNCTION_COMPONENT_NAMESPACE_END

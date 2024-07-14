@@ -15,16 +15,14 @@
 #include <chrono>
 #include <glm/fwd.hpp>
 
-FUNCTION_NAMESPACE_BEGIN
+FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
 class REFL Camera : public Component
 {
     GENERATED_BODY(Camera)
 
-    using Component::Component;
-
 public:
-    explicit Camera(GameObject* object);
+    explicit Camera();
 
     void Tick(float delta_time) override;
 
@@ -51,6 +49,6 @@ protected:
     bool focused_ = false;
 };
 
-FUNCTION_NAMESPACE_END
+FUNCTION_COMPONENT_NAMESPACE_END
 
 // FUNCTION_NAMESPACE_END

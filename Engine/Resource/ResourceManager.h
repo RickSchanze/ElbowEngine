@@ -18,8 +18,9 @@ struct SamplerInfo;
 }
 namespace Resource
 {
+class Mesh;
 class Texture;
-}
+}   // namespace Resource
 class IResource;
 
 RESOURCE_NAMESPACE_BEGIN
@@ -33,19 +34,17 @@ public:
 
     // 注册一个资产（向mReourceMap中添加已经加载完成的资产）
     // 如果InResourcePath已存在则会执行替换
-    void RegisterResource(const Path& InResourcePath, IResource* InResource);
+    void RegisterResource(const Path& path, IResource* resource);
 
     // 获取一个资产
-    IResource* GetResource(const Path& InResourcePath);
+    IResource* GetResource(const Path& path);
 
     template<typename T>
         requires std::derived_from<T, IResource>
-    T* GetResource(const Path& resource_path)
+    T* GetResource(const Path& path)
     {
-        return dynamic_cast<T*>(GetResource(resource_path));
+        return dynamic_cast<T*>(GetResource(path));
     }
-
-    Texture* GetOrCreateTexture(const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {});
 
     void DestroyAllResources();
 

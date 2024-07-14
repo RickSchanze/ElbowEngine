@@ -19,7 +19,7 @@ RTTR_REGISTRATION {
 
 Object::~Object() {
     ObjectManager::Get()->RemoveObject(id_);
-    gLogger.Info(L"Delete Object {}", name_);
+    g_logger.Info(L"Delete Object {}", name_);
 }
 
 String Object::ToString() const {
