@@ -118,6 +118,11 @@ struct PipelineInfo
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
     int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
+
+#ifdef ELBOW_DEBUG
+    AnsiString debug_name;
+    TArray<AnsiString> debug_command_buffer_names;
+#endif
 };
 
 class GraphicsPipeline : public IGraphicsPipeline
@@ -187,7 +192,7 @@ private:
     vk::CommandBuffer binded_buffer_ = nullptr;
 
     void CreateCommandBuffers();
-    void DestroyCommandBuffers() const;
+    void DestroyCommandBuffers();
 
 public:
     // clang-format on

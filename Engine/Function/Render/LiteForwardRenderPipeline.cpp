@@ -19,7 +19,7 @@ FUNCTION_NAMESPACE_BEGIN
 void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
     forward_pipeline_->BeginCommandBuffer();
-    forward_pipeline_->BeginRenderPass();
+    forward_pipeline_->BeginRenderPass({1, 0, 0, 1});
     forward_pipeline_->EndRenderPass();
     forward_pipeline_->EndCommandBuffer();
     //

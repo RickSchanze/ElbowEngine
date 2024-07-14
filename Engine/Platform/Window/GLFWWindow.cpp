@@ -127,12 +127,12 @@ void ImGuiGraphicsPipeline::Initialize()
     render_pass_->Initialize();
 
     // CommandBuffers
-    vk::CommandBufferAllocateInfo AllocInfo = {};
-    AllocInfo.setCommandPool(context_->GetCommandPool()->GetHandle())
+    vk::CommandBufferAllocateInfo alloc_info = {};
+    alloc_info.setCommandPool(context_->GetCommandPool()->GetHandle())
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandBufferCount(context_->GetSwapChainImageCount());
 
-    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(AllocInfo);
+    command_buffers_ = context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info);
 
     // 初始化Imgui
     ImGui_ImplVulkan_LoadFunctions(
@@ -176,12 +176,9 @@ void ImGuiGraphicsPipeline::Draw()
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     command_buffers_[current_image_index].begin(&begin_info);
     vk::RenderPassBeginInfo         render_pass_info = {};
-    TStaticArray<vk::ClearValue, 1> clear_values     = {};
     render_pass_info.renderPass                      = render_pass_->GetHandle();
     render_pass_info.framebuffer                     = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea                      = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
-    render_pass_info.clearValueCount                 = static_cast<uint32_t>(clear_values.size());
-    render_pass_info.pClearValues                    = clear_values.data();
     command_buffers_[current_image_index].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffers_[current_image_index]);

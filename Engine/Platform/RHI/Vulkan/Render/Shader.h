@@ -71,14 +71,15 @@ public:
      * 将磁盘的Shader文件加载
      * @param shader_path Shader路径
      * @param shader_stage Shader类型
+     * @param debug_shader_name
      * @param device Shader所属的管线
      */
-    Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, AnsiString debug_shader_name);
+    Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& debug_shader_name);
 
-    static Shader* Create(const Path& path, const EShaderStage type)
+    static Shader* Create(const Path& path, const EShaderStage type, const AnsiString& debug_shader_name = "")
     {
         const Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        return new Shader(Protected{}, device, path, type);
+        return new Shader(Protected{}, device, path, type, debug_shader_name);
     }
 
     ~Shader();
@@ -103,7 +104,7 @@ private:
     // 顶点着色器的输入属性
     TArray<VertexInAttribute> in_attributes_;
 
-    Ref<LogicalDevice> device_; // 使用此Shader的管线
+    Ref<LogicalDevice> device_;   // 使用此Shader的管线
 
 #ifdef ELBOW_DEBUG
     AnsiString debug_shader_name_;

@@ -341,12 +341,24 @@ void GraphicsPipeline::CreateCommandBuffers()
     alloc_info.commandPool                   = pool->GetHandle();
     alloc_info.commandBufferCount            = g_engine_statistics.swapchain_image_count;
     command_buffers_                         = pool->CreateCommandBuffers(alloc_info);
+#ifdef ELBOW_DEBUG
+    for (int i = 0; i < g_engine_statistics.swapchain_image_count; ++i)
+    {
+        AnsiString new_debug_cb_name = pipeline_info_.debug_name + "_CommandBuffer_" + std::to_string(i);
+        pipeline_info_.debug_command_buffer_names.push_back(new_debug_cb_name);
+        context.GetLogicalDevice()->SetCommandBufferDebugName(command_buffers_[i], pipeline_info_.debug_command_buffer_names.back().data());
+    }
+#endif
 }
 
-void GraphicsPipeline::DestroyCommandBuffers() const
+void GraphicsPipeline::DestroyCommandBuffers()
 {
     VulkanContext& context = *VulkanContext::Get();
     context.GetCommandPool()->DestroyCommandBuffers(command_buffers_);
+    command_buffers_.clear();
+#ifdef ELBOW_DEBUG
+    pipeline_info_.debug_command_buffer_names.clear();
+#endif
 }
 
 void GraphicsPipeline::Rebuild()

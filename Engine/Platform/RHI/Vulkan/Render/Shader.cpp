@@ -37,7 +37,7 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, AnsiString debug_shader_name) :
+Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, const AnsiString& debug_shader_name) :
     shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
