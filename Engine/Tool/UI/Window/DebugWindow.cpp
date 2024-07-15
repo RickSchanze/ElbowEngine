@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "DebugWindow.generated.h"
+#include "Input/Input.h"
 
 GENERATED_SOURCE()
 
@@ -37,6 +38,8 @@ void StatisticsWindow::Draw(float InDeltaTime) {
     ImGui::Text(U8("总对象数: %d"), g_engine_statistics.object_count);
     ImGui::Text(U8("窗口宽高: (%d, %d)"), g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
     ImGui::Text(U8("总帧数: %ld"), g_engine_statistics.frame_count);
+    ImGui::Text(U8("当前鼠标位置:(%f, %f)"), Input::GetMousePosition().x, Input::GetMousePosition().y);
+    ImGui::Text(U8("当前鼠标delta:(%f, %f)"), Input::GetMouseDelta().x, Input::GetMouseDelta().y);
 }
 
 WINDOW_NAMESPACE_END

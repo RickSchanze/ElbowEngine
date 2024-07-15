@@ -15,13 +15,14 @@
 
 #include "Utils/ContainerUtils.h"
 
+#include "Component/Camera.h"
+#include "Component/Mesh/StaticMesh.h"
+#include "ResourceManager.h"
 #include "UI/Window/DebugWindow.h"
 #include "UI/Window/DetailWindow.h"
 #include "UI/Window/OutlineWindow.h"
 #include "UI/Window/WindowBase.h"
 #include "UI/Window/WindowManager.h"
-#include "ResourceManager.h"
-#include "Component/Mesh/StaticMesh.h"
 
 #include "Window/GLFWWindow.h"
 

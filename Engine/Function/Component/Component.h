@@ -26,6 +26,8 @@ public:
 
     Component();
 
+    ~Component() override;
+
     virtual void Tick(float DeltaTime) {}
     virtual void BeginPlay();
     virtual void EndPlay();

@@ -9,27 +9,33 @@
 
 #include "imgui.h"
 
-void Input::InternalTick() {
-    s_last_frame_mouse_pos_ = GetMousePosition();
+void Input::InternalTick()
+{
 }
 
-bool Input::IsKeyDown(KeyCode InCode) {
+bool Input::IsKeyDown(KeyCode InCode)
+{
     return ImGui::IsKeyDown(static_cast<ImGuiKey>(static_cast<int>(InCode)));
 }
 
-bool Input::IsKeyPressed(KeyCode InCode) {
+bool Input::IsKeyPressed(KeyCode InCode)
+{
     return ImGui::IsKeyPressed(static_cast<ImGuiKey>(static_cast<int>(InCode)));
 }
 
-bool Input::IsKeyReleased(KeyCode InCode) {
+bool Input::IsKeyReleased(KeyCode InCode)
+{
     return ImGui::IsKeyReleased(static_cast<ImGuiKey>(static_cast<int>(InCode)));
 }
 
-Vector2 Input::GetMousePosition() {
+Vector2 Input::GetMousePosition()
+{
     ImGuiIO& IO = ImGui::GetIO();
     return {IO.MousePos.x, IO.MousePos.y};
 }
 
-Vector2 Input::GetMouseDelta() {
-    return GetMousePosition() - s_last_frame_mouse_pos_;
+Vector2 Input::GetMouseDelta()
+{
+    auto& io = ImGui::GetIO();
+    return {io.MouseDelta.x, io.MouseDelta.y};
 }

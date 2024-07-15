@@ -53,8 +53,14 @@ ObjectManager::~ObjectManager()
     {
         auto obj_to_del = objects_.begin()->second;
         // 组件由对象自己释放
-        if (!obj_to_del->IsComponent()) delete objects_.begin()->second;
-        objects_.erase(objects_.begin());
+        if (!obj_to_del->IsComponent())
+        {
+            delete objects_.begin()->second;
+        }
+        else
+        {
+            objects_.erase(objects_.begin());
+        }
     }
     objects_.clear();
 }

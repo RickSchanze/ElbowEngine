@@ -15,6 +15,7 @@
 
 namespace Function
 {
+class GameObject;
 class RenderContext;
 }
 namespace RHI::Vulkan

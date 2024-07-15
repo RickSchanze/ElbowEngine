@@ -21,14 +21,9 @@ enum class KeyCode {
 class Input {
 public:
     static void InternalTick();
-
-public:
     static bool IsKeyDown(KeyCode InCode);
     static bool IsKeyPressed(KeyCode InCode);
     static bool IsKeyReleased(KeyCode InCode);
     static Vector2 GetMousePosition();
     static Vector2 GetMouseDelta();
-
-private:
-    static inline Vector2 s_last_frame_mouse_pos_;
 };

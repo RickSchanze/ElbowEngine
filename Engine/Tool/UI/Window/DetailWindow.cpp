@@ -34,8 +34,8 @@ void DetailWindow::Draw(float delta_time) {
         outline_window_ = WindowManager::GetWindow<OutlineWindow>();
     }
     if (outline_window_->IsValid()) {
-        if (outline_window_->SelectedObjectID != -1) {
-            selected_object_id_ = outline_window_->SelectedObjectID;
+        if (outline_window_->selected_object_id != -1) {
+            selected_object_id_ = outline_window_->selected_object_id;
         }
     }
     Function::GameObject* object_to_draw = nullptr;
@@ -60,8 +60,9 @@ void DetailWindow::DrawComponent(Function::Comp::Component* comp) {
     if (comp == nullptr || !comp->IsValid()) return;
     if (ImGui::CollapsingHeader(comp->GetCachedAnsiString().c_str())) {
         Type comp_type = comp->get_type();
-        for (auto Prop : comp_type.get_properties()) {
-            Drawer::PropertyDrawer::DrawProperty(Prop, comp);
+        for (auto prop : comp_type.get_properties()) {
+            if (prop.get_name() == "Id") continue;
+            Drawer::PropertyDrawer::DrawProperty(prop, comp);
         }
     }
 }

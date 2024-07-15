@@ -17,32 +17,40 @@ WINDOW_NAMESPACE_BEGIN
 
 static bool TreeNodeHasSelected = false;
 
-OutlineWindow::OutlineWindow() {
+OutlineWindow::OutlineWindow()
+{
     name_       = L"Window_OutlineWindow";
     mWindowName = L"世界大纲";
 }
 
-void OutlineWindow::Draw(float InDeltaTime) {
-    auto Objs = Function::GameObject::GetRootGameObjects();
-    for (auto& Obj: Objs) {
-        DrawGameObject(Obj);
+void OutlineWindow::Draw(float InDeltaTime)
+{
+    auto objs = Function::GameObject::GetRootGameObjects();
+    for (auto& obj: objs)
+    {
+        DrawGameObject(obj);
     }
     TreeNodeHasSelected = false;
 }
 
-void OutlineWindow::DrawGameObject(Function::GameObject* InGameObject) {
-    if (InGameObject == nullptr) return;
-    ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-    if (!InGameObject->HasChildren()) {
-        Flags |= ImGuiTreeNodeFlags_Leaf;
+void OutlineWindow::DrawGameObject(Function::GameObject* game_object)
+{
+    if (game_object == nullptr) return;
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    if (!game_object->HasChildren())
+    {
+        flags |= ImGuiTreeNodeFlags_Leaf;
     }
     // TODO: 递归改循环
-    if (ImGui::TreeNodeEx(InGameObject->GetCachedAnsiString().c_str(), Flags)) {
-        if (ImGui::IsItemClicked()) {
-            SelectedObjectID = InGameObject->GetID();
+    if (ImGui::TreeNodeEx(game_object->GetCachedAnsiString().c_str(), flags))
+    {
+        if (ImGui::IsItemClicked())
+        {
+            selected_object_id = game_object->GetID();
         }
-        for (auto& Child: InGameObject->GetChildren()) {
-            DrawGameObject(Child);
+        for (auto& child: game_object->GetChildren())
+        {
+            DrawGameObject(child);
         }
         ImGui::TreePop();
     }

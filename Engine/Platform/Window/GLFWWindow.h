@@ -10,7 +10,6 @@
 #include "WindowCommon.h"
 
 #define GLFW_INCLUDE_VULKAN
-#include "Component/Camera.h"
 #include "GLFW/glfw3.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"

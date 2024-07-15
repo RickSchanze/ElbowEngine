@@ -22,7 +22,7 @@ class ImguiGraphicsPipeline;
 }   // namespace RHI::Vulkan
 
 FUNCTION_NAMESPACE_BEGIN
-
+class GameObject;
 class RenderPipeline
 {
 public:

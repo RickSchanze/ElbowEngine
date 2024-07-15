@@ -23,8 +23,8 @@ Function::GameObject::~GameObject() {
     for (auto component: components_) {
         delete component;
     }
-    for (auto game_object: sub_game_objects_) {
-        delete game_object;
+    for (int i = sub_game_objects_.size() - 1; i >= 0; i--) {
+        delete sub_game_objects_[i];
     }
     if (parent_oject_ != nullptr) {
         std::erase(parent_oject_->sub_game_objects_, this);

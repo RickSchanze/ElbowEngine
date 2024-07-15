@@ -23,7 +23,7 @@ public:
     static Tool::Window::WindowBase* GetWindow(Type type);
 
     // 销毁Type对应的Window
-    static void DestroyWindow(Type type);
+    static void DestroyWindow(const Type& type);
 
     template<typename T>
         requires std::derived_from<T, Tool::Window::WindowBase>
@@ -34,5 +34,5 @@ public:
     }
 
 protected:
-    THashMap<Type, Tool::Window::WindowBase*> mWindowMap;
+    THashMap<Type, Tool::Window::WindowBase*> windows_map_;
 };

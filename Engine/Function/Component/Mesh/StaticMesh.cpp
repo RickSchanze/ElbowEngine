@@ -20,10 +20,7 @@ StaticMesh::StaticMesh()
     SetName(L"静态网格体组件");
 }
 
-StaticMesh::~StaticMesh()
-{
-    LOG_INFO("HERE");
-}
+StaticMesh::~StaticMesh() = default;
 
 void StaticMesh::OnMeshSet()
 {

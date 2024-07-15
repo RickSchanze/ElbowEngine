@@ -17,9 +17,9 @@ GENERATED_SOURCE()
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-Component::Component() : Object(EOF_IsComponent)
-{
-}
+Component:: Component() : Object(EOF_IsComponent) {}
+
+Component::~Component() = default;
 
 void Component::BeginPlay()
 {

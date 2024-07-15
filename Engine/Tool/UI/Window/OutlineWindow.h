@@ -25,10 +25,10 @@ public:
     void Draw(float InDeltaTime) override;
 
 protected:
-    void DrawGameObject(Function::GameObject* InGameObject);
+    void DrawGameObject(Function::GameObject* game_object);
 
 public:
-   int32_t SelectedObjectID = 0;
+   int32_t selected_object_id = 0;
 };
 
 WINDOW_NAMESPACE_END
