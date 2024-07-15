@@ -30,5 +30,5 @@ public:
     static Vector2 GetMouseDelta();
 
 private:
-    static inline Vector2 sLastFrameMousePos;
+    static inline Vector2 s_last_frame_mouse_pos_;
 };

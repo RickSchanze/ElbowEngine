@@ -7,12 +7,15 @@
 
 #include "LiteForwardRenderPipeline.h"
 
+#include "Component/Camera.h"
 #include "Component/Mesh/Mesh.h"
 #include "Mesh.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
+#include "RHI/Vulkan/Render/ShaderProgram.h"
 #include "RHI/Vulkan/VulkanContext.h"
+
 
 using namespace RHI::Vulkan;
 
@@ -25,11 +28,19 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 
     auto meshes_to_draw = context_->GetDrawMeshes();
     forward_pipeline_->BindPipeline();
+    forward_pipeline_->UpdateViewport();
+    forward_pipeline_->UpdateScissor();
+
+    Comp::Camera* main  = Comp::Camera::Main;
+    auto     model = glm::mat4(1.0f);
+
+    forward_pipeline_->GetShaderProgram()->SetMVP(model, main->GetViewMatrix(), main->GetProjectionMatrix());
     for (auto mesh: meshes_to_draw)
     {
         for (auto& to_draw: mesh->GetSubMeshes())
         {
             forward_pipeline_->BindMesh(*to_draw.GetRHIResource());
+            forward_pipeline_->BindDescriptiorSets({forward_pipeline_->GetCurrentFrameDescriptorSet()});
             forward_pipeline_->DrawIndexed(to_draw.GetIndices().size());
         }
     }

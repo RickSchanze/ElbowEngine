@@ -136,18 +136,17 @@ bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const 
     const TStaticArray<glm::mat4, 3> ubo    = {model, view, projection};
     const LogicalDevice&             device = device_.get();
     // @TODO: 可能不需要每个都map memory
-    for (int i = 0; i < g_engine_statistics.swapchain_image_count; i++)
+
+    void* data;
+    auto  map_res = device.MapMemory(uniform_buffers_memory_[g_engine_statistics.current_frame_index], 3 * sizeof(glm::mat4), 0, &data);
+    if (map_res != vk::Result::eSuccess)
     {
-        void* data;
-        auto  map_res = device.MapMemory(uniform_buffers_memory_[i], 3 * sizeof(glm::mat4), 0, &data);
-        if (map_res != vk::Result::eSuccess)
-        {
-            LOG_ERROR_CATEGORY(Vulkan.Shader, L"设置Shader UBO: Map memory失败: {}", StringUtils::FromAnsiString(vk::to_string(map_res)));
-            return false;
-        }
-        memcpy(data, ubo.data(), 3 * sizeof(glm::mat4));
-        device.UnmapMemory(uniform_buffers_memory_[i]);
+        LOG_ERROR_CATEGORY(Vulkan.Shader, L"设置Shader UBO: Map memory失败: {}", StringUtils::FromAnsiString(vk::to_string(map_res)));
+        return false;
     }
+    memcpy(data, ubo.data(), 3 * sizeof(glm::mat4));
+    device.UnmapMemory(uniform_buffers_memory_[g_engine_statistics.current_frame_index]);
+
     return true;
 }
 
@@ -164,11 +163,13 @@ void ShaderProgram::CreateUniformBuffers()
     {
         buffer_size += value.size;
     }
-    uniform_buffers_.resize(g_engine_statistics.swapchain_image_count);
-    uniform_buffers_memory_.resize(g_engine_statistics.swapchain_image_count);
-    uniform_buffer_debug_names_.resize(g_engine_statistics.swapchain_image_count);
-    uniform_buffer_memory_debug_names_.resize(g_engine_statistics.swapchain_image_count);
-    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
+    uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
+    uniform_buffers_memory_.resize(g_engine_statistics.parallel_render_frame_count);
+    mapped_uniform_buffer_memory_.resize(g_engine_statistics.parallel_render_frame_count);
+
+    uniform_buffer_debug_names_.resize(g_engine_statistics.parallel_render_frame_count);
+    uniform_buffer_memory_debug_names_.resize(g_engine_statistics.parallel_render_frame_count);
+    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
         device.CreateBuffer(
             buffer_size,
@@ -192,7 +193,7 @@ void ShaderProgram::CreateUniformBuffers()
 void ShaderProgram::DestroyUniformBuffers()
 {
     const auto& device = VulkanContext::Get()->GetLogicalDevice();
-    for (size_t i = 0; i < g_engine_statistics.swapchain_image_count; i++)
+    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
         device->DestroyBuffer(uniform_buffers_[i]);
         device->FreeMemory(uniform_buffers_memory_[i]);
@@ -211,7 +212,6 @@ void ShaderProgram::CreateDescriptorSets()
     TArray                        layouts(g_engine_statistics.parallel_render_frame_count, descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
-    descriptor_sets_.resize(context.GetSwapChainImageCount());
     // 描述符池对象销毁时会自动清除描述符集
     descriptor_sets_ = context.GetLogicalDevice()->AllocateDescriptorSets(alloc_info);
 #ifdef ELBOW_DEBUG
@@ -229,7 +229,7 @@ void ShaderProgram::CreateDescriptorSets()
     const auto& sampler                   = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < descriptor_sets_.size(); i++)
     {
-        TStaticArray<vk::WriteDescriptorSet, 1> descriptor_writes = {};
+        TStaticArray<vk::WriteDescriptorSet, 2> descriptor_writes = {};
 
         vk::DescriptorBufferInfo buffer_info = {};
         buffer_info.setBuffer(uniform_buffers_[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
@@ -246,13 +246,13 @@ void ShaderProgram::CreateDescriptorSets()
         image_info.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
             .setImageView(default_lack_texture_view.GetHandle())
             .setSampler(sampler.GetHandle());
-        descriptor_writes[0].dstSet          = descriptor_sets_[i];
-        descriptor_writes[0].dstBinding      = 1;
-        descriptor_writes[0].dstArrayElement = 0;
-        descriptor_writes[0].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
-        descriptor_writes[0].descriptorCount = 1;
-        descriptor_writes[0].pBufferInfo     = nullptr;
-        descriptor_writes[0].pImageInfo      = &image_info;
+        descriptor_writes[1].dstSet          = descriptor_sets_[i];
+        descriptor_writes[1].dstBinding      = 1;
+        descriptor_writes[1].dstArrayElement = 0;
+        descriptor_writes[1].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
+        descriptor_writes[1].descriptorCount = 1;
+        descriptor_writes[1].pBufferInfo     = nullptr;
+        descriptor_writes[1].pImageInfo      = &image_info;
         context.GetLogicalDevice()->UpdateDescriptorSets(descriptor_writes);
     }
 }

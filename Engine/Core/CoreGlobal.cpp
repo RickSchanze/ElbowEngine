@@ -33,7 +33,7 @@ void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const uint32
 
 void EngineStatistics::IncreaseFrameIndex()
 {
-    current_image_index = (current_image_index + 1) % parallel_render_frame_count;
+    current_frame_index = (current_frame_index + 1) % parallel_render_frame_count;
 }
 
 void EngineStatistics::ResetDrawCalls()

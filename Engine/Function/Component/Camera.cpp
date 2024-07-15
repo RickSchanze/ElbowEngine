@@ -14,6 +14,8 @@
 
 #include "Camera.generated.h"
 
+#include <glm/ext/matrix_clip_space.hpp>
+
 GENERATED_SOURCE()
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
@@ -44,6 +46,13 @@ void Camera::BeginPlay()
 glm::mat4 Camera::GetViewMatrix() const
 {
     return lookAt(transform_->location, transform_->location + transform_->GetForwardVector(), transform_->GetUpVector());
+}
+
+glm::mat4 Camera::GetProjectionMatrix() const
+{
+    auto rtn = glm::perspective(glm::radians(45.f), 1920.f / 1080.f, 0.1f, 10.f);
+    rtn[1][1] *= -1;
+    return rtn;
 }
 
 void Camera::SetWindowFocused(bool focused)
@@ -87,10 +96,10 @@ void Camera::HandleInput()
             transform_->location -= movement_speed_ * transform_->GetUpVector();
         }
         SetWindowFocused(true);
-        Vector2 MouseDelta = Input::GetMouseDelta();
-        MouseDelta *= mouse_sensitivity_;
-        transform_->rotation.yaw += MouseDelta.x;
-        transform_->rotation.pitch -= MouseDelta.y;
+        Vector2 mouse_delta = Input::GetMouseDelta();
+        mouse_delta *= mouse_sensitivity_;
+        transform_->rotation.yaw += mouse_delta.x;
+        transform_->rotation.pitch -= mouse_delta.y;
         transform_->rotation.pitch = Math::Clamp(transform_->rotation.pitch, -89.0f, 89.0f);
     }
     else

@@ -120,10 +120,10 @@ struct PipelineInfo
     int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
 
 #ifdef ELBOW_DEBUG
-    AnsiString debug_name;
+    AnsiString         debug_name;
     TArray<AnsiString> debug_command_buffer_names;
-    AnsiString debug_pipeline_layout_name_;
-    AnsiString debug_pipeline_name_;
+    AnsiString         debug_pipeline_layout_name_;
+    AnsiString         debug_pipeline_name_;
 #endif
 };
 
@@ -153,15 +153,13 @@ public:
     void UpdateScissor(uint32_t width = 0, uint32_t height = 0, int32_t offset_x = 0, int32_t offset_y = 0) const;
 
     // TODO: TArrayView?
-    void BindVertexBuffers(vk::ArrayProxy<vk::Buffer> buffers, vk::ArrayProxy<vk::DeviceSize> offsets = {}) const;
+    void BindVertexBuffers(const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets = {}) const;
     void BindIndexBuffer(vk::Buffer buffer, vk::DeviceSize offset = 0) const;
     void BindMesh(const Mesh& mesh) const;
 
     void BindDescriptiorSets(
-        const vk::ArrayProxy<vk::DescriptorSet>& descriptor_sets,                                      // 描述符集
-        vk::PipelineBindPoint                    bind_point      = vk::PipelineBindPoint::eGraphics,   // 管线绑定点
-        uint32_t                                 first_set       = 0,                                  // 第一个描述符集的索引
-        vk::ArrayProxy<uint32_t>                 dynamic_offsets = nullptr
+        const TArray<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics, uint32_t first_set = 0,
+        const TArray<uint32_t>& dynamic_offsets = {}
     ) const;
 
     void DrawIndexed(
@@ -169,6 +167,10 @@ public:
     ) const;
 
     bool IsValid() const { return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr && shader_program_ != nullptr; }
+
+    TArray<vk::DescriptorSet> GetCurrentFrameDescriptorSet() const;
+
+    ShaderProgram* GetShaderProgram() const { return shader_program_; }
 
 protected:
     void CreatePipeline();
@@ -185,7 +187,7 @@ private:
 
     vk::SampleCountFlagBits sample_count_ = vk::SampleCountFlagBits::e1;
 
-    RenderPass* render_pass_ = nullptr;
+    RenderPass*    render_pass_    = nullptr;
     ShaderProgram* shader_program_ = nullptr;
 
     vk::CommandBuffer binded_buffer_ = nullptr;

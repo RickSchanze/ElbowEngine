@@ -10,7 +10,7 @@
 #include "imgui.h"
 
 void Input::InternalTick() {
-    sLastFrameMousePos = GetMousePosition();
+    s_last_frame_mouse_pos_ = GetMousePosition();
 }
 
 bool Input::IsKeyDown(KeyCode InCode) {
@@ -31,5 +31,5 @@ Vector2 Input::GetMousePosition() {
 }
 
 Vector2 Input::GetMouseDelta() {
-    return GetMousePosition() - sLastFrameMousePos;
+    return GetMousePosition() - s_last_frame_mouse_pos_;
 }

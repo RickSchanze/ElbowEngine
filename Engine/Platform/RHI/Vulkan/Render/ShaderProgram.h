@@ -109,6 +109,7 @@ private:
 
     TArray<vk::Buffer>       uniform_buffers_;
     TArray<vk::DeviceMemory> uniform_buffers_memory_;
+    TArray<void*>            mapped_uniform_buffer_memory_;
 
     TArray<vk::DescriptorSet> descriptor_sets_;
     vk::DescriptorPool        descriptor_pool_;

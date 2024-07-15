@@ -110,14 +110,9 @@ void GraphicsPipeline::UpdateScissor(const uint32_t width, const uint32_t height
     binded_buffer_.setScissor(0, scisor);
 }
 
-void GraphicsPipeline::BindVertexBuffers(const vk::ArrayProxy<vk::Buffer> buffers, const vk::ArrayProxy<vk::DeviceSize> offsets) const
+void GraphicsPipeline::BindVertexBuffers(const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets) const
 {
-    vk::ArrayProxy<vk::DeviceSize> my_offsets = offsets;
-    if (offsets.empty())
-    {
-        my_offsets = TArray<vk::DeviceSize>(buffers.size(), 0);
-    }
-    binded_buffer_.bindVertexBuffers(0, buffers, my_offsets);
+    binded_buffer_.bindVertexBuffers(0, buffers, offsets);
 }
 
 void GraphicsPipeline::BindIndexBuffer(const vk::Buffer buffer, const vk::DeviceSize offset) const
@@ -127,13 +122,13 @@ void GraphicsPipeline::BindIndexBuffer(const vk::Buffer buffer, const vk::Device
 
 void GraphicsPipeline::BindMesh(const Mesh& mesh) const
 {
-    BindVertexBuffers(mesh.GetVertexBuffer());
+    BindVertexBuffers({mesh.GetVertexBuffer()}, {0});
     BindIndexBuffer(mesh.GetIndexBuffer());
 }
 
 void GraphicsPipeline::BindDescriptiorSets(
-    const vk::ArrayProxy<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
-    const vk::ArrayProxy<uint32_t> dynamic_offsets
+    const TArray<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
+    const TArray<uint32_t>& dynamic_offsets
 ) const
 {
     binded_buffer_.bindDescriptorSets(bind_point, pipeline_layout_, first_set, descriptor_sets, dynamic_offsets);
@@ -145,6 +140,11 @@ void GraphicsPipeline::DrawIndexed(
 {
     binded_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     g_engine_statistics.IncreaseDrawCall();
+}
+
+TArray<vk::DescriptorSet> GraphicsPipeline::GetCurrentFrameDescriptorSet() const
+{
+    return {shader_program_->GetDescriptorSets()[g_engine_statistics.current_frame_index]};
 }
 
 void GraphicsPipeline::CreatePipeline()
@@ -173,20 +173,20 @@ void GraphicsPipeline::CreatePipeline()
     );
 
     // 配置Shader的阶段
-    vk::PipelineShaderStageCreateInfo VertInfo{};
-    VertInfo.setStage(vk::ShaderStageFlagBits::eVertex).setModule(shader_program_->GetVertShaderHandle()).setPName("main");
-    vk::PipelineShaderStageCreateInfo FragInfo{};
-    FragInfo.setStage(vk::ShaderStageFlagBits::eFragment).setModule(shader_program_->GetFragShaderHandle()).setPName("main");
-    TStaticArray<vk::PipelineShaderStageCreateInfo, 2> ShaderStages = {VertInfo, FragInfo};
+    vk::PipelineShaderStageCreateInfo vert_info{};
+    vert_info.setStage(vk::ShaderStageFlagBits::eVertex).setModule(shader_program_->GetVertShaderHandle()).setPName("main");
+    vk::PipelineShaderStageCreateInfo frag_info{};
+    frag_info.setStage(vk::ShaderStageFlagBits::eFragment).setModule(shader_program_->GetFragShaderHandle()).setPName("main");
+    TStaticArray<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {vert_info, frag_info};
 
     // 配置顶点Shader的输入信息
-    auto BindingDesc   = shader_program_->GetVertexInputBindingDescription();
-    auto AttributeDesc = shader_program_->GetVertexInputAttributeDescriptions();
+    auto binding_desc   = shader_program_->GetVertexInputBindingDescription();
+    auto attribute_desc = shader_program_->GetVertexInputAttributeDescriptions();
 
     vk::PipelineVertexInputStateCreateInfo VertexInputInfo = {};
     VertexInputInfo   //
-        .setVertexBindingDescriptions(BindingDesc)
-        .setVertexAttributeDescriptions(AttributeDesc);
+        .setVertexBindingDescriptions(binding_desc)
+        .setVertexAttributeDescriptions(attribute_desc);
 
     // 配置输入装配
     vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo = {};
@@ -300,7 +300,7 @@ void GraphicsPipeline::CreatePipeline()
 
     // 定义管线
     vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
-    pipeline_create_info.setStages(ShaderStages)
+    pipeline_create_info.setStages(shader_stages)
         .setPVertexInputState(&VertexInputInfo)
         .setPInputAssemblyState(&InputAssemblyInfo)
         .setPViewportState(&viewport_state_create_info)

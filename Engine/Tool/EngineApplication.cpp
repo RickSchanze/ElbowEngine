@@ -103,6 +103,8 @@ void EngineApplication::Run()
     {
         InternalTick();
 
+
+
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
         render_context_->PrepareFrameRender();
 
@@ -117,7 +119,7 @@ void EngineApplication::Run()
 
         ImGui::ShowDemoWindow();
         window_->Tick(g_engine_statistics.time_delta);
-
+        camera_object_->Tick(g_engine_statistics.time_delta);
         render_context_->Draw();
 
         render_context_->PostFrameRender();
