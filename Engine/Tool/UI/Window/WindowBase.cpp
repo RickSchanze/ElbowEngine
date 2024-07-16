@@ -22,7 +22,7 @@ void WindowBase::Tick(float delta_time)
     if (dirty_)
     {
         cached_ansi_window_name_ = StringUtils::ToAnsiString(window_name_);
-        dirty_                = false;
+        dirty_                   = false;
     }
 
     if (imgui_show_window_)
@@ -56,11 +56,10 @@ void WindowBase::Construct()
     }
 }
 
-WindowBase& WindowBase::SetWindowName(const String& InWindowName)
+void WindowBase::SetWindowName(const String& InWindowName)
 {
     window_name_ = InWindowName;
     MarkDirty();
-    return *this;
 }
 
 WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible)

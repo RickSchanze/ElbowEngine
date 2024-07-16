@@ -8,6 +8,7 @@
 #include "PropertyDrawer.h"
 
 #include "Utils/ReflUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <imgui.h>
 
@@ -15,61 +16,69 @@
 
 UI_DRAWER_NAMESPACE_BEGIN
 
-Vector3 PropertyDrawer::DrawProperty(const char* InName, const Vector3& InValue)
+Vector3 PropertyDrawer::DrawProperty(const char* name, const Vector3& value)
 {
-    Vector3 Vec = InValue;
-    ImGui::DragFloat3(InName, &Vec.x, DRAG_FLOAT_V_SPEED);
+    Vector3 Vec = value;
+    ImGui::DragFloat3(name, &Vec.x, DRAG_FLOAT_V_SPEED);
     return Vec;
 }
 
-Rotator PropertyDrawer::DrawProperty(const char* InName, const Rotator& InValue)
+Rotator PropertyDrawer::DrawProperty(const char* name, const Rotator& value)
 {
-    Rotator Rot = InValue;
-    ImGui::DragFloat3(InName, &Rot.yaw, DRAG_FLOAT_V_SPEED);
+    Rotator Rot = value;
+    ImGui::DragFloat3(name, &Rot.yaw, DRAG_FLOAT_V_SPEED);
     return Rot;
 }
 
-float PropertyDrawer::DrawProperty(const char* InName, float InValue)
+float PropertyDrawer::DrawProperty(const char* name, float value)
 {
-    ImGui::DragFloat(InName, &InValue, DRAG_FLOAT_V_SPEED);
-    return InValue;
+    ImGui::DragFloat(name, &value, DRAG_FLOAT_V_SPEED);
+    return value;
 }
 
-bool PropertyDrawer::DrawProperty(const char* InName, bool InValue)
+bool PropertyDrawer::DrawProperty(const char* name, bool value)
 {
-    ImGui::Checkbox(InName, &InValue);
-    return InValue;
+    ImGui::Checkbox(name, &value);
+    return value;
 }
 
-int PropertyDrawer::DrawProperty(const char* InName, int InValue)
+int PropertyDrawer::DrawProperty(const char* name, int value)
 {
-    ImGui::DragInt(InName, &InValue);
-    return InValue;
+    ImGui::DragInt(name, &value);
+    return value;
+}
+
+String PropertyDrawer::DrawProperty(const char* name, const String& value)
+{
+    const AnsiString str = StringUtils::ToAnsiString(value);
+    ImGui::Text("%s: %s", name, str.c_str());
+    return value;
 }
 
 #define VALUE_SETTER(TypeName)                                                             \
-    if (InProp.get_type().get_name() == #TypeName)                                         \
+    if (prop.get_type().get_name() == #TypeName)                                           \
     {                                                                                      \
-        auto       Vec                 = InProp.get_value(Obj);                            \
-        auto       LabelName           = InProp.get_name().data();                         \
-        const auto RegisteredLabelName = ReflUtils::GetPropertyAttribute(InProp, "Label"); \
-        if (!RegisteredLabelName.empty())                                                  \
+        auto       vec                   = prop.get_value(obj);                            \
+        auto       label_name            = prop.get_name().data();                         \
+        const auto registered_label_name = ReflUtils::GetPropertyAttribute(prop, "Label"); \
+        if (!registered_label_name.empty())                                                \
         {                                                                                  \
-            LabelName = RegisteredLabelName.c_str();                                       \
+            label_name = registered_label_name.c_str();                                    \
         }                                                                                  \
-        auto Value = Vec.get_value<TypeName>();                                            \
-        Value      = DrawProperty(LabelName, Value);                                       \
-        bool _     = InProp.set_value(Obj, Value);                                         \
+        auto value = vec.get_value<TypeName>();                                            \
+        value      = DrawProperty(label_name, value);                                      \
+        bool _     = prop.set_value(obj, value);                                           \
     }
 
-void PropertyDrawer::DrawProperty(Property InProp, const rttr::instance& Obj)
+void PropertyDrawer::DrawProperty(const Property prop, const rttr::instance& obj)
 {
-    if (ReflUtils::CheckAttribute(InProp, "Hidden")) return;
+    if (ReflUtils::CheckAttribute(prop, "Hidden")) return;
     VALUE_SETTER(Vector3)
     VALUE_SETTER(Rotator)
     VALUE_SETTER(float)
     VALUE_SETTER(bool)
     VALUE_SETTER(int)
+    VALUE_SETTER(std::wstring)
 }
 
 void PropertyDrawer::DrawTransform(Transform& transform)

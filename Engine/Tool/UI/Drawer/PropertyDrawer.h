@@ -19,13 +19,14 @@ UI_DRAWER_NAMESPACE_BEGIN
 class PropertyDrawer
 {
 public:
-    static Vector3 DrawProperty(const char* InName, const Vector3& InValue);
-    static Rotator DrawProperty(const char* InName, const Rotator& InValue);
-    static float   DrawProperty(const char* InName, float InValue);
-    static bool    DrawProperty(const char* InName, bool InValue);
-    static int     DrawProperty(const char* InName, int InValue);
-    static void    DrawProperty(Property InProp, const rttr::instance& Obj);
-    static void    DrawTransform(Transform& InTransform);
+    static Vector3 DrawProperty(const char* name, const Vector3& value);
+    static Rotator DrawProperty(const char* name, const Rotator& value);
+    static float   DrawProperty(const char* name, float value);
+    static bool    DrawProperty(const char* name, bool value);
+    static int     DrawProperty(const char* name, int value);
+    static String  DrawProperty(const char* name, const String& value);
+    static void    DrawProperty(Property prop, const rttr::instance& obj);
+    static void    DrawTransform(Transform& transform);
 };
 
 UI_DRAWER_NAMESPACE_END

@@ -46,22 +46,17 @@ public:
 
     void AddWidget(Widget::WidgetBase* Widget) { widgets_.push_back(Widget); }
 
-    WindowBase& SetWindowName(const String& InWindowName);
+    void          SetWindowName(const String& InWindowName);
+    const String& GetWindowName() const { return window_name_; }
 
-    // 设置窗口可见性
-    FUNCTION()
     WindowBase& SetVisible(EWindowVisiable InVisible);
 
-    FUNCTION()
     bool IsVisible() const { return visiable_ == EWindowVisiable::Visiable; }
 
-    FUNCTION()
     EWindowVisiable GetVisible() const { return visiable_; }
 
-    FUNCTION()
     bool IsValid() const override;
 
-    FUNCTION()
     bool HasConstructed() const { return constructed_; }
 
 public:
@@ -73,7 +68,7 @@ protected:
 
     virtual void Draw(float InDeltaTime);
 
-    PROPERTY(Serialized)
+    PROPERTY(Serialized, Getter = GetWindowName, Setter = SetWindowName)
     String window_name_;
 
     AnsiString cached_ansi_window_name_;

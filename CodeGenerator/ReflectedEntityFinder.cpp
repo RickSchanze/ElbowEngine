@@ -204,11 +204,9 @@ void ClassEntity::GenerateField(
         );
     } else if (!getter_name.empty() && !setter_name.empty()) {
         register_str = std::vformat(
-            R"(.property("{}", &{}::{}, &{}::{}, &{}::{}))",
+            R"(.property("{}", &{}::{}, &{}::{}))",
             std::make_format_args(
                 FieldName,
-                QualifiedClassName,
-                FieldDeclName,
                 QualifiedClassName,
                 getter_name,
                 QualifiedClassName,
