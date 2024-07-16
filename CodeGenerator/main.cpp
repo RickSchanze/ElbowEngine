@@ -51,7 +51,7 @@ int main(int argc, const char** argv) {
     using namespace clang::tooling;
     using namespace ast_matchers;
     auto OptionsParser = CommonOptionsParser::create(argc, argv, gToolCategory);
-    ClangTool Tool(OptionsParser->getCompilations(), OptionsParser->getSourcePathList());
+    ClangTool tool(OptionsParser->getCompilations(), OptionsParser->getSourcePathList());
 
     Json::Value Config;
     try {
@@ -66,54 +66,56 @@ int main(int argc, const char** argv) {
         return 0;
     }
 
-    ReflectedEntityFinder ClassFinder{Config, static_cast<std::string>(gOutputPath)};
-    MatchFinder Finder;
+    ReflectedEntityFinder class_finder{Config, static_cast<std::string>(gOutputPath)};
+    MatchFinder finder;
 
-    static DeclarationMatcher ClassMatcher =
+    static DeclarationMatcher class_matcher =
         cxxRecordDecl(decl().bind("class"), hasAttr(attr::Annotate), isExpansionInMainFile());
-    Finder.addMatcher(ClassMatcher, &ClassFinder);
+    finder.addMatcher(class_matcher, &class_finder);
 
-    static DeclarationMatcher FieldMatcher =
+    static DeclarationMatcher field_matcher =
         fieldDecl(decl().bind("field"), isExpansionInMainFile());
-    Finder.addMatcher(FieldMatcher, &ClassFinder);
+    finder.addMatcher(field_matcher, &class_finder);
 
-    static DeclarationMatcher EnumMatcher = enumDecl(decl().bind("enum"), isExpansionInMainFile());
-    Finder.addMatcher(EnumMatcher, &ClassFinder);
+    static DeclarationMatcher enum_matcher = enumDecl(decl().bind("enum"), isExpansionInMainFile());
+    finder.addMatcher(enum_matcher, &class_finder);
 
-    static DeclarationMatcher EnumContantMatcher =
+    static DeclarationMatcher enum_contant_matcher =
         enumConstantDecl(decl().bind("enum_constant"), isExpansionInMainFile());
-    Finder.addMatcher(EnumContantMatcher, &ClassFinder);
+    finder.addMatcher(enum_contant_matcher, &class_finder);
+
+    static DeclarationMatcher function_matcher =
+        functionDecl(decl().bind("function"), isExpansionInMainFile());
+    finder.addMatcher(function_matcher, &class_finder);
 
     // 增加Config的DefineMacros选项
-    for (Json::Value Macros = Config["DefineMacros"]; const auto& Value: Macros) {
-        std::string Macro    = Value.asString();
-        std::string MacroStr = std::string("-D") + Macro;
-        Tool.appendArgumentsAdjuster(
-            getInsertArgumentAdjuster(MacroStr.c_str(), ArgumentInsertPosition::BEGIN)
+    for (Json::Value macros = Config["DefineMacros"]; const auto& value: macros) {
+        std::string macro    = value.asString();
+        std::string macro_str = std::string("-D") + macro;
+        tool.appendArgumentsAdjuster(
+            getInsertArgumentAdjuster(macro_str.c_str(), ArgumentInsertPosition::BEGIN)
         );
     }
 
     // Config的OtherParams选项
-    for (Json::Value ExtraParams = Config["ExtraParams"]; const auto& Value: ExtraParams) {
-        std::string ExtraParam = Value.asString();
-        Tool.appendArgumentsAdjuster(
-            getInsertArgumentAdjuster(ExtraParam.c_str(), ArgumentInsertPosition::BEGIN)
+    for (Json::Value extra_params = Config["ExtraParams"]; const auto& value: extra_params) {
+        std::string extra_param = value.asString();
+        tool.appendArgumentsAdjuster(
+            getInsertArgumentAdjuster(extra_param.c_str(), ArgumentInsertPosition::BEGIN)
         );
     }
 
     // Config的Includes选项
-    for (Json::Value Includes = Config["Includes"]; const auto& Value: Includes) {
-        std::string Include    = Value.asString();
-        std::string IncludeStr = std::string("-I") + Include;
-        Tool.appendArgumentsAdjuster(
-            getInsertArgumentAdjuster(IncludeStr.c_str(), ArgumentInsertPosition::BEGIN)
+    for (Json::Value includes = Config["Includes"]; const auto& value: includes) {
+        std::string include    = value.asString();
+        std::string include_str = std::string("-I") + include;
+        tool.appendArgumentsAdjuster(
+            getInsertArgumentAdjuster(include_str.c_str(), ArgumentInsertPosition::BEGIN)
         );
     }
-    IgnoringDiagConsumer Consumer;
-    Tool.setDiagnosticConsumer(&Consumer);
-    AddIncludePaths(Tool);
-    int rtn = Tool.run(newFrontendActionFactory(&Finder).get());
+    IgnoringDiagConsumer consumer;
+    tool.setDiagnosticConsumer(&consumer);
+    AddIncludePaths(tool);
+    int rtn = tool.run(newFrontendActionFactory(&finder).get());
     std::cout << "Return code: " << rtn;
 }
-
-

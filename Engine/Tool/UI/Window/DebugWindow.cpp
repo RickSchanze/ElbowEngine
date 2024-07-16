@@ -22,7 +22,7 @@ WINDOW_NAMESPACE_BEGIN
 
 StatisticsWindow::StatisticsWindow() {
     name_       = L"Window_Statistics";
-    mWindowName = L"引擎数据统计";
+    window_name_ = L"引擎数据统计";
 }
 
 void StatisticsWindow::Draw(float InDeltaTime) {

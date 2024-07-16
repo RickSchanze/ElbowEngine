@@ -103,6 +103,7 @@ private:                                                        \
 #else
 #    define PROPERTY(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
 #    define REFL __attribute__((annotate("Reflected, ")))
+#	 define FUNCTION(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
 #endif
 
 // GENERATED_ENUM定义

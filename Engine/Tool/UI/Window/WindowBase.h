@@ -13,30 +13,38 @@
 
 #include "WindowBase.generated.h"
 
-namespace Tool::Widget {
+namespace Tool::Widget
+{
 class WidgetBase;
 }
 
 WINDOW_NAMESPACE_BEGIN
 
-enum class REFL EWindowVisiable { Visiable, Hidden, DefaultMax };
+enum class REFL EWindowVisiable
+{
+    Visiable,
+    Hidden,
+    DefaultMax
+};
 
 struct WindowVisiableChangedEvent : TEvent<EWindowVisiable>
-{};
+{
+};
 
-class REFL WindowBase : public Object {
+class REFL WindowBase : public Object
+{
     GENERATED_BODY(WindowBase)
 
 public:
     WindowBase() : Super(EOF_IsWindow) {}
 
-    void Tick(float InDeltaTime);
+    void Tick(float delta_time);
 
     void Construct();
 
     ~WindowBase() override = default;
 
-    void AddWidget(Widget::WidgetBase* Widget) { mWidgets.push_back(Widget); }
+    void AddWidget(Widget::WidgetBase* Widget) { widgets_.push_back(Widget); }
 
     WindowBase& SetWindowName(const String& InWindowName);
 
@@ -45,16 +53,16 @@ public:
     WindowBase& SetVisible(EWindowVisiable InVisible);
 
     FUNCTION()
-    bool IsVisible() const { return mVisiable == EWindowVisiable::Visiable; }
+    bool IsVisible() const { return visiable_ == EWindowVisiable::Visiable; }
 
     FUNCTION()
-    EWindowVisiable GetVisible() const { return mVisiable; }
+    EWindowVisiable GetVisible() const { return visiable_; }
 
     FUNCTION()
     bool IsValid() const override;
 
     FUNCTION()
-    bool HasConstructed() const { return bConstructed; }
+    bool HasConstructed() const { return constructed_; }
 
 public:
     // 当窗口可见性发生变化时触发，参数是旧的可见性
@@ -65,20 +73,20 @@ protected:
 
     virtual void Draw(float InDeltaTime);
 
-    PROPERTY(Serialized, Name = "WindowName")
-    String mWindowName;
+    PROPERTY(Serialized)
+    String window_name_;
 
-    AnsiString mCachedAnsiWindowName;
+    AnsiString cached_ansi_window_name_;
 
-    TArray<Widget::WidgetBase*> mWidgets;
+    TArray<Widget::WidgetBase*> widgets_;
 
-    bool bDirty       = true;
-    bool bConstructed = false;
+    bool dirty_       = true;
+    bool constructed_ = false;
 
-    EWindowVisiable mVisiable = EWindowVisiable::DefaultMax;
+    EWindowVisiable visiable_ = EWindowVisiable::DefaultMax;
 
 private:
-    bool mImguiShowWindow = true;
+    bool imgui_show_window_ = true;
 };
 
 WINDOW_NAMESPACE_END

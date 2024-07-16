@@ -12,7 +12,8 @@ using Ref = std::reference_wrapper<T>;
 
 // std::ref -> MakeRef
 template<typename T>
-Ref<T> MakeRef(T& TValue) {
+Ref<T> MakeRef(T& TValue)
+{
     return std::ref(TValue);
 }
 
@@ -21,7 +22,8 @@ using ConstRef = std::reference_wrapper<const T>;
 
 // std::cref -> MakeConstRef
 template<typename T>
-ConstRef<T> MakeConstRef(const T& TValue) {
+ConstRef<T> MakeConstRef(const T& TValue)
+{
     return std::cref(TValue);
 }
 
@@ -46,9 +48,7 @@ using TSet = std::set<KeyType, Comparator, Allocator>;
 
 // std::map -> Map
 #include <map>
-template<
-    class KeyType, class ValueType, class Comparator = std::less<KeyType>,
-    class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
+template<class KeyType, class ValueType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using TMap = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 // basic typedefs
@@ -78,24 +78,28 @@ template<typename T>
 using TWeakPtr = std::weak_ptr<T>;
 // std::make_shared -> MakeShared
 template<typename T, typename... Args>
-TSharedPtr<T> MakeShared(Args&&... args) {
+TSharedPtr<T> MakeShared(Args&&... args)
+{
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 // std::make_unique -> MakeUnique
 template<typename T, typename... Args>
-TUniquePtr<T> MakeUnique(Args&&... args) {
+TUniquePtr<T> MakeUnique(Args&&... args)
+{
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 // std::forward -> Forward
 template<typename T>
-constexpr T&& Forward(std::remove_reference_t<T>& Arg) noexcept {
+constexpr T&& Forward(std::remove_reference_t<T>& Arg) noexcept
+{
     return static_cast<T&&>(Arg);
 }
 
 // std::move -> Move
 template<typename T>
-constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept {
+constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept
+{
     return static_cast<std::remove_reference_t<T>&&>(Arg);
 }
 
@@ -108,19 +112,20 @@ using THashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocato
 
 // std::unordered_set -> HashSet
 #include <unordered_set>
-template <class KeyType, class Hasher = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>,
-    class Alloc = std::allocator<KeyType>>
+template<class KeyType, class Hasher = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>, class Alloc = std::allocator<KeyType>>
 using THashSet = std::unordered_set<KeyType, Hasher, KeyEqual, Alloc>;
 
 template<typename T>
-constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept {
+constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept
+{
     static_assert(!std::is_lvalue_reference_v<T>, "Can not forward an rvalue as an lvalue.");
     return static_cast<T&&>(Arg);
 }
 
 // std::dynamic_pointer_cast -> StaticPointerCast
 template<typename T, typename U>
-TSharedPtr<T> StaticPointerCast(const TSharedPtr<U>& InSharedPtr) {
+TSharedPtr<T> StaticPointerCast(const TSharedPtr<U>& InSharedPtr)
+{
     return std::static_pointer_cast<T>(InSharedPtr);
 }
 
@@ -148,7 +153,8 @@ typedef rttr::type     Type;
 typedef rttr::property Property;
 
 template<typename T>
-Type GetType() {
+Type GetType()
+{
     return rttr::type::get<T>();
 }
 
@@ -161,7 +167,8 @@ Type GetType() {
 #define MACRO_CONCAT3(x, y, z) CONCAT_IMPL3(x, y, z)
 
 #define GENERATED_SOURCE()                               \
-    RTTR_REGISTRATION {                                  \
+    RTTR_REGISTRATION                                    \
+    {                                                    \
         MACRO_CONCAT(GENERATED_SOURCE_, CURRENT_FILE_ID) \
     }
 
@@ -180,15 +187,18 @@ Type GetType() {
 #else
 #    define PROPERTY(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
 #    define REFL __attribute__((annotate("Reflected, ")))
+#    define FUNCTION(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
 #endif
 
 // GENERATED_ENUM定义
 #define ENUM_REGISTRATION(EnumName)                                                    \
     static void rttr_auto_register_reflection_function_##EnumName();                   \
-    namespace {                                                                        \
+    namespace                                                                          \
+    {                                                                                  \
     struct rttr__auto__register__##EnumName                                            \
     {                                                                                  \
-        rttr__auto__register__##EnumName() {                                           \
+        rttr__auto__register__##EnumName()                                             \
+        {                                                                              \
             rttr_auto_register_reflection_function_##EnumName();                       \
         }                                                                              \
     };                                                                                 \
@@ -199,7 +209,8 @@ Type GetType() {
 #define CONCAT_IMPL4(a, b, c, d) a##b##c##d
 
 #define GENERATED_ENUM_IMPL(EnumName, FileID)                   \
-    ENUM_REGISTRATION(##EnumName) {                             \
+    ENUM_REGISTRATION(##EnumName)                               \
+    {                                                           \
         CONCAT_IMPL4(GENERATED_ENUM_CODE_, FileID, _, EnumName) \
     }
 

@@ -43,14 +43,22 @@ public:
     ClassEntity() = delete;
     explicit ClassEntity(
         const clang::CXXRecordDecl* RecordDecl, Json::Value& Config, std::string CurrentFileID
-    ) : mRecord(RecordDecl), mCurrentFileID(std::move(CurrentFileID)), mConig(Config) {}
+    ) : record_(RecordDecl), current_file_id_(std::move(CurrentFileID)), config_(Config) {}
 
-    void AddField(const FieldDecl* field) { mFields.push_back(field); }
+    void AddField(const FieldDecl* field) {
+        fields_.insert(field);
+    }
+    void AddFunction(const FunctionDecl* function) { functions_.insert(function); }
 
     std::string Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const;
 
     void GenerateField(
-        const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,
+        const clang::FieldDecl* Decl, const std::map<std::string, std::string>& attr_map,
+        llvm::raw_fd_ostream& os
+    ) const;
+
+    void GenerateFunction(
+        const clang::FunctionDecl* decl, const std::map<std::string, std::string>& attr_map,
         llvm::raw_fd_ostream& os
     ) const;
 
@@ -64,11 +72,11 @@ public:
     [[nodiscard]] std::string GetClassName() const;
 
 private:
-    const clang::CXXRecordDecl* mRecord = nullptr;
-    std::vector<const FieldDecl*> mFields;
-    std::vector<const FunctionDecl*> mFunctions;
-    std::string mCurrentFileID;   // 当前文件ID
-    Json::Value& mConig;
+    const clang::CXXRecordDecl* record_ = nullptr;
+    std::set<const FieldDecl*> fields_;
+    std::set<const FunctionDecl*> functions_;
+    std::string current_file_id_;   // 当前文件ID
+    Json::Value& config_;
 };
 
 /**
@@ -81,27 +89,28 @@ class ReflectedEntityFinder final : public clang::ast_matchers::MatchFinder::Mat
 
 public:
     explicit ReflectedEntityFinder(Json::Value& Config, std::string OutputPath) :
-        mConfig(Config), mOutputPath(std::move(OutputPath)) {}
+        config_(Config), output_path_(std::move(OutputPath)) {}
 
-    virtual void run(const MatchFinder::MatchResult& Result) override;
-    virtual void onEndOfTranslationUnit() override;
+    void run(const MatchFinder::MatchResult& Result) override;
+    void onEndOfTranslationUnit() override;
 
 protected:
-    void FoundRecord(const clang::CXXRecordDecl* Decl);
-    void FoundField(const clang::FieldDecl* Decl);
-    void FoundEnum(const clang::EnumDecl* Decl);
-    void FoundEnumConstant(const clang::EnumConstantDecl* Decl);
+    void FoundRecord(const clang::CXXRecordDecl* decl);
+    void FoundField(const clang::FieldDecl* decl);
+    void FoundEnum(const clang::EnumDecl* decl);
+    void FoundEnumConstant(const clang::EnumConstantDecl* decl);
+    void FoundFunction(const clang::FunctionDecl* decl);
 
 private:
-    ASTContext* mContext          = nullptr;
-    SourceManager* mSourceManager = nullptr;
-    std::string mOriginalFilename;
-    std::string mGeneratedFilename;
-    std::vector<ClassEntity> mRecordEntities;
-    std::vector<EnumEntity> mEnumEntites;
-    Json::Value& mConfig;
-    std::string mFileID;
-    std::string mOutputPath;
+    ASTContext* context_           = nullptr;
+    SourceManager* source_manager_ = nullptr;
+    std::string original_filename_;
+    std::string generated_filename_;
+    std::vector<ClassEntity> record_entities_;
+    std::vector<EnumEntity> enum_entites_;
+    Json::Value& config_;
+    std::string file_id_;
+    std::string output_path_;
 };
 
 

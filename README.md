@@ -49,3 +49,18 @@ int mHello;
 PROPERTY(Hidden)
 int mHello;
 ```
+5. Setter
+指定一个属性的Setter,函数必须是类成员,不一定要被FUNCTION标注，必须与Getter成对出现，否则失效
+```C++
+PROPERTY(Setter = SetHello)
+int mHello;
+```
+6. Getter
+指定一个属性的Setter,函数必须是类成员,不一定要被FUNCTION标注，必须与Setter成对出现，否则失效
+```C++
+PROPERTY(Getter = GetHello)
+int mHello;
+```
+
+# 当前有意义的函数标志（FUNCTION）
+

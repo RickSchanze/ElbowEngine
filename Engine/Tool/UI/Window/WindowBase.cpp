@@ -17,65 +17,86 @@ GENERATED_SOURCE()
 
 WINDOW_NAMESPACE_BEGIN
 
-void WindowBase::Tick(float InDeltaTime) {
-    if (bDirty) {
-        mCachedAnsiWindowName = StringUtils::ToAnsiString(mWindowName);
-        bDirty                = false;
+void WindowBase::Tick(float delta_time)
+{
+    if (dirty_)
+    {
+        cached_ansi_window_name_ = StringUtils::ToAnsiString(window_name_);
+        dirty_                = false;
     }
 
-    if (mImguiShowWindow) {
-        if (!ImGui::Begin(mCachedAnsiWindowName.c_str(), &mImguiShowWindow)) {
+    if (imgui_show_window_)
+    {
+        if (!ImGui::Begin(cached_ansi_window_name_.c_str(), &imgui_show_window_))
+        {
             ImGui::End();
             SetVisible(EWindowVisiable::Hidden);
-        } else {
-            Draw(InDeltaTime);
+        }
+        else
+        {
+            Draw(delta_time);
             ImGui::End();
         }
-    } else {
+    }
+    else
+    {
         SetVisible(EWindowVisiable::Hidden);
     }
 }
-void WindowBase::Construct() {
-    if (bConstructed) {
+void WindowBase::Construct()
+{
+    if (constructed_)
+    {
         LOG_WARNING_CATEGORY(UI, L"窗口只能被初始化一次");
         return;
-    } else {
-        bConstructed = true;
+    }
+    else
+    {
+        constructed_ = true;
     }
 }
 
-WindowBase& WindowBase::SetWindowName(const String& InWindowName) {
-    mWindowName = InWindowName;
+WindowBase& WindowBase::SetWindowName(const String& InWindowName)
+{
+    window_name_ = InWindowName;
     MarkDirty();
     return *this;
 }
 
-WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible) {
-    if (InVisible != mVisiable) {
-        auto OldVisiable = mVisiable;
-        mVisiable        = InVisible;
+WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible)
+{
+    if (InVisible != visiable_)
+    {
+        auto OldVisiable = visiable_;
+        visiable_        = InVisible;
 
-        if (mVisiable == EWindowVisiable::Visiable) {
+        if (visiable_ == EWindowVisiable::Visiable)
+        {
             EngineApplication::Get().AddWindow(this);
-            mImguiShowWindow = true;
-        } else if (mVisiable == EWindowVisiable::Hidden) {
+            imgui_show_window_ = true;
+        }
+        else if (visiable_ == EWindowVisiable::Hidden)
+        {
             EngineApplication::Get().RemoveWindow(this);
-            mImguiShowWindow = false;
+            imgui_show_window_ = false;
         }
 
         OnVisiableChanged.Broadcast(OldVisiable);
     }
     return *this;
 }
-bool WindowBase::IsValid() const {
-    return Super::IsValid() && bConstructed;
+bool WindowBase::IsValid() const
+{
+    return Super::IsValid() && constructed_;
 }
 
-void WindowBase::MarkDirty() {
-    bDirty = true;
+void WindowBase::MarkDirty()
+{
+    dirty_ = true;
 }
 
-void WindowBase::Draw(float InDeltaTime) {
+void WindowBase::Draw(float InDeltaTime)
+{
     ImGui::Text(U8("未实现"));
 }
 

@@ -25,7 +25,7 @@ WINDOW_NAMESPACE_BEGIN
 
 DetailWindow::DetailWindow() {
     name_       = L"Window_DetailWindow";
-    mWindowName = L"细节";
+    window_name_ = L"细节";
 }
 
 void DetailWindow::Draw(float delta_time) {

@@ -20,7 +20,7 @@ static bool TreeNodeHasSelected = false;
 OutlineWindow::OutlineWindow()
 {
     name_       = L"Window_OutlineWindow";
-    mWindowName = L"世界大纲";
+    window_name_ = L"世界大纲";
 }
 
 void OutlineWindow::Draw(float InDeltaTime)

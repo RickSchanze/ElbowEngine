@@ -47,108 +47,115 @@ void ReplaceAll(std::string& str, const std::string& from, const std::string& to
 
 void ReflectedEntityFinder::run(const clang::ast_matchers::MatchFinder::MatchResult& Result) {
     using namespace clang;
-    mContext       = Result.Context;
-    mSourceManager = Result.SourceManager;
+    context_        = Result.Context;
+    source_manager_ = Result.SourceManager;
 
-    if (const auto Record = Result.Nodes.getNodeAs<CXXRecordDecl>("class"))
-        return FoundRecord(Record);
-    if (const auto Field = Result.Nodes.getNodeAs<FieldDecl>("field")) return FoundField(Field);
+    if (const auto record = Result.Nodes.getNodeAs<CXXRecordDecl>("class"))
+        return FoundRecord(record);
+    if (const auto field = Result.Nodes.getNodeAs<FieldDecl>("field")) return FoundField(field);
     if (const auto Enum = Result.Nodes.getNodeAs<EnumDecl>("enum")) return FoundEnum(Enum);
-    if (const auto EnumConstant = Result.Nodes.getNodeAs<EnumConstantDecl>("enum_constant"))
-        return FoundEnumConstant(EnumConstant);
+    if (const auto enum_constant = Result.Nodes.getNodeAs<EnumConstantDecl>("enum_constant"))
+        return FoundEnumConstant(enum_constant);
+    if (const auto function = Result.Nodes.getNodeAs<FunctionDecl>("function"))
+        return FoundFunction(function);
 }
 
-void ReflectedEntityFinder::FoundField(const clang::FieldDecl* Decl) {
-    if (mRecordEntities.empty()) return;
-    mRecordEntities.back().AddField(Decl);
+void ReflectedEntityFinder::FoundField(const clang::FieldDecl* decl) {
+    if (record_entities_.empty()) return;
+    record_entities_.back().AddField(decl);
 }
 
-void ReflectedEntityFinder::FoundEnum(const clang::EnumDecl* Decl) {
-    mOriginalFilename = mSourceManager->getFilename(Decl->getLocation()).str();
+void ReflectedEntityFinder::FoundEnum(const clang::EnumDecl* decl) {
+    original_filename_ = source_manager_->getFilename(decl->getLocation()).str();
     // 获取文件名字
-    if (mFileID.empty()) {
-        const std::filesystem::path FilePath = mOriginalFilename;
+    if (file_id_.empty()) {
+        const std::filesystem::path FilePath = original_filename_;
         std::string FileID                   = FilePath.filename().generic_string();
         ReplaceOne(FileID, ".", "_");
-        mFileID = FileID;
+        file_id_ = FileID;
     }
     // 看看Enum有没有Reflected属性
-    for (auto& Attr: Decl->attrs()) {
+    for (auto& Attr: decl->attrs()) {
         if (Attr->getKind() == clang::attr::Annotate) {
             if (const auto* AnnotateAttr = static_cast<clang::AnnotateAttr*>(Attr);
                 AnnotateAttr->getAnnotation().starts_with("Reflected")) {
-                mEnumEntites.emplace_back(Decl, mFileID);
+                enum_entites_.emplace_back(decl, file_id_);
                 break;
             }
         }
     }
 }
 
-void ReflectedEntityFinder::FoundEnumConstant(const clang::EnumConstantDecl* Decl) {
-    if (mEnumEntites.empty()) return;
-    mEnumEntites.back().AddConstant(Decl);
+void ReflectedEntityFinder::FoundEnumConstant(const clang::EnumConstantDecl* decl) {
+    if (enum_entites_.empty()) return;
+    enum_entites_.back().AddConstant(decl);
 }
 
-void ReflectedEntityFinder::FoundRecord(const clang::CXXRecordDecl* Decl) {
-    mOriginalFilename = mSourceManager->getFilename(Decl->getLocation()).str();
+void ReflectedEntityFinder::FoundFunction(const clang::FunctionDecl* decl) {
+    if (record_entities_.empty()) return;
+    record_entities_.back().AddFunction(decl);
+}
+
+void ReflectedEntityFinder::FoundRecord(const clang::CXXRecordDecl* decl) {
+    original_filename_ = source_manager_->getFilename(decl->getLocation()).str();
     // 获取文件名字
-    if (mFileID.empty()) {
-        const std::filesystem::path FilePath = mOriginalFilename;
+    if (file_id_.empty()) {
+        const std::filesystem::path FilePath = original_filename_;
         std::string FileID                   = FilePath.filename().generic_string();
         ReplaceOne(FileID, ".", "_");
-        mFileID = FileID;
+        file_id_ = FileID;
     }
     // 看看这个类有没有Reflected属性
-    for (auto& Attr: Decl->attrs()) {
+    for (auto& Attr: decl->attrs()) {
         if (Attr->getKind() == clang::attr::Annotate) {
             if (const auto* AnnotateAttr = static_cast<clang::AnnotateAttr*>(Attr);
                 AnnotateAttr->getAnnotation().starts_with("Reflected")) {
-                mRecordEntities.emplace_back(Decl, mConfig, mFileID);
+                record_entities_.emplace_back(decl, config_, file_id_);
                 break;
             }
         }
     }
-    if (mOriginalFilename.ends_with(".generated.h")) {
-        llvm::outs() << "Skip generated file: " << mOriginalFilename << "\n";
+    if (original_filename_.ends_with(".generated.h")) {
+        llvm::outs() << "Skip generated file: " << original_filename_ << "\n";
         exit(0);
     }
-    if (!mOriginalFilename.empty() && !mGeneratedFilename.empty()) return;
-    mGeneratedFilename = mOriginalFilename;
-    mGeneratedFilename.replace(mGeneratedFilename.find(".h"), 2, ".generated.h");
+    if (!original_filename_.empty() && !generated_filename_.empty()) return;
+    generated_filename_ = original_filename_;
+    generated_filename_.replace(generated_filename_.find(".h"), 2, ".generated.h");
 }
 
 void ReflectedEntityFinder::onEndOfTranslationUnit() {
     MatchCallback::onEndOfTranslationUnit();
-    if (mEnumEntites.empty() && mRecordEntities.empty()) return;
+    if (enum_entites_.empty() && record_entities_.empty()) return;
     std::error_code ec;
-    std::filesystem::path Path = mGeneratedFilename;
-    Path                       = std::filesystem::path(mOutputPath) / Path.filename();
-    mGeneratedFilename         = Path.string();
-    llvm::raw_fd_ostream os(mGeneratedFilename, ec);
+    std::filesystem::path Path = generated_filename_;
+    Path                       = std::filesystem::path(output_path_) / Path.filename();
+    generated_filename_        = Path.string();
+    llvm::raw_fd_ostream os(generated_filename_, ec);
     assert(!ec && "error opening file");
-    std::cout << "Generated file: " << mGeneratedFilename << "\n";
+    std::cout << "Generated file: " << generated_filename_ << "\n";
     os << "// This file generated by generator, do not edit it.\n";
     std::vector<std::string> MacroStrs;
-    for (auto& Ref: mRecordEntities) {
-        MacroStrs.push_back(Ref.Generate(mContext, os));
+    for (auto& Ref: record_entities_) {
+        MacroStrs.push_back(Ref.Generate(context_, os));
     }
-    for (auto& Ref: mEnumEntites) {
-        MacroStrs.push_back(Ref.Generate(mContext, os));
+    for (auto& Ref: enum_entites_) {
+        MacroStrs.push_back(Ref.Generate(context_, os));
     }
-    os << "#undef GENERATED_SOURCE_" << mFileID << "\n";
-    os << "#define GENERATED_SOURCE_" << mFileID << " \\\n";
+    os << "#undef GENERATED_SOURCE_" << file_id_ << "\n";
+    os << "#define GENERATED_SOURCE_" << file_id_ << " \\\n";
     for (const auto& MacroStr: MacroStrs) {
         os << MacroStr << " \\\n";
     }
     os << ";\n";
     os << "#undef CURRENT_FILE_ID\n";
-    os << "#define CURRENT_FILE_ID " << mFileID << "\n";
+    os << "#define CURRENT_FILE_ID " << file_id_ << "\n";
     os.close();
 }
 
 std::string ClassEntity::GetBaseClassName() const {
-    if (!mRecord->bases().empty()) {
-        const clang::CXXBaseSpecifier* BaseSpecifier = mRecord->bases_begin();
+    if (!record_->bases().empty()) {
+        const clang::CXXBaseSpecifier* BaseSpecifier = record_->bases_begin();
         const CXXRecordDecl* BaseRecordDecl = BaseSpecifier->getType()->getAsCXXRecordDecl();
         const std::string base_class_name   = BaseRecordDecl->getQualifiedNameAsString();
         return base_class_name;
@@ -157,51 +164,109 @@ std::string ClassEntity::GetBaseClassName() const {
 }
 
 std::string ClassEntity::GetClassQualifiedName() const {
-    if (mRecord) {
-        return mRecord->getQualifiedNameAsString();
+    if (record_) {
+        return record_->getQualifiedNameAsString();
     }
     return "";
 }
 std::string ClassEntity::GetClassName() const {
-    if (mRecord) {
-        return mRecord->getNameAsString();
+    if (record_) {
+        return record_->getNameAsString();
     }
     return "";
 }
 
 void ClassEntity::GenerateField(
-    const clang::FieldDecl* Decl, const std::map<std::string, std::string>& AttrMap,
+    const clang::FieldDecl* Decl, const std::map<std::string, std::string>& attr_map,
     llvm::raw_fd_ostream& os
 ) const {
-    if (!AttrMap.contains("Reflected") || AttrMap.at("Reflected") != "True") return;
+    if (!attr_map.contains("Reflected") || attr_map.at("Reflected") != "True") return;
     std::string FieldDeclName       = Decl->getNameAsString();
     std::string FieldName           = FieldDeclName;
     auto QualifiedClassName         = GetClassQualifiedName();
     const std::string FieldTypeName = Decl->getType().getAsString();
-    if (AttrMap.contains("Name")) {
-        FieldName = AttrMap.at("Name");
+    if (attr_map.contains("Name")) {
+        FieldName = attr_map.at("Name");
     }
-    std::string RegisterStr = std::vformat(
-        R"(.property("{}", &{}::{}))",
-        std::make_format_args(FieldName, QualifiedClassName, FieldDeclName)
-    );
-    for (const auto& [Key, Value]: AttrMap) {
-        if (Key == "Name") continue;
-        if (Key == "Reflected") continue;
-        RegisterStr +=
-            std::vformat(R"((rttr::metadata("{}", "{}")))", std::make_format_args(Key, Value));
+    std::string getter_name;
+    if (attr_map.contains("Getter")) {
+        getter_name = attr_map.at("Getter");
     }
-    if (mConig.isMember("RefWrapperType")) {
-        for (auto& Value: mConig["RefWrapperType"]) {
+    std::string setter_name;
+    if (attr_map.contains("Setter")) {
+        setter_name = attr_map.at("Setter");
+    }
+    std::string register_str;
+    if (getter_name.empty() && setter_name.empty()) {
+        register_str = std::vformat(
+            R"(.property("{}", &{}::{}))",
+            std::make_format_args(FieldName, QualifiedClassName, FieldDeclName)
+        );
+    } else if (!getter_name.empty() && !setter_name.empty()) {
+        register_str = std::vformat(
+            R"(.property("{}", &{}::{}, &{}::{}, &{}::{}))",
+            std::make_format_args(
+                FieldName,
+                QualifiedClassName,
+                FieldDeclName,
+                QualifiedClassName,
+                getter_name,
+                QualifiedClassName,
+                setter_name
+            )
+        );
+    } else {
+        register_str = std::vformat(
+            R"(.property("{}", &{}::{}))",
+            std::make_format_args(FieldName, QualifiedClassName, FieldDeclName)
+        );
+        std::cout << "getter and settr for property " << QualifiedClassName << "::" << FieldDeclName
+                  << " must exist at the same time." << std::endl;
+    }
+    for (const auto& [key, value]: attr_map) {
+        if (key == "Name") continue;
+        if (key == "Reflected") continue;
+        if (key == "Getter") continue;
+        if (key == "Setter") continue;
+        register_str +=
+            std::vformat(R"((rttr::metadata("{}", "{}")))", std::make_format_args(key, value));
+    }
+    if (config_.isMember("RefWrapperType")) {
+        for (auto& Value: config_["RefWrapperType"]) {
             auto WarpperStr = Value.asString();
             if (FieldTypeName.starts_with(WarpperStr)) {
-                RegisterStr += std::string("(rttr::policy::prop::as_reference_wrapper)");
+                register_str += std::string("(rttr::policy::prop::as_reference_wrapper)");
                 break;
             }
         }
     }
-    RegisterStr += " \\\n";
-    os << RegisterStr;
+    register_str += " \\\n";
+    os << register_str;
+}
+
+void ClassEntity::GenerateFunction(
+    const clang::FunctionDecl* decl, const std::map<std::string, std::string>& attr_map,
+    llvm::raw_fd_ostream& os
+) const {
+    if (!attr_map.contains("Reflected") || attr_map.at("Reflected") != "True") return;
+    std::string field_decl_name = decl->getNameAsString();
+    std::string field_name      = field_decl_name;
+    auto qualified_class_name   = GetClassQualifiedName();
+    if (attr_map.contains("Name")) {
+        field_name = attr_map.at("Name");
+    }
+    std::string register_str = std::vformat(
+        R"(.method("{}", &{}::{}))",
+        std::make_format_args(field_name, qualified_class_name, field_decl_name)
+    );
+    for (const auto& [key, value]: attr_map) {
+        if (key == "Name") continue;
+        if (key == "Reflected") continue;
+        register_str +=
+            std::vformat(R"((rttr::metadata("{}", "{}")))", std::make_format_args(key, value));
+    }
+    register_str += " \\\n";
+    os << register_str;
 }
 
 std::string EnumEntity::Generate(const clang::ASTContext* Context, llvm::raw_fd_ostream& OS) const {
@@ -210,7 +275,6 @@ std::string EnumEntity::Generate(const clang::ASTContext* Context, llvm::raw_fd_
     auto UnderlineEnumName = GetEnumUnderlineName();
     auto QualifiedEnumName = GetQualifiedEnumName();
     auto EnumName          = mEnumDecl->getNameAsString();
-    std::cout << EnumName;
     for (const auto* ConstantDecl: mConstants) {
         auto ConstantDeclName = ConstantDecl->getNameAsString();
         CodeBody += std::vformat(
@@ -253,7 +317,7 @@ std::string
 ClassEntity::Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os) const {
     auto ClassName = GetClassName();
     auto CodeMacroStr =
-        std::vformat(R"(GENERATED_CODE_{}{})", std::make_format_args(mCurrentFileID, ClassName));
+        std::vformat(R"(GENERATED_CODE_{}{})", std::make_format_args(current_file_id_, ClassName));
     const std::string CodeDefineMacroStr =
         std::vformat(R"(#define {} \)", std::make_format_args(CodeMacroStr));
     auto ClassQualifiedName = GetClassQualifiedName();
@@ -265,18 +329,35 @@ ClassEntity::Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os
         std::make_format_args(ClassQualifiedName, ClassQualifiedName)
     );
     os << RegisterClassCode << "\n";
-    for (const auto& Field: mFields) {
+    for (const auto& field: fields_) {
         // 寻找annoation attr
         std::string AttrStr;
-        for (const auto& attr: Field->attrs()) {
+        for (const auto& attr: field->attrs()) {
             if (attr->getKind() == clang::attr::Annotate) {
                 const auto* AnnotateAttr = static_cast<clang::AnnotateAttr*>(attr);
                 AttrStr                  = AnnotateAttr->getAnnotation();
                 break;
             }
         }
-        auto AttrMap = GetFieldAttributes(AttrStr);
-        GenerateField(Field, AttrMap, os);
+        if (!AttrStr.empty()) {
+            auto AttrMap = GetFieldAttributes(AttrStr);
+            GenerateField(field, AttrMap, os);
+        }
+    }
+    for (const auto& function: functions_) {
+        // 寻找annoation attr
+        std::string AttrStr;
+        for (const auto& attr: function->attrs()) {
+            if (attr->getKind() == clang::attr::Annotate) {
+                const auto* AnnotateAttr = static_cast<clang::AnnotateAttr*>(attr);
+                AttrStr                  = AnnotateAttr->getAnnotation();
+                break;
+            }
+        }
+        if (!AttrStr.empty()) {
+            auto AttrMap = GetFieldAttributes(AttrStr);
+            GenerateFunction(function, AttrMap, os);
+        }
     }
     os << ";\n";
     std::string ThisClassName         = GetClassQualifiedName();
@@ -294,7 +375,7 @@ public: \
     {} \
     RTTR_REGISTRATION_FRIEND \
 private:
-)",std::make_format_args(mCurrentFileID, ClassName, mCurrentFileID, ClassName, ThisClassName, ParentClassNameTypedef , RTTREnable));
+)",std::make_format_args(current_file_id_, ClassName, current_file_id_, ClassName, ThisClassName, ParentClassNameTypedef , RTTREnable));
     // clang-format on
     os << RegisterGeneratedBody << "\n";
     return CodeMacroStr;
