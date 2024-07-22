@@ -28,7 +28,7 @@ public:
 
     static Path FromStdPath(const std::filesystem::path& InPath) {
         Path NewPath;
-        NewPath.mPath = InPath;
+        NewPath.path_ = InPath;
         return NewPath;
     }
 
@@ -50,9 +50,12 @@ public:
      * 将Path转换为绝对路径字符串
      * @return
      */
-    String ToString() const;
+    String ToAbsoluteString() const;
 
-    AnsiString ToAnsiString() const;
+    String ToRelativeString() const;
+
+
+    const char* ToRelativeCStr();
 
     /**
      * 以此Path为路径创建一个目录
@@ -95,31 +98,33 @@ public:
 
     Path GetParentPath() const;
 
-    bool operator==(const Path& Other) const { return mPath == Other.mPath; }
+    bool operator==(const Path& Other) const { return path_ == Other.path_; }
 
     Path operator/(const Path& Other) const {
         Path NewPath;
-        NewPath.mPath = mPath / Other.mPath;
+        NewPath.path_ = path_ / Other.path_;
         return NewPath;
     }
 
-    std::string ToAbsoluteString() const;
+    std::string ToAbsoluteAnsiString() const;
 
-    std::string ToRelativeString() const;
+    std::string ToRelativeAnsiString() const;
 
 private:
     std::filesystem::path GetStdFullPath() const;
 
     // 项目工作路径
-    static inline Path* sProjectWorkPath = nullptr;
+    static inline Path* s_project_work_path_ = nullptr;
 
-    std::filesystem::path mPath;
+    std::filesystem::path path_;
+
+    AnsiString ansi_string_cache_;
 };
 
 // Path的哈希
 template<>
 struct std::hash<Path> {
     size_t operator()(const Path& InPath) const noexcept {
-        return std::hash<String>()(InPath.ToString());
+        return std::hash<String>()(InPath.ToAbsoluteString());
     }
 };

@@ -73,6 +73,7 @@ String PropertyDrawer::DrawProperty(const char* name, const String& value)
 void PropertyDrawer::DrawProperty(const Property prop, const rttr::instance& obj)
 {
     if (ReflUtils::CheckAttribute(prop, "Hidden")) return;
+    // TODO: prop类型为IDetailGUIDrawer的处理
     VALUE_SETTER(Vector3)
     VALUE_SETTER(Rotator)
     VALUE_SETTER(float)

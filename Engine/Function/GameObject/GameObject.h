@@ -34,6 +34,12 @@ public:
     T* AddComponent()
     {
         T* component           = New<T>();
+        if (!component->can_instanced)
+        {
+            LOG_ERROR_CATEGORY(Object.Component, L"组件{}不能被AddComponent实例化", component->GetName());
+            component->Destroy();
+            return nullptr;
+        }
         component->game_object_ = this;
         component->BeginPlay();
         component->transform_ = &transform_;

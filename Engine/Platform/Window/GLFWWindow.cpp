@@ -241,7 +241,7 @@ void GlfwWindow::SetupImGuiFonts()
 {
     ImGuiIO&                 IO                 = ImGui::GetIO();
     Path                     DefaultFontPath    = L"Fonts/Maple_UI.ttf";
-    AnsiString               DefaultFontPathStr = DefaultFontPath.ToAnsiString();
+    AnsiString               DefaultFontPathStr = DefaultFontPath.ToAbsoluteAnsiString();
     ImVector<ImWchar>        Ranges;
     ImFontGlyphRangesBuilder Builder;
     Builder.AddRanges(IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());

@@ -8,6 +8,7 @@
 #include "Mesh.h"
 
 #include "CoreGlobal.h"
+#include "ImGui/ImGuiHelper.h"
 #include "Render/RenderContext.h"
 
 #include <Mesh.h>
@@ -46,6 +47,11 @@ void Mesh::OnDisable()
 TArray<Resource::SubMesh>& Mesh::GetSubMeshes() const
 {
     return mesh_->GetSubMeshes();
+}
+
+void Mesh::OnInspectorGUI()
+{
+    ImGuiHelper::Text(U8("网格体路径: %s"), mesh_->GetPath().ToRelativeCStr());
 }
 
 FUNCTION_COMPONENT_NAMESPACE_END

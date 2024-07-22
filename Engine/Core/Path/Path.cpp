@@ -18,7 +18,7 @@ Path::Path(StringView PathStr)
         // 去掉最后的'/'或者'\\'
         PathStr.remove_suffix(1);
     }
-    mPath = PathStr;
+    path_ = PathStr;
 }
 
 #undef CreateFile
@@ -31,21 +31,21 @@ void Path::SetProjectWorkPath(StringView PathStr)
         // 去掉最后的'/'或者'\\'
         PathStr.remove_suffix(1);
     }
-    sProjectWorkPath        = new Path{};
-    sProjectWorkPath->mPath = PathStr;
-    if (!sProjectWorkPath->IsExist())
+    s_project_work_path_        = new Path{};
+    s_project_work_path_->path_ = PathStr;
+    if (!s_project_work_path_->IsExist())
     {
-        sProjectWorkPath->CreateDirectory();
+        s_project_work_path_->CreateDirectory();
         GetProjectMetaFilePath()->CreateFile();
     }
     else
     {
-        if (!sProjectWorkPath->IsFolderEmpty())
+        if (!s_project_work_path_->IsFolderEmpty())
         {
             // 查找存不存在工程元文件
             if (!GetProjectMetaFilePath()->IsExist())
             {
-                throw PathInvalidException(*sProjectWorkPath, L"目录不为空");
+                throw PathInvalidException(*s_project_work_path_, L"目录不为空");
             }
         }
         else
@@ -60,16 +60,6 @@ void Path::SetProjectWorkPath(StringView PathStr)
 bool Path::IsExist() const
 {
     return exists(GetStdFullPath());
-}
-
-String Path::ToString() const
-{
-    return GetStdFullPath().generic_wstring();
-}
-
-AnsiString Path::ToAnsiString() const
-{
-    return StringUtils::ToAnsiString(ToString());
 }
 
 void Path::CreateDirectory() const
@@ -105,21 +95,21 @@ bool Path::IsFolder(const bool bMustExist) const
 
 TOptional<Path> Path::GetWorkPath() noexcept
 {
-    if (sProjectWorkPath == nullptr) return {};
-    return *sProjectWorkPath;
+    if (s_project_work_path_ == nullptr) return {};
+    return *s_project_work_path_;
 }
 
 TOptional<Path> Path::GetProjectMetaFilePath() noexcept
 {
-    if (sProjectWorkPath == nullptr) return std::nullopt;
-    const auto ProjectName = sProjectWorkPath->mPath.stem().generic_wstring();
+    if (s_project_work_path_ == nullptr) return std::nullopt;
+    const auto ProjectName = s_project_work_path_->path_.stem().generic_wstring();
     return Path(ProjectName + L".project");
 }
 
 void Path::CreateFile() const
 {
     // 创建文件
-    const std::ofstream file(mPath);
+    const std::ofstream file(path_);
     if (!file.is_open())
     {
         throw PathInvalidException(*this, L"创建文件失败");
@@ -131,16 +121,35 @@ Path Path::GetParentPath() const
     return FromStdPath(GetStdFullPath().parent_path());
 }
 
-std::string Path::ToAbsoluteString() const
+String Path::ToAbsoluteString() const
+{
+    return GetStdFullPath().generic_wstring();
+}
+
+String Path::ToRelativeString() const
+{
+    return path_.generic_wstring();
+}
+
+const char* Path::ToRelativeCStr()
+{
+    if (ansi_string_cache_.empty())
+    {
+        ansi_string_cache_ = ToRelativeAnsiString();
+    }
+    return ansi_string_cache_.c_str();
+}
+
+AnsiString Path::ToAbsoluteAnsiString() const
 {
     return GetStdFullPath().generic_string();
 }
 
-std::string Path::ToRelativeString() const
+AnsiString Path::ToRelativeAnsiString() const
 {
-    return mPath.generic_string();
+    return path_.generic_string();
 }
 
 std::filesystem::path Path::GetStdFullPath() const{
-    return sProjectWorkPath->mPath / mPath;
+    return s_project_work_path_->path_ / path_;
 }

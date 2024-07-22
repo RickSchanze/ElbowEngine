@@ -19,7 +19,7 @@ RTTR_REGISTRATION {
 
 Object::~Object() {
     ObjectManager::Get()->RemoveObject(id_);
-    LOG_INFO_CATEGORY(ObjectSystem, L"删除对象: {}, ID: {}", name_, id_);
+    LOG_INFO_CATEGORY(Object, L"删除对象: {}, ID: {}", name_, id_);
 }
 
 String Object::ToString() const {

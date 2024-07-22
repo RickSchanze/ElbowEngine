@@ -9,6 +9,8 @@
 
 #include "CoreDef.h"
 
+#include <iostream>
+
 enum EObjectFlag
 {
     EOF_IsGameObject,   // 在游戏世界运行
@@ -73,6 +75,35 @@ public:
     EObjectFlag GetObjectFlag() const { return flag_; }
 
     const AnsiString& GetCachedAnsiString() const { return cached_ansi_string_; }
+
+    template <typename T>
+    bool IsImplemented()
+    {
+        Type other_type = rttr::type::get<T>();
+        if (other_type)
+        {
+            return IsImplemented(other_type);
+        }
+        return rttr::rttr_cast<T*>(this) != nullptr;
+    }
+
+    bool IsImplemented(const Type& other_type) const
+    {
+        rttr::type this_type = GetType();
+        bool s = this_type.is_derived_from(other_type);
+        return s;
+    }
+
+    template <typename T>
+    T* As()
+    {
+        T* t =  rttr::rttr_cast<T*>(this);
+        if (t != nullptr)
+        {
+            return t;
+        }
+        return dynamic_cast<T*>(this);
+    }
 
 protected:
     String  name_;                 // 对象名字

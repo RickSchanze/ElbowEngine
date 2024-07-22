@@ -65,7 +65,7 @@ public:
     [[nodiscard]] std::map<std::string, std::string> GetFieldAttributes(const std::string& AttrStr
     ) const;
 
-    [[nodiscard]] std::string GetBaseClassName() const;
+    [[nodiscard]] std::vector<std::string> GetBaseClassNames() const;
 
     [[nodiscard]] std::string GetClassQualifiedName() const;
 

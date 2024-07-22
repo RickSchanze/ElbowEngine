@@ -23,7 +23,6 @@ public:
     void OnMeshSet() override;
 
     void SetMesh(const Path& mesh_path);
-
 };
 
 FUNCTION_COMPONENT_NAMESPACE_END

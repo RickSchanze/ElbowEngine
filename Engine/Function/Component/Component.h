@@ -13,13 +13,15 @@
 
 struct Transform;
 
-namespace Function {
+namespace Function
+{
 class GameObject;
 }
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL Component : public Object {
+class REFL Component : public Object
+{
     GENERATED_BODY(Component)
 public:
     friend class GameObject;
@@ -34,6 +36,8 @@ public:
     virtual void OnEnable() {}
     virtual void OnDisable() {}
 
+    bool CanInstanced() const { return can_instanced; }
+
     void SetEnabled(bool enable);
 
     Transform& GetTransform() const;
@@ -41,9 +45,12 @@ public:
     void Destroy();
 
 protected:
-    Transform* transform_ = nullptr;
+    Transform*  transform_   = nullptr;
     GameObject* game_object_ = nullptr;
-    bool enabled_ = true;
+    bool        enabled_     = true;
+
+    // 能否被AddComponent函数实例化
+    bool can_instanced = true;
 };
 
 FUNCTION_NAMESPACE_END

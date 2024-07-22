@@ -230,11 +230,20 @@ Type GetType()
 #define OUT
 
 // 这个宏表示这个方法必须由子类实现
-#define INTERFACE_METHOD = 0;
+#define INTERFACE_METHOD {}
 
 #define _CRT_SECURE_NO_WARNINGS
 
 // 项目Debug宏
 #define ELBOW_DEBUG _DEBUG || RELWITHDEBINFO
 
-#define U8(Text) (const char*)u8## Text
+#define U8(Text) (const char*)u8##Text
+
+#define INTERFACE_IMPL(type)                                 \
+RTTR_REGISTRATION                                           \
+{                                                           \
+    rttr::registration::class_<type>(#type).constructor<>(); \
+}
+
+// IMGUI开关
+#define USE_IMGUI 1

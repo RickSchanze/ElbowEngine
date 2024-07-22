@@ -21,12 +21,12 @@ void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* In
 {
     if (InResource == nullptr || !InResource->IsValid())
     {
-        LOG_WARNING_CATEGORY(Resource, L"注册资产失败, {}对应的资产无效.", InResourcePath.ToString());
+        LOG_WARNING_CATEGORY(Resource, L"注册资产失败, {}对应的资产无效.", InResourcePath.ToAbsoluteString());
         return;
     }
     if (resource_map_.contains(InResourcePath))
     {
-        LOG_WARNING_CATEGORY(Resource, L"{}对应资产已存在,执行替换.", InResourcePath.ToString());
+        LOG_WARNING_CATEGORY(Resource, L"{}对应资产已存在,执行替换.", InResourcePath.ToAbsoluteString());
     }
     resource_map_[InResourcePath] = InResource;
 }

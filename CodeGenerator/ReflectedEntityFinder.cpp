@@ -153,14 +153,16 @@ void ReflectedEntityFinder::onEndOfTranslationUnit() {
     os.close();
 }
 
-std::string ClassEntity::GetBaseClassName() const {
-    if (!record_->bases().empty()) {
-        const clang::CXXBaseSpecifier* BaseSpecifier = record_->bases_begin();
-        const CXXRecordDecl* BaseRecordDecl = BaseSpecifier->getType()->getAsCXXRecordDecl();
-        const std::string base_class_name   = BaseRecordDecl->getQualifiedNameAsString();
-        return base_class_name;
+std::vector<std::string> ClassEntity::GetBaseClassNames() const {
+    std::vector<std::string> base_class_name;
+    const clang::CXXBaseSpecifier* base_class = record_->bases_begin();
+    while (base_class != record_->bases_end()) {
+        const CXXRecordDecl* BaseRecordDecl = base_class->getType()->getAsCXXRecordDecl();
+        const std::string this_base_class_name   = BaseRecordDecl->getQualifiedNameAsString();
+        base_class_name.push_back(this_base_class_name);
+        base_class++;
     }
-    return "";
+    return base_class_name;
 }
 
 std::string ClassEntity::GetClassQualifiedName() const {
@@ -359,10 +361,17 @@ ClassEntity::Generate(const clang::ASTContext* context, llvm::raw_fd_ostream& os
     }
     os << ";\n";
     std::string ThisClassName         = GetClassQualifiedName();
-    const std::string ParentClassName = GetBaseClassName();
+    const auto parent_class_names = GetBaseClassNames();
     std::string ParentClassNameTypedef =
-        ParentClassName.empty() ? "" : "typedef "s + ParentClassName + " Super;";
-    std::string RTTREnable = ParentClassName.empty() ? "" : "RTTR_ENABLE("s + ParentClassName + ")";
+        parent_class_names.empty() ? "" : "typedef "s + parent_class_names[0] + " Super;";
+    std::string rttr_enable_string;
+    for (int i = 0; i < static_cast<int>(parent_class_names.size()) - 1; ++i) {
+        rttr_enable_string += parent_class_names[i] + ", ";
+    }
+    if (!parent_class_names.empty()) {
+        rttr_enable_string += parent_class_names[parent_class_names.size()  - 1];
+    }
+    std::string RTTREnable = parent_class_names.empty() ? "" : "RTTR_ENABLE("s + rttr_enable_string + ")";
     // clang-format off
     const std::string RegisterGeneratedBody = std::vformat(R"(
 #undef GENERATED_BODY_{}_{}

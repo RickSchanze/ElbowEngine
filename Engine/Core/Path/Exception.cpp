@@ -9,7 +9,7 @@
 String PathInvalidException::What() const {
     return std::format(
         L"PathInvalidException: \"{}\": {}",
-        mPath.ToString(),
+        mPath.ToAbsoluteString(),
         message_.empty() ? L"" : L" " + message_
     );
 }
@@ -22,7 +22,7 @@ String ProjectPathNotValidException::What() const {
 String FileCreateFailedException::What() const {
     return std::format(
         L"FileCreateFailedException: 创建文件 \"{}\" 失败.{}",
-        mPath.ToString(),
+        mPath.ToAbsoluteString(),
         message_.empty() ? L"" : L" " + message_
     );
 }

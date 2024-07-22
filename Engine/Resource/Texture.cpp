@@ -53,15 +53,15 @@ void Texture::Load()
 {
     if (!path_.IsExist())
     {
-        LOG_ERROR_CATEGORY(Resource, L"{}不存在", path_.ToString());
+        LOG_ERROR_CATEGORY(Resource, L"{}不存在", path_.ToAbsoluteString());
         return;
     }
-    const AnsiString PathStr = path_.ToAnsiString();
+    const AnsiString PathStr = path_.ToAbsoluteAnsiString();
 
     data_ = stbi_load(PathStr.c_str(), &width_, &height_, &channels_, STBI_rgb_alpha);
     if (!data_)
     {
-        LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", path_.ToString());
+        LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", path_.ToAbsoluteString());
         return;
     }
 
@@ -71,7 +71,7 @@ void Texture::Load()
     texture_info.width      = width_;
     texture_info.image_type = vk::ImageType::e2D;
 #ifdef ELBOW_DEBUG
-    texture_info.debug_name = path_.ToAnsiString();
+    texture_info.debug_name = path_.ToAbsoluteAnsiString();
 #endif
     rhi_texture_ = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
 
@@ -111,7 +111,7 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
         }
         else
         {
-            throw Exception(std::format(L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToString()));
+            throw Exception(std::format(L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToAbsoluteString()));
         }
     }
     else

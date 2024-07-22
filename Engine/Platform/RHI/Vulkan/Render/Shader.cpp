@@ -41,11 +41,12 @@ Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_pa
     shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
-    FileInputStream shader_file_stream{shader_path.ToString(), std::ios::ate | std::ios::binary};
+    FileInputStream shader_file_stream{shader_path.ToAbsoluteString(), std::ios::ate | std::ios::binary};
     if (!shader_file_stream.is_open())
     {
         LOG_ERROR_CATEGORY(
-            Vulkan.Shader, L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}", shader_path.ToString(), errno, StringUtils::ErrorCodeToString(errno)
+            Vulkan.Shader, L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}",
+            shader_path.ToAbsoluteString(), errno, StringUtils::ErrorCodeToString(errno)
         );
         return;
     }

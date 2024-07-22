@@ -8,6 +8,7 @@
 #pragma once
 #include "Component/Component.h"
 
+#include "Component/Interface/IDetailGUIDrawer.h"
 #include "Mesh.generated.h"
 
 /**
@@ -22,9 +23,10 @@ namespace Resource
 {
 class Mesh;
 }
+
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL Mesh : public Component
+class REFL Mesh : public Component, public IDetailGUIDrawer
 {
     GENERATED_BODY(Mesh)
 public:
@@ -37,8 +39,10 @@ public:
     void OnEnable() override;
     void OnDisable() override;
 
-    Resource::Mesh* GetMeshResource() const { return mesh_; }
+    Resource::Mesh*            GetMeshResource() const { return mesh_; }
     TArray<Resource::SubMesh>& GetSubMeshes() const;
+
+    void OnInspectorGUI() override;
 
 protected:
     Resource::Mesh* mesh_ = nullptr;

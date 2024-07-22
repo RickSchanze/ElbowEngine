@@ -7,6 +7,7 @@
 
 #include "StaticMesh.h"
 
+#include "ImGui/ImGuiHelper.h"
 #include "Render/RenderContext.h"
 
 #include <Mesh.h>
@@ -40,5 +41,6 @@ void StaticMesh::SetMesh(const Path& mesh_path)
     auto* new_mesh = Resource::Mesh::Create(mesh_path);
     Super::SetMesh(new_mesh);
 }
+
 
 FUNCTION_COMPONENT_NAMESPACE_END

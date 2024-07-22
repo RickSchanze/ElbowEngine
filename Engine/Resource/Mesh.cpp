@@ -48,10 +48,10 @@ void Mesh::Load()
 {
     Assimp::Importer Importer;
     const aiScene*   Scene =
-        Importer.ReadFile(path_.ToAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        Importer.ReadFile(path_.ToAbsoluteAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     if (Scene == nullptr || Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode == nullptr)
     {
-        LOG_ERROR_CATEGORY(Resource, L"Model::Load(): 加载模型{}失败", path_.ToString());
+        LOG_ERROR_CATEGORY(Resource, L"Model::Load(): 加载模型{}失败", path_.ToAbsoluteString());
         return;
     }
     ProcessNode(Scene->mRootNode, Scene);

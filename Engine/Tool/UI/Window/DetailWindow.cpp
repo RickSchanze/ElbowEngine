@@ -17,6 +17,8 @@
 #include "UI/Drawer/PropertyDrawer.h"
 
 #include "Component/Component.h"
+#include "Component/Interface/IDetailGUIDrawer.h"
+#include "Component/Mesh/Mesh.h"
 #include "DetailWindow.generated.h"
 
 GENERATED_SOURCE()
@@ -58,6 +60,15 @@ void DetailWindow::DrawSelectedObject(Function::GameObject* game_object) {
 
 void DetailWindow::DrawComponent(Function::Comp::Component* comp) {
     if (comp == nullptr || !comp->IsValid()) return;
+    if (comp->IsImplemented<Function::IDetailGUIDrawer>())
+    {
+        auto* drawer = comp->As<Function::IDetailGUIDrawer>();
+        if (drawer != nullptr)
+        {
+            drawer->OnInspectorGUI();
+            return;
+        }
+    }
     if (ImGui::CollapsingHeader(comp->GetCachedAnsiString().c_str())) {
         Type comp_type = comp->get_type();
         for (auto prop : comp_type.get_properties()) {
