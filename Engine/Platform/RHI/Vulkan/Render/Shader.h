@@ -31,8 +31,9 @@ enum class EShaderStage : uint8_t
 };
 enum class EUniformDescriptorType : uint8_t
 {
-    Object,
-    Sampler2D
+    UniformBuffer,
+    Sampler2D,
+    DynamicUniformBuffer,
 };
 
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType type);

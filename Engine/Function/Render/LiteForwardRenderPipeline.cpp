@@ -23,6 +23,7 @@ FUNCTION_NAMESPACE_BEGIN
 
 void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
+    Super::Draw(draw_param);
     forward_pipeline_->BeginCommandBuffer();
     forward_pipeline_->BeginRenderPass({1, 0, 0, 1});
 
@@ -31,16 +32,20 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     forward_pipeline_->UpdateViewport();
     forward_pipeline_->UpdateScissor();
 
-    Comp::Camera* main  = Comp::Camera::Main;
-    auto     model = glm::mat4(1.0f);
+    Comp::Camera* main = Comp::Camera::Main;
 
-    forward_pipeline_->GetShaderProgram()->SetMVP(model, main->GetViewMatrix(), main->GetProjectionMatrix());
-    for (auto mesh: meshes_to_draw)
+    forward_pipeline_->GetShaderProgram()->SetVP(main->GetViewMatrix(), main->GetProjectionMatrix());
+    forward_pipeline_->GetShaderProgram()->SetM(model_instances_.models, model_instances_.size);
+    for (int i = 0; i < meshes_to_draw.size(); i++)
     {
+        auto&  mesh            = meshes_to_draw[i];
+        TArray dynamic_offsets = {i * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
         for (auto& to_draw: mesh->GetSubMeshes())
         {
             forward_pipeline_->BindMesh(*to_draw.GetRHIResource());
-            forward_pipeline_->BindDescriptiorSets({forward_pipeline_->GetCurrentFrameDescriptorSet()});
+            forward_pipeline_->BindDescriptiorSets(
+                {forward_pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0, dynamic_offsets
+            );
             forward_pipeline_->DrawIndexed(to_draw.GetIndices().size());
         }
     }
@@ -62,10 +67,11 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 void LiteForwardRenderPipeline::Build()
 {
     PipelineInfo pipeline_info;
-    pipeline_info.shader_stage.frag = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment, "LiteForwardFragShader");
-    pipeline_info.shader_stage.vert = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex, "LiteForwardVertShader");
-    pipeline_info.render_pass       = new RenderPass("LiteForwardRenderPass");
-    pipeline_info.debug_name        = "LiteForwardGraphicsPipeline";
+    auto         frag            = Shader::Create(L"Shaders/frag.spv", EShaderStage::Fragment, "LiteForwardFragShader");
+    auto         vert            = Shader::Create(L"Shaders/vert.spv", EShaderStage::Vertex, "LiteForwardVertShader");
+    pipeline_info.shader_program = ShaderProgram::Create(vert, frag);
+    pipeline_info.render_pass    = new RenderPass("LiteForwardRenderPass");
+    pipeline_info.name_          = "LiteForwardGraphicsPipeline";
 
     forward_pipeline_ = new GraphicsPipeline(pipeline_info);
     AddImGuiGraphicsPipeline();

@@ -172,6 +172,7 @@ struct EngineStatistics
     struct
     {
         int32_t draw_calls = 0;
+        uint32_t max_dynamic_model_uniform_buffer_count = 20; // 最大动态模型矩阵uniform buffer数量 @see ShaderProgram.cpp
     } graphics;
 
     float    time_delta                  = 0;

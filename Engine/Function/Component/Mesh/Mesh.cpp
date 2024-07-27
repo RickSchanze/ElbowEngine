@@ -51,7 +51,10 @@ TArray<Resource::SubMesh>& Mesh::GetSubMeshes() const
 
 void Mesh::OnInspectorGUI()
 {
-    ImGuiHelper::Text(U8("网格体路径: %s"), mesh_->GetPath().ToRelativeCStr());
+    if (ImGuiHelper::CollapsingHeader(GetCachedAnsiString().c_str()))
+    {
+        ImGuiHelper::Text(U8("网格体路径: %s"), mesh_->GetPath().ToRelativeCStr());
+    }
 }
 
 FUNCTION_COMPONENT_NAMESPACE_END

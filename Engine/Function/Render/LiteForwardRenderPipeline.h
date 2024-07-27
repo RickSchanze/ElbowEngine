@@ -19,6 +19,8 @@ FUNCTION_NAMESPACE_BEGIN
 
 class LiteForwardRenderPipeline : public RenderPipeline {
 public:
+    typedef RenderPipeline Super;
+
     void Draw(const RenderContextDrawParam& draw_param) override;
     void Build() override;
 

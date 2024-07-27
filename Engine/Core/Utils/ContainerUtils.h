@@ -29,6 +29,9 @@ public:
 
     template<typename ContainerT>
     static ContainerT Concat(const ContainerT& ContainerA, const ContainerT& ContainerB);
+
+    template <typename ContainerT>
+    static void AddUnique(ContainerT& container, const typename ContainerT::value_type& value);
 };
 
 template<typename ContainerT>
@@ -100,4 +103,12 @@ ContainerT ContainerUtils::Concat(const ContainerT& ContainerA, const ContainerT
     result.insert(result.end(), ContainerB.begin(), ContainerB.end());
 
     return result;
+}
+
+template<typename ContainerT>
+void ContainerUtils::AddUnique(ContainerT& container, const typename ContainerT::value_type& value){
+    if (std::count(container.begin(), container.end(), value) == 0)
+    {
+        container.push_back(value);
+    }
 }

@@ -23,6 +23,8 @@ add_library(${PROJECT_NAME}
         Render/RenderPipeline.h
         Render/RenderPipeline.cpp
         Render/Event.h
+        Render/Material.h
+        Render/Material.cpp
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

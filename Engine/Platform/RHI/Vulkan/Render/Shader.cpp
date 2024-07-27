@@ -21,8 +21,9 @@ vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType type)
 {
     switch (type)
     {
-    case EUniformDescriptorType::Object: return vk::DescriptorType::eUniformBuffer;
+    case EUniformDescriptorType::UniformBuffer: return vk::DescriptorType::eUniformBuffer;
     case EUniformDescriptorType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
+    case EUniformDescriptorType::DynamicUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
     }
     return vk::DescriptorType::eUniformBuffer;
 }
@@ -37,16 +38,20 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, const AnsiString& debug_shader_name) :
-    shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
+Shader::Shader(
+    Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, const AnsiString& debug_shader_name
+) : shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
     FileInputStream shader_file_stream{shader_path.ToAbsoluteString(), std::ios::ate | std::ios::binary};
     if (!shader_file_stream.is_open())
     {
         LOG_ERROR_CATEGORY(
-            Vulkan.Shader, L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}",
-            shader_path.ToAbsoluteString(), errno, StringUtils::ErrorCodeToString(errno)
+            Vulkan.Shader,
+            L"加载Shader文件失败: {}, 异常码:{}, 异常消息: {}",
+            shader_path.ToAbsoluteString(),
+            errno,
+            StringUtils::ErrorCodeToString(errno)
         );
         return;
     }
@@ -65,7 +70,7 @@ Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_pa
     create_info.setCodeSize(shader_code_size * 4).setPCode(shader_code_ptr);
     shader_module_ = device.get().GetHandle().createShaderModule(create_info);
 #ifdef ELBOW_DEBUG
-    debug_shader_name_ = std::move(debug_shader_name);
+    debug_shader_name_ = debug_shader_name;
     if (!debug_shader_name_.empty())
     {
         device.get().SetShaderModuleDebugName(shader_module_, debug_shader_name_.data());
@@ -96,8 +101,15 @@ void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_siz
             obj.name    = compiler.get_name(ubo.id);
             obj.binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
             obj.size    = compiler.get_declared_struct_size(compiler.get_type(ubo.type_id));
-            obj.offset  = offset;
-            obj.type    = EUniformDescriptorType::Object;
+            obj.offset  = 0;
+            if (obj.name == "ubo_instance")
+            {
+                obj.type = EUniformDescriptorType::DynamicUniformBuffer;
+            }
+            else
+            {
+                obj.type = EUniformDescriptorType::UniformBuffer;
+            }
             offset += obj.size;
             uniform_descriptors_.push_back(obj);
         }

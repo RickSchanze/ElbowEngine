@@ -11,6 +11,10 @@
 
 #include <glm/fwd.hpp>
 
+namespace RHI::Vulkan
+{
+class Buffer;
+}
 RHI_VULKAN_NAMESPACE_BEGIN
 
 // TODO: 延迟销毁特性
@@ -53,10 +57,10 @@ public:
     bool CheckAndUpdateUniforms(const Shader* shader);
 
     // 获取顶点Shader
-    const Shader* GetVertShader() const { return vert_shader_; }
+    Shader* GetVertShader() const { return vert_shader_; }
 
     // 获取片段Shader
-    const Shader* GetFragShader() const { return frag_shader_; }
+    Shader* GetFragShader() const { return frag_shader_; }
 
     // 获取顶点着色器的hanlde
     vk::ShaderModule GetVertShaderHandle() const { return vert_shader_->GetHandle(); }
@@ -77,8 +81,10 @@ public:
 
     void DestroyShaders();
 
-    // 设置MVP矩阵
-    bool SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const;
+    // 设置MVP中的VP矩阵
+    void SetVP(const glm::mat4& view, const glm::mat4& projection) const;
+    // 设置MVP中的M矩阵
+    void SetM(glm::mat4* models, size_t model_count) const;
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer
@@ -107,9 +113,8 @@ private:
     Shader*            frag_shader_;
     EShaderDestroyTime destroy_time_;
 
-    TArray<vk::Buffer>       uniform_buffers_;
-    TArray<vk::DeviceMemory> uniform_buffers_memory_;
-    TArray<void*>            mapped_uniform_buffer_memory_;
+    TArray<Buffer*> static_vp_uniform_buffers_;
+    TArray<Buffer*> dynamic_model_uniform_buffers_;
 
     TArray<vk::DescriptorSet> descriptor_sets_;
     vk::DescriptorPool        descriptor_pool_;
@@ -117,14 +122,11 @@ private:
 
     Ref<LogicalDevice> device_;
 
-#ifdef ELBOW_DEBUG
-    AnsiString         debug_name_;
-    TArray<AnsiString> uniform_buffer_debug_names_;
-    TArray<AnsiString> uniform_buffer_memory_debug_names_;
-    AnsiString         debug_descriptor_set_layout_name_;
-    AnsiString         debug_descriptor_pool_name_;
-    TArray<AnsiString> debug_descriptor_set_names_;
-#endif
+
+    AnsiString         name_;
+    AnsiString         descriptor_set_layout_name_;
+    AnsiString         descriptor_pool_name_;
+    TArray<AnsiString> descriptor_set_names_;
 };
 
 RHI_VULKAN_NAMESPACE_END

@@ -17,17 +17,15 @@
 #include "ShaderProgram.h"
 #include "Utils/StringUtils.h"
 
-#include <iostream>
 #include <ranges>
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
 GraphicsPipeline::~GraphicsPipeline()
 {
-    delete shader_program_;
-    shader_program_ = nullptr;
     DestroyCommandBuffers();
     DestroyPipeline();
+    delete shader_program_;
 }
 
 GraphicsPipeline::GraphicsPipeline(const PipelineInfo& pipeline_info)
@@ -161,16 +159,13 @@ void GraphicsPipeline::CreatePipeline()
     /************************* 配置RenderPass结束 ************************/
 
     /************************* 配置Shader ************************/
-    if (pipeline_info_.shader_stage.frag == nullptr || pipeline_info_.shader_stage.vert == nullptr)
+    if (pipeline_info_.shader_program == nullptr)
     {
-        // TODO: 加载引擎默认shader
-        LOG_CRITIAL_CATEGORY(Vulkan.Shader, L"顶点或片元着色器不能为空");
+        LOG_CRITIAL_CATEGORY(Vulkan, L"创建管线: {} 失败, 传入ShaderProgram为空", StringUtils::FromAnsiString(pipeline_info_.name_));
     }
 
     // TODO: Shader管理器
-    shader_program_ = ShaderProgram::Create(
-        pipeline_info_.shader_stage.vert, pipeline_info_.shader_stage.frag, EShaderDestroyTime::Defered, pipeline_info_.debug_name + "_ShaderProgram"
-    );
+    shader_program_ = pipeline_info_.shader_program;
 
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo vert_info{};
@@ -273,14 +268,14 @@ void GraphicsPipeline::CreatePipeline()
     vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
     TStaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
     pipeline_layout_info.setSetLayouts(layout);
-#ifdef ELBOW_DEBUG
-    if (!pipeline_info_.debug_name.empty())
+
+    if (!pipeline_info_.name_.empty())
     {
-        pipeline_info_.debug_pipeline_layout_name_ = pipeline_info_.debug_name + "_PipelineLayout";
+        pipeline_info_.pipeline_layout_name_ = pipeline_info_.name_ + "_PipelineLayout";
     }
-#endif
+
     // 创建管线布局
-    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(pipeline_layout_info, pipeline_info_.debug_pipeline_layout_name_);
+    pipeline_layout_ = context.GetLogicalDevice()->CreatePipelineLayout(pipeline_layout_info, pipeline_info_.pipeline_layout_name_);
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo dynamic_state_info;
@@ -313,14 +308,12 @@ void GraphicsPipeline::CreatePipeline()
         .setSubpass(0)                                // 子Pass
         .setPDynamicState(&dynamic_state_info);
 
-#ifdef ELBOW_DEBUG
-    if (!pipeline_info_.debug_name.empty())
+    if (!pipeline_info_.name_.empty())
     {
-        pipeline_info_.debug_pipeline_name_ = pipeline_info_.debug_name + "_Pipeline";
+        pipeline_info_.pipeline_name_ = pipeline_info_.name_ + "_Pipeline";
     }
-#endif
 
-    pipeline_ = context.GetLogicalDevice()->CreateGraphicsPipeline(nullptr, pipeline_create_info, pipeline_info_.debug_pipeline_name_);
+    pipeline_ = context.GetLogicalDevice()->CreateGraphicsPipeline(nullptr, pipeline_create_info, pipeline_info_.pipeline_name_);
 }
 
 void GraphicsPipeline::DestroyPipeline()
@@ -346,10 +339,9 @@ void GraphicsPipeline::CreateCommandBuffers()
     alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
     alloc_info.commandPool                   = pool->GetHandle();
     alloc_info.commandBufferCount            = g_engine_statistics.swapchain_image_count;
-#ifdef ELBOW_DEBUG
-    AnsiString debug_command_buffer_name = pipeline_info_.debug_name + "_Command_Buffer";
-#endif
-    command_buffers_ = pool->CreateCommandBuffers(alloc_info, debug_command_buffer_name.c_str(), &pipeline_info_.debug_command_buffer_names);
+
+    AnsiString command_buffer_name = pipeline_info_.name_ + "_Command_Buffer";
+    command_buffers_ = pool->CreateCommandBuffers(alloc_info, command_buffer_name.c_str(), &pipeline_info_.command_buffer_names);
 }
 
 void GraphicsPipeline::DestroyCommandBuffers()
@@ -357,9 +349,7 @@ void GraphicsPipeline::DestroyCommandBuffers()
     VulkanContext& context = *VulkanContext::Get();
     context.GetCommandPool()->DestroyCommandBuffers(command_buffers_);
     command_buffers_.clear();
-#ifdef ELBOW_DEBUG
-    pipeline_info_.debug_command_buffer_names.clear();
-#endif
+    pipeline_info_.command_buffer_names.clear();
 }
 
 void GraphicsPipeline::Rebuild()

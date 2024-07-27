@@ -102,6 +102,8 @@ public:
     vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
     vk::Fence     GetInFlightFence() const { return in_flight_fences_[g_engine_statistics.current_frame_index]; }
 
+    uint32_t GetMinUniformBufferOffsetAlignment() const;
+
 protected:
     void CreateSyncObjecs();
     void CleanSyncObjects() const;

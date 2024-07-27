@@ -223,6 +223,11 @@ vk::Format VulkanContext::GetDepthImageFormat() const
     );
 }
 
+uint32_t VulkanContext::GetMinUniformBufferOffsetAlignment() const
+{
+    return physical_device_->GetProperties().limits.minUniformBufferOffsetAlignment;
+}
+
 void VulkanContext::CreateSyncObjecs()
 {
     image_available_semaphores_.resize(g_engine_statistics.parallel_render_frame_count);

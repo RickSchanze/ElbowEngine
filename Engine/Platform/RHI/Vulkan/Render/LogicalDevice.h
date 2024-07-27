@@ -91,6 +91,8 @@ public:
 
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
+    void FlushMappedMemory(const TArray<vk::MappedMemoryRange> &ranges)const;
+
     vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
 
     void ResetFences(vk::ArrayProxy<vk::Fence> fences) const;

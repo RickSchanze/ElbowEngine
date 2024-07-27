@@ -13,6 +13,7 @@
 #include <imgui.h>
 #endif
 
+class CachedString;
 /**
  * ImGui wrapper
  * 项目里所有对ImGui的绘制调用走这个函数
@@ -27,4 +28,8 @@ public:
         ImGui::Text(fmt, Forward<Args>(args)...);
 #endif
     }
+
+    static void Text(CachedString& str);
+
+    static bool CollapsingHeader(const char* label);
 };

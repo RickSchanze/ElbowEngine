@@ -14,6 +14,8 @@ add_library(${PROJECT_NAME}
         Utils/ReflUtils.cpp
         Utils/ContainerUtils.h
         Utils/ContainerUtils.cpp
+        Utils/MemoryUtils.cpp
+        Utils/MemoryUtils.h
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h
@@ -41,6 +43,8 @@ add_library(${PROJECT_NAME}
         Path/Exception.h
         Path/Exception.cpp
         Interface/IStringify.h
+        CachedString.h
+        CachedString.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

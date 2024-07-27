@@ -13,6 +13,8 @@
 #include <ranges>
 
 #include "glm/matrix.hpp"
+#include "RHI/Vulkan/Resource/Buffer.h"
+#include "RHI/Vulkan/VulkanUtils.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -30,9 +32,8 @@ ShaderProgram::ShaderProgram(
     {
         return;
     }
-#ifdef ELBOW_DEBUG
-    debug_name_ = debug_name;
-#endif
+
+    name_ = debug_name;
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -131,23 +132,26 @@ void ShaderProgram::DestroyShaders()
     }
 }
 
-bool ShaderProgram::SetMVP(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const
+void ShaderProgram::SetVP(const glm::mat4& view, const glm::mat4& projection) const
 {
-    const TStaticArray<glm::mat4, 3> ubo    = {model, view, projection};
-    const LogicalDevice&             device = device_.get();
-    // @TODO: 可能不需要每个都map memory
+    const TStaticArray<glm::mat4, 2> ubo = {projection, view};
 
-    void* data;
-    auto  map_res = device.MapMemory(uniform_buffers_memory_[g_engine_statistics.current_frame_index], 3 * sizeof(glm::mat4), 0, &data);
-    if (map_res != vk::Result::eSuccess)
+    auto* current_buffer = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index];
+    current_buffer->MapMemory();
+    auto* map_res = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index]->GetMappedCpuMemory();
+    memcpy(map_res, ubo.data(), 2 * sizeof(glm::mat4));
+    current_buffer->UnmapMemory();
+}
+
+void ShaderProgram::SetM(glm::mat4* models, size_t size) const
+{
+    auto* current_buffer = dynamic_model_uniform_buffers_[g_engine_statistics.current_frame_index];
+    if (!current_buffer->IsMemoryMapped())
     {
-        LOG_ERROR_CATEGORY(Vulkan.Shader, L"设置Shader UBO: Map memory失败: {}", StringUtils::FromAnsiString(vk::to_string(map_res)));
-        return false;
+        current_buffer->MapMemory();
     }
-    memcpy(data, ubo.data(), 3 * sizeof(glm::mat4));
-    device.UnmapMemory(uniform_buffers_memory_[g_engine_statistics.current_frame_index]);
-
-    return true;
+    current_buffer->Memcpy(models, size);
+    current_buffer->FlushMemory();
 }
 
 bool ShaderProgram::IsValid() const
@@ -157,49 +161,47 @@ bool ShaderProgram::IsValid() const
 
 void ShaderProgram::CreateUniformBuffers()
 {
-    const auto&    device      = *VulkanContext::Get()->GetLogicalDevice();
     vk::DeviceSize buffer_size = 0;
+
+    // 静态共享的VP矩阵的UniformBuffer
     for (const auto& value: GetUniforms() | std::views::values)
     {
-        buffer_size += value.size;
+        if (value.name != "ubo_instance")
+        {
+            buffer_size += value.size;
+        }
     }
-    uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
-    uniform_buffers_memory_.resize(g_engine_statistics.parallel_render_frame_count);
-    mapped_uniform_buffer_memory_.resize(g_engine_statistics.parallel_render_frame_count);
+    static_vp_uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
 
-    uniform_buffer_debug_names_.resize(g_engine_statistics.parallel_render_frame_count);
-    uniform_buffer_memory_debug_names_.resize(g_engine_statistics.parallel_render_frame_count);
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
-        device.CreateBuffer(
+        static_vp_uniform_buffers_[i] = new Buffer(
             buffer_size,
             vk::BufferUsageFlagBits::eUniformBuffer,
             vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            uniform_buffers_[i],
-            uniform_buffers_memory_[i]
+            name_ + "_StaticSharedUniformBuffer"
         );
-#ifdef ELBOW_DEBUG
-        if (!debug_name_.empty())
-        {
-            uniform_buffer_debug_names_[i] = debug_name_ + "_UniformBuffer_" + std::to_string(i);
-            device.SetBufferDebugName(uniform_buffers_[i], uniform_buffer_debug_names_[i].data());
-            uniform_buffer_memory_debug_names_[i] = debug_name_ + "_UniformBufferMemory_" + std::to_string(i);
-            device.SetBufferMemoryDebugName(uniform_buffers_memory_[i], uniform_buffer_memory_debug_names_[i].data());
-        }
-#endif
+    }
+    size_t dynamic_alignment = VulkanUtils::GetDynamicUniformModelAligment();
+    // 动态实例的模型变换矩阵的uniform buffer
+    buffer_size              = dynamic_alignment * g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count;
+    dynamic_model_uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
+    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    {
+        dynamic_model_uniform_buffers_[i] = new Buffer(
+            buffer_size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, name_ + "_DynamiModelUniformBuffer"
+        );
     }
 }
 
 void ShaderProgram::DestroyUniformBuffers()
 {
-    const auto& device = VulkanContext::Get()->GetLogicalDevice();
     for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
     {
-        device->DestroyBuffer(uniform_buffers_[i]);
-        device->FreeMemory(uniform_buffers_memory_[i]);
+        delete static_vp_uniform_buffers_[i];
+        delete dynamic_model_uniform_buffers_[i];
     }
-    uniform_buffers_.clear();
-    uniform_buffers_memory_.clear();
+    static_vp_uniform_buffers_.clear();
 }
 
 void ShaderProgram::CreateDescriptorSets()
@@ -214,45 +216,63 @@ void ShaderProgram::CreateDescriptorSets()
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     // 描述符池对象销毁时会自动清除描述符集
     descriptor_sets_ = context.GetLogicalDevice()->AllocateDescriptorSets(alloc_info);
-#ifdef ELBOW_DEBUG
-    if (!debug_name_.empty())
+
+    if (!name_.empty())
     {
         for (size_t i = 0; i < descriptor_sets_.size(); i++)
         {
-            debug_descriptor_set_names_.emplace_back(debug_name_ + "_DescriptorSet_" + std::to_string(i));
-            context.GetLogicalDevice()->SetDescriptorSetDebugName(descriptor_sets_[i], debug_descriptor_set_names_.back().data());
+            descriptor_set_names_.emplace_back(name_ + "_DescriptorSet_" + std::to_string(i));
+            context.GetLogicalDevice()->SetDescriptorSetDebugName(descriptor_sets_[i], descriptor_set_names_.back().data());
         }
     }
-#endif
+
     // 创建材质时首先使用默认丢失的贴图，之后需要调用更新贴图的方法
     const auto& default_lack_texture_view = Texture::GetDefaultLackTextureView();
     const auto& sampler                   = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < descriptor_sets_.size(); i++)
     {
-        TStaticArray<vk::WriteDescriptorSet, 2> descriptor_writes = {};
+        TArray<vk::WriteDescriptorSet>   descriptor_writes = {};
+        TArray<vk::DescriptorBufferInfo> buffer_infos;
+        TArray<vk::DescriptorImageInfo>  image_infos;
 
-        vk::DescriptorBufferInfo buffer_info = {};
-        buffer_info.setBuffer(uniform_buffers_[i]).setOffset(0).setRange(VK_WHOLE_SIZE);
-        // TODO: DescriptorSet 应该动态更新而不是写死
-        descriptor_writes[0].dstSet          = descriptor_sets_[i];
-        descriptor_writes[0].dstBinding      = 0;
-        descriptor_writes[0].dstArrayElement = 0;
-        descriptor_writes[0].descriptorType  = vk::DescriptorType::eUniformBuffer;
-        descriptor_writes[0].descriptorCount = 1;
-        descriptor_writes[0].pBufferInfo     = &buffer_info;
-        descriptor_writes[0].pImageInfo      = nullptr;
+        buffer_infos.reserve(4);
 
-        vk::DescriptorImageInfo image_info = {};
-        image_info.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-            .setImageView(default_lack_texture_view.GetHandle())
-            .setSampler(sampler.GetHandle());
-        descriptor_writes[1].dstSet          = descriptor_sets_[i];
-        descriptor_writes[1].dstBinding      = 1;
-        descriptor_writes[1].dstArrayElement = 0;
-        descriptor_writes[1].descriptorType  = vk::DescriptorType::eCombinedImageSampler;
-        descriptor_writes[1].descriptorCount = 1;
-        descriptor_writes[1].pBufferInfo     = nullptr;
-        descriptor_writes[1].pImageInfo      = &image_info;
+        for (auto& uniform: uniforms_ | std::views::values)
+        {
+            vk::WriteDescriptorSet descriptor_write;
+            descriptor_write.dstSet          = descriptor_sets_[i];
+            descriptor_write.dstBinding      = uniform.binding;
+            descriptor_write.dstArrayElement = 0;
+            descriptor_write.descriptorType  = vk::DescriptorType::eUniformBufferDynamic;
+            descriptor_write.descriptorType  = GetVkDescriptorType(uniform.type);
+            descriptor_write.descriptorCount = 1;
+            if (uniform.type == EUniformDescriptorType::UniformBuffer || uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
+            {
+                vk::DescriptorBufferInfo buffer_info;
+                if (uniform.type == EUniformDescriptorType::UniformBuffer)
+                {
+                    buffer_info.buffer = static_vp_uniform_buffers_[i]->GetBufferHandle();
+                }
+                else if (uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
+                {
+                    buffer_info.buffer = dynamic_model_uniform_buffers_[i]->GetBufferHandle();
+                }
+                buffer_info.offset = uniform.offset;
+                buffer_info.range  = uniform.size;
+                buffer_infos.emplace_back(buffer_info);
+                descriptor_write.pBufferInfo = &buffer_infos.back();
+            }
+            else
+            {
+                vk::DescriptorImageInfo image_info;
+                image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                image_info.imageView   = default_lack_texture_view.GetHandle();
+                image_info.sampler     = sampler.GetHandle();
+                image_infos.emplace_back(image_info);
+                descriptor_write.pImageInfo = &image_infos.back();
+            }
+            descriptor_writes.push_back(descriptor_write);
+        }
         context.GetLogicalDevice()->UpdateDescriptorSets(descriptor_writes);
     }
 }
@@ -260,9 +280,7 @@ void ShaderProgram::CreateDescriptorSets()
 void ShaderProgram::DestroyDescriptorSets()
 {
     descriptor_sets_.clear();
-#ifdef ELBOW_DEBUG
-    debug_descriptor_set_names_.clear();
-#endif
+    descriptor_set_names_.clear();
 }
 
 void ShaderProgram::CreateDescriptorPool()
@@ -281,11 +299,9 @@ void ShaderProgram::CreateDescriptorPool()
 
     vk::DescriptorPoolCreateInfo pool_info = {};
     pool_info.setPoolSizes(pool_sizes).setMaxSets(swapchain_image_count);
-    descriptor_pool_ = device->CreateDescriptorPool(pool_info);
-#ifdef ELBOW_DEBUG
-    debug_descriptor_pool_name_ = debug_name_ + "_DescriptorPool";
-    device->SetDescriptorPoolDebugName(descriptor_pool_, debug_descriptor_pool_name_.data());
-#endif
+    descriptor_pool_      = device->CreateDescriptorPool(pool_info);
+    descriptor_pool_name_ = name_ + "_DescriptorPool";
+    device->SetDescriptorPoolDebugName(descriptor_pool_, descriptor_pool_name_.data());
 }
 
 void ShaderProgram::DestroyDescriptorPool()
@@ -312,13 +328,11 @@ void ShaderProgram::CreateDescriptorSetLayout()
     vk::DescriptorSetLayoutCreateInfo layout_info{};
     layout_info.setBindings(uniform_bindings);
     descriptor_set_layout_ = device->CreateDescriptorSetLayout(layout_info);
-#ifdef ELBOW_DEBUG
-    if (!debug_name_.empty())
+    if (!name_.empty())
     {
-        debug_descriptor_set_layout_name_ = debug_name_ + "_DescriptorSetLayout";
-        device->SetDescriptionSetLayoutDebugName(descriptor_set_layout_, debug_descriptor_set_layout_name_.data());
+        descriptor_set_layout_name_ = name_ + "_DescriptorSetLayout";
+        device->SetDescriptionSetLayoutDebugName(descriptor_set_layout_, descriptor_set_layout_name_.data());
     }
-#endif
 }
 
 void ShaderProgram::DestroyDescriptorSetLayout()

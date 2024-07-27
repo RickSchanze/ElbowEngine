@@ -34,6 +34,8 @@ add_library(Platform
         RHI/Vulkan/VulkanContext.cpp
         RHI/Vulkan/Resource/Image.cpp
         RHI/Vulkan/Resource/Image.h
+        RHI/Vulkan/Resource/Buffer.h
+        RHI/Vulkan/Resource/Buffer.cpp
         RHI/Vulkan/Render/RenderPass.cpp
         RHI/Vulkan/Render/RenderPass.h
         RHI/Vulkan/VulkanStringify.cpp
@@ -54,6 +56,8 @@ add_library(Platform
         RHI/Vulkan/Resource/VulkanModel.cpp
         RHI/Vulkan/Interface/IGraphicsPipeline.h
         RHI/Vulkan/Interface/IGraphicsPipeline.cpp
+        RHI/Vulkan/VulkanUtils.h
+        RHI/Vulkan/VulkanUtils.cpp
         PlatformEvents.h
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp

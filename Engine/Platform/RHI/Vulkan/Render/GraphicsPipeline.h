@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "CachedString.h"
 #include "CoreDef.h"
 #include "Framebuffer.h"
 #include "glm/glm.hpp"
@@ -100,12 +101,6 @@ struct PipelineInfo
     {
     };
 
-    struct ShaderStageConfig
-    {
-        Shader* vert = nullptr;
-        Shader* frag = nullptr;
-    };
-
     RasterizationStageConfig        rasterization_stage;
     ViewportConfig                  viewport;
     ClippingRectConfig              clipping_rect;
@@ -113,18 +108,16 @@ struct PipelineInfo
     DepthStencilStageConfig         depth_stencil_stage;
     ColorBlendAttachmentStateConfig color_blend_attachment_state;
     ColorBlendStageConfig           color_blend_stage;
-    ShaderStageConfig               shader_stage;
+    ShaderProgram*                  shader_program        = nullptr;
     RenderPass*                     render_pass           = nullptr;
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
     int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
 
-#ifdef ELBOW_DEBUG
-    AnsiString         debug_name;
-    TArray<AnsiString> debug_command_buffer_names;
-    AnsiString         debug_pipeline_layout_name_;
-    AnsiString         debug_pipeline_name_;
-#endif
+    AnsiString           name_;
+    TArray<AnsiString> command_buffer_names;
+    AnsiString           pipeline_layout_name_;
+    AnsiString           pipeline_name_;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline

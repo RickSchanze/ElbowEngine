@@ -80,9 +80,13 @@ void EngineApplication::Initialize()
     camera_object_->BeginPlay();
     camera_object_->AddComponent<Function::Comp::Camera>();
     New<Function::GameObject>(L"Dummy对象", camera_object_);
-    auto mesh_obj  = New<Function::GameObject>(L"网格体对象");
+    auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
+
+    auto mesh_obj2 = New<Function::GameObject>(L"AK-47_2");
+    auto mesh_comp2 = mesh_obj2->AddComponent<Function::Comp::StaticMesh>();
+    mesh_comp2->SetMesh(L"Models/AK47/AK47_CS2.fbx");
 
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 }
@@ -104,8 +108,6 @@ void EngineApplication::Run()
     {
         InternalTick();
 
-
-
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
         render_context_->PrepareFrameRender();
 
@@ -118,7 +120,6 @@ void EngineApplication::Run()
 
         DrawAppUI();
 
-        ImGui::ShowDemoWindow();
         window_->Tick(g_engine_statistics.time_delta);
         camera_object_->Tick(g_engine_statistics.time_delta);
         render_context_->Draw();

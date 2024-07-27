@@ -10,7 +10,9 @@
 #include "Utils/StringUtils.h"
 
 #include <format>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/geometric.hpp>
+#include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 
 RTTR_REGISTRATION
@@ -82,9 +84,17 @@ Vector3 Transform::GetRightVector() const
 String Transform::ToString() const
 {
     return std::format(
-        L"Transform[location: <{}>, rotation: <{}>, scale: <{}>]",
-        StringUtils::ToString(location),
-        rotation.ToString(),
-        StringUtils::ToString(scale)
+        L"Transform[location: <{}>, rotation: <{}>, scale: <{}>]", StringUtils::ToString(location), rotation.ToString(), StringUtils::ToString(scale)
     );
+}
+
+glm::mat4 Transform::ToMat4() const
+{
+    auto mat = glm::mat4(1.0f);
+    mat = translate(mat, location);
+    mat = rotate(mat, glm::radians(rotation.yaw), Constant::UpVector);
+    mat = rotate(mat, glm::radians(rotation.pitch), GetRightVector());
+    mat = rotate(mat, glm::radians(rotation.roll), GetForwardVector());
+    mat = glm::scale(mat, scale);
+    return mat;
 }

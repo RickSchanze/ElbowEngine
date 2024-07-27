@@ -193,6 +193,10 @@ void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
     handle_.unmapMemory(InMemory);
 }
 
+void LogicalDevice::FlushMappedMemory(const TArray<vk::MappedMemoryRange> &ranges) const {
+    handle_.flushMappedMemoryRanges(ranges);
+}
+
 vk::Result LogicalDevice::WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all, uint64_t timeout) const
 {
     return handle_.waitForFences(fences, wait_all, timeout);

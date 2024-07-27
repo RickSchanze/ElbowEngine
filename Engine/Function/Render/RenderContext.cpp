@@ -73,7 +73,7 @@ vk::Fence RenderContext::GetInFlightFence() const
 
 void RenderContext::RegisterDrawMesh(Comp::Mesh* mesh)
 {
-    mesh_to_draw_.insert(mesh);
+    ContainerUtils::AddUnique(mesh_to_draw_, mesh);
 }
 
 void RenderContext::UnregisterDrawMesh(Comp::Mesh* mesh)
@@ -84,6 +84,11 @@ void RenderContext::UnregisterDrawMesh(Comp::Mesh* mesh)
 void RenderContext::UnregisterAllDrawMesh()
 {
     mesh_to_draw_.clear();
+}
+
+uint32_t RenderContext::GetMinUniformBufferOffsetAlignment() const
+{
+    return vulkan_context_->GetMinUniformBufferOffsetAlignment();
 }
 
 

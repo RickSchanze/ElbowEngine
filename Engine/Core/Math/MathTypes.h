@@ -10,6 +10,7 @@
 #include "CoreDef.h"
 #include "Interface/IStringify.h"
 
+#include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -52,12 +53,14 @@ struct Transform : IStringify
 {
     Vector3 location{};
     Rotator rotation{};
-    Vector3 scale{};
+    Vector3 scale = Constant::OneVector;
 
     Vector3 GetForwardVector() const;
     Vector3 GetUpVector() const;
     Vector3 GetRightVector() const;
     String  ToString() const override;
+
+    glm::mat4 ToMat4() const;
 };
 
 struct Color
