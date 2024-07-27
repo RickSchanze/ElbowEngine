@@ -17,6 +17,7 @@
 
 #include "Component/Camera.h"
 #include "Component/Mesh/StaticMesh.h"
+#include "EditorStyle/ImGuiStyle.h"
 #include "ResourceManager.h"
 #include "UI/Window/DebugWindow.h"
 #include "UI/Window/DetailWindow.h"
@@ -44,6 +45,13 @@ EngineApplication::EngineApplication(const String& project_path, const String& w
     }
     window_title_ = window_title;
     instance_     = this;
+    editor_style_ = new DeepDarkStyle();
+}
+
+EngineApplication::~EngineApplication()
+{
+    delete editor_style_;
+    Finitialize();
 }
 
 EngineApplication& EngineApplication::Instance()
@@ -60,9 +68,24 @@ Size2D EngineApplication::GetWindowSize() const
     return window_->GetWindowSize();
 }
 
+void EngineApplication::LogBeginInit()
+{
+    // TODO: Log for init
+    LOG_INFO_CATEGORY(Engine, L"初始化引擎...");
+    LOG_INFO_CATEGORY(Engine.Graphics, L"最大DynamicUniformBuffer数量 = {}", g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count);
+    LOG_INFO_CATEGORY(Engine.Graphics, L"交换链图像数量 = {}", g_engine_statistics.graphics.swapchain_image_count);
+    LOG_INFO_CATEGORY(Engine.Graphics, L"并行渲染帧数量 = {}", g_engine_statistics.graphics.parallel_render_frame_count);
+}
+
+void EngineApplication::LogEndInit()
+{
+    LOG_INFO_CATEGORY(Engine, L"引擎初始化完成");
+}
+
 void EngineApplication::Initialize()
 {
     // 创建并初始化GlfwWindow
+    LogBeginInit();
     window_ = MakeUnique<Platform::Window::GlfwWindow>(window_title_, 1920, 1080);
     window_->Initialize();
     window_->SetFrameBufferResizedCallback(&ThisClass::FrameBufferResizeCallback);
@@ -72,8 +95,10 @@ void EngineApplication::Initialize()
     auto Surface        = window_->GetWindowSurface();
     render_application_->SetWindowSurface(Move(Surface));
     render_application_->SetExtensions(window_->GetRequiredExtensions());
+
     render_application_->Initialize();
     window_->InitImGui(render_application_->GetContext());
+    editor_style_->SetStyle();
     render_context_ = new Function::RenderContext();
 
     camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
@@ -84,11 +109,12 @@ void EngineApplication::Initialize()
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
 
-    auto mesh_obj2 = New<Function::GameObject>(L"AK-47_2");
+    auto mesh_obj2  = New<Function::GameObject>(L"AK-47_2");
     auto mesh_comp2 = mesh_obj2->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp2->SetMesh(L"Models/AK47/AK47_CS2.fbx");
 
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
+    LogEndInit();
 }
 
 void EngineApplication::Finitialize() const
@@ -106,11 +132,15 @@ void EngineApplication::Run()
 {
     while (!glfwWindowShouldClose(window_->GetGLFWWindowHandle()))
     {
-        InternalTick();
+        // Tick逻辑
 
+        InternalTick();
+        window_->Tick(g_engine_statistics.time_delta);
+        camera_object_->Tick(g_engine_statistics.time_delta);
+
+        // Tick渲染
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
         render_context_->PrepareFrameRender();
-
         window_->BeginImGuiFrame();
 
         for (auto& sub_window: sub_windows_)
@@ -119,9 +149,7 @@ void EngineApplication::Run()
         }
 
         DrawAppUI();
-
-        window_->Tick(g_engine_statistics.time_delta);
-        camera_object_->Tick(g_engine_statistics.time_delta);
+        g_engine_statistics.ResetDrawCalls();
         render_context_->Draw();
 
         render_context_->PostFrameRender();

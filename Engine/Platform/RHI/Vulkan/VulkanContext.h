@@ -83,7 +83,7 @@ public:
 
     vk::Extent2D GetSwapChainExtent() const { return swap_chain_->GetExtent(); }
 
-    int32_t GetSwapChainImageCount() const { return swap_chain_image_count_; }
+    int32_t GetSwapChainImageCount() const { return g_engine_statistics.graphics.swapchain_image_count; }
 
     TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
 
@@ -111,8 +111,6 @@ protected:
     static inline VulkanContext* s_context_ = nullptr;
 
 private:
-    int32_t swap_chain_image_count_ = 3;
-
     int32_t renderer_id_ = 0;
 
     static inline int32_t s_renderer_id_count_ = 0;

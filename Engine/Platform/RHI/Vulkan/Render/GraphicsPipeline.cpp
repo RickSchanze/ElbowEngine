@@ -338,7 +338,7 @@ void GraphicsPipeline::CreateCommandBuffers()
     vk::CommandBufferAllocateInfo alloc_info = {};
     alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
     alloc_info.commandPool                   = pool->GetHandle();
-    alloc_info.commandBufferCount            = g_engine_statistics.swapchain_image_count;
+    alloc_info.commandBufferCount            = g_engine_statistics.graphics.swapchain_image_count;
 
     AnsiString command_buffer_name = pipeline_info_.name_ + "_Command_Buffer";
     command_buffers_ = pool->CreateCommandBuffers(alloc_info, command_buffer_name.c_str(), &pipeline_info_.command_buffer_names);

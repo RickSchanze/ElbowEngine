@@ -33,7 +33,7 @@ void ObjectCreateHelper::SetObjectID(const TUniquePtr<Object>& Obj, const uint32
 
 void EngineStatistics::IncreaseFrameIndex()
 {
-    current_frame_index = (current_frame_index + 1) % parallel_render_frame_count;
+    current_frame_index = (current_frame_index + 1) % graphics.parallel_render_frame_count;
 }
 
 void EngineStatistics::ResetDrawCalls()
@@ -41,7 +41,7 @@ void EngineStatistics::ResetDrawCalls()
     graphics.draw_calls = 0;
 }
 
-void EngineStatistics::IncreaseDrawCall(const uint32_t count)
+void EngineStatistics::IncreaseDrawCall(const int32_t count)
 {
     graphics.draw_calls += count;
 }

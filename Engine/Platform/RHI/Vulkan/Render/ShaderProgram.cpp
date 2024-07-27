@@ -171,9 +171,9 @@ void ShaderProgram::CreateUniformBuffers()
             buffer_size += value.size;
         }
     }
-    static_vp_uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
+    static_vp_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
 
-    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         static_vp_uniform_buffers_[i] = new Buffer(
             buffer_size,
@@ -185,8 +185,8 @@ void ShaderProgram::CreateUniformBuffers()
     size_t dynamic_alignment = VulkanUtils::GetDynamicUniformModelAligment();
     // 动态实例的模型变换矩阵的uniform buffer
     buffer_size              = dynamic_alignment * g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count;
-    dynamic_model_uniform_buffers_.resize(g_engine_statistics.parallel_render_frame_count);
-    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    dynamic_model_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         dynamic_model_uniform_buffers_[i] = new Buffer(
             buffer_size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, name_ + "_DynamiModelUniformBuffer"
@@ -196,7 +196,7 @@ void ShaderProgram::CreateUniformBuffers()
 
 void ShaderProgram::DestroyUniformBuffers()
 {
-    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         delete static_vp_uniform_buffers_[i];
         delete dynamic_model_uniform_buffers_[i];
@@ -211,7 +211,7 @@ void ShaderProgram::CreateDescriptorSets()
         CreateDescriptorSetLayout();
     }
     VulkanContext&                context = *VulkanContext::Get();
-    TArray                        layouts(g_engine_statistics.parallel_render_frame_count, descriptor_set_layout_);
+    TArray                        layouts(g_engine_statistics.graphics.parallel_render_frame_count, descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     // 描述符池对象销毁时会自动清除描述符集
@@ -287,7 +287,7 @@ void ShaderProgram::CreateDescriptorPool()
 {
     const auto&                             device                = VulkanContext::Get()->GetLogicalDevice();
     TStaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
-    const auto                              swapchain_image_count = g_engine_statistics.swapchain_image_count;
+    const auto                              swapchain_image_count = g_engine_statistics.graphics.swapchain_image_count;
 
     // Uniform Object
     pool_sizes[0].type            = vk::DescriptorType::eUniformBuffer;

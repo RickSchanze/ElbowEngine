@@ -11,6 +11,7 @@
 #include "FunctionCommon.h"
 
 #include "Camera.generated.h"
+#include "Math/MathTypes.h"
 
 #include <chrono>
 #include <glm/fwd.hpp>
@@ -34,6 +35,10 @@ public:
     glm::mat4 GetProjectionMatrix() const;
 
     void SetWindowFocused(bool focused);
+
+public:
+    PROPERTY(Serialize, Label = "背景颜色")
+    Color background_color = Color(0.5f, 0.5f, 0.5f, 1.0f);
 
 protected:
     void HandleInput();

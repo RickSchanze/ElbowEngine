@@ -21,6 +21,7 @@ class PropertyDrawer
 public:
     static Vector3 DrawProperty(const char* name, const Vector3& value);
     static Rotator DrawProperty(const char* name, const Rotator& value);
+    static Color   DrawProperty(const char* name, const Color& value);
     static float   DrawProperty(const char* name, float value);
     static bool    DrawProperty(const char* name, bool value);
     static int     DrawProperty(const char* name, int value);

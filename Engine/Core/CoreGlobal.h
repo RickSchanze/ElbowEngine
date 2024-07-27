@@ -171,8 +171,10 @@ struct EngineStatistics
 
     struct
     {
-        int32_t draw_calls = 0;
-        uint32_t max_dynamic_model_uniform_buffer_count = 20; // 最大动态模型矩阵uniform buffer数量 @see ShaderProgram.cpp
+        int32_t  draw_calls                             = 0;
+        uint32_t max_dynamic_model_uniform_buffer_count = 20;   // 最大动态模型矩阵uniform buffer数量 @see ShaderProgram.cpp
+        int32_t  swapchain_image_count                  = 3;    // 交换链图像数量
+        int32_t  parallel_render_frame_count            = 2;    // 同时渲染的帧数
     } graphics;
 
     float    time_delta                  = 0;
@@ -180,15 +182,13 @@ struct EngineStatistics
     int32_t  fps                         = 0;       // 帧率
     bool     is_hide_mouse               = false;   // 是否隐藏鼠标
     int32_t  object_count                = 0;       // 当前总对象数
-    int32_t  parallel_render_frame_count = 2;       // 同时渲染的帧数
-    int32_t  swapchain_image_count       = -1;      // 交换链图像数量
-    uint32_t current_image_index         = 0;       // 当前交换链索引
-    int32_t  current_frame_index         = 0;       // 当前渲染帧索引
+    uint32_t current_image_index         = 0;   // 当前交换链索引
+    int32_t  current_frame_index         = 0;   // 当前渲染帧索引
 
     // current_frame_index++
     void IncreaseFrameIndex();
     void ResetDrawCalls();
-    void IncreaseDrawCall(uint32_t count = 1);
+    void IncreaseDrawCall(const int32_t count = 1);
 };
 
 extern EngineStatistics g_engine_statistics;

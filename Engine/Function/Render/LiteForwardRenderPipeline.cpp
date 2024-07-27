@@ -23,16 +23,16 @@ FUNCTION_NAMESPACE_BEGIN
 
 void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
+    // TODO: 将Camera加入到渲染参数
+    Comp::Camera* main = Comp::Camera::Main;
     Super::Draw(draw_param);
     forward_pipeline_->BeginCommandBuffer();
-    forward_pipeline_->BeginRenderPass({1, 0, 0, 1});
+    forward_pipeline_->BeginRenderPass(main->background_color);
 
     auto meshes_to_draw = context_->GetDrawMeshes();
     forward_pipeline_->BindPipeline();
     forward_pipeline_->UpdateViewport();
     forward_pipeline_->UpdateScissor();
-
-    Comp::Camera* main = Comp::Camera::Main;
 
     forward_pipeline_->GetShaderProgram()->SetVP(main->GetViewMatrix(), main->GetProjectionMatrix());
     forward_pipeline_->GetShaderProgram()->SetM(model_instances_.models, model_instances_.size);

@@ -16,6 +16,8 @@ add_library(${PROJECT_NAME}
         UI/Window/DetailWindow.h
         UI/Drawer/PropertyDrawer.cpp
         UI/Drawer/PropertyDrawer.h
+        EditorStyle/ImGuiStyle.h
+        EditorStyle/ImGuiStyle.cpp
 )
 
 add_library(Engine::Tool ALIAS ${PROJECT_NAME})

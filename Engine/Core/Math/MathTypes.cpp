@@ -23,17 +23,20 @@ RTTR_REGISTRATION
         .property("roll", &Rotator::roll)
         .property("pitch", &Rotator::pitch);
 
-    rttr::registration::class_<Vector3>("Vector3")
-        .constructor<>()
-        .property("x", &Vector3::x)
-        .property("y", &Vector3::y)
-        .property("z", &Vector3::z);
+    rttr::registration::class_<Vector3>("Vector3").constructor<>().property("x", &Vector3::x).property("y", &Vector3::y).property("z", &Vector3::z);
 
     rttr::registration::class_<Transform>("Transform")
         .constructor<>()
         .property("location", &Transform::location)
         .property("rotation", &Transform::rotation)
         .property("scale", &Transform::scale);
+
+    rttr::registration::class_<Color>("Color")
+        .constructor<>()
+        .property("r", &Color::r)
+        .property("g", &Color::g)
+        .property("b", &Color::b)
+        .property("a", &Color::a);
 }
 
 String Size2D::ToString() const
@@ -91,10 +94,10 @@ String Transform::ToString() const
 glm::mat4 Transform::ToMat4() const
 {
     auto mat = glm::mat4(1.0f);
-    mat = translate(mat, location);
-    mat = rotate(mat, glm::radians(rotation.yaw), Constant::UpVector);
-    mat = rotate(mat, glm::radians(rotation.pitch), GetRightVector());
-    mat = rotate(mat, glm::radians(rotation.roll), GetForwardVector());
-    mat = glm::scale(mat, scale);
+    mat      = translate(mat, location);
+    mat      = rotate(mat, glm::radians(rotation.yaw), Constant::UpVector);
+    mat      = rotate(mat, glm::radians(rotation.pitch), GetRightVector());
+    mat      = rotate(mat, glm::radians(rotation.roll), GetForwardVector());
+    mat      = glm::scale(mat, scale);
     return mat;
 }

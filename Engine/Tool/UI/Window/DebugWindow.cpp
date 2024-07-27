@@ -26,7 +26,6 @@ StatisticsWindow::StatisticsWindow() {
 }
 
 void StatisticsWindow::Draw(float InDeltaTime) {
-    WindowBase::Draw(InDeltaTime);
     mFpsRefreshTime += InDeltaTime;
     if (mFpsRefreshTime > 1.f) {
         mRecordedFps       = g_engine_statistics.fps;
@@ -40,6 +39,9 @@ void StatisticsWindow::Draw(float InDeltaTime) {
     ImGui::Text(U8("总帧数: %ld"), g_engine_statistics.frame_count);
     ImGui::Text(U8("当前鼠标位置:(%f, %f)"), Input::GetMousePosition().x, Input::GetMousePosition().y);
     ImGui::Text(U8("当前鼠标delta:(%f, %f)"), Input::GetMouseDelta().x, Input::GetMouseDelta().y);
+    ImGui::Text(U8("Draw Call: %d"), g_engine_statistics.graphics.draw_calls);
+    ImGui::Text(U8("交换链帧索引: %d"), g_engine_statistics.current_image_index);
+    ImGui::Text(U8("并行渲染帧索引: %d"), g_engine_statistics.current_frame_index);
 }
 
 WINDOW_NAMESPACE_END

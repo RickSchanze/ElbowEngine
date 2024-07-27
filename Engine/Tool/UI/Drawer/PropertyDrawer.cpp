@@ -30,6 +30,13 @@ Rotator PropertyDrawer::DrawProperty(const char* name, const Rotator& value)
     return Rot;
 }
 
+Color PropertyDrawer::DrawProperty(const char* name, const Color& value)
+{
+    Color color = value;
+    ImGui::ColorEdit4(name, &color.r);
+    return color;
+}
+
 float PropertyDrawer::DrawProperty(const char* name, float value)
 {
     ImGui::DragFloat(name, &value, DRAG_FLOAT_V_SPEED);
@@ -76,6 +83,7 @@ void PropertyDrawer::DrawProperty(const Property prop, const rttr::instance& obj
     // TODO: prop类型为IDetailGUIDrawer的处理
     VALUE_SETTER(Vector3)
     VALUE_SETTER(Rotator)
+    VALUE_SETTER(Color)
     VALUE_SETTER(float)
     VALUE_SETTER(bool)
     VALUE_SETTER(int)

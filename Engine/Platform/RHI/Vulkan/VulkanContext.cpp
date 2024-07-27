@@ -46,14 +46,14 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
         return;
     }
     renderer_id_ = s_renderer_id_count_++;
-    LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", renderer_id_, swap_chain_image_count_);
+    LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
     vulkan_instance_      = instance;
     physical_device_      = vulkan_instance_->PickPhysicalDevice();
     const auto Properties = physical_device_->GetProperties();
     auto       Name       = StringUtils::FromAnsiString(Properties.deviceName);
     LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", Name);
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
-    swap_chain_     = logical_device_->CreateSwapChain(swap_chain_image_count_, 1920, 1080);
+    swap_chain_     = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, 1920, 1080);
     // 初始化命令生产者
     command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
     CreateSyncObjecs();
@@ -71,8 +71,7 @@ VulkanContext* VulkanContext::Get()
 
 void VulkanContext::Initialize()
 {
-    LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", renderer_id_, swap_chain_image_count_);
-    g_engine_statistics.swapchain_image_count = GetSwapChainImageCount();
+    LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
 }
 
 void VulkanContext::Finalize()
@@ -211,7 +210,7 @@ void VulkanContext::RebuildSwapChain()
     logical_device_->GetHandle().waitIdle();
 
     swap_chain_->Finialize();
-    swap_chain_ = logical_device_->CreateSwapChain(swap_chain_image_count_, Size.width, Size.height);
+    swap_chain_ = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, Size.width, Size.height);
 }
 
 vk::Format VulkanContext::GetDepthImageFormat() const
@@ -230,15 +229,15 @@ uint32_t VulkanContext::GetMinUniformBufferOffsetAlignment() const
 
 void VulkanContext::CreateSyncObjecs()
 {
-    image_available_semaphores_.resize(g_engine_statistics.parallel_render_frame_count);
-    in_flight_fences_.resize(g_engine_statistics.parallel_render_frame_count);
+    image_available_semaphores_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
+    in_flight_fences_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
 
     vk::SemaphoreCreateInfo SemaphoreInfo = {};
     vk::FenceCreateInfo     FenceInfo     = {};
     FenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
     // 为多帧并行渲染创建信号量
-    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         image_available_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
         in_flight_fences_[i]           = logical_device_->GetHandle().createFence(FenceInfo);
@@ -247,7 +246,7 @@ void VulkanContext::CreateSyncObjecs()
 
 void VulkanContext::CleanSyncObjects() const
 {
-    for (size_t i = 0; i < g_engine_statistics.parallel_render_frame_count; i++)
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         logical_device_->GetHandle().destroySemaphore(image_available_semaphores_[i]);
         logical_device_->GetHandle().destroyFence(in_flight_fences_[i]);

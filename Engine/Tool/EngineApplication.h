@@ -13,6 +13,8 @@
 #include "UI/Window/WindowBase.h"
 #include "Window/GLFWWindow.h"
 
+class EditorImGuiStyle;
+
 namespace Function
 {
 class GameObject;
@@ -34,11 +36,15 @@ public:
 
     EngineApplication(const String& project_path, const String& window_title);
 
-    ~EngineApplication() { Finitialize(); }
+    ~EngineApplication();
 
     static EngineApplication& Instance();
 
     Size2D GetWindowSize() const;
+
+    void LogBeginInit();
+
+    void LogEndInit();
 
     void Initialize();
     void Finitialize() const;
@@ -94,6 +100,8 @@ private:
 
     // 暂时测试
     Function::GameObject* camera_object_ = nullptr;
+
+    EditorImGuiStyle* editor_style_;
 };
 
 TOOL_NAMESPACE_END
