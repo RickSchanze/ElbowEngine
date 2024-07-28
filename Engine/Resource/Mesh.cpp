@@ -1,5 +1,5 @@
 /**
- * @file Model.cpp
+ * @file Mesh.cpp
  * @author Echo 
  * @Date 24-5-8
  * @brief 
@@ -16,7 +16,6 @@
 #include "Utils/StringUtils.h"
 
 RESOURCE_NAMESPACE_BEGIN
-
 
 TUniquePtr<RHI::Vulkan::Mesh>& SubMesh::GetRHIResource()
 {
@@ -47,17 +46,19 @@ Mesh* Mesh::Create(const Path& model_path)
 void Mesh::Load()
 {
     Assimp::Importer Importer;
-    const aiScene*   Scene =
-        Importer.ReadFile(path_.ToAbsoluteAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene*   Scene = Importer.ReadFile(
+        path_.ToAbsoluteAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
+    );
     if (Scene == nullptr || Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode == nullptr)
     {
         LOG_ERROR_CATEGORY(Resource, L"Model::Load(): 加载模型{}失败", path_.ToAbsoluteString());
         return;
     }
     ProcessNode(Scene->mRootNode, Scene);
+    triangles_count_ = index_count_ / 3;
 }
 
-void Mesh::ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_mesh) const
+void Mesh::ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_mesh)
 {
     // 遍历Mesh顶点
     for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -83,6 +84,7 @@ void Mesh::ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_me
         }
         out_mesh.GetVertices().push_back(Vertex);
     }
+    vertex_count_ += mesh->mNumVertices;
     // 遍历索引
     for (uint32_t i = 0; i < mesh->mNumFaces; i++)
     {
@@ -93,10 +95,9 @@ void Mesh::ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_me
         }
     }
     out_mesh.LoadRHI();
+    index_count_ += mesh->mNumFaces * 3;
     // 纹理
     // 这里直接加载 TODO: 自动解压纹理
-    const aiMaterial* Material = scene->mMaterials[mesh->mMaterialIndex];
-    LoadTextures(ETextureUsage::Diffuse, Material, out_mesh.GetTextures());
 }
 
 aiTextureType GetTextureType(const ETextureUsage InUsage)
@@ -105,18 +106,6 @@ aiTextureType GetTextureType(const ETextureUsage InUsage)
     {
     case ETextureUsage::Diffuse: return aiTextureType_DIFFUSE;
     default: return aiTextureType_DIFFUSE;
-    }
-}
-
-void Mesh::LoadTextures(const ETextureUsage usage, const aiMaterial* material, TArray<Texture*>& out_textures) const
-{
-    for (uint32_t i = 0; i < material->GetTextureCount(GetTextureType(usage)); i++)
-    {
-        aiString MyPath;
-        material->GetTexture(aiTextureType_DIFFUSE, i, &MyPath);
-        Path     TexturePath = path_.GetParentPath() / Path(StringUtils::FromAnsiString(MyPath.C_Str()));
-        Texture* NewTexture  = Texture::Create(TexturePath, usage);
-        out_textures.push_back(NewTexture);
     }
 }
 

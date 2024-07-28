@@ -57,6 +57,7 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
     // 初始化命令生产者
     command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
     CreateSyncObjecs();
+    CreateCommandBuffers();
     Initialize();
 }
 
@@ -77,6 +78,7 @@ void VulkanContext::Initialize()
 void VulkanContext::Finalize()
 {
     if (!IsValid()) return;
+    DestroyCommandBuffers();
     // 清理所有的Sampler
     Sampler::DestroyAllSamplers();
     CleanSyncObjects();
@@ -89,11 +91,10 @@ void VulkanContext::Finalize()
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
-vk::Semaphore
-VulkanContext::SubmitGraphicsQueue(const IGraphicsPipeline* pipeline, GraphicsQueueSubmitParams submit_params, vk::Fence fence_to_trigger)
+vk::Semaphore VulkanContext::SubmitGraphicsQueue(GraphicsQueueSubmitParams submit_params, vk::Fence fence_to_trigger)
 {
     vk::Queue         graphics_queue = logical_device_->GetGraphicsQueue();
-    vk::CommandBuffer cb             = pipeline->GetCurrentCommandBuffer();
+    vk::CommandBuffer cb             = GetCurrentCommandBuffer();
     vk::SubmitInfo    submit_info;
 
     vk::Semaphore rtn_semaphore = nullptr;
@@ -227,6 +228,26 @@ uint32_t VulkanContext::GetMinUniformBufferOffsetAlignment() const
     return physical_device_->GetProperties().limits.minUniformBufferOffsetAlignment;
 }
 
+vk::CommandBuffer VulkanContext::GetCurrentCommandBuffer() const
+{
+    return command_buffers_[g_engine_statistics.current_image_index];
+}
+
+vk::CommandBuffer VulkanContext::BeginRecordCommandBuffer()
+{
+    vk::CommandBuffer cb = GetCurrentCommandBuffer();
+    cb.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+    vk::CommandBufferBeginInfo begin_info;
+    begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+    cb.begin(begin_info);
+    return cb;
+}
+
+void VulkanContext::EndRecordCommandBuffer()
+{
+    GetCurrentCommandBuffer().end();
+}
+
 void VulkanContext::CreateSyncObjecs()
 {
     image_available_semaphores_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
@@ -252,5 +273,23 @@ void VulkanContext::CleanSyncObjects() const
         logical_device_->GetHandle().destroyFence(in_flight_fences_[i]);
     }
 }
+
+void VulkanContext::CreateCommandBuffers()
+{
+    vk::CommandBufferAllocateInfo alloc_info;
+    alloc_info.level               = vk::CommandBufferLevel::ePrimary;
+    alloc_info.commandPool         = command_pool_->GetHandle();
+    alloc_info.commandBufferCount  = g_engine_statistics.graphics.swapchain_image_count;
+    AnsiString command_buffer_name = "GlobalCommandBuffer";
+    command_buffers_               = command_pool_->CreateCommandBuffers(alloc_info, command_buffer_name.c_str(), &command_buffers_names_);
+}
+
+void VulkanContext::DestroyCommandBuffers(){
+    command_pool_->DestroyCommandBuffers(command_buffers_);
+    command_buffers_.clear();
+    command_buffers_names_.clear();
+}
+
+
 
 RHI_VULKAN_NAMESPACE_END

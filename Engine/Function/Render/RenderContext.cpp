@@ -25,7 +25,7 @@ RenderContext::~RenderContext()
 
 RenderContext::RenderContext()
 {
-    vulkan_context_ = RHI::Vulkan::VulkanContext::Get();
+    vulkan_context_   = RHI::Vulkan::VulkanContext::Get();
     s_render_context_ = this;
 }
 
@@ -59,11 +59,9 @@ void RenderContext::SetRenderPipeline(RenderPipeline* new_render_pipeline)
     render_pipeline_->Build();
 }
 
-vk::Semaphore RenderContext::SubmitPipeline(
-    const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, const vk::Fence fence_to_trigger
-) const
+vk::Semaphore RenderContext::SubmitPipeline(const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, const vk::Fence fence_to_trigger) const
 {
-    return vulkan_context_->SubmitGraphicsQueue(pipeline, draw_param, fence_to_trigger);
+    return vulkan_context_->SubmitGraphicsQueue(draw_param, fence_to_trigger);
 }
 
 vk::Fence RenderContext::GetInFlightFence() const
@@ -89,6 +87,16 @@ void RenderContext::UnregisterAllDrawMesh()
 uint32_t RenderContext::GetMinUniformBufferOffsetAlignment() const
 {
     return vulkan_context_->GetMinUniformBufferOffsetAlignment();
+}
+
+vk::CommandBuffer RenderContext::BeginRecordCommandBuffer()
+{
+    return vulkan_context_->BeginRecordCommandBuffer();
+}
+
+void RenderContext::EndRecordCommandBuffer()
+{
+    vulkan_context_->EndRecordCommandBuffer();
 }
 
 

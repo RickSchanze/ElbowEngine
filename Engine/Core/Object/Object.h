@@ -74,7 +74,7 @@ public:
     // TODO: 位操作
     EObjectFlag GetObjectFlag() const { return flag_; }
 
-    const AnsiString& GetCachedAnsiString() const { return cached_ansi_string_; }
+    const AnsiString& GetCachedAnsiString();
 
     template <typename T>
     bool IsImplemented()

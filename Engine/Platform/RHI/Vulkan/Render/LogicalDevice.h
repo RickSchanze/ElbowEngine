@@ -91,7 +91,7 @@ public:
 
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
-    void FlushMappedMemory(const TArray<vk::MappedMemoryRange> &ranges)const;
+    void FlushMappedMemory(const TArray<vk::MappedMemoryRange>& ranges) const;
 
     vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
 
@@ -119,7 +119,8 @@ public:
     vk::CommandPool CreateCommandPool(const vk::CommandPoolCreateInfo& create_info, const char* debug_name = "") const;
     void            DestroyCommandPool(vk::CommandPool command_pool) const;
 
-    vk::Pipeline CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name = "") const;
+    vk::Pipeline
+    CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name = "") const;
 
     void SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const;
     void SetCommandBufferDebugName(vk::CommandBuffer handle, const char* name) const;

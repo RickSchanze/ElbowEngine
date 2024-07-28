@@ -30,7 +30,7 @@ public:
     template<typename ContainerT>
     static ContainerT Concat(const ContainerT& ContainerA, const ContainerT& ContainerB);
 
-    template <typename ContainerT>
+    template<typename ContainerT>
     static void AddUnique(ContainerT& container, const typename ContainerT::value_type& value);
 };
 
@@ -106,7 +106,8 @@ ContainerT ContainerUtils::Concat(const ContainerT& ContainerA, const ContainerT
 }
 
 template<typename ContainerT>
-void ContainerUtils::AddUnique(ContainerT& container, const typename ContainerT::value_type& value){
+void ContainerUtils::AddUnique(ContainerT& container, const typename ContainerT::value_type& value)
+{
     if (std::count(container.begin(), container.end(), value) == 0)
     {
         container.push_back(value);

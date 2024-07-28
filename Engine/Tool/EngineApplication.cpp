@@ -18,6 +18,7 @@
 #include "Component/Camera.h"
 #include "Component/Mesh/StaticMesh.h"
 #include "EditorStyle/ImGuiStyle.h"
+#include "Render/Material.h"
 #include "ResourceManager.h"
 #include "UI/Window/DebugWindow.h"
 #include "UI/Window/DetailWindow.h"
@@ -113,6 +114,13 @@ void EngineApplication::Initialize()
     auto mesh_comp2 = mesh_obj2->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp2->SetMesh(L"Models/AK47/AK47_CS2.fbx");
 
+    auto* mat = Function::MaterialManager::CreateMaterials(L"Shaders/vert.spv", L"Shaders/frag.spv", L"AK-47材质");
+
+    mesh_comp->SetMaterial(mat);
+    mesh_comp2->SetMaterial(mat);
+
+    mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
+
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
     LogEndInit();
 }
@@ -121,6 +129,7 @@ void EngineApplication::Finitialize() const
 {
     if (!IsValid()) return;
     delete render_context_;
+    RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
     window_->ShutdownImGui();
     // vulkan device失效前释放所有资产
     Resource::ResourceManager::Get()->DestroyAllResources();

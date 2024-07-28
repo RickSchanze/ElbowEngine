@@ -7,6 +7,7 @@
 
 #include "RenderPass.h"
 
+#include <ranges>
 #include <utility>
 
 #include "CommandPool.h"
@@ -14,6 +15,11 @@
 #include "Framebuffer.h"
 #include "LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
+
+RTTR_REGISTRATION
+{
+    rttr::registration::class_<RHI::Vulkan::RenderPass>("RHI::Vulkan::RenderPass").constructor();
+}
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -131,8 +137,8 @@ void RenderPass::SetupFramebuffer()
         ImageViewInfo view_info = {};
         if (i == depth_attachment_index_)
         {
-            view_info.format                  = image_info.format;
-            view_info.aspect_flags            = vk::ImageAspectFlagBits::eDepth;
+            view_info.format       = image_info.format;
+            view_info.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 #ifdef ELBOW_DEBUG
             view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
 #endif
@@ -140,8 +146,8 @@ void RenderPass::SetupFramebuffer()
         }
         else
         {
-            view_info.aspect_flags            = vk::ImageAspectFlagBits::eColor;
-            view_info.format                  = image_info.format;
+            view_info.aspect_flags = vk::ImageAspectFlagBits::eColor;
+            view_info.format       = image_info.format;
 #ifdef ELBOW_DEBUG
             view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
 #endif
@@ -220,6 +226,26 @@ void RenderPass::Destroy()
 vk::Framebuffer RenderPass::GetCurrentFrameBufferHandle()
 {
     return GetCurrentFrameBuffer()->GetHandle();
+}
+
+void RenderPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
+{
+    TStaticArray<vk::ClearValue, 2> clear_values;
+    clear_values[0].color        = vk::ClearColorValue{TStaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
+
+    vk::RenderPassBeginInfo render_pass_info;
+    render_pass_info.renderPass        = handle_;
+    render_pass_info.framebuffer       = GetCurrentFrameBufferHandle();
+    render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
+    render_pass_info.renderArea.extent = VulkanContext::Get()->GetSwapChainExtent();
+    render_pass_info.setClearValues(clear_values);
+    cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+}
+
+void RenderPass::End(vk::CommandBuffer cb)
+{
+    cb.endRenderPass();
 }
 
 void RenderPass::InternalDestroy()
@@ -391,6 +417,19 @@ void RenderPass::CreateRenderPass()
         context.GetLogicalDevice()->SetRenderPassDebugName(handle_, render_pass_debug_name_.data());
     }
 #endif
+}
+
+RenderPassManager::RenderPassManager()
+{
+    VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&RenderPassManager::DestroyRenderPasses);
+}
+
+void RenderPassManager::DestroyRenderPasses(){
+    for (auto render_pass : Get()->render_passes_ | std::views::values)
+    {
+        delete render_pass;
+    }
+    Get()->render_passes_.clear();
 }
 
 RHI_VULKAN_NAMESPACE_END

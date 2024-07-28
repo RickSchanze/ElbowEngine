@@ -25,6 +25,8 @@ add_library(${PROJECT_NAME}
         Render/Event.h
         Render/Material.h
         Render/Material.cpp
+        ImGui/ImGuiHelper.h
+        ImGui/ImGuiHelper.cpp
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

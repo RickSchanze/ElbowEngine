@@ -59,8 +59,6 @@ add_library(Platform
         RHI/Vulkan/VulkanUtils.h
         RHI/Vulkan/VulkanUtils.cpp
         PlatformEvents.h
-        ImGui/ImGuiHelper.h
-        ImGui/ImGuiHelper.cpp
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

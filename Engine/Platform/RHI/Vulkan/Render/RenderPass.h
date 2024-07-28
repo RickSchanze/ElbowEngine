@@ -7,6 +7,7 @@
 
 #pragma once
 #include "RHI/Vulkan/Interface/IRHIResource.h"
+#include "Utils/StringUtils.h"
 #include "vulkan/vulkan.hpp"
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -30,7 +31,7 @@ struct RenderPassAttachmentParam
     vk::AttachmentStoreOp   store_op         = vk::AttachmentStoreOp::eStore;
     vk::AttachmentLoadOp    StencilLoadOp    = vk::AttachmentLoadOp::eDontCare;
     vk::AttachmentStoreOp   StencilStoreOp   = vk::AttachmentStoreOp::eDontCare;
-    vk::ImageLayout         initial_layout    = vk::ImageLayout::eUndefined;
+    vk::ImageLayout         initial_layout   = vk::ImageLayout::eUndefined;
     // 自动决定，如果SampleCount不为e1则是ColorAttachmentOptimal 否则 ePresentSrcKHR
     vk::ImageLayout         finial_layout    = vk::ImageLayout::eUndefined;
     vk::ImageLayout         reference_layout = vk::ImageLayout::eUndefined;
@@ -54,14 +55,16 @@ struct RenderPassAttachmentImageInfo
 #endif
 };
 
-// 基本RenderPass 基本RenderPass包含一个ColorAttachment 一个DepthAttachment和一个Multismaple使用的Attachment
-// RenderPass同时还包含了对应的Framebuffer
+/**
+ * 基本RenderPass 基本RenderPass包含一个ColorAttachment 一个DepthAttachment和一个Multismaple使用的Attachment
+ * RenderPass同时还包含了对应的Framebuffer
+ */
 class RenderPass : public IRHIResource
 {
 public:
     bool IsValid() const;
 
-    explicit RenderPass(const AnsiString &debug_name = "");
+    explicit RenderPass(const AnsiString& debug_name = "");
 
     ~RenderPass() override;
 
@@ -91,6 +94,9 @@ public:
     TUniquePtr<Framebuffer>& GetCurrentFrameBuffer() { return frame_buffers_[g_engine_statistics.current_image_index]; }
 
     vk::Framebuffer GetCurrentFrameBufferHandle();
+
+    void Begin(vk::CommandBuffer cb, const Color& clear_color = Color::Red());
+    void End(vk::CommandBuffer cb);
 
 protected:
     void InternalDestroy();
@@ -139,11 +145,68 @@ protected:
     vk::SubpassDependency  dependency_;
 
 #ifdef ELBOW_DEBUG
-    AnsiString render_pass_debug_name_;
+    AnsiString          render_pass_debug_name_;
     TArray<std::string> debug_image_names_;
     TArray<std::string> debug_image_view_names_;
     TArray<std::string> debug_frame_buffer_names_;
 #endif
 };
+
+class RenderPassManager final : public Singleton<RenderPassManager>
+{
+public:
+    RenderPassManager();
+
+    template<typename T>
+    static T* GetRenderPass();
+
+    template<typename T>
+    static T* CreateRenderPass(const AnsiString& name);
+
+    template<typename T>
+    static T* GetOrCreateRenderPass(const AnsiString& name);
+
+    static void DestroyRenderPasses();
+
+private:
+    THashMap<Type, RenderPass*> render_passes_;
+};
+
+template<typename T>
+T* RenderPassManager::GetRenderPass()
+{
+    static_assert(std::derived_from<T, RenderPass>, "T must derived from RenderPass");
+    Type t = TypeOf<T>();
+    auto& render_passes = Get()->render_passes_;
+    if (render_passes.contains(t))
+    {
+        return render_passes[t];
+    }
+    return nullptr;
+}
+
+template<typename T>
+T* RenderPassManager::CreateRenderPass(const AnsiString& name)
+{
+    static_assert(std::derived_from<T, RenderPass>, "T must derived from RenderPass");
+    Type t = TypeOf<T>();
+    auto& render_passes = Get()->render_passes_;
+    if (render_passes.contains(t))
+    {
+        LOG_ERROR_CATEGORY(Vulkan, L"没有新建名为{}的RenderPass,因为此RenderPass已经存在了", StringUtils::FromAnsiString(name));
+        return render_passes[t];
+    }
+    T* new_render_pass = new T(name);
+    new_render_pass->Initialize();
+    render_passes[t] = new_render_pass;
+    return new_render_pass;
+}
+
+template<typename T>
+T* RenderPassManager::GetOrCreateRenderPass(const AnsiString& name){
+    auto* rp = GetRenderPass<T>();
+    if (rp) return rp;
+    return CreateRenderPass<T>(name);
+}
 
 RHI_VULKAN_NAMESPACE_END

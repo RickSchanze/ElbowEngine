@@ -9,7 +9,6 @@
 
 #include "CoreDef.h"
 #include "FunctionCommon.h"
-#include "Singleton/Singleton.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -49,9 +48,7 @@ public:
 
     void SetRenderPipeline(RenderPipeline* new_render_pipeline);
 
-    vk::Semaphore SubmitPipeline(
-        const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr
-    ) const;
+    vk::Semaphore SubmitPipeline(const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr) const;
 
     /**
      * 获得当前帧结束时需要触发的Fence
@@ -68,6 +65,9 @@ public:
     const TArray<Comp::Mesh*>& GetDrawMeshes() const { return mesh_to_draw_; }
 
     uint32_t GetMinUniformBufferOffsetAlignment() const;
+
+    vk::CommandBuffer BeginRecordCommandBuffer();
+    void              EndRecordCommandBuffer();
 
 private:
     RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;

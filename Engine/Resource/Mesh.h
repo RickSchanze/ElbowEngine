@@ -75,13 +75,20 @@ public:
 
     TArray<SubMesh>& GetSubMeshes() { return sub_meshes_; }
 
+    int32_t GetVertexCount() const { return vertex_count_; }
+    int32_t GetIndexCount() const { return index_count_; }
+    int32_t GetTrianglesCount() const { return triangles_count_; }
+
 protected:
-    void ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_mesh) const;
-    void LoadTextures(ETextureUsage usage, const aiMaterial* material, TArray<Texture*>& out_textures) const;
+    void ProcessMesh(const aiMesh* mesh, const aiScene* scene, SubMesh& out_mesh);
     void ProcessNode(const aiNode* node, const aiScene* scene);
 
 private:
     TArray<SubMesh> sub_meshes_;
+
+    int32_t vertex_count_ = 0;
+    int32_t index_count_ = 0;
+    int32_t triangles_count_ = 0;
 
     Path path_;
 };

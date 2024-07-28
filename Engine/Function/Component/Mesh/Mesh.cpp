@@ -9,6 +9,8 @@
 
 #include "CoreGlobal.h"
 #include "ImGui/ImGuiHelper.h"
+#include "Math/MathTypes.h"
+#include "Render/Material.h"
 #include "Render/RenderContext.h"
 
 #include <Mesh.h>
@@ -54,7 +56,30 @@ void Mesh::OnInspectorGUI()
     if (ImGuiHelper::CollapsingHeader(GetCachedAnsiString().c_str()))
     {
         ImGuiHelper::Text(U8("网格体路径: %s"), mesh_->GetPath().ToRelativeCStr());
+        ImGuiHelper::Text(U8("顶点数: %d"), mesh_->GetVertexCount());
+        ImGuiHelper::Text(U8("索引数: %d"), mesh_->GetIndexCount());
+        ImGuiHelper::Text(U8("三角形面数: %d"), mesh_->GetTrianglesCount());
+
+        ImGuiHelper::SeparatorText(U8("材质"));
+        if (material_ == nullptr)
+        {
+            ImGuiHelper::TextColored(Color::Red(), U8("此网格材质为空,可能会导致渲染失效!"));
+        }
+        else
+        {
+            material_->OnInspectorGUI();
+        }
     }
+}
+
+void Mesh::SetMaterial(Material* mat)
+{
+    material_ = mat;
+}
+
+Material* Mesh::GetMaterial() const
+{
+    return material_;
 }
 
 FUNCTION_COMPONENT_NAMESPACE_END

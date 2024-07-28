@@ -154,6 +154,31 @@ void ShaderProgram::SetM(glm::mat4* models, size_t size) const
     current_buffer->FlushMemory();
 }
 
+bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler)
+{
+    if (!uniforms_.contains(name))
+    {
+        return false;
+    }
+    vk::WriteDescriptorSet descriptor_write;
+    const auto& tex_uniform = uniforms_[name];
+    descriptor_write.dstBinding = tex_uniform.binding;
+    descriptor_write.dstArrayElement = 0;
+    descriptor_write.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    descriptor_write.descriptorCount = 1;
+    vk::DescriptorImageInfo image_info;
+    image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    image_info.imageView = view.GetHandle();
+    image_info.sampler = sampler.GetHandle();
+    for (const auto descriptor_set : descriptor_sets_)
+    {
+        descriptor_write.dstSet = descriptor_set;
+        descriptor_write.pImageInfo = &image_info;
+        VulkanContext::Get()->GetLogicalDevice()->UpdateDescriptorSets(descriptor_write);
+    }
+    return true;
+}
+
 bool ShaderProgram::IsValid() const
 {
     return descriptor_set_layout_ != nullptr && !descriptor_sets_.empty() && descriptor_pool_ != nullptr;
@@ -243,7 +268,6 @@ void ShaderProgram::CreateDescriptorSets()
             descriptor_write.dstSet          = descriptor_sets_[i];
             descriptor_write.dstBinding      = uniform.binding;
             descriptor_write.dstArrayElement = 0;
-            descriptor_write.descriptorType  = vk::DescriptorType::eUniformBufferDynamic;
             descriptor_write.descriptorType  = GetVkDescriptorType(uniform.type);
             descriptor_write.descriptorCount = 1;
             if (uniform.type == EUniformDescriptorType::UniformBuffer || uniform.type == EUniformDescriptorType::DynamicUniformBuffer)

@@ -6,7 +6,6 @@
  */
 
 #include "GLFWWindow.h"
-#include "Component/Mesh/StaticMesh.h"
 #include "GameObject/GameObject.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
@@ -34,7 +33,7 @@ protected:
     void OnCreateAttachments() override
     {
         RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
-        Param.initial_layout   = vk::ImageLayout::ePresentSrcKHR;
+        Param.initial_layout   = vk::ImageLayout::eUndefined;
         Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
         Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
         Param.store_op         = vk::AttachmentStoreOp::eStore;
@@ -57,14 +56,11 @@ public:
 
 protected:
     void CreateDescriptorPool();
-    void CreateCommandBuffers();
 
 public:
-    void Draw() override;
+    void Draw(vk::CommandBuffer cb) override;
 
     void Rebuild() const;
-
-    vk::CommandBuffer GetCurrentCommandBuffer() const override;
 
 private:
     VulkanContext* context_;
@@ -72,7 +68,6 @@ private:
     vk::DescriptorPool        descriptor_pool_ = nullptr;
     TUniquePtr<CommandPool>   command_pool_;
     RenderPass*               render_pass_ = nullptr;
-    TArray<vk::CommandBuffer> command_buffers_;
 #ifdef ELBOW_DEBUG
     TArray<AnsiString> command_buffer_debug_names;
 #endif
@@ -133,8 +128,6 @@ void ImGuiGraphicsPipeline::Initialize()
     render_pass_ = new ImGuiRenderPass("ImGuiRenderPass");
     render_pass_->Initialize();
 
-    CreateCommandBuffers();
-
     // 初始化Imgui
     ImGui_ImplVulkan_LoadFunctions(
         [](const char* Name, void* UserData) { return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name); },
@@ -159,31 +152,19 @@ ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline()
     Finialize();
 }
 
-void ImGuiGraphicsPipeline::CreateCommandBuffers()
-{
-    vk::CommandBufferAllocateInfo alloc_info = {};
-    alloc_info.level                         = vk::CommandBufferLevel::ePrimary;
-    alloc_info.commandPool                   = command_pool_->GetHandle();
-    alloc_info.commandBufferCount            = static_cast<uint32_t>(render_pass_->GetFrameBuffers().size());
-    command_buffers_ =
-        context_->GetLogicalDevice()->AllocateCommandBuffers(alloc_info, "ImGuiGraphicsPipeline_CommandBuffer", &command_buffer_debug_names);
-}
-
-void ImGuiGraphicsPipeline::Draw()
+void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
 {
     vk::CommandBufferBeginInfo begin_info          = {};
     int32_t                    current_image_index = g_engine_statistics.current_image_index;
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    command_buffers_[current_image_index].begin(&begin_info);
     vk::RenderPassBeginInfo render_pass_info = {};
     render_pass_info.renderPass              = render_pass_->GetHandle();
     render_pass_info.framebuffer             = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
-    command_buffers_[current_image_index].beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+    cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffers_[current_image_index]);
-    command_buffers_[current_image_index].endRenderPass();
-    command_buffers_[current_image_index].end();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cb);
+    cb.endRenderPass();
 }
 
 void ImGuiGraphicsPipeline::Rebuild() const
@@ -191,16 +172,11 @@ void ImGuiGraphicsPipeline::Rebuild() const
     render_pass_->Rebuild(false);
 }
 
-vk::CommandBuffer ImGuiGraphicsPipeline::GetCurrentCommandBuffer() const
-{
-    return command_buffers_[g_engine_statistics.current_image_index];
-}
-
 void ImGuiGraphicsPipeline::CreateDescriptorPool()
 {
     vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
     vk::DescriptorPoolCreateInfo PoolCreateInfo;
-    PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(1).setPoolSizes(PoolSizes);
+    PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(10).setPoolSizes(PoolSizes);
     descriptor_pool_ = context_->GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 

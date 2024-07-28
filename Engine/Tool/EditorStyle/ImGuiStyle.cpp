@@ -91,4 +91,6 @@ void DeepDarkStyle::SetStyle()
     style.GrabRounding      = 3;
     style.LogSliderDeadzone = 4;
     style.TabRounding       = 4;
+    style.SeparatorTextBorderSize = 10;
+    style.SeparatorTextPadding.y = 10;
 }

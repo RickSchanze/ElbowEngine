@@ -86,6 +86,8 @@ public:
     // 设置MVP中的M矩阵
     void SetM(glm::mat4* models, size_t model_count) const;
 
+    bool SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler);
+
 protected:
     // 创建与交换链图像数量相当的UniformBuffer
     void CreateUniformBuffers();
@@ -121,7 +123,6 @@ private:
     vk::DescriptorSetLayout   descriptor_set_layout_;
 
     Ref<LogicalDevice> device_;
-
 
     AnsiString         name_;
     AnsiString         descriptor_set_layout_name_;

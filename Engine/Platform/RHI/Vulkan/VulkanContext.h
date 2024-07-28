@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include "Interface/IGraphicsPipeline.h"
 #include "Render/LogicalDevice.h"
 #include "Render/SwapChain.h"
 #include "Utils/ContainerUtils.h"
@@ -25,6 +24,12 @@ class RenderPass;
 }
 
 RHI_VULKAN_NAMESPACE_BEGIN
+
+
+struct PreVulkanDeviceDestroyedSingnature : public TEvent<>
+{
+};
+
 class IGraphicsPipeline;
 // VulkanContext应该具有全局唯一单例
 struct GraphicsQueueSubmitParams
@@ -44,6 +49,8 @@ public:
 
     static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance>& instance);
 
+    PreVulkanDeviceDestroyedSingnature PreVulkanDeviceDestroyed;
+
 protected:
     struct Protected
     {
@@ -60,8 +67,6 @@ public:
     void Finalize();
 
     vk::Semaphore SubmitGraphicsQueue(
-        const IGraphicsPipeline*  pipeline,
-        // 管线
         GraphicsQueueSubmitParams submit_params,
         // 提交参数
         vk::Fence                 fence_to_trigger   // 这次提交需要触发的fence
@@ -104,9 +109,17 @@ public:
 
     uint32_t GetMinUniformBufferOffsetAlignment() const;
 
+    vk::CommandBuffer GetCurrentCommandBuffer() const;
+
+    vk::CommandBuffer BeginRecordCommandBuffer();
+    void EndRecordCommandBuffer();
+
 protected:
     void CreateSyncObjecs();
     void CleanSyncObjects() const;
+
+    void CreateCommandBuffers();
+    void DestroyCommandBuffers();
 
     static inline VulkanContext* s_context_ = nullptr;
 
@@ -128,6 +141,9 @@ private:
 
     // 一次QueuePresent提交时需要等待的所有 Semaphore
     TArray<vk::Semaphore> all_wait_semaphores_;
+
+    TArray<vk::CommandBuffer> command_buffers_;
+    TArray<AnsiString> command_buffers_names_;
 };
 
 RHI_VULKAN_NAMESPACE_END

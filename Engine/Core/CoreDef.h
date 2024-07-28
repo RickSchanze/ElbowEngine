@@ -153,7 +153,7 @@ typedef rttr::type     Type;
 typedef rttr::property Property;
 
 template<typename T>
-Type GetType()
+Type TypeOf()
 {
     return rttr::type::get<T>();
 }

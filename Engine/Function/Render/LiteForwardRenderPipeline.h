@@ -12,6 +12,10 @@
 
 namespace RHI::Vulkan
 {
+class RenderPass;
+}
+namespace RHI::Vulkan
+{
 class GraphicsPipeline;
 }
 
@@ -24,10 +28,8 @@ public:
     void Draw(const RenderContextDrawParam& draw_param) override;
     void Build() override;
 
-    ~LiteForwardRenderPipeline() override;
-
 private:
-    RHI::Vulkan::GraphicsPipeline* forward_pipeline_ = nullptr;
+    RHI::Vulkan::RenderPass* forward_pass_ = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

@@ -15,6 +15,10 @@
 
 namespace Function
 {
+class Material;
+}
+namespace Function
+{
 class RenderContext;
 }
 
@@ -38,18 +42,22 @@ struct UBOViewProjection
 struct UBOModelInstance
 {
     glm::mat4* models = nullptr;
-    size_t count = 0;
-    size_t size = 0;
+    size_t     count  = 0;
+    size_t     size   = 0;
 
     ~UBOModelInstance()
     {
         MemoryUtils::AlignedFree(models);
-        count = 0;
+        count  = 0;
         models = nullptr;
     }
 };
 
 class GameObject;
+
+/**
+ * 负责RenderPass的流程
+ */
 class RenderPipeline
 {
 public:
@@ -72,14 +80,12 @@ protected:
 
     void PrepareModelUniformBuffer();
 
-    vk::Semaphore Submit(
-        const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params,
-        vk::Fence fence_to_trigger = nullptr
-    ) const;
+    vk::Semaphore Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, vk::Fence fence_to_trigger = nullptr) const;
 
     void AddImGuiGraphicsPipeline();
-    void DrawImGuiPipeline() const;
-    void SubmitImGuiPipelne(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const;
+    void DrawImGuiPipeline(vk::CommandBuffer cb) const;
+
+    THashMap<Material*, TArray<Comp::Mesh*>> CollectMeshesWithMaterial()const;
 
     RenderContext*                      context_        = nullptr;
     RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;

@@ -86,6 +86,11 @@ TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
     return rhi_texture_;
 }
 
+Texture* Texture::GetDefaultLackTexture()
+{
+    return Create(gResourceConfig.default_lack_texture_path);
+}
+
 RESOURCE_NAMESPACE_END
 
 static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageView** out_texture_view)

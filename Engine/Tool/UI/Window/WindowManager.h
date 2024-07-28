@@ -28,7 +28,7 @@ public:
     template<typename T>
         requires std::derived_from<T, Tool::Window::WindowBase>
     static T* GetWindow() {
-        Type WindowType     = GetType<T>();
+        Type WindowType     = TypeOf<T>();
         auto WindowInstance = GetWindow(WindowType);
         return dynamic_cast<T*>(WindowInstance);
     }

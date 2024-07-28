@@ -31,6 +31,15 @@ void Object::SetName(const String& name) {
     cached_ansi_string_ = StringUtils::ToAnsiString(name);
 }
 
-bool Object::IsValid() const {
+bool Object::IsValid() const
+{
     return !is_garbage_;
+}
+
+const AnsiString& Object::GetCachedAnsiString(){
+    if (cached_ansi_string_.empty())
+    {
+        cached_ansi_string_ = StringUtils::ToAnsiString(name_);
+    }
+    return cached_ansi_string_;
 }

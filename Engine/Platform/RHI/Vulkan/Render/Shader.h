@@ -77,10 +77,10 @@ public:
      */
     Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& debug_shader_name);
 
-    static Shader* Create(const Path& path, const EShaderStage type, const AnsiString& debug_shader_name = "")
+    static Shader* Create(const Path& path, const EShaderStage type, const AnsiString& name = "")
     {
         const Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        return new Shader(Protected{}, device, path, type, debug_shader_name);
+        return new Shader(Protected{}, device, path, type, name);
     }
 
     ~Shader();
@@ -107,9 +107,7 @@ private:
 
     Ref<LogicalDevice> device_;   // 使用此Shader的管线
 
-#ifdef ELBOW_DEBUG
-    AnsiString debug_shader_name_;
-#endif
+    AnsiString shader_name_;
 };
 
 RHI_VULKAN_NAMESPACE_END

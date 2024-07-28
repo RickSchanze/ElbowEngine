@@ -14,14 +14,12 @@ class IGraphicsPipeline
 {
 public:
     virtual ~IGraphicsPipeline() = default;
-
-    virtual vk::CommandBuffer GetCurrentCommandBuffer() const = 0;
 };
 
 class ImguiGraphicsPipeline : public IGraphicsPipeline
 {
 public:
-    virtual void Draw() = 0;
+    virtual void Draw(vk::CommandBuffer cb) = 0;
 };
 
 RHI_VULKAN_NAMESPACE_END

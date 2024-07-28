@@ -12,7 +12,6 @@
 #include "LogicalDevice.h"
 #include "Utils/StringUtils.h"
 
-#include <iostream>
 #include <utility>
 
 RHI_VULKAN_NAMESPACE_BEGIN
@@ -69,13 +68,12 @@ Shader::Shader(
     vk::ShaderModuleCreateInfo create_info = {};
     create_info.setCodeSize(shader_code_size * 4).setPCode(shader_code_ptr);
     shader_module_ = device.get().GetHandle().createShaderModule(create_info);
-#ifdef ELBOW_DEBUG
-    debug_shader_name_ = debug_shader_name;
-    if (!debug_shader_name_.empty())
+
+    shader_name_ = debug_shader_name;
+    if (!shader_name_.empty())
     {
-        device.get().SetShaderModuleDebugName(shader_module_, debug_shader_name_.data());
+        device.get().SetShaderModuleDebugName(shader_module_, shader_name_.data());
     }
-#endif
 }
 
 Shader::~Shader()

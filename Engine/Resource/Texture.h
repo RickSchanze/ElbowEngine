@@ -59,6 +59,8 @@ public:
 
     TUniquePtr<RHI::Vulkan::Texture>& GetRHIResource() override;
 
+    static Texture* GetDefaultLackTexture();
+
 protected:
     Path          path_;
     int32_t       width_    = 0;

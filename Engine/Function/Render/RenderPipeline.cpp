@@ -92,11 +92,9 @@ void RenderPipeline::PrepareModelUniformBuffer()
     }
 }
 
-vk::Semaphore RenderPipeline::Submit(
-    const RHI::Vulkan::IGraphicsPipeline* pipeline, const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger
-) const
+vk::Semaphore RenderPipeline::Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger) const
 {
-    return context_->SubmitPipeline(pipeline, submit_params, fence_to_trigger);
+    return context_->SubmitPipeline(submit_params, fence_to_trigger);
 }
 
 void RenderPipeline::AddImGuiGraphicsPipeline()
@@ -104,14 +102,24 @@ void RenderPipeline::AddImGuiGraphicsPipeline()
     OnRequireImGuiGraphicsPipeline.Broadcast(&imgui_pipeline_);
 }
 
-void RenderPipeline::DrawImGuiPipeline() const
+void RenderPipeline::DrawImGuiPipeline(vk::CommandBuffer cb) const
 {
-    imgui_pipeline_->Draw();
+    imgui_pipeline_->Draw(cb);
 }
 
-void RenderPipeline::SubmitImGuiPipelne(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params) const
+THashMap<Material*, TArray<Comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const
 {
-    Submit(imgui_pipeline_, submit_params);
+    THashMap<Material*, TArray<Comp::Mesh*>> rtn;
+    for (auto& mesh: context_->GetDrawMeshes())
+    {
+        if (mesh->GetMaterial() == nullptr)
+        {
+            continue;
+        }
+
+        rtn[mesh->GetMaterial()].push_back(mesh);
+    }
+    return rtn;
 }
 
 FUNCTION_NAMESPACE_END

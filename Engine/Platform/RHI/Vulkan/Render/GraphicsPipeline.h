@@ -114,10 +114,10 @@ struct PipelineInfo
     // 如果位包含了None则不启用
     int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
 
-    AnsiString           name_;
+    AnsiString         name_;
     TArray<AnsiString> command_buffer_names;
-    AnsiString           pipeline_layout_name_;
-    AnsiString           pipeline_name_;
+    AnsiString         pipeline_layout_name_;
+    AnsiString         pipeline_name_;
 };
 
 class GraphicsPipeline : public IGraphicsPipeline
@@ -132,31 +132,24 @@ public:
     // 根据Initializer配置的参数初始化一个图形管线
     explicit GraphicsPipeline(const PipelineInfo& pipeline_info);
 
-    vk::CommandBuffer GetCurrentCommandBuffer() const override;
+    void BindPipeline(vk::CommandBuffer cb) const;
 
-    void BeginCommandBuffer();
-    void EndCommandBuffer();
-
-    void BeginRenderPass(Color clear_color = Color::Red()) const;
-    void EndRenderPass() const;
-
-    void BindPipeline() const;
-
-    void UpdateViewport(float width = 0, float height = 0, float x = 0, float y = 0) const;
-    void UpdateScissor(uint32_t width = 0, uint32_t height = 0, int32_t offset_x = 0, int32_t offset_y = 0) const;
+    void UpdateViewport(vk::CommandBuffer cb, float width = 0, float height = 0, float x = 0, float y = 0) const;
+    void UpdateScissor(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int32_t offset_x = 0, int32_t offset_y = 0) const;
 
     // TODO: TArrayView?
-    void BindVertexBuffers(const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets = {}) const;
-    void BindIndexBuffer(vk::Buffer buffer, vk::DeviceSize offset = 0) const;
-    void BindMesh(const Mesh& mesh) const;
+    void BindVertexBuffers(vk::CommandBuffer cb, const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets = {}) const;
+    void BindIndexBuffer(vk::CommandBuffer cb, vk::Buffer buffer, vk::DeviceSize offset = 0) const;
+    void BindMesh(vk::CommandBuffer cb, const Mesh& mesh) const;
 
     void BindDescriptiorSets(
-        const TArray<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics, uint32_t first_set = 0,
-        const TArray<uint32_t>& dynamic_offsets = {}
+        vk::CommandBuffer cb, const TArray<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics,
+        uint32_t first_set = 0, const TArray<uint32_t>& dynamic_offsets = {}
     ) const;
 
     void DrawIndexed(
-        uint32_t index_count, uint32_t instance_count = 1, uint32_t first_index = 0, int32_t vertex_offset = 0, uint32_t first_instance = 0
+        vk::CommandBuffer cb, uint32_t index_count, uint32_t instance_count = 1, uint32_t first_index = 0, int32_t vertex_offset = 0,
+        uint32_t first_instance = 0
     ) const;
 
     bool IsValid() const { return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr && shader_program_ != nullptr; }
@@ -175,18 +168,10 @@ private:
     vk::PipelineLayout pipeline_layout_;
     vk::Pipeline       pipeline_;
 
-    // 4.命令缓冲
-    TArray<vk::CommandBuffer> command_buffers_;
-
     vk::SampleCountFlagBits sample_count_ = vk::SampleCountFlagBits::e1;
 
     RenderPass*    render_pass_    = nullptr;
     ShaderProgram* shader_program_ = nullptr;
-
-    vk::CommandBuffer binded_buffer_ = nullptr;
-
-    void CreateCommandBuffers();
-    void DestroyCommandBuffers();
 
 public:
     // clang-format on

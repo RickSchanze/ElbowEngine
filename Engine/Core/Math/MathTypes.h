@@ -13,6 +13,7 @@
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <imgui.h>
 
 struct Size2D : IStringify
 {
@@ -77,4 +78,6 @@ public:
     static Color Green() { return {0, 1, 0, 1}; }
     static Color Blue() { return {0, 0, 1, 1}; }
     static Color Yellow() { return {1, 1, 0, 1}; }
+
+    operator ImVec4() { return {r, g, b, a}; }
 };

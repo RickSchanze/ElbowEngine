@@ -15,6 +15,10 @@
  * 表示Mesh的基类
  */
 
+namespace Function
+{
+class Material;
+}
 namespace Resource
 {
 class SubMesh;
@@ -44,8 +48,13 @@ public:
 
     void OnInspectorGUI() override;
 
+    void SetMaterial(Material* mat);
+
+    Material* GetMaterial() const;
+
 protected:
-    Resource::Mesh* mesh_ = nullptr;
+    Resource::Mesh* mesh_     = nullptr;
+    Material*       material_ = nullptr;
 };
 
 FUNCTION_COMPONENT_NAMESPACE_END
