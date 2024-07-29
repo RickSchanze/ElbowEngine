@@ -175,6 +175,7 @@ struct EngineStatistics
         uint32_t max_dynamic_model_uniform_buffer_count = 20;   // 最大动态模型矩阵uniform buffer数量 @see ShaderProgram.cpp
         int32_t  swapchain_image_count                  = 3;    // 交换链图像数量
         int32_t  parallel_render_frame_count            = 2;    // 同时渲染的帧数
+        int32_t  max_directional_light_count            = 4;    // 同一场景最大能拥有的直射光的数量
     } graphics;
 
     float    time_delta                  = 0;

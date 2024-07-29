@@ -10,9 +10,7 @@
 #include "CoreDef.h"
 #include "Interface/IStringify.h"
 
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
 #include <imgui.h>
 
 struct Size2D : IStringify
@@ -28,6 +26,7 @@ struct Size2D : IStringify
 
 typedef glm::vec3 Vector3;
 typedef glm::vec2 Vector2;
+typedef glm::vec4 Vector4;
 
 namespace Constant
 {

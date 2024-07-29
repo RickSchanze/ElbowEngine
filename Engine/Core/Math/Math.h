@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "MathTypes.h"
 
 
 class Math {
@@ -14,4 +15,7 @@ public:
     static bool  IsNearlyZero(float value, float tolerance = 1.e-4f);
     static float Clamp(float value, float min, float max);
     static float Clamp01(float value);
+
+    // 类型转换
+    static Vector4 ToVector4(const Vector3& v, float fill = 0.f);
 };

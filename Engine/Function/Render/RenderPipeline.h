@@ -13,6 +13,10 @@
 
 #include <glm/glm.hpp>
 
+namespace Function::Comp
+{
+class Camera;
+}
 namespace Function
 {
 class Material;

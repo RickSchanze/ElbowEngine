@@ -132,14 +132,23 @@ void ShaderProgram::DestroyShaders()
     }
 }
 
-void ShaderProgram::SetVP(const glm::mat4& view, const glm::mat4& projection) const
+void ShaderProgram::SetCameraPositionProjectionView(const glm::mat4& view, const glm::mat4& projection, const glm::vec4& pos) const
 {
-    const TStaticArray<glm::mat4, 2> ubo = {projection, view};
+    struct UboView
+    {
+        glm::mat4 projection;
+        glm::mat4 view;
+        glm::vec4 cameraPosition;
+    } ubo_view{};
+
+    ubo_view.projection     = projection;
+    ubo_view.view           = view;
+    ubo_view.cameraPosition = pos;
 
     auto* current_buffer = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index];
     current_buffer->MapMemory();
     auto* map_res = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index]->GetMappedCpuMemory();
-    memcpy(map_res, ubo.data(), 2 * sizeof(glm::mat4));
+    memcpy(map_res, &ubo_view.projection, sizeof(UboView));
     current_buffer->UnmapMemory();
 }
 
@@ -161,18 +170,18 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
         return false;
     }
     vk::WriteDescriptorSet descriptor_write;
-    const auto& tex_uniform = uniforms_[name];
-    descriptor_write.dstBinding = tex_uniform.binding;
-    descriptor_write.dstArrayElement = 0;
-    descriptor_write.descriptorType = vk::DescriptorType::eCombinedImageSampler;
-    descriptor_write.descriptorCount = 1;
+    const auto&            tex_uniform = uniforms_[name];
+    descriptor_write.dstBinding        = tex_uniform.binding;
+    descriptor_write.dstArrayElement   = 0;
+    descriptor_write.descriptorType    = vk::DescriptorType::eCombinedImageSampler;
+    descriptor_write.descriptorCount   = 1;
     vk::DescriptorImageInfo image_info;
     image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-    image_info.imageView = view.GetHandle();
-    image_info.sampler = sampler.GetHandle();
-    for (const auto descriptor_set : descriptor_sets_)
+    image_info.imageView   = view.GetHandle();
+    image_info.sampler     = sampler.GetHandle();
+    for (const auto descriptor_set: descriptor_sets_)
     {
-        descriptor_write.dstSet = descriptor_set;
+        descriptor_write.dstSet     = descriptor_set;
         descriptor_write.pImageInfo = &image_info;
         VulkanContext::Get()->GetLogicalDevice()->UpdateDescriptorSets(descriptor_write);
     }

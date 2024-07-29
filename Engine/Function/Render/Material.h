@@ -58,7 +58,7 @@ public:
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 
-    void SetViewProjection(Comp::Camera* camera);
+    void SetPostionViewProjection(Comp::Camera* camera);
 
     void SetModel(glm::mat4* models, size_t size);
 

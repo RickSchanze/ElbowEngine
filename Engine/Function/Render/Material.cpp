@@ -10,6 +10,7 @@
 #include "Component/Camera.h"
 #include "Component/Mesh/Mesh.h"
 #include "ImGui/ImGuiHelper.h"
+#include "Math/Math.h"
 #include "Mesh.h"
 
 #include <ranges>
@@ -75,13 +76,14 @@ void Material::Use(vk::CommandBuffer cb, uint32_t width, uint32_t height, int x,
     pipeline_->UpdateViewport(cb, width, height, x, y);
 }
 
-void Material::SetViewProjection(Comp::Camera* camera)
+void Material::SetPostionViewProjection(Comp::Camera* camera)
 {
     if (camera == nullptr)
     {
         return;
     }
-    shader_program_->SetVP(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+    Vector4 pos = Math::ToVector4(camera->GetTransform().location);
+    shader_program_->SetCameraPositionProjectionView(camera->GetViewMatrix(), camera->GetProjectionMatrix(), pos);
 }
 
 void Material::SetModel(glm::mat4* models, size_t size)

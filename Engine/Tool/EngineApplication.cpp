@@ -76,6 +76,7 @@ void EngineApplication::LogBeginInit()
     LOG_INFO_CATEGORY(Engine.Graphics, L"最大DynamicUniformBuffer数量 = {}", g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count);
     LOG_INFO_CATEGORY(Engine.Graphics, L"交换链图像数量 = {}", g_engine_statistics.graphics.swapchain_image_count);
     LOG_INFO_CATEGORY(Engine.Graphics, L"并行渲染帧数量 = {}", g_engine_statistics.graphics.parallel_render_frame_count);
+    LOG_INFO_CATEGORY(Engine.Graphics, L"最大直射光源数量 = {}", g_engine_statistics.graphics.max_directional_light_count);
 }
 
 void EngineApplication::LogEndInit()

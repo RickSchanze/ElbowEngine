@@ -25,6 +25,7 @@ FUNCTION_NAMESPACE_BEGIN
 void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
     // TODO: 将Camera加入到渲染参数
+    // TODO: 遮挡剔除
     Comp::Camera* main = Comp::Camera::Main;
     Super::Draw(draw_param);
     auto cb = context_->BeginRecordCommandBuffer();
@@ -35,7 +36,7 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     for (auto& [material, meshes]: meshes_to_draw)
     {
         material->Use(cb);
-        material->SetViewProjection(main);
+        material->SetPostionViewProjection(main);
         material->SetModel(model_instances_.models, model_instances_.size);
         for (int i = 0; i < meshes.size(); i++)
         {

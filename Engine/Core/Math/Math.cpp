@@ -22,6 +22,12 @@ float Math::Clamp(float value, float min, float max) {
     return std::clamp(value, min, max);
 }
 
-float Math::Clamp01(float value) {
+float Math::Clamp01(float value)
+{
     return Clamp(value, 0, 1);
+}
+
+Vector4 Math::ToVector4(const Vector3& v, float fill)
+{
+    return {v.x, v.y, v.z, fill};
 }

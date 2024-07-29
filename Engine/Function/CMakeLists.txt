@@ -16,6 +16,8 @@ add_library(${PROJECT_NAME}
         Component/Mesh/StaticMesh.cpp
         Component/Interface/IDetailGUIDrawer.h
         Component/Interface/IDetailGUIDrawer.cpp
+        Component/Light/Light.h
+        Component/Light/Light.cpp
         Render/RenderContext.h
         Render/RenderContext.cpp
         Render/LiteForwardRenderPipeline.h

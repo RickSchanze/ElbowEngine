@@ -82,7 +82,7 @@ public:
     void DestroyShaders();
 
     // 设置MVP中的VP矩阵
-    void SetVP(const glm::mat4& view, const glm::mat4& projection) const;
+    void SetCameraPositionProjectionView(const glm::mat4& view, const glm::mat4& projection, const glm::vec4& pos) const;
     // 设置MVP中的M矩阵
     void SetM(glm::mat4* models, size_t model_count) const;
 
