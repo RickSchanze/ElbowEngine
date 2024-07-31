@@ -145,22 +145,43 @@ void ShaderProgram::SetCameraPositionProjectionView(const glm::mat4& view, const
     ubo_view.view           = view;
     ubo_view.cameraPosition = pos;
 
-    auto* current_buffer = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index];
-    current_buffer->MapMemory();
-    auto* map_res = static_vp_uniform_buffers_[g_engine_statistics.current_frame_index]->GetMappedCpuMemory();
-    memcpy(map_res, &ubo_view.projection, sizeof(UboView));
-    current_buffer->UnmapMemory();
+    // TODO: 这里到底应该都设置还是只设置当前Frame?
+    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+    {
+        auto* current_buffer = static_pvc_uniform_buffers_[i];
+        current_buffer->MapMemory();
+        auto* map_res = static_pvc_uniform_buffers_[i]->GetMappedCpuMemory();
+        memcpy(map_res, &ubo_view.projection, sizeof(UboView));
+        current_buffer->FlushMemory();
+    }
 }
 
 void ShaderProgram::SetM(glm::mat4* models, size_t size) const
 {
-    auto* current_buffer = dynamic_model_uniform_buffers_[g_engine_statistics.current_frame_index];
-    if (!current_buffer->IsMemoryMapped())
+    // TODO: 这里到底应该都设置还是只设置当前Frame?
+    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
-        current_buffer->MapMemory();
+        auto* current_buffer = dynamic_model_uniform_buffers_[i];
+        if (!current_buffer->IsMemoryMapped())
+        {
+            current_buffer->MapMemory();
+        }
+        current_buffer->Memcpy(models, size);
+        current_buffer->FlushMemory();
     }
-    current_buffer->Memcpy(models, size);
-    current_buffer->FlushMemory();
+}
+
+void ShaderProgram::SetPointLight(void* data, size_t size) const
+{
+    // TODO: 这里到底应该都设置还是只设置当前Frame?
+    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+    {
+        auto* current_buffer = static_light_uniform_buffers_[i];
+        current_buffer->MapMemory();
+        auto* map_res = static_light_uniform_buffers_[i]->GetMappedCpuMemory();
+        memcpy(map_res, data, size);
+        current_buffer->FlushMemory();
+    }
 }
 
 bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler)
@@ -200,31 +221,52 @@ void ShaderProgram::CreateUniformBuffers()
     // 静态共享的VP矩阵的UniformBuffer
     for (const auto& value: GetUniforms() | std::views::values)
     {
-        if (value.name != "ubo_instance")
+        if (value.name == "ubo_view")
         {
-            buffer_size += value.size;
-        }
-    }
-    static_vp_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
+            buffer_size = value.size;
+            static_pvc_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
 
-    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-    {
-        static_vp_uniform_buffers_[i] = new Buffer(
-            buffer_size,
-            vk::BufferUsageFlagBits::eUniformBuffer,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            name_ + "_StaticSharedUniformBuffer"
-        );
-    }
-    size_t dynamic_alignment = VulkanUtils::GetDynamicUniformModelAligment();
-    // 动态实例的模型变换矩阵的uniform buffer
-    buffer_size              = dynamic_alignment * g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count;
-    dynamic_model_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
-    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-    {
-        dynamic_model_uniform_buffers_[i] = new Buffer(
-            buffer_size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, name_ + "_DynamiModelUniformBuffer"
-        );
+            for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+            {
+                static_pvc_uniform_buffers_[i] = new Buffer(
+                    buffer_size,
+                    vk::BufferUsageFlagBits::eUniformBuffer,
+                    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+                    name_ + "_StaticPVCUniformBuffer"
+                );
+            }
+        }
+        if (value.name == "ubo_instance")
+        {
+            size_t dynamic_alignment = VulkanUtils::GetDynamicUniformModelAligment();
+            // 动态实例的模型变换矩阵的uniform buffer
+            buffer_size              = dynamic_alignment * g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count;
+            dynamic_model_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
+            for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+            {
+                dynamic_model_uniform_buffers_[i] = new Buffer(
+                    buffer_size,
+                    vk::BufferUsageFlagBits::eUniformBuffer,
+                    vk::MemoryPropertyFlagBits::eHostVisible,
+                    name_ + "_DynamiModelUniformBuffer"
+                );
+            }
+        }
+        if (value.name == "ubo_point_lights")
+        {
+            buffer_size = value.size;
+            static_light_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
+
+            for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+            {
+                static_light_uniform_buffers_[i] = new Buffer(
+                    buffer_size,
+                    vk::BufferUsageFlagBits::eUniformBuffer,
+                    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+                    name_ + "_StaticPointLightUniformBuffer"
+                );
+            }
+        }
     }
 }
 
@@ -232,10 +274,11 @@ void ShaderProgram::DestroyUniformBuffers()
 {
     for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
-        delete static_vp_uniform_buffers_[i];
+        delete static_pvc_uniform_buffers_[i];
         delete dynamic_model_uniform_buffers_[i];
+        delete static_light_uniform_buffers_[i];
     }
-    static_vp_uniform_buffers_.clear();
+    static_pvc_uniform_buffers_.clear();
 }
 
 void ShaderProgram::CreateDescriptorSets()
@@ -284,7 +327,7 @@ void ShaderProgram::CreateDescriptorSets()
                 vk::DescriptorBufferInfo buffer_info;
                 if (uniform.type == EUniformDescriptorType::UniformBuffer)
                 {
-                    buffer_info.buffer = static_vp_uniform_buffers_[i]->GetBufferHandle();
+                    buffer_info.buffer = static_pvc_uniform_buffers_[i]->GetBufferHandle();
                 }
                 else if (uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
                 {

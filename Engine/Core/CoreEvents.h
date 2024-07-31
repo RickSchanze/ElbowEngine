@@ -11,7 +11,9 @@
 
 struct ProjectPathSetEvent : TEvent<>
 {
-
 };
 
+struct AppExitEvent : TEvent<> {};
+
 inline ProjectPathSetEvent OnProjectPathSet;
+inline AppExitEvent OnAppExit;

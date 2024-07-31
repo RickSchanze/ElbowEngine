@@ -113,6 +113,7 @@ struct PipelineInfo
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
     int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
+    bool                            push_light_count_constant = true;   // 是否将光照数量push进shader里
 
     AnsiString         name_;
     TArray<AnsiString> command_buffer_names;

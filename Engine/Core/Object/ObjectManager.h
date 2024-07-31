@@ -14,6 +14,8 @@ class Object;
 class ObjectManager : public Singleton<ObjectManager>
 {
 public:
+    ObjectManager();
+
     /**
      * 向对象管理器中添加一个对象
      * @param new_object 对象
@@ -59,6 +61,8 @@ public:
     }
 
     int32_t GetObjectCount() const { return objects_.size(); }
+
+    static void DestroyAllObjects();
 
     ~ObjectManager() override;
 

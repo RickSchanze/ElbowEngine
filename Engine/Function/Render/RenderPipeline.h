@@ -83,6 +83,9 @@ protected:
     glm::mat4* GetModelDynamicUniformBuffer();
 
     void PrepareModelUniformBuffer();
+    void PrepareLight();
+    void PrepareFrame();
+    void PrepareDrawMeshes();
 
     vk::Semaphore Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, vk::Fence fence_to_trigger = nullptr) const;
 
@@ -95,6 +98,10 @@ protected:
     RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
 
     UBOModelInstance model_instances_;
+
+protected:
+    // 每帧处理的需要绘制的mesh
+    THashMap<Material*, TArray<Comp::Mesh*>> draw_meshs_;
 };
 
 FUNCTION_NAMESPACE_END

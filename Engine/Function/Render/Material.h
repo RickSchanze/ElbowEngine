@@ -62,6 +62,8 @@ public:
 
     void SetModel(glm::mat4* models, size_t size);
 
+    void SetPointLights(void* data, size_t size);
+
     void DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
 
 protected:

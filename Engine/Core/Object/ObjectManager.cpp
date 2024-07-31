@@ -6,9 +6,16 @@
  */
 
 #include "ObjectManager.h"
+
+#include "CoreEvents.h"
 #include "CoreGlobal.h"
 #include "Object.h"
 #include "Utils/ContainerUtils.h"
+
+ObjectManager::ObjectManager()
+{
+    OnAppExit.Add(&ObjectManager::DestroyAllObjects);
+}
 
 bool ObjectManager::AddObject(Object* new_object)
 {
@@ -47,20 +54,30 @@ bool ObjectManager::RemoveObject(const uint32_t id)
     return false;
 }
 
-ObjectManager::~ObjectManager()
+void ObjectManager::DestroyAllObjects()
 {
-    while (!objects_.empty())
+    auto m = Get();
+    if (m == nullptr)
     {
-        auto obj_to_del = objects_.begin()->second;
+        return;
+    }
+    while (!m->objects_.empty())
+    {
+        auto obj_to_del = m->objects_.begin()->second;
         // 组件由对象自己释放
         if (!obj_to_del->IsComponent())
         {
-            delete objects_.begin()->second;
+            delete m->objects_.begin()->second;
         }
         else
         {
-            objects_.erase(objects_.begin());
+            m->objects_.erase(m->objects_.begin());
         }
     }
-    objects_.clear();
+    m->objects_.clear();
+}
+
+ObjectManager::~ObjectManager()
+{
+    DestroyAllObjects();
 }

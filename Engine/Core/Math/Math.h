@@ -18,4 +18,5 @@ public:
 
     // 类型转换
     static Vector4 ToVector4(const Vector3& v, float fill = 0.f);
+    static Vector4 ToVector4(const Color& c);
 };

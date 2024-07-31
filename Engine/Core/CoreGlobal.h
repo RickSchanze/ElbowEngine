@@ -27,6 +27,8 @@ extern Logger g_logger;
 
 #define LOG_ERROR(Text, ...) g_logger.Error(L##Text, __VA_ARGS__)
 #define LOG_ERROR_CATEGORY(Category, Text, ...) g_logger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI(Text, ...) g_logger.Error(##Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI_CATEGORY(Category, Text, ...) g_logger.Error("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_CRITIAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
 #define LOG_CRITIAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
@@ -175,16 +177,16 @@ struct EngineStatistics
         uint32_t max_dynamic_model_uniform_buffer_count = 20;   // 最大动态模型矩阵uniform buffer数量 @see ShaderProgram.cpp
         int32_t  swapchain_image_count                  = 3;    // 交换链图像数量
         int32_t  parallel_render_frame_count            = 2;    // 同时渲染的帧数
-        int32_t  max_directional_light_count            = 4;    // 同一场景最大能拥有的直射光的数量
+        int32_t  max_point_light_count                  = 4;    // 同一场景最大能拥有的直射光的数量
     } graphics;
 
-    float    time_delta                  = 0;
-    uint64_t frame_count                 = 0;
-    int32_t  fps                         = 0;       // 帧率
-    bool     is_hide_mouse               = false;   // 是否隐藏鼠标
-    int32_t  object_count                = 0;       // 当前总对象数
-    uint32_t current_image_index         = 0;   // 当前交换链索引
-    int32_t  current_frame_index         = 0;   // 当前渲染帧索引
+    float    time_delta          = 0;
+    uint64_t frame_count         = 0;
+    int32_t  fps                 = 0;       // 帧率
+    bool     is_hide_mouse       = false;   // 是否隐藏鼠标
+    int32_t  object_count        = 0;       // 当前总对象数
+    uint32_t current_image_index = 0;       // 当前交换链索引
+    int32_t  current_frame_index = 0;       // 当前渲染帧索引
 
     // current_frame_index++
     void IncreaseFrameIndex();

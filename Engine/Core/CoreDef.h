@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#include <ranges>
+
 // 一些Typedef
 #include <functional>
 

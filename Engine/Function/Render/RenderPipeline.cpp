@@ -7,8 +7,11 @@
 
 #include "RenderPipeline.h"
 
+#include "Component/Light/Light.h"
 #include "Component/Mesh/Mesh.h"
 #include "Event.h"
+#include "Material.h"
+#include "Math/Math.h"
 #include "Math/MathTypes.h"
 #include "RenderContext.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
@@ -33,7 +36,7 @@ RenderPipeline::~RenderPipeline()
 
 void RenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
-    PrepareModelUniformBuffer();
+    PrepareFrame();
 }
 
 size_t RenderPipeline::GetDynamicUniformModelAligment() const
@@ -90,6 +93,44 @@ void RenderPipeline::PrepareModelUniformBuffer()
         auto& mesh_transform       = mesh->GetTransform();
         model_instances_.models[i] = mesh_transform.ToMat4();
     }
+}
+
+void RenderPipeline::PrepareLight()
+{
+    auto lights = Comp::LightManager::Get()->GetLights();
+    struct PointLight
+    {
+        Vector4 pos;
+        Vector4 color;
+    };
+    TArray<PointLight> lights_data;
+    for (auto* light: lights)
+    {
+        // 处理直射光
+        if (light->GetLightType() == Comp::ELightType::Point)
+        {
+            PointLight light_data{};
+            light_data.color = Math::ToVector4(light->GetLightColor());
+            // 位置的w分量表示强度
+            light_data.pos   = Math::ToVector4(light->GetTransform().location, light->GetLightIntensity());
+        }
+    }
+    for (auto* mat : draw_meshs_ | std::views::keys)
+    {
+        mat->SetPointLights(lights_data.data(), lights_data.size() * sizeof(PointLight));
+    }
+}
+
+void RenderPipeline::PrepareFrame()
+{
+    PrepareDrawMeshes();
+    PrepareLight();
+    PrepareModelUniformBuffer();
+}
+
+void RenderPipeline::PrepareDrawMeshes()
+{
+    draw_meshs_ = CollectMeshesWithMaterial();
 }
 
 vk::Semaphore RenderPipeline::Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger) const

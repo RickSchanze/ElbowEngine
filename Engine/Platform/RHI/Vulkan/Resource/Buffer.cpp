@@ -45,13 +45,19 @@ void* Buffer::GetMappedCpuMemory()
 void Buffer::MapMemory()
 {
     auto* context = VulkanContext::Get();
-    auto a = context->GetLogicalDevice()->MapMemory(memory_, size_, 0, &mapped_);
+    if (mapped_ == nullptr)
+    {
+        context->GetLogicalDevice()->MapMemory(memory_, size_, 0, &mapped_);
+    }
 }
 
 void Buffer::UnmapMemory()
 {
     auto* context = VulkanContext::Get();
-    context->GetLogicalDevice()->UnmapMemory(memory_);
+    if (mapped_ != nullptr)
+    {
+        context->GetLogicalDevice()->UnmapMemory(memory_);
+    }
     mapped_ = nullptr;
 }
 

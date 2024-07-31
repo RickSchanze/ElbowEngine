@@ -21,8 +21,10 @@ Function::GameObject::GameObject(GameObject* InParent) {
 
 Function::GameObject::~GameObject() {
     for (auto component: components_) {
+        component->EndPlay();
         delete component;
     }
+    components_.clear();
     for (int i = sub_game_objects_.size() - 1; i >= 0; i--) {
         delete sub_game_objects_[i];
     }

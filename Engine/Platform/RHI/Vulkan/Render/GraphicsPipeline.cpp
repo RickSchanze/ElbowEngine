@@ -126,8 +126,21 @@ void GraphicsPipeline::CreatePipeline()
     // 配置Shader的阶段
     vk::PipelineShaderStageCreateInfo vert_info{};
     vert_info.setStage(vk::ShaderStageFlagBits::eVertex).setModule(shader_program_->GetVertShaderHandle()).setPName("main");
+
+    // 配置frag shader的最大光照信息
+    TStaticArray<vk::SpecializationMapEntry, 1> specializations;
+    specializations[0].constantID = 0;
+    specializations[0].size = sizeof(int32_t);
+    specializations[0].offset = 0;
+
+    vk::SpecializationInfo specialization_info;
+    specialization_info.dataSize = sizeof(int32_t);
+    specialization_info.setMapEntries(specializations);
+    specialization_info.pData = &g_engine_statistics.graphics.max_point_light_count;
+
     vk::PipelineShaderStageCreateInfo frag_info{};
     frag_info.setStage(vk::ShaderStageFlagBits::eFragment).setModule(shader_program_->GetFragShaderHandle()).setPName("main");
+    frag_info.setPSpecializationInfo(&specialization_info);
     TStaticArray<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {vert_info, frag_info};
 
     // 配置顶点Shader的输入信息

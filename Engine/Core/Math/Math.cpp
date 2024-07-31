@@ -10,15 +10,18 @@
 
 #include <algorithm>
 
-bool Math::ApproximatelyEqual(float a, float b, float tolerance) {
+bool Math::ApproximatelyEqual(float a, float b, float tolerance)
+{
     return std::fabs(a - b) <= tolerance;
 }
 
-bool Math::IsNearlyZero(float value, float tolerance) {
+bool Math::IsNearlyZero(float value, float tolerance)
+{
     return ApproximatelyEqual(value, 0.f, tolerance);
 }
 
-float Math::Clamp(float value, float min, float max) {
+float Math::Clamp(float value, float min, float max)
+{
     return std::clamp(value, min, max);
 }
 
@@ -30,4 +33,9 @@ float Math::Clamp01(float value)
 Vector4 Math::ToVector4(const Vector3& v, float fill)
 {
     return {v.x, v.y, v.z, fill};
+}
+
+Vector4 Math::ToVector4(const Color& c)
+{
+    return {c.r, c.g, c.b, c.a};
 }
