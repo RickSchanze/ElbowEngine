@@ -34,9 +34,8 @@ public:
 
 private:
     vk::ImageView handle_ = VK_NULL_HANDLE;
-#ifdef ELBOW_DEBUG
+
     AnsiString debug_name_;
-#endif
 };
 
 RHI_VULKAN_NAMESPACE_END

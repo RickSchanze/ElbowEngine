@@ -35,17 +35,12 @@ extern Logger g_logger;
 #define LOG_CRITIAL_ANSI(Text, ...) g_logger.Critical(##Text, __VA_ARGS__)
 #define LOG_CRITIAL_ANSI_CATEGORY(Category, Text, ...) g_logger.Critical("[" #Category "] " Text, __VA_ARGS__)
 
-#ifdef ELBOW_DEBUG
-#    define LOG_DEBUG(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#    define LOG_TRACE(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#else
-#    define LOG_DEBUG(Text, ...)
-#    define LOG_DEBUG_CATEGORY(Category, Text, ...)
-#    define LOG_TRACE(Text, ...)
-#    define LOG_TRACE_CATEGORY(Category, Text, ...)
-#endif
+
+#define LOG_DEBUG(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
+#define LOG_DEBUG_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_TRACE(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
+#define LOG_TRACE_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+
 
 #define ASSERT(Condition, Message) \
     if (!(Condition)) LOG_CRITIAL(Message)

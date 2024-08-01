@@ -152,7 +152,7 @@ private:
     vk::Queue graphics_queue_;
     vk::Queue present_queue_;
 
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT_ = nullptr;
 #endif
 };

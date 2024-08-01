@@ -49,10 +49,9 @@ struct RenderPassAttachmentImageInfo
     vk::Format          format;
     vk::ImageLayout     InitialLayout;
     vk::ImageLayout     FinalLayout;
-#ifdef ELBOW_DEBUG
+
     const char* debug_image_name;
     const char* debug_image_view_name;
-#endif
 };
 
 /**
@@ -144,12 +143,10 @@ protected:
     vk::SubpassDescription subpass_;
     vk::SubpassDependency  dependency_;
 
-#ifdef ELBOW_DEBUG
     AnsiString          render_pass_debug_name_;
     TArray<std::string> debug_image_names_;
     TArray<std::string> debug_image_view_names_;
     TArray<std::string> debug_frame_buffer_names_;
-#endif
 };
 
 class RenderPassManager final : public Singleton<RenderPassManager>

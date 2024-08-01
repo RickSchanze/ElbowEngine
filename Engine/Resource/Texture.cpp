@@ -70,9 +70,7 @@ void Texture::Load()
     texture_info.height     = height_;
     texture_info.width      = width_;
     texture_info.image_type = vk::ImageType::e2D;
-#ifdef ELBOW_DEBUG
     texture_info.debug_name = path_.ToAbsoluteAnsiString();
-#endif
     rhi_texture_ = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
 
     ImageViewInfo view_info = {};
@@ -103,7 +101,6 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
         {
             *out_texture      = DefaultLackTexture->GetRHIResource().get();
             *out_texture_view = DefaultLackTexture->GetTextureView().get();
-#ifdef ELBOW_DEBUG
             static const char* default_lack_image_debug_name      = "DefaultLackImage";
             static const char* default_lack_image_debug_view_name = "DefaultLackImageView";
             VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(
@@ -112,7 +109,6 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
             VulkanContext::Get()->GetLogicalDevice()->SetImageViewDebugName(
                 DefaultLackTexture->GetTextureView()->GetHandle(), default_lack_image_debug_view_name
             );
-#endif
         }
         else
         {

@@ -53,9 +53,7 @@ bool RenderPass::IsValid() const
 
 RenderPass::RenderPass(const AnsiString& debug_name)
 {
-#ifdef ELBOW_DEBUG
     render_pass_debug_name_ = debug_name;
-#endif
 }
 
 RenderPass::~RenderPass()
@@ -128,29 +126,24 @@ void RenderPass::SetupFramebuffer()
         image_info.usage                   = frame_buffer_attachment_image_infos_[i].usage;
         image_info.format                  = frame_buffer_attachment_image_infos_[i].format;
         frame_buffer_attachments_[i].Image = Image::CreateUnique(image_info);
-#ifdef ELBOW_DEBUG
+
         context.GetLogicalDevice()->SetImageDebugName(
             frame_buffer_attachments_[i].Image->GetHandle(), frame_buffer_attachment_image_infos_[i].debug_image_name
         );
-#endif
 
         ImageViewInfo view_info = {};
         if (i == depth_attachment_index_)
         {
             view_info.format       = image_info.format;
             view_info.aspect_flags = vk::ImageAspectFlagBits::eDepth;
-#ifdef ELBOW_DEBUG
             view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
-#endif
             frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
         else
         {
             view_info.aspect_flags = vk::ImageAspectFlagBits::eColor;
             view_info.format       = image_info.format;
-#ifdef ELBOW_DEBUG
             view_info.debug_name = frame_buffer_attachment_image_infos_[i].debug_image_view_name;
-#endif
             frame_buffer_attachments_[i].view = frame_buffer_attachments_[i].Image->CreateImageViewUnique(view_info);
         }
     }
@@ -177,14 +170,12 @@ void RenderPass::SetupFramebuffer()
         framebuffer_info.height = height;
         framebuffer_info.layers = 1;
         frame_buffers_[i]       = Framebuffer::CreateUnique(framebuffer_info);
-#ifdef ELBOW_DEBUG
         if (!render_pass_debug_name_.empty())
         {
             const AnsiString frame_buffer_name = render_pass_debug_name_ + "_FrameBuffer_" + std::to_string(i);
             debug_frame_buffer_names_.push_back(frame_buffer_name);
             context.GetLogicalDevice()->SetFramebufferDebugName(frame_buffers_[i]->GetHandle(), frame_buffer_name.data());
         }
-#endif
     }
 }
 
@@ -299,7 +290,6 @@ void RenderPass::NewAttachment(
     new_image_info.format        = param.format;
     new_image_info.InitialLayout = param.initial_layout;
     new_image_info.FinalLayout   = param.finial_layout;
-#ifdef ELBOW_DEBUG
     // 如果attachment_debug_name为空 给转换一下
     if (attchemnt_debug_name.empty())
     {
@@ -327,7 +317,6 @@ void RenderPass::NewAttachment(
     debug_image_view_names_.push_back(new_image_view_ansi_string);
     new_image_info.debug_image_name      = debug_image_names_.back().data();
     new_image_info.debug_image_view_name = debug_image_view_names_.back().data();
-#endif
     frame_buffer_attachment_image_infos_.emplace_back(new_image_info);
 }
 
@@ -411,12 +400,10 @@ void RenderPass::CreateRenderPass()
     vk::RenderPassCreateInfo Info{};
     Info.setAttachments(attachment_descs_).setSubpasses(subpasses).setDependencies(dependencies);
     handle_ = context.GetLogicalDevice()->CreateRenderPass(Info);
-#ifdef ELBOW_DEBUG
     if (!render_pass_debug_name_.empty())
     {
         context.GetLogicalDevice()->SetRenderPassDebugName(handle_, render_pass_debug_name_.data());
     }
-#endif
 }
 
 RenderPassManager::RenderPassManager()

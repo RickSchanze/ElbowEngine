@@ -68,9 +68,8 @@ private:
     vk::DescriptorPool        descriptor_pool_ = nullptr;
     TUniquePtr<CommandPool>   command_pool_;
     RenderPass*               render_pass_ = nullptr;
-#ifdef ELBOW_DEBUG
+
     TArray<AnsiString> command_buffer_debug_names;
-#endif
 };
 
 void GLFWWindowSurface::Initialize()

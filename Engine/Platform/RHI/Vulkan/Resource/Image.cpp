@@ -135,13 +135,13 @@ void Image::CreateImage()
     image_create_info.setSharingMode(vk::SharingMode::eExclusive);
 
     image_handle_ = device_handle.createImage(image_create_info);
-#ifdef ELBOW_DEBUG
+
     if (!image_info_.debug_name.empty())
     {
         image_info_.debug_image_name = image_info_.debug_name + "_Image";
         context.GetLogicalDevice()->SetImageDebugName(image_handle_, image_info_.debug_image_name.c_str());
     }
-#endif
+
     // 为图像分配内存
     const auto             memory_requirements = device_handle.getImageMemoryRequirements(image_handle_);
     vk::MemoryAllocateInfo memory_allocate_info{};
@@ -150,13 +150,13 @@ void Image::CreateImage()
         context.GetLogicalDevice()->GetAssociatedPhysicalDevice().FindMemoryType(memory_requirements.memoryTypeBits, image_info_.memory_property)
     );
     image_memory_ = device_handle.allocateMemory(memory_allocate_info);
-#ifdef ELBOW_DEBUG
+
     if (!image_info_.debug_name.empty())
     {
         image_info_.debug_image_memory_name = image_info_.debug_name + "_ImageMemory";
         context.GetLogicalDevice()->SetDeviceMemoryDebugName(image_memory_, image_info_.debug_image_memory_name.c_str());
     }
-#endif
+
     device_handle.bindImageMemory(image_handle_, image_memory_, 0);
 }
 

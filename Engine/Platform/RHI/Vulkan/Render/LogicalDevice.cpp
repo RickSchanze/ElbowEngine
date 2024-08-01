@@ -305,7 +305,7 @@ vk::Pipeline LogicalDevice::CreateGraphicsPipeline(const vk::PipelineCache& cach
 
 void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     const VkDebugUtilsObjectNameInfoEXT name_info_ext = name_info;
     vkSetDebugUtilsObjectNameEXT_(handle_, &name_info_ext);
 #endif
@@ -424,7 +424,9 @@ void LogicalDevice::SetCommandPoolDebugName(vk::CommandPool handle, const char* 
 }
 
 void LogicalDevice::InitializePFNs(){
+#if ELBOW_DEBUG
     vkSetDebugUtilsObjectNameEXT_ = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(VulkanContext::Get()->GetVulkanInstance()->GetHandle(), "vkSetDebugUtilsObjectNameEXT"));
+#endif
 }
 
 RHI_VULKAN_NAMESPACE_END
