@@ -13,7 +13,10 @@ GENERATED_SOURCE()
 
 FUNCTION_NAMESPACE_BEGIN
 
-Comp::Light::Light() : light_type_(ELightType::Point), light_color_(Color::White()), light_intensity_(1.0f) {}
+Comp::Light::Light() : light_type_(ELightType::Point), light_color_(Color::White()), light_intensity_(1.0f)
+{
+    name_ = L"点光源";
+}
 
 void Comp::Light::OnEnable()
 {

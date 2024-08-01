@@ -38,7 +38,7 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
 }
 
 Shader::Shader(
-    Protected, const Ref<LogicalDevice> device, const Path& shader_path, const EShaderStage shader_stage, const AnsiString& debug_shader_name
+    Protected, const Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& shader_name
 ) : shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
@@ -62,24 +62,18 @@ Shader::Shader(
 
     auto*  shader_code_ptr  = reinterpret_cast<uint32_t*>(shader_code.data());
     size_t shader_code_size = shader_code.size() / 4;
-    // 解析此Shader的所有参数
+    // 解析此Shader的Input
     ParseShaderCode(shader_code_ptr, shader_code_size, shader_stage);
     // 创建ShaderModule
     vk::ShaderModuleCreateInfo create_info = {};
     create_info.setCodeSize(shader_code_size * 4).setPCode(shader_code_ptr);
     shader_module_ = device.get().GetHandle().createShaderModule(create_info);
 
-    shader_name_ = debug_shader_name;
+    shader_name_ = shader_name;
     if (!shader_name_.empty())
     {
         device.get().SetShaderModuleDebugName(shader_module_, shader_name_.data());
     }
-}
-
-Shader::~Shader()
-{
-    const auto& device = device_.get();
-    device.DestroyShaderModule(shader_module_);
 }
 
 void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_size, EShaderStage shader_stage)
@@ -88,42 +82,6 @@ void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_siz
     using namespace spirv_cross;
     Compiler        compiler(shader_code, shader_code_size);
     ShaderResources res = compiler.get_shader_resources();
-    // 收集所有UniformBuffer信息
-    {
-        size_t offset = 0;
-
-        for (const auto& ubo: res.uniform_buffers)
-        {
-            UniformDescriptor obj;
-            obj.stage   = shader_stage;
-            obj.name    = compiler.get_name(ubo.id);
-            obj.binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
-            obj.size    = compiler.get_declared_struct_size(compiler.get_type(ubo.type_id));
-            obj.offset  = 0;
-            if (obj.name == "ubo_instance")
-            {
-                obj.type = EUniformDescriptorType::DynamicUniformBuffer;
-            }
-            else
-            {
-                obj.type = EUniformDescriptorType::UniformBuffer;
-            }
-            offset += obj.size;
-            uniform_descriptors_.push_back(obj);
-        }
-    }
-    // 收集所有Sampler2D信息
-    {
-        for (const auto& sampler: res.sampled_images)
-        {
-            UniformDescriptor sampler_desc;
-            sampler_desc.name    = compiler.get_name(sampler.id);
-            sampler_desc.binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
-            sampler_desc.stage   = shader_stage;
-            sampler_desc.type    = EUniformDescriptorType::Sampler2D;
-            uniform_descriptors_.push_back(sampler_desc);
-        }
-    }
     // 收集所有layout(location = 0) in vec3 inPos;信息
     {
         // 只有顶点输入需要在管线建立
@@ -151,6 +109,12 @@ void Shader::ParseShaderCode(const uint32_t* shader_code, size_t shader_code_siz
             offset += InAttr.size;
         }
     }
+}
+
+Shader::~Shader()
+{
+    const auto& device = device_.get();
+    device.DestroyShaderModule(shader_module_);
 }
 
 RHI_VULKAN_NAMESPACE_END

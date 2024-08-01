@@ -18,6 +18,7 @@
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
+#include "Shaders/StandardForwardShader.h"
 #include "Utils/StringUtils.h"
 
 FUNCTION_NAMESPACE_BEGIN
@@ -25,8 +26,8 @@ FUNCTION_NAMESPACE_BEGIN
 Material::Material(const Path& vert, const Path& frag, const String& name)
 {
     using namespace RHI::Vulkan;
-    Shader* vert_shader = Shader::Create(vert, EShaderStage::Vertex);
-    Shader* frag_shader = Shader::Create(frag, EShaderStage::Fragment);
+    Shader* vert_shader = Shader::Create<StandardForwardVertShader>(vert);
+    Shader* frag_shader = Shader::Create<StandardForwardFragShader>(frag);
     shader_program_     = ShaderProgram::Create(vert_shader, frag_shader);
     name_               = name;
     ParseShaderParameters();
@@ -82,18 +83,26 @@ void Material::SetPostionViewProjection(Comp::Camera* camera)
     {
         return;
     }
-    Vector4 pos = Math::ToVector4(camera->GetTransform().location);
-    shader_program_->SetCameraPositionProjectionView(camera->GetViewMatrix(), camera->GetProjectionMatrix(), pos);
+    struct UboView
+    {
+        glm::mat4 proj;
+        glm::mat4 view;
+        glm::mat4 camera;
+    } ubo_view{};
+    ubo_view.proj = camera->GetProjectionMatrix();
+    ubo_view.view = camera->GetViewMatrix();
+    ubo_view.camera = camera->GetTransform().ToGPUMat4();
+    shader_program_->SetUniformBuffer("ubo_view", &ubo_view.proj, sizeof(UboView));
 }
 
 void Material::SetModel(glm::mat4* models, size_t size)
 {
-    shader_program_->SetM(models, size);
+    shader_program_->SetUniformBuffer("ubo_instance", models, size);
 }
 
 void Material::SetPointLights(void* data, size_t size)
 {
-    shader_program_->SetPointLight(data, size);
+    shader_program_->SetUniformBuffer("ubo_point_lights", data, size);
 }
 
 void Material::DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets)

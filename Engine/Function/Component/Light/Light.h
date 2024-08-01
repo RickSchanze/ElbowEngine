@@ -41,6 +41,7 @@ public:
     float GetLightIntensity() const { return light_intensity_; }
 
 protected:
+    // TODO: 枚举类型的ImGui Display
     PROPERTY(Serialized, Label = "光源类型")
     ELightType light_type_;
 

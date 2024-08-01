@@ -48,6 +48,7 @@ public:
     // 例如MVP矩阵 每帧设置 自然不用加入
     static inline TArray<AnsiString> parameter_name_white_list = {"ubo_instance", "ubo_view"};
 
+    // TODO: 这里应该是传入两个Shader而不是两个路径
     Material(const Path& vert, const Path& frag, const String& name);
 
     ~Material() override;

@@ -45,7 +45,7 @@ void Camera::BeginPlay()
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-    return lookAt(transform_->location, transform_->location + transform_->GetForwardVector(), transform_->GetUpVector());
+    return lookAt(transform_->position, transform_->position + transform_->GetForwardVector(), transform_->GetUpVector());
 }
 
 glm::mat4 Camera::GetProjectionMatrix() const
@@ -69,19 +69,19 @@ void Camera::HandleInput()
     {
         if (Input::IsKeyDown(KeyCode::W))
         {
-            transform_->location += movement_speed_ * transform_->GetForwardVector();
+            transform_->position += movement_speed_ * transform_->GetForwardVector();
         }
         if (Input::IsKeyDown(KeyCode::S))
         {
-            transform_->location -= movement_speed_ * transform_->GetForwardVector();
+            transform_->position -= movement_speed_ * transform_->GetForwardVector();
         }
         if (Input::IsKeyDown(KeyCode::A))
         {
-            transform_->location -= movement_speed_ * transform_->GetRightVector();
+            transform_->position -= movement_speed_ * transform_->GetRightVector();
         }
         if (Input::IsKeyDown(KeyCode::D))
         {
-            transform_->location += movement_speed_ * transform_->GetRightVector();
+            transform_->position += movement_speed_ * transform_->GetRightVector();
         }
         if (Input::IsKeyDown(KeyCode::Escape))
         {
@@ -89,11 +89,11 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            transform_->location += movement_speed_ * transform_->GetUpVector();
+            transform_->position += movement_speed_ * transform_->GetUpVector();
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            transform_->location -= movement_speed_ * transform_->GetUpVector();
+            transform_->position -= movement_speed_ * transform_->GetUpVector();
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();

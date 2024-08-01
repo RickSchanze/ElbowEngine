@@ -18,20 +18,20 @@ public:
 
     ~Buffer();
 
-    size_t GetBufferSize() const { return size_; }
-    vk::Buffer GetBufferHandle() const { return handle_; }
+    size_t           GetBufferSize() const { return size_; }
+    vk::Buffer       GetBufferHandle() const { return handle_; }
     vk::DeviceMemory GetMemoryHandle() const { return memory_; }
 
     void* GetMappedCpuMemory();
-    void MapMemory();
-    void UnmapMemory();
-    void FlushMemory() const;
+    void  MapMemory();
+    void  UnmapMemory();
+    void  FlushMemory() const;
 
     void Memcpy(void* data, size_t size) const;
 
     bool IsMemoryMapped() const;
 
-
+    size_t GetSize() const { return size_; }
 private:
     vk::Buffer       handle_;
     vk::DeviceMemory memory_;

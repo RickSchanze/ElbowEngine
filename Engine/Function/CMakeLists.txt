@@ -27,6 +27,8 @@ add_library(${PROJECT_NAME}
         Render/Event.h
         Render/Material.h
         Render/Material.cpp
+        Render/Shaders/StandardForwardShader.h
+        Render/Shaders/StandardForwardShader.cpp
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp
 )

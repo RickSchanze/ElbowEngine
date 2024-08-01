@@ -4,7 +4,7 @@
 layout(binding = 0) uniform UboView {
     mat4 projection;
     mat4 view;
-    vec4 cameraPosition;
+    mat4 camera;
 } ubo_view;
 
 layout(binding = 1) uniform UboInstance {
@@ -28,5 +28,5 @@ void main() {
     // 法线乘以法线矩阵
     // 防止因不规则形变而导致的法线方向错误
     outNormal = mat3(transpose(inverse(ubo_instance.model))) * inNormal;
-    outCameraPosition = ubo_view.cameraPosition.xyz;
+    outCameraPosition = ubo_view.camera[0].xyz; // 相机位置
 }

@@ -94,7 +94,7 @@ void PropertyDrawer::DrawTransform(Transform& transform)
 {
     if (ImGui::CollapsingHeader(U8("变换")))
     {
-        transform.location = DrawProperty(U8("位置(x y z)"), transform.location);
+        transform.position = DrawProperty(U8("位置(x y z)"), transform.position);
         transform.rotation = DrawProperty(U8("旋转(Yaw Roll Pitch)"), transform.rotation);
         transform.scale    = DrawProperty(U8("缩放(x y z)"), transform.scale);
     }

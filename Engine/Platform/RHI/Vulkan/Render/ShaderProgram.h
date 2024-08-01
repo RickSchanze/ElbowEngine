@@ -9,8 +9,6 @@
 #include "CoreDef.h"
 #include "Shader.h"
 
-#include <glm/fwd.hpp>
-
 namespace RHI::Vulkan
 {
 class Buffer;
@@ -81,14 +79,10 @@ public:
 
     void DestroyShaders();
 
-    // 设置MVP中的VP矩阵
-    void SetCameraPositionProjectionView(const glm::mat4& view, const glm::mat4& projection, const glm::vec4& pos) const;
-    // 设置MVP中的M矩阵
-    void SetM(glm::mat4* models, size_t model_count) const;
-    // 设置点光源
-    void SetPointLight(void* data, size_t size) const;
     // 设置纹理
     bool SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler);
+
+    void SetUniformBuffer(const AnsiString& name, const void* data, size_t size);
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer
@@ -119,9 +113,7 @@ private:
 
     // pvc指的是 projection-view-camera_position结构
     // TODO: 是否应该只分两个类即static ubo和dynamic ubo?
-    TArray<Buffer*> static_pvc_uniform_buffers_;
-    TArray<Buffer*> dynamic_model_uniform_buffers_;
-    TArray<Buffer*> static_light_uniform_buffers_;
+    THashMap<AnsiString, TArray<Buffer*>> uniform_buffers_;
 
     TArray<vk::DescriptorSet> descriptor_sets_;
     vk::DescriptorPool        descriptor_pool_;

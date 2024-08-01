@@ -112,7 +112,8 @@ void RenderPipeline::PrepareLight()
             PointLight light_data{};
             light_data.color = Math::ToVector4(light->GetLightColor());
             // 位置的w分量表示强度
-            light_data.pos   = Math::ToVector4(light->GetTransform().location, light->GetLightIntensity());
+            light_data.pos   = Math::ToVector4(light->GetTransform().position, light->GetLightIntensity());
+            lights_data.push_back(light_data);
         }
     }
     for (auto* mat : draw_meshs_ | std::views::keys)

@@ -100,7 +100,6 @@ bool SwapChain::IsValid() const
 
 void SwapChain::Initialize()
 {
-#ifdef ELBOW_DEBUG
     // clang-format off
     static const char* s_swap_chain_image_view_debug_name[3] = {
         "SwapchainImageView_0",
@@ -114,18 +113,14 @@ void SwapChain::Initialize()
         "SwapchainImage_2",
     };
     // clang-format on
-#endif
 
     if (IsValid()) return;
     auto swapchain_images = associated_logical_device_->GetHandle().getSwapchainImagesKHR(swapchain_handle_);
     swap_chain_images_.resize(swapchain_images.size());
-
     for (int i = 0; i < swapchain_images.size(); i++)
     {
         swap_chain_images_[i] = MakeShared<SwapChainImage>(swapchain_images[i]);
-#ifdef ELBOW_DEBUG
         VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(swapchain_images[i], s_swap_chain_image_debug_name[i]);
-#endif
     }
 
     swapchain_image_views_.resize(GetSwapchainImageCount());
@@ -133,9 +128,7 @@ void SwapChain::Initialize()
     {
         ImageViewInfo view_info;
         view_info.format = swapchain_image_format_;
-#ifdef ELBOW_DEBUG
         view_info.debug_name = s_swap_chain_image_view_debug_name[i];
-#endif
         swapchain_image_views_[i] = swap_chain_images_[i]->CreateImageViewShared(view_info);
     }
 

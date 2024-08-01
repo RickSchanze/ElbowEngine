@@ -51,7 +51,7 @@ struct Rotator : IStringify
 
 struct Transform : IStringify
 {
-    Vector3 location{};
+    Vector3 position{};
     Rotator rotation{};
     Vector3 scale = Constant::OneVector;
 
@@ -61,6 +61,13 @@ struct Transform : IStringify
     String  ToString() const override;
 
     glm::mat4 ToMat4() const;
+
+    /**
+     * 0->position
+     * 其他位置的参数还不知道应该装什么
+     * @return
+     */
+    glm::mat4 ToGPUMat4() const;
 };
 
 struct Color

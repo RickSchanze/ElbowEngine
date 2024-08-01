@@ -12,9 +12,7 @@
 
 #include <ranges>
 
-#include "glm/matrix.hpp"
 #include "RHI/Vulkan/Resource/Buffer.h"
-#include "RHI/Vulkan/VulkanUtils.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
@@ -132,58 +130,6 @@ void ShaderProgram::DestroyShaders()
     }
 }
 
-void ShaderProgram::SetCameraPositionProjectionView(const glm::mat4& view, const glm::mat4& projection, const glm::vec4& pos) const
-{
-    struct UboView
-    {
-        glm::mat4 projection;
-        glm::mat4 view;
-        glm::vec4 cameraPosition;
-    } ubo_view{};
-
-    ubo_view.projection     = projection;
-    ubo_view.view           = view;
-    ubo_view.cameraPosition = pos;
-
-    // TODO: 这里到底应该都设置还是只设置当前Frame?
-    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-    {
-        auto* current_buffer = static_pvc_uniform_buffers_[i];
-        current_buffer->MapMemory();
-        auto* map_res = static_pvc_uniform_buffers_[i]->GetMappedCpuMemory();
-        memcpy(map_res, &ubo_view.projection, sizeof(UboView));
-        current_buffer->FlushMemory();
-    }
-}
-
-void ShaderProgram::SetM(glm::mat4* models, size_t size) const
-{
-    // TODO: 这里到底应该都设置还是只设置当前Frame?
-    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-    {
-        auto* current_buffer = dynamic_model_uniform_buffers_[i];
-        if (!current_buffer->IsMemoryMapped())
-        {
-            current_buffer->MapMemory();
-        }
-        current_buffer->Memcpy(models, size);
-        current_buffer->FlushMemory();
-    }
-}
-
-void ShaderProgram::SetPointLight(void* data, size_t size) const
-{
-    // TODO: 这里到底应该都设置还是只设置当前Frame?
-    for (int i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-    {
-        auto* current_buffer = static_light_uniform_buffers_[i];
-        current_buffer->MapMemory();
-        auto* map_res = static_light_uniform_buffers_[i]->GetMappedCpuMemory();
-        memcpy(map_res, data, size);
-        current_buffer->FlushMemory();
-    }
-}
-
 bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler)
 {
     if (!uniforms_.contains(name))
@@ -209,6 +155,24 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
     return true;
 }
 
+void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, size_t size)
+{
+    if (!uniform_buffers_.contains(name))
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetStaticUniformBuffer: UniformBuffer {} not found", name);
+        return;
+    }
+    auto& buffers = uniform_buffers_[name];
+    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+    {
+        auto& buffer = buffers[i];
+        buffer->MapMemory();
+        auto* map_res = buffer->GetMappedCpuMemory();
+        memcpy(map_res, data, size);
+        buffer->FlushMemory();
+    }
+}
+
 bool ShaderProgram::IsValid() const
 {
     return descriptor_set_layout_ != nullptr && !descriptor_sets_.empty() && descriptor_pool_ != nullptr;
@@ -216,69 +180,36 @@ bool ShaderProgram::IsValid() const
 
 void ShaderProgram::CreateUniformBuffers()
 {
-    vk::DeviceSize buffer_size = 0;
-
     // 静态共享的VP矩阵的UniformBuffer
     for (const auto& value: GetUniforms() | std::views::values)
     {
-        if (value.name == "ubo_view")
+        if (value.type == EUniformDescriptorType::UniformBuffer || value.type == EUniformDescriptorType::DynamicUniformBuffer)
         {
-            buffer_size = value.size;
-            static_pvc_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
-
+            TArray<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
             for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
             {
-                static_pvc_uniform_buffers_[i] = new Buffer(
-                    buffer_size,
+                new_buffer[i] = new Buffer(
+                    value.size,
                     vk::BufferUsageFlagBits::eUniformBuffer,
                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                    name_ + "_StaticPVCUniformBuffer"
+                    name_ + "_" + value.name
                 );
             }
-        }
-        if (value.name == "ubo_instance")
-        {
-            size_t dynamic_alignment = VulkanUtils::GetDynamicUniformModelAligment();
-            // 动态实例的模型变换矩阵的uniform buffer
-            buffer_size              = dynamic_alignment * g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count;
-            dynamic_model_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
-            for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-            {
-                dynamic_model_uniform_buffers_[i] = new Buffer(
-                    buffer_size,
-                    vk::BufferUsageFlagBits::eUniformBuffer,
-                    vk::MemoryPropertyFlagBits::eHostVisible,
-                    name_ + "_DynamiModelUniformBuffer"
-                );
-            }
-        }
-        if (value.name == "ubo_point_lights")
-        {
-            buffer_size = value.size;
-            static_light_uniform_buffers_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
-
-            for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
-            {
-                static_light_uniform_buffers_[i] = new Buffer(
-                    buffer_size,
-                    vk::BufferUsageFlagBits::eUniformBuffer,
-                    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                    name_ + "_StaticPointLightUniformBuffer"
-                );
-            }
+            uniform_buffers_[value.name] = new_buffer;
         }
     }
 }
 
 void ShaderProgram::DestroyUniformBuffers()
 {
-    for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
+    for (auto& value: uniform_buffers_ | std::views::values)
     {
-        delete static_pvc_uniform_buffers_[i];
-        delete dynamic_model_uniform_buffers_[i];
-        delete static_light_uniform_buffers_[i];
+        for (auto& buffer: value)
+        {
+            delete buffer;
+        }
     }
-    static_pvc_uniform_buffers_.clear();
+    uniform_buffers_.clear();
 }
 
 void ShaderProgram::CreateDescriptorSets()
@@ -312,10 +243,19 @@ void ShaderProgram::CreateDescriptorSets()
         TArray<vk::DescriptorBufferInfo> buffer_infos;
         TArray<vk::DescriptorImageInfo>  image_infos;
 
-        buffer_infos.reserve(4);
+        buffer_infos.reserve(uniforms_.size());
+        image_infos.reserve(uniforms_.size());
 
         for (auto& uniform: uniforms_ | std::views::values)
         {
+            if (uniform.type == EUniformDescriptorType::Sampler2D)
+            {
+                continue;
+            }
+            if (!uniform_buffers_.contains(uniform.name))
+            {
+                LOG_CRITIAL_ANSI_CATEGORY(Vulkan, "Uniform buffer has not been create before creat descriptor!");
+            }
             vk::WriteDescriptorSet descriptor_write;
             descriptor_write.dstSet          = descriptor_sets_[i];
             descriptor_write.dstBinding      = uniform.binding;
@@ -325,16 +265,16 @@ void ShaderProgram::CreateDescriptorSets()
             if (uniform.type == EUniformDescriptorType::UniformBuffer || uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
             {
                 vk::DescriptorBufferInfo buffer_info;
-                if (uniform.type == EUniformDescriptorType::UniformBuffer)
-                {
-                    buffer_info.buffer = static_pvc_uniform_buffers_[i]->GetBufferHandle();
-                }
-                else if (uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
-                {
-                    buffer_info.buffer = dynamic_model_uniform_buffers_[i]->GetBufferHandle();
-                }
                 buffer_info.offset = uniform.offset;
-                buffer_info.range  = uniform.size;
+                buffer_info.buffer = uniform_buffers_[uniform.name][i]->GetBufferHandle();
+                if (uniform.type == EUniformDescriptorType::DynamicUniformBuffer)
+                {
+                    buffer_info.range = uniform.range;
+                }
+                else
+                {
+                    buffer_info.range = uniform.size;
+                }
                 buffer_infos.emplace_back(buffer_info);
                 descriptor_write.pBufferInfo = &buffer_infos.back();
             }

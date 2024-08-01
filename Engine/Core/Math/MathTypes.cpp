@@ -7,6 +7,7 @@
 
 #include "MathTypes.h"
 
+#include "Math.h"
 #include "Utils/StringUtils.h"
 
 #include <format>
@@ -27,7 +28,7 @@ RTTR_REGISTRATION
 
     rttr::registration::class_<Transform>("Transform")
         .constructor<>()
-        .property("location", &Transform::location)
+        .property("location", &Transform::position)
         .property("rotation", &Transform::rotation)
         .property("scale", &Transform::scale);
 
@@ -87,17 +88,24 @@ Vector3 Transform::GetRightVector() const
 String Transform::ToString() const
 {
     return std::format(
-        L"Transform[location: <{}>, rotation: <{}>, scale: <{}>]", StringUtils::ToString(location), rotation.ToString(), StringUtils::ToString(scale)
+        L"Transform[location: <{}>, rotation: <{}>, scale: <{}>]", StringUtils::ToString(position), rotation.ToString(), StringUtils::ToString(scale)
     );
 }
 
 glm::mat4 Transform::ToMat4() const
 {
     auto mat = glm::mat4(1.0f);
-    mat      = translate(mat, location);
+    mat      = translate(mat, position);
     mat      = rotate(mat, glm::radians(rotation.yaw), Constant::UpVector);
     mat      = rotate(mat, glm::radians(rotation.pitch), GetRightVector());
     mat      = rotate(mat, glm::radians(rotation.roll), GetForwardVector());
     mat      = glm::scale(mat, scale);
     return mat;
+}
+
+glm::mat4 Transform::ToGPUMat4() const
+{
+    auto rtn = glm::mat4(1.0f);
+    rtn[0] = Math::ToVector4(position);
+    return rtn;
 }

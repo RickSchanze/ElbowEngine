@@ -94,7 +94,11 @@ public:
         GENERATE_STACKTRACE()
         logger_->critical(fmt, Forward<ArgsT>(args)...);
         logger_->critical("{}", CurrentStackTraceStr);
+#ifdef ELBOW_DEBUG
+        __debugbreak();
+#else
         assert((false, "trigger critical log, crash program"));
+#endif
         exit(-1);
     }
 
@@ -105,7 +109,11 @@ public:
         GENERATE_STACKTRACE()
         logger_->critical(fmt, Forward<ArgsT>(args)...);
         logger_->critical("{}", CurrentStackTraceStr);
+#ifdef ELBOW_DEBUG
+        __debugbreak();
+#else
         assert((false, "trigger critical log, crash program"));
+#endif
         exit(-1);
     }
 

@@ -110,6 +110,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainI
     }
     graphics_queue_ = handle_.getQueue(indicies.graphics_family.value(), 0);
     present_queue_  = handle_.getQueue(indicies.present_family.value(), 0);
+
     return SwapChain::CreateUnique(handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent);
 }
 
@@ -167,12 +168,12 @@ void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module) const
 vk::PipelineLayout LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const AnsiString& debug_name) const
 {
     auto rtn = handle_.createPipelineLayout(create_info);
-#ifdef ELBOW_DEBUG
+
     if (!debug_name.empty())
     {
         SetPipelineLayoutDebugName(rtn, debug_name.c_str());
     }
-#endif
+
     return rtn;
 }
 
@@ -212,7 +213,7 @@ TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
 ) const
 {
     auto rtn = handle_.allocateCommandBuffers(allocate_info);
-#ifdef ELBOW_DEBUG
+
     if (debug_name != nullptr && out_debug_names != nullptr)
     {
         out_debug_names->resize(rtn.size());
@@ -223,7 +224,7 @@ TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
             SetCommandBufferDebugName(rtn[i], out_debug_names->back().c_str());
         }
     }
-#endif
+
     return rtn;
 }
 
@@ -270,12 +271,12 @@ void LogicalDevice::DestroyRenderPass(vk::RenderPass render_pass) const
 vk::CommandPool LogicalDevice::CreateCommandPool(const vk::CommandPoolCreateInfo& create_info, const char* debug_name) const
 {
     auto rtn = handle_.createCommandPool(create_info);
-#ifdef ELBOW_DEBUG
+
     if (debug_name != nullptr)
     {
         SetCommandPoolDebugName(rtn, debug_name);
     }
-#endif
+
     return rtn;
 }
 
@@ -287,18 +288,18 @@ vk::Pipeline LogicalDevice::CreateGraphicsPipeline(const vk::PipelineCache& cach
     auto res = handle_.createGraphicsPipeline(cache, info);
     if (res.result != vk::Result::eSuccess)
     {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
         throw VulkanException(std::format(L"管线 {} 创建失败", StringUtils::FromAnsiString(debug_name)));
 #else
         throw VulkanException(L"管线创建失败");
 #endif
     }
-#ifdef ELBOW_DEBUG
+
     if (!debug_name.empty())
     {
         SetPipelineDebugName(res.value, debug_name.c_str());
     }
-#endif
+
     return res.value;
 }
 
@@ -319,14 +320,14 @@ void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& na
 
 void LogicalDevice::SetCommandBufferDebugName(const vk::CommandBuffer handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eCommandBuffer, VkCommandBuffer);
 #endif
 }
 
 void LogicalDevice::SetImageDebugName(const vk::Image handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eImage, VkImage);
 #endif
 }
@@ -340,84 +341,84 @@ void LogicalDevice::SetImageViewDebugName(const vk::ImageView handle, const char
 
 void LogicalDevice::SetRenderPassDebugName(const vk::RenderPass handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eRenderPass, VkRenderPass)
 #endif
 }
 
 void LogicalDevice::SetFramebufferDebugName(const vk::Framebuffer handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eFramebuffer, VkFramebuffer)
 #endif
 }
 
 void LogicalDevice::SetShaderModuleDebugName(const vk::ShaderModule handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eShaderModule, VkShaderModule)
 #endif
 }
 
 void LogicalDevice::SetBufferDebugName(const vk::Buffer handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eBuffer, VkBuffer)
 #endif
 }
 
 void LogicalDevice::SetBufferMemoryDebugName(const vk::DeviceMemory handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eDeviceMemory, VkDeviceMemory)
 #endif
 }
 
 void LogicalDevice::SetDescriptionSetLayoutDebugName(const vk::DescriptorSetLayout handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eDescriptorSetLayout, VkDescriptorSetLayout)
 #endif
 }
 
 void LogicalDevice::SetDescriptorSetDebugName(vk::DescriptorSet handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eDescriptorSet, VkDescriptorSet)
 #endif
 }
 
 void LogicalDevice::SetDescriptorPoolDebugName(vk::DescriptorPool handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eDescriptorPool, VkDescriptorPool)
 #endif
 }
 
 void LogicalDevice::SetPipelineDebugName(vk::Pipeline handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(ePipeline, VkPipeline);
 #endif
 }
 
 void LogicalDevice::SetPipelineLayoutDebugName(vk::PipelineLayout handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(ePipelineLayout, VkPipelineLayout);
 #endif
 }
 
 void LogicalDevice::SetDeviceMemoryDebugName(vk::DeviceMemory handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eDeviceMemory, VkDeviceMemory);
 #endif
 }
 
 void LogicalDevice::SetCommandPoolDebugName(vk::CommandPool handle, const char* name) const
 {
-#ifdef ELBOW_DEBUG
+#if ELBOW_DEBUG
     SET_DEBUG_NAME_BODY(eCommandPool, VkCommandPool);
 #endif
 }

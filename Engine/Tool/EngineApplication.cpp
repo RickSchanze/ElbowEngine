@@ -17,6 +17,7 @@
 #include "Utils/ContainerUtils.h"
 
 #include "Component/Camera.h"
+#include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
 #include "EditorStyle/ImGuiStyle.h"
 #include "Render/Material.h"
@@ -124,6 +125,10 @@ void EngineApplication::Initialize()
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
 
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
+
+    auto* light_obj = New<Function::GameObject>(L"点光源");
+    light_obj->GetTransform().position = Vector3(0, 0, 10);
+    light_obj->AddComponent<Function::Comp::Light>();
     LogEndInit();
 }
 
