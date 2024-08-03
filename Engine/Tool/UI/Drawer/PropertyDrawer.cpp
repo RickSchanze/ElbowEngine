@@ -110,7 +110,7 @@ void PropertyDrawer::DrawTransform(Transform& transform)
         auto new_rot = DrawProperty(U8("旋转(Yaw Roll Pitch)"), old_rot);
         if (old_rot != new_rot)
         {
-            transform.SetRotation(new_rot);
+            transform.Rotate(new_rot - old_rot);
         }
 
         auto old_scale = transform.GetScale();

@@ -69,19 +69,19 @@ void Camera::HandleInput()
     {
         if (Input::IsKeyDown(KeyCode::W))
         {
-            game_object_->DeltaPosition(movement_speed_ * transform_->GetForwardVector());
+            game_object_->Translate(movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::S))
         {
-            game_object_->DeltaPosition(-movement_speed_ * transform_->GetForwardVector());
+            game_object_->Translate(-movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::A))
         {
-            game_object_->DeltaPosition(-movement_speed_ * transform_->GetRightVector());
+            game_object_->Translate(-movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::D))
         {
-            game_object_->DeltaPosition(movement_speed_ * transform_->GetRightVector());
+            game_object_->Translate(movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::Escape))
         {
@@ -89,11 +89,11 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            game_object_->DeltaPosition(movement_speed_ * transform_->GetUpVector());
+            game_object_->Translate(movement_speed_ * transform_->GetUpVector());
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            game_object_->DeltaPosition(-movement_speed_ * transform_->GetUpVector());
+            game_object_->Translate(-movement_speed_ * transform_->GetUpVector());
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();

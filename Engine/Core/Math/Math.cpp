@@ -62,6 +62,11 @@ Matrix4x4 Math::Rotate(const Matrix4x4& m, const Quaternion& v)
     return m * rot_mat;
 }
 
+Matrix4x4 Math::Rotate(const Matrix4x4& m, float angle, const Vector3& axis)
+{
+    return rotate(m, angle, axis);
+}
+
 Matrix4x4 Math::Scale(const Matrix4x4& m, const Vector3& v)
 {
     return glm::scale(m, v);
@@ -103,7 +108,8 @@ void Math::Decompose(const Matrix4x4& m, Vector3& pos, Quaternion& rot_quat, Vec
     Vector3 skew;
     decompose(m, scale, rot_quat, pos, skew, perp);
     rot_quat  = conjugate(rot_quat);
-    rot_eluer = eulerAngles(rot_quat) * Constant::PI / 180.f;
+    rot_eluer = eulerAngles(rot_quat) / Constant::PI * 180.f;
+    std::swap(rot_eluer.pitch, rot_eluer.yaw);
 }
 
 Vector4 Math::ToVector4(const Vector3& v, float fill)

@@ -7,8 +7,8 @@
 
 #include "GameObject.h"
 #include "Component/Component.h"
-#include "Math/Math.h"
 #include "Component/Transform.h"
+#include "Math/Math.h"
 
 using namespace Function::Comp;
 
@@ -155,13 +155,26 @@ void GameObject::DestroyComponent(Component* component)
 void GameObject::SetPosition(Vector3 position, bool delay)
 {
     const Vector3 transform_delta = position - transform_.GetPosition();
-    DeltaPosition(transform_delta, delay);
+    Translate(transform_delta, delay);
 }
 
-void GameObject::DeltaPosition(Vector3 pos_delta, bool delay)
+void GameObject::Translate(Vector3 pos_delta, bool delay)
 {
     transform_delta_ = Math::Translate(GetMatrix4x4Identity(), pos_delta);
     transform_dirty_ = true;
+    if (!delay)
+    {
+        ApplyTransformDeltas();
+    }
+}
+
+void GameObject::Rotate(const Rotator &rotator, bool delay)
+{
+    transform_dirty_      = true;
+    const Matrix4x4 yaw   = Math::Rotate(GetMatrix4x4Identity(), rotator.yaw, Constant::UpVector);
+    const Matrix4x4 pitch = Math::Rotate(GetMatrix4x4Identity(), rotator.pitch, Constant::RightVector);
+    const Matrix4x4 roll  = Math::Rotate(GetMatrix4x4Identity(), rotator.roll, Constant::ForwardVector);
+    transform_delta_ *= roll * pitch * yaw;
     if (!delay)
     {
         ApplyTransformDeltas();

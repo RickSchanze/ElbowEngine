@@ -39,8 +39,8 @@ public:
     static Matrix4x4 Translate(const Matrix4x4& m, const Vector3& v);
 
     static Matrix4x4 Rotate(const Matrix4x4& m, const Rotator& v);
-
     static Matrix4x4 Rotate(const Matrix4x4& m, const Quaternion& v);
+    static Matrix4x4 Rotate(const Matrix4x4& m, float angle, const Vector3& axis);
 
     /**
      * 将m的缩放设为v

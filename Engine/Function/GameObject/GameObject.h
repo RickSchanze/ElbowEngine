@@ -115,7 +115,13 @@ public:
      * @param pos_delta
      * @param delay true则在PostTick里更改 false则立即更改
      */
-    void DeltaPosition(Vector3 pos_delta, bool delay = true);
+    void Translate(Vector3 pos_delta, bool delay = true);
+
+    /**
+     * 旋转rotator的数值
+     * @param rotator
+     */
+    void Rotate(const Rotator &rotator, bool delay = true);
 
     static const TArray<GameObject*>& GetRootGameObjects() { return s_root_objects_; }
 

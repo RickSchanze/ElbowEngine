@@ -109,28 +109,16 @@ void EngineApplication::Initialize()
     camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
     camera_object_->BeginPlay();
     camera_object_->AddComponent<Function::Comp::Camera>();
-    New<Function::GameObject>(L"Dummy对象", camera_object_);
     auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-
-    auto mesh_obj2  = New<Function::GameObject>(L"AK-47_2");
-    auto mesh_comp2 = mesh_obj2->AddComponent<Function::Comp::StaticMesh>();
-    mesh_comp2->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-
     auto* mat = Function::MaterialManager::CreateMaterials(L"Shaders/vert.spv", L"Shaders/frag.spv", L"AK-47材质");
-
     mesh_comp->SetMaterial(mat);
-    mesh_comp2->SetMaterial(mat);
-
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-
-    New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 
     auto* light_obj = New<Function::GameObject>(L"点光源");
     light_obj->SetPosition(Vector3(0, 0, 10));
     light_obj->AddComponent<Function::Comp::Light>();
-    light_obj->AddComponent<Function::Comp::SpaceCircle>();
     LogEndInit();
 }
 

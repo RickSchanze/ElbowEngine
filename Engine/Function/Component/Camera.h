@@ -14,7 +14,6 @@
 #include "Math/MathTypes.h"
 
 #include <chrono>
-#include <glm/fwd.hpp>
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
@@ -50,7 +49,7 @@ protected:
     bool enable_input_ = true;
 
     PROPERTY(Serialized, Name = mouse_sensitity, Label = "鼠标灵敏度")
-    float mouse_sensitivity_ = 0.1f;
+    float mouse_sensitivity_ = 0.01f;
 
     bool focused_ = false;
 };

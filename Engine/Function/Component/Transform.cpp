@@ -59,7 +59,7 @@ void Transform::SetRotation(const Rotator& rot)
 
 void Transform::Rotate(const Rotator& rot)
 {
-    mat_ = Math::Rotate(mat_, rot);
+    owner_->Rotate(rot);
 }
 
 Vector3 Transform::GetScale()
