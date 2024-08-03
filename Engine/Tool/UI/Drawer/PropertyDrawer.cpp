@@ -7,6 +7,7 @@
 
 #include "PropertyDrawer.h"
 
+#include "CoreGlobal.h"
 #include "Utils/ReflUtils.h"
 #include "Utils/StringUtils.h"
 
@@ -72,9 +73,13 @@ String PropertyDrawer::DrawProperty(const char* name, const String& value)
         {                                                                                  \
             label_name = registered_label_name.c_str();                                    \
         }                                                                                  \
-        auto value = vec.get_value<TypeName>();                                            \
-        value      = DrawProperty(label_name, value);                                      \
-        bool _     = prop.set_value(obj, value);                                           \
+        auto     value     = vec.get_value<TypeName>();                                    \
+        TypeName new_value = DrawProperty(label_name, value);                              \
+        if (new_value != value)                                                            \
+        {                                                                                  \
+            bool _ = prop.set_value(obj, new_value);                                       \
+        }                                                                                  \
+        return;                                                                            \
     }
 
 void PropertyDrawer::DrawProperty(const Property prop, const rttr::instance& obj)
@@ -94,9 +99,26 @@ void PropertyDrawer::DrawTransform(Transform& transform)
 {
     if (ImGui::CollapsingHeader(U8("变换")))
     {
-        transform.position = DrawProperty(U8("位置(x y z)"), transform.position);
-        transform.rotation = DrawProperty(U8("旋转(Yaw Roll Pitch)"), transform.rotation);
-        transform.scale    = DrawProperty(U8("缩放(x y z)"), transform.scale);
+        auto old_pos = transform.GetPosition();
+        auto new_pos = DrawProperty(U8("位置(x y z)"), old_pos);
+        if (old_pos != new_pos)
+        {
+            transform.SetPosition(new_pos);
+        }
+
+        auto old_rot = transform.GetRotation();
+        auto new_rot = DrawProperty(U8("旋转(Yaw Roll Pitch)"), old_rot);
+        if (old_rot != new_rot)
+        {
+            transform.SetRotation(new_rot);
+        }
+
+        auto old_scale = transform.GetScale();
+        auto new_scale = DrawProperty(U8("缩放(x y z)"), old_scale);
+        if (old_scale != new_scale)
+        {
+            transform.SetScale(new_scale);
+        }
     }
 }
 

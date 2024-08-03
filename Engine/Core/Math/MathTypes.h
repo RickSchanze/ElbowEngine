@@ -10,6 +10,7 @@
 #include "CoreDef.h"
 #include "Interface/IStringify.h"
 
+#include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
 #include <imgui.h>
 
@@ -27,6 +28,8 @@ struct Size2D : IStringify
 typedef glm::vec3 Vector3;
 typedef glm::vec2 Vector2;
 typedef glm::vec4 Vector4;
+typedef glm::mat4 Matrix4x4;
+typedef glm::quat Quaternion;
 
 namespace Constant
 {
@@ -35,6 +38,7 @@ constexpr Vector3 OneVector     = {1, 1, 1};
 constexpr Vector3 ForwardVector = {0, 0, 1};
 constexpr Vector3 RightVector   = {1, 0, 0};
 constexpr Vector3 UpVector      = {0, 1, 0};
+constexpr float   PI            = 3.14159265358979323846f;
 }   // namespace Constant
 
 struct Rotator : IStringify
@@ -47,27 +51,15 @@ struct Rotator : IStringify
     Vector3 GetUpVector() const;
     Vector3 GetRightVector() const;
     String  ToString() const override;
-};
 
-struct Transform : IStringify
-{
-    Vector3 position{};
-    Rotator rotation{};
-    Vector3 scale = Constant::OneVector;
+    bool operator==(const Rotator&) const;
+    bool operator!=(const Rotator&) const;
 
-    Vector3 GetForwardVector() const;
-    Vector3 GetUpVector() const;
-    Vector3 GetRightVector() const;
-    String  ToString() const override;
+    Rotator& operator=(const Vector3& v);
+    Rotator  operator-(const Rotator& other) const;
+    Rotator  operator+(const Rotator& other) const;
 
-    glm::mat4 ToMat4() const;
-
-    /**
-     * 0->position
-     * 其他位置的参数还不知道应该装什么
-     * @return
-     */
-    glm::mat4 ToGPUMat4() const;
+    Vector3 ToVector3() const { return {roll, pitch, yaw}; }
 };
 
 struct Color
@@ -86,4 +78,13 @@ public:
     static Color Yellow() { return {1, 1, 0, 1}; }
 
     operator ImVec4() { return {r, g, b, a}; }
+
+    bool operator==(const Color& other) const;
+    bool operator!=(const Color& other) const;
 };
+
+inline Matrix4x4 GetMatrix4x4Identity()
+{
+    static auto identity = glm::mat4(1.0f);
+    return identity;
+}

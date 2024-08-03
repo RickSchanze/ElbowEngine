@@ -71,12 +71,14 @@ public:
 
     bool IsComponent() const { return flag_ == EOF_IsComponent; }
 
+    bool IsGameObject() const { return flag_ == EOF_IsGameObject; }
+
     // TODO: 位操作
     EObjectFlag GetObjectFlag() const { return flag_; }
 
     const AnsiString& GetCachedAnsiString();
 
-    template <typename T>
+    template<typename T>
     bool IsImplemented()
     {
         Type other_type = rttr::type::get<T>();
@@ -90,14 +92,14 @@ public:
     bool IsImplemented(const Type& other_type) const
     {
         rttr::type this_type = GetType();
-        bool s = this_type.is_derived_from(other_type);
+        bool       s         = this_type.is_derived_from(other_type);
         return s;
     }
 
-    template <typename T>
+    template<typename T>
     T* As()
     {
-        T* t =  rttr::rttr_cast<T*>(this);
+        T* t = rttr::rttr_cast<T*>(this);
         if (t != nullptr)
         {
             return t;

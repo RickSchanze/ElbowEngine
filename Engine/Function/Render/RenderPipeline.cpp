@@ -9,6 +9,7 @@
 
 #include "Component/Light/Light.h"
 #include "Component/Mesh/Mesh.h"
+#include "Component/Transform.h"
 #include "Event.h"
 #include "Material.h"
 #include "Math/Math.h"
@@ -91,7 +92,7 @@ void RenderPipeline::PrepareModelUniformBuffer()
     {
         auto& mesh                 = meshes[i];
         auto& mesh_transform       = mesh->GetTransform();
-        model_instances_.models[i] = mesh_transform.ToMat4();
+        model_instances_.models[i] = mesh_transform.GetMat4();
     }
 }
 
@@ -112,7 +113,7 @@ void RenderPipeline::PrepareLight()
             PointLight light_data{};
             light_data.color = Math::ToVector4(light->GetLightColor());
             // 位置的w分量表示强度
-            light_data.pos   = Math::ToVector4(light->GetTransform().position, light->GetLightIntensity());
+            light_data.pos   = Math::ToVector4(light->GetTransform().GetPosition(), light->GetLightIntensity());
             lights_data.push_back(light_data);
         }
     }

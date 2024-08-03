@@ -19,6 +19,7 @@
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
+#include "Component/Script/SpaceCircle.h"
 #include "EditorStyle/ImGuiStyle.h"
 #include "Render/Material.h"
 #include "ResourceManager.h"
@@ -127,8 +128,9 @@ void EngineApplication::Initialize()
     New<Function::GameObject>(L"对象3", New<Function::GameObject>(L"对象4", New<Function::GameObject>(L"对象5")));
 
     auto* light_obj = New<Function::GameObject>(L"点光源");
-    light_obj->GetTransform().position = Vector3(0, 0, 10);
+    light_obj->SetPosition(Vector3(0, 0, 10));
     light_obj->AddComponent<Function::Comp::Light>();
+    light_obj->AddComponent<Function::Comp::SpaceCircle>();
     LogEndInit();
 }
 
@@ -150,10 +152,11 @@ void EngineApplication::Run()
     while (!glfwWindowShouldClose(window_->GetGLFWWindowHandle()))
     {
         // Tick逻辑
-
         InternalTick();
         window_->Tick(g_engine_statistics.time_delta);
-        camera_object_->Tick(g_engine_statistics.time_delta);
+
+        // Tick GameObject
+        Function::GameObject::TickObjects(g_engine_statistics.time_delta);
 
         // Tick渲染
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");

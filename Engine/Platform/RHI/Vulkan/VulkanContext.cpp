@@ -16,8 +16,6 @@
 #include "Utils/ContainerUtils.h"
 #include "Utils/StringUtils.h"
 
-#include <iostream>
-
 RHI_VULKAN_NAMESPACE_BEGIN
 
 VulkanContext::~VulkanContext()

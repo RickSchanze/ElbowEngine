@@ -10,9 +10,9 @@
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
-#include <glm/ext/matrix_transform.hpp>
 
 #include "Camera.generated.h"
+#include "GameObject/GameObject.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
 
@@ -45,7 +45,7 @@ void Camera::BeginPlay()
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-    return lookAt(transform_->position, transform_->position + transform_->GetForwardVector(), transform_->GetUpVector());
+    return Math::LookAt(transform_->GetPosition(), transform_->GetPosition() + transform_->GetForwardVector(), transform_->GetUpVector());
 }
 
 glm::mat4 Camera::GetProjectionMatrix() const
@@ -69,19 +69,19 @@ void Camera::HandleInput()
     {
         if (Input::IsKeyDown(KeyCode::W))
         {
-            transform_->position += movement_speed_ * transform_->GetForwardVector();
+            game_object_->DeltaPosition(movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::S))
         {
-            transform_->position -= movement_speed_ * transform_->GetForwardVector();
+            game_object_->DeltaPosition(-movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::A))
         {
-            transform_->position -= movement_speed_ * transform_->GetRightVector();
+            game_object_->DeltaPosition(-movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::D))
         {
-            transform_->position += movement_speed_ * transform_->GetRightVector();
+            game_object_->DeltaPosition(movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::Escape))
         {
@@ -89,18 +89,19 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            transform_->position += movement_speed_ * transform_->GetUpVector();
+            game_object_->DeltaPosition(movement_speed_ * transform_->GetUpVector());
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            transform_->position -= movement_speed_ * transform_->GetUpVector();
+            game_object_->DeltaPosition(-movement_speed_ * transform_->GetUpVector());
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();
         mouse_delta *= mouse_sensitivity_;
-        transform_->rotation.yaw += mouse_delta.x;
-        transform_->rotation.pitch -= mouse_delta.y;
-        transform_->rotation.pitch = Math::Clamp(transform_->rotation.pitch, -89.0f, 89.0f);
+        Rotator r;
+        r.yaw = mouse_delta.x;
+        r.pitch = Math::Clamp(mouse_delta.y, -89.0f, 89.0f);
+        transform_->Rotate(r);
     }
     else
     {

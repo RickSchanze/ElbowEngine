@@ -11,7 +11,7 @@
 
 #include "Component.generated.h"
 
-struct Transform;
+class Transform;
 
 namespace Function
 {
@@ -30,7 +30,9 @@ public:
 
     ~Component() override;
 
+    virtual void PreTick(float DeltaTime) {}
     virtual void Tick(float DeltaTime) {}
+    virtual void PostTick(float DeltaTime) {}
     virtual void BeginPlay();
     virtual void EndPlay();
     virtual void OnEnable() {}

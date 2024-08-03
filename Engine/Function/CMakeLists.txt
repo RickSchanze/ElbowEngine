@@ -10,6 +10,8 @@ add_library(${PROJECT_NAME}
         Input/Input.h
         Component/Camera.cpp
         Component/Camera.h
+        Component/Transform.cpp
+        Component/Transform.h
         Component/Mesh/Mesh.h
         Component/Mesh/Mesh.cpp
         Component/Mesh/StaticMesh.h
@@ -18,6 +20,8 @@ add_library(${PROJECT_NAME}
         Component/Interface/IDetailGUIDrawer.cpp
         Component/Light/Light.h
         Component/Light/Light.cpp
+        Component/Script/SpaceCircle.h
+        Component/Script/SpaceCircle.cpp
         Render/RenderContext.h
         Render/RenderContext.cpp
         Render/LiteForwardRenderPipeline.h

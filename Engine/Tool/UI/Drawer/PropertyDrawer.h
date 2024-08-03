@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Component/Transform.h"
 #include "CoreDef.h"
 #include "Math/MathTypes.h"
 #include "ToolCommon.h"

@@ -9,6 +9,7 @@
 
 #include "Component/Camera.h"
 #include "Component/Mesh/Mesh.h"
+#include "Component/Transform.h"
 #include "ImGui/ImGuiHelper.h"
 #include "Math/Math.h"
 #include "Mesh.h"

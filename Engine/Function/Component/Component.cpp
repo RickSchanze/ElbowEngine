@@ -47,7 +47,7 @@ void Component::SetEnabled(const bool enable)
     }
 }
 
-Transform& Component::GetTransform() const
+::Transform& Component::GetTransform() const
 {
     return *transform_;
 }

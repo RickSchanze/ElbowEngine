@@ -21,6 +21,8 @@ extern Logger g_logger;
 
 #define LOG_INFO(Text, ...) g_logger.Info(L##Text, __VA_ARGS__)
 #define LOG_INFO_CATEGORY(Category, Text, ...) g_logger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_INFO_ANSI(Text, ...) g_logger.Info(##Text, __VA_ARGS__)
+#define LOG_INFO_ANSI_CATEGORY(Category, Text, ...) g_logger.Info("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_WARNING(Text, ...) g_logger.Warning(L##Text, __VA_ARGS__)
 #define LOG_WARNING_CATEGORY(Category, Text, ...) g_logger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)

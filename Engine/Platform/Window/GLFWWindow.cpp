@@ -220,7 +220,7 @@ void GlfwWindow::SetupImGuiFonts()
     ImVector<ImWchar>        Ranges;
     ImFontGlyphRangesBuilder Builder;
     Builder.AddRanges(IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-    Builder.AddText(U8("帧引擎渲染"));
+    Builder.AddText(IMGUI_FONT_STR);
     Builder.BuildRanges(&Ranges);
     IO.Fonts->AddFontFromFileTTF(DefaultFontPathStr.c_str(), 30, nullptr, Ranges.Data);
     ImGui_ImplVulkan_CreateFontsTexture();
