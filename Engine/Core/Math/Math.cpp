@@ -51,7 +51,7 @@ Matrix4x4 Math::Translate(const Matrix4x4& m, const Vector3& v)
 
 Matrix4x4 Math::Rotate(const Matrix4x4& m, const Rotator& v)
 {
-    const Vector3 eluer_angle = v.ToVector3();
+    const Vector3 eluer_angle = v.ToRotatorRadian().ToVector3();
     const auto    q           = glm::quat(eluer_angle);
     return Rotate(m, q);
 }
@@ -109,7 +109,6 @@ void Math::Decompose(const Matrix4x4& m, Vector3& pos, Quaternion& rot_quat, Vec
     decompose(m, scale, rot_quat, pos, skew, perp);
     rot_quat  = conjugate(rot_quat);
     rot_eluer = eulerAngles(rot_quat) / Constant::PI * 180.f;
-    std::swap(rot_eluer.pitch, rot_eluer.yaw);
 }
 
 Vector4 Math::ToVector4(const Vector3& v, float fill)
@@ -120,4 +119,9 @@ Vector4 Math::ToVector4(const Vector3& v, float fill)
 Vector4 Math::ToVector4(const Color& c)
 {
     return {c.r, c.g, c.b, c.a};
+}
+
+float Math::Radians(float a)
+{
+    return a * Constant::PI / 180.f;
 }

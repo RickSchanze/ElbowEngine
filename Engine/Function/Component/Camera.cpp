@@ -67,21 +67,22 @@ void Camera::HandleInput()
 {
     if (Input::IsKeyDown(KeyCode::MouseRight))
     {
+        Transform& transform = game_object_->GetTransform();
         if (Input::IsKeyDown(KeyCode::W))
         {
-            game_object_->Translate(movement_speed_ * transform_->GetForwardVector());
+            transform.Translate(movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::S))
         {
-            game_object_->Translate(-movement_speed_ * transform_->GetForwardVector());
+            transform.Translate(-movement_speed_ * transform_->GetForwardVector());
         }
         if (Input::IsKeyDown(KeyCode::A))
         {
-            game_object_->Translate(-movement_speed_ * transform_->GetRightVector());
+            transform.Translate(-movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::D))
         {
-            game_object_->Translate(movement_speed_ * transform_->GetRightVector());
+            transform.Translate(movement_speed_ * transform_->GetRightVector());
         }
         if (Input::IsKeyDown(KeyCode::Escape))
         {
@@ -89,19 +90,28 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            game_object_->Translate(movement_speed_ * transform_->GetUpVector());
+            transform.Translate(movement_speed_ * transform_->GetUpVector());
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            game_object_->Translate(-movement_speed_ * transform_->GetUpVector());
+            transform.Translate(-movement_speed_ * transform_->GetUpVector());
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();
         mouse_delta *= mouse_sensitivity_;
         Rotator r;
-        r.yaw = mouse_delta.x;
-        r.pitch = Math::Clamp(mouse_delta.y, -89.0f, 89.0f);
-        transform_->Rotate(r);
+        r.yaw           = mouse_delta.x;
+        r.pitch         = -mouse_delta.y;
+        Rotator new_rot = transform_->GetRotation() + r;
+        if (new_rot.pitch > 89.f)
+        {
+            new_rot.pitch = 89.f;
+        }
+        if (new_rot.pitch < -89.f)
+        {
+            new_rot.pitch = -89.f;
+        }
+        transform_->SetRotation(new_rot);
     }
     else
     {

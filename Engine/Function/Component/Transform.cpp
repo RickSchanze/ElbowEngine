@@ -14,84 +14,111 @@
 RTTR_REGISTRATION
 {
     rttr::registration::class_<Transform>("Transform")
-        .property("location", &Transform::GetPosition, &Transform::SetPosition)
-        .property("rotation", &Transform::GetRotation, &Transform::SetRotation)
-        .property("scale", &Transform::GetScale, &Transform::SetScale);
+        .property("location", &Transform::GetPosition, rttr::select_overload<void(Vector3)>(&Transform::SetPosition))
+        .property("rotation", &Transform::GetRotation, rttr::select_overload<void(const Rotator&)>(&Transform::SetRotation))
+        .property("scale", &Transform::GetScale, rttr::select_overload<void(Vector3)>(&Transform::SetScale));
 }
 
-Transform::Transform(Function::GameObject* owner) : owner_(owner)
+Transform::Transform(Function::GameObject* owner) :
+    composited_mat_(GetMatrix4x4Identity()), position_(), scale_(1, 1, 1), rotator_(Rotator()), composited_mat_dirty_(true), owner_(owner),
+    world_position_(Constant::ZeroVector), world_rotator_(Rotator()), world_scale_(1, 1, 1)
 {
-    mat_ = GetMatrix4x4Identity();
+}
+
+Transform Transform::Identity()
+{
+    static Transform identity{nullptr};
+    identity.position_ = Vector3(0, 0, 0);
+    identity.rotator_  = Rotator(0, 0, 0);
+    identity.scale_    = Vector3(1, 1, 1);
+    return identity;
 }
 
 Vector3 Transform::GetPosition()
 {
-    if (decompose_dirty_)
-    {
-        DecomposeMat();
-        decompose_dirty_ = false;
-    }
     return position_;
+}
+
+void Transform::SetPosition(Vector3 pos, bool delay)
+{
+    position_ = pos;
+    if (delay)
+    {
+        owner_->MarkTransformDirty();
+    }
+    else
+    {
+        owner_->ForceUpdateTransform();
+    }
 }
 
 void Transform::SetPosition(Vector3 pos)
 {
-    owner_->SetPosition(pos);
+    SetPosition(pos, true);
+}
+
+void Transform::Translate(Vector3 pos, bool delay)
+{
+    SetPosition(position_ + pos);
 }
 
 const Rotator& Transform::GetRotation()
 {
-    if (decompose_dirty_)
-    {
-        DecomposeMat();
-        decompose_dirty_ = false;
-    }
     return rotator_;
+}
+
+void Transform::SetRotation(const Rotator& rot, bool delay)
+{
+    rotator_ = rot;
+    if (delay)
+    {
+        owner_->MarkTransformDirty();
+    }
+    else
+    {
+        owner_->ForceUpdateTransform();
+    }
 }
 
 void Transform::SetRotation(const Rotator& rot)
 {
-    const auto source = GetRotation();
-    const auto delta  = rot - source;
-    decompose_dirty_  = true;
-    mat_              = Math::Rotate(mat_, delta);
+    SetRotation(rot, true);
 }
 
-void Transform::Rotate(const Rotator& rot)
+void Transform::Rotate(const Rotator& rot, bool delay)
 {
-    owner_->Rotate(rot);
+    rotator_ += rot;
+    if (delay)
+    {
+        owner_->MarkTransformDirty();
+    }
+    else
+    {
+        owner_->ForceUpdateTransform();
+    }
 }
 
 Vector3 Transform::GetScale()
 {
-    if (decompose_dirty_)
-    {
-        DecomposeMat();
-        decompose_dirty_ = false;
-    }
     return scale_;
+}
+
+void Transform::SetScale(Vector3 scale, bool delay)
+{
+    scale_ = scale;
+    if (delay)
+    {
+        owner_->MarkTransformDirty();
+    }
+    else
+    {
+        owner_->ForceUpdateTransform();
+    }
 }
 
 void Transform::SetScale(Vector3 scale)
 {
-    decompose_dirty_ = true;
-    mat_             = Math::Scale(mat_, scale);
-}
-
-Quaternion Transform::GetRotationQuaternion()
-{
-    if (decompose_dirty_)
-    {
-        DecomposeMat();
-        decompose_dirty_ = false;
-    }
-    return rotation_;
-}
-
-void Transform::SetRotationQuaternion(Quaternion q)
-{
-    decompose_dirty_ = true;
-    mat_             = Math::Rotate(mat_, q);
+    return SetScale(scale, true);
 }
 
 Vector3 Transform::GetForwardVector() const
@@ -119,9 +146,17 @@ String Transform::ToString()
     );
 }
 
-glm::mat4 Transform::GetMat4() const
+glm::mat4 Transform::GetMat4()
 {
-    return mat_;
+    if (composited_mat_dirty_)
+    {
+        composited_mat_       = GetMatrix4x4Identity();
+        composited_mat_       = Math::Translate(composited_mat_, world_position_);
+        composited_mat_       = Math::Rotate(composited_mat_, world_rotator_);
+        composited_mat_       = Math::Scale(composited_mat_, world_scale_);
+        composited_mat_dirty_ = false;
+    }
+    return composited_mat_;
 }
 
 glm::mat4 Transform::ToGPUMat4()
@@ -131,13 +166,44 @@ glm::mat4 Transform::ToGPUMat4()
     return rtn;
 }
 
-void Transform::ApplyModify(const Matrix4x4& modify)
+void Transform::ApplyModify(const Vector3& pos, const Rotator& rot, const Vector3& scale)
 {
-    decompose_dirty_ = true;
-    mat_ *= modify;
+    world_position_ = position_ + pos;
+    world_rotator_ = rotator_ + rot;
+    world_scale_ = scale_ * scale;
+    composited_mat_dirty_ = true;
 }
 
-void Transform::DecomposeMat()
+Transform& Transform::operator+=(const Transform& other)
 {
-    Math::Decompose(mat_, position_, rotation_, scale_, rotator_);
+    position_ += other.position_;
+    rotator_ += other.rotator_;
+    scale_ += other.scale_;
+    return *this;
+}
+
+Transform& Transform::operator-=(const Transform& other)
+{
+    position_ -= other.position_;
+    rotator_ -= other.rotator_;
+    scale_ -= other.scale_;
+    return *this;
+}
+
+Transform Transform::operator-(const Transform& other) const
+{
+    Transform t = Transform::Identity();
+    t.position_ = position_ - other.position_;
+    t.rotator_  = rotator_ - other.rotator_;
+    t.scale_    = scale_ - other.scale_;
+    return t;
+}
+
+Transform Transform::operator+(const Transform& other) const
+{
+    Transform t = Transform::Identity();
+    t.position_ = position_ + other.position_;
+    t.rotator_  = rotator_ + other.rotator_;
+    t.scale_    = scale_ + other.scale_;
+    return t;
 }

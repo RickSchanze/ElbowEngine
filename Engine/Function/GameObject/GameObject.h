@@ -103,27 +103,11 @@ public:
     // 获取这个对象的所有Components
     TArray<Comp::Component*>& GetComponents() { return components_; }
 
-    /**
-     * 直接设置对象的Position
-     * @param position
-     * @param delay true则在PostTick里更改 false则立即更改
-     */
-    void SetPosition(Vector3 position, bool delay = true);
-
-    /**
-     * 设置对象位置的变化量
-     * @param pos_delta
-     * @param delay true则在PostTick里更改 false则立即更改
-     */
-    void Translate(Vector3 pos_delta, bool delay = true);
-
-    /**
-     * 旋转rotator的数值
-     * @param rotator
-     */
-    void Rotate(const Rotator &rotator, bool delay = true);
-
     static const TArray<GameObject*>& GetRootGameObjects() { return s_root_objects_; }
+
+    void MarkTransformDirty();
+
+    void ForceUpdateTransform();
 
 private:
     void ApplyTransformDeltas();
@@ -131,7 +115,6 @@ private:
 protected:
     Transform transform_;
     bool      transform_dirty_;   // transform有变化时为true
-    Matrix4x4 transform_delta_;   // transform有变化时值有效
 
     TArray<Comp::Component*> components_;
     TArray<GameObject*>      sub_game_objects_;

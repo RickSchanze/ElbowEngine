@@ -41,16 +41,18 @@ constexpr Vector3 UpVector      = {0, 1, 0};
 constexpr float   PI            = 3.14159265358979323846f;
 }   // namespace Constant
 
-struct Rotator : IStringify
+struct Rotator
 {
-    float yaw   = -90;
+    float yaw   = 0;
     float roll  = 0;
     float pitch = 0;
+
+    Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
 
     Vector3 GetForwardVector() const;
     Vector3 GetUpVector() const;
     Vector3 GetRightVector() const;
-    String  ToString() const override;
+    String  ToString() const;
 
     bool operator==(const Rotator&) const;
     bool operator!=(const Rotator&) const;
@@ -59,7 +61,16 @@ struct Rotator : IStringify
     Rotator  operator-(const Rotator& other) const;
     Rotator  operator+(const Rotator& other) const;
 
-    Vector3 ToVector3() const { return {roll, pitch, yaw}; }
+    Vector3 ToVector3() const { return {pitch, yaw, roll}; }
+
+    Rotator& operator+=(const Rotator& other);
+    Rotator& operator-=(const Rotator& other);
+
+    /**
+     * 将角度表示的自己转变为弧度表示
+     * @return
+     */
+    Rotator ToRotatorRadian() const;
 };
 
 struct Color

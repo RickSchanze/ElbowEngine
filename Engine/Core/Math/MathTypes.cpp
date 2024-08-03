@@ -101,6 +101,31 @@ Rotator Rotator::operator+(const Rotator& other) const
     return rtn;
 }
 
+Rotator& Rotator::operator+=(const Rotator& other)
+{
+    yaw   = Math::Clamp(yaw + other.yaw, -180.0f, 180.0f);
+    pitch = Math::Clamp(pitch + other.pitch, -180.0f, 180.0f);
+    roll  = Math::Clamp(roll + other.roll, -180.0f, 180.0f);
+    return *this;
+}
+
+Rotator& Rotator::operator-=(const Rotator& other)
+{
+    yaw   = Math::Clamp(yaw - other.yaw, -180.0f, 180.0f);
+    pitch = Math::Clamp(pitch - other.pitch, -180.0f, 180.0f);
+    roll  = Math::Clamp(roll - other.roll, -180.0f, 180.0f);
+    return *this;
+}
+
+Rotator Rotator::ToRotatorRadian() const
+{
+    Rotator r;
+    r.roll  = Math::Radians(roll);
+    r.pitch = Math::Radians(pitch);
+    r.yaw   = Math::Radians(yaw);
+    return r;
+}
+
 bool Color::operator==(const Color& other) const
 {
     return Math::ApproximatelyEqual(r, other.r) && Math::ApproximatelyEqual(g, other.g) && Math::ApproximatelyEqual(b, other.b) &&

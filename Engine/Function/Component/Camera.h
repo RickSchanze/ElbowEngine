@@ -43,13 +43,13 @@ protected:
     void HandleInput();
 
     PROPERTY(Serialized, Name = movement_speed, Label = "摄像机移动速度")
-    float movement_speed_ = 0.001;
+    float movement_speed_ = 0.3f;
 
     PROPERTY(Serialized, Name = enable_input, Label = "启用输入")
     bool enable_input_ = true;
 
     PROPERTY(Serialized, Name = mouse_sensitity, Label = "鼠标灵敏度")
-    float mouse_sensitivity_ = 0.01f;
+    float mouse_sensitivity_ = 0.3f;
 
     bool focused_ = false;
 };

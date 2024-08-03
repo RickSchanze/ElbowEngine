@@ -10,6 +10,8 @@
 #include "GameObject/GameObject.h"
 #include "Math/Math.h"
 
+#include "SpaceCircle.generated.h"
+
 GENERATED_SOURCE()
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
@@ -72,10 +74,10 @@ void SpaceCircle::PerformTranslate()
     float   cos = Math::Cos(theta);
     float   sin = Math::Sin(theta);
     Vector3 new_pos;
-    new_pos.x = center_.x + radius_ * a_.x + cos + radius_ * b_.x * sin;
-    new_pos.y = center_.y + radius_ * a_.y + cos + radius_ * b_.y * sin;
-    new_pos.z = center_.z + radius_ * a_.z + cos + radius_ * b_.z * sin;
-    game_object_->SetPosition(new_pos);
+    new_pos.x = center_.x + radius_ * a_.x * cos + radius_ * b_.x * sin;
+    new_pos.y = center_.y + radius_ * a_.y * cos + radius_ * b_.y * sin;
+    new_pos.z = center_.z + radius_ * a_.z * cos + radius_ * b_.z * sin;
+    game_object_->GetTransform().SetPosition(new_pos);
 }
 
 FUNCTION_COMPONENT_NAMESPACE_END

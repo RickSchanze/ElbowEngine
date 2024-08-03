@@ -6,39 +6,39 @@
  */
 
 #pragma once
+#include "Camera.h"
 #include "Component.h"
 #include "Math/MathTypes.h"
 
 class Transform
 {
-    friend class GameObject;
+    friend class Function::GameObject;
+
 public:
-    Transform(Function::GameObject* owner);
+    Transform(Function::GameObject* owner = nullptr);
+
+    static Transform Identity();
 
     Vector3 GetPosition();
+    void    SetPosition(Vector3 pos, bool delay);
     void    SetPosition(Vector3 pos);
+    void    Translate(Vector3 pos, bool delay = true);
 
     const Rotator& GetRotation();
+    void           SetRotation(const Rotator& rot, bool delay);
     void           SetRotation(const Rotator& rot);
-    void           Rotate(const Rotator& rot);
+    void           Rotate(const Rotator& rot, bool delay = true);
 
     Vector3 GetScale();
+    void    SetScale(Vector3 scale, bool delay);
     void    SetScale(Vector3 scale);
-
-    Quaternion GetRotationQuaternion();
-
-    /**
-     * 将mat旋转四元数q
-     * @param q
-     */
-    void SetRotationQuaternion(Quaternion q);
 
     Vector3 GetForwardVector() const;
     Vector3 GetUpVector() const;
     Vector3 GetRightVector() const;
     String  ToString();
 
-    glm::mat4 GetMat4() const;
+    glm::mat4 GetMat4();
 
     /**
      * 0->position
@@ -47,19 +47,23 @@ public:
      */
     glm::mat4 ToGPUMat4();
 
-    void ApplyModify(const Matrix4x4& modify);
+    void ApplyModify(const Vector3& pos, const ::Rotator& rot, const Vector3&scale);
+
+    Transform& operator+=(const Transform& other);
+    Transform& operator-=(const Transform& other);
+    Transform  operator-(const Transform& other) const;
+    Transform  operator+(const Transform& other) const;
 
 protected:
-    /**
-     * 将变换矩阵mat_分解成 position, rotation, scale
-     */
-    void DecomposeMat();
+    Matrix4x4 composited_mat_;
+    Vector3   position_;
+    Vector3   scale_;
+    Rotator   rotator_;
 
-    Matrix4x4             mat_;
-    Vector3               position_;
-    Vector3               scale_;
-    Quaternion            rotation_;
-    Rotator               rotator_;
-    bool                  decompose_dirty_ = true;
+    Vector3 world_position_;
+    Vector3 world_scale_;
+    Rotator world_rotator_;
+
+    bool                  composited_mat_dirty_;
     Function::GameObject* owner_;
 };

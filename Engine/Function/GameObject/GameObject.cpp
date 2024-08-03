@@ -8,13 +8,12 @@
 #include "GameObject.h"
 #include "Component/Component.h"
 #include "Component/Transform.h"
-#include "Math/Math.h"
 
 using namespace Function::Comp;
 
 FUNCTION_NAMESPACE_BEGIN
 
-GameObject::GameObject(GameObject* InParent) : Object(EOF_IsGameObject), transform_delta_(GetMatrix4x4Identity()), transform_(this)
+GameObject::GameObject(GameObject* InParent) : Object(EOF_IsGameObject), transform_(this)
 {
     if (InParent == nullptr)
     {
@@ -152,54 +151,33 @@ void GameObject::DestroyComponent(Component* component)
     delete component;
 }
 
-void GameObject::SetPosition(Vector3 position, bool delay)
+void GameObject::MarkTransformDirty()
 {
-    const Vector3 transform_delta = position - transform_.GetPosition();
-    Translate(transform_delta, delay);
-}
-
-void GameObject::Translate(Vector3 pos_delta, bool delay)
-{
-    transform_delta_ = Math::Translate(GetMatrix4x4Identity(), pos_delta);
     transform_dirty_ = true;
-    if (!delay)
-    {
-        ApplyTransformDeltas();
-    }
 }
 
-void GameObject::Rotate(const Rotator &rotator, bool delay)
+void GameObject::ForceUpdateTransform()
 {
-    transform_dirty_      = true;
-    const Matrix4x4 yaw   = Math::Rotate(GetMatrix4x4Identity(), rotator.yaw, Constant::UpVector);
-    const Matrix4x4 pitch = Math::Rotate(GetMatrix4x4Identity(), rotator.pitch, Constant::RightVector);
-    const Matrix4x4 roll  = Math::Rotate(GetMatrix4x4Identity(), rotator.roll, Constant::ForwardVector);
-    transform_delta_ *= roll * pitch * yaw;
-    if (!delay)
-    {
-        ApplyTransformDeltas();
-    }
+    ApplyTransformDeltas();
 }
 
 void GameObject::ApplyTransformDeltas()
 {
-    Matrix4x4 parent_delta;
+    Transform parent_;
     if (parent_oject_ != nullptr)
     {
-        parent_delta = parent_oject_->transform_delta_;
+        parent_ = parent_oject_->transform_;
     }
     else
     {
-        parent_delta = GetMatrix4x4Identity();
+        parent_ = Transform::Identity();
     }
-    transform_delta_ = parent_delta * transform_delta_;
+    transform_.ApplyModify(parent_.world_position_, parent_.world_rotator_, parent_.world_scale_);
     for (auto* object: sub_game_objects_)
     {
         object->ApplyTransformDeltas();
     }
-    transform_.ApplyModify(transform_delta_);
     transform_dirty_ = false;
-    transform_delta_ = GetMatrix4x4Identity();
 }
 
 FUNCTION_NAMESPACE_END
