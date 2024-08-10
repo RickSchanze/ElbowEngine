@@ -70,7 +70,7 @@ public:
 
     void SetMouseVisible(bool InVisible) const;
 
-    void RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline);
+    void RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline) const;
 
 
 private:

@@ -10,6 +10,11 @@
 #include "RenderContext.h"
 #include "RenderPipeline.h"
 
+namespace Function
+{
+class SimpleObjectShadingPass;
+}
+
 namespace RHI::Vulkan
 {
 class RenderPass;
@@ -29,7 +34,7 @@ public:
     void Build() override;
 
 private:
-    RHI::Vulkan::RenderPass* forward_pass_ = nullptr;
+    SimpleObjectShadingPass* forward_pass_ = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

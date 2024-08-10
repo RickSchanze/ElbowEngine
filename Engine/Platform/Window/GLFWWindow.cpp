@@ -27,21 +27,73 @@ PLATFORM_WINDOW_NAMESPACE_BEGIN
 class ImGuiRenderPass : public RenderPass
 {
 public:
-    explicit ImGuiRenderPass(const AnsiString& debug_name) : RenderPass(debug_name) {}
-
-protected:
-    void OnCreateAttachments() override
+    explicit ImGuiRenderPass(const AnsiString& debug_name) :
+        RenderPass(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height, debug_name)
     {
-        RenderPassAttachmentParam Param(vk::ImageUsageFlagBits::eSampled);
-        Param.initial_layout   = vk::ImageLayout::eUndefined;
-        Param.finial_layout    = vk::ImageLayout::ePresentSrcKHR;
-        Param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-        Param.store_op         = vk::AttachmentStoreOp::eStore;
-        Param.load_op          = vk::AttachmentLoadOp::eDontCare;
-        NewAttachment(Param, true);
     }
 
-    void CreateSubpassDescription() override;
+protected:
+    void SetupAttachments() override
+    {
+        RenderPassAttachmentParam param{};
+        param.format           = VulkanContext::Get()->GetSwapChainImageFormat();
+        param.sample_count = vk::SampleCountFlagBits::e1;
+        param.load_op = vk::AttachmentLoadOp::eDontCare;
+        param.store_op = vk::AttachmentStoreOp::eStore;
+        param.stencil_load_op = vk::AttachmentLoadOp::eDontCare;
+        param.stencil_store_op = vk::AttachmentStoreOp::eDontCare;
+        param.initial_layout   = vk::ImageLayout::eUndefined;
+        param.final_layout     = vk::ImageLayout::ePresentSrcKHR;
+        param.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
+        NewSwapchainColorAttachment(param);
+    }
+
+    void SetupSubpassDependency() override
+    {
+        vk::SubpassDependency dependency;
+        dependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
+        dependency.dstSubpass    = 0;
+        dependency.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        dependency.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        dependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        dependencies_.push_back(dependency);
+    }
+
+public:
+    void SetupFramebuffer() override
+    {
+        framebuffers_.resize(g_engine_statistics.graphics.swapchain_image_count);
+        framebuffer_names_.resize(g_engine_statistics.graphics.swapchain_image_count);
+        for (int i = 0; i < g_engine_statistics.graphics.swapchain_image_count; ++i)
+        {
+            vk::FramebufferCreateInfo info{};
+            info.renderPass    = handle_;
+            TArray attachments = {VulkanContext::Get()->GetSwapChainImageViews()[i]->GetHandle()};
+            info.setAttachments(attachments);
+            info.width            = width_;
+            info.height           = height_;
+            info.layers           = 1;
+            framebuffer_names_[i] = std::string("ImGuiFrameBuffer_") + std::to_string(i);
+            framebuffers_[i]      = new Framebuffer(info, framebuffer_names_[i].c_str());
+        }
+    }
+
+    void CleanFrameBuffer() override
+    {
+        for (auto& framebuffer: framebuffers_)
+        {
+            delete framebuffer;
+        }
+        framebuffers_.clear();
+    }
+
+    Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
+
+    void Begin(vk::CommandBuffer cb, const Color& clear_color) override {}
+
+    TArray<Framebuffer*> framebuffers_;
+    TArray<AnsiString>   framebuffer_names_;
 };
 
 class ImGuiGraphicsPipeline : public ImguiGraphicsPipeline
@@ -65,11 +117,9 @@ public:
 private:
     VulkanContext* context_;
 
-    vk::DescriptorPool        descriptor_pool_ = nullptr;
-    TUniquePtr<CommandPool>   command_pool_;
-    RenderPass*               render_pass_ = nullptr;
-
-    TArray<AnsiString> command_buffer_debug_names;
+    vk::DescriptorPool      descriptor_pool_ = nullptr;
+    TUniquePtr<CommandPool> command_pool_;
+    ImGuiRenderPass*        render_pass_ = nullptr;
 };
 
 void GLFWWindowSurface::Initialize()
@@ -85,15 +135,6 @@ void GLFWWindowSurface::Initialize()
         }
         mSurfaceHandle = vk::SurfaceKHR(surface);
     }
-}
-
-void ImGuiRenderPass::CreateSubpassDescription()
-{
-    RenderPass::CreateSubpassDescription();
-    dependency_.srcStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependency_.dstStageMask  = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependency_.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    dependency_.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 }
 
 ImGuiGraphicsPipeline::ImGuiGraphicsPipeline()
@@ -139,6 +180,7 @@ void ImGuiGraphicsPipeline::Finialize()
 {
     if (descriptor_pool_ == nullptr) return;
     command_pool_->Finialize();
+    render_pass_->CleanFrameBuffer();
     delete render_pass_;
     render_pass_ = nullptr;
     ImGui_ImplVulkan_Shutdown();
@@ -158,7 +200,7 @@ void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     vk::RenderPassBeginInfo render_pass_info = {};
     render_pass_info.renderPass              = render_pass_->GetHandle();
-    render_pass_info.framebuffer             = render_pass_->GetFrameBuffer(current_image_index)->GetHandle();
+    render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
     cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
@@ -279,7 +321,7 @@ void GlfwWindow::SetMouseVisible(const bool InVisible) const
     glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline)
+void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline) const
 {
     *pipeline = imgui_graphics_pipeline_;
 }

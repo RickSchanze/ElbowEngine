@@ -146,7 +146,7 @@ String Transform::ToString()
     );
 }
 
-glm::mat4 Transform::GetMat4()
+Matrix4x4 Transform::GetMat4()
 {
     if (composited_mat_dirty_)
     {

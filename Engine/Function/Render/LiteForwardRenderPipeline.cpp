@@ -8,13 +8,12 @@
 #include "LiteForwardRenderPipeline.h"
 
 #include "Component/Camera.h"
-#include "Component/Mesh/Mesh.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "RenderPasses/SimpleObjectShadingPass.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
-#include "RHI/Vulkan/Render/ShaderProgram.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
 
@@ -58,7 +57,7 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 
 void LiteForwardRenderPipeline::Build()
 {
-    forward_pass_ = RenderPassManager::GetOrCreateRenderPass<RenderPass>("SimpleForwardPass");
+    forward_pass_ = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
 
     AddImGuiGraphicsPipeline();
 }

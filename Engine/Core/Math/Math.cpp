@@ -125,3 +125,16 @@ float Math::Radians(float a)
 {
     return a * Constant::PI / 180.f;
 }
+
+float Math::RoundAngle(float a, float min, float max)
+{
+    float range         = max - min;
+    float wrapped_angle = Mod(a - min, range);
+    if (wrapped_angle < 0) wrapped_angle += range;
+    return wrapped_angle + min;
+}
+
+float Math::ClampAngle(float a, float min, float max)
+{
+    return Clamp(a, min, max);
+}

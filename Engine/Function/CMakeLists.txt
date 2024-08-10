@@ -33,6 +33,10 @@ add_library(${PROJECT_NAME}
         Render/Material.cpp
         Render/Shaders/StandardForwardShader.h
         Render/Shaders/StandardForwardShader.cpp
+        Render/RenderPasses/PointLightShadowPass.h
+        Render/RenderPasses/PointLightShadowPass.cpp
+        Render/RenderPasses/SimpleObjectShadingPass.h
+        Render/RenderPasses/SimpleObjectShadingPass.cpp
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp
 )

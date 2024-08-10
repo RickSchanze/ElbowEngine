@@ -17,14 +17,19 @@
 
 RESOURCE_NAMESPACE_BEGIN
 
-TUniquePtr<RHI::Vulkan::Mesh>& SubMesh::GetRHIResource()
+SubMesh::~SubMesh()
+{
+    delete mesh_rhi_resource_;
+}
+
+RHI::Vulkan::Mesh* SubMesh::GetRHIResource()
 {
     return mesh_rhi_resource_;
 }
 
 void SubMesh::LoadRHI()
 {
-    mesh_rhi_resource_ = RHI::Vulkan::Mesh::CreateUnique(vertices_, indices_);
+    mesh_rhi_resource_ = new RHI::Vulkan::Mesh(vertices_, indices_);
 }
 
 Mesh::Mesh(Protected, const Path& mesh_path) : path_(mesh_path)

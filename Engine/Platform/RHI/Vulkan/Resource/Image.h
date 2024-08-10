@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include <utility>
+
 #include "ImageView.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
@@ -20,7 +22,7 @@ struct ImageViewInfo
     vk::Format           format       = vk::Format::eUndefined;            // 自动选择和Image一样的格式
     vk::ImageAspectFlags aspect_flags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
     int32_t              mip_levels   = 0;                                 // 自动选择Miplevels
-    const char* debug_name = nullptr;
+    const char*          debug_name   = nullptr;
 };
 
 class ImageBase
@@ -37,12 +39,6 @@ public:
 
     vk::Image GetHandle() const { return image_handle_; }
 
-    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const;
-
-    TUniquePtr<ImageView> CreateImageViewUnique(const ImageViewInfo& view_info) const;
-
-    virtual ImageView* CreateImageView(const ImageViewInfo& view_info) const = 0;
-
 protected:
     vk::Image image_handle_ = VK_NULL_HANDLE;
 };
@@ -55,7 +51,12 @@ public:
 
     SwapChainImage() = default;
 
-    ImageView* CreateImageView(const ImageViewInfo& view_info) const override;
+    ImageView* CreateImageView(const ImageViewInfo& view_info) const;
+
+    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const
+    {
+        return TSharedPtr<ImageView>{CreateImageView(view_info)};
+    }
 };
 
 struct ImageInfo
@@ -66,15 +67,26 @@ struct ImageInfo
     uint32_t                height          = 0;
     uint32_t                depth           = 1;
     uint32_t                mip_levels      = 1;
+    uint32_t                array_layers    = 1;
     vk::ImageTiling         tiling          = vk::ImageTiling::eOptimal;
     vk::SampleCountFlagBits sample_count    = vk::SampleCountFlagBits::e1;
     vk::ImageType           image_type      = vk::ImageType::e2D;
     vk::MemoryPropertyFlags memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
+    vk::ImageCreateFlags    create_flags    = {};
+    vk::ImageLayout         initial_layout  = vk::ImageLayout::eUndefined;
+    vk::SharingMode         sharing_mode    = vk::SharingMode::eExclusive;
 
     AnsiString debug_name;
     AnsiString debug_image_name;
     AnsiString debug_image_memory_name;
 
+    static ImageInfo CubemapInfo(
+        vk::Format format, const AnsiString& name = "", vk::ImageCreateFlags create_flags = vk::ImageCreateFlagBits::eCubeCompatible,
+        vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, int32_t width = 0,
+        int32_t height = 0, int32_t mip_level = 1, vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1,
+        vk::ImageLayout initial_layout = vk::ImageLayout::eUndefined, vk::SharingMode sharing_mode = vk::SharingMode::eExclusive,
+        vk::MemoryPropertyFlags memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
 
     ImageInfo() = default;
 
@@ -91,7 +103,7 @@ protected:
 public:
     typedef ImageBase Super;
 
-    explicit Image(Protected, const ImageInfo& create_info);
+    explicit Image(const ImageInfo& create_info);
 
     static TSharedPtr<Image> CreateShared(const ImageInfo& create_info);
     static TUniquePtr<Image> CreateUnique(const ImageInfo& create_info);
@@ -103,23 +115,52 @@ public:
     bool IsValid() const override;
     void Finialize();
 
-    int32_t GetWidth() const { return image_info_.width; }
-    int32_t GetHeight() const { return image_info_.height; }
-    int32_t GetDepth() const { return image_info_.depth; }
+    int32_t    GetWidth() const { return image_info_.width; }
+    int32_t    GetHeight() const { return image_info_.height; }
+    int32_t    GetDepth() const { return image_info_.depth; }
+    vk::Format GetFormat() const { return image_info_.format; }
+    uint32_t   GetMipLevel() const { return image_info_.mip_levels; }
 
 protected:
     void CreateImage();
 
 protected:
     explicit Image() = default;
-    explicit Image(const ImageInfo& image_info) : image_info_(image_info) {}
 
 public:
-    ImageView* CreateImageView(const ImageViewInfo& view_info) const override;
+    ImageView* CreateImageView(const ImageViewInfo& view_info) const;
 
 protected:
     vk::DeviceMemory image_memory_ = nullptr;
     ImageInfo        image_info_{};
+};
+
+class Cubemap : public Image
+{
+public:
+    enum class ECubemapFace
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        Forward,
+        Back
+    };
+
+    typedef Image Super;
+
+    Cubemap(Protected, const ImageInfo& image_info);
+
+    ~Cubemap() override;
+
+    void CreateCubemapImageViews(const AnsiString& name = "");
+
+    ImageView* GetView(ECubemapFace face);
+
+protected:
+    TArray<ImageView*> cubemap_image_views_;
+    TArray<AnsiString> cubemap_view_names_;
 };
 
 struct SamplerInfo
@@ -147,13 +188,7 @@ struct SamplerInfo
 class Texture : public Image
 {
 public:
-    static TSharedPtr<Texture> CreateShared(const ImageInfo& image_info, const uint8_t* data);
-
-    static TUniquePtr<Texture> CreateUnique(const ImageInfo& image_info, const uint8_t* data);
-
-    Texture(Protected, const ImageInfo& image_info, const uint8_t* data);
-
-    int32_t GetMipLevel() const { return image_info_.mip_levels; }
+    Texture(const ImageInfo& image_info, const uint8_t* data);
 
     static void LoadDefaultTextures();
 

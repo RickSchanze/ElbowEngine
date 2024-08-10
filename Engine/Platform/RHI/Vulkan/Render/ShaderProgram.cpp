@@ -248,14 +248,6 @@ void ShaderProgram::CreateDescriptorSets()
 
         for (auto& uniform: uniforms_ | std::views::values)
         {
-            if (uniform.type == EUniformDescriptorType::Sampler2D)
-            {
-                continue;
-            }
-            if (!uniform_buffers_.contains(uniform.name))
-            {
-                LOG_CRITIAL_ANSI_CATEGORY(Vulkan, "Uniform buffer has not been create before creat descriptor!");
-            }
             vk::WriteDescriptorSet descriptor_write;
             descriptor_write.dstSet          = descriptor_sets_[i];
             descriptor_write.dstBinding      = uniform.binding;

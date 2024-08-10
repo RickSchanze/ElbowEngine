@@ -86,34 +86,34 @@ Rotator& Rotator::operator=(const Vector3& v)
 Rotator Rotator::operator-(const Rotator& other) const
 {
     Rotator rtn;
-    rtn.yaw   = Math::Clamp(yaw - other.yaw, -180.0f, 180.0f);
-    rtn.pitch = Math::Clamp(pitch - other.pitch, -180.0f, 180.0f);
-    rtn.roll  = Math::Clamp(roll - other.roll, -180.0f, 180.0f);
+    rtn.yaw   = Math::RoundAngle(yaw - other.yaw, -180.0f, 180.0f);
+    rtn.pitch = Math::RoundAngle(pitch - other.pitch, -180.0f, 180.0f);
+    rtn.roll  = Math::RoundAngle(roll - other.roll, -180.0f, 180.0f);
     return rtn;
 }
 
 Rotator Rotator::operator+(const Rotator& other) const
 {
     Rotator rtn;
-    rtn.yaw   = Math::Clamp(yaw + other.yaw, -180.0f, 180.0f);
-    rtn.pitch = Math::Clamp(pitch + other.pitch, -180.0f, 180.0f);
-    rtn.roll  = Math::Clamp(roll + other.roll, -180.0f, 180.0f);
+    rtn.yaw   = Math::RoundAngle(yaw + other.yaw, -180.0f, 180.0f);
+    rtn.pitch = Math::RoundAngle(pitch + other.pitch, -180.0f, 180.0f);
+    rtn.roll  = Math::RoundAngle(roll + other.roll, -180.0f, 180.0f);
     return rtn;
 }
 
 Rotator& Rotator::operator+=(const Rotator& other)
 {
-    yaw   = Math::Clamp(yaw + other.yaw, -180.0f, 180.0f);
-    pitch = Math::Clamp(pitch + other.pitch, -180.0f, 180.0f);
-    roll  = Math::Clamp(roll + other.roll, -180.0f, 180.0f);
+    yaw   = Math::RoundAngle(yaw + other.yaw);
+    pitch = Math::RoundAngle(pitch + other.pitch);
+    roll  = Math::RoundAngle(roll + other.roll);
     return *this;
 }
 
 Rotator& Rotator::operator-=(const Rotator& other)
 {
-    yaw   = Math::Clamp(yaw - other.yaw, -180.0f, 180.0f);
-    pitch = Math::Clamp(pitch - other.pitch, -180.0f, 180.0f);
-    roll  = Math::Clamp(roll - other.roll, -180.0f, 180.0f);
+    yaw   = Math::RoundAngle(yaw - other.yaw);
+    pitch = Math::RoundAngle(pitch - other.pitch);
+    roll  = Math::RoundAngle(roll - other.roll);
     return *this;
 }
 

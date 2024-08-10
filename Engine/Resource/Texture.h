@@ -52,12 +52,12 @@ public:
     uint8_t* GetData() const { return data_; }
     Path     GetPath() const override { return path_; }
 
-    RHI::Vulkan::Sampler*               GetSampler() const { return rhi_sampler_; }
-    TUniquePtr<RHI::Vulkan::ImageView>& GetTextureView() { return rhi_texture_view_; }
+    RHI::Vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
+    RHI::Vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
 
     void Load() final;
 
-    TUniquePtr<RHI::Vulkan::Texture>& GetRHIResource() override;
+    RHI::Vulkan::Texture* GetRHIResource() override;
 
     static Texture* GetDefaultLackTexture();
 
@@ -70,9 +70,9 @@ protected:
     ETextureUsage usage_;
 
 private:
-    TUniquePtr<RHI::Vulkan::Texture>   rhi_texture_      = nullptr;
-    TUniquePtr<RHI::Vulkan::ImageView> rhi_texture_view_ = nullptr;
-    RHI::Vulkan::Sampler*              rhi_sampler_      = nullptr;
+    RHI::Vulkan::Texture*   rhi_texture_      = nullptr;
+    RHI::Vulkan::ImageView* rhi_texture_view_ = nullptr;
+    RHI::Vulkan::Sampler*   rhi_sampler_      = nullptr;
 
     RHI::Vulkan::SamplerInfo sampler_info_;
 };

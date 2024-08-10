@@ -42,9 +42,11 @@ public:
     TArray<Texture*>& GetTextures() { return textures_; }
     TArray<uint32_t>& GetIndices() { return indices_; }
 
+    ~SubMesh() override;
+
     bool IsValid() const { return !vertices_.empty(); }
 
-    TUniquePtr<RHI::Vulkan::Mesh>& GetRHIResource() override;
+    RHI::Vulkan::Mesh* GetRHIResource() override;
 
     // 初始化mMeshRHIResource成员
     void LoadRHI();
@@ -54,7 +56,7 @@ private:
     TArray<Texture*> textures_;
     TArray<uint32_t> indices_;
 
-    TUniquePtr<RHI::Vulkan::Mesh> mesh_rhi_resource_ = nullptr;
+    RHI::Vulkan::Mesh* mesh_rhi_resource_ = nullptr;
 };
 
 class Mesh : public IResource

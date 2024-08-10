@@ -13,15 +13,17 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Mesh::Mesh(ResourceProtected, const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies) {
-    if (vertices.empty() || indicies.empty()) {
+Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+{
+    if (vertices.empty() || indicies.empty())
+    {
         LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据或索引数据不合法");
         return;
     }
-    VulkanContext& context            = *VulkanContext::Get();
-    auto&          device             = context.GetLogicalDevice();
+    VulkanContext& context              = *VulkanContext::Get();
+    auto&          device               = context.GetLogicalDevice();
     // 顶点缓冲
-    vertex_count_                      = static_cast<uint32_t>(vertices.size());
+    vertex_count_                       = static_cast<uint32_t>(vertices.size());
     vk::DeviceSize   vertex_buffer_size = sizeof(vertices[0]) * vertex_count_;
     vk::Buffer       vertex_staging_buffer;
     vk::DeviceMemory vertex_staging_buffer_memory;
@@ -48,7 +50,7 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& vertices, const TArray<uint3
     device->FreeMemory(vertex_staging_buffer_memory);
 
     // 索引缓冲
-    index_count_                      = static_cast<uint32_t>(indicies.size());
+    index_count_                       = static_cast<uint32_t>(indicies.size());
     vk::DeviceSize   index_buffer_size = sizeof(indicies[0]) * index_count_;
     vk::Buffer       index_staging_buffer;
     vk::DeviceMemory index_staging_buffer_memory;
@@ -74,37 +76,43 @@ Mesh::Mesh(ResourceProtected, const TArray<Vertex>& vertices, const TArray<uint3
     device->FreeMemory(index_staging_buffer_memory);
 }
 
-TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies) {
-    return MakeShared<Mesh>(ResourceProtected{}, vertices, indicies);
+TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+{
+    return MakeShared<Mesh>(vertices, indicies);
 }
 
-TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies){
-    return MakeUnique<Mesh>(ResourceProtected{}, vertices, indicies);
+TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+{
+    return MakeUnique<Mesh>(vertices, indicies);
 }
 
-Mesh::~Mesh() {
+Mesh::~Mesh()
+{
     InternalDestroy();
 }
 
-bool Mesh::IsValid() const {
+bool Mesh::IsValid() const
+{
     return vertex_buffer_ && index_buffer_;
 }
 
-void Mesh::InternalDestroy() {
+void Mesh::InternalDestroy()
+{
     if (!IsValid()) return;
-    VulkanContext& context      = *VulkanContext::Get();
-    auto&           device = context.GetLogicalDevice();
+    VulkanContext& context = *VulkanContext::Get();
+    auto&          device  = context.GetLogicalDevice();
     device->DestroyBuffer(vertex_buffer_);
     device->FreeMemory(vertex_buffer_memory_);
     device->DestroyBuffer(index_buffer_);
     device->FreeMemory(index_buffer_memory_);
-    vertex_buffer_       = nullptr;
-    index_buffer_        = nullptr;
+    vertex_buffer_        = nullptr;
+    index_buffer_         = nullptr;
     vertex_buffer_memory_ = nullptr;
     index_buffer_memory_  = nullptr;
 }
 
-void Mesh::Destroy() {
+void Mesh::Destroy()
+{
     InternalDestroy();
 }
 

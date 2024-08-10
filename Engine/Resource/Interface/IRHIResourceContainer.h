@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "RHI/Vulkan/Resource/Image.h"
 
 namespace RHI::Vulkan {
 class IRHIResource;
@@ -22,5 +23,5 @@ class IRHIResourceContainer : public IRHIResourceContainer1
 public:
     ~IRHIResourceContainer() override = default;
 
-    virtual TUniquePtr<ResourceType>& GetRHIResource() = 0;
+    virtual ResourceType* GetRHIResource() = 0;
 };

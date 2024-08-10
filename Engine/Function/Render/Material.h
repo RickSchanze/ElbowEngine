@@ -55,7 +55,7 @@ public:
 
     void SetTexture(const AnsiString& name, Resource::Texture* texture);
 
-    void SetTexture(const AnsiString&name, const Path& path);
+    void SetTexture(const AnsiString& name, const Path& path);
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 

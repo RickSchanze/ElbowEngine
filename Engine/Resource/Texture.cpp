@@ -70,16 +70,17 @@ void Texture::Load()
     texture_info.height     = height_;
     texture_info.width      = width_;
     texture_info.image_type = vk::ImageType::e2D;
-    texture_info.debug_name = path_.ToAbsoluteAnsiString();
-    rhi_texture_ = RHI::Vulkan::Texture::CreateUnique(texture_info, data_);
+    texture_info.usage      = vk::ImageUsageFlagBits::eSampled;
+    texture_info.debug_name = path_.ToRelativeAnsiString();
+    rhi_texture_            = new RHI::Vulkan::Texture(texture_info, data_);
 
     ImageViewInfo view_info = {};
-    rhi_texture_view_       = rhi_texture_->CreateImageViewUnique(view_info);
+    rhi_texture_view_       = rhi_texture_->CreateImageView(view_info);
 
     rhi_sampler_ = Sampler::Create(sampler_info_);
 }
 
-TUniquePtr<RHI::Vulkan::Texture>& Texture::GetRHIResource()
+RHI::Vulkan::Texture*Texture::GetRHIResource()
 {
     return rhi_texture_;
 }
@@ -99,8 +100,8 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
         auto* DefaultLackTexture = Resource::Texture::Create(gResourceConfig.default_lack_texture_path);
         if (DefaultLackTexture)
         {
-            *out_texture      = DefaultLackTexture->GetRHIResource().get();
-            *out_texture_view = DefaultLackTexture->GetTextureView().get();
+            *out_texture                                          = DefaultLackTexture->GetRHIResource();
+            *out_texture_view                                     = DefaultLackTexture->GetTextureView();
             static const char* default_lack_image_debug_name      = "DefaultLackImage";
             static const char* default_lack_image_debug_view_name = "DefaultLackImageView";
             VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(

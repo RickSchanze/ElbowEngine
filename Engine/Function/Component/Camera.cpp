@@ -90,11 +90,11 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            transform.Translate(movement_speed_ * transform_->GetUpVector());
+            transform.Translate(movement_speed_ * Constant::UpVector);
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            transform.Translate(-movement_speed_ * transform_->GetUpVector());
+            transform.Translate(-movement_speed_ * Constant::UpVector);
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();

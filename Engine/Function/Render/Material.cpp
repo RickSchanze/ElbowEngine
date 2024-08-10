@@ -13,6 +13,7 @@
 #include "ImGui/ImGuiHelper.h"
 #include "Math/Math.h"
 #include "Mesh.h"
+#include "RenderPasses/SimpleObjectShadingPass.h"
 
 #include <ranges>
 
@@ -34,7 +35,7 @@ Material::Material(const Path& vert, const Path& frag, const String& name)
     ParseShaderParameters();
     PipelineInfo pipeline_info;
     pipeline_info.shader_program = shader_program_;
-    pipeline_info.render_pass    = RenderPassManager::GetOrCreateRenderPass<RenderPass>("SimpleForwardPass");
+    pipeline_info.render_pass    = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
     pipeline_                    = new GraphicsPipeline(pipeline_info);
 }
 
@@ -90,8 +91,8 @@ void Material::SetPostionViewProjection(Comp::Camera* camera)
         glm::mat4 view;
         glm::mat4 camera;
     } ubo_view{};
-    ubo_view.proj = camera->GetProjectionMatrix();
-    ubo_view.view = camera->GetViewMatrix();
+    ubo_view.proj   = camera->GetProjectionMatrix();
+    ubo_view.view   = camera->GetViewMatrix();
     ubo_view.camera = camera->GetTransform().ToGPUMat4();
     shader_program_->SetUniformBuffer("ubo_view", &ubo_view.proj, sizeof(UboView));
 }

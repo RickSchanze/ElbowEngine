@@ -107,7 +107,6 @@ void EngineApplication::Initialize()
     render_context_ = new Function::RenderContext();
 
     camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
-    camera_object_->BeginPlay();
     camera_object_->AddComponent<Function::Comp::Camera>();
     auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();

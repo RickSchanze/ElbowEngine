@@ -50,7 +50,7 @@ void CommandPool::CleanCommandPool()
 }
 
 void CommandPool::TrainsitionImageLayout(
-    const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level
+    const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level, uint32_t layer_count
 ) const
 {
     const vk::CommandBuffer cb              = BeginSingleTimeCommands();
@@ -67,7 +67,7 @@ void CommandPool::TrainsitionImageLayout(
     barrier.subresourceRange.baseMipLevel   = 0;
     barrier.subresourceRange.levelCount     = mip_level;
     barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount     = 1;
+    barrier.subresourceRange.layerCount     = layer_count;
     // 指定屏障之前要发生的操作类型 以及屏障之后才发生的操作类型
     barrier.srcAccessMask                   = {};
     barrier.dstAccessMask                   = {};

@@ -81,6 +81,24 @@ public:
     static Vector4 ToVector4(const Color& c);
 
     static float Radians(float a);
+
+    /**
+     * 将一个角度标准化到 min 到 max 之间
+     * @param a
+     * @param min 最小值
+     * @param max 最大值
+     * @return
+     */
+    static float RoundAngle(float a, float min = -180.f, float max = 180.f);
+
+    /**
+     * 将一个角度限制到min和max
+     * @param a
+     * @param min
+     * @param max
+     * @return
+     */
+    static float ClampAngle(float a, float min = -180.f, float max = 180.f);
 };
 
 template<typename T>

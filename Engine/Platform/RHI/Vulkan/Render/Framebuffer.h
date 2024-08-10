@@ -16,10 +16,7 @@ RHI_VULKAN_NAMESPACE_BEGIN
 
 class Framebuffer : public IRHIResource {
 public:
-    Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& create_info);
-
-    static TSharedPtr<Framebuffer> CreateShared(const vk::FramebufferCreateInfo& create_info);
-    static TUniquePtr<Framebuffer> CreateUnique(const vk::FramebufferCreateInfo& create_info);
+    explicit Framebuffer(const vk::FramebufferCreateInfo& create_info, const char* name = nullptr);
 
     vk::Framebuffer GetHandle() const { return handle_; }
 

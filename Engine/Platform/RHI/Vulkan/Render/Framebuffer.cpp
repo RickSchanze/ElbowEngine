@@ -11,16 +11,12 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Framebuffer::Framebuffer(ResourceProtected, const vk::FramebufferCreateInfo& create_info) {
+Framebuffer::Framebuffer(const vk::FramebufferCreateInfo& create_info, const char* name) {
     handle_ = VulkanContext::Get()->GetLogicalDevice()->GetHandle().createFramebuffer(create_info);
-}
-
-TSharedPtr<Framebuffer> Framebuffer::CreateShared(const vk::FramebufferCreateInfo& create_info) {
-    return MakeShared<Framebuffer>(ResourceProtected{}, create_info);
-}
-
-TUniquePtr<Framebuffer> Framebuffer::CreateUnique(const vk::FramebufferCreateInfo& create_info) {
-    return Move(MakeUnique<Framebuffer>(ResourceProtected{}, create_info));
+    if (name)
+    {
+        VulkanContext::Get()->GetLogicalDevice()->SetFramebufferDebugName(handle_, name);
+    }
 }
 
 void Framebuffer::InternalDestroy() {

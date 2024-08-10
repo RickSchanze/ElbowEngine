@@ -33,7 +33,7 @@ public:
     vk::CommandPool GetHandle() const { return pool_; }
 
     void
-    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1) const;
+    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1, uint32_t layer_count = 1) const;
 
     void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) const;
 
@@ -52,7 +52,17 @@ public:
     void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const;
 
 protected:
+    /**
+     * 与EndSingleTimeCommands配合使用
+     * @return
+     */
     vk::CommandBuffer BeginSingleTimeCommands() const;
+
+    /**
+     * 与BeginSingleTimeCommands配合使用
+     * 不止End 同时还会提交
+     * @param command_buffer
+     */
     void              EndSingleTimeCommands(vk::CommandBuffer command_buffer) const;
 
 private:
