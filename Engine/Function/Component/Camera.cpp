@@ -50,7 +50,7 @@ glm::mat4 Camera::GetViewMatrix() const
 
 glm::mat4 Camera::GetProjectionMatrix() const
 {
-    auto rtn = glm::perspective(glm::radians(45.f), 1920.f / 1080.f, 0.1f, 1000.f);
+    auto rtn = Math::Perspective(glm::radians(45.f), 1920.f / 1080.f, 0.1f, 1000.f);
     rtn[1][1] *= -1;
     return rtn;
 }

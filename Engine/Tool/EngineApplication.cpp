@@ -111,20 +111,21 @@ void EngineApplication::Initialize()
     auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-    auto* mat = Function::MaterialManager::CreateMaterials(L"Shaders/vert.spv", L"Shaders/frag.spv", L"AK-47材质");
+    auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/vert.spv", L"Shaders/frag.spv", L"AK-47材质");
     mesh_comp->SetMaterial(mat);
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-    mesh_obj->AddComponent<Function::Comp::SpaceCircle>();
+    // mesh_obj->AddComponent<Function::Comp::SpaceCircle>();
 
     auto obj2 = New<Function::GameObject>(L"AK-47_2", mesh_obj);
-    obj2->AddComponent<Function::Comp::SpaceCircle>();
+    // obj2->AddComponent<Function::Comp::SpaceCircle>();
     auto mesh_cmp = obj2->AddComponent<Function::Comp::StaticMesh>();
     mesh_cmp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
     mesh_cmp->SetMaterial(mat);
 
     auto* light_obj = New<Function::GameObject>(L"点光源");
-    light_obj->GetTransform().SetPosition(Vector3(0, 0, 10));
-    light_obj->AddComponent<Function::Comp::SpaceCircle>();
+    mesh_obj->GetTransform().SetPosition(Vector3(100, 0, 0));
+    // light_obj->GetTransform().SetPosition(Vector3(0, 0, 10));
+    // light_obj->AddComponent<Function::Comp::SpaceCircle>();
     light_obj->AddComponent<Function::Comp::Light>();
     LogEndInit();
 }

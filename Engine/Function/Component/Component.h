@@ -8,10 +8,9 @@
 #pragma once
 #include "FunctionCommon.h"
 #include "Object/Object.h"
+#include "Math/MathTypes.h"
 
 #include "Component.generated.h"
-#include "Math/MathTypes.h"
-#include "Transform.h"
 
 class Transform;
 
@@ -48,8 +47,8 @@ public:
 
     void Destroy();
 
-    Vector3 GetPosition() const { return transform_->GetPosition(); }
-    Vector3 GetWorldPosition() const { return transform_->GetWorldPosition(); }
+    Vector3 GetPosition() const;
+    Vector3 GetWorldPosition() const;
 
 protected:
     Transform*  transform_   = nullptr;

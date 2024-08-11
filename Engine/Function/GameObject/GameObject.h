@@ -9,7 +9,6 @@
 #include "Component/Transform.h"
 #include "CoreGlobal.h"
 #include "FunctionCommon.h"
-#include "Math/MathTypes.h"
 #include "Object/Object.h"
 
 namespace Function::Comp

@@ -57,4 +57,14 @@ void Component::Destroy()
     game_object_->DestroyComponent(this);
 }
 
+Vector3 Component::GetPosition() const
+{
+    return transform_->GetPosition();
+}
+
+Vector3 Component::GetWorldPosition() const
+{
+    return transform_->GetWorldPosition();
+}
+
 FUNCTION_COMPONENT_NAMESPACE_END

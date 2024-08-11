@@ -23,6 +23,7 @@ vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType type)
     case EUniformDescriptorType::UniformBuffer: return vk::DescriptorType::eUniformBuffer;
     case EUniformDescriptorType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
     case EUniformDescriptorType::DynamicUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
+    case EUniformDescriptorType::SamplerCube: return vk::DescriptorType::eCombinedImageSampler;
     }
     return vk::DescriptorType::eUniformBuffer;
 }
@@ -37,9 +38,8 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-Shader::Shader(
-    Protected, const Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& shader_name
-) : shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
+Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& shader_name) :
+    shader_stage_(shader_stage), shader_path_(shader_path), device_(device)
 {
     // 加载Shader文件
     FileInputStream shader_file_stream{shader_path.ToAbsoluteString(), std::ios::ate | std::ios::binary};

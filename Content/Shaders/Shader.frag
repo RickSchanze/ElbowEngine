@@ -46,7 +46,7 @@ void main() {
     vec3 lightVec = inWorldPosition - ubo_point_lights.lights[0].position.xyz;
     float sampledDist = texture(shadowCubeMap, lightVec).r;
     float dist = length(lightVec);
-    float shadow = (dist <= sampledDist) ? 1.0f : 0.0f;
+    float shadow = (dist <= sampledDist) ? 1.0f : 0.1f;
 
     outColor.rgb *= shadow;
 }

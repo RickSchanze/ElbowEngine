@@ -7,6 +7,8 @@
 
 #include "Image.h"
 
+#include <utility>
+
 #include "CoreGlobal.h"
 #include "PlatformEvents.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
@@ -64,7 +66,7 @@ ImageInfo ImageInfo::CubemapInfo(
     info.sharing_mode            = sharing_mode;
     info.create_flags            = create_flags;
     info.memory_property         = memory_property;
-    info.name              = name;
+    info.name                    = name;
     info.debug_image_name        = name + "Cubemap";
     info.debug_image_memory_name = name + "CubemapMemory";
     return info;
@@ -84,7 +86,7 @@ ImageInfo::ImageInfo(const vk::ImageCreateInfo& image_info)
     memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
 }
 
-Image::Image(const ImageInfo& create_info) : image_info_(create_info)
+Image::Image(ImageInfo create_info) : image_info_(std::move(create_info))
 {
     if (image_handle_ == nullptr)
     {
@@ -134,7 +136,7 @@ void Image::CreateImage()
         static_cast<uint32_t>(image_info_.image_type == vk::ImageType::e3D ? 1 : image_info_.depth)
     };
     image_create_info.setExtent(Extent);
-    image_create_info.setArrayLayers(1);
+    image_create_info.setArrayLayers(image_info_.array_layers);
     image_create_info.setFormat(image_info_.format == vk::Format::eUndefined ? vk::Format::eR8G8B8A8Srgb : image_info_.format);
     image_create_info.setTiling(image_info_.tiling);
     image_create_info.setInitialLayout(vk::ImageLayout::eUndefined);
@@ -142,7 +144,8 @@ void Image::CreateImage()
     image_create_info.setSamples(image_info_.sample_count);
     image_create_info.setMipLevels(image_info_.mip_levels);
     // 只被一个队列族使用
-    image_create_info.setSharingMode(vk::SharingMode::eExclusive);
+    image_create_info.setSharingMode(image_info_.sharing_mode);
+    image_create_info.setFlags(image_info_.create_flags);
 
     image_handle_ = device_handle.createImage(image_create_info);
 
@@ -194,18 +197,30 @@ ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
 Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info)
 {
     VulkanContext::Get()->GetCommandPool()->TrainsitionImageLayout(
-        GetHandle(), GetFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, 6
+        GetHandle(), GetFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, GetMipLevel(), 6
     );
+    vk::ImageViewCreateInfo view_create_info;
+    view_create_info.image                       = GetHandle();
+    view_create_info.viewType                    = vk::ImageViewType::eCube;
+    view_create_info.format                      = GetFormat();
+    view_create_info.components                  = {{vk::ComponentSwizzle::eR}};
+    view_create_info.subresourceRange            = {vk::ImageAspectFlagBits::eColor, 0, GetMipLevel(), 0, 1};
+    view_create_info.subresourceRange.layerCount = 6;
+    cubemap_image_view_name_                     = image_info.name + "_CubemapView";
+    cubemap_image_view_ =
+        new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.c_str());
 }
 
 Cubemap::~Cubemap()
 {
-    for (auto& view: cubemap_image_views_)
+    for (auto& view: cubemap_image_face_views_)
     {
         delete view;
     }
-    cubemap_image_views_.clear();
-    cubemap_view_names_.clear();
+    cubemap_image_face_views_.clear();
+    cubemap_face_view_names_.clear();
+    delete cubemap_image_view_;
+    cubemap_image_view_ = nullptr;
 }
 
 void Cubemap::CreateCubemapImageViews(const AnsiString& name)
@@ -217,30 +232,30 @@ void Cubemap::CreateCubemapImageViews(const AnsiString& name)
     view_create_info.format                  = GetFormat();
     view_create_info.components              = {vk::ComponentSwizzle::eR};
     view_create_info.subresourceRange        = {vk::ImageAspectFlagBits::eColor, 0, GetMipLevel(), 0, 1};
-    cubemap_image_views_.resize(6);
-    cubemap_view_names_.resize(6);
+    cubemap_image_face_views_.resize(6);
+    cubemap_face_view_names_.resize(6);
     for (int i = 0; i < 6; i++)
     {
         // clang-format off
         view_create_info.subresourceRange.baseArrayLayer = i;
-        cubemap_view_names_[i] = name + "_" + std::to_string(i);
-        cubemap_image_views_[i] = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_view_names_[i].c_str());
+        cubemap_face_view_names_[i] = name + "_" + std::to_string(i);
+        cubemap_image_face_views_[i] = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_face_view_names_[i].c_str());
         // clang-format on
     }
 }
 
-ImageView* Cubemap::GetView(ECubemapFace face)
+ImageView* Cubemap::GetFaceView(ECubemapFace face)
 {
-    if (cubemap_image_views_.empty())
+    if (cubemap_image_face_views_.empty())
     {
         CreateCubemapImageViews();
     }
-    if (cubemap_image_views_.empty())
+    if (cubemap_image_face_views_.empty())
     {
         LOG_ERROR_ANSI_CATEGORY(Vulkan.Resource, "Create ImageView for cubemap failed");
         return nullptr;
     }
-    return cubemap_image_views_[static_cast<int>(face)];
+    return cubemap_image_face_views_[static_cast<int>(face)];
 }
 
 Texture::Texture(const ImageInfo& image_info, const uint8_t* data)

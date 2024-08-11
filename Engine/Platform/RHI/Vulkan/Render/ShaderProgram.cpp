@@ -8,6 +8,7 @@
 #include "ShaderProgram.h"
 
 #include "CoreGlobal.h"
+#include "Misc/Vertex.h"
 #include "Utils/StringUtils.h"
 
 #include <ranges>
@@ -108,12 +109,8 @@ TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDe
 
 uint32_t ShaderProgram::GetStride() const
 {
-    uint32_t Stride = 0;
-    for (const auto& Attribute: vertex_input_attributes_)
-    {
-        Stride += Attribute.size;
-    }
-    return Stride;
+    // Mesh里Vertex的大小
+    return sizeof(Vertex);
 }
 
 void ShaderProgram::DestroyShaders()
@@ -136,6 +133,23 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
     {
         return false;
     }
+    if (!view.IsValid())
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetTexture: ImageView {} is invalid in ShaderProgram {}", name, name_);
+        return false;
+    }
+    if (!sampler.IsValid())
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetTexture: Sampler {} is invalid in ShaderProgram {}", name, name_);
+        return false;
+    }
+    if (uniform_texture_storage_.contains(name))
+    {
+        if (const auto& storage = uniform_texture_storage_[name]; storage.view == &view && storage.sampler == &sampler)
+        {
+            return true;
+        }
+    }
     vk::WriteDescriptorSet descriptor_write;
     const auto&            tex_uniform = uniforms_[name];
     descriptor_write.dstBinding        = tex_uniform.binding;
@@ -152,6 +166,8 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
         descriptor_write.pImageInfo = &image_info;
         VulkanContext::Get()->GetLogicalDevice()->UpdateDescriptorSets(descriptor_write);
     }
+    TextureStorage storage(&view, &sampler);
+    uniform_texture_storage_.insert({name, storage});
     return true;
 }
 
@@ -171,6 +187,60 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
         memcpy(map_res, data, size);
         buffer->FlushMemory();
     }
+}
+
+const TArray<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
+{
+    return vert_shader_->GetPushConstantDescriptors();
+}
+
+const TArray<PushConstantDescriptor>& ShaderProgram::GetFragmentPushConstants() const
+{
+    return frag_shader_->GetPushConstantDescriptors();
+}
+
+bool ShaderProgram::SetCubeTexture(const AnsiString& name, const ImageView& image_view, const Sampler& sampler)
+{
+    if (!uniforms_.contains(name))
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "Not find cubemap sampler {} in ShaderProgram {}", name, name_);
+        return false;
+    }
+    if (!sampler.IsValid())
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "Sampler {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        return false;
+    }
+    if (!image_view.IsValid())
+    {
+        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "ImageView {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        return false;
+    }
+    if (uniform_texture_storage_.contains(name))
+    {
+        auto& storage = uniform_texture_storage_[name];
+        if (storage.view == &image_view && storage.sampler == &sampler) return true;
+    }
+    vk::DescriptorImageInfo image_info;
+    image_info.sampler     = sampler.GetHandle();
+    image_info.imageView   = image_view.GetHandle();
+    image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    TArray<vk::WriteDescriptorSet> write_descriptor_sets;
+    for (const auto& descriptor_set: descriptor_sets_)
+    {
+        vk::WriteDescriptorSet write_descriptor_set;
+        write_descriptor_set.dstSet          = descriptor_set;
+        write_descriptor_set.dstBinding      = uniforms_[name].binding;
+        write_descriptor_set.dstArrayElement = 0;
+        write_descriptor_set.descriptorType  = vk::DescriptorType::eCombinedImageSampler;
+        write_descriptor_set.descriptorCount = 1;
+        write_descriptor_set.pImageInfo      = &image_info;
+        write_descriptor_sets.push_back(write_descriptor_set);
+    }
+    VulkanContext::Get()->GetLogicalDevice()->UpdateDescriptorSets(write_descriptor_sets);
+    TextureStorage storage(&image_view, &sampler);
+    uniform_texture_storage_.insert({name, storage});
+    return true;
 }
 
 bool ShaderProgram::IsValid() const
@@ -248,6 +318,10 @@ void ShaderProgram::CreateDescriptorSets()
 
         for (auto& uniform: uniforms_ | std::views::values)
         {
+            if (uniform.update_manually)
+            {
+                continue;
+            }
             vk::WriteDescriptorSet descriptor_write;
             descriptor_write.dstSet          = descriptor_sets_[i];
             descriptor_write.dstBinding      = uniform.binding;

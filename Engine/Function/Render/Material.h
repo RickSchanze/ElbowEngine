@@ -62,15 +62,20 @@ public:
 
     ~Material() override;
 
+    // SetTexture的不同重载
     void SetTexture(const AnsiString& name, Resource::Texture* texture);
-
     void SetTexture(const AnsiString& name, const Path& path);
+    void SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
+
+    void SetCubeTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 
     void SetPostionViewProjection(Comp::Camera* camera);
 
     void SetModel(glm::mat4* models, size_t size);
+
+    void Set(const AnsiString& name, void* data, size_t size);
 
     void SetPointLights(void* data, size_t size);
 
@@ -104,9 +109,13 @@ public:
 
     static void DestroyMaterials();
 
-    static Material* GetMaterials(const String& name);
+    static Material* GetMaterial(const String& name);
 
-    static Material* CreateMaterials(const Path& vert, const Path& frag, const String& name);
+    static Material* CreateMaterial(const Path& vert, const Path& frag, const String& name);
+
+    static Material* CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name);
+
+    static Material* CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name);
 
 private:
     THashMap<String, Material*> materials_;

@@ -11,7 +11,6 @@
 #include "Component/Mesh/Mesh.h"
 #include "Component/Transform.h"
 #include "ImGui/ImGuiHelper.h"
-#include "Math/Math.h"
 #include "Mesh.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
 
@@ -47,7 +46,7 @@ Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const T
     ParseShaderParameters();
     PipelineInfo pipeline_info;
     pipeline_info.shader_program = shader_program_;
-    pipeline_info.render_pass    = RenderPassManager::GetRenderPass(pass_type);
+    pipeline_info.render_pass    = RenderPassManager::Get()->GetRenderPass(pass_type);
     pipeline_                    = new GraphicsPipeline(pipeline_info);
 }
 
@@ -92,6 +91,16 @@ void Material::SetTexture(const AnsiString& name, const Path& path)
     SetTexture(name, new_tex);
 }
 
+void Material::SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler)
+{
+    shader_program_->SetTexture(name, view, sampler);
+}
+
+void Material::SetCubeTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler)
+{
+    shader_program_->SetCubeTexture(name, view, sampler);
+}
+
 void Material::Use(vk::CommandBuffer cb, uint32_t width, uint32_t height, int x, int y) const
 {
     if (pipeline_ == nullptr)
@@ -124,6 +133,11 @@ void Material::SetPostionViewProjection(Comp::Camera* camera)
 void Material::SetModel(glm::mat4* models, size_t size)
 {
     shader_program_->SetUniformBuffer("ubo_instance", models, size);
+}
+
+void Material::Set(const AnsiString& name, void* data, size_t size)
+{
+    shader_program_->SetUniformBuffer(name, data, size);
 }
 
 void Material::SetPointLights(void* data, size_t size)
@@ -197,7 +211,7 @@ void MaterialManager::DestroyMaterials()
     mats.clear();
 }
 
-Material* MaterialManager::GetMaterials(const String& name)
+Material* MaterialManager::GetMaterial(const String& name)
 {
     auto& mats = Get()->materials_;
     if (mats.contains(name))
@@ -207,7 +221,7 @@ Material* MaterialManager::GetMaterials(const String& name)
     return nullptr;
 }
 
-Material* MaterialManager::CreateMaterials(const Path& vert, const Path& frag, const String& name)
+Material* MaterialManager::CreateMaterial(const Path& vert, const Path& frag, const String& name)
 {
     auto& mats = Get()->materials_;
     if (mats.contains(name))
@@ -219,6 +233,39 @@ Material* MaterialManager::CreateMaterials(const Path& vert, const Path& frag, c
     else
     {
         mats[name] = new Material(vert, frag, name);
+    }
+    return mats[name];
+}
+
+Material* MaterialManager::CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name)
+{
+    auto& mats = Get()->materials_;
+    if (mats.contains(name))
+    {
+        LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
+        delete mats[name];
+        mats[name] = new Material(vert, frag, pass_type, name);
+    }
+    else
+    {
+        mats[name] = new Material(vert, frag, pass_type, name);
+    }
+    return mats[name];
+}
+
+Material*
+MaterialManager::CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name)
+{
+    auto& mats = Get()->materials_;
+    if (mats.contains(name))
+    {
+        LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
+        delete mats[name];
+        mats[name] = new Material(vert, frag, render_pass, name);
+    }
+    else
+    {
+        mats[name] = new Material(vert, frag, render_pass, name);
     }
     return mats[name];
 }

@@ -100,10 +100,7 @@ protected:
 public:
     typedef ImageBase Super;
 
-    explicit Image(const ImageInfo& create_info);
-
-    static TSharedPtr<Image> CreateShared(const ImageInfo& create_info);
-    static TUniquePtr<Image> CreateUnique(const ImageInfo& create_info);
+    explicit Image(ImageInfo create_info);
 
     void Destroy() override;
 
@@ -153,11 +150,15 @@ public:
 
     void CreateCubemapImageViews(const AnsiString& name = "");
 
-    ImageView* GetView(ECubemapFace face);
+    ImageView* GetFaceView(ECubemapFace face);
+
+    ImageView* GetView() const { return cubemap_image_view_; }
 
 protected:
-    TArray<ImageView*> cubemap_image_views_;
-    TArray<AnsiString> cubemap_view_names_;
+    TArray<ImageView*> cubemap_image_face_views_;
+    TArray<AnsiString> cubemap_face_view_names_;
+    ImageView*         cubemap_image_view_;
+    AnsiString         cubemap_image_view_name_;
 };
 
 struct SamplerInfo

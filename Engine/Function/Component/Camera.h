@@ -9,11 +9,10 @@
 #include "Component.h"
 #include "CoreDef.h"
 #include "FunctionCommon.h"
-
-#include "Camera.generated.h"
 #include "Math/MathTypes.h"
 
-#include <chrono>
+#include "Camera.generated.h"
+
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 

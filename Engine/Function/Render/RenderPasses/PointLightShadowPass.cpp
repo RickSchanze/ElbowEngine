@@ -8,6 +8,7 @@
 #include "PointLightShadowPass.h"
 
 #include "Component/Camera.h"
+#include "Component/Light/Light.h"
 #include "Math/Math.h"
 #include "Render/Material.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
@@ -24,7 +25,7 @@ void PointLightShadowPass::SetupAttachments()
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
     RenderPassAttachmentParam color_attachment{};
-    color_attachment.format           = vk::Format::eR8G8B8Unorm;
+    color_attachment.format           = vk::Format::eR32Sfloat;
     color_attachment.sample_count     = vk::SampleCountFlagBits::e1;
     color_attachment.load_op          = vk::AttachmentLoadOp::eClear;
     color_attachment.store_op         = vk::AttachmentStoreOp::eStore;
@@ -114,7 +115,7 @@ void PointLightShadowPass::SetupFramebuffer()
     fb.layers     = 1;
     for (int i = 0; i < 6; i++)
     {
-        attachments[0] = shadow_map_->GetView(static_cast<Cubemap::ECubemapFace>(i))->GetHandle();
+        attachments[0] = shadow_map_->GetFaceView(static_cast<Cubemap::ECubemapFace>(i))->GetHandle();
         fb.setAttachments(attachments);
         cubemap_framebuffers_[i] = new Framebuffer(fb);
     }
@@ -130,6 +131,7 @@ void PointLightShadowPass::CleanFrameBuffer()
     {
         delete framebuffer;
     }
+    CleanCubemap();
     color_      = nullptr;
     color_view_ = nullptr;
     depth_      = nullptr;
@@ -146,10 +148,18 @@ void PointLightShadowPass::SetupCubemap()
     using namespace RHI::Vulkan;
     ImageInfo cube_info = ImageInfo::CubemapInfo(vk::Format::eR32Sfloat);
     cube_info.name      = "PointLightShadowPass_Cube";
+    cube_info.width     = width_;
+    cube_info.height    = height_;
     shadow_map_         = new Cubemap(cube_info);
 }
 
-Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Camera* camera, int index)
+void PointLightShadowPass::CleanCubemap()
+{
+    delete shadow_map_;
+    shadow_map_ = nullptr;
+}
+
+Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
 {
     if (index < 0 || index > 5)
     {
@@ -157,34 +167,36 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Camera* camera, int inde
         return GetMatrix4x4Identity();
     }
     using namespace RHI::Vulkan;
-    Matrix4x4 view;
-    // clang-format off
-    switch (static_cast<Cubemap::ECubemapFace>(index))
+    auto view = glm::mat4(1.0f);
+    switch (index)
     {
-    case Cubemap::ECubemapFace::Up:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::UpVector, Constant::UpVector);
+    case 0:   // POSITIVE_X
+        view = glm::rotate(view, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         break;
-    case Cubemap::ECubemapFace::Down:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::DownVector, Constant::UpVector);
+    case 1:   // NEGATIVE_X
+        view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         break;
-    case Cubemap::ECubemapFace::Left:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::LeftVector, Constant::UpVector);
+    case 2:   // POSITIVE_Y
+        view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         break;
-    case Cubemap::ECubemapFace::Right:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::RightVector, Constant::UpVector);
+    case 3:   // NEGATIVE_Y
+        view = glm::rotate(view, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         break;
-    case Cubemap::ECubemapFace::Forward:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::ForwardVector, Constant::UpVector);
+    case 4:   // POSITIVE_Z
+        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         break;
-    case Cubemap::ECubemapFace::Back:
-        view = Math::LookAt(camera->GetWorldPosition(), Constant::BackVector, Constant::UpVector);
+    case 5:   // NEGATIVE_Z
+        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         break;
     }
+
     // clang-format on
     return view;
 }
 
-void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Camera* camera, int index)
+void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index)
 {
     vk::ClearValue clear_value[2];
     clear_value[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -199,18 +211,32 @@ void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Co
 
     // Update view matrix via push constant
 
-    glm::mat4 viewMatrix = GetFaceViewMatrix(camera, index);
+    glm::mat4 viewMatrix = GetFaceViewMatrix(light, index);
     cb.beginRenderPass(begin_info, vk::SubpassContents::eInline);
     // Render scene from cube face's point of view
     // Update shader push constant block
     // Contains current face view matrix
     mat->PushConstant(cb, 0, sizeof(Matrix4x4), RHI::Vulkan::EShaderStage::Vertex, &viewMatrix);
     mat->Use(cb, width_, height_);
+    struct UboView
+    {
+        Matrix4x4 proj;
+        Matrix4x4 light;
+    } view;
+    view.proj = Math::Perspective((float)(Constant::PI / 2.0), 1.0f, 0.1f, 1024.0f);
+    view.proj[0][0] *= -1;
+    view.light[0] = Math::ToVector4(light->GetWorldPosition());
+    mat->Set("ubo_view", &view, sizeof(UboView));
 }
 
 void PointLightShadowPass::EndDrawFace(vk::CommandBuffer cb)
 {
     cb.endRenderPass();
+}
+
+RHI::Vulkan::ImageView* PointLightShadowPass::GetOutputCubemapView() const
+{
+    return shadow_map_->GetView();
 }
 
 FUNCTION_NAMESPACE_END

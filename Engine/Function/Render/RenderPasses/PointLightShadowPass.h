@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Component/Camera.h"
 #include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 
@@ -15,6 +16,7 @@ class Material;
 }
 namespace Function::Comp
 {
+class Light;
 class Camera;
 }
 namespace RHI::Vulkan
@@ -35,11 +37,14 @@ public:
     vk::Framebuffer GetCurrentFramebufferHandle() override;
 
     void SetupCubemap();
+    void CleanCubemap();
 
-    Matrix4x4 GetFaceViewMatrix(Comp::Camera* camera, int index);
+    Matrix4x4 GetFaceViewMatrix(Comp::Light* camera, int index);
 
-    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Camera* camera, int index);
+    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index);
     void EndDrawFace(vk::CommandBuffer cb);
+
+    RHI::Vulkan::ImageView* GetOutputCubemapView() const;
 
 private:
     RHI::Vulkan::Image*               color_      = nullptr;

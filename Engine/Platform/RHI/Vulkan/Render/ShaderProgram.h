@@ -84,6 +84,23 @@ public:
 
     void SetUniformBuffer(const AnsiString& name, const void* data, size_t size);
 
+    /**
+     * 顶点着色器的所有PushConstant
+     * @return
+     */
+    const TArray<PushConstantDescriptor>& GetVertexPushConstants() const;
+
+    /**
+     * 片段着色器的所有PushConstant
+     * @return
+     */
+    const TArray<PushConstantDescriptor>& GetFragmentPushConstants() const;
+
+    /**
+     * 更新一个Cubemap Sampler 用于Shader Read
+     */
+    bool  SetCubeTexture(const AnsiString& name, const ImageView& image_view, const Sampler& sampler);
+
 protected:
     // 创建与交换链图像数量相当的UniformBuffer
     void CreateUniformBuffers();
@@ -103,9 +120,20 @@ protected:
     void DestroyDescriptorSetLayout();
 
 private:
+    // 用于判断一个texture uniform是否有被update
+    struct TextureStorage
+    {
+        const ImageView* view;
+        const Sampler*   sampler;
+
+        TextureStorage(const ImageView* view, const Sampler* sampler) : view(view), sampler(sampler) {}
+        TextureStorage() : TextureStorage(nullptr, nullptr) {}
+    };
+
     // 存储所有的Uniform变量
     THashMap<AnsiString, UniformDescriptor> uniforms_;
     TArray<VertexInAttribute>               vertex_input_attributes_;
+    THashMap<AnsiString, TextureStorage>    uniform_texture_storage_;
 
     Shader*            vert_shader_;
     Shader*            frag_shader_;

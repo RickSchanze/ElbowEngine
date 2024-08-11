@@ -22,7 +22,8 @@ CommandPool::CommandPool(
     CreateCommandPool(pool_flags);
 }
 
-TUniquePtr<CommandPool> CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
+TUniquePtr<CommandPool>
+CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
 {
     return MakeUnique<CommandPool>(Private{}, device, pool_flags, debug_name);
 }
@@ -50,7 +51,8 @@ void CommandPool::CleanCommandPool()
 }
 
 void CommandPool::TrainsitionImageLayout(
-    const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level, uint32_t layer_count
+    const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level,
+    uint32_t layer_count
 ) const
 {
     const vk::CommandBuffer cb              = BeginSingleTimeCommands();
@@ -94,6 +96,13 @@ void CommandPool::TrainsitionImageLayout(
         source_stage          = vk::PipelineStageFlagBits::eTopOfPipe;
         destination_stage     = vk::PipelineStageFlagBits::eTransfer;
     }
+    else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal)
+    {
+        barrier.srcAccessMask = vk::AccessFlagBits::eHostWrite | vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        source_stage          = vk::PipelineStageFlagBits::eAllCommands;
+        destination_stage     = vk::PipelineStageFlagBits::eAllCommands;
+    }
     else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal)
     {
         barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
@@ -117,7 +126,9 @@ void CommandPool::TrainsitionImageLayout(
     }
     else
     {
-        throw VulkanException(L"不支持的布局转换");
+        LOG_CRITIAL_ANSI_CATEGORY(
+            Vulkan, "Unsupported image layout transition, old_layout: {}, new_layout: {}", vk::to_string(old_layout), vk::to_string(new_layout)
+        );
     }
     cb.pipelineBarrier(source_stage, destination_stage, {}, {}, {}, {barrier});
     EndSingleTimeCommands(cb);

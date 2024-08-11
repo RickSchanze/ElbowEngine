@@ -7,7 +7,7 @@ layout(location = 1) out vec3 outLightPos;
 
 layout(binding = 0) uniform UboView {
     mat4 projection;
-    mat4 camera;
+    mat4 light;
 } ubo_view;
 
 layout(push_constant) uniform CameraView {
@@ -26,5 +26,5 @@ void main() {
     gl_Position = ubo_view.projection * camera_view.view * ubo_instance.model * vec4(inPosition, 1.0);
 
     outPosition = vec4(inPosition, 1.0);
-    outLightPos = ubo_view.camera[0].xyz;
+    outLightPos = ubo_view.light[0].xyz;
 }

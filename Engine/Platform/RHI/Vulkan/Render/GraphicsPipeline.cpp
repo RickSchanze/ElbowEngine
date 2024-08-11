@@ -130,8 +130,8 @@ void GraphicsPipeline::CreatePipeline()
     // 配置frag shader的最大光照信息
     TStaticArray<vk::SpecializationMapEntry, 1> specializations;
     specializations[0].constantID = 0;
-    specializations[0].size = sizeof(int32_t);
-    specializations[0].offset = 0;
+    specializations[0].size       = sizeof(int32_t);
+    specializations[0].offset     = 0;
 
     vk::SpecializationInfo specialization_info;
     specialization_info.dataSize = sizeof(int32_t);
@@ -237,6 +237,28 @@ void GraphicsPipeline::CreatePipeline()
     vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
     TStaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
     pipeline_layout_info.setSetLayouts(layout);
+
+    TArray<vk::PushConstantRange> push_constant_ranges;
+
+    // PushConstants
+    for (const auto& push_constant: shader_program_->GetVertexPushConstants())
+    {
+        vk::PushConstantRange range;
+        range.stageFlags = ShaderStage2VKShaderStage(push_constant.stage);
+        range.offset     = push_constant.offset;
+        range.size       = push_constant.size;
+        push_constant_ranges.emplace_back(range);
+    }
+    for (const auto& push_constant: shader_program_->GetFragmentPushConstants())
+    {
+        vk::PushConstantRange range;
+        range.stageFlags = ShaderStage2VKShaderStage(push_constant.stage);
+        range.offset     = push_constant.offset;
+        range.size       = push_constant.size;
+        push_constant_ranges.emplace_back(range);
+    }
+
+    pipeline_layout_info.setPushConstantRanges(push_constant_ranges);
 
     if (!pipeline_info_.name_.empty())
     {
