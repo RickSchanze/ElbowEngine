@@ -10,6 +10,8 @@
 #include "Object/Object.h"
 
 #include "Component.generated.h"
+#include "Math/MathTypes.h"
+#include "Transform.h"
 
 class Transform;
 
@@ -45,6 +47,9 @@ public:
     Transform& GetTransform() const;
 
     void Destroy();
+
+    Vector3 GetPosition() const { return transform_->GetPosition(); }
+    Vector3 GetWorldPosition() const { return transform_->GetWorldPosition(); }
 
 protected:
     Transform*  transform_   = nullptr;

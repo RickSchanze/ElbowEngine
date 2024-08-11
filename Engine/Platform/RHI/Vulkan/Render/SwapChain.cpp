@@ -128,7 +128,7 @@ void SwapChain::Initialize()
     {
         ImageViewInfo view_info;
         view_info.format = swapchain_image_format_;
-        view_info.debug_name = s_swap_chain_image_view_debug_name[i];
+        view_info.name = s_swap_chain_image_view_debug_name[i];
         swapchain_image_views_[i] = swap_chain_images_[i]->CreateImageViewShared(view_info);
     }
 

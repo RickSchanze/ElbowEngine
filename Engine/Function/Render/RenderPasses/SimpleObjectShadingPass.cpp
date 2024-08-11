@@ -53,7 +53,7 @@ void SimpleObjectShadingPass::SetupFramebuffer()
     ImageViewInfo depth_image_view_info{};
     depth_image_view_info.format = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_view_info.aspect_flags = vk::ImageAspectFlagBits::eDepth;
-    depth_image_view_info.debug_name = "SimpleObjectShadingPassDepthImageView";
+    depth_image_view_info.name = "SimpleObjectShadingPassDepthImageView";
     depth_image_view_ = depth_image_->CreateImageView(depth_image_view_info);
     attachments[1] = depth_image_view_->GetHandle();
 
@@ -84,21 +84,6 @@ void SimpleObjectShadingPass::CleanFrameBuffer()
     framebuffers_.clear();
 }
 
-void SimpleObjectShadingPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
-{
-    TStaticArray<vk::ClearValue, 2> clear_values;
-    clear_values[0].color        = vk::ClearColorValue{TStaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
-    clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
-
-    vk::RenderPassBeginInfo render_pass_info;
-    render_pass_info.renderPass        = handle_;
-    render_pass_info.framebuffer       = framebuffers_[g_engine_statistics.current_image_index]->GetHandle();
-    render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
-    render_pass_info.renderArea.extent = VulkanContext::Get()->GetSwapChainExtent();
-    render_pass_info.setClearValues(clear_values);
-    cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
-}
-
 void SimpleObjectShadingPass::SetupSubpassDependency()
 {
     vk::SubpassDependency dependency;
@@ -112,6 +97,10 @@ void SimpleObjectShadingPass::SetupSubpassDependency()
         .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定等待的管线阶段
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);   // 指定子进行的操作类型
     dependencies_.push_back(dependency);
+}
+
+vk::Framebuffer SimpleObjectShadingPass::GetCurrentFramebufferHandle(){
+    return framebuffers_[g_engine_statistics.current_image_index]->GetHandle();
 }
 
 FUNCTION_NAMESPACE_END

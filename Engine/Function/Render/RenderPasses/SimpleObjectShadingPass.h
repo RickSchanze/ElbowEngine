@@ -16,11 +16,11 @@ class SimpleObjectShadingPass : public RHI::Vulkan::RenderPass
 public:
     SimpleObjectShadingPass(uint32_t width, uint32_t height, const AnsiString& name);
 
-    void SetupAttachments() override;
-    void SetupFramebuffer() override;
-    void CleanFrameBuffer() override;
-    void Begin(vk::CommandBuffer cb, const Color& clear_color) override;
-    void SetupSubpassDependency() override;
+    void            SetupAttachments() override;
+    void            SetupFramebuffer() override;
+    void            CleanFrameBuffer() override;
+    void            SetupSubpassDependency() override;
+    vk::Framebuffer GetCurrentFramebufferHandle() override;
 
 private:
     TArray<RHI::Vulkan::Framebuffer*> framebuffers_;

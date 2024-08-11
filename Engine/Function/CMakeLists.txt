@@ -1,5 +1,19 @@
 project(Function)
 
+set(SHADER_FILE
+        Render/Shaders/StandardForwardShader.h
+        Render/Shaders/StandardForwardShader.cpp
+        Render/Shaders/PointLightShadowPassShader.h
+        Render/Shaders/PointLightShadowPassShader.cpp
+)
+
+set(RENDER_PASS_FILE
+        Render/RenderPasses/PointLightShadowPass.h
+        Render/RenderPasses/PointLightShadowPass.cpp
+        Render/RenderPasses/SimpleObjectShadingPass.h
+        Render/RenderPasses/SimpleObjectShadingPass.cpp
+)
+
 add_library(${PROJECT_NAME}
         Component/Component.cpp
         Component/Component.h
@@ -31,12 +45,8 @@ add_library(${PROJECT_NAME}
         Render/Event.h
         Render/Material.h
         Render/Material.cpp
-        Render/Shaders/StandardForwardShader.h
-        Render/Shaders/StandardForwardShader.cpp
-        Render/RenderPasses/PointLightShadowPass.h
-        Render/RenderPasses/PointLightShadowPass.cpp
-        Render/RenderPasses/SimpleObjectShadingPass.h
-        Render/RenderPasses/SimpleObjectShadingPass.cpp
+        ${SHADER_FILE}
+        ${RENDER_PASS_FILE}
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp
 )

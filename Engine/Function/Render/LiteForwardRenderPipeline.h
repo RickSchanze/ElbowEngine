@@ -12,6 +12,10 @@
 
 namespace Function
 {
+class PointLightShadowPass;
+}
+namespace Function
+{
 class SimpleObjectShadingPass;
 }
 
@@ -26,7 +30,8 @@ class GraphicsPipeline;
 
 FUNCTION_NAMESPACE_BEGIN
 
-class LiteForwardRenderPipeline : public RenderPipeline {
+class LiteForwardRenderPipeline : public RenderPipeline
+{
 public:
     typedef RenderPipeline Super;
 
@@ -34,7 +39,9 @@ public:
     void Build() override;
 
 private:
-    SimpleObjectShadingPass* forward_pass_ = nullptr;
+    SimpleObjectShadingPass* forward_pass_    = nullptr;
+    PointLightShadowPass*    shadow_pass_     = nullptr;
+    Material*                shadow_material_ = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

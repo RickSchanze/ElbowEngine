@@ -108,11 +108,11 @@ struct PipelineInfo
     DepthStencilStageConfig         depth_stencil_stage;
     ColorBlendAttachmentStateConfig color_blend_attachment_state;
     ColorBlendStageConfig           color_blend_stage;
-    ShaderProgram*                  shader_program        = nullptr;
-    RenderPass*                     render_pass           = nullptr;
+    ShaderProgram*                  shader_program            = nullptr;
+    RenderPass*                     render_pass               = nullptr;
     // 使用不同组合启用DynamicState 默认启用Viewport和Scissor
     // 如果位包含了None则不启用
-    int32_t                         dynamic_state_enabled = EPDSE_Viewport | EPDSE_Scissor;
+    int32_t                         dynamic_state_enabled     = EPDSE_Viewport | EPDSE_Scissor;
     bool                            push_light_count_constant = true;   // 是否将光照数量push进shader里
 
     AnsiString         name_;
@@ -158,6 +158,8 @@ public:
     TArray<vk::DescriptorSet> GetCurrentFrameDescriptorSet() const;
 
     ShaderProgram* GetShaderProgram() const { return shader_program_; }
+
+    vk::PipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
 
 protected:
     void CreatePipeline();

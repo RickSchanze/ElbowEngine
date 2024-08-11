@@ -88,13 +88,14 @@ public:
 
     // 初始化Framebuffer和其Attachment
     // 用于创建RenderPass需要的所有Attachment
-    virtual void SetupAttachments()                                    = 0;
-    virtual void SetupFramebuffer()                                    = 0;
-    virtual void CleanFrameBuffer()                                    = 0;
-    virtual void Begin(vk::CommandBuffer cb, const Color& clear_color) = 0;
-    virtual void SetupSubpassDependency()                              = 0;
+    virtual void            SetupAttachments()            = 0;
+    virtual void            SetupFramebuffer()            = 0;
+    virtual void            CleanFrameBuffer()            = 0;
+    virtual vk::Framebuffer GetCurrentFramebufferHandle() = 0;
+    virtual void            SetupSubpassDependency()      = 0;
 
     virtual void SetupSubpassDescription();
+    virtual void Begin(vk::CommandBuffer cb, const Color& clear_color);
     virtual void End(vk::CommandBuffer cb);
     void         Destroy() override;
     /**
@@ -164,6 +165,8 @@ public:
 
     template<typename T>
     static T* GetOrCreateRenderPass(uint32_t width = 0, uint32_t height = 0, const AnsiString& name = "");
+
+    RenderPass* GetRenderPass(const Type &t) { return render_passes_.contains(t) ? render_passes_[t] : nullptr; }
 
     static void DestroyRenderPasses();
 

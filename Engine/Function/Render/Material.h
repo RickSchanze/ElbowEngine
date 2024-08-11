@@ -11,9 +11,14 @@
 #include "FunctionCommon.h"
 #include "Object/Object.h"
 #include "ResourceManager.h"
+#include "RHI/Vulkan/Render/Shader.h"
 
 #include <glm/fwd.hpp>
 
+namespace RHI::Vulkan
+{
+class RenderPass;
+}
 namespace Function::Comp
 {
 class Mesh;
@@ -51,6 +56,10 @@ public:
     // TODO: 这里应该是传入两个Shader而不是两个路径
     Material(const Path& vert, const Path& frag, const String& name);
 
+    Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name);
+
+    Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name);
+
     ~Material() override;
 
     void SetTexture(const AnsiString& name, Resource::Texture* texture);
@@ -66,6 +75,8 @@ public:
     void SetPointLights(void* data, size_t size);
 
     void DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
+
+    void PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const;
 
 protected:
     /**

@@ -39,7 +39,7 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info), view_info.debug_name);
+    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info), view_info.name);
     return view;
 }
 
@@ -64,7 +64,7 @@ ImageInfo ImageInfo::CubemapInfo(
     info.sharing_mode            = sharing_mode;
     info.create_flags            = create_flags;
     info.memory_property         = memory_property;
-    info.debug_name              = name;
+    info.name              = name;
     info.debug_image_name        = name + "Cubemap";
     info.debug_image_memory_name = name + "CubemapMemory";
     return info;
@@ -146,9 +146,9 @@ void Image::CreateImage()
 
     image_handle_ = device_handle.createImage(image_create_info);
 
-    if (!image_info_.debug_name.empty())
+    if (!image_info_.name.empty())
     {
-        image_info_.debug_image_name = image_info_.debug_name + "_Image";
+        image_info_.debug_image_name = image_info_.name + "_Image";
         context.GetLogicalDevice()->SetImageDebugName(image_handle_, image_info_.debug_image_name.c_str());
     }
 
@@ -161,9 +161,9 @@ void Image::CreateImage()
     );
     image_memory_ = device_handle.allocateMemory(memory_allocate_info);
 
-    if (!image_info_.debug_name.empty())
+    if (!image_info_.name.empty())
     {
-        image_info_.debug_image_memory_name = image_info_.debug_name + "_ImageMemory";
+        image_info_.debug_image_memory_name = image_info_.name + "_ImageMemory";
         context.GetLogicalDevice()->SetDeviceMemoryDebugName(image_memory_, image_info_.debug_image_memory_name.c_str());
     }
 
@@ -188,10 +188,10 @@ ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.debug_name);
+    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.name);
 }
 
-Cubemap::Cubemap(Protected, const ImageInfo& image_info) : Super(image_info)
+Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info)
 {
     VulkanContext::Get()->GetCommandPool()->TrainsitionImageLayout(
         GetHandle(), GetFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, 6

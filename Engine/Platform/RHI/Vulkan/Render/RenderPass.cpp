@@ -256,6 +256,21 @@ void RenderPass::SetupSubpassDescription()
     }
 }
 
+void RenderPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
+{
+    TStaticArray<vk::ClearValue, 2> clear_values;
+    clear_values[0].color        = vk::ClearColorValue{TStaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
+
+    vk::RenderPassBeginInfo render_pass_info;
+    render_pass_info.renderPass        = handle_;
+    render_pass_info.framebuffer       = GetCurrentFramebufferHandle();
+    render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
+    render_pass_info.renderArea.extent = VulkanContext::Get()->GetSwapChainExtent();
+    render_pass_info.setClearValues(clear_values);
+    cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+}
+
 void RenderPass::CreateRenderPass()
 {
     VulkanContext& context = *VulkanContext::Get();
@@ -276,8 +291,9 @@ RenderPassManager::RenderPassManager()
     VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&RenderPassManager::DestroyRenderPasses);
 }
 
-void RenderPassManager::DestroyRenderPasses(){
-    for (auto render_pass : Get()->render_passes_ | std::views::values)
+void RenderPassManager::DestroyRenderPasses()
+{
+    for (auto render_pass: Get()->render_passes_ | std::views::values)
     {
         render_pass->CleanFrameBuffer();
         delete render_pass;

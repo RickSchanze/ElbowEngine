@@ -37,10 +37,10 @@ protected:
     {
         RenderPassAttachmentParam param{};
         param.format           = VulkanContext::Get()->GetSwapChainImageFormat();
-        param.sample_count = vk::SampleCountFlagBits::e1;
-        param.load_op = vk::AttachmentLoadOp::eDontCare;
-        param.store_op = vk::AttachmentStoreOp::eStore;
-        param.stencil_load_op = vk::AttachmentLoadOp::eDontCare;
+        param.sample_count     = vk::SampleCountFlagBits::e1;
+        param.load_op          = vk::AttachmentLoadOp::eDontCare;
+        param.store_op         = vk::AttachmentStoreOp::eStore;
+        param.stencil_load_op  = vk::AttachmentLoadOp::eDontCare;
         param.stencil_store_op = vk::AttachmentStoreOp::eDontCare;
         param.initial_layout   = vk::ImageLayout::eUndefined;
         param.final_layout     = vk::ImageLayout::ePresentSrcKHR;
@@ -90,7 +90,7 @@ public:
 
     Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
 
-    void Begin(vk::CommandBuffer cb, const Color& clear_color) override {}
+    vk::Framebuffer GetCurrentFramebufferHandle() override;
 
     TArray<Framebuffer*> framebuffers_;
     TArray<AnsiString>   framebuffer_names_;
@@ -135,6 +135,12 @@ void GLFWWindowSurface::Initialize()
         }
         mSurfaceHandle = vk::SurfaceKHR(surface);
     }
+}
+
+vk::Framebuffer ImGuiRenderPass::GetCurrentFramebufferHandle()
+{
+    NEVER_ENTRY_WARNING()
+    return nullptr;
 }
 
 ImGuiGraphicsPipeline::ImGuiGraphicsPipeline()

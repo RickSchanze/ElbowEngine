@@ -22,7 +22,7 @@ struct ImageViewInfo
     vk::Format           format       = vk::Format::eUndefined;            // 自动选择和Image一样的格式
     vk::ImageAspectFlags aspect_flags = vk::ImageAspectFlagBits::eColor;   // 首先选择颜色通道
     int32_t              mip_levels   = 0;                                 // 自动选择Miplevels
-    const char*          debug_name   = nullptr;
+    const char*          name         = nullptr;
 };
 
 class ImageBase
@@ -53,10 +53,7 @@ public:
 
     ImageView* CreateImageView(const ImageViewInfo& view_info) const;
 
-    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const
-    {
-        return TSharedPtr<ImageView>{CreateImageView(view_info)};
-    }
+    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const { return TSharedPtr<ImageView>{CreateImageView(view_info)}; }
 };
 
 struct ImageInfo
@@ -76,7 +73,7 @@ struct ImageInfo
     vk::ImageLayout         initial_layout  = vk::ImageLayout::eUndefined;
     vk::SharingMode         sharing_mode    = vk::SharingMode::eExclusive;
 
-    AnsiString debug_name;
+    AnsiString name;
     AnsiString debug_image_name;
     AnsiString debug_image_memory_name;
 
@@ -138,9 +135,11 @@ protected:
 class Cubemap : public Image
 {
 public:
+    typedef Image Super;
+
     enum class ECubemapFace
     {
-        Up,
+        Up = 0,
         Down,
         Left,
         Right,
@@ -148,9 +147,7 @@ public:
         Back
     };
 
-    typedef Image Super;
-
-    Cubemap(Protected, const ImageInfo& image_info);
+    explicit Cubemap(const ImageInfo& image_info);
 
     ~Cubemap() override;
 

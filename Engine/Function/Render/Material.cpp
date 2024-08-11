@@ -39,6 +39,30 @@ Material::Material(const Path& vert, const Path& frag, const String& name)
     pipeline_                    = new GraphicsPipeline(pipeline_info);
 }
 
+Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name)
+{
+    using namespace RHI::Vulkan;
+    shader_program_ = ShaderProgram::Create(vert, frag);
+    name_           = name;
+    ParseShaderParameters();
+    PipelineInfo pipeline_info;
+    pipeline_info.shader_program = shader_program_;
+    pipeline_info.render_pass    = RenderPassManager::GetRenderPass(pass_type);
+    pipeline_                    = new GraphicsPipeline(pipeline_info);
+}
+
+Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name)
+{
+    using namespace RHI::Vulkan;
+    shader_program_ = ShaderProgram::Create(vert, frag);
+    name_           = name;
+    ParseShaderParameters();
+    PipelineInfo pipeline_info;
+    pipeline_info.shader_program = shader_program_;
+    pipeline_info.render_pass    = render_pass;
+    pipeline_                    = new GraphicsPipeline(pipeline_info);
+}
+
 Material::~Material()
 {
     delete shader_program_;
@@ -120,6 +144,11 @@ void Material::DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArr
         pipeline_->BindDescriptiorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0, dynamic_offsets);
         pipeline_->DrawIndexed(cb, mesh_to_draw.GetIndices().size());
     }
+}
+
+void Material::PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const
+{
+    cb.pushConstants(pipeline_->GetPipelineLayout(), ShaderStage2VKShaderStage(stage), offset, size, data);
 }
 
 void Material::ParseShaderParameters()

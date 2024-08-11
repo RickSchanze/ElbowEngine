@@ -36,8 +36,12 @@ namespace Constant
 constexpr Vector3 ZeroVector    = {0, 0, 0};
 constexpr Vector3 OneVector     = {1, 1, 1};
 constexpr Vector3 ForwardVector = {0, 0, 1};
+constexpr Vector3 BackVector    = {0, 0, -1};
 constexpr Vector3 RightVector   = {1, 0, 0};
+constexpr Vector3 LeftVector    = {-1, 0, 0};
 constexpr Vector3 UpVector      = {0, 1, 0};
+constexpr Vector3 DownVector    = {0, -1, 0};
+
 constexpr float   PI            = 3.14159265358979323846f;
 }   // namespace Constant
 

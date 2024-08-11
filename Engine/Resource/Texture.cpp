@@ -71,7 +71,7 @@ void Texture::Load()
     texture_info.width      = width_;
     texture_info.image_type = vk::ImageType::e2D;
     texture_info.usage      = vk::ImageUsageFlagBits::eSampled;
-    texture_info.debug_name = path_.ToRelativeAnsiString();
+    texture_info.name = path_.ToRelativeAnsiString();
     rhi_texture_            = new RHI::Vulkan::Texture(texture_info, data_);
 
     ImageViewInfo view_info = {};

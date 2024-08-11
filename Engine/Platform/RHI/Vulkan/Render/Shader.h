@@ -69,10 +69,13 @@ class GraphicsPipeline;
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO_Sampler2D(name) REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::RHI::Vulkan::EUniformDescriptorType::Sampler2D, 0)
 
-#define REGISTER_SHADER_VAR_END
+#define REGISTER_FRAG_SHADER_VAR_AUTO_SmaplerCube(name) REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::RHI::Vulkan::EUniformDescriptorType::SamplerCube, 0)
+
+#define REGISTER_SHADER_VAR_END()
 
 #define DECLARE_VERT_SHADER(type)                                                                                     \
 public:                                                                                                               \
+    static_assert(std::is_base_of_v<::RHI::Vulkan::Shader, type>, "type must be derived from ::RHI::Vulkan::Shader"); \
     type(Protected, Ref<RHI::Vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
         Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Vertex, shader_name)                    \
     {                                                                                                                 \
@@ -89,6 +92,17 @@ public:                                                                         
                                                                                                                       \
 private:
 
+#define REGISTER_PUSH_CONSTANT(name_, offset_, stage_, size_) \
+    {                                                         \
+        ::RHI::Vulkan::PushConstantDescriptor p;              \
+        p.name   = name_;                                     \
+        p.offset = offset_;                                   \
+        p.stage  = stage_;                                    \
+        p.size   = size_;                                     \
+        push_constant_descriptors_.push_back(p);              \
+    }
+
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 enum class EShaderStage : uint8_t
@@ -97,11 +111,13 @@ enum class EShaderStage : uint8_t
     Fragment,
     None
 };
+
 enum class EUniformDescriptorType : uint8_t
 {
     UniformBuffer,
     Sampler2D,
     DynamicUniformBuffer,
+    SamplerCube
 };
 
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType type);
@@ -116,6 +132,14 @@ struct UniformDescriptor
     uint32_t               size;
     uint32_t               offset;
     uint32_t               range;
+};
+
+struct PushConstantDescriptor
+{
+    EShaderStage stage;
+    uint32_t     offset;
+    uint32_t     size;
+    AnsiString   name;
 };
 
 // 假如声明layout(location = 0) in vec3 inPos;
@@ -171,14 +195,25 @@ protected:
 
 
 protected:
-    TArray<UniformDescriptor> uniform_descriptors_;
-    EShaderStage              shader_stage_ = EShaderStage::None;
-    Path                      shader_path_;
-    vk::ShaderModule          shader_module_;
+    TArray<UniformDescriptor>      uniform_descriptors_;
+    TArray<PushConstantDescriptor> push_constant_descriptors_;
+    EShaderStage                   shader_stage_ = EShaderStage::None;
+    Path                           shader_path_;
+    vk::ShaderModule               shader_module_;
     // 顶点着色器的输入属性
-    TArray<VertexInAttribute> in_attributes_;
-    Ref<LogicalDevice>        device_;   // 使用此Shader的管线
-    AnsiString shader_name_;
+    TArray<VertexInAttribute>      in_attributes_;
+    Ref<LogicalDevice>             device_;   // 使用此Shader的管线
+    AnsiString                     shader_name_;
 };
 
 RHI_VULKAN_NAMESPACE_END
+
+inline vk::ShaderStageFlags ShaderStage2VKShaderStage(RHI::Vulkan::EShaderStage stage)
+{
+    switch (stage)
+    {
+    case RHI::Vulkan::EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex; break;
+    case RHI::Vulkan::EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment; break;
+    case RHI::Vulkan::EShaderStage::None: break;}
+    return {};
+}

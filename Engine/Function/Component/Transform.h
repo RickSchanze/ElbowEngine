@@ -23,6 +23,7 @@ public:
     void    SetPosition(Vector3 pos, bool delay);
     void    SetPosition(Vector3 pos);
     void    Translate(Vector3 pos, bool delay = true);
+    Vector3 GetWorldPosition() const { return world_position_; }
 
     const Rotator& GetRotation();
     void           SetRotation(const Rotator& rot, bool delay);
