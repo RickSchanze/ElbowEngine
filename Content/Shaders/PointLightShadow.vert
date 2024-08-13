@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec3 inPosition;
 
-layout(location = 0) out vec4 outPosition;
+layout(location = 0) out vec4 outWorldPos;
 layout(location = 1) out vec3 outLightPos;
 
 layout(binding = 0) uniform UboView {
@@ -25,6 +25,6 @@ out gl_PerVertex {
 void main() {
     gl_Position = ubo_view.projection * camera_view.view * ubo_instance.model * vec4(inPosition, 1.0);
 
-    outPosition = vec4(inPosition, 1.0);
+    outWorldPos = ubo_instance.model * vec4(inPosition, 1.0);
     outLightPos = ubo_view.light[0].xyz;
 }

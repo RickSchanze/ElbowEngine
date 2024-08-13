@@ -18,7 +18,7 @@ layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inFragPosition;
 layout(location = 3) in vec3 inCameraPosition;
-layout(location = 4) in vec3 inWorldPosition;
+layout(location = 4) in vec4 inWorldPosition;
 
 layout(location = 0) out vec4 outColor;
 
@@ -43,10 +43,10 @@ void main() {
     outColor = texture(texSampler, inUV) * vec4((ambient + diffuse + specular), 1.0f);
 
     // 阴影
-    vec3 lightVec = inWorldPosition - ubo_point_lights.lights[0].position.xyz;
+    vec3 lightVec = inWorldPosition.xyz - ubo_point_lights.lights[0].position.xyz;
     float sampledDist = texture(shadowCubeMap, lightVec).r;
     float dist = length(lightVec);
-    float shadow = (dist <= sampledDist) ? 1.0f : 0.1f;
+    float shadow = (dist <= sampledDist + 0.1f) ? 1.0f : 0.1f;
 
     outColor.rgb *= shadow;
 }

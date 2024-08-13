@@ -31,9 +31,9 @@ public:
 
     ~Component() override;
 
-    virtual void PreTick(float DeltaTime) {}
-    virtual void Tick(float DeltaTime) {}
-    virtual void PostTick(float DeltaTime) {}
+    virtual void PreTick(float delta_time) {}
+    virtual void Tick(float delta_time) {}
+    virtual void PostTick(float delta_time) {}
     virtual void BeginPlay();
     virtual void EndPlay();
     virtual void OnEnable() {}

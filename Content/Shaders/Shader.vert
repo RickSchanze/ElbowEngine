@@ -19,7 +19,7 @@ layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outFragPosition;
 layout(location = 3) out vec3 outCameraPosition;
-layout(location = 4) out vec3 outWorldPosition;
+layout(location = 4) out vec4 outWorldPosition;
 
 void main() {
     gl_Position = ubo_view.projection * ubo_view.view * ubo_instance.model * vec4(inPosition, 1.0);
@@ -30,5 +30,5 @@ void main() {
     // 防止因不规则形变而导致的法线方向错误
     outNormal = mat3(transpose(inverse(ubo_instance.model))) * inNormal;
     outCameraPosition = ubo_view.camera[0].xyz; // 相机位置
-    outWorldPosition = inPosition;
+    outWorldPosition = ubo_instance.model * vec4(inPosition, 1.0);
 }

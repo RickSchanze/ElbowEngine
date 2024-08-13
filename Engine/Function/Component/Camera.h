@@ -13,6 +13,8 @@
 
 #include "Camera.generated.h"
 
+#undef near
+#undef far
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
@@ -38,6 +40,13 @@ public:
     PROPERTY(Serialize, Label = "背景颜色")
     Color background_color = Color(0.5f, 0.5f, 0.5f, 1.0f);
 
+    // 沟槽的微软定义 #define near
+    PROPERTY(Serialized, Label = "近平面")
+    float near_plane = 0.1f;
+
+    PROPERTY(Serialized, Label = "远平面")
+    float far_plane = 1000.f;
+
 protected:
     void HandleInput();
 
@@ -49,6 +58,7 @@ protected:
 
     PROPERTY(Serialized, Name = mouse_sensitity, Label = "鼠标灵敏度")
     float mouse_sensitivity_ = 0.3f;
+
 
     bool focused_ = false;
 };

@@ -42,7 +42,7 @@ constexpr Vector3 LeftVector    = {-1, 0, 0};
 constexpr Vector3 UpVector      = {0, 1, 0};
 constexpr Vector3 DownVector    = {0, -1, 0};
 
-constexpr float   PI            = 3.14159265358979323846f;
+constexpr float PI = 3.14159265358979323846f;
 }   // namespace Constant
 
 struct Rotator
@@ -52,6 +52,7 @@ struct Rotator
     float pitch = 0;
 
     Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
+    Rotator(const Vector3 v) : yaw(v.x), roll(v.y), pitch(v.z) {}
 
     Vector3 GetForwardVector() const;
     Vector3 GetUpVector() const;

@@ -36,6 +36,8 @@ add_library(${PROJECT_NAME}
         Component/Light/Light.cpp
         Component/Script/SpaceCircle.h
         Component/Script/SpaceCircle.cpp
+        Component/Script/Autorotation.h
+        Component/Script/Autorotation.cpp
         Render/RenderContext.h
         Render/RenderContext.cpp
         Render/LiteForwardRenderPipeline.h

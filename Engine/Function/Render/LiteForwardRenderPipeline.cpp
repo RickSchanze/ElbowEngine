@@ -24,6 +24,9 @@ using namespace RHI::Vulkan;
 
 FUNCTION_NAMESPACE_BEGIN
 
+#undef near
+#undef far
+
 void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
     // TODO: 将Camera加入到渲染参数
@@ -40,7 +43,7 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
         shadow_material_->SetModel(model_instances_.models, model_instances_.size);
         for (int i = 0; i < 6; i++)
         {
-            shadow_pass_->BeginDrawFace(cb, shadow_material_, light[0], i);
+            shadow_pass_->BeginDrawFace(cb, shadow_material_, light[0], i, main->near_plane, main->far_plane);
             for (auto& meshes: meshes_to_draw | std::views::values)
             {
                 for (int j = 0; j < meshes.size(); j++)

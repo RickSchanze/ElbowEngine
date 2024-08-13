@@ -41,7 +41,7 @@ public:
 
     Matrix4x4 GetFaceViewMatrix(Comp::Light* camera, int index);
 
-    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index);
+    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index, float near, float far);
     void EndDrawFace(vk::CommandBuffer cb);
 
     RHI::Vulkan::ImageView* GetOutputCubemapView() const;

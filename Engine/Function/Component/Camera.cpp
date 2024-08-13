@@ -10,11 +10,9 @@
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
-
-#include "Camera.generated.h"
 #include "GameObject/GameObject.h"
 
-#include <glm/ext/matrix_clip_space.hpp>
+#include "Camera.generated.h"
 
 GENERATED_SOURCE()
 
@@ -50,8 +48,7 @@ glm::mat4 Camera::GetViewMatrix() const
 
 glm::mat4 Camera::GetProjectionMatrix() const
 {
-    auto rtn = Math::Perspective(glm::radians(45.f), 1920.f / 1080.f, 0.1f, 1000.f);
-    rtn[1][1] *= -1;
+    auto rtn = Math::Perspective(glm::radians(45.f), 1920.f / 1080.f, near_plane, far_plane);
     return rtn;
 }
 

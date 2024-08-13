@@ -29,10 +29,17 @@ public:
     void           SetAxis(const Vector3& axis);
     const Vector3& GetAxis() const;
 
-    float GetSpeed() { return speed_; }
-    void  SetSpeed(float speed)
+    float        GetSpeed() { return speed_; }
+    SpaceCircle* SetSpeed(float speed)
     {
         speed_ = speed;
+        return this;
+    }
+
+    SpaceCircle* SetCenter(Vector3 center)
+    {
+        center_ = center;
+        return this;
     }
 
     void PerformTranslate();

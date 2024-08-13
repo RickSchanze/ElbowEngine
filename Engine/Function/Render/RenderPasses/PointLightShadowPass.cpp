@@ -168,27 +168,26 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
     }
     using namespace RHI::Vulkan;
     auto view = glm::mat4(1.0f);
+    Vector3 light_pos = light->GetWorldPosition();
     switch (index)
     {
     case 0:   // POSITIVE_X
-        view = glm::rotate(view, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         break;
     case 1:   // NEGATIVE_X
-        view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         break;
     case 2:   // POSITIVE_Y
-        view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
         break;
     case 3:   // NEGATIVE_Y
-        view = glm::rotate(view, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
         break;
     case 4:   // POSITIVE_Z
-        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
         break;
     case 5:   // NEGATIVE_Z
-        view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        view = Math::LookAt(light_pos, light_pos + Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
         break;
     }
 
@@ -196,7 +195,10 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
     return view;
 }
 
-void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index)
+#undef near
+#undef far
+
+void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index, float near, float far)
 {
     vk::ClearValue clear_value[2];
     clear_value[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -224,8 +226,9 @@ void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Co
         Matrix4x4 light;
     } view;
     view.proj = Math::Perspective((float)(Constant::PI / 2.0), 1.0f, 0.1f, 1024.0f);
-    view.proj[0][0] *= -1;
+    view.proj[1][1] *= -1;
     view.light[0] = Math::ToVector4(light->GetWorldPosition());
+    view.light[1] = Vector4(near, far, 0, 0);
     mat->Set("ubo_view", &view, sizeof(UboView));
 }
 
