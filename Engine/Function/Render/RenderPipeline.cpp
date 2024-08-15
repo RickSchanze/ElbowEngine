@@ -10,19 +10,24 @@
 #include "Component/Light/Light.h"
 #include "Component/Mesh/Mesh.h"
 #include "Component/Transform.h"
+#include "CoreEvents.h"
 #include "Event.h"
 #include "Material.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
 #include "RenderContext.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
+#include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/MemoryUtils.h"
 
 FUNCTION_NAMESPACE_BEGIN
+
+
 RenderPipeline::RenderPipeline()
 {
-    context_ = RenderContext::Get();
+    context_                     = RenderContext::Get();
+    window_resized_event_handle_ = OnAppWindowResized.AddObject(this, &RenderPipeline::Rebuild);
 }
 
 RenderPipeline::~RenderPipeline()
@@ -33,11 +38,25 @@ RenderPipeline::~RenderPipeline()
         // delete imgui_pipeline_;
         imgui_pipeline_ = nullptr;
     }
+    // OnAppWindowResized.Remove(window_resized_event_handle_);
 }
 
 void RenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 {
     PrepareFrame();
+}
+
+void RenderPipeline::Rebuild(int w, int h)
+{
+    if (w == 0 || h == 0) return;
+    for (auto* render_pass: saved_render_passes_)
+    {
+        render_pass->ResizeFramebuffer(w, h);
+    }
+    if (imgui_pipeline_ != nullptr)
+    {
+        imgui_pipeline_->Rebuild(w, h);
+    }
 }
 
 size_t RenderPipeline::GetDynamicUniformModelAligment() const
@@ -117,7 +136,7 @@ void RenderPipeline::PrepareLight()
             lights_data.push_back(light_data);
         }
     }
-    for (auto* mat : draw_meshs_ | std::views::keys)
+    for (auto* mat: draw_meshs_ | std::views::keys)
     {
         mat->SetPointLights(lights_data.data(), lights_data.size() * sizeof(PointLight));
     }
@@ -148,6 +167,16 @@ void RenderPipeline::AddImGuiGraphicsPipeline()
 void RenderPipeline::DrawImGuiPipeline(vk::CommandBuffer cb) const
 {
     imgui_pipeline_->Draw(cb);
+}
+
+void RenderPipeline::RegisterRenderPass(RHI::Vulkan::RenderPass* render_pass)
+{
+    saved_render_passes_.push_back(render_pass);
+}
+
+void RenderPipeline::UnregisterRenderPass(RHI::Vulkan::RenderPass* render_pass)
+{
+    ContainerUtils::Remove(saved_render_passes_, render_pass);
 }
 
 THashMap<Material*, TArray<Comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const

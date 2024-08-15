@@ -13,6 +13,10 @@
 
 #include <glm/glm.hpp>
 
+namespace RHI::Vulkan
+{
+class RenderPass;
+}
 namespace Function::Comp
 {
 class Camera;
@@ -72,6 +76,11 @@ public:
     virtual void Draw(const RenderContextDrawParam& draw_param);
     virtual void Build() = 0;
 
+    /**
+     * 处理framebuffer改变
+     */
+    virtual void Rebuild(int w, int h);
+
 protected:
     size_t GetDynamicUniformModelAligment() const;
 
@@ -92,7 +101,10 @@ protected:
     void AddImGuiGraphicsPipeline();
     void DrawImGuiPipeline(vk::CommandBuffer cb) const;
 
-    THashMap<Material*, TArray<Comp::Mesh*>> CollectMeshesWithMaterial()const;
+    void RegisterRenderPass(RHI::Vulkan::RenderPass* render_pass);
+    void UnregisterRenderPass(RHI::Vulkan::RenderPass* render_pass);
+
+    THashMap<Material*, TArray<Comp::Mesh*>> CollectMeshesWithMaterial() const;
 
     RenderContext*                      context_        = nullptr;
     RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
@@ -102,6 +114,10 @@ protected:
 protected:
     // 每帧处理的需要绘制的mesh
     THashMap<Material*, TArray<Comp::Mesh*>> draw_meshs_;
+
+    TArray<RHI::Vulkan::RenderPass*> saved_render_passes_;
+
+    String window_resized_event_handle_;
 };
 
 FUNCTION_NAMESPACE_END

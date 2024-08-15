@@ -41,6 +41,7 @@ public:
 private:
     SimpleObjectShadingPass* forward_pass_    = nullptr;
     PointLightShadowPass*    shadow_pass_     = nullptr;
+
     Material*                shadow_material_ = nullptr;
 };
 

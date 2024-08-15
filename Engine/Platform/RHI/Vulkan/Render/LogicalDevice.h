@@ -43,12 +43,13 @@ public:
 
     /**
      * 创建一个交换链对象
-     * @param InSwapChainImageCount 交换链图像数量 为0表示自动选择
-     * @param InWidth
-     * @param InHeight
+     * @param swap_chain_image_count 交换链图像数量 为0表示自动选择
+     * @param width
+     * @param height
+     * @param log 是否打log
      * @return
      */
-    TUniquePtr<SwapChain> CreateSwapChain(uint32_t InSwapChainImageCount = 0, int32_t InWidth = 0, int32_t InHeight = 0);
+    TUniquePtr<SwapChain> CreateSwapChain(uint32_t swap_chain_image_count = 0, int32_t width = 0, int32_t height = 0, bool log = true);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据

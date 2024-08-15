@@ -56,7 +56,7 @@ public:
     TArray<TSharedPtr<ImageView>>& GetImageViews() { return swapchain_image_views_; }
 
     void Initialize();
-    void Finialize();
+    void Finialize(bool log);
 
     int32_t GetSwapchainImageCount() const { return static_cast<uint32_t>(swap_chain_images_.size()); }
 

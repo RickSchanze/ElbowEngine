@@ -94,15 +94,12 @@ public:
     virtual vk::Framebuffer GetCurrentFramebufferHandle() = 0;
     virtual void            SetupSubpassDependency()      = 0;
 
+    virtual void ResizeFramebuffer(int w, int h);
+
     virtual void SetupSubpassDescription();
     virtual void Begin(vk::CommandBuffer cb, const Color& clear_color);
     virtual void End(vk::CommandBuffer cb);
     void         Destroy() override;
-    /**
-  * 重置Renderpass
-  * @param bDeep 为true则会 销毁RenderPass否则只销毁Framebuffer及其Attachment
-  */
-    virtual void Rebuild(bool bDeep);
 
 protected:
     void InternalDestroy();

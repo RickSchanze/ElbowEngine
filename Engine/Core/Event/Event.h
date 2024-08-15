@@ -9,7 +9,8 @@
 #include "CoreGlobal.h"
 #include "Misc/Guid.h"
 
-template <typename... Args>
+// TODO: 事件系统需要重构
+template<typename... Args>
 class TDelegate
 {
 public:
@@ -18,10 +19,7 @@ public:
      * @param id 自己设定的ID
      * @param func 代理的function
      */
-    TDelegate(String id, TFunction<void(Args...)> func)
-        : function_(Move(func)), id_(Move(id)), valid_(true)
-    {
-    }
+    TDelegate(String id, TFunction<void(Args...)> func) : function_(Move(func)), id_(Move(id)), valid_(true) {}
 
     /**
      * 使用一个对象的方法构造Delegate
@@ -31,11 +29,11 @@ public:
      * @param object 对象指针
      * @param func 对象的方法
      */
-    template <typename ObjectType, typename FuncType>
-    TDelegate(String id, ObjectType *object, FuncType func) : id_(Move(id))
+    template<typename ObjectType, typename FuncType>
+    TDelegate(String id, ObjectType* object, FuncType func) : id_(Move(id))
     {
         function_ = [object, func](Args... args) { (object->*func)(args...); };
-        valid_ = true;
+        valid_    = true;
     }
 
     /**
@@ -45,7 +43,7 @@ public:
     explicit TDelegate(TFunction<void(Args...)> func) : id_(Guid().ToString())
     {
         function_ = Move(func);
-        valid_ = true;
+        valid_    = true;
     }
 
     /**
@@ -58,39 +56,31 @@ public:
      * @param object 对象指针
      * @param func 函数指针
      */
-    template <typename ObjectType, typename FuncType>
+    template<typename ObjectType, typename FuncType>
         requires(!std::is_same_v<ObjectType, const char>)
-    TDelegate(ObjectType *object, FuncType func) : id_(Guid().ToString())
+    TDelegate(ObjectType* object, FuncType func) : id_(Guid().ToString())
     {
         function_ = [object, func](Args... args) { (object->*func)(args...); };
-        valid_ = true;
+        valid_    = true;
     }
 
-    /**
-     * 移动构造 重新生成ID并将原来的设为无效
-     * @param other
-     */
-    TDelegate(TDelegate &&other) noexcept
+    TDelegate(TDelegate&& other) noexcept
     {
-        function_ = Move(other.function_);
-        id_ = Guid().ToString();
-        valid_ = other.valid_;
+        function_    = Move(other.function_);
+        id_          = other.GetID();
+        valid_       = other.valid_;
         other.valid_ = false;
     }
 
-    /**
-     * 复制构造，会重新生成id
-     * @param other
-     */
-    TDelegate(const TDelegate &other)
+    TDelegate(const TDelegate& other)
     {
         function_ = other.function_;
-        id_ = Guid().ToString();
-        valid_ = other.valid_;
+        id_       = other.GetID();
+        valid_    = other.valid_;
     }
 
-    template <class... InvokeArgs>
-    void operator()(InvokeArgs &&...args) const
+    template<class... InvokeArgs>
+    void operator()(InvokeArgs&&... args) const
     {
         if (valid_)
         {
@@ -109,72 +99,74 @@ public:
         }
     }
 
-    auto operator<=>(const TDelegate &rhs) const
-    {
-        return id_ <=> rhs.id_;
-    }
+    auto operator<=>(const TDelegate& rhs) const { return id_ <=> rhs.id_; }
 
     /** 获取Delegate id */
-    String GetID() const
-    {
-        return id_;
-    }
+    String GetID() const { return id_; }
 
     /** 此Delegate是否有效 */
-    bool IsValid() const
-    {
-        return valid_;
-    }
+    bool IsValid() const { return valid_; }
 
 private:
     TFunction<void(Args...)> function_;
-    String id_;
-    bool valid_;
+    String                   id_;
+    bool                     valid_;
 };
 
-template <typename... Args>
+template<typename... Args>
 class TEvent
 {
 public:
     TEvent() = default;
+
     // 禁止拷贝构造和赋值
-    TEvent(const TEvent &) = delete;
-    TEvent &operator=(const TEvent &) = delete;
+    TEvent(const TEvent&) = delete;
+
+    TEvent& operator=(const TEvent&) = delete;
 
     /** 使用其他的Delegate或者Lambda来初始化添加Event */
-    template <typename DelegateType>
-    void Add(DelegateType &&delegate)
+    template<typename DelegateType>
+    String Add(DelegateType&& delegate)
     {
-        m_event_listener.emplace_back(Forward<DelegateType>(delegate));
+        TDelegate<Args...> new_delegate(Move(delegate));
+        m_event_listener.emplace_back(Move(new_delegate));
+        return new_delegate.GetID();
     }
 
     /** 添加Delegate */
-    template <typename ObjectType, typename ClassFunc>
-    void AddObject(String id, ObjectType *obj, ClassFunc func)
+    template<typename ObjectType, typename ClassFunc>
+    String AddObject(String id, ObjectType* obj, ClassFunc func)
     {
-        m_event_listener.emplace_back(id, obj, func);
+        TDelegate<Args...> new_delegate(id, obj, func);
+        m_event_listener.emplace_back(Move(new_delegate));
+        return new_delegate.GetID();
     }
 
     /** 添加Delegate */
-    template <typename ObjectType, typename ClassFunc>
+    template<typename ObjectType, typename ClassFunc>
         requires(!std::is_same_v<ObjectType, const char>)
-    void AddObject(ObjectType *obj, ClassFunc func)
+    String AddObject(ObjectType* obj, ClassFunc func)
     {
-        m_event_listener.emplace_back(obj, func);
+        TDelegate<Args...> new_delegate(obj, func);
+        m_event_listener.emplace_back(Move(new_delegate));
+        return new_delegate.GetID();
     }
 
     /** 添加Delegate */
-    template <typename Func>
-    void Add(String id, Func func)
+    template<typename Func>
+    String Add(String id, Func func)
     {
-        m_event_listener.emplace_back(Move(id), func);
+        TDelegate<Args...> new_delegate(id, Move(func));
+        m_event_listener.emplace_back(Move(new_delegate));
+        return new_delegate.GetID();
     }
 
     /** 添加Delegate */
     void Remove(String id)
     {
-        auto it = std::find_if(m_event_listener.begin(), m_event_listener.end(),
-                               [&id](const TDelegate<Args...> &delegate) { return delegate.GetName() == id; });
+        auto it = std::find_if(m_event_listener.begin(), m_event_listener.end(), [&id](const TDelegate<Args...>& delegate) {
+            return delegate.GetID() == id;
+        });
         if (it != m_event_listener.end())
         {
             m_event_listener.erase(it);
@@ -182,10 +174,7 @@ public:
     }
 
     /** 清除所有Delegate */
-    void Clear()
-    {
-        m_event_listener.clear();
-    }
+    void Clear() { m_event_listener.clear(); }
 
     /**
      * 分发当前事件
@@ -193,10 +182,10 @@ public:
      * @tparam InvokeArgs
      * @param args
      */
-    template <typename... InvokeArgs>
-    void Broadcast(InvokeArgs &&...args)
+    template<typename... InvokeArgs>
+    void Broadcast(InvokeArgs&&... args)
     {
-        for (auto &listener : m_event_listener)
+        for (auto& listener: m_event_listener)
         {
             if (listener.IsValid())
             {

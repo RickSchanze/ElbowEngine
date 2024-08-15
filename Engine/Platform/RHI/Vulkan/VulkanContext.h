@@ -77,8 +77,7 @@ public:
 
     bool IsValid() const;
 
-    // 重建交换链
-    void RebuildSwapChain();
+    static void RebuildSwapChain(int w, int h);
 
     // 获取交换链图像支持的格式
     vk::Format GetSwapChainImageFormat() const { return swap_chain_->GetImageFormat(); }
@@ -114,6 +113,12 @@ public:
     vk::CommandBuffer BeginRecordCommandBuffer();
     void EndRecordCommandBuffer();
 
+    /**
+     * 现在能不能进行渲染
+     * @return
+     */
+    bool CanRender() const;
+
 protected:
     void CreateSyncObjecs();
     void CleanSyncObjects() const;
@@ -144,6 +149,8 @@ private:
 
     TArray<vk::CommandBuffer> command_buffers_;
     TArray<AnsiString> command_buffers_names_;
+
+    bool wait_swapchain_rebuild_ = false;
 };
 
 RHI_VULKAN_NAMESPACE_END

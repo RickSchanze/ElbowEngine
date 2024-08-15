@@ -69,6 +69,13 @@ public:
     vk::CommandBuffer BeginRecordCommandBuffer();
     void              EndRecordCommandBuffer();
 
+    /**
+     * 现在能否进行渲染
+     * 如果re
+     * @return
+     */
+    bool CanRender() const;
+
 private:
     RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;

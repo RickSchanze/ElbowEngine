@@ -159,6 +159,11 @@ void PointLightShadowPass::CleanCubemap()
     shadow_map_ = nullptr;
 }
 
+void PointLightShadowPass::ResizeFramebuffer(int w, int h)
+{
+    // Cubemap不需要Resize
+}
+
 Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
 {
     if (index < 0 || index > 5)

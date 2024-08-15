@@ -99,5 +99,10 @@ void RenderContext::EndRecordCommandBuffer()
     vulkan_context_->EndRecordCommandBuffer();
 }
 
+bool RenderContext::CanRender() const
+{
+    return vulkan_context_->CanRender();
+}
+
 
 FUNCTION_NAMESPACE_END

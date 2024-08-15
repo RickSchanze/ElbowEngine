@@ -7,6 +7,7 @@
 
 #include "GLFWWindow.h"
 #include "GameObject/GameObject.h"
+#include "IconsMaterialDesign.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 #include "Input/Input.h"
@@ -19,7 +20,6 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan_to_string.hpp"
-#include "IconsMaterialDesign.h"
 
 using namespace RHI::Vulkan;
 
@@ -113,7 +113,10 @@ protected:
 public:
     void Draw(vk::CommandBuffer cb) override;
 
-    void Rebuild() const;
+    void Rebuild(int w, int h) override
+    {
+        render_pass_->ResizeFramebuffer(w, h);
+    }
 
 private:
     VulkanContext* context_;
@@ -210,14 +213,23 @@ void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
     cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+
     ImGui::Render();
+    vk::Viewport viewport;
+    viewport.x        = 0;
+    viewport.y        = 0;
+    viewport.width    = g_engine_statistics.window_size.width;
+    viewport.height   = g_engine_statistics.window_size.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    cb.setViewport(0, viewport);
+    vk::Rect2D scisor;
+    scisor.offset = vk::Offset2D{0, 0};
+    scisor.extent = VulkanContext::Get()->GetSwapChainExtent();
+    cb.setScissor(0, scisor);
+
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cb);
     cb.endRenderPass();
-}
-
-void ImGuiGraphicsPipeline::Rebuild() const
-{
-    render_pass_->Rebuild(false);
 }
 
 void ImGuiGraphicsPipeline::CreateDescriptorPool()
@@ -275,11 +287,11 @@ void GlfwWindow::SetupImGuiFonts()
 
     // 字体图标
     static constexpr ImWchar icon_font_ranges[] = {ICON_MIN_MD, ICON_MAX_16_MD, 0};
-    ImFontConfig icon_font_config;
-    icon_font_config.MergeMode = true;
+    ImFontConfig             icon_font_config;
+    icon_font_config.MergeMode   = true;
     icon_font_config.GlyphOffset = {0.f, 4.f};
 
-    Path icon_font = GOOGLE_MATERIAL_ICON_FONT_PATH;
+    Path       icon_font      = GOOGLE_MATERIAL_ICON_FONT_PATH;
     AnsiString icon_font_ansi = icon_font.ToAbsoluteAnsiString();
     io.Fonts->AddFontFromFileTTF(icon_font_ansi.c_str(), DEFAULT_FONT_SIZE, &icon_font_config, icon_font_ranges);
 

@@ -42,7 +42,7 @@ SwapChain::~SwapChain()
 {
     if (IsValid())
     {
-        Finialize();
+        Finialize(true);
     }
 }
 
@@ -127,15 +127,13 @@ void SwapChain::Initialize()
     for (uint32_t i = 0; i < GetSwapchainImageCount(); ++i)
     {
         ImageViewInfo view_info;
-        view_info.format = swapchain_image_format_;
-        view_info.name = s_swap_chain_image_view_debug_name[i];
+        view_info.format          = swapchain_image_format_;
+        view_info.name            = s_swap_chain_image_view_debug_name[i];
         swapchain_image_views_[i] = swap_chain_images_[i]->CreateImageViewShared(view_info);
     }
-
-    LOG_INFO_CATEGORY(VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", swap_chain_images_.size(), VulkanStringify::ToString(swapchain_extent_));
 }
 
-void SwapChain::Finialize()
+void SwapChain::Finialize(bool log)
 {
     if (!IsValid()) return;
     for (const auto& ImageView: swapchain_image_views_)
@@ -145,11 +143,15 @@ void SwapChain::Finialize()
     associated_logical_device_->DestroySwapChain(swapchain_handle_);
     swapchain_handle_ = VK_NULL_HANDLE;
     swap_chain_images_.clear();
-    LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");
+    if (log)
+    {
+        LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");
+    }
 }
 
-void SwapChain::Destroy(){
-    Finialize();
+void SwapChain::Destroy()
+{
+    Finialize(true);
 }
 
 RHI_VULKAN_NAMESPACE_END

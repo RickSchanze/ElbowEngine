@@ -85,7 +85,9 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
 void LiteForwardRenderPipeline::Build()
 {
     forward_pass_ = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
+    RegisterRenderPass(forward_pass_);
     shadow_pass_  = RenderPassManager::GetOrCreateRenderPass<PointLightShadowPass>(800, 800, "PointLightPass");
+    RegisterRenderPass(shadow_pass_);
 
     Shader* shadow_vert = Shader::Create<PointLightShadowPassVertShader>(L"Shaders/PointLightShadowVert.spv", "PointLightShadowVert");
     Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadowFrag.spv", "PointLightShadowFrag");

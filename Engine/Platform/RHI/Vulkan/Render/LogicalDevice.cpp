@@ -11,6 +11,7 @@
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
+#include "RHI/Vulkan/VulkanStringify.h"
 #include "SwapChain.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan.hpp"
@@ -56,7 +57,7 @@ void LogicalDevice::Destroy()
     Finialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainImageCount, int32_t InWidth, int32_t InHeight)
+TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
 {
     const auto physical_device    = associated_physical_device_.get();
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
@@ -64,10 +65,10 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainI
 
     const auto surface_format = SwapChain::ChooseSwapSurfaceFormat(swap_chain_support.formats);
     const auto present_mode   = SwapChain::ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const auto extent         = SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, InWidth, InHeight);
+    const auto extent         = SwapChain::ChooseSwapExtent(swap_chain_support.capabilities, width, height);
 
-    int32_t ImageCount = InSwapChainImageCount;
-    if (InSwapChainImageCount == 0)
+    int32_t ImageCount = swap_chain_image_count;
+    if (swap_chain_image_count == 0)
     {
         ImageCount = swap_chain_support.capabilities.minImageCount + 1;
     }
@@ -111,7 +112,14 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t InSwapChainI
     graphics_queue_ = handle_.getQueue(indicies.graphics_family.value(), 0);
     present_queue_  = handle_.getQueue(indicies.present_family.value(), 0);
 
-    return SwapChain::CreateUnique(handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent);
+    auto rtn = SwapChain::CreateUnique(handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent);
+    if (log)
+    {
+        LOG_INFO_CATEGORY(
+            VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", swap_chain_image_count, VulkanStringify::ToString(vk::Extent2D(extent))
+        );
+    }
+    return Move(rtn);
 }
 
 void LogicalDevice::CreateBuffer(
@@ -194,7 +202,8 @@ void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
     handle_.unmapMemory(InMemory);
 }
 
-void LogicalDevice::FlushMappedMemory(const TArray<vk::MappedMemoryRange> &ranges) const {
+void LogicalDevice::FlushMappedMemory(const TArray<vk::MappedMemoryRange>& ranges) const
+{
     handle_.flushMappedMemoryRanges(ranges);
 }
 
@@ -280,11 +289,14 @@ vk::CommandPool LogicalDevice::CreateCommandPool(const vk::CommandPoolCreateInfo
     return rtn;
 }
 
-void LogicalDevice::DestroyCommandPool(vk::CommandPool command_pool) const{
+void LogicalDevice::DestroyCommandPool(vk::CommandPool command_pool) const
+{
     handle_.destroyCommandPool(command_pool);
 }
 
-vk::Pipeline LogicalDevice::CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name) const{
+vk::Pipeline
+LogicalDevice::CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name) const
+{
     auto res = handle_.createGraphicsPipeline(cache, info);
     if (res.result != vk::Result::eSuccess)
     {

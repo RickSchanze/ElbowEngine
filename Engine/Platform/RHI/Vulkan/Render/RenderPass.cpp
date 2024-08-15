@@ -112,20 +112,6 @@ void RenderPass::SetupAttachments()
     }
 }
 
-void RenderPass::Rebuild(bool bDeep)
-{
-    if (bDeep)
-    {
-        InternalDestroy();
-        Initialize();
-    }
-    else
-    {
-        CleanFrameBuffer();
-        SetupFramebuffer();
-    }
-}
-
 void RenderPass::Destroy()
 {
     InternalDestroy();
@@ -193,6 +179,13 @@ void RenderPass::NewSampleResolveAttachment(RenderPassAttachmentParam& param)
 void RenderPass::NewSwapchainColorAttachment(RenderPassAttachmentParam& param)
 {
     NewAttachment(param, true, false, false);
+}
+
+void RenderPass::ResizeFramebuffer(int w, int h){
+    width_ = w;
+    height_ = h;
+    CleanFrameBuffer();
+    SetupFramebuffer();
 }
 
 void RenderPass::SetupSubpassDescription()

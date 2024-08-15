@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CoreDef.h"
+#include "CoreEvents.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
@@ -19,7 +20,7 @@ namespace Function
 {
 class GameObject;
 class RenderContext;
-}
+}   // namespace Function
 namespace RHI::Vulkan
 {
 class VulkanApplication;
@@ -58,8 +59,6 @@ public:
 
     static EngineApplication& Get() { return *instance_; }
 
-    bool frame_buffer_resized = false;
-
     void AddWindow(Window::WindowBase* window) { sub_windows_.push_back(window); }
     void RemoveWindow(Window::WindowBase* window);
     void RemoveWindow(Type type);
@@ -83,8 +82,7 @@ protected:
 private:
     static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
     {
-        auto& app                = Get();
-        app.frame_buffer_resized = true;
+        OnAppWindowResized.Broadcast(width, height);
     }
 
     TUniquePtr<RHI::Vulkan::VulkanApplication> render_application_;

@@ -20,6 +20,7 @@ class ImguiGraphicsPipeline : public IGraphicsPipeline
 {
 public:
     virtual void Draw(vk::CommandBuffer cb) = 0;
+    virtual void Rebuild(int w, int h) = 0;
 };
 
 RHI_VULKAN_NAMESPACE_END

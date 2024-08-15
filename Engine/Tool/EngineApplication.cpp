@@ -89,6 +89,18 @@ void EngineApplication::LogEndInit()
     LOG_INFO_CATEGORY(Engine, L"引擎初始化完成");
 }
 
+static void OnAppRequiredWindowSizeCallback(int* w, int* h)
+{
+    auto window = EngineApplication::Get().GetWindowSize();
+    *w          = window.width;
+    *h          = window.height;
+}
+
+static void RegisterEvents()
+{
+    OnGetAppWindowSize.Add(OnAppRequiredWindowSizeCallback);
+}
+
 void EngineApplication::Initialize()
 {
     // 创建并初始化GlfwWindow
@@ -98,6 +110,7 @@ void EngineApplication::Initialize()
     window_->SetFrameBufferResizedCallback(&ThisClass::FrameBufferResizeCallback);
     // 创建并初始化VulkanApplication
     // 设置初始化RenderApplication需要的值
+    RegisterEvents();
     render_application_ = MakeUnique<RHI::Vulkan::VulkanApplication>();
     auto Surface        = window_->GetWindowSurface();
     render_application_->SetWindowSurface(Move(Surface));
@@ -165,19 +178,22 @@ void EngineApplication::Run()
 
         // Tick渲染
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
-        render_context_->PrepareFrameRender();
-        window_->BeginImGuiFrame();
-
-        for (auto& sub_window: sub_windows_)
+        if (render_context_->CanRender())
         {
-            sub_window->Tick(g_engine_statistics.time_delta);
+            render_context_->PrepareFrameRender();
+            window_->BeginImGuiFrame();
+
+            for (auto& sub_window: sub_windows_)
+            {
+                sub_window->Tick(g_engine_statistics.time_delta);
+            }
+
+            DrawAppUI();
+            g_engine_statistics.ResetDrawCalls();
+            render_context_->Draw();
+
+            render_context_->PostFrameRender();
         }
-
-        DrawAppUI();
-        g_engine_statistics.ResetDrawCalls();
-        render_context_->Draw();
-
-        render_context_->PostFrameRender();
     }
 }
 

@@ -7,8 +7,7 @@
 
 #include "VulkanContext.h"
 
-// TODO: 这里不应该包含EngineApplication
-#include "../../../Tool/EngineApplication.h"
+#include "CoreEvents.h"
 #include "CoreGlobal.h"
 #include "Instance.h"
 #include "Render/CommandPool.h"
@@ -71,6 +70,9 @@ VulkanContext* VulkanContext::Get()
 void VulkanContext::Initialize()
 {
     LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
+    // 一般来说这个应该是第一个
+    // @TODO: 具有优先级的队列系统
+    OnAppWindowResized.Add(&VulkanContext::RebuildSwapChain);
 }
 
 void VulkanContext::Finalize()
@@ -84,7 +86,7 @@ void VulkanContext::Finalize()
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
-    swap_chain_->Finialize();
+    swap_chain_->Finialize(true);
     logical_device_->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
@@ -137,7 +139,6 @@ void VulkanContext::PrepareFrameRender()
     {
         // 交换链过期，重建交换链
         // TODO: 加上交换链过期事件
-        RebuildSwapChain();
         return;
     }
     if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
@@ -162,10 +163,11 @@ void VulkanContext::PostFrameRender()
 
     const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
 
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR || Tool::EngineApplication::Get().frame_buffer_resized)
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR)
     {
-        RebuildSwapChain();
-        Tool::EngineApplication::Get().frame_buffer_resized = false;
+        int w, h;
+        OnGetAppWindowSize.Broadcast(&w, &h);
+        RebuildSwapChain(w, h);
     }
     else if (Result != vk::Result::eSuccess)
     {
@@ -195,21 +197,19 @@ bool VulkanContext::IsValid() const
     // clang-format on
 }
 
-void VulkanContext::RebuildSwapChain()
+void VulkanContext::RebuildSwapChain(int w, int h)
 {
-    // TODO: 使用PipelineCache
-    auto Size = Tool::EngineApplication::Get().GetWindowSize();
-    while (Size.width == 0 || Size.height == 0)
+    Get()->wait_swapchain_rebuild_ = true;
+    if (w == 0 || h == 0)
     {
-        Size = Tool::EngineApplication::Get().GetWindowSize();
-        glfwWaitEvents();
+        OnAppNeedWait.Broadcast();
+        return;
     }
-    logical_device_->GetGraphicsQueue().waitIdle();
-    logical_device_->GetPresentQueue().waitIdle();
-    logical_device_->GetHandle().waitIdle();
-
-    swap_chain_->Finialize();
-    swap_chain_ = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, Size.width, Size.height);
+    Get()->swap_chain_->Finialize(false);
+    Get()->swap_chain_                     = Get()->logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, w, h, false);
+    g_engine_statistics.window_size.width  = w;
+    g_engine_statistics.window_size.height = h;
+    Get()->wait_swapchain_rebuild_         = false;
 }
 
 vk::Format VulkanContext::GetDepthImageFormat() const
@@ -244,6 +244,11 @@ vk::CommandBuffer VulkanContext::BeginRecordCommandBuffer()
 void VulkanContext::EndRecordCommandBuffer()
 {
     GetCurrentCommandBuffer().end();
+}
+
+bool VulkanContext::CanRender() const
+{
+    return !wait_swapchain_rebuild_;
 }
 
 void VulkanContext::CreateSyncObjecs()
