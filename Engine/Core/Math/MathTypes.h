@@ -92,6 +92,7 @@ public:
     static Color Green() { return {0, 1, 0, 1}; }
     static Color Blue() { return {0, 0, 1, 1}; }
     static Color Yellow() { return {1, 1, 0, 1}; }
+    static Color Warning() { return {1, 1, 0, 1}; }
 
     operator ImVec4() { return {r, g, b, a}; }
 

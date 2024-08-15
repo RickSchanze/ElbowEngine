@@ -94,7 +94,7 @@ void WindowBase::MarkDirty()
     dirty_ = true;
 }
 
-void WindowBase::Draw(float InDeltaTime)
+void WindowBase::Draw(float delta_time)
 {
     ImGui::Text(U8("未实现"));
 }

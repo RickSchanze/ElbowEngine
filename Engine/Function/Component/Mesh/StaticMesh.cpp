@@ -36,11 +36,11 @@ void StaticMesh::OnMeshSet()
     }
 }
 
-StaticMesh* StaticMesh::SetMesh(const Path& mesh_path)
+StaticMesh& StaticMesh::SetMesh(const Path& mesh_path)
 {
     auto* new_mesh = Resource::Mesh::Create(mesh_path);
     Super::SetMesh(new_mesh);
-    return this;
+    return *this;
 }
 
 

@@ -22,7 +22,7 @@ public:
 
     void OnMeshSet() override;
 
-    StaticMesh* SetMesh(const Path& mesh_path);
+    StaticMesh& SetMesh(const Path& mesh_path);
 };
 
 FUNCTION_COMPONENT_NAMESPACE_END

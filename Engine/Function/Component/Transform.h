@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "Component.h"
 #include "Math/MathTypes.h"
+#include "Script/Autorotation.h"
 
 class Transform
 {
@@ -19,20 +20,20 @@ public:
 
     static Transform Identity();
 
-    Vector3 GetPosition();
-    void    SetPosition(Vector3 pos, bool delay);
-    void    SetPosition(Vector3 pos);
+    Vector3      GetPosition() const;
+    ::Transform& SetPosition(Vector3 pos, bool delay);
+    ::Transform& SetPosition(Vector3 pos);
     void    Translate(Vector3 pos, bool delay = true);
     Vector3 GetWorldPosition() const { return world_position_; }
 
-    const Rotator& GetRotation();
-    void           SetRotation(const Rotator& rot, bool delay);
-    void           SetRotation(const Rotator& rot);
+    const Rotator& GetRotation() const;
+    Transform&     SetRotation(const Rotator& rot, bool delay);
+    Transform&     SetRotation(const Rotator& rot);
     void           Rotate(const Rotator& rot, bool delay = true);
 
-    Vector3 GetScale();
-    void    SetScale(Vector3 scale, bool delay);
-    void    SetScale(Vector3 scale);
+    Vector3      GetScale() const;
+    ::Transform& SetScale(Vector3 scale, bool delay);
+    ::Transform& SetScale(Vector3 scale);
 
     Vector3 GetForwardVector() const;
     Vector3 GetUpVector() const;

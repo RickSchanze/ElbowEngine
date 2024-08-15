@@ -55,8 +55,30 @@ public:
 
     static void SeparatorText(const char* label);
 
+    static void ShowDemoWindow();
+
+    template <typename ...Args>
+static void TextWrapped(const char* fmt, Args&&... args)
+    {
+#if USE_IMGUI
+        ImGui::TextWrapped(fmt, Forward<Args>(args)...);
+#endif
+    }
+
+    static void WarningBox(const char* text);
+
+    /**
+     * new scale = old scale * scale
+     * @param scale
+     */
+    static void PushFontScale(float scale);
+
+    static void PopFontScale();
+
 private:
     static void RemoveAllImGuiTextures();
 
     static inline THashMap<Resource::Texture*, VkDescriptorSet> imgui_textuers_;
+
+    static inline float old_font_scale_;
 };

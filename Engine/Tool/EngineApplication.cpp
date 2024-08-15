@@ -26,6 +26,7 @@
 #include "ResourceManager.h"
 #include "UI/Window/DebugWindow.h"
 #include "UI/Window/DetailWindow.h"
+#include "UI/Window/ImGuiDemoWindow.h"
 #include "UI/Window/OutlineWindow.h"
 #include "UI/Window/WindowBase.h"
 #include "UI/Window/WindowManager.h"
@@ -132,11 +133,9 @@ void EngineApplication::Initialize()
     light_obj->AddComponent<Function::Comp::Light>();
 
     auto wall = New<Function::GameObject>(L"方块");
-    wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx")->SetMaterial(mat);
+    wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
     wall->AddComponent<Function::Comp::Autoroatation>()->SetRotationSpeed(20.f);
-    wall->GetTransform().SetScale({1.f, 0.01f, 1.f});
-    wall->GetTransform().SetPosition({150.f, 0, 0});
-
+    wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
     LogEndInit();
 }
 
@@ -247,6 +246,10 @@ void EngineApplication::DrawWindowMenu()
         {
             OnOpenDetailWindow();
         }
+        if (ImGui::MenuItem(U8("ImGuiDemo")))
+        {
+            OnOpenImGuiDemoWindow();
+        }
         ImGui::EndMenu();
     }
 }
@@ -275,6 +278,10 @@ void EngineApplication::OnOpenOutlineWindow()
 void EngineApplication::OnOpenDetailWindow()
 {
     OpenWindow<Window::DetailWindow>();
+}
+
+void EngineApplication::OnOpenImGuiDemoWindow(){
+    OpenWindow<Window::ImGuiDemoWindow>();
 }
 
 TOOL_NAMESPACE_END

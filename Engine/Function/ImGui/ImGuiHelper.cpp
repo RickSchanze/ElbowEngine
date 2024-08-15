@@ -8,8 +8,10 @@
 #include "ImGuiHelper.h"
 
 #include "CachedString.h"
+#include "Math/MathTypes.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Texture.h"
+#include "IconsMaterialDesign.h"
 
 #include <imgui_impl_vulkan.h>
 #include <ranges>
@@ -62,6 +64,51 @@ void ImGuiHelper::SameLine()
 void ImGuiHelper::SeparatorText(const char* label)
 {
     ImGui::SeparatorText(label);
+}
+
+void ImGuiHelper::ShowDemoWindow()
+{
+    ImGui::ShowDemoWindow();
+}
+
+void ImGuiHelper::WarningBox(const char* text)
+{
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.1, 0.1, 0.1, 0.1});
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+    ImGui::PushStyleColor(ImGuiCol_Border, Color::Warning());
+    auto window_width = ImGui::GetWindowWidth();
+    auto size         = ImGui::CalcTextSize(text, nullptr, false, window_width);
+    if (size.x < window_width)
+    {
+        size.x = window_width - 20;
+    }
+    size.y += ImGui::GetTextLineHeight() * 2;
+    ImGui::BeginChild("##warning", size, ImGuiChildFlags_Border);
+
+    PushFontScale(1.2f);
+    TextColored(Color::Warning(), ICON_MD_WARNING);
+    ImGui::SameLine();
+    TextColored(Color::Warning(), U8("警告"));
+    PopFontScale();
+
+    TextWrapped(text);
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
+}
+
+void ImGuiHelper::PushFontScale(float scale)
+{
+    old_font_scale_ = ImGui::GetFont()->Scale;
+    ImGui::GetFont()->Scale *= scale;
+    ImGui::PushFont(ImGui::GetFont());
+}
+
+void ImGuiHelper::PopFontScale()
+{
+    ImGui::GetFont()->Scale = old_font_scale_;
+    ImGui::PopFont();
 }
 
 void ImGuiHelper::RemoveAllImGuiTextures()

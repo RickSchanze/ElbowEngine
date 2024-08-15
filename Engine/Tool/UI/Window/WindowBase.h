@@ -66,7 +66,7 @@ public:
 protected:
     void MarkDirty();
 
-    virtual void Draw(float InDeltaTime);
+    virtual void Draw(float delta_time);
 
     PROPERTY(Serialized, Getter = GetWindowName, Setter = SetWindowName)
     String window_name_;

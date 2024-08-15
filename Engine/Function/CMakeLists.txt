@@ -63,3 +63,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Resource Engi
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
+

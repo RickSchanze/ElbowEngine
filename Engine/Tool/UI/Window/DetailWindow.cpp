@@ -15,11 +15,12 @@
 
 
 #include "UI/Drawer/PropertyDrawer.h"
-
 #include "Component/Component.h"
 #include "Component/Interface/IDetailGUIDrawer.h"
-#include "Component/Mesh/Mesh.h"
+
 #include "DetailWindow.generated.h"
+#include "ImGui/ImGuiHelper.h"
+#include "Utils/ReflUtils.h"
 
 GENERATED_SOURCE()
 
@@ -73,6 +74,10 @@ void DetailWindow::DrawComponent(Function::Comp::Component* comp) {
         Type comp_type = comp->get_type();
         for (auto prop : comp_type.get_properties()) {
             if (prop.get_name() == "Id") continue;
+            if (ReflUtils::GetPropertyAttribute(prop, "Label") == comp->GetCachedAnsiString())
+            {
+                ImGuiHelper::WarningBox(U8("这个属性与组件本身名称相同，这可能导致对这个属性的修改不生效"));
+            }
             Drawer::PropertyDrawer::DrawProperty(prop, comp);
         }
     }

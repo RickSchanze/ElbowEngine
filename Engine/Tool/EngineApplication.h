@@ -68,7 +68,7 @@ protected:
     // clang-format off
     // 为整个应用程序绘制UI 不抽象出独立Window
     void DrawAppUI();
-    // 绘制主菜单上的"窗口"菜单
+        // 绘制主菜单上的"窗口"菜单
         void DrawWindowMenu();
             // 窗口下的"数据窗口"
             void OnOpenStatisticsWindow();
@@ -76,6 +76,8 @@ protected:
             void OnOpenOutlineWindow();
             // 窗口下的"细节"
             void OnOpenDetailWindow();
+            // 窗口下的"ImGui示例"
+            void OnOpenImGuiDemoWindow();
     // clang-format on
 
 private:

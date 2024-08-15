@@ -1,5 +1,16 @@
 project(Tool)
 
+set(WINDOW_FILE
+        UI/Window/DebugWindow.h
+        UI/Window/DebugWindow.cpp
+        UI/Window/OutlineWindow.cpp
+        UI/Window/OutlineWindow.h
+        UI/Window/DetailWindow.cpp
+        UI/Window/DetailWindow.h
+        UI/Window/ImGuiDemoWindow.cpp
+        UI/Window/ImGuiDemoWindow.h
+)
+
 add_library(${PROJECT_NAME}
         EngineApplication.h
         EngineApplication.cpp
@@ -8,12 +19,7 @@ add_library(${PROJECT_NAME}
         UI/Window/WindowBase.h
         UI/Window/WindowManager.cpp
         UI/Window/WindowManager.h
-        UI/Window/DebugWindow.cpp
-        UI/Window/DebugWindow.h
-        UI/Window/OutlineWindow.cpp
-        UI/Window/OutlineWindow.h
-        UI/Window/DetailWindow.cpp
-        UI/Window/DetailWindow.h
+        ${WINDOW_FILE}
         UI/Drawer/PropertyDrawer.cpp
         UI/Drawer/PropertyDrawer.h
         EditorStyle/ImGuiStyle.h

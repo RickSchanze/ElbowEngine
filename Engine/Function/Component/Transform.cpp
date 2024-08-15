@@ -14,9 +14,9 @@
 RTTR_REGISTRATION
 {
     rttr::registration::class_<Transform>("Transform")
-        .property("location", &Transform::GetPosition, rttr::select_overload<void(Vector3)>(&Transform::SetPosition))
-        .property("rotation", &Transform::GetRotation, rttr::select_overload<void(const Rotator&)>(&Transform::SetRotation))
-        .property("scale", &Transform::GetScale, rttr::select_overload<void(Vector3)>(&Transform::SetScale));
+        .property("location", &Transform::GetPosition, rttr::select_overload<Transform&(Vector3)>(&Transform::SetPosition))
+        .property("rotation", &Transform::GetRotation, rttr::select_overload<Transform&(const Rotator&)>(&Transform::SetRotation))
+        .property("scale", &Transform::GetScale, rttr::select_overload<Transform&(Vector3)>(&Transform::SetScale));
 }
 
 Transform::Transform(Function::GameObject* owner) :
@@ -34,12 +34,12 @@ Transform Transform::Identity()
     return identity;
 }
 
-Vector3 Transform::GetPosition()
+Vector3 Transform::GetPosition() const
 {
     return position_;
 }
 
-void Transform::SetPosition(Vector3 pos, bool delay)
+Transform& Transform::SetPosition(Vector3 pos, bool delay)
 {
     position_ = pos;
     if (delay)
@@ -50,11 +50,12 @@ void Transform::SetPosition(Vector3 pos, bool delay)
     {
         owner_->ForceUpdateTransform();
     }
+    return *this;
 }
 
-void Transform::SetPosition(Vector3 pos)
+Transform& Transform::SetPosition(Vector3 pos)
 {
-    SetPosition(pos, true);
+    return SetPosition(pos, true);
 }
 
 void Transform::Translate(Vector3 pos, bool delay)
@@ -62,12 +63,12 @@ void Transform::Translate(Vector3 pos, bool delay)
     SetPosition(position_ + pos);
 }
 
-const Rotator& Transform::GetRotation()
+const Rotator& Transform::GetRotation() const
 {
     return rotator_;
 }
 
-void Transform::SetRotation(const Rotator& rot, bool delay)
+Transform& Transform::SetRotation(const Rotator& rot, bool delay)
 {
     rotator_ = rot;
     if (delay)
@@ -78,11 +79,12 @@ void Transform::SetRotation(const Rotator& rot, bool delay)
     {
         owner_->ForceUpdateTransform();
     }
+    return *this;
 }
 
-void Transform::SetRotation(const Rotator& rot)
+Transform& Transform::SetRotation(const Rotator& rot)
 {
-    SetRotation(rot, true);
+    return SetRotation(rot, true);
 }
 
 void Transform::Rotate(const Rotator& rot, bool delay)
@@ -98,12 +100,12 @@ void Transform::Rotate(const Rotator& rot, bool delay)
     }
 }
 
-Vector3 Transform::GetScale()
+Vector3 Transform::GetScale() const
 {
     return scale_;
 }
 
-void Transform::SetScale(Vector3 scale, bool delay)
+Transform& Transform::SetScale(Vector3 scale, bool delay)
 {
     scale_ = scale;
     if (delay)
@@ -114,11 +116,13 @@ void Transform::SetScale(Vector3 scale, bool delay)
     {
         owner_->ForceUpdateTransform();
     }
+    return *this;
 }
 
-void Transform::SetScale(Vector3 scale)
+Transform& Transform::SetScale(Vector3 scale)
 {
-    return SetScale(scale, true);
+    SetScale(scale, true);
+    return *this;
 }
 
 Vector3 Transform::GetForwardVector() const
@@ -168,9 +172,9 @@ glm::mat4 Transform::ToGPUMat4()
 
 void Transform::ApplyModify(const Vector3& pos, const Rotator& rot, const Vector3& scale)
 {
-    world_position_ = position_ + pos;
-    world_rotator_ = rotator_ + rot;
-    world_scale_ = scale_ * scale;
+    world_position_       = position_ + pos;
+    world_rotator_        = rotator_ + rot;
+    world_scale_          = scale_ * scale;
     composited_mat_dirty_ = true;
 }
 

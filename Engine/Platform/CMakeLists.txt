@@ -87,4 +87,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-core)
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}  PRIVATE imgui::imgui)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+
+

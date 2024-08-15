@@ -29,22 +29,22 @@ void Autoroatation::Tick(float delta_time)
         GetTransform().Rotate(delta_rotation);
     }
 }
-Autoroatation* Autoroatation::SetRotationSpeed(float speed)
+Autoroatation& Autoroatation::SetRotationSpeed(float speed)
 {
     rotation_speed_ = speed;
-    return this;
+    return *this;
 }
 
-Autoroatation* Autoroatation::SetRotationAxis(Vector3 axis)
+Autoroatation& Autoroatation::SetRotationAxis(Vector3 axis)
 {
     rotation_axis_ = axis;
-    return this;
+    return *this;
 }
 
-Autoroatation* Autoroatation::SetRotationEnabled(bool enabled)
+Autoroatation& Autoroatation::SetRotationEnabled(bool enabled)
 {
     rotation_ = enabled;
-    return this;
+    return *this;
 }
 
 FUNCTION_COMPONENT_NAMESPACE_END

@@ -72,9 +72,10 @@ void Mesh::OnInspectorGUI()
     }
 }
 
-void Mesh::SetMaterial(Material* mat)
+Mesh &Mesh::SetMaterial(Material* mat)
 {
     material_ = mat;
+    return *this;
 }
 
 Material* Mesh::GetMaterial() const

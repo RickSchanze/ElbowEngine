@@ -1,0 +1,3 @@
+[submodule "Engine/ThirdParty/IconFontCppHeaders"]
+	path = Engine/ThirdParty/IconFontCppHeaders
+	url = https://github.com/RickSchanze/IconFontCppHeaders

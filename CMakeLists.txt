@@ -38,3 +38,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+
+include_directories(Engine/ThirdParty)

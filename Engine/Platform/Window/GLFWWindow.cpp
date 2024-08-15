@@ -19,6 +19,7 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan_to_string.hpp"
+#include "IconsMaterialDesign.h"
 
 using namespace RHI::Vulkan;
 
@@ -262,15 +263,26 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 
 void GlfwWindow::SetupImGuiFonts()
 {
-    ImGuiIO&                 IO                 = ImGui::GetIO();
-    Path                     DefaultFontPath    = L"Fonts/Maple_UI.ttf";
-    AnsiString               DefaultFontPathStr = DefaultFontPath.ToAbsoluteAnsiString();
-    ImVector<ImWchar>        Ranges;
-    ImFontGlyphRangesBuilder Builder;
-    Builder.AddRanges(IO.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-    Builder.AddText(IMGUI_FONT_STR);
-    Builder.BuildRanges(&Ranges);
-    IO.Fonts->AddFontFromFileTTF(DefaultFontPathStr.c_str(), 30, nullptr, Ranges.Data);
+    ImGuiIO&                 io                    = ImGui::GetIO();
+    Path                     default_font_path     = MAPLE_UI_FONT_PATH;
+    AnsiString               default_font_path_str = default_font_path.ToAbsoluteAnsiString();
+    ImVector<ImWchar>        ranges;
+    ImFontGlyphRangesBuilder builder;
+    builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    builder.AddText(IMGUI_FONT_STR);
+    builder.BuildRanges(&ranges);
+    io.Fonts->AddFontFromFileTTF(default_font_path_str.c_str(), DEFAULT_FONT_SIZE, nullptr, ranges.Data);
+
+    // 字体图标
+    static constexpr ImWchar icon_font_ranges[] = {ICON_MIN_MD, ICON_MAX_16_MD, 0};
+    ImFontConfig icon_font_config;
+    icon_font_config.MergeMode = true;
+    icon_font_config.GlyphOffset = {0.f, 4.f};
+
+    Path icon_font = GOOGLE_MATERIAL_ICON_FONT_PATH;
+    AnsiString icon_font_ansi = icon_font.ToAbsoluteAnsiString();
+    io.Fonts->AddFontFromFileTTF(icon_font_ansi.c_str(), DEFAULT_FONT_SIZE, &icon_font_config, icon_font_ranges);
+
     ImGui_ImplVulkan_CreateFontsTexture();
 }
 

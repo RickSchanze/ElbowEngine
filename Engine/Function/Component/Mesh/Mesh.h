@@ -48,7 +48,7 @@ public:
 
     void OnInspectorGUI() override;
 
-    void SetMaterial(Material* mat);
+    Mesh& SetMaterial(Material* mat);
 
     Material* GetMaterial() const;
 
