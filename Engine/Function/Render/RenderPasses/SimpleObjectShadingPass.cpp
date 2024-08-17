@@ -16,9 +16,7 @@ FUNCTION_NAMESPACE_BEGIN
 
 using namespace RHI::Vulkan;
 
-SimpleObjectShadingPass::SimpleObjectShadingPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name)
-{
-}
+SimpleObjectShadingPass::SimpleObjectShadingPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name) {}
 
 void SimpleObjectShadingPass::SetupAttachments()
 {
@@ -27,7 +25,8 @@ void SimpleObjectShadingPass::SetupAttachments()
     swapchain_image.store_op         = vk::AttachmentStoreOp::eStore;
     swapchain_image.sample_count     = sample_count;
     swapchain_image.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-    NewSwapchainColorAttachment(swapchain_image);
+    swapchain_image.final_layout     = vk::ImageLayout::eShaderReadOnlyOptimal;
+    NewAttachment(swapchain_image);
 
     RenderPassAttachmentParam depth_image{};
     depth_image.sample_count     = sample_count;
@@ -48,28 +47,28 @@ void SimpleObjectShadingPass::SetupFramebuffer()
     depth_image_info.height = height_;
     depth_image_info.format = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_info.usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-    depth_image_ = new Image(depth_image_info);
+    depth_image_            = new Image(depth_image_info);
 
     ImageViewInfo depth_image_view_info{};
-    depth_image_view_info.format = VulkanContext::Get()->GetDepthImageFormat();
+    depth_image_view_info.format       = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_view_info.aspect_flags = vk::ImageAspectFlagBits::eDepth;
-    depth_image_view_info.name = "SimpleObjectShadingPassDepthImageView";
-    depth_image_view_ = depth_image_->CreateImageView(depth_image_view_info);
-    attachments[1] = depth_image_view_->GetHandle();
+    depth_image_view_info.name         = "SimpleObjectShadingPassDepthImageView";
+    depth_image_view_                  = depth_image_->CreateImageView(depth_image_view_info);
+    attachments[1]                     = depth_image_view_->GetHandle();
 
     framebuffers_.resize(g_engine_statistics.graphics.swapchain_image_count);
     framebuffer_names_.resize(g_engine_statistics.graphics.swapchain_image_count);
     for (int i = 0; i < g_engine_statistics.graphics.swapchain_image_count; i++)
     {
-        attachments[0] = VulkanContext::Get()->GetSwapChainImageViews()[i]->GetHandle();
+        attachments[0] = VulkanContext::Get()->GetBackbufferView(i)->GetHandle();
         vk::FramebufferCreateInfo fb;
         fb.renderPass = handle_;
         fb.setAttachments(attachments);
-        fb.width  = width_;
-        fb.height = height_;
-        fb.layers = 1;
+        fb.width              = width_;
+        fb.height             = height_;
+        fb.layers             = 1;
         framebuffer_names_[i] = "SimpleObjectShadingPassFramebuffer" + std::to_string(i);
-        framebuffers_[i] = new Framebuffer(fb, framebuffer_names_[i].c_str());
+        framebuffers_[i]      = new Framebuffer(fb, framebuffer_names_[i].c_str());
     }
 }
 

@@ -73,8 +73,11 @@ public:
 
     virtual ~RenderPipeline();
 
-    virtual void Draw(const RenderContextDrawParam& draw_param);
+    virtual void DrawBackbuffer(const RenderContextDrawParam& draw_param);
     virtual void Build() = 0;
+    virtual void Submit(RenderContextDrawParam& param);
+
+    void DrawImGui(const RenderContextDrawParam& draw_param);
 
     /**
      * 处理framebuffer改变

@@ -23,11 +23,10 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-
 RenderPipeline::RenderPipeline()
 {
     context_                     = RenderContext::Get();
-    window_resized_event_handle_ = OnAppWindowResized.AddObject(this, &RenderPipeline::Rebuild);
+    window_resized_event_handle_ = OnBackbufferResize.AddObject(this, &RenderPipeline::Rebuild);
 }
 
 RenderPipeline::~RenderPipeline()
@@ -41,21 +40,32 @@ RenderPipeline::~RenderPipeline()
     // OnAppWindowResized.Remove(window_resized_event_handle_);
 }
 
-void RenderPipeline::Draw(const RenderContextDrawParam& draw_param)
+void RenderPipeline::DrawBackbuffer(const RenderContextDrawParam& draw_param)
 {
     PrepareFrame();
+}
+
+void RenderPipeline::Submit(RenderContextDrawParam& param)
+{
+    RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
+    submit_params.semaphores_to_wait = {param.render_begin_semaphore};
+    submit_params.wait_stages        = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+
+    Submit(submit_params, param.render_end_fence);
+}
+
+void RenderPipeline::DrawImGui(const RenderContextDrawParam& draw_param)
+{
+    imgui_pipeline_->Draw(draw_param.command_buffer);
 }
 
 void RenderPipeline::Rebuild(int w, int h)
 {
     if (w == 0 || h == 0) return;
+
     for (auto* render_pass: saved_render_passes_)
     {
         render_pass->ResizeFramebuffer(w, h);
-    }
-    if (imgui_pipeline_ != nullptr)
-    {
-        imgui_pipeline_->Rebuild(w, h);
     }
 }
 

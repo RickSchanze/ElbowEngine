@@ -181,11 +181,21 @@ void RenderPass::NewSwapchainColorAttachment(RenderPassAttachmentParam& param)
     NewAttachment(param, true, false, false);
 }
 
-void RenderPass::ResizeFramebuffer(int w, int h){
-    width_ = w;
+void RenderPass::ResizeFramebuffer(int w, int h)
+{
+    if (w <= 0 || h <= 0)
+    {
+        return;
+    }
+    if (w > width_ || h > height_)
+    {
+        width_  = w;
+        height_ = h;
+        CleanFrameBuffer();
+        SetupFramebuffer();
+    }
+    width_  = w;
     height_ = h;
-    CleanFrameBuffer();
-    SetupFramebuffer();
 }
 
 void RenderPass::SetupSubpassDescription()
@@ -259,7 +269,7 @@ void RenderPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
     render_pass_info.renderPass        = handle_;
     render_pass_info.framebuffer       = GetCurrentFramebufferHandle();
     render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
-    render_pass_info.renderArea.extent = VulkanContext::Get()->GetSwapChainExtent();
+    render_pass_info.renderArea.extent = vk::Extent2D{width_, height_};
     render_pass_info.setClearValues(clear_values);
     cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
 }

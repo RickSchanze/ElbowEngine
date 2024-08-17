@@ -6,6 +6,8 @@
  */
 
 #include "GLFWWindow.h"
+
+#include "CoreEvents.h"
 #include "GameObject/GameObject.h"
 #include "IconsMaterialDesign.h"
 #include "imgui_impl_glfw.h"
@@ -89,6 +91,17 @@ public:
         framebuffers_.clear();
     }
 
+    void ResizeFramebuffer(int w, int h) override
+    {
+        if (w > 0 && h > 0)
+        {
+            width_ = w;
+            height_ = h;
+            CleanFrameBuffer();
+            SetupFramebuffer();
+        }
+    }
+
     Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
 
     vk::Framebuffer GetCurrentFramebufferHandle() override;
@@ -100,7 +113,12 @@ public:
 class ImGuiGraphicsPipeline : public ImguiGraphicsPipeline
 {
 public:
-    explicit ImGuiGraphicsPipeline();
+    explicit ImGuiGraphicsPipeline()
+    {
+        context_ = VulkanContext::Get();
+        Initialize();
+        OnAppWindowResized.AddObject(this, &ImGuiGraphicsPipeline::Rebuild);
+    }
 
     void Initialize();
     void Finialize();
@@ -115,7 +133,12 @@ public:
 
     void Rebuild(int w, int h) override
     {
+        if (w == 0 || h == 0)
+        {
+            return;
+        }
         render_pass_->ResizeFramebuffer(w, h);
+        // 重新根据窗口大小调整ImGui Window的大小
     }
 
 private:
@@ -147,12 +170,6 @@ vk::Framebuffer ImGuiRenderPass::GetCurrentFramebufferHandle()
     return nullptr;
 }
 
-ImGuiGraphicsPipeline::ImGuiGraphicsPipeline()
-{
-    context_ = VulkanContext::Get();
-    Initialize();
-}
-
 void ImGuiGraphicsPipeline::Initialize()
 {
     if (descriptor_pool_ != nullptr) return;
@@ -162,9 +179,8 @@ void ImGuiGraphicsPipeline::Initialize()
     Info.Device         = context_->GetLogicalDevice()->GetHandle();
     Info.QueueFamily    = context_->GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
     Info.Queue          = context_->GetLogicalDevice()->GetGraphicsQueue();
-    // TODO: 填充PipelineCache和DescriptorPool
+    // TODO: 填充PipelineCache
     Info.PipelineCache  = nullptr;
-    Info.DescriptorPool = nullptr;
     Info.Subpass        = 0;
     Info.MinImageCount  = context_->GetSwapChainImageCount();
     Info.ImageCount     = context_->GetSwapChainImageCount();
@@ -227,8 +243,8 @@ void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     scisor.offset = vk::Offset2D{0, 0};
     scisor.extent = VulkanContext::Get()->GetSwapChainExtent();
     cb.setScissor(0, scisor);
-
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cb);
+    auto* draw_data = ImGui::GetDrawData();
+    ImGui_ImplVulkan_RenderDrawData(draw_data, cb);
     cb.endRenderPass();
 }
 
@@ -267,6 +283,7 @@ Size2D GlfwWindow::GetWindowSize()
 void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 {
     ImGui::CreateContext();
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
     imgui_graphics_pipeline_ = new ImGuiGraphicsPipeline();
     Function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
@@ -313,6 +330,7 @@ void GlfwWindow::BeginImGuiFrame()
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    ImGui::DockSpaceOverViewport();
 }
 
 void GlfwWindow::EndImGuiFrame()

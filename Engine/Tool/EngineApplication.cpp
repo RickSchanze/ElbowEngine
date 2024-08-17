@@ -21,15 +21,16 @@
 #include "Component/Mesh/StaticMesh.h"
 #include "Component/Script/Autorotation.h"
 #include "Component/Script/SpaceCircle.h"
+#include "Editor/Window/DebugWindow.h"
+#include "Editor/Window/DetailWindow.h"
+#include "Editor/Window/ImGuiDemoWindow.h"
+#include "Editor/Window/OutlineWindow.h"
+#include "Editor/Window/SceneViewportWindow.h"
+#include "Editor/Window/WindowBase.h"
+#include "Editor/Window/WindowManager.h"
 #include "EditorStyle/ImGuiStyle.h"
 #include "Render/Material.h"
 #include "ResourceManager.h"
-#include "UI/Window/DebugWindow.h"
-#include "UI/Window/DetailWindow.h"
-#include "UI/Window/ImGuiDemoWindow.h"
-#include "UI/Window/OutlineWindow.h"
-#include "UI/Window/WindowBase.h"
-#include "UI/Window/WindowManager.h"
 
 #include "Window/GLFWWindow.h"
 
@@ -183,14 +184,13 @@ void EngineApplication::Run()
             render_context_->PrepareFrameRender();
             window_->BeginImGuiFrame();
 
-            for (auto& sub_window: sub_windows_)
-            {
-                sub_window->Tick(g_engine_statistics.time_delta);
-            }
+            Window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);
 
             DrawAppUI();
             g_engine_statistics.ResetDrawCalls();
-            render_context_->Draw();
+
+
+            render_context_->Draw(render_context_->CanRenderBackbuffer());
 
             render_context_->PostFrameRender();
         }
@@ -218,22 +218,6 @@ void EngineApplication::InternalTick()
     g_engine_statistics.frame_count++;
 
     g_engine_statistics.object_count = ObjectManager::Get()->GetObjectCount();
-}
-
-void EngineApplication::RemoveWindow(Window::WindowBase* window)
-{
-    ContainerUtils::Remove(sub_windows_, window);
-}
-
-void EngineApplication::RemoveWindow(Type type)
-{
-    ContainerUtils::RemoveIf(sub_windows_, [type](const Window::WindowBase* window) {
-        if (window->GetType() == type)
-        {
-            return true;
-        }
-        return false;
-    });
 }
 
 // TODO: 更加可拓展的主窗口形式
@@ -266,6 +250,10 @@ void EngineApplication::DrawWindowMenu()
         {
             OnOpenImGuiDemoWindow();
         }
+        if (ImGui::MenuItem(U8("场景")))
+        {
+            OnOpenSceneWindow();
+        }
         ImGui::EndMenu();
     }
 }
@@ -274,7 +262,7 @@ template<typename T>
     requires std::is_base_of_v<Window::WindowBase, T>
 void OpenWindow()
 {
-    auto window = WindowManager::GetWindow<T>();
+    auto window = Window::WindowManager::GetOrCreateWindow<T>();
     if (window)
     {
         window->SetVisible(Window::EWindowVisiable::Visiable);
@@ -296,8 +284,13 @@ void EngineApplication::OnOpenDetailWindow()
     OpenWindow<Window::DetailWindow>();
 }
 
-void EngineApplication::OnOpenImGuiDemoWindow(){
+void EngineApplication::OnOpenImGuiDemoWindow()
+{
     OpenWindow<Window::ImGuiDemoWindow>();
+}
+
+void EngineApplication::OnOpenSceneWindow(){
+    OpenWindow<Window::SceneViewportWindow>();
 }
 
 TOOL_NAMESPACE_END

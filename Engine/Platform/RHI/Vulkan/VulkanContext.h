@@ -47,6 +47,8 @@ public:
 
     virtual ~VulkanContext();
 
+    bool CanRenderBackbuffer() const;
+
     static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance>& instance);
 
     PreVulkanDeviceDestroyedSingnature PreVulkanDeviceDestroyed;
@@ -91,6 +93,8 @@ public:
 
     TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
 
+    ImageView* GetBackbufferView(int index) const { return back_buffer_views_[index]; }
+
     const TUniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
 
     TUniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
@@ -111,13 +115,18 @@ public:
     vk::CommandBuffer GetCurrentCommandBuffer() const;
 
     vk::CommandBuffer BeginRecordCommandBuffer();
-    void EndRecordCommandBuffer();
+    void              EndRecordCommandBuffer();
+
+    int32_t GetActualBackbufferWidth() const { return back_buffers_[0]->GetWidth(); }
+    int32_t GetActualBackbufferHeight() const { return back_buffers_[0]->GetHeight(); }
 
     /**
      * 现在能不能进行渲染
      * @return
      */
     bool CanRender() const;
+
+    bool IsBackBufferValid() const;
 
 protected:
     void CreateSyncObjecs();
@@ -127,6 +136,8 @@ protected:
     void DestroyCommandBuffers();
 
     static inline VulkanContext* s_context_ = nullptr;
+
+    static void OnBackBufferResized(int w, int h);
 
 private:
     int32_t renderer_id_ = 0;
@@ -148,7 +159,10 @@ private:
     TArray<vk::Semaphore> all_wait_semaphores_;
 
     TArray<vk::CommandBuffer> command_buffers_;
-    TArray<AnsiString> command_buffers_names_;
+    TArray<AnsiString>        command_buffers_names_;
+
+    TArray<Image*>     back_buffers_;
+    TArray<ImageView*> back_buffer_views_;
 
     bool wait_swapchain_rebuild_ = false;
 };

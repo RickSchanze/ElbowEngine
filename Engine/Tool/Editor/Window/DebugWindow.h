@@ -21,9 +21,9 @@ public:
     void Draw(float InDeltaTime) override;
 
 protected:
-    float mFpsRefreshTime = 0;
-    int32_t mRecordedFps = 0;
-    float mRecordedDeltaTime = 0.f;
+    float fps_refresh_time_ = 0;
+    int32_t recorded_fps_ = 0;
+    float recorded_delta_time_ = 0.f;
 };
 
 

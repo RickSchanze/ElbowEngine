@@ -11,7 +11,9 @@
 #include "Utils/StringUtils.h"
 #include <imgui.h>
 
+#include "ImGui/ImGuiHelper.h"
 #include "WindowBase.generated.h"
+#include "WindowManager.h"
 
 GENERATED_SOURCE()
 
@@ -27,22 +29,18 @@ void WindowBase::Tick(float delta_time)
 
     if (imgui_show_window_)
     {
-        if (!ImGui::Begin(cached_ansi_window_name_.c_str(), &imgui_show_window_))
-        {
-            ImGui::End();
-            SetVisible(EWindowVisiable::Hidden);
-        }
-        else
-        {
-            Draw(delta_time);
-            ImGui::End();
-        }
+        ImGui::Begin(cached_ansi_window_name_.c_str(), &imgui_show_window_);
+        Draw(delta_time);
+        width_  = ImGui::GetWindowWidth();
+        height_ = ImGui::GetWindowHeight() - (ImGui::GetStyle().WindowPadding.y * 2 + ImGui::GetFrameHeightWithSpacing());
+        ImGui::End();
     }
     else
     {
         SetVisible(EWindowVisiable::Hidden);
     }
 }
+
 void WindowBase::Construct()
 {
     if (constructed_)
@@ -71,22 +69,23 @@ WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible)
 
         if (visiable_ == EWindowVisiable::Visiable)
         {
-            EngineApplication::Get().AddWindow(this);
+            WindowManager::Get()->AddVisibleWindow(this);
             imgui_show_window_ = true;
         }
         else if (visiable_ == EWindowVisiable::Hidden)
         {
-            EngineApplication::Get().RemoveWindow(this);
+            WindowManager::Get()->RemoveVisibleWindow(this);
             imgui_show_window_ = false;
         }
 
-        OnVisiableChanged.Broadcast(OldVisiable);
+        OnVisiableChanged.Broadcast(OldVisiable, InVisible);
     }
     return *this;
 }
+
 bool WindowBase::IsValid() const
 {
-    return Super::IsValid() && constructed_;
+    return Super::IsValid();
 }
 
 void WindowBase::MarkDirty()
@@ -96,7 +95,7 @@ void WindowBase::MarkDirty()
 
 void WindowBase::Draw(float delta_time)
 {
-    ImGui::Text(U8("未实现"));
+    ImGuiHelper::WarningBox(U8("这个窗口没有实现\"Draw\"方法。"));
 }
 
 WINDOW_NAMESPACE_END

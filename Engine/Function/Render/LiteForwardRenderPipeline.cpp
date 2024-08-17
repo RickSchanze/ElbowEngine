@@ -27,13 +27,13 @@ FUNCTION_NAMESPACE_BEGIN
 #undef near
 #undef far
 
-void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
+void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& draw_param)
 {
     // TODO: 将Camera加入到渲染参数
     // TODO: 遮挡剔除
     Comp::Camera* main = Comp::Camera::Main;
-    Super::Draw(draw_param);
-    auto cb             = context_->BeginRecordCommandBuffer();
+    Super::DrawBackbuffer(draw_param);
+    auto cb             = draw_param.command_buffer;
     auto meshes_to_draw = CollectMeshesWithMaterial();
 
     // 走一遍shadow pass
@@ -72,14 +72,6 @@ void LiteForwardRenderPipeline::Draw(const RenderContextDrawParam& draw_param)
     }
 
     forward_pass_->End(cb);
-    DrawImGuiPipeline(cb);
-    context_->EndRecordCommandBuffer();
-
-    GraphicsQueueSubmitParams submit_params;
-    submit_params.semaphores_to_wait = {draw_param.render_begin_semaphore};
-    submit_params.wait_stages        = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-
-    Submit(submit_params, draw_param.render_end_fence);
 }
 
 void LiteForwardRenderPipeline::Build()

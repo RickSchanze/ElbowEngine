@@ -49,6 +49,7 @@ public:
     void Error(spdlog::wformat_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->error(fmt, Forward<ArgsT>(args)...);
+        __debugbreak();
     }
 
     /** 输出Error级别的信息 */
@@ -56,6 +57,7 @@ public:
     void Error(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->error(fmt, Forward<ArgsT>(args)...);
+        __debugbreak();
     }
 
 

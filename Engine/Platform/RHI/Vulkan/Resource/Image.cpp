@@ -148,7 +148,6 @@ void Image::CreateImage()
     image_create_info.setFlags(image_info_.create_flags);
 
     image_handle_ = device_handle.createImage(image_create_info);
-
     if (!image_info_.name.empty())
     {
         image_info_.debug_image_name = image_info_.name + "_Image";

@@ -32,6 +32,25 @@ public:
 
     template<typename ContainerT>
     static void AddUnique(ContainerT& container, const typename ContainerT::value_type& value);
+
+    template<typename KeyType, typename ValueType>
+    static bool ContainsValue(const THashMap<KeyType, ValueType> map, const ValueType& value)
+    {
+        for (const auto& [key, val] : map)
+        {
+            if (val == value)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<typename ContainerT>
+    static bool Contains(const ContainerT& container, const typename ContainerT::value_type& value)
+    {
+        return std::ranges::any_of(container, [value](const typename ContainerT::value_type& v) { return v == value; });
+    }
 };
 
 template<typename ContainerT>

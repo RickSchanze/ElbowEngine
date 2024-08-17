@@ -35,7 +35,7 @@ class LiteForwardRenderPipeline : public RenderPipeline
 public:
     typedef RenderPipeline Super;
 
-    void Draw(const RenderContextDrawParam& draw_param) override;
+    void DrawBackbuffer(const RenderContextDrawParam& draw_param) override;
     void Build() override;
 
 private:

@@ -55,8 +55,6 @@ struct RenderPassAttachmentImageInfo
     const char* debug_image_view_name;
 };
 
-
-
 /**
  * 基本RenderPass 基本RenderPass包含一个ColorAttachment 一个DepthAttachment和一个Multismaple使用的Attachment
  * RenderPass同时还包含了对应的Framebuffer
@@ -123,7 +121,6 @@ protected:
     void NewDepthAttachment(RenderPassAttachmentParam& param);
     void NewSampleResolveAttachment(RenderPassAttachmentParam& param);
     void NewSwapchainColorAttachment(RenderPassAttachmentParam& param);
-
 
     void CreateRenderPass();
 

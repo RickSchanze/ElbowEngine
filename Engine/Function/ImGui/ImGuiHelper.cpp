@@ -8,10 +8,10 @@
 #include "ImGuiHelper.h"
 
 #include "CachedString.h"
+#include "IconsMaterialDesign.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Texture.h"
-#include "IconsMaterialDesign.h"
 
 #include <imgui_impl_vulkan.h>
 #include <ranges>
@@ -109,6 +109,40 @@ void ImGuiHelper::PopFontScale()
 {
     ImGui::GetFont()->Scale = old_font_scale_;
     ImGui::PopFont();
+}
+
+void ImGuiHelper::ImageBackbuffer(int32_t width, int32_t height)
+{
+    if (width <= 0 || height <= 0)
+    {
+        return;
+    }
+    if (back_image_texture_.empty())
+    {
+        back_image_texture_.resize(g_engine_statistics.graphics.swapchain_image_count);
+    }
+    if (back_image_texture_[g_engine_statistics.current_image_index] == nullptr)
+    {
+        back_image_texture_[g_engine_statistics.current_image_index] = ImGui_ImplVulkan_AddTexture(
+            RHI::Vulkan::Sampler::GetDefaultSampler().GetHandle(),
+            RHI::Vulkan::VulkanContext::Get()->GetBackbufferView(g_engine_statistics.current_image_index)->GetHandle(),
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        );
+    }
+    float uv1x = (float)width / (float)RHI::Vulkan::VulkanContext::Get()->GetActualBackbufferWidth();
+    float uv1y = (float)height / (float)RHI::Vulkan::VulkanContext::Get()->GetActualBackbufferHeight();
+    ImGui::Image(
+        back_image_texture_[g_engine_statistics.current_image_index], {static_cast<float>(width), static_cast<float>(height)}, {0, 0}, {uv1x, uv1y}
+    );
+}
+
+void ImGuiHelper::ClearBackbufferDescriptorSets()
+{
+    for (auto& set: back_image_texture_)
+    {
+        ImGui_ImplVulkan_RemoveTexture(set);
+        set = nullptr;
+    }
 }
 
 void ImGuiHelper::RemoveAllImGuiTextures()

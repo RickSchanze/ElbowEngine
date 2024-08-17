@@ -1,27 +1,31 @@
 project(Tool)
 
 set(WINDOW_FILE
-        UI/Window/DebugWindow.h
-        UI/Window/DebugWindow.cpp
-        UI/Window/OutlineWindow.cpp
-        UI/Window/OutlineWindow.h
-        UI/Window/DetailWindow.cpp
-        UI/Window/DetailWindow.h
-        UI/Window/ImGuiDemoWindow.cpp
-        UI/Window/ImGuiDemoWindow.h
+        Editor/Window/DebugWindow.h
+        Editor/Window/DebugWindow.cpp
+        Editor/Window/OutlineWindow.cpp
+        Editor/Window/OutlineWindow.h
+        Editor/Window/DetailWindow.cpp
+        Editor/Window/DetailWindow.h
+        Editor/Window/ImGuiDemoWindow.cpp
+        Editor/Window/ImGuiDemoWindow.h
+        Editor/Window/ViewportWindow.h
+        Editor/Window/ViewportWindow.cpp
+        Editor/Window/SceneViewportWindow.h
+        Editor/Window/SceneViewportWindow.cpp
 )
 
 add_library(${PROJECT_NAME}
         EngineApplication.h
         EngineApplication.cpp
         ToolCommon.h
-        UI/Window/WindowBase.cpp
-        UI/Window/WindowBase.h
-        UI/Window/WindowManager.cpp
-        UI/Window/WindowManager.h
+        Editor/Window/WindowBase.cpp
+        Editor/Window/WindowBase.h
+        Editor/Window/WindowManager.cpp
+        Editor/Window/WindowManager.h
         ${WINDOW_FILE}
-        UI/Drawer/PropertyDrawer.cpp
-        UI/Drawer/PropertyDrawer.h
+        Editor/Drawer/PropertyDrawer.cpp
+        Editor/Drawer/PropertyDrawer.h
         EditorStyle/ImGuiStyle.h
         EditorStyle/ImGuiStyle.cpp
 )

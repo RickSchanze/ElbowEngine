@@ -25,6 +25,11 @@ VulkanContext::~VulkanContext()
     }
 }
 
+bool VulkanContext::CanRenderBackbuffer() const
+{
+    return IsBackBufferValid();
+}
+
 TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& instance)
 {
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
@@ -72,7 +77,9 @@ void VulkanContext::Initialize()
     LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
     // 一般来说这个应该是第一个
     // @TODO: 具有优先级的队列系统
+    OnBackBufferResized(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
     OnAppWindowResized.Add(&VulkanContext::RebuildSwapChain);
+    OnBackbufferResize.Add(&VulkanContext::OnBackBufferResized);
 }
 
 void VulkanContext::Finalize()
@@ -87,6 +94,16 @@ void VulkanContext::Finalize()
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
     swap_chain_->Finialize(true);
+
+    for (auto view: back_buffer_views_)
+    {
+        delete view;
+    }
+    for (auto back_buffer: back_buffers_)
+    {
+        delete back_buffer;
+    }
+
     logical_device_->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
@@ -251,6 +268,11 @@ bool VulkanContext::CanRender() const
     return !wait_swapchain_rebuild_;
 }
 
+bool VulkanContext::IsBackBufferValid() const
+{
+    return !back_buffers_.empty() && !back_buffer_views_.empty() && back_buffers_[0]->IsValid() && back_buffer_views_[0]->IsValid();
+}
+
 void VulkanContext::CreateSyncObjecs()
 {
     image_available_semaphores_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
@@ -287,10 +309,48 @@ void VulkanContext::CreateCommandBuffers()
     command_buffers_               = command_pool_->CreateCommandBuffers(alloc_info, command_buffer_name.c_str(), &command_buffers_names_);
 }
 
-void VulkanContext::DestroyCommandBuffers(){
+void VulkanContext::DestroyCommandBuffers()
+{
     command_pool_->DestroyCommandBuffers(command_buffers_);
     command_buffers_.clear();
     command_buffers_names_.clear();
+}
+
+void VulkanContext::OnBackBufferResized(int w, int h)
+{
+    if (w <= 0 || h <= 0) return;
+    auto* context = VulkanContext::Get();
+    if (context->back_buffers_.empty())
+    {
+        context->back_buffers_.resize(g_engine_statistics.graphics.swapchain_image_count);
+    }
+    if (context->back_buffer_views_.empty())
+    {
+        context->back_buffer_views_.resize(g_engine_statistics.graphics.swapchain_image_count);
+    }
+    for (int i = 0; i < context->back_buffers_.size(); i++)
+    {
+        auto& back_buffer = context->back_buffers_[i];
+        if (back_buffer == nullptr || w > back_buffer->GetWidth() || h > back_buffer->GetHeight())
+        {
+            delete back_buffer;
+
+            ImageInfo info;
+            info.format         = context->GetSwapChainImageFormat();
+            info.width          = w;
+            info.height         = h;
+            info.tiling         = vk::ImageTiling::eOptimal;
+            info.initial_layout = vk::ImageLayout::eUndefined;
+            info.usage          = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+            back_buffer         = new Image(info);
+            auto& view = context->back_buffer_views_[i];
+            delete view;
+            ImageViewInfo view_info;
+            view_info.format = context->GetSwapChainImageFormat();
+            view_info.mip_levels = 1;
+            view = context->back_buffers_[i]->CreateImageView(view_info);
+        }
+    }
 }
 
 

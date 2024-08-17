@@ -27,7 +27,7 @@ enum class REFL EWindowVisiable
     DefaultMax
 };
 
-struct WindowVisiableChangedEvent : TEvent<EWindowVisiable>
+struct WindowVisiableChangedEvent : TEvent<EWindowVisiable, EWindowVisiable>
 {
 };
 
@@ -59,6 +59,8 @@ public:
 
     bool HasConstructed() const { return constructed_; }
 
+    bool IsSingleton() const { return singleton_; }
+
 public:
     // 当窗口可见性发生变化时触发，参数是旧的可见性
     WindowVisiableChangedEvent OnVisiableChanged;
@@ -79,6 +81,12 @@ protected:
     bool constructed_ = false;
 
     EWindowVisiable visiable_ = EWindowVisiable::DefaultMax;
+
+    int width_  = 0;
+    int height_ = 0;
+
+    // 这个窗口只能存在一个
+    bool singleton_ = true;
 
 private:
     bool imgui_show_window_ = true;

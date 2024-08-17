@@ -34,7 +34,7 @@ void RenderContext::PrepareFrameRender() const
     vulkan_context_->PrepareFrameRender();
 }
 
-void RenderContext::Draw()
+void RenderContext::Draw(bool draw_backbuffer)
 {
     if (render_pipeline_ == nullptr)
     {
@@ -44,7 +44,14 @@ void RenderContext::Draw()
     RenderContextDrawParam draw_param;
     draw_param.render_begin_semaphore = vulkan_context_->GetRenderBeginWaitSemphore();
     draw_param.render_end_fence       = vulkan_context_->GetInFlightFence();
-    render_pipeline_->Draw(draw_param);
+    draw_param.command_buffer = BeginRecordCommandBuffer();
+    if (draw_backbuffer)
+    {
+        render_pipeline_->DrawBackbuffer(draw_param);
+    }
+    render_pipeline_->DrawImGui(draw_param);
+    EndRecordCommandBuffer();
+    render_pipeline_->Submit(draw_param);
 }
 
 void RenderContext::PostFrameRender() const
@@ -102,6 +109,11 @@ void RenderContext::EndRecordCommandBuffer()
 bool RenderContext::CanRender() const
 {
     return vulkan_context_->CanRender();
+}
+
+bool RenderContext::CanRenderBackbuffer() const
+{
+    return vulkan_context_->CanRenderBackbuffer() && has_back_buffer;
 }
 
 

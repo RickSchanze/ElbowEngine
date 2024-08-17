@@ -75,10 +75,16 @@ static void TextWrapped(const char* fmt, Args&&... args)
 
     static void PopFontScale();
 
+    static void ImageBackbuffer(int32_t width,int32_t height);
+
+    static void ClearBackbufferDescriptorSets();
+
 private:
     static void RemoveAllImGuiTextures();
 
     static inline THashMap<Resource::Texture*, VkDescriptorSet> imgui_textuers_;
+
+    static inline TArray<VkDescriptorSet> back_image_texture_;
 
     static inline float old_font_scale_;
 };

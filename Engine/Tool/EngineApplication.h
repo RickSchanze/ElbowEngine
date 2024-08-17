@@ -8,10 +8,10 @@
 #pragma once
 #include "CoreDef.h"
 #include "CoreEvents.h"
+#include "Editor/Window/WindowBase.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
-#include "UI/Window/WindowBase.h"
 #include "Window/GLFWWindow.h"
 
 class EditorImGuiStyle;
@@ -59,10 +59,6 @@ public:
 
     static EngineApplication& Get() { return *instance_; }
 
-    void AddWindow(Window::WindowBase* window) { sub_windows_.push_back(window); }
-    void RemoveWindow(Window::WindowBase* window);
-    void RemoveWindow(Type type);
-
 protected:
     // clang-format off
     // 为整个应用程序绘制UI 不抽象出独立Window
@@ -77,6 +73,8 @@ protected:
             void OnOpenDetailWindow();
             // 窗口下的"ImGui示例"
             void OnOpenImGuiDemoWindow();
+            // 窗口下的"场景"
+            void OnOpenSceneWindow();
     // clang-format on
 
 private:
@@ -92,8 +90,6 @@ private:
     static inline EngineApplication* instance_ = nullptr;
 
     String window_title_;
-
-    TArray<Window::WindowBase*> sub_windows_;
 
     // TODO: 封装Timer
     std::chrono::time_point<std::chrono::steady_clock> last_frame_time_;

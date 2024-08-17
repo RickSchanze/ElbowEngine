@@ -16,11 +16,13 @@ struct AppExitEvent : TEvent<> {};
 struct AppWindowResizeEvent : TEvent<int32_t, int32_t> {};
 struct AppNeedWaitEvent : TEvent<> {};
 struct GetAppWindowSizeEvent : TEvent<int*, int *> {};
+struct BackbufferResizeEvent : TEvent<int32_t, int32_t> {};
 
 // clang-format on
 
-inline ProjectPathSetEvent   OnProjectPathSet;
-inline AppExitEvent          OnAppExit;
-inline AppWindowResizeEvent  OnAppWindowResized;
-inline AppNeedWaitEvent      OnAppNeedWait;
-inline GetAppWindowSizeEvent OnGetAppWindowSize;
+inline ProjectPathSetEvent          OnProjectPathSet;
+inline AppExitEvent                 OnAppExit;
+inline AppWindowResizeEvent         OnAppWindowResized;
+inline AppNeedWaitEvent             OnAppNeedWait;
+inline GetAppWindowSizeEvent        OnGetAppWindowSize;
+inline BackbufferResizeEvent        OnBackbufferResize;

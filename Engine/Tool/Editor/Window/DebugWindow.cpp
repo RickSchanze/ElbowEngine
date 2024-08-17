@@ -26,14 +26,14 @@ StatisticsWindow::StatisticsWindow() {
 }
 
 void StatisticsWindow::Draw(float InDeltaTime) {
-    mFpsRefreshTime += InDeltaTime;
-    if (mFpsRefreshTime > 1.f) {
-        mRecordedFps       = g_engine_statistics.fps;
-        mRecordedDeltaTime = InDeltaTime;
-        mFpsRefreshTime = 0.f;
+    fps_refresh_time_ += InDeltaTime;
+    if (fps_refresh_time_ > 0.5f) {
+        recorded_fps_       = g_engine_statistics.fps;
+        recorded_delta_time_ = InDeltaTime;
+        fps_refresh_time_ = 0.f;
     }
-    ImGui::Text(U8("帧生成: %f"), mRecordedDeltaTime);
-    ImGui::Text(U8("帧率: %d"), mRecordedFps);
+    ImGui::Text(U8("帧生成: %f"), recorded_delta_time_);
+    ImGui::Text(U8("帧率: %d"), recorded_fps_);
     ImGui::Text(U8("总对象数: %d"), g_engine_statistics.object_count);
     ImGui::Text(U8("窗口宽高: (%d, %d)"), g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
     ImGui::Text(U8("总帧数: %ld"), g_engine_statistics.frame_count);

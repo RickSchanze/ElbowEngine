@@ -29,8 +29,9 @@ class RenderPipeline;
 
 struct RenderContextDrawParam
 {
-    vk::Semaphore render_begin_semaphore = nullptr;   // 管线开始前需要等待的semphore
-    vk::Fence     render_end_fence       = nullptr;   // 渲染一帧完成后需要触发的fence
+    vk::Semaphore     render_begin_semaphore = nullptr;   // 管线开始前需要等待的semphore
+    vk::Fence         render_end_fence       = nullptr;   // 渲染一帧完成后需要触发的fence
+    vk::CommandBuffer command_buffer         = nullptr;   // 渲染一帧的command buffer
 };
 
 class RenderContext
@@ -41,7 +42,7 @@ public:
     RenderContext();
 
     void PrepareFrameRender() const;
-    void Draw();
+    void Draw(bool draw_backbuffer);
     void PostFrameRender() const;
 
     static RenderContext* Get() { return s_render_context_; }
@@ -71,10 +72,14 @@ public:
 
     /**
      * 现在能否进行渲染
-     * 如果re
      * @return
      */
     bool CanRender() const;
+
+    bool CanRenderBackbuffer() const;
+
+    //
+    static inline bool has_back_buffer = false;
 
 private:
     RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;
