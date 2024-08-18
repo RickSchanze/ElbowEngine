@@ -74,23 +74,11 @@ void PointLightShadowPass::SetupFramebuffer()
 {
     SetupCubemap();
     using namespace RHI::Vulkan;
-    // Color
-    ImageInfo color;
-    color.width          = width_;
-    color.height         = height_;
-    color.format         = vk::Format::eR32Sfloat;
-    color.usage          = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
-    color.initial_layout = vk::ImageLayout::eUndefined;
-    color.name           = "PointLightShadowPass_Color";
-    color_               = new Image(color);
-    ImageViewInfo color_view;
-    color_view.format       = color.format;
-    color_view.aspect_flags = vk::ImageAspectFlagBits::eColor;
-    color_view.name         = "PointLightShadowPass_ColorView";
-    color_view_             = color_->CreateImageView(color_view);
-
     // Depth
-    ImageInfo depth = color;
+    ImageInfo depth;
+    depth.width          = width_;
+    depth.height         = height_;
+    depth.initial_layout = vk::ImageLayout::eUndefined;
     depth.format    = VulkanContext::Get()->GetDepthImageFormat();
     depth.usage     = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc;
     depth.name      = "PointLightShadowPass_Depth";
@@ -125,15 +113,11 @@ void PointLightShadowPass::CleanFrameBuffer()
 {
     delete depth_view_;
     delete depth_;
-    delete color_view_;
-    delete color_;
     for (auto& framebuffer: cubemap_framebuffers_)
     {
         delete framebuffer;
     }
     CleanCubemap();
-    color_      = nullptr;
-    color_view_ = nullptr;
     depth_      = nullptr;
     depth_view_ = nullptr;
 }

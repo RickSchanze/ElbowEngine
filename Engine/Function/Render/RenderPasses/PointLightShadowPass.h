@@ -47,9 +47,7 @@ public:
     RHI::Vulkan::ImageView* GetOutputCubemapView() const;
 
 private:
-    RHI::Vulkan::Image*               color_      = nullptr;
     RHI::Vulkan::Image*               depth_      = nullptr;
-    RHI::Vulkan::ImageView*           color_view_ = nullptr;
     RHI::Vulkan::ImageView*           depth_view_ = nullptr;
 
     TStaticArray<RHI::Vulkan::Framebuffer*, 6> cubemap_framebuffers_;
