@@ -24,10 +24,10 @@ class VulkanContext;
 class Mesh : public IRHIResource
 {
 public:
-    Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies);
+    Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index);
 
-    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies);
-    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies);
+    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index = false);
+    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index = false);
 
     ~Mesh() override;
 
@@ -49,6 +49,8 @@ private:
 
     int32_t index_count_  = 0;
     int32_t vertex_count_ = 0;
+
+    bool ignore_index_;
 };
 
 RHI_VULKAN_NAMESPACE_END

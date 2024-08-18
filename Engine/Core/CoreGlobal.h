@@ -32,6 +32,11 @@ extern Logger g_logger;
 #define LOG_ERROR_ANSI(Text, ...) g_logger.Error(##Text, __VA_ARGS__)
 #define LOG_ERROR_ANSI_CATEGORY(Category, Text, ...) g_logger.Error("[" #Category "] " Text, __VA_ARGS__)
 
+#define LOG_ERROR_NO_BREAK(Text, ...) g_logger.ErrorNoBreak(L##Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreak(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI_NO_BREAK(Text, ...) g_logger.ErrorNoBreak(##Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreak("[" #Category "] " Text, __VA_ARGS__)
+
 #define LOG_CRITIAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
 #define LOG_CRITIAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 #define LOG_CRITIAL_ANSI(Text, ...) g_logger.Critical(##Text, __VA_ARGS__)

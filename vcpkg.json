@@ -42,5 +42,11 @@
   }, {
     "name" : "tinyexr",
     "version>=" : "1.0.8"
+  }, {
+    "name" : "shaderc",
+    "version>=" : "2023.8"
+  }, {
+    "name" : "nlohmann-json",
+    "version>=" : "3.11.3"
   } ]
 }

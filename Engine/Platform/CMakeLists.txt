@@ -85,7 +85,13 @@ find_package(spirv_cross_core CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-core)
 
 find_package(imgui CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME}  PRIVATE imgui::imgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
+
+find_package(unofficial-shaderc CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::shaderc::shaderc)
+
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 

@@ -189,6 +189,11 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
     }
 }
 
+bool ShaderProgram::HasShaderUniform(const AnsiString& name) const
+{
+    return uniforms_.contains(name);
+}
+
 const TArray<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
 {
     return vert_shader_->GetPushConstantDescriptors();

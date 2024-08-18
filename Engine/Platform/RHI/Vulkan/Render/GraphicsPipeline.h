@@ -87,7 +87,7 @@ struct PipelineInfo
     {
         bool          enable_depth_test        = true;
         bool          enable_depth_write       = true;
-        vk::CompareOp depth_compare_op         = vk::CompareOp::eLess;
+        vk::CompareOp depth_compare_op         = vk::CompareOp::eLessOrEqual;
         bool          enable_depth_bounds_test = false;   // DBT目前还不知道用来干啥 @TODO: 了解DBT
         bool          enable_stencil_test      = false;   // 暂时不开启模版测试 @TODO: 将模版测试加入
     };
@@ -152,6 +152,8 @@ public:
         vk::CommandBuffer cb, uint32_t index_count, uint32_t instance_count = 1, uint32_t first_index = 0, int32_t vertex_offset = 0,
         uint32_t first_instance = 0
     ) const;
+
+    void Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count = 0, uint32_t first_vertex = 0, uint32_t first_instance = 0) const;
 
     bool IsValid() const { return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr && shader_program_ != nullptr; }
 

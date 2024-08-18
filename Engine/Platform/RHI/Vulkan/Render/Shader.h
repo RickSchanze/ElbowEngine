@@ -91,7 +91,7 @@ private:
 #define DECLARE_FRAG_SHADER(type)                                                                                     \
 public:                                                                                                               \
     type(Protected, Ref<RHI::Vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
-        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Vertex, shader_name)                    \
+        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Fragment, shader_name)                    \
     {                                                                                                                 \
     }                                                                                                                 \
                                                                                                                       \
@@ -127,6 +127,7 @@ enum class EUniformDescriptorType : uint8_t
 
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType type);
 vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage stage);
+String                  ShaderStageToString(EShaderStage stage);
 
 struct UniformDescriptor
 {
@@ -170,6 +171,7 @@ public:
     /**
      * 将磁盘的Shader文件加载
      * @param shader_path Shader路径
+     * @param shader_stage
      * @param shader_name
      * @param device Shader所属的管线
      */
@@ -197,10 +199,12 @@ public:
     const TArray<PushConstantDescriptor>& GetPushConstantDescriptors() const { return push_constant_descriptors_; }
     virtual void                          RegisterShaderVariables() = 0;
 
+    static bool
+    CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, TArray<uint32_t>& output);
+
 protected:
     // 解析传入的Shader代码
     void ParseShaderCode(const uint32_t* shader_code, size_t shader_code_size, EShaderStage shader_stage);
-
 
 protected:
     TArray<UniformDescriptor>      uniform_descriptors_;
@@ -212,6 +216,9 @@ protected:
     TArray<VertexInAttribute>      in_attributes_;
     Ref<LogicalDevice>             device_;   // 使用此Shader的管线
     AnsiString                     shader_name_;
+
+    // Shader的Cache
+    static inline TSharedPtr<class ShaderCache> cache_;
 };
 
 RHI_VULKAN_NAMESPACE_END

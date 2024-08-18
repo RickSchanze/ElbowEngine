@@ -96,6 +96,14 @@ void GraphicsPipeline::DrawIndexed(
     g_engine_statistics.IncreaseDrawCall();
 }
 
+void GraphicsPipeline::Draw(
+    vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance
+) const
+{
+    cb.draw(vertex_count, instance_count, first_vertex, first_instance);
+    g_engine_statistics.IncreaseDrawCall();
+}
+
 TArray<vk::DescriptorSet> GraphicsPipeline::GetCurrentFrameDescriptorSet() const
 {
     return {shader_program_->GetDescriptorSets()[g_engine_statistics.current_frame_index]};

@@ -7,10 +7,9 @@
 
 #include "PointLightShadowPass.h"
 
-#include "Component/Camera.h"
 #include "Component/Light/Light.h"
 #include "Math/Math.h"
-#include "Render/Material.h"
+#include "Render/Materials/Material.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/VulkanContext.h"

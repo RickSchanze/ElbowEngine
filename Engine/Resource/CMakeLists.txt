@@ -26,6 +26,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
+find_package(tinyexr CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::tinyexr::tinyexr)
+
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         Engine::Core

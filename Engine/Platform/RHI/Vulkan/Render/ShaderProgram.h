@@ -84,6 +84,8 @@ public:
 
     void SetUniformBuffer(const AnsiString& name, const void* data, size_t size);
 
+    bool HasShaderUniform(const AnsiString& name) const;
+
     /**
      * 顶点着色器的所有PushConstant
      * @return
@@ -99,7 +101,7 @@ public:
     /**
      * 更新一个Cubemap Sampler 用于Shader Read
      */
-    bool  SetCubeTexture(const AnsiString& name, const ImageView& image_view, const Sampler& sampler);
+    bool SetCubeTexture(const AnsiString& name, const ImageView& image_view, const Sampler& sampler);
 
 protected:
     // 创建与交换链图像数量相当的UniformBuffer

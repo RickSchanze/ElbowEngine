@@ -8,12 +8,15 @@
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "CoreGlobal.h"
 #include "PlatformEvents.h"
 #include "ResourceConfig.h"
 #include "ResourceManager.h"
 #include "RHI/Vulkan/VulkanContext.h"
-#include "stb_image.h"
+
+#include "tinyexr.h"
 
 using namespace RHI::Vulkan;
 

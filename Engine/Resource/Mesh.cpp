@@ -29,7 +29,7 @@ RHI::Vulkan::Mesh* SubMesh::GetRHIResource()
 
 void SubMesh::LoadRHI()
 {
-    mesh_rhi_resource_ = new RHI::Vulkan::Mesh(vertices_, indices_);
+    mesh_rhi_resource_ = new RHI::Vulkan::Mesh(vertices_, indices_, false);
 }
 
 Mesh::Mesh(Protected, const Path& mesh_path) : path_(mesh_path)

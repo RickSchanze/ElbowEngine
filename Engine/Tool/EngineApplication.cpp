@@ -29,7 +29,7 @@
 #include "Editor/Window/WindowBase.h"
 #include "Editor/Window/WindowManager.h"
 #include "EditorStyle/ImGuiStyle.h"
-#include "Render/Material.h"
+#include "Render/Materials/Material.h"
 #include "ResourceManager.h"
 
 #include "Window/GLFWWindow.h"
@@ -127,7 +127,7 @@ void EngineApplication::Initialize()
     auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-    auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/vert.spv", L"Shaders/frag.spv", L"AK-47材质");
+    auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK-47材质");
     mesh_comp->SetMaterial(mat);
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
     mesh_obj->AddComponent<Function::Comp::SpaceCircle>()->SetSpeed(2.f);
@@ -150,6 +150,8 @@ void EngineApplication::Initialize()
     wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
     wall->AddComponent<Function::Comp::Autoroatation>()->SetRotationSpeed(20.f);
     wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
+
+    auto* t = Resource::Texture::Create(L"Textures/Sky.hdr");
     LogEndInit();
 }
 

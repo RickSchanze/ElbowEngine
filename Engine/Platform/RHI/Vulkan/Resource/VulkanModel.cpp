@@ -13,11 +13,17 @@
 
 RHI_VULKAN_NAMESPACE_BEGIN
 
-Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
 {
-    if (vertices.empty() || indicies.empty())
+    ignore_index_ = ignore_index;
+    if (vertices.empty())
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据或索引数据不合法");
+        LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据不合法");
+        return;
+    }
+    if (!ignore_index && indicies.empty())
+    {
+        LOG_ERROR_CATEGORY(Vulkan, L"传入索引数据不合法");
         return;
     }
     VulkanContext& context              = *VulkanContext::Get();
@@ -49,41 +55,44 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
     device->DestroyBuffer(vertex_staging_buffer);
     device->FreeMemory(vertex_staging_buffer_memory);
 
-    // 索引缓冲
-    index_count_                       = static_cast<uint32_t>(indicies.size());
-    vk::DeviceSize   index_buffer_size = sizeof(indicies[0]) * index_count_;
-    vk::Buffer       index_staging_buffer;
-    vk::DeviceMemory index_staging_buffer_memory;
-    device->CreateBuffer(
-        index_buffer_size,
-        vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-        index_staging_buffer,
-        index_staging_buffer_memory
-    );
-    device->MapMemory(index_staging_buffer_memory, index_buffer_size, 0, &data);
-    memcpy(data, indicies.data(), index_buffer_size);
-    device->UnmapMemory(index_staging_buffer_memory);
-    device->CreateBuffer(
-        index_buffer_size,
-        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
-        vk::MemoryPropertyFlagBits::eDeviceLocal,
-        index_buffer_,
-        index_buffer_memory_
-    );
-    context.GetCommandPool()->CopyBuffer(index_staging_buffer, index_buffer_, index_buffer_size);
-    device->DestroyBuffer(index_staging_buffer);
-    device->FreeMemory(index_staging_buffer_memory);
+    if (!ignore_index)
+    {
+        // 索引缓冲
+        index_count_                       = static_cast<uint32_t>(indicies.size());
+        vk::DeviceSize   index_buffer_size = sizeof(indicies[0]) * index_count_;
+        vk::Buffer       index_staging_buffer;
+        vk::DeviceMemory index_staging_buffer_memory;
+        device->CreateBuffer(
+            index_buffer_size,
+            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+            index_staging_buffer,
+            index_staging_buffer_memory
+        );
+        device->MapMemory(index_staging_buffer_memory, index_buffer_size, 0, &data);
+        memcpy(data, indicies.data(), index_buffer_size);
+        device->UnmapMemory(index_staging_buffer_memory);
+        device->CreateBuffer(
+            index_buffer_size,
+            vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
+            vk::MemoryPropertyFlagBits::eDeviceLocal,
+            index_buffer_,
+            index_buffer_memory_
+        );
+        context.GetCommandPool()->CopyBuffer(index_staging_buffer, index_buffer_, index_buffer_size);
+        device->DestroyBuffer(index_staging_buffer);
+        device->FreeMemory(index_staging_buffer_memory);
+    }
 }
 
-TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
 {
-    return MakeShared<Mesh>(vertices, indicies);
+    return MakeShared<Mesh>(vertices, indicies, ignore_index);
 }
 
-TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies)
+TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
 {
-    return MakeUnique<Mesh>(vertices, indicies);
+    return MakeUnique<Mesh>(vertices, indicies, ignore_index);
 }
 
 Mesh::~Mesh()
@@ -93,7 +102,7 @@ Mesh::~Mesh()
 
 bool Mesh::IsValid() const
 {
-    return vertex_buffer_ && index_buffer_;
+    return vertex_buffer_ && ignore_index_ ? true : index_buffer_;
 }
 
 void Mesh::InternalDestroy()

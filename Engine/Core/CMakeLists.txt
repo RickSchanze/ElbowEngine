@@ -16,6 +16,8 @@ add_library(${PROJECT_NAME}
         Utils/ContainerUtils.cpp
         Utils/MemoryUtils.cpp
         Utils/MemoryUtils.h
+        Utils/HashUtils.h
+        Utils/HashUtils.cpp
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h
@@ -63,5 +65,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
 find_package(cpptrace CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
+
+find_package(OpenSSL REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})

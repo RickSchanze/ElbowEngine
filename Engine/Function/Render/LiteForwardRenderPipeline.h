@@ -12,6 +12,14 @@
 
 namespace Function
 {
+class SkyboxPass;
+}
+namespace Function
+{
+class SkyboxMaterial;
+}
+namespace Function
+{
 class PointLightShadowPass;
 }
 namespace Function
@@ -39,10 +47,12 @@ public:
     void Build() override;
 
 private:
-    SimpleObjectShadingPass* forward_pass_    = nullptr;
-    PointLightShadowPass*    shadow_pass_     = nullptr;
+    SimpleObjectShadingPass* forward_pass_ = nullptr;
+    PointLightShadowPass*    shadow_pass_  = nullptr;
+    SkyboxPass*              skybox_pass_  = nullptr;
 
-    Material*                shadow_material_ = nullptr;
+    Material*       shadow_material_  = nullptr;
+    SkyboxMaterial* sky_box_material_ = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

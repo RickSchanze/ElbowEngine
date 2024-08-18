@@ -60,6 +60,21 @@ public:
         __debugbreak();
     }
 
+    /** 输出Error级别的信息 */
+    template<typename... ArgsT>
+    void ErrorNoBreak(spdlog::wformat_string_t<ArgsT...> fmt, ArgsT&&... args)
+    {
+        logger_->error(fmt, Forward<ArgsT>(args)...);
+    }
+
+    /** 输出Error级别的信息 */
+    template<typename... ArgsT>
+    void ErrorNoBreak(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    {
+        logger_->error(fmt, Forward<ArgsT>(args)...);
+    }
+
+
 
     /** 输出Warning级别的信息 */
     template<typename... ArgsT>
@@ -127,6 +142,7 @@ public:
     {
         logger_->error(L"未处理的异常:\n {}", ex.What());
         logger_->error("{}", ex.GetStackTrace());
+        __debugbreak();
     }
 
     /**
@@ -136,6 +152,7 @@ public:
     void StdException(const std::exception& ex) const
     {
         logger_->error("Unhandled exception:\n {}", ex.what());
+        __debugbreak();
     }
 
 private:

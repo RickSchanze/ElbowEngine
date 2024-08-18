@@ -9,15 +9,17 @@
 
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
-#include "Material.h"
+#include "Materials/Material.h"
 #include "Mesh.h"
 #include "RenderPasses/PointLightShadowPass.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
+#include "RenderPasses/SkyboxPass.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
-#include "RHI/Vulkan/VulkanContext.h"
 #include "Shaders/PointLightShadowPassShader.h"
+#include "Shaders/SkyboxShader.h"
+#include "Render/Materials/SkyboxMaterial.h"
 
 
 using namespace RHI::Vulkan;
@@ -70,20 +72,36 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
             material->DrawMesh(cb, *meshes[i], dynamic_offsets);
         }
     }
-
     forward_pass_->End(cb);
+    // 绘制skybox
+    if (sky_box_material_->HasSetSkyTexture())
+    {
+        skybox_pass_->Begin(cb, main->background_color);
+        sky_box_material_->Use(cb);
+        sky_box_material_->SetProjectionView(main);
+        sky_box_material_->DrawSkybox(cb);
+        skybox_pass_->End(cb);
+    }
 }
 
 void LiteForwardRenderPipeline::Build()
 {
     forward_pass_ = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
     RegisterRenderPass(forward_pass_);
-    shadow_pass_  = RenderPassManager::GetOrCreateRenderPass<PointLightShadowPass>(800, 800, "PointLightPass");
+    shadow_pass_ = RenderPassManager::GetOrCreateRenderPass<PointLightShadowPass>(800, 800, "PointLightPass");
     RegisterRenderPass(shadow_pass_);
+    skybox_pass_ = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
+    RegisterRenderPass(skybox_pass_);
 
-    Shader* shadow_vert = Shader::Create<PointLightShadowPassVertShader>(L"Shaders/PointLightShadowVert.spv", "PointLightShadowVert");
-    Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadowFrag.spv", "PointLightShadowFrag");
+    Shader* shadow_vert = Shader::Create<PointLightShadowPassVertShader>(L"Shaders/PointLightShadow.vert", "PointLightShadowVert");
+    Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadow.frag", "PointLightShadowFrag");
     shadow_material_    = MaterialManager::CreateMaterial(shadow_vert, shadow_frag, shadow_pass_, L"PointLightShadowMaterial");
+
+    Shader* sky_vert = Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert", "SkyboxVert");
+    Shader* sky_frag = Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag", "SkyboxFrag");
+    sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial");
+
+    sky_box_material_->SetSkyTexture(Resource::Texture::Create(L"Textures/Sky.hdr"));
 
     AddImGuiGraphicsPipeline();
 }

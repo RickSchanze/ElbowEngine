@@ -56,6 +56,13 @@ void ImGuiHelper::Image(Resource::Texture* texture, int32_t width, int32_t heigh
     ImGui::Image(set, {static_cast<float>(width), static_cast<float>(height)});
 }
 
+void ImGuiHelper::Image(Resource::Texture* texture)
+{
+    float ratio = (float)texture->GetWidth() / (float)texture->GetHeight();
+    float width = ImGui::GetContentRegionAvail().x;
+    Image(texture, static_cast<int32_t>(width), static_cast<int32_t>(width / ratio));
+}
+
 void ImGuiHelper::SameLine()
 {
     ImGui::SameLine();

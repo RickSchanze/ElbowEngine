@@ -25,7 +25,7 @@ void SimpleObjectShadingPass::SetupAttachments()
     swapchain_image.store_op         = vk::AttachmentStoreOp::eStore;
     swapchain_image.sample_count     = sample_count;
     swapchain_image.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
-    swapchain_image.final_layout     = vk::ImageLayout::eShaderReadOnlyOptimal;
+    swapchain_image.final_layout     = vk::ImageLayout::eColorAttachmentOptimal;
     NewAttachment(swapchain_image);
 
     RenderPassAttachmentParam depth_image{};

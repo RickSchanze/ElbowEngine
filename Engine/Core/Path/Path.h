@@ -11,7 +11,6 @@
 #include "CoreDef.h"
 
 
-
 class Path {
 
 public:
@@ -60,7 +59,7 @@ public:
     /**
      * 以此Path为路径创建一个目录
      */
-    void CreateDirectory() const;
+    void CreateDir() const;
 
     /**
      * 判断这个path指示的目录是不是空
@@ -94,7 +93,7 @@ public:
     /**
      * 创建当前路径指示的文件
      */
-    void CreateFile() const;
+    void CreateFileA() const;
 
     Path GetParentPath() const;
 
@@ -106,9 +105,43 @@ public:
         return NewPath;
     }
 
+    bool EndsWith(const String& subfix)const;
+
+    String GetFileName() const;
+
     std::string ToAbsoluteAnsiString() const;
 
     std::string ToRelativeAnsiString() const;
+
+    AnsiString ReadAllText() const;
+
+    /**
+     * 以二进制Char读取文件
+     * @param output 如果读取失败，那么output会被清零
+     */
+    void ReadAllBinary(TArray<char>& output) const;
+    /**
+     * Shader编译将会使用这个
+     * @param output
+     */
+    void ReadAllBinary(TArray<uint32_t>& output) const;
+
+    /**
+     * 写入二进制 不存在自动创建
+     * @param binary
+     */
+    void WriteAllBinary(const TArray<char>&binary) const;
+    /**
+     * shader编译将会使用这个
+     * @param binary
+     */
+    void WriteAllBinary(const TArray<uint32_t>& binary) const;
+
+    /**
+     * 写入文本 不存在自动创建
+     * @param text
+     */
+    void WriteAllText(const AnsiString& text)const;
 
 private:
     std::filesystem::path GetStdFullPath() const;

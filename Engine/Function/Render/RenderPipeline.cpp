@@ -12,7 +12,7 @@
 #include "Component/Transform.h"
 #include "CoreEvents.h"
 #include "Event.h"
-#include "Material.h"
+#include "Render/Materials/Material.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
 #include "RenderContext.h"

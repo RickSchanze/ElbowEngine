@@ -51,6 +51,12 @@ public:
 
     static void Image(Resource::Texture* texture, int32_t width, int32_t height);
 
+    /**
+     * 适应窗口宽度的显示image
+     * @param texture
+     */
+    static void Image(Resource::Texture* texture);
+
     static void SameLine();
 
     static void SeparatorText(const char* label);

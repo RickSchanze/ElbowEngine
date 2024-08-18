@@ -10,7 +10,7 @@
 #include "CoreGlobal.h"
 #include "ImGui/ImGuiHelper.h"
 #include "Math/MathTypes.h"
-#include "Render/Material.h"
+#include "Render/Materials/Material.h"
 #include "Render/RenderContext.h"
 
 #include <Mesh.h>

@@ -5,6 +5,8 @@ set(SHADER_FILE
         Render/Shaders/StandardForwardShader.cpp
         Render/Shaders/PointLightShadowPassShader.h
         Render/Shaders/PointLightShadowPassShader.cpp
+        Render/Shaders/SkyboxShader.h
+        Render/Shaders/SkyboxShader.cpp
 )
 
 set(RENDER_PASS_FILE
@@ -12,6 +14,15 @@ set(RENDER_PASS_FILE
         Render/RenderPasses/PointLightShadowPass.cpp
         Render/RenderPasses/SimpleObjectShadingPass.h
         Render/RenderPasses/SimpleObjectShadingPass.cpp
+        Render/RenderPasses/SkyboxPass.h
+        Render/RenderPasses/SkyboxPass.cpp
+)
+
+set(MATERIAL_FILE
+        Render/Materials/Material.h
+        Render/Materials/Material.cpp
+        Render/Materials/SkyboxMaterial.h
+        Render/Materials/SkyboxMaterial.cpp
 )
 
 add_library(${PROJECT_NAME}
@@ -45,10 +56,9 @@ add_library(${PROJECT_NAME}
         Render/RenderPipeline.h
         Render/RenderPipeline.cpp
         Render/Event.h
-        Render/Material.h
-        Render/Material.cpp
         ${SHADER_FILE}
         ${RENDER_PASS_FILE}
+        ${MATERIAL_FILE}
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp
 )
