@@ -31,7 +31,7 @@ void SimpleObjectShadingPass::SetupAttachments()
     RenderPassAttachmentParam depth_image{};
     depth_image.sample_count     = sample_count;
     depth_image.load_op          = vk::AttachmentLoadOp::eClear;
-    depth_image.store_op         = vk::AttachmentStoreOp::eDontCare;
+    depth_image.store_op         = vk::AttachmentStoreOp::eStore;
     depth_image.format           = VulkanContext::Get()->GetDepthImageFormat();
     depth_image.final_layout     = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     depth_image.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
@@ -78,8 +78,8 @@ void SimpleObjectShadingPass::CleanFrameBuffer()
     {
         delete framebuffer;
     }
-    delete depth_image_;
-    delete depth_image_view_;
+    depth_image_->Destroy();
+    depth_image_view_->Destroy();
     framebuffers_.clear();
 }
 

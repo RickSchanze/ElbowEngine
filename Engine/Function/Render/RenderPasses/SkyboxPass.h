@@ -27,6 +27,8 @@ public:
     vk::Framebuffer GetCurrentFramebufferHandle() override;
     void            SetupSubpassDependency() override;
 
+    RHI::Vulkan::ImageView* external_depth_view = nullptr; // 来自外部的深度View 不由自己清理
+
 protected:
     TArray<RHI::Vulkan::Framebuffer*> framebuffers_;
     TArray<AnsiString>                framebuffer_names_;

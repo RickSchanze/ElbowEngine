@@ -8,6 +8,6 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     vec3 direction = normalize(inWorldPosition);
-    vec2 uv = vec2(atan(direction.x, direction.z) / (2.0 * 3.14159265359), acos(-direction.y));
+    vec2 uv = direction.xy * vec2(-0.5, -0.5) + vec2(0.5, 0.5);
     outColor = texture(sky, uv);
 }

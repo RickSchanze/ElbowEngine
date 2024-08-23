@@ -194,7 +194,6 @@ T* RenderPassManager::CreateRenderPass(uint32_t width, uint32_t height, const An
     }
     T* new_render_pass =
         new T(width == 0 ? g_engine_statistics.window_size.width : width, height == 0 ? g_engine_statistics.window_size.height : height, name);
-    new_render_pass->Initialize();
     render_passes[t] = new_render_pass;
     return new_render_pass;
 }

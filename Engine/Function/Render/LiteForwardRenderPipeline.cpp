@@ -11,6 +11,7 @@
 #include "Component/Light/Light.h"
 #include "Materials/Material.h"
 #include "Mesh.h"
+#include "Render/Materials/SkyboxMaterial.h"
 #include "RenderPasses/PointLightShadowPass.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
 #include "RenderPasses/SkyboxPass.h"
@@ -19,7 +20,6 @@
 #include "RHI/Vulkan/Render/Shader.h"
 #include "Shaders/PointLightShadowPassShader.h"
 #include "Shaders/SkyboxShader.h"
-#include "Render/Materials/SkyboxMaterial.h"
 
 
 using namespace RHI::Vulkan;
@@ -87,11 +87,19 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
 void LiteForwardRenderPipeline::Build()
 {
     forward_pass_ = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
+    forward_pass_->Initialize();
     RegisterRenderPass(forward_pass_);
+
     shadow_pass_ = RenderPassManager::GetOrCreateRenderPass<PointLightShadowPass>(800, 800, "PointLightPass");
+    shadow_pass_->Initialize();
     RegisterRenderPass(shadow_pass_);
-    skybox_pass_ = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
+
+    skybox_pass_                      = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
+    skybox_pass_->external_depth_view = forward_pass_->GetDepthView();
+    skybox_pass_->Initialize();
     RegisterRenderPass(skybox_pass_);
+
+    MaterialConfig config;
 
     Shader* shadow_vert = Shader::Create<PointLightShadowPassVertShader>(L"Shaders/PointLightShadow.vert", "PointLightShadowVert");
     Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadow.frag", "PointLightShadowFrag");
@@ -99,11 +107,21 @@ void LiteForwardRenderPipeline::Build()
 
     Shader* sky_vert = Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert", "SkyboxVert");
     Shader* sky_frag = Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag", "SkyboxFrag");
-    sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial");
+
+    config.use_counter_clock_wise_front_face = false;
+    config.use_depth_write                   = false;
+    sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial", config);
 
     sky_box_material_->SetSkyTexture(Resource::Texture::Create(L"Textures/Sky.hdr"));
 
     AddImGuiGraphicsPipeline();
+}
+
+void LiteForwardRenderPipeline::Rebuild(int w, int h)
+{
+    forward_pass_->ResizeFramebuffer(w, h);
+    skybox_pass_->external_depth_view = forward_pass_->GetDepthView();
+    skybox_pass_->ResizeFramebuffer(w, h);
 }
 
 FUNCTION_NAMESPACE_END

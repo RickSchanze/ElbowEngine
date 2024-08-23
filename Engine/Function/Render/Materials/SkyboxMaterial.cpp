@@ -16,8 +16,9 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-SkyboxMaterial::SkyboxMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name) :
-    Material(vert, frag, render_pass, name)
+SkyboxMaterial::SkyboxMaterial(
+    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+) : Material(vert, frag, render_pass, config, name)
 {
     if (!shader_program_->HasShaderUniform("sky"))
     {

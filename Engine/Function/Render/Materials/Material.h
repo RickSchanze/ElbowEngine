@@ -46,6 +46,27 @@ FUNCTION_NAMESPACE_BEGIN
  * 作用：Shader参数的集合
  *      通过此类设置Shader参数
  */
+
+enum class EDepthCompareOp
+{
+    Never,
+    Less,
+    Equal,
+    LessOrEqual,
+    Greater,
+    NotEqual,
+    GreaterOrEqual,
+    Always,
+};
+
+struct MaterialConfig
+{
+    bool            use_counter_clock_wise_front_face = true;   // 正面是不是逆时针
+    bool            use_depth_test                    = true;   // 是否使用深度测试
+    bool            use_depth_write                   = true;   // 是否使用深度写入
+    EDepthCompareOp depth_compare_op                  = EDepthCompareOp::LessOrEqual;
+};
+
 class Material : public Object, public IDetailGUIDrawer
 {
 public:
@@ -54,11 +75,16 @@ public:
     static inline TArray<AnsiString> parameter_name_white_list = {"ubo_instance", "ubo_view"};
 
     // TODO: 这里应该是传入两个Shader而不是两个路径
-    Material(const Path& vert, const Path& frag, const String& name);
+    Material(const Path& vert, const Path& frag, const MaterialConfig& config = {}, const String& name = L"");
 
-    Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name);
+    Material(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config = {}, const String& name = L""
+    );
 
-    Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name);
+    Material(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config = {},
+        const String& name = L""
+    );
 
     ~Material() override;
 
@@ -125,25 +151,35 @@ public:
 
     static Material* GetMaterial(const String& name);
 
-    static Material* CreateMaterial(const Path& vert, const Path& frag, const String& name);
+    static Material* CreateMaterial(const Path& vert, const Path& frag, const String& name = {}, const MaterialConfig& config = {});
 
-    static Material* CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name);
+    static Material* CreateMaterial(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name = {}, const MaterialConfig& config = {}
+    );
 
-    static Material* CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name);
+    static Material* CreateMaterial(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name = {},
+        const MaterialConfig& config = {}
 
-    template<typename T> requires std::is_base_of_v<Material, T>
-    static T* CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name)
+    );
+
+    template<typename T>
+        requires std::is_base_of_v<Material, T>
+    static T* CreateMaterial(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name = {},
+        const MaterialConfig& config = {}
+    )
     {
         auto& mats = Get()->materials_;
         if (mats.contains(name))
         {
             LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
             delete mats[name];
-            mats[name] = new T(vert, frag, render_pass, name);
+            mats[name] = new T(vert, frag, render_pass, config, name);
         }
         else
         {
-            mats[name] = new T(vert, frag, render_pass, name);
+            mats[name] = new T(vert, frag, render_pass, config, name);
         }
         return static_cast<T*>(mats[name]);
 

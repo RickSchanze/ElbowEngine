@@ -22,6 +22,8 @@ public:
     void            SetupSubpassDependency() override;
     vk::Framebuffer GetCurrentFramebufferHandle() override;
 
+    RHI::Vulkan::ImageView* GetDepthView() const { return depth_image_view_; }
+
 private:
     TArray<RHI::Vulkan::Framebuffer*> framebuffers_;
     TArray<AnsiString>                framebuffer_names_;

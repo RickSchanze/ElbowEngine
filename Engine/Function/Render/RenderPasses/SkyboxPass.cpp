@@ -17,7 +17,7 @@ REGISTER_RENDER_PASS_REFL(Function::SkyboxPass)
 
 using namespace RHI::Vulkan;
 
-SkyboxPass:: SkyboxPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name) {}
+SkyboxPass::SkyboxPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name) {}
 
 void SkyboxPass::SetupAttachments()
 {
@@ -28,13 +28,28 @@ void SkyboxPass::SetupAttachments()
     back_buffer.initial_layout   = vk::ImageLayout::eColorAttachmentOptimal;
     back_buffer.final_layout     = vk::ImageLayout::eShaderReadOnlyOptimal;
     NewAttachment(back_buffer);
+
+    RenderPassAttachmentParam depth;
+    depth.load_op          = vk::AttachmentLoadOp::eDontCare;
+    depth.store_op         = vk::AttachmentStoreOp::eDontCare;
+    depth.format           = VulkanContext::Get()->GetDepthImageFormat();
+    depth.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    depth.initial_layout   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    depth.final_layout     = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    NewDepthAttachment(depth);
 }
 
 void SkyboxPass::SetupFramebuffer()
 {
+    if (!external_depth_view)
+    {
+        LOG_ERROR_ANSI_CATEGORY(L"Render", L"Skybox Pass需要设置external_depth_view");
+        return;
+    }
     framebuffers_.resize(g_engine_statistics.graphics.swapchain_image_count);
     framebuffer_names_.resize(g_engine_statistics.graphics.swapchain_image_count);
-    vk::ImageView attachment[1];
+    vk::ImageView attachment[2];
+    attachment[1] = external_depth_view->GetHandle();
     for (uint32_t i = 0; i < g_engine_statistics.graphics.swapchain_image_count; ++i)
     {
         attachment[0] = VulkanContext::Get()->GetBackbufferView(i)->GetHandle();

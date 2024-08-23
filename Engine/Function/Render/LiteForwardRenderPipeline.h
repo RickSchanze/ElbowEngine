@@ -45,6 +45,7 @@ public:
 
     void DrawBackbuffer(const RenderContextDrawParam& draw_param) override;
     void Build() override;
+    void Rebuild(int w, int h) override;
 
 private:
     SimpleObjectShadingPass* forward_pass_ = nullptr;

@@ -16,15 +16,36 @@
 
 #include <ranges>
 
+#include "Render/Shaders/StandardForwardShader.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
-#include "Render/Shaders/StandardForwardShader.h"
 #include "Utils/StringUtils.h"
 
 FUNCTION_NAMESPACE_BEGIN
 
-Material::Material(const Path& vert, const Path& frag, const String& name)
+static void ConfigPipelineByMaterial(RHI::Vulkan::PipelineInfo& pipeline_info, const MaterialConfig& config)
+{
+    pipeline_info.rasterization_stage.front_face =
+        config.use_counter_clock_wise_front_face ? vk::FrontFace::eCounterClockwise : vk::FrontFace::eClockwise;
+    pipeline_info.depth_stencil_stage.enable_depth_test  = config.use_depth_test;
+    pipeline_info.depth_stencil_stage.enable_depth_write = config.use_depth_write;
+    vk::CompareOp op                                     = vk::CompareOp::eLessOrEqual;
+    switch (config.depth_compare_op)
+    {
+    case EDepthCompareOp::Never: op = vk::CompareOp::eNever; break;
+    case EDepthCompareOp::Less: op = vk::CompareOp::eLess; break;
+    case EDepthCompareOp::Equal: op = vk::CompareOp::eEqual; break;
+    case EDepthCompareOp::LessOrEqual: op = vk::CompareOp::eLessOrEqual; break;
+    case EDepthCompareOp::Greater: op = vk::CompareOp::eGreater; break;
+    case EDepthCompareOp::NotEqual: op = vk::CompareOp::eNotEqual; break;
+    case EDepthCompareOp::GreaterOrEqual: op = vk::CompareOp::eGreaterOrEqual; break;
+    case EDepthCompareOp::Always: op = vk::CompareOp::eAlways; break;
+    }
+    pipeline_info.depth_stencil_stage.depth_compare_op = op;
+}
+
+Material::Material(const Path& vert, const Path& frag, const MaterialConfig& config, const String& name)
 {
     using namespace RHI::Vulkan;
     Shader* vert_shader = Shader::Create<StandardForwardVertShader>(vert);
@@ -33,33 +54,38 @@ Material::Material(const Path& vert, const Path& frag, const String& name)
     name_               = name;
     ParseShaderParameters();
     PipelineInfo pipeline_info;
-    pipeline_info.shader_program = shader_program_;
-    pipeline_info.render_pass    = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
-    pipeline_                    = new GraphicsPipeline(pipeline_info);
+    ConfigPipelineByMaterial(pipeline_info, config);
+    pipeline_info.shader_program                         = shader_program_;
+    pipeline_info.render_pass = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
+    pipeline_                 = new GraphicsPipeline(pipeline_info);
 }
 
-Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name)
+Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config, const String& name)
 {
     using namespace RHI::Vulkan;
     shader_program_ = ShaderProgram::Create(vert, frag);
     name_           = name;
     ParseShaderParameters();
     PipelineInfo pipeline_info;
-    pipeline_info.shader_program = shader_program_;
-    pipeline_info.render_pass    = RenderPassManager::Get()->GetRenderPass(pass_type);
-    pipeline_                    = new GraphicsPipeline(pipeline_info);
+    ConfigPipelineByMaterial(pipeline_info, config);
+    pipeline_info.shader_program                         = shader_program_;
+    pipeline_info.render_pass                            = RenderPassManager::Get()->GetRenderPass(pass_type);
+    pipeline_                                            = new GraphicsPipeline(pipeline_info);
 }
 
-Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name)
+Material::Material(
+    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+)
 {
     using namespace RHI::Vulkan;
     shader_program_ = ShaderProgram::Create(vert, frag);
     name_           = name;
     ParseShaderParameters();
     PipelineInfo pipeline_info;
-    pipeline_info.shader_program = shader_program_;
-    pipeline_info.render_pass    = render_pass;
-    pipeline_                    = new GraphicsPipeline(pipeline_info);
+    ConfigPipelineByMaterial(pipeline_info, config);
+    pipeline_info.shader_program                         = shader_program_;
+    pipeline_info.render_pass                            = render_pass;
+    pipeline_                                            = new GraphicsPipeline(pipeline_info);
 }
 
 Material::~Material()
@@ -242,51 +268,54 @@ Material* MaterialManager::GetMaterial(const String& name)
     return nullptr;
 }
 
-Material* MaterialManager::CreateMaterial(const Path& vert, const Path& frag, const String& name)
+Material* MaterialManager::CreateMaterial(const Path& vert, const Path& frag, const String& name, const MaterialConfig& config)
 {
     auto& mats = Get()->materials_;
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
         delete mats[name];
-        mats[name] = new Material(vert, frag, name);
+        mats[name] = new Material(vert, frag, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, name);
+        mats[name] = new Material(vert, frag, config, name);
     }
     return mats[name];
 }
 
-Material* MaterialManager::CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name)
+Material* MaterialManager::CreateMaterial(
+    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name, const MaterialConfig& config
+)
 {
     auto& mats = Get()->materials_;
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
         delete mats[name];
-        mats[name] = new Material(vert, frag, pass_type, name);
+        mats[name] = new Material(vert, frag, pass_type, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, pass_type, name);
+        mats[name] = new Material(vert, frag, pass_type, config, name);
     }
     return mats[name];
 }
 
-Material*
-MaterialManager::CreateMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name)
+Material* MaterialManager::CreateMaterial(
+    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name, const MaterialConfig& config
+)
 {
     auto& mats = Get()->materials_;
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
         delete mats[name];
-        mats[name] = new Material(vert, frag, render_pass, name);
+        mats[name] = new Material(vert, frag, render_pass, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, render_pass, name);
+        mats[name] = new Material(vert, frag, render_pass, config, name);
     }
     return mats[name];
 }

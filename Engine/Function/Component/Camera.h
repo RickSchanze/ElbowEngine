@@ -31,8 +31,8 @@ public:
 
     static inline Camera* Main = nullptr;
 
-    glm::mat4 GetViewMatrix() const;
-    glm::mat4 GetProjectionMatrix() const;
+    Matrix4x4 GetViewMatrix() const;
+    Matrix4x4 GetProjectionMatrix() const;
 
     void SetWindowFocused(bool focused);
 

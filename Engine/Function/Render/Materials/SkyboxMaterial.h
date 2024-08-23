@@ -17,7 +17,9 @@ FUNCTION_NAMESPACE_BEGIN
 class SkyboxMaterial : public Material
 {
 public:
-    SkyboxMaterial(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name);
+    SkyboxMaterial(
+        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+    );
 
     void SetSkyTexture(Resource::Texture* texture) const;
 
@@ -30,7 +32,8 @@ public:
     void DrawSkybox(vk::CommandBuffer cb);
 
 protected:
-    Resource::Mesh* skybox_mesh_ = nullptr;;
+    Resource::Mesh* skybox_mesh_ = nullptr;
+    ;
 };
 
 FUNCTION_NAMESPACE_END

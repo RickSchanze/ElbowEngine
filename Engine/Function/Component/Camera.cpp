@@ -41,12 +41,12 @@ void Camera::BeginPlay()
     }
 }
 
-glm::mat4 Camera::GetViewMatrix() const
+Matrix4x4 Camera::GetViewMatrix() const
 {
     return Math::LookAt(transform_->GetPosition(), transform_->GetPosition() + transform_->GetForwardVector(), transform_->GetUpVector());
 }
 
-glm::mat4 Camera::GetProjectionMatrix() const
+Matrix4x4 Camera::GetProjectionMatrix() const
 {
     auto rtn = Math::Perspective(glm::radians(45.f), 1920.f / 1080.f, near_plane, far_plane);
     return rtn;

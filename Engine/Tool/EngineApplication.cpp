@@ -130,25 +130,20 @@ void EngineApplication::Initialize()
     auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK-47材质");
     mesh_comp->SetMaterial(mat);
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-    mesh_obj->AddComponent<Function::Comp::SpaceCircle>()->SetSpeed(2.f);
-    mesh_obj->AddComponent<Function::Comp::Autoroatation>()->SetRotationSpeed(40.f);
 
     auto obj2 = New<Function::GameObject>(L"AK-47_2", mesh_obj);
     obj2->AddComponent<Function::Comp::SpaceCircle>();
     auto mesh_cmp = obj2->AddComponent<Function::Comp::StaticMesh>();
     mesh_cmp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
     mesh_cmp->SetMaterial(mat);
-    obj2->AddComponent<Function::Comp::Autoroatation>()->SetRotationSpeed(30.f);
 
     auto* light_obj = New<Function::GameObject>(L"点光源");
     mesh_obj->GetTransform().SetPosition(Vector3(100, 0, 0));
     light_obj->GetTransform().SetPosition(Vector3(0, 0, 10));
-    light_obj->AddComponent<Function::Comp::SpaceCircle>();
     light_obj->AddComponent<Function::Comp::Light>();
 
     auto wall = New<Function::GameObject>(L"方块");
     wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
-    wall->AddComponent<Function::Comp::Autoroatation>()->SetRotationSpeed(20.f);
     wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
 
     auto* t = Resource::Texture::Create(L"Textures/Sky.hdr");
