@@ -48,8 +48,8 @@ static void ConfigPipelineByMaterial(RHI::Vulkan::PipelineInfo& pipeline_info, c
 Material::Material(const Path& vert, const Path& frag, const MaterialConfig& config, const String& name)
 {
     using namespace RHI::Vulkan;
-    Shader* vert_shader = Shader::Create<StandardForwardVertShader>(vert);
-    Shader* frag_shader = Shader::Create<StandardForwardFragShader>(frag);
+    Shader* vert_shader = Shader::Create<StandardForwardVertShader>(vert, "StandardShaderVert");
+    Shader* frag_shader = Shader::Create<StandardForwardFragShader>(frag, "StandardShaderFrag");
     shader_program_     = ShaderProgram::Create(vert_shader, frag_shader);
     name_               = name;
     ParseShaderParameters();
@@ -90,7 +90,6 @@ Material::Material(
 
 Material::~Material()
 {
-    delete shader_program_;
     shader_program_ = nullptr;
     delete pipeline_;
     pipeline_ = nullptr;

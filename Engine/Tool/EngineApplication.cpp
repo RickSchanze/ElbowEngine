@@ -146,7 +146,6 @@ void EngineApplication::Initialize()
     wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
     wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
 
-    auto* t = Resource::Texture::Create(L"Textures/Sky.hdr");
     LogEndInit();
 }
 

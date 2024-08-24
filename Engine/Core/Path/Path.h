@@ -12,6 +12,7 @@
 
 
 class Path {
+    friend class PathUtils;
 
 public:
     Path() = default;

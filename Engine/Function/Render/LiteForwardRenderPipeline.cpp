@@ -19,7 +19,7 @@
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
 #include "Shaders/PointLightShadowPassShader.h"
-#include "Shaders/SkyboxShader.h"
+#include "Shaders/SkySphereShader.h"
 
 
 using namespace RHI::Vulkan;
@@ -105,14 +105,15 @@ void LiteForwardRenderPipeline::Build()
     Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadow.frag", "PointLightShadowFrag");
     shadow_material_    = MaterialManager::CreateMaterial(shadow_vert, shadow_frag, shadow_pass_, L"PointLightShadowMaterial");
 
-    Shader* sky_vert = Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert", "SkyboxVert");
-    Shader* sky_frag = Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag", "SkyboxFrag");
+    Shader* sky_vert = Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert", "SkySphereVert");
+    Shader* sky_frag = Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag", "SkySphereFrag");
 
     config.use_counter_clock_wise_front_face = false;
     config.use_depth_write                   = false;
     sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial", config);
 
-    sky_box_material_->SetSkyTexture(Resource::Texture::Create(L"Textures/Sky.hdr"));
+    // sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
+    sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
 
     AddImGuiGraphicsPipeline();
 }

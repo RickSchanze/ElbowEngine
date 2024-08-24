@@ -39,7 +39,7 @@ void PointLightShadowPass::SetupAttachments()
     depth_attachment.format           = VulkanContext::Get()->GetDepthImageFormat();
     depth_attachment.sample_count     = vk::SampleCountFlagBits::e1;
     depth_attachment.load_op          = vk::AttachmentLoadOp::eClear;
-    depth_attachment.store_op         = vk::AttachmentStoreOp::eDontCare;
+    depth_attachment.store_op         = vk::AttachmentStoreOp::eStore;
     depth_attachment.stencil_load_op  = vk::AttachmentLoadOp::eDontCare;
     depth_attachment.stencil_store_op = vk::AttachmentStoreOp::eDontCare;
     depth_attachment.initial_layout   = vk::ImageLayout::eUndefined;
@@ -77,20 +77,17 @@ void PointLightShadowPass::SetupFramebuffer()
     ImageInfo depth;
     depth.width          = width_;
     depth.height         = height_;
-    depth.initial_layout = vk::ImageLayout::eUndefined;
-    depth.format    = VulkanContext::Get()->GetDepthImageFormat();
-    depth.usage     = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc;
-    depth.name      = "PointLightShadowPass_Depth";
-    depth_          = new Image(depth);
+    depth.format         = VulkanContext::Get()->GetDepthImageFormat();
+    depth.usage          = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc;
+    depth.name           = "PointLightShadowPass_Depth";
+    depth_               = Image::Create(depth);
     ImageViewInfo depth_view;
     depth_view.format       = depth.format;
     depth_view.aspect_flags = vk::ImageAspectFlagBits::eDepth;
     depth_view.name         = "PointLightShadowPass_DepthView";
     depth_view_             = depth_->CreateImageView(depth_view);
-    VulkanContext::Get()->GetCommandPool()->TrainsitionImageLayout(
-        depth_->GetHandle(), depth.format, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
-    );
-
+    const auto& pool        = VulkanContext::Get()->GetCommandPool();
+    pool->TransitionImageLayout(depth_->GetHandle(), depth.format, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
     // framebuffer
     vk::ImageView attachments[2];
     attachments[1] = depth_view_->GetHandle();
@@ -134,6 +131,7 @@ void PointLightShadowPass::SetupCubemap()
     cube_info.width     = width_;
     cube_info.height    = height_;
     shadow_map_         = new Cubemap(cube_info);
+    shadow_map_->Initialize();
 }
 
 void PointLightShadowPass::CleanCubemap()
@@ -155,7 +153,7 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
         return GetMatrix4x4Identity();
     }
     using namespace RHI::Vulkan;
-    auto view = glm::mat4(1.0f);
+    auto    view      = glm::mat4(1.0f);
     Vector3 light_pos = light->GetWorldPosition();
     switch (index)
     {

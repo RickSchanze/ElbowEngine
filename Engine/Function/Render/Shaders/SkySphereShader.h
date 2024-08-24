@@ -1,7 +1,7 @@
 /**
- * @file SkyboxShader.h
+ * @file SkySphereShader.h
  * @author Echo 
- * @Date 24-8-24
+ * @Date 24-8-18
  * @brief 
  */
 
@@ -11,22 +11,18 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class SkyboxVertShader : public RHI::Vulkan::Shader
+class SkySphereVertShader : public RHI::Vulkan::Shader
 {
+    DECLARE_VERT_SHADER(SkySphereVertShader)
 public:
     void RegisterShaderVariables() override;
-
-private:
-    DECLARE_VERT_SHADER(SkyboxVertShader)
 };
 
-class SkyboxFragShader : public RHI::Vulkan::Shader
+class SkySphereFragShader : public RHI::Vulkan::Shader
 {
+    DECLARE_FRAG_SHADER(SkySphereFragShader)
 public:
     void RegisterShaderVariables() override;
-
-private:
-    DECLARE_VERT_SHADER(SkyboxFragShader)
 };
 
 FUNCTION_NAMESPACE_END

@@ -21,7 +21,17 @@ public:
         RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
     );
 
-    void SetSkyTexture(Resource::Texture* texture) const;
+    /**
+     * 一张贴图表示的，球面环境映射
+     * @param texture
+     */
+    void SetSkySphereTexture(Resource::Texture* texture);
+
+    /**
+     * 六张贴图表示的，立方体投映射
+     * @param path
+     */
+    void SetSkyBoxTexture(const Path& path);
 
     void OnInspectorGUI() override;
 
@@ -33,7 +43,7 @@ public:
 
 protected:
     Resource::Mesh* skybox_mesh_ = nullptr;
-    ;
+    int use_skybox_; // 0: 未设置 1: 球面映射 2: 立方体映射
 };
 
 FUNCTION_NAMESPACE_END

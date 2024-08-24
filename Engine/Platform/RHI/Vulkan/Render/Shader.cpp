@@ -112,9 +112,12 @@ public:
             if (spirv_path.IsExist())
             {
                 auto new_spirv_hash = HashUtils::ComputeSHA256(spirv_path);
-                if (old_source_hash == new_source_hash && old_spirv_hash == new_spirv_hash)
+                if (new_spirv_hash.has_value() && new_source_hash.has_value())
                 {
-                    return spirv_path.ReadAllBinary(code);
+                    if (old_source_hash == new_source_hash.value() && old_spirv_hash == new_spirv_hash.value())
+                    {
+                        return spirv_path.ReadAllBinary(code);
+                    }
                 }
             }
         }
@@ -131,6 +134,15 @@ protected:
     nlohmann::json json_;
     bool           init_ = false;
 };
+
+void ShaderManager::DestroyAll()
+{
+    for (auto& val: shaders_ | std::views::values)
+    {
+        delete val;
+    }
+    shaders_.clear();
+}
 
 Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& shader_name) :
     shader_stage_(shader_stage), shader_path_(shader_path), device_(device)

@@ -21,9 +21,6 @@ public:
     template<typename ContainerT, typename Lambda>
     static void RemoveIf(ContainerT& Container, const Lambda& Value);
 
-    template<typename ContainerT, typename Lambda>
-    static auto FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())>;
-
     template<typename ContainerT>
     static ContainerT Slice(const ContainerT& Container, int32_t Start = 0, int32_t End = 0);
 
@@ -36,7 +33,7 @@ public:
     template<typename KeyType, typename ValueType>
     static bool ContainsValue(const THashMap<KeyType, ValueType> map, const ValueType& value)
     {
-        for (const auto& [key, val] : map)
+        for (const auto& [key, val]: map)
         {
             if (val == value)
             {
@@ -50,6 +47,22 @@ public:
     static bool Contains(const ContainerT& container, const typename ContainerT::value_type& value)
     {
         return std::ranges::any_of(container, [value](const typename ContainerT::value_type& v) { return v == value; });
+    }
+
+    template<typename ContainerT>
+    static TOptional<typename ContainerT::value_type> First(
+        const ContainerT&                                              container,
+        const TFunction<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
+    )
+    {
+        for (auto& item: container)
+        {
+            if (predicate(item))
+            {
+                return item;
+            }
+        }
+        return {};
     }
 };
 
@@ -69,17 +82,6 @@ void ContainerUtils::RemoveIf(ContainerT& Container, const Lambda& Value)
     {
         Container.erase(Iter);
     }
-}
-
-template<typename ContainerT, typename Lambda>
-auto ContainerUtils::FindFirstIf(ContainerT& Container, const Lambda& Value) -> TOptional<decltype(Container.begin())>
-{
-    auto Iter = std::find_if(Container.begin(), Container.end(), Value);
-    if (Iter != Container.end())
-    {
-        return Iter;
-    }
-    return std::nullopt;
 }
 
 template<typename ContainerT>

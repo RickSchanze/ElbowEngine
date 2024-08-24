@@ -32,16 +32,22 @@ public:
 
     vk::CommandPool GetHandle() const { return pool_; }
 
-    void
-    TrainsitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1, uint32_t layer_count = 1) const;
+    void TransitionImageLayout(
+        vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1, uint32_t layer_count = 1
+    );
 
-    void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) const;
+    void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
 
-    bool GenerateMipmaps(vk::Image image, vk::Format image_format, const uint32_t tex_width, const uint32_t tex_height, uint32_t mip_level) const;
+    bool GenerateMipmaps(
+        vk::Image image, vk::Format image_format, const uint32_t tex_width, const uint32_t tex_height, uint32_t mip_level,
+        vk::ImageLayout final_layout = vk::ImageLayout::eShaderReadOnlyOptimal
+    );
 
     void Finialize();
 
-    void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer, uint64_t size) const;
+    void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer, uint64_t size);
+
+    void CopyImage(vk::Image src, vk::Image dst, const TArray<vk::ImageCopy>& copies);
 
     void ResetCommandPool() const;
 
@@ -52,18 +58,18 @@ public:
     void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const;
 
 protected:
+
     /**
      * 与EndSingleTimeCommands配合使用
      * @return
      */
-    vk::CommandBuffer BeginSingleTimeCommands() const;
+    void BeginSingleTimeCommands();
 
     /**
      * 与BeginSingleTimeCommands配合使用
      * 不止End 同时还会提交
-     * @param command_buffer
      */
-    void              EndSingleTimeCommands(vk::CommandBuffer command_buffer) const;
+    void EndSingleTimeCommands();
 
 private:
     vk::CommandPool pool_ = nullptr;
@@ -71,6 +77,8 @@ private:
     Ref<TUniquePtr<LogicalDevice>> device_;
 
     AnsiString debug_name_;
+
+    vk::CommandBuffer single_cmd_;
 };
 
 RHI_VULKAN_NAMESPACE_END

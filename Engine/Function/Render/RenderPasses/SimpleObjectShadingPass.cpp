@@ -25,6 +25,7 @@ void SimpleObjectShadingPass::SetupAttachments()
     swapchain_image.store_op         = vk::AttachmentStoreOp::eStore;
     swapchain_image.sample_count     = sample_count;
     swapchain_image.reference_layout = vk::ImageLayout::eColorAttachmentOptimal;
+    swapchain_image.initial_layout   = vk::ImageLayout::eUndefined;
     swapchain_image.final_layout     = vk::ImageLayout::eColorAttachmentOptimal;
     NewAttachment(swapchain_image);
 
@@ -47,7 +48,7 @@ void SimpleObjectShadingPass::SetupFramebuffer()
     depth_image_info.height = height_;
     depth_image_info.format = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_info.usage  = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-    depth_image_            = new Image(depth_image_info);
+    depth_image_            = Image::Create(depth_image_info);
 
     ImageViewInfo depth_image_view_info{};
     depth_image_view_info.format       = VulkanContext::Get()->GetDepthImageFormat();

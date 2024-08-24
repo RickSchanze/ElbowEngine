@@ -70,7 +70,8 @@ struct ImageInfo
     vk::ImageType           image_type      = vk::ImageType::e2D;
     vk::MemoryPropertyFlags memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
     vk::ImageCreateFlags    create_flags    = {};
-    vk::ImageLayout         initial_layout  = vk::ImageLayout::eUndefined;
+    // 此参数代表你想转换到哪个ImageLayout 与原有的initialLayout含义不同！！！
+    vk::ImageLayout         initial_layout  = vk::ImageLayout::eShaderReadOnlyOptimal;
     vk::SharingMode         sharing_mode    = vk::SharingMode::eExclusive;
 
     AnsiString name;
@@ -102,6 +103,8 @@ public:
 
     explicit Image(ImageInfo create_info);
 
+    static Image* Create(const ImageInfo &info);
+
     void Destroy() override;
 
     ~Image() override;
@@ -115,8 +118,10 @@ public:
     vk::Format GetFormat() const { return image_info_.format; }
     uint32_t   GetMipLevel() const { return image_info_.mip_levels; }
 
-protected:
-    void CreateImage();
+    /**
+     * 实际为图像分配内存
+     */
+    virtual void Initialize();
 
 protected:
     explicit Image() = default;
@@ -129,6 +134,7 @@ protected:
     ImageInfo        image_info_{};
 };
 
+// TODO: 这里应该转移到RenderTextureCube
 class Cubemap : public Image
 {
 public:
@@ -146,6 +152,8 @@ public:
 
     explicit Cubemap(const ImageInfo& image_info);
 
+    void Initialize() override;
+
     ~Cubemap() override;
 
     void CreateCubemapImageViews(const AnsiString& name = "");
@@ -155,9 +163,9 @@ public:
     ImageView* GetView() const { return cubemap_image_view_; }
 
 protected:
-    TArray<ImageView*> cubemap_image_face_views_;
+    TArray<ImageView*> cubemap_image_face_views_ = {};
     TArray<AnsiString> cubemap_face_view_names_;
-    ImageView*         cubemap_image_view_;
+    ImageView*         cubemap_image_view_ = nullptr;
     AnsiString         cubemap_image_view_name_;
 };
 
@@ -188,6 +196,10 @@ class Texture : public Image
 public:
     Texture(const ImageInfo& image_info, const uint8_t* data);
 
+    Texture(const ImageInfo& img_info);
+
+    void Initialize() override;
+
     static void LoadDefaultTextures();
 
     static Texture&   GetDefaultLackTexture();
@@ -197,6 +209,9 @@ protected:
     static inline Texture*   s_default_lack_texture_      = nullptr;
     static inline ImageView* s_default_lack_texture_view_ = nullptr;
     static inline bool       default_textures_loaded_     = false;
+
+    // 临时存储的变量 调用Initialize()后即置空
+    const uint8_t* data_;
 };
 
 class Sampler : public IRHIResource

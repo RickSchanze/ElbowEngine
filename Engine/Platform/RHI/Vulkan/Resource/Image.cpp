@@ -62,7 +62,6 @@ ImageInfo ImageInfo::CubemapInfo(
     info.sample_count            = sample_count;
     info.image_type              = vk::ImageType::e2D;
     info.depth                   = 1;
-    info.initial_layout          = initial_layout;
     info.sharing_mode            = sharing_mode;
     info.create_flags            = create_flags;
     info.memory_property         = memory_property;
@@ -86,12 +85,13 @@ ImageInfo::ImageInfo(const vk::ImageCreateInfo& image_info)
     memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
 }
 
-Image::Image(ImageInfo create_info) : image_info_(std::move(create_info))
+Image::Image(ImageInfo create_info) : image_info_(std::move(create_info)) {}
+
+Image* Image::Create(const ImageInfo& info)
 {
-    if (image_handle_ == nullptr)
-    {
-        CreateImage();
-    }
+    Image* new_img = new Image(info);
+    new_img->Initialize();
+    return new_img;
 }
 
 void Image::Destroy()
@@ -124,7 +124,7 @@ void Image::Finialize()
     }
 }
 
-void Image::CreateImage()
+void Image::Initialize()
 {
     VulkanContext&      context = *VulkanContext::Get();
     vk::ImageCreateInfo image_create_info{};
@@ -193,11 +193,13 @@ ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
     return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.name);
 }
 
-Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info)
+Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info) {}
+
+void Cubemap::Initialize()
 {
-    VulkanContext::Get()->GetCommandPool()->TrainsitionImageLayout(
-        GetHandle(), GetFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, GetMipLevel(), 6
-    );
+    Image::Initialize();
+    const auto& pool = VulkanContext::Get()->GetCommandPool();
+    pool->TransitionImageLayout(GetHandle(), GetFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, GetMipLevel(), 6);
     vk::ImageViewCreateInfo view_create_info;
     view_create_info.image                       = GetHandle();
     view_create_info.viewType                    = vk::ImageViewType::eCube;
@@ -205,7 +207,7 @@ Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info)
     view_create_info.components                  = {{vk::ComponentSwizzle::eR}};
     view_create_info.subresourceRange            = {vk::ImageAspectFlagBits::eColor, 0, GetMipLevel(), 0, 1};
     view_create_info.subresourceRange.layerCount = 6;
-    cubemap_image_view_name_                     = image_info.name + "_CubemapView";
+    cubemap_image_view_name_                     = image_info_.name + "_CubemapView";
     cubemap_image_view_ =
         new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.c_str());
 }
@@ -270,65 +272,86 @@ Texture::Texture(const ImageInfo& image_info, const uint8_t* data)
         LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: 宽或高不合法");
         return;
     }
-    // TODO: 绑定TextureSampler
-    vk::Buffer       staging_buffer;
-    vk::DeviceMemory staging_buffer_memory;
+    this->data_ = data;
+}
+
+Texture::Texture(const ImageInfo& img_info) : data_(nullptr)
+{
+    image_info_ = img_info;
+}
+
+void Texture::Initialize()
+{
     VulkanContext&   context       = *VulkanContext::Get();
     auto&            device        = context.GetLogicalDevice();
     auto             device_handle = device->GetHandle();
     auto&            command_pool  = context.GetCommandPool();
-
-    auto width  = image_info_.width;
-    auto height = image_info_.height;
-
-    const vk::DeviceSize image_size = width * height * 4;
-    image_info_.mip_levels          = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
-
-    device->CreateBuffer(
-        image_size,
-        vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-        staging_buffer,
-        staging_buffer_memory
-    );
-    void*      map_data;
-    const auto result = device_handle.mapMemory(staging_buffer_memory, 0, image_size, vk::MemoryMapFlags(), &map_data);
-    if (result != vk::Result::eSuccess)
+    // TODO: 绑定TextureSampler
+    vk::Buffer       staging_buffer;
+    vk::DeviceMemory staging_buffer_memory;
+    // data不等于nullptr说明传入了图像数据 那这时直接使用StagingBuffer上传到GPU即可
+    // data == nullptr代表还需要一些其他操作 交给子类重写执行
+    if (data_ != nullptr)
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"映射内存失败");
-        return;
-    }
-    std::memcpy(map_data, data, image_size);
-    device_handle.unmapMemory(staging_buffer_memory);
-    image_info_.width  = width;
-    image_info_.height = height;
-    if (image_info_.format == vk::Format::eUndefined)
-    {
-        image_info_.format = vk::Format::eR8G8B8A8Unorm;
-    }
-    // 这里设为Src是为了生成mipmap
-    image_info_.usage           = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
-    image_info_.tiling          = vk::ImageTiling::eOptimal;
-    image_info_.memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
-    image_info_.sample_count    = vk::SampleCountFlagBits::e1;
-    CreateImage();
-    // 赋值暂存缓冲区数据到纹理图像
-    // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
-    command_pool->TrainsitionImageLayout(
-        image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, image_info_.mip_levels
-    );
-    // 2. 复制缓冲区到图像
-    command_pool->CopyBufferToImage(staging_buffer, image_handle_, image_info_.width, image_info_.height);
-    // 3. 生成mipmap
-    if (!command_pool->GenerateMipmaps(image_handle_, image_info_.format, image_info_.width, image_info_.height, image_info_.mip_levels))
-    {
-        // 无法生成mipmap就直接传给shader
-        command_pool->TrainsitionImageLayout(
-            image_handle_, image_info_.format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal
+        auto width  = image_info_.width;
+        auto height = image_info_.height;
+
+        const vk::DeviceSize image_size = width * height * 4;
+        image_info_.mip_levels          = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+
+        device->CreateBuffer(
+            image_size,
+            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+            staging_buffer,
+            staging_buffer_memory
         );
+        void*      map_data;
+        const auto result = device_handle.mapMemory(staging_buffer_memory, 0, image_size, vk::MemoryMapFlags(), &map_data);
+        if (result != vk::Result::eSuccess)
+        {
+            LOG_ERROR_CATEGORY(Vulkan, L"映射内存失败");
+            return;
+        }
+        std::memcpy(map_data, data_, image_size);
+        device_handle.unmapMemory(staging_buffer_memory);
+
+        image_info_.width  = width;
+        image_info_.height = height;
+        if (image_info_.format == vk::Format::eUndefined)
+        {
+            image_info_.format = vk::Format::eR8G8B8A8Unorm;
+        }
+        // 这里设为Src是为了生成mipmap
+        image_info_.usage           = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+        image_info_.tiling          = vk::ImageTiling::eOptimal;
+        image_info_.memory_property = vk::MemoryPropertyFlagBits::eDeviceLocal;
+        image_info_.sample_count    = vk::SampleCountFlagBits::e1;
     }
-    device_handle.destroy(staging_buffer);
-    device_handle.freeMemory(staging_buffer_memory);
+
+    Image::Initialize();
+
+    if (data_ != nullptr)
+    {
+        // 赋值暂存缓冲区数据到纹理图像
+        // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
+        command_pool->TransitionImageLayout(
+            image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, image_info_.mip_levels
+        );
+        // 2. 复制缓冲区到图像
+        command_pool->CopyBufferToImage(staging_buffer, image_handle_, image_info_.width, image_info_.height);
+        // 3. 生成mipmap
+        if (!command_pool->GenerateMipmaps(
+                image_handle_, image_info_.format, image_info_.width, image_info_.height, image_info_.mip_levels, image_info_.initial_layout
+            ))
+        {
+            // 无法生成mipmap就直接传给shader
+            command_pool->TransitionImageLayout(image_handle_, image_info_.format, vk::ImageLayout::eTransferDstOptimal, image_info_.initial_layout);
+        }
+        device_handle.destroy(staging_buffer);
+        device_handle.freeMemory(staging_buffer_memory);
+        data_ = nullptr;
+    }
 }
 
 void Texture::LoadDefaultTextures()

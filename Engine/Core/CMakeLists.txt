@@ -18,6 +18,8 @@ add_library(${PROJECT_NAME}
         Utils/MemoryUtils.h
         Utils/HashUtils.h
         Utils/HashUtils.cpp
+        Utils/PathUtils.h
+        Utils/PathUtils.cpp
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h

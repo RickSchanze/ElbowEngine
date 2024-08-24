@@ -1,14 +1,17 @@
 /**
- * @file SkyboxShader.cpp
+ * @file SkySphereShader.cpp
  * @author Echo 
- * @Date 24-8-24
+ * @Date 24-8-18
  * @brief 
  */
 
-#include "SkyboxShader.h"
+#include "SkySphereShader.h"
+
 #include "Math/MathTypes.h"
 
-void Function::SkyboxVertShader::RegisterShaderVariables()
+FUNCTION_NAMESPACE_BEGIN
+
+void SkySphereVertShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(0)
     struct UBOView
@@ -20,9 +23,11 @@ void Function::SkyboxVertShader::RegisterShaderVariables()
     REGISTER_SHADER_VAR_END()
 }
 
-void Function::SkyboxFragShader::RegisterShaderVariables()
+void SkySphereFragShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(1)
-    REGISTER_FRAG_SHADER_VAR_AUTO_SmaplerCube("sky", false);
+    REGISTER_FRAG_SHADER_VAR_AUTO_Sampler2D("sky", false);
     REGISTER_SHADER_VAR_END()
 }
+
+FUNCTION_NAMESPACE_END

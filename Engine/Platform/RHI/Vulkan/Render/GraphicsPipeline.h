@@ -163,6 +163,8 @@ public:
 
     vk::PipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
 
+    PipelineInfo GetPipelineInfo() const { return pipeline_info_; }
+
 protected:
     void CreatePipeline();
     void DestroyPipeline();

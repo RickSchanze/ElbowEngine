@@ -10,6 +10,7 @@
 #include "Path/Path.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "RHI/Vulkan/VulkanContext.h"
+#include "Shader.h"
 #include "vulkan/vulkan.hpp"
 
 namespace RHI::Vulkan
@@ -91,7 +92,7 @@ private:
 #define DECLARE_FRAG_SHADER(type)                                                                                     \
 public:                                                                                                               \
     type(Protected, Ref<RHI::Vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
-        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Fragment, shader_name)                    \
+        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Fragment, shader_name)                  \
     {                                                                                                                 \
     }                                                                                                                 \
                                                                                                                       \
@@ -159,6 +160,33 @@ struct VertexInAttribute
     uint8_t    offset;     // = 0
 };
 
+class ShaderManager
+{
+public:
+    static class Shader* Request(const Path& shader)
+    {
+        if (shaders_.contains(shader.ToRelativeString()))
+        {
+            return shaders_[shader.ToRelativeString()];
+        }
+        return nullptr;
+    }
+
+    static void RegisterShader(const Path& p, Shader* shader)
+    {
+        if (shaders_.empty())
+        {
+            VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ShaderManager::DestroyAll);
+        }
+        shaders_[p.ToRelativeString()] = shader;
+    }
+
+    static void DestroyAll();
+
+protected:
+    static inline THashMap<String, Shader*> shaders_;
+};
+
 // 输入Spirv文件路径，通过反射获取所有uniform变量
 class Shader
 {
@@ -183,8 +211,14 @@ public:
     {
         static_assert(!std::is_same_v<T, Shader>, "Shader::Create<T> T must be its subclass");
         const Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        T*        shader = new T(Protected{}, device, path, name);
+        Shader*   s      = ShaderManager::Request(path);
+        if (s != nullptr)
+        {
+            return s;
+        }
+        T* shader = new T(Protected{}, device, path, name);
         shader->RegisterShaderVariables();
+        ShaderManager::RegisterShader(path, shader);
         return shader;
     }
 

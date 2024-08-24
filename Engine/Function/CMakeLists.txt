@@ -7,6 +7,8 @@ set(SHADER_FILE
         Render/Shaders/PointLightShadowPassShader.cpp
         Render/Shaders/SkyboxShader.h
         Render/Shaders/SkyboxShader.cpp
+        Render/Shaders/SkySphereShader.h
+        Render/Shaders/SkySphereShader.cpp
 )
 
 set(RENDER_PASS_FILE

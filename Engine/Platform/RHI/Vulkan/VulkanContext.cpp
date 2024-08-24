@@ -340,9 +340,10 @@ void VulkanContext::OnBackBufferResized(int w, int h)
             info.width          = w;
             info.height         = h;
             info.tiling         = vk::ImageTiling::eOptimal;
-            info.initial_layout = vk::ImageLayout::eUndefined;
             info.usage          = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+            info.name           = AnsiString("Backbuffer") + std::to_string(i);
             back_buffer         = new Image(info);
+            back_buffer->Initialize();
             auto& view = context->back_buffer_views_[i];
             delete view;
             ImageViewInfo view_info;

@@ -11,6 +11,8 @@
 #include "ImGui/ImGuiHelper.h"
 #include "Math/MathTypes.h"
 #include "Mesh.h"
+#include "Render/Shaders/SkyboxShader.h"
+#include "Render/Shaders/SkySphereShader.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
 
@@ -22,22 +24,53 @@ SkyboxMaterial::SkyboxMaterial(
 {
     if (!shader_program_->HasShaderUniform("sky"))
     {
-        LOG_ERROR_CATEGORY(Material, L"传入天空盒材质的shader没有必须的参数\"sky\"");
+        LOG_ERROR_CATEGORY(Material.Skybox, L"传入天空盒材质的shader没有必须的参数\"sky\"");
     }
 }
 
-void SkyboxMaterial::SetSkyTexture(Resource::Texture* texture) const
+void SkyboxMaterial::SetSkySphereTexture(Resource::Texture* texture)
 {
     if (texture == nullptr)
     {
         return;
     }
-    if (!texture->GetPath().EndsWith(L".hdr"))
+    if (texture->GetUsage() != Resource::ETextureUsage::Skybox2D)
     {
-        LOG_ERROR_CATEGORY(Material, L"天空盒材质的纹理必须以.hdr结尾");
+        LOG_ERROR_CATEGORY(Material.Skybox, L"天空球材质的纹理类型必须为Skybox2D");
         return;
     }
+    if (use_skybox_ != 1)
+    {
+        RHI::Vulkan::Shader* vert = RHI::Vulkan::Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert");
+        RHI::Vulkan::Shader* frag = RHI::Vulkan::Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag");
+        shader_program_ = RHI::Vulkan::ShaderProgram::Create(vert, frag);
+        auto info = pipeline_->GetPipelineInfo();
+        info.shader_program = shader_program_;
+        delete pipeline_;
+        pipeline_ = new RHI::Vulkan::GraphicsPipeline(info);
+        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立方体贴图映射");
+    }
     shader_program_->SetTexture("sky", *texture->GetTextureView(), RHI::Vulkan::Sampler::GetDefaultSampler());
+    use_skybox_ = 1;
+}
+
+void SkyboxMaterial::SetSkyBoxTexture(const Path& path)
+{
+    if (use_skybox_ != -1)
+    {
+        RHI::Vulkan::Shader* vert = RHI::Vulkan::Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert");
+        RHI::Vulkan::Shader* frag = RHI::Vulkan::Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag");
+        shader_program_ = RHI::Vulkan::ShaderProgram::Create(vert, frag);
+        auto info = pipeline_->GetPipelineInfo();
+        info.shader_program = shader_program_;
+        delete pipeline_;
+        pipeline_ = new RHI::Vulkan::GraphicsPipeline(info);
+        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至球面环境映射");
+    }
+
+    Resource::TextureCube* texture = Resource::TextureCube::Create(path);
+    shader_program_->SetTexture("sky", *texture->GetTextureView(), RHI::Vulkan::Sampler::GetDefaultSampler());
+    use_skybox_ = 0;
 }
 
 void SkyboxMaterial::OnInspectorGUI()

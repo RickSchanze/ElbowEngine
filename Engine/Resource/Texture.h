@@ -2,7 +2,8 @@
  * @file Texture.h
  * @author Echo 
  * @Date 24-5-7
- * @brief 
+ * @brief
+ * TODO: RenderTexture
  */
 
 #pragma once
@@ -25,56 +26,107 @@ RESOURCE_NAMESPACE_BEGIN
 
 enum class ETextureUsage
 {
+    None,
     Diffuse,
+    Skybox2D,
+    SkyboxCube,
+    SkyboxFace,
 };
 
+/**
+ * 纹理资源类
+ * 现在默认无法write/read(即创建就释放CPU侧资源)
+ * TODO: 实现真正意义上的"RHI"
+ */
 class Texture : public IResource, public IRHIResourceContainer<RHI::Vulkan::Texture>
 {
     friend class RHI::Vulkan::Texture;
 
-protected:
-    struct Protected
-    {
-    };
-
 public:
-    Texture(Protected, const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+    Texture() = default;
 
-    static Texture* Create(const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {});
 
-    bool IsValid() const override { return data_ != nullptr; }
+    static Texture* Create(
+        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {},
+        vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal);
+
+    bool IsValid() const override { return rhi_texture_ != nullptr; }
 
     ~Texture() override;
 
-    int32_t  GetWidth() const { return width_; }
-    int32_t  GetHeight() const { return height_; }
-    int32_t  GetChannels() const { return channels_; }
-    uint8_t* GetData() const { return data_; }
-    Path     GetPath() const override { return path_; }
+    int32_t       GetWidth() const { return width_; }
+    int32_t       GetHeight() const { return height_; }
+    int32_t       GetChannels() const { return channels_; }
+    uint8_t*      GetData() const { return data_; }
+    Path          GetPath() const override { return path_; }
+    ETextureUsage GetUsage() const { return usage_; }
 
     RHI::Vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
     RHI::Vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
 
-    void Load() final;
+    void Load() override;
+
+    /**
+     * 释放纹理在CPU侧的资源
+     */
+    virtual void ReleaseMemoryCPU();
+
+    /**
+     * CPU侧纹理资源是否有效
+     * @return
+     */
+    virtual bool IsCPUMemoryAvailable();
 
     RHI::Vulkan::Texture* GetRHIResource() override;
 
     static Texture* GetDefaultLackTexture();
 
+    vk::Image  GetLowlevelImage() const;
+    vk::Format GetLowlevelFormat() const;
+
 protected:
+    Texture(
+        const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info = {},
+        vk::ImageLayout init_transition_to_layout = vk::ImageLayout::eShaderReadOnlyOptimal
+    );
+
     Path          path_;
     int32_t       width_    = 0;
     int32_t       height_   = 0;
     int32_t       channels_ = 0;
     uint8_t*      data_     = nullptr;
-    ETextureUsage usage_;
+    ETextureUsage usage_    = ETextureUsage::None;
 
-private:
     RHI::Vulkan::Texture*   rhi_texture_      = nullptr;
     RHI::Vulkan::ImageView* rhi_texture_view_ = nullptr;
     RHI::Vulkan::Sampler*   rhi_sampler_      = nullptr;
 
     RHI::Vulkan::SamplerInfo sampler_info_;
+
+private:
+    // 一开始要转换到什么Layout
+    vk::ImageLayout init_transition_to_layout_;
+};
+
+class TextureCube : public Texture
+{
+public:
+    /**
+     * 创建一个TextureCube
+     * @param cube_folder 立方体贴图文件夹 应该包含以_Left,_Right,_Top,_Bottom,_Front,_Back结尾的6张图片 没有包含则会使用DefaultLackTexture并警告
+     * @param sampler_info
+     * @return
+     */
+    static TextureCube* Create(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+
+    explicit TextureCube(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+
+    void Load() override;
+
+    ~TextureCube() override;
+
+protected:
+    TStaticArray<Texture*, 6> textures_{};
 };
 
 RESOURCE_NAMESPACE_END

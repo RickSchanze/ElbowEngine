@@ -33,20 +33,8 @@ public:
 
     ~ShaderProgram();
 
-    static TSharedPtr<ShaderProgram>
-    CreateShared(Shader* vert, Shader* frag, EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString& debug_name = "")
-    {
-        Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        return MakeShared<ShaderProgram>(device, vert, frag, destroy_time, debug_name);
-    }
-
     static ShaderProgram*
-    Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString& debug_name = "")
-    {
-        Ref   device  = *VulkanContext::Get()->GetLogicalDevice();
-        auto* program = new ShaderProgram(device, vert, frag, destroy_time, debug_name);
-        return program;
-    }
+    Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time = EShaderDestroyTime::Defered, const AnsiString& debug_name = "");
 
     /**
      * 检查这个Shader的Uniform变量是否合规
@@ -76,8 +64,6 @@ public:
     uint32_t GetStride() const;
 
     const THashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return uniforms_; }
-
-    void DestroyShaders();
 
     // 设置纹理
     bool SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler);

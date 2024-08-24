@@ -7,6 +7,7 @@
 
 #include "ShaderProgram.h"
 
+#include "CoreEvents.h"
 #include "CoreGlobal.h"
 #include "Misc/Vertex.h"
 #include "Utils/StringUtils.h"
@@ -16,6 +17,65 @@
 #include "RHI/Vulkan/Resource/Buffer.h"
 
 RHI_VULKAN_NAMESPACE_BEGIN
+
+class ShaderProgramManager
+{
+    struct ShaderPath
+    {
+        Path vert;
+        Path frag;
+    };
+
+    struct ShaderPathHash
+    {
+        size_t operator()(const ShaderPath& p) const
+        {
+            return std::hash<String>()(p.vert.ToRelativeString()) ^ std::hash<String>()(p.frag.ToRelativeString());
+        }
+    };
+
+    struct ShaderPathEqual
+    {
+        bool operator()(const ShaderPath& p1, const ShaderPath& p2) const { return p1.vert == p2.vert && p1.frag == p2.frag; }
+    };
+
+public:
+    static ShaderProgram* Request(const Path& v, const Path& f)
+    {
+        ShaderPath p;
+        p.vert = v;
+        p.frag = f;
+        if (shader_programs_.contains(p))
+        {
+            return shader_programs_[p];
+        }
+        return nullptr;
+    }
+
+    static void Register(ShaderProgram* prog)
+    {
+        if (shader_programs_.empty())
+        {
+            VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ShaderProgramManager::DestroyAll);
+        }
+        ShaderPath p;
+        p.vert              = prog->GetVertShader()->GetShaderPath();
+        p.frag              = prog->GetFragShader()->GetShaderPath();
+        shader_programs_[p] = prog;
+    }
+
+    static void DestroyAll()
+    {
+        for (const auto& v: shader_programs_ | std::views::values)
+        {
+            delete v;
+        }
+        shader_programs_.clear();
+    }
+
+protected:
+    inline static THashMap<ShaderPath, ShaderProgram*, ShaderPathHash, ShaderPathEqual> shader_programs_;
+};
 
 ShaderProgram::ShaderProgram(
     const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const AnsiString& debug_name
@@ -40,11 +100,23 @@ ShaderProgram::ShaderProgram(
 
 ShaderProgram::~ShaderProgram()
 {
-    DestroyShaders();
     DestroyDescriptorSets();
     DestroyDescriptorSetLayout();
     DestroyDescriptorPool();
     DestroyUniformBuffers();
+}
+
+ShaderProgram* ShaderProgram::Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const AnsiString& debug_name)
+{
+    Ref   device = *VulkanContext::Get()->GetLogicalDevice();
+    auto* prog   = ShaderProgramManager::Request(vert->GetShaderPath(), frag->GetShaderPath());
+    if (prog != nullptr)
+    {
+        return prog;
+    }
+    prog = new ShaderProgram(device, vert, frag, destroy_time, debug_name);
+    ShaderProgramManager::Register(prog);
+    return prog;
 }
 
 bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
@@ -111,20 +183,6 @@ uint32_t ShaderProgram::GetStride() const
 {
     // Mesh里Vertex的大小
     return sizeof(Vertex);
-}
-
-void ShaderProgram::DestroyShaders()
-{
-    if (vert_shader_)
-    {
-        delete vert_shader_;
-        vert_shader_ = nullptr;
-    }
-    if (frag_shader_)
-    {
-        delete frag_shader_;
-        frag_shader_ = nullptr;
-    }
 }
 
 bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler)
