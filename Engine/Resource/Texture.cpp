@@ -274,6 +274,7 @@ void TextureCube::Load()
     image_info.width        = width_;
     image_info.height       = height_;
     image_info.depth        = 1;
+    image_info.create_flags = vk::ImageCreateFlagBits::eCubeCompatible;
 
     rhi_texture_ = new RHI::Vulkan::Texture(image_info);
     rhi_texture_->Initialize();
@@ -281,9 +282,11 @@ void TextureCube::Load()
     auto& pool = VulkanContext::Get()->GetCommandPool();
     // 执行图像复制
 
-    pool->TransitionImageLayout(GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     for (int i = 0; i < 6; i++)
     {
+        pool->TransitionImageLayout(
+            GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 1, i
+        );
         vk::ImageCopy copy;
         copy.srcSubresource.aspectMask     = vk::ImageAspectFlagBits::eColor;
         copy.srcSubresource.layerCount     = 1;
@@ -295,15 +298,15 @@ void TextureCube::Load()
         copy.extent                        = {{(uint32_t)width_, (uint32_t)height_, 1}};
         pool->CopyImage(textures_[i]->GetLowlevelImage(), GetLowlevelImage(), {copy});
         pool->TransitionImageLayout(
+            GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 1, i
+        );
+        pool->TransitionImageLayout(
             textures_[i]->GetLowlevelImage(),
             textures_[i]->GetLowlevelFormat(),
             vk::ImageLayout::eTransferSrcOptimal,
             vk::ImageLayout::eShaderReadOnlyOptimal
         );
     }
-    pool->TransitionImageLayout(
-        GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal
-    );
     // TODO: 使用Image创建而不是使用LogicalDevice创建
     vk::ImageViewCreateInfo view_create_info;
     view_create_info.image                       = GetLowlevelImage();
@@ -315,14 +318,7 @@ void TextureCube::Load()
     rhi_texture_view_ = new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info));
 }
 
-TextureCube::~TextureCube()
-{
-    for (int i = 0; i < 6; i++)
-    {
-        delete textures_[i];
-        textures_[i] = nullptr;
-    }
-}
+TextureCube::~TextureCube() = default;
 
 RESOURCE_NAMESPACE_END
 

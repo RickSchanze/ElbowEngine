@@ -70,7 +70,7 @@ void SkyboxMaterial::SetSkyBoxTexture(const Path& path)
 
     Resource::TextureCube* texture = Resource::TextureCube::Create(path);
     shader_program_->SetTexture("sky", *texture->GetTextureView(), RHI::Vulkan::Sampler::GetDefaultSampler());
-    use_skybox_ = 0;
+    use_skybox_ = -1;
 }
 
 void SkyboxMaterial::OnInspectorGUI()

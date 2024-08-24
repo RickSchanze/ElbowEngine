@@ -123,6 +123,7 @@ public:
 
     void Load() override;
 
+    // 创建的Texture*由ResourceManager管理
     ~TextureCube() override;
 
 protected:

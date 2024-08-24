@@ -32,8 +32,10 @@ public:
 
     vk::CommandPool GetHandle() const { return pool_; }
 
+    // TODO: 图像布局变换这块需要优化
     void TransitionImageLayout(
-        vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1, uint32_t layer_count = 1
+        vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t mip_level = 1, uint32_t layer_count = 1,
+        uint32_t base_array_layer = 0
     );
 
     void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);

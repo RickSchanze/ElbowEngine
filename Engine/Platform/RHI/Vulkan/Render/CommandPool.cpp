@@ -52,7 +52,7 @@ void CommandPool::CleanCommandPool()
 
 void CommandPool::TransitionImageLayout(
     const vk::Image image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout, uint32_t mip_level,
-    uint32_t layer_count
+    uint32_t layer_count, uint32_t base_array_layer
 )
 {
     BeginSingleTimeCommands();
@@ -68,7 +68,7 @@ void CommandPool::TransitionImageLayout(
     barrier.subresourceRange.aspectMask     = vk::ImageAspectFlagBits::eColor;
     barrier.subresourceRange.baseMipLevel   = 0;
     barrier.subresourceRange.levelCount     = mip_level;
-    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.baseArrayLayer = base_array_layer;
     barrier.subresourceRange.layerCount     = layer_count;
     // 指定屏障之前要发生的操作类型 以及屏障之后才发生的操作类型
     barrier.srcAccessMask                   = {};
