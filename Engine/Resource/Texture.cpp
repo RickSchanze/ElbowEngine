@@ -302,15 +302,6 @@ void TextureCube::Load()
             GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 1, i
         );
     }
-    for (int i = 0; i < 6; i++)
-    {
-        pool->TransitionImageLayout(
-            textures[i]->GetLowlevelImage(),
-            textures[i]->GetLowlevelFormat(),
-            vk::ImageLayout::eTransferSrcOptimal,
-            vk::ImageLayout::eShaderReadOnlyOptimal
-        );
-    }
     // TODO: 使用Image创建而不是使用LogicalDevice创建
     vk::ImageViewCreateInfo view_create_info;
     view_create_info.image            = GetLowlevelImage();

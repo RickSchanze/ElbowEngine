@@ -74,10 +74,10 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     }
     forward_pass_->End(cb);
 
-    if (g_engine_statistics.frame_count % 1000 == 0)
-    {
-        sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
-    }
+    // if (g_engine_statistics.frame_count % 1000 == 0)
+    // {
+    //     sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
+    // }
     if (g_engine_statistics.frame_count % 3000 == 0)
     {
         sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));

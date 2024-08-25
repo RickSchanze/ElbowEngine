@@ -48,7 +48,7 @@ void SkyboxMaterial::SetSkySphereTexture(Resource::Texture* texture)
         info.shader_program       = shader_program_;
         delete pipeline_;
         pipeline_ = new RHI::Vulkan::GraphicsPipeline(info);
-        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立方体贴图映射");
+        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立球面环境映射");
     }
     SetTexture("sky", texture);
     use_skybox_ = 1;
@@ -65,7 +65,7 @@ void SkyboxMaterial::SetSkyBoxTexture(const Path& path)
         info.shader_program       = shader_program_;
         delete pipeline_;
         pipeline_ = new RHI::Vulkan::GraphicsPipeline(info);
-        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至球面环境映射");
+        LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立方体贴图");
     }
 
     Resource::TextureCube* texture = Resource::TextureCube::Create(path);

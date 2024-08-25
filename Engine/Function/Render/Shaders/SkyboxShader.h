@@ -26,7 +26,7 @@ public:
     void RegisterShaderVariables() override;
 
 private:
-    DECLARE_VERT_SHADER(SkyboxFragShader)
+    DECLARE_FRAG_SHADER(SkyboxFragShader)
 };
 
 FUNCTION_NAMESPACE_END

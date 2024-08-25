@@ -87,3 +87,4 @@ fabric.properties
 !CodeGenerator/bin
 
 *.spv
+Content/Cache
