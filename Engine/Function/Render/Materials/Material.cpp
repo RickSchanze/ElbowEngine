@@ -238,7 +238,7 @@ void Material::OnInspectorGUI()
     for (auto& [name, texture]: textures_maps_)
     {
         ImGuiHelper::Text("%s:", name.data());
-        ImGuiHelper::Image(texture, 160, 160);
+        ImGuiHelper::Image(texture);
     }
 }
 

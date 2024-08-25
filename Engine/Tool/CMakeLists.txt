@@ -13,6 +13,8 @@ set(WINDOW_FILE
         Editor/Window/ViewportWindow.cpp
         Editor/Window/SceneViewportWindow.h
         Editor/Window/SceneViewportWindow.cpp
+        Editor/Window/LightSettingWindow.h
+        Editor/Window/LightSettingWindow.cpp
 )
 
 add_library(${PROJECT_NAME}

@@ -19,11 +19,11 @@
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
-#include "Component/Script/Autorotation.h"
 #include "Component/Script/SpaceCircle.h"
 #include "Editor/Window/DebugWindow.h"
 #include "Editor/Window/DetailWindow.h"
 #include "Editor/Window/ImGuiDemoWindow.h"
+#include "Editor/Window/LightSettingWindow.h"
 #include "Editor/Window/OutlineWindow.h"
 #include "Editor/Window/SceneViewportWindow.h"
 #include "Editor/Window/WindowBase.h"
@@ -250,6 +250,10 @@ void EngineApplication::DrawWindowMenu()
         {
             OnOpenSceneWindow();
         }
+        if (ImGui::MenuItem(U8("光照设置")))
+        {
+            OnOpenLightSettingWindow();
+        }
         ImGui::EndMenu();
     }
 }
@@ -285,8 +289,14 @@ void EngineApplication::OnOpenImGuiDemoWindow()
     OpenWindow<Window::ImGuiDemoWindow>();
 }
 
-void EngineApplication::OnOpenSceneWindow(){
+void EngineApplication::OnOpenSceneWindow()
+{
     OpenWindow<Window::SceneViewportWindow>();
+}
+
+void EngineApplication::OnOpenLightSettingWindow()
+{
+    OpenWindow<Window::LightSettingWindow>();
 }
 
 TOOL_NAMESPACE_END

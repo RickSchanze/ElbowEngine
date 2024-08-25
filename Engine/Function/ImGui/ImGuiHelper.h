@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreDef.h"
+#include "RHI/Vulkan/VulkanContext.h"
 
 #include <vulkan/vulkan_core.h>
 
@@ -15,6 +16,10 @@
 #include <imgui.h>
 #endif
 
+namespace Resource
+{
+class TextureCube;
+}
 namespace Resource
 {
 class Texture;
@@ -49,13 +54,19 @@ public:
 
     static void Separator();
 
-    static void Image(Resource::Texture* texture, int32_t width, int32_t height);
+    static void Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
+
+    static void Image(Resource::TextureCube* texture_cube, int max_wdith = 500,int max_height = 500);
+
+    static void Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width,int max_height);
 
     /**
      * 适应窗口宽度的显示image
      * @param texture
+     * @param max_width
+     * @param max_height
      */
-    static void Image(Resource::Texture* texture);
+    static void Image(Resource::Texture* texture, int max_width = 500,int max_height = 500);
 
     static void SameLine();
 
@@ -73,6 +84,8 @@ static void TextWrapped(const char* fmt, Args&&... args)
 
     static void WarningBox(const char* text);
 
+    static void ErrorBox(const char* text);
+
     /**
      * new scale = old scale * scale
      * @param scale
@@ -88,7 +101,7 @@ static void TextWrapped(const char* fmt, Args&&... args)
 private:
     static void RemoveAllImGuiTextures();
 
-    static inline THashMap<Resource::Texture*, VkDescriptorSet> imgui_textuers_;
+    static inline THashMap<RHI::Vulkan::ImageView*, VkDescriptorSet> imgui_textuers_;
 
     static inline TArray<VkDescriptorSet> back_image_texture_;
 

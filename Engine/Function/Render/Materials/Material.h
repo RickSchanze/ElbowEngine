@@ -160,7 +160,6 @@ public:
     static Material* CreateMaterial(
         RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name = {},
         const MaterialConfig& config = {}
-
     );
 
     template<typename T>

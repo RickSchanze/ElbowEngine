@@ -143,14 +143,14 @@ TextureCube::TextureCube(const Path& cube_folder, const RHI::Vulkan::SamplerInfo
 {
     path_         = cube_folder;
     sampler_info_ = sampler_info;
-    textures_     = {};
     usage_        = ETextureUsage::SkyboxCube;
 }
 
 void TextureCube::Load()
 {
     // 找到所有需要加载的资产
-    TArray<Path> skybox_textures = PathUtils::FilterPath(
+    TStaticArray<Texture*, 6> textures;
+    TArray<Path>              skybox_textures = PathUtils::FilterPath(
         path_,
         [](const Path& p) {
             const String name = p.GetFileName();
@@ -170,11 +170,11 @@ void TextureCube::Load()
     }
 
 
-    auto LoadCubeFace = [&skybox_textures, this](const String& subfix, int index) -> bool {
-        auto path = ContainerUtils::First(skybox_textures, [&subfix](const auto& p) { return p.GetFileName().contains(subfix); });
+    auto LoadCubeFace = [&skybox_textures, this, &textures](const String& subfix, int index) -> bool {
+        auto path = ContainerUtils::First(skybox_textures, [&subfix, &textures](const auto& p) { return p.GetFileName().contains(subfix); });
         if (path)
         {
-            textures_[index] = Texture::Create(*path, ETextureUsage::SkyboxFace, sampler_info_, vk::ImageLayout::eTransferSrcOptimal);
+            textures[index] = Texture::Create(*path, ETextureUsage::SkyboxFace, sampler_info_, vk::ImageLayout::eTransferSrcOptimal);
         }
         else
         {
@@ -183,8 +183,8 @@ void TextureCube::Load()
         }
         if (width_ == 0 || height_ == 0)
         {
-            width_  = textures_[index]->GetWidth();
-            height_ = textures_[index]->GetHeight();
+            width_  = textures[index]->GetWidth();
+            height_ = textures[index]->GetHeight();
             if (width_ != height_)
             {
                 LOG_ERROR_CATEGORY(TextureCube, L"{}: 立方体贴图的六个面的宽高必须相等", path_.ToRelativeString());
@@ -193,7 +193,7 @@ void TextureCube::Load()
         }
         else
         {
-            if (textures_[index]->GetWidth() != width_ || textures_[index]->GetHeight() != height_)
+            if (textures[index]->GetWidth() != width_ || textures[index]->GetHeight() != height_)
             {
                 LOG_ERROR_CATEGORY(TextureCube, L"{}: 立方体贴图的六个面的宽高必须一致", path_.ToRelativeString());
                 return false;
@@ -204,60 +204,60 @@ void TextureCube::Load()
     // +x
     if (!LoadCubeFace(L"_Right", 0))
     {
-        if (textures_[0])
+        if (textures[0])
         {
-            delete textures_[0];
-            textures_[0] = nullptr;
+            delete textures[0];
+            textures[0] = nullptr;
         }
         return;
     }
     // -x
     if (!LoadCubeFace(L"_Left", 1))
     {
-        if (textures_[1])
+        if (textures[1])
         {
-            delete textures_[1];
-            textures_[1] = nullptr;
+            delete textures[1];
+            textures[1] = nullptr;
         }
         return;
     }
     // +y
     if (!LoadCubeFace(L"_Top", 2))
     {
-        if (textures_[2])
+        if (textures[2])
         {
-            delete textures_[2];
-            textures_[2] = nullptr;
+            delete textures[2];
+            textures[2] = nullptr;
         }
         return;
     }
     // -y
     if (!LoadCubeFace(L"_Bottom", 3))
     {
-        if (textures_[3])
+        if (textures[3])
         {
-            delete textures_[3];
-            textures_[3] = nullptr;
+            delete textures[3];
+            textures[3] = nullptr;
         }
         return;
     }
     // +z
     if (!LoadCubeFace(L"_Front", 4))
     {
-        if (textures_[4])
+        if (textures[4])
         {
-            delete textures_[4];
-            textures_[4] = nullptr;
+            delete textures[4];
+            textures[4] = nullptr;
         }
         return;
     }
     // -z
     if (!LoadCubeFace(L"_Back", 5))
     {
-        if (textures_[5])
+        if (textures[5])
         {
-            delete textures_[5];
-            textures_[5] = nullptr;
+            delete textures[5];
+            textures[5] = nullptr;
         }
         return;
     }
@@ -275,6 +275,7 @@ void TextureCube::Load()
     image_info.height       = height_;
     image_info.depth        = 1;
     image_info.create_flags = vk::ImageCreateFlagBits::eCubeCompatible;
+    image_info.name         = GetPath().ToRelativeAnsiString();
 
     rhi_texture_ = new RHI::Vulkan::Texture(image_info);
     rhi_texture_->Initialize();
@@ -296,29 +297,53 @@ void TextureCube::Load()
         copy.dstSubresource.layerCount     = 1;
         copy.dstOffset                     = {{0, 0, 0}};
         copy.extent                        = {{(uint32_t)width_, (uint32_t)height_, 1}};
-        pool->CopyImage(textures_[i]->GetLowlevelImage(), GetLowlevelImage(), {copy});
+        pool->CopyImage(textures[i]->GetLowlevelImage(), GetLowlevelImage(), {copy});
         pool->TransitionImageLayout(
             GetLowlevelImage(), GetLowlevelFormat(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 1, i
         );
+    }
+    for (int i = 0; i < 6; i++)
+    {
         pool->TransitionImageLayout(
-            textures_[i]->GetLowlevelImage(),
-            textures_[i]->GetLowlevelFormat(),
+            textures[i]->GetLowlevelImage(),
+            textures[i]->GetLowlevelFormat(),
             vk::ImageLayout::eTransferSrcOptimal,
             vk::ImageLayout::eShaderReadOnlyOptimal
         );
     }
     // TODO: 使用Image创建而不是使用LogicalDevice创建
     vk::ImageViewCreateInfo view_create_info;
-    view_create_info.image                       = GetLowlevelImage();
-    view_create_info.viewType                    = vk::ImageViewType::eCube;
-    view_create_info.format                      = GetLowlevelFormat();
-    view_create_info.components                  = {{vk::ComponentSwizzle::eR}};
-    view_create_info.subresourceRange            = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+    view_create_info.image            = GetLowlevelImage();
+    view_create_info.viewType         = vk::ImageViewType::eCube;
+    view_create_info.format           = GetLowlevelFormat();
+    view_create_info.components       = {vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA};
+    view_create_info.subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
     view_create_info.subresourceRange.layerCount = 6;
-    rhi_texture_view_ = new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info));
+    rhi_texture_view_         = new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info));
+    rhi_sampler_              = &Sampler::GetDefaultSampler();
+    // 创建对应的View
+    view_create_info.viewType = vk::ImageViewType::e2D;
+    view_create_info.subresourceRange.layerCount = 1;
+    for (int i = 0; i < 6; i++)
+    {
+        view_create_info.subresourceRange.baseArrayLayer = i;
+        view_names_[i]                                   = image_info.name + std::to_string(i);
+        views_[i] = new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_names_[i].c_str());
+    }
+    // 释放ResourceManager持有的Texture资源, 因为它们现在的Layout是TransferSrc
+    for (int i = 0; i < 6; i++)
+    {
+        ResourceManager::Get()->DestroyResource(textures[i]->GetPath());
+    }
 }
 
-TextureCube::~TextureCube() = default;
+TextureCube::~TextureCube()
+{
+    for (int i = 0; i < 6; i++)
+    {
+        delete views_[i];
+    }
+}
 
 RESOURCE_NAMESPACE_END
 

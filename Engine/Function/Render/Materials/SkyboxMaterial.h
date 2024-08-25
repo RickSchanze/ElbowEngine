@@ -41,9 +41,15 @@ public:
 
     void DrawSkybox(vk::CommandBuffer cb);
 
+    /**
+     * 是否在使用 SkyBox模式 ?
+     * @return
+     */
+    bool IsUsingSkyBox() const;
+
 protected:
     Resource::Mesh* skybox_mesh_ = nullptr;
-    int use_skybox_; // 0: 未设置 1: 球面映射 2: 立方体映射
+    int use_skybox_; // 0: 未设置 1: 球面映射 -1: 立方体映射
 };
 
 FUNCTION_NAMESPACE_END

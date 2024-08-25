@@ -48,7 +48,8 @@ public:
 
     static Texture* Create(
         const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {},
-        vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal);
+        vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal
+    );
 
     bool IsValid() const override { return rhi_texture_ != nullptr; }
 
@@ -126,8 +127,11 @@ public:
     // 创建的Texture*由ResourceManager管理
     ~TextureCube() override;
 
+    RHI::Vulkan::ImageView* GetFaceView(int face) const { return views_[face];}
+
 protected:
-    TStaticArray<Texture*, 6> textures_{};
+    TStaticArray<RHI::Vulkan::ImageView*, 6> views_{};
+    TStaticArray<AnsiString, 6> view_names_{};
 };
 
 RESOURCE_NAMESPACE_END

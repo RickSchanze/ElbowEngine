@@ -252,7 +252,7 @@ void ImGuiGraphicsPipeline::CreateDescriptorPool()
 {
     vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
     vk::DescriptorPoolCreateInfo PoolCreateInfo;
-    PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(10).setPoolSizes(PoolSizes);
+    PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(50).setPoolSizes(PoolSizes);
     descriptor_pool_ = context_->GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 

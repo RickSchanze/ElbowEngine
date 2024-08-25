@@ -75,6 +75,8 @@ protected:
             void OnOpenImGuiDemoWindow();
             // 窗口下的"场景"
             void OnOpenSceneWindow();
+            // 窗口下的"光照设置"
+            void OnOpenLightSettingWindow();
     // clang-format on
 
 private:

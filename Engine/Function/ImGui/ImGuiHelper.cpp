@@ -31,9 +31,57 @@ void ImGuiHelper::Separator()
     ImGui::Separator();
 }
 
-void ImGuiHelper::Image(Resource::Texture* texture, int32_t width, int32_t height)
+void ImGuiHelper::Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height)
 {
     if (texture == nullptr)
+    {
+        ErrorBox(U8("传入纹理为nullptr"));
+        return;
+    }
+    if (!texture->IsValid())
+    {
+        CachedString errors = std::format(L"纹理 {} 无效", texture->GetPath().ToRelativeString());
+        ErrorBox(errors.ToCStyleString());
+        return;
+    }
+    Image(texture->GetTextureView(), texture->GetSampler(), width, height, max_width, max_height);
+}
+
+void ImGuiHelper::Image(Resource::TextureCube* texture_cube, int max_wdith, int max_height)
+{
+    if (texture_cube == nullptr)
+    {
+        ErrorBox(U8("立方体贴图为空!"));
+        return;
+    }
+    if (!texture_cube->IsValid())
+    {
+        CachedString texture = std::format(L"立方体贴图 {} 失效", texture_cube->GetPath().ToRelativeString());
+        ErrorBox(texture.ToCStyleString());
+        return;
+    }
+    int32_t w      = texture_cube->GetWidth();
+    int32_t h      = texture_cube->GetHeight();
+    float   ratio  = static_cast<float>(w) / h;
+    float   width  = ImGui::GetContentRegionAvail().x;
+    float   height = width / ratio;
+    Text(U8("右:"));
+    Image(texture_cube->GetFaceView(0), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+    Text(U8("左:"));
+    Image(texture_cube->GetFaceView(1), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+    Text(U8("上:"));
+    Image(texture_cube->GetFaceView(2), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+    Text(U8("下:"));
+    Image(texture_cube->GetFaceView(3), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+    Text(U8("前:"));
+    Image(texture_cube->GetFaceView(4), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+    Text(U8("后:"));
+    Image(texture_cube->GetFaceView(5), texture_cube->GetSampler(), width, height, max_wdith, max_height);
+}
+
+void ImGuiHelper::Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width, int max_height)
+{
+    if (view == nullptr)
     {
         return;
     }
@@ -42,25 +90,31 @@ void ImGuiHelper::Image(Resource::Texture* texture, int32_t width, int32_t heigh
         RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ImGuiHelper::RemoveAllImGuiTextures);
     }
     VkDescriptorSet set;
-    if (imgui_textuers_.contains(texture))
+    if (imgui_textuers_.contains(view))
     {
-        set = imgui_textuers_[texture];
+        set = imgui_textuers_[view];
     }
     else
     {
-        set = ImGui_ImplVulkan_AddTexture(
-            texture->GetSampler()->GetHandle(), texture->GetTextureView()->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        );
-        imgui_textuers_[texture] = set;
+        set                   = ImGui_ImplVulkan_AddTexture(sampler->GetHandle(), view->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        imgui_textuers_[view] = set;
+    }
+    // 宽度超标了 不能再加了
+    if (width > max_width)
+    {
+        float ratio = (width * 1.f) / height;
+        width       = max_width;
+        height      = static_cast<int32_t>(width / ratio);
+        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
     }
     ImGui::Image(set, {static_cast<float>(width), static_cast<float>(height)});
 }
 
-void ImGuiHelper::Image(Resource::Texture* texture)
+void ImGuiHelper::Image(Resource::Texture* texture, int max_width, int max_height)
 {
     float ratio = (float)texture->GetWidth() / (float)texture->GetHeight();
     float width = ImGui::GetContentRegionAvail().x;
-    Image(texture, static_cast<int32_t>(width), static_cast<int32_t>(width / ratio));
+    Image(texture, static_cast<int32_t>(width), static_cast<int32_t>(width / ratio), max_width, max_height);
 }
 
 void ImGuiHelper::SameLine()
@@ -96,6 +150,33 @@ void ImGuiHelper::WarningBox(const char* text)
     TextColored(Color::Warning(), ICON_MD_WARNING);
     ImGui::SameLine();
     TextColored(Color::Warning(), U8("警告"));
+    PopFontScale();
+
+    TextWrapped(text);
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
+}
+
+void ImGuiHelper::ErrorBox(const char* text)
+{
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.1, 0.1, 0.1, 0.1});
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+    ImGui::PushStyleColor(ImGuiCol_Border, Color::Error());
+    auto window_width = ImGui::GetWindowWidth();
+    auto size         = ImGui::CalcTextSize(text, nullptr, false, window_width);
+    if (size.x < window_width)
+    {
+        size.x = window_width - 20;
+    }
+    size.y += ImGui::GetTextLineHeight() * 2;
+    ImGui::BeginChild("##error", size, ImGuiChildFlags_Border);
+
+    PushFontScale(1.2f);
+    TextColored(Color::Error(), ICON_MD_ERROR);
+    ImGui::SameLine();
+    TextColored(Color::Error(), U8("错误"));
     PopFontScale();
 
     TextWrapped(text);
