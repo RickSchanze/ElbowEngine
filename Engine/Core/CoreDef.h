@@ -4,6 +4,7 @@
 #pragma once
 
 #include <ranges>
+#include <chrono>
 
 // 一些Typedef
 #include <functional>
@@ -53,8 +54,9 @@ using TSet = std::set<KeyType, Comparator, Allocator>;
 template<class KeyType, class ValueType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using TMap = std::map<KeyType, ValueType, Comparator, Allocator>;
 
-// basic typedefs
-#include <cstdint>
+#include <list>
+template<typename T, typename Allocator = std::allocator<T>>
+using TList = std::list<T, Allocator>;
 
 // std::wstring -> String
 // unicode字符串,此项目中全部使用此字符串
@@ -232,7 +234,9 @@ Type TypeOf()
 #define OUT
 
 // 这个宏表示这个方法必须由子类实现
-#define INTERFACE_METHOD {}
+#define INTERFACE_METHOD \
+    {                    \
+    }
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -241,10 +245,10 @@ Type TypeOf()
 
 #define U8(Text) (const char*)u8##Text
 
-#define INTERFACE_IMPL(type)                                 \
-RTTR_REGISTRATION                                           \
-{                                                           \
-    rttr::registration::class_<type>(#type).constructor<>(); \
+#define INTERFACE_IMPL(type)                                     \
+    RTTR_REGISTRATION                                            \
+    {                                                            \
+        rttr::registration::class_<type>(#type).constructor<>(); \
 }
 
 // IMGUI开关

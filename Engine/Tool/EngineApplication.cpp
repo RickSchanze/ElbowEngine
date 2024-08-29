@@ -20,6 +20,7 @@
 #include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
 #include "Component/Script/SpaceCircle.h"
+#include "Editor/Window/ConsoleWindow.h"
 #include "Editor/Window/DebugWindow.h"
 #include "Editor/Window/DetailWindow.h"
 #include "Editor/Window/ImGuiDemoWindow.h"
@@ -254,6 +255,10 @@ void EngineApplication::DrawWindowMenu()
         {
             OnOpenLightSettingWindow();
         }
+        if (ImGui::MenuItem(U8("控制台")))
+        {
+            OnOpenConsoleWindow();
+        }
         ImGui::EndMenu();
     }
 }
@@ -297,6 +302,11 @@ void EngineApplication::OnOpenSceneWindow()
 void EngineApplication::OnOpenLightSettingWindow()
 {
     OpenWindow<Window::LightSettingWindow>();
+}
+
+void EngineApplication::OnOpenConsoleWindow()
+{
+    OpenWindow<Window::ConsoleWindow>();
 }
 
 TOOL_NAMESPACE_END

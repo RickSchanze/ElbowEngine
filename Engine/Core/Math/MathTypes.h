@@ -94,6 +94,8 @@ public:
     static Color Yellow() { return {1, 1, 0, 1}; }
     static Color Warning() { return {1, 1, 0, 1}; }
     static Color Error() { return {1, 0, 0, 1}; }
+    static Color Info() { return {0, 1, 1, 1}; }
+    static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
 
     operator ImVec4() { return {r, g, b, a}; }
 

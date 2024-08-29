@@ -15,6 +15,8 @@ set(WINDOW_FILE
         Editor/Window/SceneViewportWindow.cpp
         Editor/Window/LightSettingWindow.h
         Editor/Window/LightSettingWindow.cpp
+        Editor/Window/ConsoleWindow.h
+        Editor/Window/ConsoleWindow.cpp
 )
 
 add_library(${PROJECT_NAME}
@@ -45,3 +47,4 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Core)
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Platform)
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Function)
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Resource)
+target_link_libraries(${PROJECT_NAME} PUBLIC IconFontCppHeaders)

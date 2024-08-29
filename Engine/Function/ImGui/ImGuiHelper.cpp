@@ -117,9 +117,9 @@ void ImGuiHelper::Image(Resource::Texture* texture, int max_width, int max_heigh
     Image(texture, static_cast<int32_t>(width), static_cast<int32_t>(width / ratio), max_width, max_height);
 }
 
-void ImGuiHelper::SameLine()
+void ImGuiHelper::SameLine(float offset_from_start_x, float spacing)
 {
-    ImGui::SameLine();
+    ImGui::SameLine(offset_from_start_x, spacing);
 }
 
 void ImGuiHelper::SeparatorText(const char* label)
@@ -186,6 +186,11 @@ void ImGuiHelper::ErrorBox(const char* text)
     ImGui::PopStyleColor();
 }
 
+bool ImGuiHelper::IsItemClicked()
+{
+    return ImGui::IsItemClicked();
+}
+
 void ImGuiHelper::PushFontScale(float scale)
 {
     old_font_scale_ = ImGui::GetFont()->Scale;
@@ -231,6 +236,62 @@ void ImGuiHelper::ClearBackbufferDescriptorSets()
         ImGui_ImplVulkan_RemoveTexture(set);
         set = nullptr;
     }
+}
+
+void ImGuiHelper::BeginChild(const char* id, Vector2 size, int32_t child_flags, int32_t window_flags)
+{
+    ImGui::BeginChild(id, {size.x, size.y}, child_flags, window_flags);
+}
+
+void ImGuiHelper::EndChild()
+{
+    ImGui::EndChild();
+}
+
+Vector2 ImGuiHelper::GetContentRegionAvail()
+{
+    auto size = ImGui::GetContentRegionAvail();
+    return {size.x, size.y};
+}
+
+void ImGuiHelper::PushID(int id)
+{
+    ImGui::PushID(id);
+}
+
+void ImGuiHelper::PopID()
+{
+    ImGui::PopID();
+}
+
+void ImGuiHelper::PushChildWindowColor(Color col)
+{
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, col);
+}
+
+void ImGuiHelper::PopChildWindowColor()
+{
+    ImGui::PopStyleColor();
+}
+
+float ImGuiHelper::GetFontSize()
+{
+    return ImGui::GetFontSize();
+}
+
+void ImGuiHelper::SetCursorPosY(float y)
+{
+    ImGui::SetCursorPosY(y);
+}
+
+void ImGuiHelper::BeginGroup()
+{
+    ImGui::BeginGroup();
+}
+
+void ImGuiHelper::EndGroup()
+{
+    ImGui::EndGroup();
 }
 
 void ImGuiHelper::RemoveAllImGuiTextures()

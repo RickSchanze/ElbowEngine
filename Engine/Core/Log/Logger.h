@@ -15,7 +15,6 @@ class Logger
 public:
     Logger();
 
-
     /** 输出Info级别的信息 */
     template<typename... ArgsT>
     void Info(spdlog::wformat_string_t<ArgsT...> fmt, ArgsT&&... args)

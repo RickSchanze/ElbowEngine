@@ -8,6 +8,10 @@ add_library(${PROJECT_NAME}
         Object/ObjectManager.cpp
         Log/Logger.h
         Log/Logger.cpp
+        Log/LogEvent.h
+        Log/LogEvent.cpp
+        Log/LogRecorder.h
+        Log/LogRecorder.cpp
         Utils/StringUtils.h
         Utils/StringUtils.cpp
         Utils/ReflUtils.h
@@ -20,6 +24,8 @@ add_library(${PROJECT_NAME}
         Utils/HashUtils.cpp
         Utils/PathUtils.h
         Utils/PathUtils.cpp
+        Utils/TimeUtils.h
+        Utils/TimeUtils.cpp
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h

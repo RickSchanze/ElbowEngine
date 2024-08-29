@@ -77,6 +77,7 @@ protected:
             void OnOpenSceneWindow();
             // 窗口下的"光照设置"
             void OnOpenLightSettingWindow();
+            void OnOpenConsoleWindow();
     // clang-format on
 
 private:
