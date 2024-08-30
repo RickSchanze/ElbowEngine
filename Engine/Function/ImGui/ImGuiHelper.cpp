@@ -9,9 +9,11 @@
 
 #include "CachedString.h"
 #include "IconsMaterialDesign.h"
+#include "Math/Math.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Texture.h"
+#include "Window/WindowCommon.h"
 
 #include <imgui_impl_vulkan.h>
 #include <ranges>
@@ -136,7 +138,7 @@ void ImGuiHelper::WarningBox(const char* text)
 {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.1, 0.1, 0.1, 0.1});
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
-    ImGui::PushStyleColor(ImGuiCol_Border, Color::Warning());
+    ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)Color::Warning());
     auto window_width = ImGui::GetWindowWidth();
     auto size         = ImGui::CalcTextSize(text, nullptr, false, window_width);
     if (size.x < window_width)
@@ -163,7 +165,7 @@ void ImGuiHelper::ErrorBox(const char* text)
 {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.1, 0.1, 0.1, 0.1});
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
-    ImGui::PushStyleColor(ImGuiCol_Border, Color::Error());
+    ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)Color::Error());
     auto window_width = ImGui::GetWindowWidth();
     auto size         = ImGui::CalcTextSize(text, nullptr, false, window_width);
     if (size.x < window_width)
@@ -266,10 +268,25 @@ void ImGuiHelper::PopID()
 
 void ImGuiHelper::PushChildWindowColor(Color col)
 {
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, col);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)col);
 }
 
 void ImGuiHelper::PopChildWindowColor()
+{
+    ImGui::PopStyleColor();
+}
+
+void ImGuiHelper::PushTextColor(Color col)
+{
+    ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)col);
+}
+
+void ImGuiHelper::PushTextBackgroundColor(Color col)
+{
+    ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, (ImVec4)col);
+}
+
+void ImGuiHelper::PopColor()
 {
     ImGui::PopStyleColor();
 }
@@ -284,6 +301,20 @@ void ImGuiHelper::SetCursorPosY(float y)
     ImGui::SetCursorPosY(y);
 }
 
+void ImGuiHelper::SetCursorPosX(float x)
+{
+    ImGui::SetCursorPosY(x);
+}
+
+float ImGuiHelper::GetCursorPosX()
+{
+    return ImGui::GetCursorPosX();
+}
+
+void ImGuiHelper::SetCursorScreenPos(float x, float y){
+    ImGui::SetCursorScreenPos({x, y});
+}
+
 void ImGuiHelper::BeginGroup()
 {
     ImGui::BeginGroup();
@@ -294,6 +325,34 @@ void ImGuiHelper::EndGroup()
     ImGui::EndGroup();
 }
 
+bool ImGuiHelper::Button(const char* label, Vector2 size)
+{
+    return ImGui::Button(label, {size.x, size.y});
+}
+
+void ImGuiHelper::SetItemTooltip(const AnsiString& tooltip)
+{
+    ImGui::SetItemTooltip(tooltip.c_str());
+}
+
+Vector2 ImGuiHelper::CalcTextSize(const AnsiString& str)
+{
+    return CalcTextSize(str.c_str());
+}
+
+Vector2 ImGuiHelper::CalcTextSize(const char* str)
+{
+    ImVec2 vec     = ImGui::CalcTextSize(str);
+    auto   padding = GetFramePadding();
+    return Vector2{vec.x, vec.y} + Math::Multiply(padding, 2);
+}
+
+Vector2 ImGuiHelper::GetFramePadding()
+{
+    auto& style = ImGui::GetStyle();
+    return {style.FramePadding.x, style.FramePadding.y};
+}
+
 void ImGuiHelper::RemoveAllImGuiTextures()
 {
     for (auto set: imgui_textuers_ | std::views::values)
@@ -301,4 +360,15 @@ void ImGuiHelper::RemoveAllImGuiTextures()
         ImGui_ImplVulkan_RemoveTexture(set);
     }
     imgui_textuers_.clear();
+}
+
+Vector2 ImGuiHelper::GetCursorScreenPos()
+{
+    auto pos = ImGui::GetCursorScreenPos();
+    return {pos.x, pos.y};
+}
+
+void ImGuiHelper::DrawRectFilled(Vector2 min, Vector2 max, Color color, float rounding)
+{
+    ImGui::GetWindowDrawList()->AddRectFilled(min, max, static_cast<ImU32>(color), rounding);
 }

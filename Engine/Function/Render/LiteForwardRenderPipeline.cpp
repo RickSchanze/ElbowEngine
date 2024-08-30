@@ -80,7 +80,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     // }
     if (g_engine_statistics.frame_count % 3000 == 0)
     {
-        sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
+        // sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
     }
     // 绘制skybox
     if (sky_box_material_->HasSetSkyTexture())
@@ -122,7 +122,7 @@ void LiteForwardRenderPipeline::Build()
     sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial", config);
 
     // sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
-    sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
+    // sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
 
     AddImGuiGraphicsPipeline();
 }

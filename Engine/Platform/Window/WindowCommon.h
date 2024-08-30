@@ -13,5 +13,9 @@
 #define IMGUI_FONT_STR U8("帧引擎渲染轴栈")
 
 #define GOOGLE_MATERIAL_ICON_FONT_PATH L"Fonts/MaterialIcons-Regular.ttf"
-#define MAPLE_UI_FONT_PATH L"Fonts/Consolas-with-Yahei_Nerd_Font.ttf"
-#define DEFAULT_FONT_SIZE 30
+#define EDITOR_UI_FONT_PATH L"Fonts/Consolas-with-Yahei_Nerd_Font.ttf"
+#define DEFAULT_FONT_SIZE 20
+
+inline float g_window_scale = 1.2f;
+
+#define WINDOW_SCALE(x) ((x) * g_window_scale)

@@ -12,7 +12,10 @@
 
 #include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
-#include <imgui.h>
+
+#if USE_IMGUI
+#    include <imgui.h>
+#endif
 
 struct Size2D : IStringify
 {
@@ -26,7 +29,23 @@ struct Size2D : IStringify
 
 
 typedef glm::vec3 Vector3;
-typedef glm::vec2 Vector2;
+
+struct Vector2
+{
+    operator glm::vec2();
+
+#if USE_IMGUI
+    operator ImVec2();
+#endif
+
+    Vector2 operator+(const Vector2& other);
+
+    Vector2 operator*=(const float scalar);
+
+    float x;
+    float y;
+};
+
 typedef glm::vec4 Vector4;
 typedef glm::mat4 Matrix4x4;
 typedef glm::quat Quaternion;
@@ -96,8 +115,14 @@ public:
     static Color Error() { return {1, 0, 0, 1}; }
     static Color Info() { return {0, 1, 1, 1}; }
     static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
+    static Color Invalid() { return {-1, -1, -1, -1}; }
 
+    bool IsValid() const;
+
+#if USE_IMGUI
     operator ImVec4() { return {r, g, b, a}; }
+    explicit operator ImU32() { return ImGui::GetColorU32((ImVec4)(*this)); }
+#endif
 
     bool operator==(const Color& other) const;
     bool operator!=(const Color& other) const;

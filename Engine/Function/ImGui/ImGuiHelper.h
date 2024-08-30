@@ -158,13 +158,36 @@ public:
 
     static void PopChildWindowColor();
 
+    static void PushTextColor(Color col);
+    static void PushTextBackgroundColor(Color col);
+    static void PopColor();
+
     static float GetFontSize();
 
     static void SetCursorPosY(float y);
 
+    static void SetCursorPosX(float x);
+
+    static float GetCursorPosX();
+
+    static void SetCursorScreenPos(float x, float y);
+
     static void BeginGroup();
 
     static void EndGroup();
+
+    static bool Button(const char* label, Vector2 size = {0, 0});
+
+    static void SetItemTooltip(const AnsiString& tooltip);
+
+    static Vector2 CalcTextSize(const AnsiString& str);
+    static Vector2 CalcTextSize(const char* str);
+
+    static Vector2 GetFramePadding();
+
+    static Vector2 GetCursorScreenPos();
+
+    static void DrawRectFilled(Vector2 min, Vector2 max, Color color, float rounding = 0);
 
 private:
     static void RemoveAllImGuiTextures();

@@ -101,6 +101,8 @@ public:
     static float ClampAngle(float a, float min = -180.f, float max = 180.f);
 
     static Matrix4x4 Perspective(float fov, float aspect, float near, float far);
+
+    static Vector2 Multiply(Vector2 a, float num);
 };
 
 template<typename T>

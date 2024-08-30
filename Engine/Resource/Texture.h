@@ -62,6 +62,8 @@ public:
     Path          GetPath() const override { return path_; }
     ETextureUsage GetUsage() const { return usage_; }
 
+    bool IsDefaultLackTexture() const { return this == GetDefaultLackTexture(); }
+
     RHI::Vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
     RHI::Vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
 
@@ -127,7 +129,7 @@ public:
     // 创建的Texture*由ResourceManager管理
     ~TextureCube() override;
 
-    RHI::Vulkan::ImageView* GetFaceView(int face) const { return views_[face];}
+    RHI::Vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
 
 protected:
     TStaticArray<RHI::Vulkan::ImageView*, 6> views_{};

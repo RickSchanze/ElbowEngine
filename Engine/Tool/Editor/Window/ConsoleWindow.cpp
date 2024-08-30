@@ -11,6 +11,7 @@
 #include "ImGui/ImGuiHelper.h"
 #include "Log/LogRecorder.h"
 #include "Utils/TimeUtils.h"
+#include "Window/WindowCommon.h"
 
 GENERATED_SOURCE()
 
@@ -22,15 +23,25 @@ ConsoleWindow::ConsoleWindow()
     window_name_ = L"控制台";
 }
 
+void ConsoleWindow::Construct()
+{
+    Super::Construct();
+    btn_.SetText( ICON_MD_ERROR  "测试一下");
+    btn2_.SetText(L"2222");
+}
+
 void ConsoleWindow::Draw(float delta_time)
 {
     const auto& logs = g_log_recorder.GetLogs();
 
     DrawLogConsoleHeader();
     int     i    = 0;
-    Vector2 size = {ImGuiHelper::GetContentRegionAvail().x, single_log_height_};
+    btn_.Draw();
+    ImGuiHelper::SameLine(0, 30);
+    btn2_.Draw();
+    Vector2 size = {ImGuiHelper::GetContentRegionAvail().x, WINDOW_SCALE(single_log_height_)};
     ImGuiHelper::BeginChild("logs", Vector2{}, EImGuiCF_ResizeY);
-    ;
+
     for (auto log_it = logs.begin(); log_it != logs.end(); ++log_it)
     {
         ImGuiHelper::PushID(10000 + i);
@@ -47,39 +58,66 @@ void ConsoleWindow::Draw(float delta_time)
     DrawLogConsoleFooter();
 }
 
+bool ConsoleWindow::IsLevelLogSelected() const
+{
+    return (selected_level_flags_ & 1 << 0) != 0;
+}
+
+bool ConsoleWindow::IsLevelWarningSelected() const
+{
+    return (selected_level_flags_ & 1 << 1) != 0;
+}
+
+bool ConsoleWindow::IsLevelErrorSelected() const
+{
+    return (selected_level_flags_ & 1 << 2) != 0;
+}
+
 void ConsoleWindow::DrawLogConsoleHeader()
 {
     ImGuiHelper::BeginChild("log_header", {0, 0}, EImGuiCF_AutoResizeY);
 
     {
-        ImGui::PushStyleColor(ImGuiCol_Text, Color::Error());
-        AnsiString error_count_str = ICON_MD_ERROR_OUTLINE + std::to_string(error_count_);
-        if (ImGui::Button(error_count_str.c_str()))
-        {
-        }
-        ImGui::PopStyleColor();
-    }
-
-    ImGui::SameLine(0, 10);
-
-    {
-        ImGui::PushStyleColor(ImGuiCol_Text, Color::Warning());
-        AnsiString warning_count_str = ICON_MD_WARNING_AMBER + std::to_string(warning_count_);
-        if (ImGui::Button(warning_count_str.c_str()))
-        {
-        }
-        ImGui::PopStyleColor();
-    }
-
-    ImGui::SameLine(0, 10);
-
-    {
-        ImGui::PushStyleColor(ImGuiCol_Text, Color::Info());
+        ImGuiHelper::PushTextColor(Color::Info());
         AnsiString info_count_str = ICON_MD_INFO_OUTLINE + std::to_string(info_count_);
-        if (ImGui::Button(info_count_str.c_str()))
+        if (ImGuiHelper::Button(info_count_str.c_str()))
         {
         }
-        ImGui::PopStyleColor();
+        ImGuiHelper::PopColor();
+    }
+
+    ImGuiHelper::SameLine(0, WINDOW_SCALE(10));
+
+    {
+        ImGuiHelper::PushTextColor(Color::Warning());
+        AnsiString warning_count_str = ICON_MD_WARNING_AMBER + std::to_string(warning_count_);
+        if (ImGuiHelper::Button(warning_count_str.c_str()))
+        {
+        }
+        ImGuiHelper::PopColor();
+    }
+
+    ImGuiHelper::SameLine(0, WINDOW_SCALE(10));
+
+    {
+        ImGuiHelper::PushTextColor(Color::Error());
+        AnsiString error_count_str = ICON_MD_ERROR_OUTLINE + std::to_string(error_count_);
+        bool       v               = true;
+        if (ImGui::Checkbox(error_count_str.c_str(), &v))
+        {
+        }
+        ImGuiHelper::PopColor();
+    }
+
+    ImGuiHelper::SameLine(0, WINDOW_SCALE(10));
+
+    {
+        ImGuiHelper::PushTextColor(Color::White());
+        if (ImGuiHelper::Button(ICON_MD_CANCEL))
+        {
+        }
+        ImGuiHelper::SetItemTooltip(U8("清除所有日志"));
+        ImGuiHelper::PopColor();
     }
 
     ImGuiHelper::EndChild();
@@ -128,7 +166,7 @@ void ConsoleWindow::DrawSingleLog(const Log& log, bool even, Vector2 size)
     ImGuiHelper::BeginChild("##log", size, 0);
     ImGuiHelper::PushFontScale(2.5f);
     auto font_size = ImGuiHelper::GetFontSize();
-    ImGuiHelper::SetCursorPosY((size.y - font_size));
+
     // clang-format off
     switch (log.level)
     {
@@ -152,6 +190,7 @@ void ConsoleWindow::DrawSingleLog(const Log& log, bool even, Vector2 size)
     }
     ImGuiHelper::PopFontScale();
     ImGuiHelper::SameLine(0, 3);
+    ImGuiHelper::SetCursorPosY((size.y - font_size));
     ImGuiHelper::BeginGroup();
     ImGuiHelper::Text(log.message.c_str());
     ImGuiHelper::PushFontScale(0.8f);

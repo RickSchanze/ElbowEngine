@@ -145,3 +145,8 @@ Matrix4x4 Math::Perspective(float fov, float aspect, float near, float far)
     rtn[1][1] *= -1;
     return rtn;
 }
+
+Vector2 Math::Multiply(Vector2 a, float num)
+{
+    return {a.x * num, a.y * num};
+}

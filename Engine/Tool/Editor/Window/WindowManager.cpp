@@ -41,12 +41,14 @@ WindowBase* WindowManager::GetOrCreateWindow(const Type& type)
                     }
                     else
                     {
+                        window->Construct();
                         LOG_INFO_CATEGORY(Tool.Window, L"创建窗口 {}", window->GetName());
                     }
                     mgr->singleton_windows_[type] = window;
                 }
                 else
                 {
+                    window->Construct();
                     mgr->duplicated_windows_.push_back(window);
                     LOG_INFO_CATEGORY(Tool.Window, L"创建窗口 {}", window->GetName());
                 }

@@ -40,6 +40,26 @@ String Size2D::ToString() const
     return std::format(L"Width: {}, Height:{}", width, height);
 }
 
+Vector2::operator glm::vec<2, float>()
+{
+    return {x, y};
+}
+
+Vector2::operator ImVec2()
+{
+    return {x, y};
+}
+
+Vector2 Vector2::operator+(const Vector2& other)
+{
+    return Vector2(x + other.x, y + other.y);
+}
+
+Vector2 Vector2::operator*=(const float scalar)
+{
+    return Vector2(x * scalar, y * scalar);
+}
+
 
 Vector3 Rotator::GetForwardVector() const
 {
@@ -124,6 +144,11 @@ Rotator Rotator::ToRotatorRadian() const
     r.pitch = Math::Radians(pitch);
     r.yaw   = Math::Radians(yaw);
     return r;
+}
+
+bool Color::IsValid() const
+{
+    return r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && a >= 0 && a <= 1;
 }
 
 bool Color::operator==(const Color& other) const

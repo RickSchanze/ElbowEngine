@@ -40,7 +40,7 @@ public:
 
     void Tick(float delta_time);
 
-    void Construct();
+    virtual void Construct();
 
     ~WindowBase() override = default;
 

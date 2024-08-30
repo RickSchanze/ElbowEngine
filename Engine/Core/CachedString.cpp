@@ -35,3 +35,13 @@ const char* CachedString::ToCStyleString()
     }
     return ansi_string_.c_str();
 }
+
+bool CachedString::Empty() const
+{
+    return string_.empty() && ansi_string_.empty();
+}
+
+CachedString::operator bool() const
+{
+    return !Empty();
+}

@@ -95,7 +95,7 @@ public:
     {
         if (w > 0 && h > 0)
         {
-            width_ = w;
+            width_  = w;
             height_ = h;
             CleanFrameBuffer();
             SetupFramebuffer();
@@ -293,24 +293,25 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 void GlfwWindow::SetupImGuiFonts()
 {
     ImGuiIO&                 io                    = ImGui::GetIO();
-    Path                     default_font_path     = MAPLE_UI_FONT_PATH;
+    Path                     default_font_path     = EDITOR_UI_FONT_PATH;
     AnsiString               default_font_path_str = default_font_path.ToAbsoluteAnsiString();
     ImVector<ImWchar>        ranges;
     ImFontGlyphRangesBuilder builder;
     builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     builder.AddText(IMGUI_FONT_STR);
     builder.BuildRanges(&ranges);
-    io.Fonts->AddFontFromFileTTF(default_font_path_str.c_str(), DEFAULT_FONT_SIZE, nullptr, ranges.Data);
+    io.Fonts->AddFontFromFileTTF(default_font_path_str.c_str(), WINDOW_SCALE(DEFAULT_FONT_SIZE), nullptr, ranges.Data);
 
     // 字体图标
     static constexpr ImWchar icon_font_ranges[] = {ICON_MIN_MD, ICON_MAX_16_MD, 0};
     ImFontConfig             icon_font_config;
-    icon_font_config.MergeMode   = true;
-    icon_font_config.GlyphOffset = {0.f, 4.f};
+    icon_font_config.MergeMode        = true;
+    icon_font_config.GlyphOffset      = {WINDOW_SCALE(0.f), WINDOW_SCALE(4.f)};
+    icon_font_config.GlyphMinAdvanceX = WINDOW_SCALE(20.f);
 
     Path       icon_font      = GOOGLE_MATERIAL_ICON_FONT_PATH;
     AnsiString icon_font_ansi = icon_font.ToAbsoluteAnsiString();
-    io.Fonts->AddFontFromFileTTF(icon_font_ansi.c_str(), DEFAULT_FONT_SIZE, &icon_font_config, icon_font_ranges);
+    io.Fonts->AddFontFromFileTTF(icon_font_ansi.c_str(), WINDOW_SCALE(DEFAULT_FONT_SIZE), &icon_font_config, icon_font_ranges);
 
     ImGui_ImplVulkan_CreateFontsTexture();
 }

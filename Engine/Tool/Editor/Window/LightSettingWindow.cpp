@@ -28,7 +28,7 @@ void LightSettingWindow::Draw(float delta_time)
 {
     ImGuiHelper::SeparatorText(U8("天空盒设置"));
     auto* material = Function::MaterialManager::GetMaterial(L"SkyboxMaterial");
-    if (material != nullptr)
+    if (material != nullptr && material->GetTextureValue("sky") != nullptr && !material->GetTextureValue("sky")->IsDefaultLackTexture())
     {
         auto* sky_mat = static_cast<Function::SkyboxMaterial*>(material);
         if (sky_mat->IsUsingSkyBox())

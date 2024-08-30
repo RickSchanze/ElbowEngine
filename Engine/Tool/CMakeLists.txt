@@ -19,6 +19,13 @@ set(WINDOW_FILE
         Editor/Window/ConsoleWindow.cpp
 )
 
+set(WIDGET_FILE
+        Editor/Widgets/WidgetBase.h
+        Editor/Widgets/WidgetBase.cpp
+        Editor/Widgets/Button.h
+        Editor/Widgets/Button.cpp
+)
+
 add_library(${PROJECT_NAME}
         EngineApplication.h
         EngineApplication.cpp
@@ -28,6 +35,7 @@ add_library(${PROJECT_NAME}
         Editor/Window/WindowManager.cpp
         Editor/Window/WindowManager.h
         ${WINDOW_FILE}
+        ${WIDGET_FILE}
         Editor/Drawer/PropertyDrawer.cpp
         Editor/Drawer/PropertyDrawer.h
         EditorStyle/ImGuiStyle.h
