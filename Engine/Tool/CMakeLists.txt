@@ -24,6 +24,8 @@ set(WIDGET_FILE
         Editor/Widgets/WidgetBase.cpp
         Editor/Widgets/Button.h
         Editor/Widgets/Button.cpp
+        Editor/Widgets/ToggleButton.h
+        Editor/Widgets/ToggleButton.cpp
 )
 
 add_library(${PROJECT_NAME}

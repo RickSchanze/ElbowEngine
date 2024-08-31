@@ -119,7 +119,13 @@ public:
 
     bool IsValid() const;
 
+    Color operator*(const Color& other)const;
+    Color operator*(const float scalar)const;
+
 #if USE_IMGUI
+    Color() = default;
+    Color(ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
+    Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}
     operator ImVec4() { return {r, g, b, a}; }
     explicit operator ImU32() { return ImGui::GetColorU32((ImVec4)(*this)); }
 #endif

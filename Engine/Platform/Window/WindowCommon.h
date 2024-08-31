@@ -16,6 +16,6 @@
 #define EDITOR_UI_FONT_PATH L"Fonts/Consolas-with-Yahei_Nerd_Font.ttf"
 #define DEFAULT_FONT_SIZE 20
 
-inline float g_window_scale = 1.2f;
+inline float g_window_scale = 1.5f;
 
 #define WINDOW_SCALE(x) ((x) * g_window_scale)

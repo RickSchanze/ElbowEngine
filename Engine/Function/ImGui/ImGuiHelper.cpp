@@ -193,6 +193,16 @@ bool ImGuiHelper::IsItemClicked()
     return ImGui::IsItemClicked();
 }
 
+bool ImGuiHelper::IsLeftMouseDown()
+{
+    return ImGui::IsMouseDown(ImGuiMouseButton_Left);
+}
+
+bool ImGuiHelper::IsLeftMouseReleased()
+{
+    return ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+}
+
 void ImGuiHelper::PushFontScale(float scale)
 {
     old_font_scale_ = ImGui::GetFont()->Scale;
@@ -311,7 +321,8 @@ float ImGuiHelper::GetCursorPosX()
     return ImGui::GetCursorPosX();
 }
 
-void ImGuiHelper::SetCursorScreenPos(float x, float y){
+void ImGuiHelper::SetCursorScreenPos(float x, float y)
+{
     ImGui::SetCursorScreenPos({x, y});
 }
 
@@ -371,4 +382,33 @@ Vector2 ImGuiHelper::GetCursorScreenPos()
 void ImGuiHelper::DrawRectFilled(Vector2 min, Vector2 max, Color color, float rounding)
 {
     ImGui::GetWindowDrawList()->AddRectFilled(min, max, static_cast<ImU32>(color), rounding);
+}
+
+bool ImGuiHelper::IsItemHovered()
+{
+    return ImGui::IsItemHovered();
+}
+
+bool ImGuiHelper::IsItemActive()
+{
+    return ImGui::IsItemActive();
+}
+Color ImGuiHelper::GetButtonNormalColor()
+{
+    return ImGui::GetStyle().Colors[ImGuiCol_Button];
+}
+
+Color ImGuiHelper::GetButtonHoveredColor()
+{
+    return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+}
+
+Color ImGuiHelper::GetButtonPressedColor()
+{
+    return ImGui::GetStyle().Colors[ImGuiCol_ButtonActive];
+}
+
+Color ImGuiHelper::GetWindowBackgroundColor()
+{
+    return ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
 }

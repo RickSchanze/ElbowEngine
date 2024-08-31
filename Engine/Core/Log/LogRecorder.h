@@ -43,6 +43,7 @@ struct Log
     int32_t                                            line;
     size_t                                             thread_id;
     std::chrono::time_point<std::chrono::system_clock> time;
+    int32_t                                            index;
 
     /**
      *
@@ -63,6 +64,7 @@ public:
     const TList<Log>& GetLogs() const;
     size_t            GetSize() const;
     size_t            GetMaxSize() const;
+    void              Clear();
 
     /**
      * 为LogRecorder设置一个新的最大size

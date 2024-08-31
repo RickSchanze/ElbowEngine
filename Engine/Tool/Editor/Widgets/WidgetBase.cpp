@@ -11,8 +11,8 @@
 
 #include <imgui.h>
 
-namespace Tool::Widgets
-{
+WIDGET_NAMESPACE_BEGIN
+
 void WidgetBase::Text(const char* str, Color foreground, Color background)
 {
     if (foreground.IsValid())
@@ -41,4 +41,5 @@ void WidgetBase::Text(const AnsiString& str, Color foreground, Color background)
 {
     Text(str.c_str(), foreground, background);
 }
-}   // namespace Tool::Widgets
+
+WIDGET_NAMESPACE_END

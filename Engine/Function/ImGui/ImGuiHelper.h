@@ -76,6 +76,33 @@ enum EImGuiWindowFlags
 class ImGuiHelper
 {
 public:
+    /** 辅助函数 **/
+    static void ClearBackbufferDescriptorSets();
+    ////////////////
+
+    /** 与ElbowEngine结合起来的无状态控件 **/
+    static void Text(CachedString& str);
+    static void Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
+    static void Image(Resource::TextureCube* texture_cube, int max_wdith = 500, int max_height = 500);
+    static void Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width, int max_height);
+    /**
+     * 适应窗口宽度的显示image
+     * @param texture
+     * @param max_width
+     * @param max_height
+     */
+    static void Image(Resource::Texture* texture, int max_width = 500, int max_height = 500);
+    static void WarningBox(const char* text);
+    static void ErrorBox(const char* text);
+    static void ImageBackbuffer(int32_t width, int32_t height);
+    ////////////////////////////////////////
+
+    /** 杂项 **/
+    static void PushID(int id);
+    static void PopID();
+    ///////////
+
+    /** 原生ImGui无状态控件 **/
     template<typename... Args>
     static void Text(const char* fmt, Args&&... args)
     {
@@ -83,10 +110,6 @@ public:
         ImGui::Text(fmt, Forward<Args>(args)...);
 #endif
     }
-
-    static void Text(CachedString& str);
-
-    static bool CollapsingHeader(const char* label);
 
     template<typename... Args>
     static void TextColored(const ImVec4& color, const char* fmt, Args&&... args)
@@ -96,28 +119,6 @@ public:
 #endif
     }
 
-    static void Separator();
-
-    static void Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
-
-    static void Image(Resource::TextureCube* texture_cube, int max_wdith = 500, int max_height = 500);
-
-    static void Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width, int max_height);
-
-    /**
-     * 适应窗口宽度的显示image
-     * @param texture
-     * @param max_width
-     * @param max_height
-     */
-    static void Image(Resource::Texture* texture, int max_width = 500, int max_height = 500);
-
-    static void SameLine(float offset_from_start_x = 0, float spacing = 0);
-
-    static void SeparatorText(const char* label);
-
-    static void ShowDemoWindow();
-
     template<typename... Args>
     static void TextWrapped(const char* fmt, Args&&... args)
     {
@@ -126,68 +127,62 @@ public:
 #endif
     }
 
-    static void WarningBox(const char* text);
+    static void SetItemTooltip(const AnsiString& tooltip);
+    static bool Button(const char* label, Vector2 size = {0, 0});
+    static bool CollapsingHeader(const char* label);
+    static void Separator();
+    static void SameLine(float offset_from_start_x = 0, float spacing = 0);
+    static void SeparatorText(const char* label);
+    static void ShowDemoWindow();
+    ///////////////////////////
 
-    static void ErrorBox(const char* text);
 
-    static bool IsItemClicked();
-
-    /**
-     * new scale = old scale * scale
-     * @param scale
-     */
-    static void PushFontScale(float scale);
-
-    static void PopFontScale();
-
-    static void ImageBackbuffer(int32_t width, int32_t height);
-
-    static void ClearBackbufferDescriptorSets();
-
-    static void BeginChild(const char* id, Vector2 size = {0, 0}, int32_t child_flags = 0, int32_t window_flags = 0);
-
-    static void EndChild();
-
-    static Vector2 GetContentRegionAvail();
-
-    static void PushID(int id);
-
-    static void PopID();
-
+    /** 样式相关 */
     static void PushChildWindowColor(Color col);
-
     static void PopChildWindowColor();
-
     static void PushTextColor(Color col);
     static void PushTextBackgroundColor(Color col);
     static void PopColor();
+    // new scale = old_scale * scale
+    static void PushFontScale(float scale);
+    static void PopFontScale();
+    ///////////////
 
-    static float GetFontSize();
-
-    static void SetCursorPosY(float y);
-
-    static void SetCursorPosX(float x);
-
-    static float GetCursorPosX();
-
-    static void SetCursorScreenPos(float x, float y);
-
-    static void BeginGroup();
-
-    static void EndGroup();
-
-    static bool Button(const char* label, Vector2 size = {0, 0});
-
-    static void SetItemTooltip(const AnsiString& tooltip);
-
+    /** 布局相关 **/
     static Vector2 CalcTextSize(const AnsiString& str);
     static Vector2 CalcTextSize(const char* str);
-
     static Vector2 GetFramePadding();
-
     static Vector2 GetCursorScreenPos();
+    static void    SetCursorPosY(float y);
+    static void    SetCursorPosX(float x);
+    static float   GetCursorPosX();
+    static void    SetCursorScreenPos(float x, float y);
+    static void    BeginGroup();
+    static void    EndGroup();
+    static float   GetFontSize();
+    static Vector2 GetContentRegionAvail();
+    static void    BeginChild(const char* id, Vector2 size = {0, 0}, int32_t child_flags = 0, int32_t window_flags = 0);
+    static void    EndChild();
+    ///////////////
 
+    /** 事件 **/
+    static bool IsItemHovered();
+    static bool IsItemActive();
+    static bool IsItemClicked();
+    static bool IsLeftMouseDown();
+    static bool IsLeftMouseReleased();
+    ////////////
+
+    /** 使用了ImDrawList */
     static void DrawRectFilled(Vector2 min, Vector2 max, Color color, float rounding = 0);
+    ///////////////////////
+
+    /** 样式的颜色 **/
+    static Color GetButtonNormalColor();
+    static Color GetButtonHoveredColor();
+    static Color GetButtonPressedColor();
+    static Color GetWindowBackgroundColor();
+    //////////////////
 
 private:
     static void RemoveAllImGuiTextures();

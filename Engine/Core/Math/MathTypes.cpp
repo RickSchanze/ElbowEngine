@@ -151,6 +151,16 @@ bool Color::IsValid() const
     return r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && a >= 0 && a <= 1;
 }
 
+Color Color::operator*(const Color& other) const
+{
+    return {r * other.r, g * other.g, b * other.b, a * other.a};
+}
+
+Color Color::operator*(const float scalar) const
+{
+    return {r * scalar, g * scalar, b * scalar, a * scalar};
+}
+
 bool Color::operator==(const Color& other) const
 {
     return Math::ApproximatelyEqual(r, other.r) && Math::ApproximatelyEqual(g, other.g) && Math::ApproximatelyEqual(b, other.b) &&

@@ -15,3 +15,6 @@
 
 #define WINDOW_NAMESPACE_BEGIN namespace Tool::Window {
 #define WINDOW_NAMESPACE_END }
+
+#define WIDGET_NAMESPACE_BEGIN namespace Tool::Widgets {
+#define WIDGET_NAMESPACE_END }

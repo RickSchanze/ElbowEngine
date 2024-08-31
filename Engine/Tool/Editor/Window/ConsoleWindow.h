@@ -14,6 +14,11 @@
 #include "Log/LogRecorder.h"
 #include "Math/MathTypes.h"
 
+namespace Tool::Widgets
+{
+class ToggleButton;
+}
+
 WINDOW_NAMESPACE_BEGIN
 
 class REFL ConsoleWindow : public WindowBase
@@ -23,7 +28,6 @@ public:
     ConsoleWindow();
 
     void Construct() override;
-
 
     void Draw(float delta_time) override;
 
@@ -40,10 +44,13 @@ private:
     int32_t single_log_height_ = 60;
 
     PROPERTY(Serialized)
-    Color even_color_ = Color(0.2f, 0.2f, 0.2f, 0.5f);
+    Color even_color_;
 
     PROPERTY(Serialized)
-    Color odd_color_ = Color(0.1f, 0.1f, 0.1f, 0.5f);
+    Color odd_color_;
+
+    PROPERTY(Serialized)
+    Color selected_color_;
 
     int32_t selected_index_ = -1;
 
@@ -55,13 +62,14 @@ private:
     // 1 << 0: 选中info
     // 1 << 1: 选中warning
     // 1 << 2: 选中error
-    // 1 << 3: 全选
-    int8_t selected_level_flags_ = 1 << 3;
+    int8_t selected_level_flags_ = 1 << 0 | 1 << 1 | 1 << 2;
 
     TList<Log>::const_iterator selected_log_;
 
-    Widget::Button btn_;
-    Widget::Button btn2_;
+    TUniquePtr<Widgets::ToggleButton> button_filter_info_;
+    TUniquePtr<Widgets::ToggleButton> button_filter_warning_;
+    TUniquePtr<Widgets::ToggleButton> button_filter_error_;
+    TUniquePtr<Widgets::Button>       button_filter_clear_;
 };
 
 WINDOW_NAMESPACE_END

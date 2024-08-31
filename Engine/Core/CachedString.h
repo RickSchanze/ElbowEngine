@@ -23,13 +23,17 @@ public:
     CachedString(const wchar_t* string) : string_(string) {}
     CachedString(const char* string) : ansi_string_(string) {}
 
+    operator const AnsiString&();
+
     String      ToString();
     AnsiString  ToAnsiString();
     const char* ToCStyleString();
 
     bool Empty() const;
 
-    operator bool () const;
+    operator bool() const;
+
+    bool operator==(const CachedString&) const;
 
 private:
     String     string_;

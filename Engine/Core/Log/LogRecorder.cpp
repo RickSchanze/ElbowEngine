@@ -53,13 +53,14 @@ Log::Log(const spdlog::details::log_msg& msg, ELogLevel trace_level)
 LogRecorder::LogRecorder(size_t max_count)
 {
     max_log_counts_ = max_count;
-    size_ = 0;
+    size_           = 0;
     OnLog.Add(&HandleOnLog);
 }
 
 void LogRecorder::PushLog(const spdlog::details::log_msg& msg)
 {
     auto l = Log(msg, trace_level_);
+    l.index = size_;
     if (size_ != max_log_counts_)
     {
         logs_.push_back(Move(l));
@@ -85,6 +86,12 @@ size_t LogRecorder::GetSize() const
 size_t LogRecorder::GetMaxSize() const
 {
     return max_log_counts_;
+}
+
+void LogRecorder::Clear()
+{
+    logs_.clear();
+    size_ = 0;
 }
 
 void LogRecorder::SetMaxSize(size_t new_size)

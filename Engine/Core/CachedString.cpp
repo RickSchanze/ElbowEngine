@@ -9,6 +9,15 @@
 
 #include "Utils/StringUtils.h"
 
+CachedString::operator const AnsiString&()
+{
+    if (ansi_string_.empty())
+    {
+        ansi_string_ = StringUtils::ToAnsiString(string_);
+    }
+    return ansi_string_;
+}
+
 String CachedString::ToString()
 {
     if (string_.empty())
@@ -44,4 +53,21 @@ bool CachedString::Empty() const
 CachedString::operator bool() const
 {
     return !Empty();
+}
+
+bool CachedString::operator==(const CachedString& other) const
+{
+    if (!ansi_string_.empty())
+    {
+        return ansi_string_ == other.ansi_string_;
+    }
+    if (!string_.empty())
+    {
+        return string_ == other.string_;
+    }
+    if (other.Empty())
+    {
+        return true;
+    }
+    return false;
 }
