@@ -323,17 +323,20 @@ void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& na
 #endif
 }
 
-#define SET_DEBUG_NAME_BODY(obj_type_enum, obj_type)                                    \
-    vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
-    name_info.pObjectName  = name;                                                      \
-    name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
-    name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
-    SetObjectDebugName(name_info);
+#define SET_DEBUG_NAME_BODY(obj_type_enum, obj_type)                                        \
+    if (ValidationLayer::sEnableValidationLayer)                                            \
+    {                                                                                       \
+        vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
+        name_info.pObjectName  = name;                                                      \
+        name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
+        name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
+        SetObjectDebugName(name_info);                                                      \
+    }
 
 void LogicalDevice::SetCommandBufferDebugName(const vk::CommandBuffer handle, const char* name) const
 {
 #if ELBOW_DEBUG
-    SET_DEBUG_NAME_BODY(eCommandBuffer, VkCommandBuffer);
+    if (ValidationLayer::sEnableValidationLayer) SET_DEBUG_NAME_BODY(eCommandBuffer, VkCommandBuffer);
 #endif
 }
 
