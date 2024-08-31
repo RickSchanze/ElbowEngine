@@ -27,7 +27,7 @@ StatisticsWindow::StatisticsWindow() {
 
 void StatisticsWindow::Draw(float InDeltaTime) {
     fps_refresh_time_ += InDeltaTime;
-    if (fps_refresh_time_ > 0.5f) {
+    if (fps_refresh_time_ > 0.2f) {
         recorded_fps_       = g_engine_statistics.fps;
         recorded_delta_time_ = InDeltaTime;
         fps_refresh_time_ = 0.f;

@@ -39,6 +39,7 @@ private:
     void DrawLogConsoleHeader();
     void DrawLogConsoleFooter();
     void DrawSingleLog(const Log& log, bool even, Vector2 size);
+    void FilterLogsByLevel(const TList<Log, std::allocator<Log>>& logs);
 
     PROPERTY(Serialized)
     int32_t single_log_height_ = 60;
@@ -65,6 +66,9 @@ private:
     int8_t selected_level_flags_ = 1 << 0 | 1 << 1 | 1 << 2;
 
     TList<Log>::const_iterator selected_log_;
+
+    TArray<TList<Log>::const_iterator> filtered_logs_;
+    int32_t                            filtered_logs_size_ = 0;
 
     TUniquePtr<Widgets::ToggleButton> button_filter_info_;
     TUniquePtr<Widgets::ToggleButton> button_filter_warning_;

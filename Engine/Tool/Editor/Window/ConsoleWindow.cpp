@@ -55,29 +55,6 @@ void ConsoleWindow::Construct()
     selected_color_ = {0.1, 0.2, 0.3};
 }
 
-static TArray<TList<Log>::const_iterator> FilterLogByLevel(const TList<Log>& logs, int level_flags)
-{
-    TArray<TList<Log>::const_iterator> filtered_logs;
-    auto                               log_it = logs.begin();
-    for (; log_it != logs.end(); ++log_it)
-    {
-        auto log = *log_it;
-        if (log.level <= ELogLevel::Info && (level_flags & 1 << 0))
-        {
-            filtered_logs.push_back(log_it);
-        }
-        if (log.level == ELogLevel::Warning && (level_flags & 1 << 1))
-        {
-            filtered_logs.push_back(log_it);
-        }
-        if (log.level >= ELogLevel::Error && (level_flags & 1 << 2))
-        {
-            filtered_logs.push_back(log_it);
-        }
-    }
-    return filtered_logs;
-}
-
 void ConsoleWindow::Draw(float delta_time)
 {
     DrawLogConsoleHeader();
@@ -100,24 +77,25 @@ void ConsoleWindow::Draw(float delta_time)
         }
     }
 
-    auto filter_logs = FilterLogByLevel(logs, selected_level_flags_);
+    FilterLogsByLevel(logs);
 
     int     i    = 0;
     Vector2 size = {ImGuiHelper::GetContentRegionAvail().x, WINDOW_SCALE(single_log_height_)};
 
     ImGuiHelper::BeginChild("logs", Vector2{}, EImGuiCF_ResizeY);
-    for (auto log_it = filter_logs.begin(); log_it != filter_logs.end(); ++log_it)
+    for (int i = 0; i < filtered_logs_size_; i++)
     {
+        auto log_it = filtered_logs_[i];
         ImGuiHelper::PushID(10000 + i);
-        DrawSingleLog(**log_it, i % 2 == 0, size);
+        DrawSingleLog(*log_it, i % 2 == 0, size);
         if (ImGuiHelper::IsItemClicked())
         {
-            selected_index_ = (*log_it)->index;
-            selected_log_   = *log_it;
+            selected_index_ = (log_it)->index;
+            selected_log_   = log_it;
         }
         ImGuiHelper::PopID();
-        i++;
     }
+    filtered_logs_size_ = 0;
     ImGuiHelper::EndChild();
 
     DrawLogConsoleFooter();
@@ -247,6 +225,28 @@ void ConsoleWindow::DrawSingleLog(const Log& log, bool even, Vector2 size)
     ImGuiHelper::EndGroup();
     ImGuiHelper::EndChild();
     ImGuiHelper::PopChildWindowColor();
+}
+
+void ConsoleWindow::FilterLogsByLevel(const TList<Log>&logs){
+    if (logs.size() > filtered_logs_.size())
+    {
+        filtered_logs_.resize(logs.size());
+    }
+    for (auto log_it = logs.begin(); log_it != logs.cend(); ++log_it)
+    {
+        if (log_it->level <= ELogLevel::Info && (selected_level_flags_ & 1 << 0))
+        {
+            filtered_logs_[filtered_logs_size_++] = log_it;
+        }
+        if (log_it->level == ELogLevel::Warning && (selected_level_flags_ & 1 << 1))
+        {
+            filtered_logs_[filtered_logs_size_++] = log_it;
+        }
+        if (log_it->level >= ELogLevel::Error && (selected_level_flags_ & 1 << 2))
+        {
+            filtered_logs_[filtered_logs_size_++] = log_it;
+        }
+    }
 }
 
 WINDOW_NAMESPACE_END
