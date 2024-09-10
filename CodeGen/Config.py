@@ -13,7 +13,9 @@ class ElbowEngineCodeGenConfig:
         "TMap", "std::map",
         "THashMap", "std::unordered_map",
     ]
-    # 一系列正则表达式，能匹配上这个正则表达式的文件不会被处理
-    excluded_filter = [
-        r"/ThirdParty/"
-    ]
+    # 这里写ElbowEngine的位置
+    working_dir = r"C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine"
+    # 相对于ElbowEngine的文件夹位置 开头不要写"/"
+    process_folder = ["Engine/Core", "Engine/Function", "Engine/Platform", "Engine/Resource", "Engine/Tool"]
+    # 进程池并行处理最大数量
+    max_process_count = 10
