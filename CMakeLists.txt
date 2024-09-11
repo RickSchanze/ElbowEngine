@@ -6,14 +6,7 @@ project(ElbowEngine)
 set(CMAKE_CXX_STANDARD 23)
 set(REFLECTION_EXE ${CMAKE_SOURCE_DIR}/CodeGenerator/bin/CodeGenerator.exe)
 set(PYTHON_EXE "C:/Users/Echo/AppData/Local/Programs/Python/Python312/python.exe")
-execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGenerator/CodeGenerator.py
-        --reflection-tool-path=${REFLECTION_EXE}
-        --output-files-path=${CMAKE_SOURCE_DIR}/Generated
-        --process-files-path ${CMAKE_SOURCE_DIR}/Engine
-        --include-path ${CMAKE_SOURCE_DIR}/Engine ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include ${CMAKE_SOURCE_DIR}/Generated
-        ${CMAKE_SOURCE_DIR}/Engine/Core ${CMAKE_SOURCE_DIR}/Engine/Function ${CMAKE_SOURCE_DIR}/Engine/Platform ${CMAKE_SOURCE_DIR}/Engine/Tool
-        --config-path ${CMAKE_SOURCE_DIR}/CodeGenerator/Config.json
-)
+execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGen/main.py)
 
 if (MSVC)
     add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")

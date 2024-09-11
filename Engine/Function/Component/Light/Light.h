@@ -15,7 +15,8 @@
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-enum class REFL ELightType
+EENUM()
+enum class ELightType
 {
     Point,   // 当前只有点光源
 };
@@ -23,7 +24,8 @@ enum class REFL ELightType
 /**
  * 点光源
  */
-class REFL Light : public Component
+ECLASS()
+class Light : public Component
 {
     GENERATED_BODY(Light)
 
@@ -42,13 +44,13 @@ public:
 
 protected:
     // TODO: 枚举类型的ImGui Display
-    PROPERTY(Serialized, Label = "光源类型")
+    EPROPERTY(Label = "光源类型")
     ELightType light_type_;
 
-    PROPERTY(Serialized, Label = "光源颜色")
+    EPROPERTY(Label = "光源颜色")
     Color light_color_;
 
-    PROPERTY(Serialized, Label = "光照强度")
+    EPROPERTY(Label = "光照强度")
     float light_intensity_;
 };
 

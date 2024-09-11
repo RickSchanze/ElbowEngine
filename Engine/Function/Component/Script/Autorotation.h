@@ -12,7 +12,8 @@
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL Autoroatation : public Component
+ECLASS()
+class Autoroatation : public Component
 {
     GENERATED_BODY(Autoroatation)
 public:
@@ -27,13 +28,13 @@ public:
     Autoroatation& SetRotationEnabled(bool enabled);
 
 protected:
-    PROPERTY(Serialized, Label = "自转速度")
+    EPROPERTY(Label = "自转速度")
     float rotation_speed_ = 10.f;
 
-    PROPERTY(Serialized, Label = "自转轴")
+    EPROPERTY(Label = "自转轴")
     Vector3 rotation_axis_ = Constant::UpVector;
 
-    PROPERTY(Serialized, Label = "启用自转")
+    EPROPERTY(Label = "启用自转")
     bool rotation_ = true;
 };
 

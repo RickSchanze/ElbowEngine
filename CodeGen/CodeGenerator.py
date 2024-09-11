@@ -1,17 +1,25 @@
 import typing
 from abc import abstractmethod
+from logging import Logger, fatal
 from typing import List, override
 from pathlib import Path
 from clang.cindex import Config, Cursor, CursorKind
 from Config import ElbowEngineCodeGenConfig
 from enum import Enum
+from multiprocessing import Queue
 
 import logging
 
 Config.set_library_file(ElbowEngineCodeGenConfig.lib_clang_path)
 
-logging.basicConfig(level=ElbowEngineCodeGenConfig.debug_level, format='[%(levelname)s] [%(asctime)s] %(message)s', datefmt='%Y-%d-%m %H:%M:%S')
+log_path = Path(ElbowEngineCodeGenConfig.working_dir) / ElbowEngineCodeGenConfig.log_output_path
+log_path.parent.mkdir(exist_ok=True, parents=True)
+log_path.open('w').close()
+
+logging.basicConfig(level=ElbowEngineCodeGenConfig.debug_level, format='[%(levelname)s] [%(asctime)s] %(message)s', datefmt='%Y-%d-%m %H:%M:%S',
+                    filename=log_path, encoding='utf-8')
 logger = logging.getLogger()
+log_queue = Queue()
 
 
 def get_full_qualified_name(node: Cursor) -> str:
@@ -227,12 +235,14 @@ class ASTParseResult:
 
 
 class ASTParser:
-    def __init__(self):
+    def __init__(self, file: Path, logger_: Logger):
         self.current_trait_node: ReflTraitNode | None = None
         self.current_refl_node: ReflClass | ReflStruct | None = None
         self.current_refl_node_end_level: int = 0
         self.result: ASTParseResult = ASTParseResult()
         self.has_error: bool = False
+        self.file: str = file.as_posix()
+        self.logger = logger_
 
     def get_result(self) -> ASTParseResult | None:
         if self.has_error:
@@ -248,7 +258,17 @@ class ASTParser:
     def ast_travel(self, node: Cursor, level: int = 0):
         if self.has_error:
             return
-        kind = node.kind
+
+        try:
+            kind: CursorKind | None = node.kind
+        except:
+            kind = None
+
+        if kind is None:
+            return
+        if node.location.file:
+            if Path(node.location.file.name).as_posix() != self.file:
+                return
         spelling = str(node.spelling)
 
         # 如果是函数声明，看它反射的类型
@@ -275,21 +295,21 @@ class ASTParser:
         if kind == CursorKind.CLASS_DECL:
             if self.current_trait_node is not None:
                 if self.current_trait_node.refl_node_type == ReflTraitNodeType.CLASS:
-                    logger.info(f"Find reflection class {spelling}")
+                    self.logger.info(f"Find reflection class {spelling}")
                     self.current_refl_node = ReflClass(node, self.current_trait_node)
                     self.current_refl_node_end_level = level
 
         if kind == CursorKind.STRUCT_DECL:
             if self.current_trait_node is not None:
                 if self.current_trait_node.refl_node_type == ReflTraitNodeType.STRUCT:
-                    logger.info(f"Find reflection struct {spelling}")
+                    self.logger.info(f"Find reflection struct {spelling}")
                     self.current_refl_node = ReflStruct(node, self.current_trait_node)
                     self.current_refl_node_end_level = level
 
         if kind == CursorKind.ENUM_DECL:
             if self.current_trait_node is not None:
                 if self.current_trait_node.refl_node_type == ReflTraitNodeType.ENUM:
-                    logger.info(f"Find reflection enum {spelling}")
+                    self.logger.info(f"Find reflection enum {spelling}")
                     self.current_refl_node = ReflEnum(node, self.current_trait_node)
                     self.current_refl_node_end_level = level
 
@@ -301,7 +321,7 @@ class ASTParser:
                 return
             attr_str: str = attr_node.spelling
             if not attr_str.startswith("Property"):
-                logger.error(
+                self.logger.error(
                     f"类字段只能使用EPROPERTY修饰: node {self.current_refl_node.name}; type {self.current_refl_node.trait_node.refl_node_type}; filed {spelling}")
                 self.has_error = True
                 return
@@ -315,12 +335,12 @@ class ASTParser:
                 return
             attr_str: str = attr_node.spelling
             if not attr_str.startswith("Function"):
-                logger.error(
+                self.logger.error(
                     f"类方法只能使用EFUNCTION修饰: node {self.current_refl_node.name}; type {self.current_refl_node.trait_node.refl_node_type}; filed {spelling}")
                 self.has_error = True
                 return
             if self.current_trait_node.refl_node_type == ReflTraitNodeType.STRUCT:
-                logger.error("ESTRUCT里不能有EFUNECTION")
+                self.logger.error("ESTRUCT里不能有EFUNECTION")
                 self.has_error = True
                 return
             func_node = ReflFunction(node, attr_str)
@@ -329,14 +349,14 @@ class ASTParser:
         if kind == CursorKind.ENUM_CONSTANT_DECL:
             if self.current_trait_node is not None:
                 if self.current_trait_node.refl_node_type != ReflTraitNodeType.ENUM:
-                    logger.error("ECLASS ESTRUCT内不能声明枚举值")
+                    self.logger.error("ECLASS ESTRUCT内不能声明枚举值")
                     self.has_error = True
                     return
                 attr_node = self.__find_attr_node(node)
                 if attr_node is not None:
                     attr_str: str = str(attr_node.spelling)
                     if not attr_str.startswith("Value"):
-                        logger.error("枚举内的标注只能用EVALUE")
+                        self.logger.error("枚举内的标注只能用EVALUE")
                         self.has_error = True
                         return
                     constant = ReflEnumConstant(node, attr_str)
@@ -475,7 +495,7 @@ private: \ """)
 
         # 生成所有struct
         for struct in self.result.structs:
-            generated_header_codes.append(f"""#undef GENERATED_BODY_{original_header_name}_{struct.name} \\
+            generated_header_codes.append(f"""#undef GENERATED_BODY_{original_header_name}_{struct.name}
 #define GENERATED_BODY_{original_header_name}_{struct.name} \\
 RTTR_REGISTRATION_FRIEND \\
 typedef {struct.name} ThisStruct; \\""")
@@ -507,7 +527,7 @@ typedef {struct.name} ThisStruct; \\""")
             class_name = class_.full_name
             if "Name" in class_.attr_map.keys():
                 class_name = class_.attr_map["Name"]
-            generated_header_codes.append(f"""#undef GENERATED_SOURCE_{original_header_name}_{class_.name} \\
+            generated_header_codes.append(f"""#undef GENERATED_SOURCE_{original_header_name}_{class_.name}
 #define GENERATED_SOURCE_{original_header_name}_{class_.name} \\
 rttr::registration::class_<{class_.full_name}>(\"{class_name}\").constructor<>()(rttr::policy::ctor::as_raw_ptr) \\""")
             for property_ in class_.properties:
@@ -515,11 +535,30 @@ rttr::registration::class_<{class_.full_name}>(\"{class_name}\").constructor<>()
                 if "Name" in property_.attr_map.keys():
                     property_name = property_.attr_map["Name"]
                 prop_str = f".property(\"{property_name}\", &{class_.full_name}::{property_.name})"
+                getter_or_setter_set = False
                 for key, value in property_.attr_map.items():
                     if key == "":
                         continue
                     if key == "Name":
                         continue
+
+                    if key == "Getter":
+                        if "Setter" not in property_.attr_map:
+                            logger.error(f"标注Getter与Setter必须同时出现, 缺少Setter: {class_.full_name}::{property_.name}")
+                            self.has_error = True
+                            return
+                        elif not getter_or_setter_set:
+                            getter_or_setter_set = True
+                            prop_str = f'.property("{property_name}", &{class_.full_name}::{value}, &{class_.full_name}::{property_.attr_map["Setter"]})'
+                    if key == "Setter":
+                        if "Setter" not in property_.attr_map:
+                            logger.error(f"标注Getter与Setter必须同时出现, 缺少Getter: {class_.full_name}::{property_.name}")
+                            self.has_error = True
+                            return
+                        elif not getter_or_setter_set:
+                            getter_or_setter_set = True
+                            prop_str = f'.property("{property_name}", &{class_.full_name}::{property_.attr_map["Getter"]}, &{class_.full_name}::{value})'
+
                     valid = False
                     for gen in self.__property_annotation_generators:
                         if gen.match(property_, key, value):
@@ -538,7 +577,7 @@ rttr::registration::class_<{class_.full_name}>(\"{class_name}\").constructor<>()
             enum_name = enum.full_name
             if "Name" in enum.attr_map.keys():
                 enum_name = enum.attr_map["Name"]
-            generated_header_codes.append(f"""#undef GENERATED_SOURCE_{original_header_name}_{enum.name} \\
+            generated_header_codes.append(f"""#undef GENERATED_SOURCE_{original_header_name}_{enum.name}
 #define GENERATED_SOURCE_{original_header_name}_{enum.name} \\
 rttr::registration::enumeration<{enum.full_name}>(\"{enum_name}\")(""")
             for idx, value in enumerate(enum.constants):

@@ -30,7 +30,8 @@ class Mesh;
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL Mesh : public Component, public IDetailGUIDrawer
+ECLASS()
+class Mesh : public Component, public IDetailGUIDrawer
 {
     GENERATED_BODY(Mesh)
 public:

@@ -1,13 +1,17 @@
-import functools
 import hashlib
 import json
+import logging
 import multiprocessing
+import os
+from calendar import weekday
+from logging.handlers import QueueHandler
 from typing import override, List, Dict
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
 
+import clang.cindex
 from clang.cindex import Index
 
+from CodeGenerator import log_queue
 from Config import ElbowEngineCodeGenConfig
 from CodeGenerator import ReflStruct, property_annotation_generator, PropertyAnnotationGenerator, ReflProperty
 from CodeGenerator import logger, ASTParser, class_annotation_generator, ClassAnnotationGenerator, ReflClass, CodeGenerator
@@ -96,22 +100,70 @@ class FileProcess:
             for h_file in all_h_files:
                 new_result = FileProcess.ProcessResult(h_file, self.working_dir / "Generated" / folder / (h_file.name[:-2] + ".generated.h"))
                 self.calculate_files_need_process_folder(new_result)
-        with cache_path.open('w') as f:
-            json.dump(self.file_hash_caches, cache_path.open('w'))
 
+    def process_one(self, result: ProcessResult):
+        # 配置log
+        handler = QueueHandler(log_queue)
+        log = logging.getLogger()
+        log.setLevel(ElbowEngineCodeGenConfig.debug_level)
+        log.addHandler(handler)
 
-def run():
-    index = Index.create()
-    logger.info(r"Begin Prcocess file 'C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\CodeGen\a.cpp'")
-    translation_unit = index.parse(r'C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\CodeGen\a.cpp')
-    traverser = ASTParser()
-    traverser.ast_travel(translation_unit.cursor)
-    gen = CodeGenerator(traverser.get_result())
-    res = gen.generate(Path(r"C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\CodeGen\generated\a.cpp"), "a.cpp")
-    print(res)
-    logger.info(r"End Prcocess file 'C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\CodeGen\a.cpp'")
+        args = [f"-I{(self.working_dir / folder).as_posix()}" for folder in self.folders]
+        args += [f"-I{(self.working_dir / folder).as_posix()}" for folder in ElbowEngineCodeGenConfig.extra_include_folder]
+        args.append(f"-I{self.working_dir / "cmake-build-debug/vcpkg_installed/x86-windows/include"}")
+        args.append("-DREFLECTION")
+        args += ElbowEngineCodeGenConfig.clang_args
+        index = Index.create()
+        args.append(f"-I{result.dst.parent.as_posix()}")
+        log.info(f"[{os.getpid()}] 开始解析文件 {result.src.as_posix()}")
+        tu = index.parse(result.src.as_posix(), args)
+        parse_error = False
+        for diag in tu.diagnostics:
+            if diag.severity == clang.cindex.Diagnostic.Error:
+                parse_error = True
+                log.error(f"[{os.getpid()}] 解析{result.src}:{diag.location.line}:{diag.location.column}出错: {diag.spelling}")
+        if parse_error:
+            return -1
+        traverser = ASTParser(result.src, log)
+        traverser.ast_travel(tu.cursor)
+        if traverser.has_error:
+            logger.error(f"[{os.getpid()}] 解析{result.src}失败")
+            return -1
+        gen = CodeGenerator(traverser.get_result())
+        if len(gen.result.classes) <= 0 and len(gen.result.structs) <= 0 and len(gen.result.enums) <= 0:
+            logger.info(f"[{os.getpid()}] 解析{result.src}结束, 未找到需要反射的struct/class/enum")
+            return 0
+        res = gen.generate(result.dst, result.dst.name)
+        if gen.has_error:
+            logger.error(f"[{os.getpid()}] 解析{result.src}失败")
+            return -1
+        try:
+            result.dst.parent.mkdir(parents=True, exist_ok=True)
+            with open(result.dst, "w", encoding='utf-8') as f:
+                f.write(res)
+        except Exception as e:
+            logger.exception(e)
+            return -1
+        log.info(f"[{os.getpid()}] 解析文件 {result.src.as_posix()} 结束")
+        return 0
+
+    def process_all(self):
+        listener = logging.handlers.QueueListener(log_queue, logging.StreamHandler())
+        listener.start()
+        # TODO: 可以并行
+        with multiprocessing.Pool() as pool:
+            results = pool.map(self.process_one, self.files_need_to_process)
+        if all(result == 0 for result in results):
+            logger.info("所有文件处理完成")
+            with open(self.working_dir / "Generated" / "Cache.json", "w") as f:
+                json.dump(self.file_hash_caches, f)
+        else:
+            logger.error("某些进程未能正确执行")
+        listener.stop()
 
 
 if __name__ == '__main__':
+
     process = FileProcess(ElbowEngineCodeGenConfig.working_dir, ElbowEngineCodeGenConfig.process_folder, ElbowEngineCodeGenConfig.max_process_count)
     process.calculate_all_files_need_process()
+    process.process_all()

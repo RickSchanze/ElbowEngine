@@ -13,7 +13,8 @@
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL StaticMesh : public Mesh {
+ECLASS()
+class StaticMesh : public Mesh {
     GENERATED_BODY(StaticMesh)
 
 public:

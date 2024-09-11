@@ -16,6 +16,8 @@
 class CachedString
 {
 public:
+
+
     CachedString() = default;
 
     CachedString(String string) : string_(std::move(string)) {}

@@ -21,7 +21,8 @@ class GameObject;
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL Component : public Object
+ECLASS()
+class Component : public Object
 {
     GENERATED_BODY(Component)
 public:

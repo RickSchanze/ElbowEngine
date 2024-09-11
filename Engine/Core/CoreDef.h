@@ -176,52 +176,26 @@ Type TypeOf()
         MACRO_CONCAT(GENERATED_SOURCE_, CURRENT_FILE_ID) \
     }
 
-// GENERATED_BODY定义
-#define GENRATED_BODY_COMBINE_IMPL(A, B, C, D) A##B##C##D
-#define GENERATED_BODY_COMBINE_IMPL(A, B, C, D) GENRATED_BODY_COMBINE_IMPL(A, B, C, D)
-#ifndef REFLECTION
-#    define GENERATED_BODY(ClassName) GENERATED_BODY_COMBINE_IMPL(GENERATED_BODY_, CURRENT_FILE_ID, _, ClassName)
+// 反射宏
+#define _CONCAT2(a,b) a##b
+#define CONCAT2(a,b) _CONCAT2(a,b)
+#ifdef REFLECTION
+#define ECLASS(...) extern void CONCAT2(REFLECTION_CLASS_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
+#define ESTRUCT(...) extern void CONCAT2(REFLECTION_STRUCT_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
+#define EPROPERTY(...) __attribute__((annotate("Property, " #__VA_ARGS__)))
+#define EFUNCTION(...) __attribute__((annotate("Function, " #__VA_ARGS__)))
+#define EENUM(...) extern void CONCAT2(REFLECTION_ENUM_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
+#define EVALUE(...) __attribute__((annotate("Value, " #__VA_ARGS__)))
 #else
-#    define GENERATED_BODY(...)
-#endif
-#ifndef REFLECTION
-#    define PROPERTY(...)
-#    define REFL
-#    define FUNCTION(...)
-#else
-#    define PROPERTY(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
-#    define REFL __attribute__((annotate("Reflected, ")))
-#    define FUNCTION(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
+#define ECLASS(...)
+#define ESTRUCT(...)
+#define EPROPERTY(...)
+#define EFUNCTION(...)
+#define EENUM(...)
+#define EVALUE(...)
 #endif
 
-// GENERATED_ENUM定义
-#define ENUM_REGISTRATION(EnumName)                                                    \
-    static void rttr_auto_register_reflection_function_##EnumName();                   \
-    namespace                                                                          \
-    {                                                                                  \
-    struct rttr__auto__register__##EnumName                                            \
-    {                                                                                  \
-        rttr__auto__register__##EnumName()                                             \
-        {                                                                              \
-            rttr_auto_register_reflection_function_##EnumName();                       \
-        }                                                                              \
-    };                                                                                 \
-    }                                                                                  \
-    static const rttr__auto__register__##EnumName RTTR_CAT(auto_register__, __LINE__); \
-    static void                                   rttr_auto_register_reflection_function_##EnumName()
-
-#define CONCAT_IMPL4(a, b, c, d) a##b##c##d
-
-#define GENERATED_ENUM_IMPL(EnumName, FileID)                   \
-    ENUM_REGISTRATION(##EnumName)                               \
-    {                                                           \
-        CONCAT_IMPL4(GENERATED_ENUM_CODE_, FileID, _, EnumName) \
-    }
-
-#define GENERATED_ENUM(EnumName) GENERATED_ENUM_IMPL(EnumName, CURRENT_FILE_ID)
-
-
-// // 获取当前调用栈的宏
+// 获取当前调用栈的宏
 #include "cpptrace/cpptrace.hpp"
 #define GENERATE_STACKTRACE()                                     \
     const auto CurrentStackTrace    = cpptrace::generate_trace(); \

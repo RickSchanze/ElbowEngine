@@ -14,7 +14,8 @@
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN
 
-class REFL SpaceCircle : public Component
+ECLASS()
+class SpaceCircle : public Component
 {
     GENERATED_BODY(SpaceCircle)
 
@@ -45,22 +46,22 @@ public:
     void PerformTranslate();
 
 protected:
-    PROPERTY(Serialized, Label = "半径")
+    EPROPERTY(Serialized, Label = "半径")
     float radius_ = 20.f;
 
-    PROPERTY(Serialized, Label = "圆心")
+    EPROPERTY(Label = "圆心")
     Vector3 center_ = Vector3(0, 0, 0);
 
-    PROPERTY(Serialized, Label = "速度", Getter = "GetSpeed", Setter = "SetSpeed")
+    EPROPERTY(Label = "速度", Getter = "GetSpeed", Setter = "SetSpeed")
     float speed_ = 1.f;
 
-    PROPERTY(Serialized, Label = "旋转轴", Getter = "GetAxis", Setter = "SetAxis")
+    EPROPERTY(Label = "旋转轴", Getter = "GetAxis", Setter = "SetAxis")
     Vector3 axis_ = Constant::UpVector;
 
-    PROPERTY(Serialized, Label = "比例", Getter = "GetScale", Setter = "SetScale")
+    EPROPERTY(Label = "比例", Getter = "GetScale", Setter = "SetScale")
     float scale_ = 0.f;
 
-    PROPERTY(Serialized, Label = "自动运行")
+    EPROPERTY(Label = "自动运行")
     bool auto_run_ = true;
 
     Vector3 a_;
