@@ -153,6 +153,7 @@ typedef std::ifstream     FileInputStream;
 
 // 反射相关类的定义
 #include "rttr/registration"
+#include "rttr/argument.h"
 typedef rttr::type     Type;
 typedef rttr::property Property;
 
@@ -169,6 +170,8 @@ Type TypeOf()
 #define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
 #define CONCAT_IMPL3(x, y, z) x##y##z
 #define MACRO_CONCAT3(x, y, z) CONCAT_IMPL3(x, y, z)
+
+#define GENERATED_BODY(class_name) MACRO_CONCAT3(GENERATED_BODY_, CURRENT_FILE_ID, class_name)
 
 #define GENERATED_SOURCE()                               \
     RTTR_REGISTRATION                                    \

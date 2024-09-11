@@ -24,6 +24,7 @@ public:
 
     void Tick(float DeltaTime) override;
 
+
     void  SetScale(float scale);
     float GetScale() const;
 
@@ -46,7 +47,7 @@ public:
     void PerformTranslate();
 
 protected:
-    EPROPERTY(Serialized, Label = "半径")
+    EPROPERTY(Label = "半径")
     float radius_ = 20.f;
 
     EPROPERTY(Label = "圆心")

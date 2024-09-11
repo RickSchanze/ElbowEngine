@@ -13,15 +13,14 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL SceneViewportWindow : public ViewportWindow
+ECLASS()
+class SceneViewportWindow : public ViewportWindow
 {
     GENERATED_BODY(SceneViewportWindow)
 public:
     SceneViewportWindow();
 
     void Draw(float delta_time) override;
-
-
 
 private:
     int old_w_;

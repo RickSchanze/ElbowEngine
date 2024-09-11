@@ -12,7 +12,8 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL ViewportWindow : public WindowBase {
+ECLASS()
+class ViewportWindow : public WindowBase {
     GENERATED_BODY(ViewportWindow)
 public:
     ViewportWindow();

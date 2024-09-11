@@ -27,7 +27,8 @@ class OutlineWindow;
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL DetailWindow : public WindowBase
+ECLASS()
+class DetailWindow : public WindowBase
 {
     GENERATED_BODY(DetailWindow)
 

@@ -17,9 +17,9 @@ GENERATED_SOURCE()
 
 WINDOW_NAMESPACE_BEGIN
 
-static void OnSceneViewportWindowVisibleChanged(EWindowVisiable old, EWindowVisiable New)
+static void OnSceneViewportWindowVisibleChanged(EWindowVisibility old, EWindowVisibility New)
 {
-    Function::RenderContext::has_back_buffer = New == EWindowVisiable::Visiable ? true : false;
+    Function::RenderContext::has_back_buffer = New == EWindowVisibility::Visible ? true : false;
 }
 
 SceneViewportWindow::SceneViewportWindow()
@@ -27,7 +27,7 @@ SceneViewportWindow::SceneViewportWindow()
     window_name_ = L"场景";
     name_        = L"Window_SceneWindow";
 
-    OnVisiableChanged.Add(OnSceneViewportWindowVisibleChanged);
+    OnVisibilityChanged.Add(OnSceneViewportWindowVisibleChanged);
 }
 
 void SceneViewportWindow::Draw(float delta_time)

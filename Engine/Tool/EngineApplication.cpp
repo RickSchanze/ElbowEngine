@@ -270,7 +270,7 @@ void OpenWindow()
     auto window = Window::WindowManager::GetOrCreateWindow<T>();
     if (window)
     {
-        window->SetVisible(Window::EWindowVisiable::Visiable);
+        window->SetVisible(Window::EWindowVisibility::Visible);
     }
 }
 

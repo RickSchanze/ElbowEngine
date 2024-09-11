@@ -12,7 +12,8 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL ImGuiDemoWindow : public WindowBase {
+ECLASS()
+class ImGuiDemoWindow : public WindowBase {
     GENERATED_BODY(ImGuiDemoWindow)
 public:
     ImGuiDemoWindow();

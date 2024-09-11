@@ -20,18 +20,20 @@ class WidgetBase;
 
 WINDOW_NAMESPACE_BEGIN
 
-enum class REFL EWindowVisiable
+EENUM()
+enum class EWindowVisibility
 {
-    Visiable,
+    Visible,
     Hidden,
     DefaultMax
 };
 
-struct WindowVisiableChangedEvent : TEvent<EWindowVisiable, EWindowVisiable>
+struct WindowVisibilityChangedEvent : TEvent<EWindowVisibility, EWindowVisibility>
 {
 };
 
-class REFL WindowBase : public Object
+ECLASS()
+class WindowBase : public Object
 {
     GENERATED_BODY(WindowBase)
 
@@ -49,11 +51,11 @@ public:
     void          SetWindowName(const String& InWindowName);
     const String& GetWindowName() const { return window_name_; }
 
-    WindowBase& SetVisible(EWindowVisiable InVisible);
+    WindowBase& SetVisible(EWindowVisibility InVisible);
 
-    bool IsVisible() const { return visiable_ == EWindowVisiable::Visiable; }
+    bool IsVisible() const { return visible_ == EWindowVisibility::Visible; }
 
-    EWindowVisiable GetVisible() const { return visiable_; }
+    EWindowVisibility GetVisible() const { return visible_; }
 
     bool IsValid() const override;
 
@@ -63,14 +65,14 @@ public:
 
 public:
     // 当窗口可见性发生变化时触发，参数是旧的可见性
-    WindowVisiableChangedEvent OnVisiableChanged;
+    WindowVisibilityChangedEvent OnVisibilityChanged;
 
 protected:
     void MarkDirty();
 
     virtual void Draw(float delta_time);
 
-    PROPERTY(Serialized, Getter = GetWindowName, Setter = SetWindowName)
+    EPROPERTY(Getter = GetWindowName, Setter = SetWindowName)
     String window_name_;
 
     AnsiString cached_ansi_window_name_;
@@ -80,7 +82,7 @@ protected:
     bool dirty_       = true;
     bool constructed_ = false;
 
-    EWindowVisiable visiable_ = EWindowVisiable::DefaultMax;
+    EWindowVisibility visible_ = EWindowVisibility::DefaultMax;
 
     int width_  = 0;
     int height_ = 0;

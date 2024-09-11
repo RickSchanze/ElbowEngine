@@ -58,3 +58,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Platform)
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Function)
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine::Resource)
 target_link_libraries(${PROJECT_NAME} PUBLIC IconFontCppHeaders)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${ELBOWENGINE_MAKE_WORK_DIR}/Generated/Engine/Tool)

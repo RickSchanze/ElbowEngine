@@ -13,7 +13,8 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL LightSettingWindow : public WindowBase
+ECLASS()
+class LightSettingWindow : public WindowBase
 {
     GENERATED_BODY(LightSettingWindow)
 public:

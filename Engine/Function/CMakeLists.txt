@@ -77,3 +77,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 
+target_include_directories(${PROJECT_NAME} PRIVATE ${ELBOWENGINE_MAKE_WORK_DIR}/Generated/Engine/Function)
+

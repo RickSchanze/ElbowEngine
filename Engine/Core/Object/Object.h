@@ -26,6 +26,7 @@ class Object
     friend class ObjectCreateHelper;
 
 public:
+    typedef Object ThisClass;
     Object() : Object(EOF_IsGameObject) {}
 
     explicit Object(const EObjectFlag flag) : flag_(flag) {}

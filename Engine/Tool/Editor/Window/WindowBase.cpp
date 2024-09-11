@@ -8,12 +8,12 @@
 #include "WindowBase.h"
 #include "CoreDef.h"
 #include "EngineApplication.h"
+#include "ImGui/ImGuiHelper.h"
 #include "Utils/StringUtils.h"
+#include "WindowManager.h"
 #include <imgui.h>
 
-#include "ImGui/ImGuiHelper.h"
 #include "WindowBase.generated.h"
-#include "WindowManager.h"
 
 GENERATED_SOURCE()
 
@@ -37,7 +37,7 @@ void WindowBase::Tick(float delta_time)
     }
     else
     {
-        SetVisible(EWindowVisiable::Hidden);
+        SetVisible(EWindowVisibility::Hidden);
     }
 }
 
@@ -60,25 +60,25 @@ void WindowBase::SetWindowName(const String& InWindowName)
     MarkDirty();
 }
 
-WindowBase& WindowBase::SetVisible(EWindowVisiable InVisible)
+WindowBase& WindowBase::SetVisible(EWindowVisibility InVisible)
 {
-    if (InVisible != visiable_)
+    if (InVisible != visible_)
     {
-        auto OldVisiable = visiable_;
-        visiable_        = InVisible;
+        auto OldVisiable = visible_;
+        visible_         = InVisible;
 
-        if (visiable_ == EWindowVisiable::Visiable)
+        if (visible_ == EWindowVisibility::Visible)
         {
             WindowManager::Get()->AddVisibleWindow(this);
             imgui_show_window_ = true;
         }
-        else if (visiable_ == EWindowVisiable::Hidden)
+        else if (visible_ == EWindowVisibility::Hidden)
         {
             WindowManager::Get()->RemoveVisibleWindow(this);
             imgui_show_window_ = false;
         }
 
-        OnVisiableChanged.Broadcast(OldVisiable, InVisible);
+        OnVisibilityChanged.Broadcast(OldVisiable, InVisible);
     }
     return *this;
 }

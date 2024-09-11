@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import json
 import logging
@@ -40,6 +41,20 @@ class SimpleEditorMetaGenerator(PropertyAnnotationGenerator):
 
     def match(self, entity: ReflProperty, anno_key: str, anno_value: str) -> bool:
         if anno_key in ["Label"]:
+            return True
+        return False
+
+
+@property_annotation_generator
+class DummyGenerator(PropertyAnnotationGenerator):
+    """
+    用于特殊的不需要匹配的标注
+    """
+    def generate_source(self, entity: ReflProperty, anno_key: str, anno_value: str) -> str:
+        return ""
+
+    def match(self, entity: ReflProperty, anno_key: str, anno_value: str) -> bool:
+        if anno_key in ["Getter", "Setter"]:
             return True
         return False
 
@@ -91,7 +106,7 @@ class FileProcess:
             try:
                 self.file_hash_caches = json.load(cache_path.open('r'))
             except Exception as e:
-                logger.warn(f"读取json文件哈希缓存{cache_path}失败, 异常: {e}")
+                logger.warning(f"读取json文件哈希缓存{cache_path}失败, 异常: {e}")
                 self.file_hash_caches = {}
         # TODO: 计算文件哈希的操作应该可以多进程化
         for folder in self.folders:
@@ -110,7 +125,6 @@ class FileProcess:
 
         args = [f"-I{(self.working_dir / folder).as_posix()}" for folder in self.folders]
         args += [f"-I{(self.working_dir / folder).as_posix()}" for folder in ElbowEngineCodeGenConfig.extra_include_folder]
-        args.append(f"-I{self.working_dir / "cmake-build-debug/vcpkg_installed/x86-windows/include"}")
         args.append("-DREFLECTION")
         args += ElbowEngineCodeGenConfig.clang_args
         index = Index.create()
@@ -133,7 +147,7 @@ class FileProcess:
         if len(gen.result.classes) <= 0 and len(gen.result.structs) <= 0 and len(gen.result.enums) <= 0:
             logger.info(f"[{os.getpid()}] 解析{result.src}结束, 未找到需要反射的struct/class/enum")
             return 0
-        res = gen.generate(result.dst, result.dst.name)
+        res = gen.generate(result.src.name)
         if gen.has_error:
             logger.error(f"[{os.getpid()}] 解析{result.src}失败")
             return -1
@@ -150,9 +164,13 @@ class FileProcess:
     def process_all(self):
         listener = logging.handlers.QueueListener(log_queue, logging.StreamHandler())
         listener.start()
-        # TODO: 可以并行
-        with multiprocessing.Pool() as pool:
+        # results = [0]
+        # for one in self.files_need_to_process:
+        #     self.process_one(one)
+        with multiprocessing.Pool(ElbowEngineCodeGenConfig.max_process_count) as pool:
             results = pool.map(self.process_one, self.files_need_to_process)
+            # pool.close()
+            # pool.join()
         if all(result == 0 for result in results):
             logger.info("所有文件处理完成")
             with open(self.working_dir / "Generated" / "Cache.json", "w") as f:
@@ -163,7 +181,11 @@ class FileProcess:
 
 
 if __name__ == '__main__':
-
+    parser = argparse.ArgumentParser(description="process header file, generate code")
+    parser.add_argument('--includes', nargs='+', help='include file')
+    args = parser.parse_args()
+    files = args.includes
+    ElbowEngineCodeGenConfig.extra_include_folder += [f"-I{file}" for file in files]
     process = FileProcess(ElbowEngineCodeGenConfig.working_dir, ElbowEngineCodeGenConfig.process_folder, ElbowEngineCodeGenConfig.max_process_count)
     process.calculate_all_files_need_process()
     process.process_all()

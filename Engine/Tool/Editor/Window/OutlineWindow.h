@@ -17,7 +17,8 @@ class GameObject;
 WINDOW_NAMESPACE_BEGIN
 
 // 世界大纲窗口
-class REFL OutlineWindow : public WindowBase  {
+ECLASS()
+class OutlineWindow : public WindowBase  {
     GENERATED_BODY(OutlineWindow)
 
 public:

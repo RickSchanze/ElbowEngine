@@ -21,7 +21,8 @@ class ToggleButton;
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL ConsoleWindow : public WindowBase
+ECLASS()
+class ConsoleWindow : public WindowBase
 {
     GENERATED_BODY(ConsoleWindow)
 public:

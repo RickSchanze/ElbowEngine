@@ -13,7 +13,8 @@
 
 WINDOW_NAMESPACE_BEGIN
 
-class REFL StatisticsWindow : public WindowBase {
+ECLASS()
+class StatisticsWindow : public WindowBase {
     GENERATED_BODY(StatisticsWindow)
 
 public:
