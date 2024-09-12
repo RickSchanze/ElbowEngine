@@ -468,14 +468,14 @@ class CodeGenerator:
 """]
         # 生成所有class
         for class_ in self.result.classes:
-            generated_header_codes.append(rf"""#undef GENERATED_BODY_{original_header_name}{class_.name}
-#define GENERATED_BODY_{original_header_name}{class_.name} \
-public: \
-    typedef ThisClass Super; \
-    typedef {class_.name} ThisClass; \
-    RTTR_ENABLE({class_.bases[0] if len(class_.bases) > 0 else ""}); \
-    RTTR_REGISTRATION_FRIEND; \
-private: \ """)
+            generated_header_codes.append(f'''#undef GENERATED_BODY_{original_header_name}{class_.name}
+#define GENERATED_BODY_{original_header_name}{class_.name} \\
+public: \\
+    typedef ThisClass Super; \\
+    typedef {class_.name} ThisClass; \\
+    RTTR_ENABLE({class_.bases[0] if len(class_.bases) > 0 else ""}); \\
+    RTTR_REGISTRATION_FRIEND; \\
+private: \\''')
             for key, value in class_.attr_map.items():
                 if key == "":
                     continue

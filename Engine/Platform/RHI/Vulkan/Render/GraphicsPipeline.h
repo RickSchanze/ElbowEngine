@@ -6,12 +6,8 @@
  */
 
 #pragma once
-#include "CachedString.h"
 #include "CoreDef.h"
 #include "Framebuffer.h"
-#include "glm/glm.hpp"
-#include "Math/MathTypes.h"
-#include "Path/Path.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
@@ -143,7 +139,7 @@ public:
     void BindIndexBuffer(vk::CommandBuffer cb, vk::Buffer buffer, vk::DeviceSize offset = 0) const;
     void BindMesh(vk::CommandBuffer cb, const Mesh& mesh) const;
 
-    void BindDescriptiorSets(
+    void BindDescriptorSets(
         vk::CommandBuffer cb, const TArray<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics,
         uint32_t first_set = 0, const TArray<uint32_t>& dynamic_offsets = {}
     ) const;

@@ -180,7 +180,7 @@ void Material::DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArr
     for (auto& mesh_to_draw: mesh.GetSubMeshes())
     {
         pipeline_->BindMesh(cb, *mesh_to_draw.GetRHIResource());
-        pipeline_->BindDescriptiorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0, dynamic_offsets);
+        pipeline_->BindDescriptorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0, dynamic_offsets);
         pipeline_->DrawIndexed(cb, mesh_to_draw.GetIndices().size());
     }
 }

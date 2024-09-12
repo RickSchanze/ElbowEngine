@@ -6,6 +6,8 @@
 #include <ranges>
 #include <chrono>
 
+#include "CoreMacro.h"
+
 // 一些Typedef
 #include <functional>
 
@@ -196,6 +198,12 @@ Type TypeOf()
 #define EFUNCTION(...)
 #define EENUM(...)
 #define EVALUE(...)
+#endif
+
+#ifdef WITH_EDITOR
+#define EDITOR_META(...) (__VA_ARGS__)
+#else
+#define EDITOR_META(...)
 #endif
 
 // 获取当前调用栈的宏

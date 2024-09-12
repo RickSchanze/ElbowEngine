@@ -79,7 +79,7 @@ void GraphicsPipeline::BindMesh(vk::CommandBuffer cb, const Mesh& mesh) const
     BindIndexBuffer(cb, mesh.GetIndexBuffer());
 }
 
-void GraphicsPipeline::BindDescriptiorSets(
+void GraphicsPipeline::BindDescriptorSets(
     vk::CommandBuffer cb, const TArray<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
     const TArray<uint32_t>& dynamic_offsets
 ) const

@@ -4,7 +4,6 @@ import json
 import logging
 import multiprocessing
 import os
-from calendar import weekday
 from logging.handlers import QueueHandler
 from typing import override, List, Dict
 from pathlib import Path
@@ -37,7 +36,7 @@ class NonCopyableGenerator(ClassAnnotationGenerator):
 @property_annotation_generator
 class SimpleEditorMetaGenerator(PropertyAnnotationGenerator):
     def generate_source(self, entity: ReflProperty, anno_key: str, anno_value: str) -> str:
-        return f" EDITOR_META( (rttr::metadata(\"{anno_key}\", \"{anno_value}\") )"
+        return f" EDITOR_META(rttr::metadata(\"{anno_key}\", \"{anno_value}\"))"
 
     def match(self, entity: ReflProperty, anno_key: str, anno_value: str) -> bool:
         if anno_key in ["Label"]:
@@ -90,7 +89,7 @@ class FileProcess:
             data = f.read()
         return hashlib.md5(data).hexdigest()
 
-    def calculate_files_need_process_folder(self, result: ProcessResult):
+    def append_file_if_need_process(self, result: ProcessResult):
         new_hash = FileProcess.hash(result.src)
         old_hash = self.file_hash_caches.get(result.src.as_posix())
         if old_hash != new_hash:
@@ -113,8 +112,8 @@ class FileProcess:
             folder_path = self.working_dir / folder
             all_h_files = folder_path.rglob("*.h")
             for h_file in all_h_files:
-                new_result = FileProcess.ProcessResult(h_file, self.working_dir / "Generated" / folder / (h_file.name[:-2] + ".generated.h"))
-                self.calculate_files_need_process_folder(new_result)
+                new_result = FileProcess.ProcessResult(h_file, self.working_dir / "Generated" / (h_file.name[:-2] + ".generated.h"))
+                self.append_file_if_need_process(new_result)
 
     def process_one(self, result: ProcessResult):
         # 配置log

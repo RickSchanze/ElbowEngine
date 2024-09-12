@@ -42,16 +42,16 @@ private:
     void DrawSingleLog(const Log& log, bool even, Vector2 size);
     void FilterLogsByLevel(const TList<Log, std::allocator<Log>>& logs);
 
-    PROPERTY(Serialized)
+    EPROPERTY()
     int32_t single_log_height_ = 60;
 
-    PROPERTY(Serialized)
+    EPROPERTY()
     Color even_color_;
 
-    PROPERTY(Serialized)
+    EPROPERTY()
     Color odd_color_;
 
-    PROPERTY(Serialized)
+    EPROPERTY()
     Color selected_color_;
 
     int32_t selected_index_ = -1;

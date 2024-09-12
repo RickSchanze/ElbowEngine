@@ -6,6 +6,7 @@
  */
 
 #pragma once
+
 #include "FunctionCommon.h"
 #include "Object/Object.h"
 #include "Math/MathTypes.h"

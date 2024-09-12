@@ -8,9 +8,10 @@
 #pragma once
 #include "Component/Component.h"
 #include "FunctionCommon.h"
-#include "Light.generated.h"
 #include "Math/MathTypes.h"
 #include "Singleton/Singleton.h"
+
+#include "Light.generated.h"
 
 
 FUNCTION_COMPONENT_NAMESPACE_BAGIN

@@ -108,7 +108,7 @@ void SkyboxMaterial::DrawSkybox(vk::CommandBuffer cb)
         skybox_mesh_ = Resource::Mesh::Create(L"Models/Cube.fbx");
     }
     pipeline_->BindMesh(cb, *skybox_mesh_->GetSubMeshes()[0].GetRHIResource());
-    pipeline_->BindDescriptiorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0);
+    pipeline_->BindDescriptorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0);
     pipeline_->DrawIndexed(cb, skybox_mesh_->GetIndexCount());
     // clang-format on
 }

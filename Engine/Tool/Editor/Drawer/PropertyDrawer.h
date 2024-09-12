@@ -6,15 +6,12 @@
  */
 
 #pragma once
-#include "Component/Transform.h"
 #include "CoreDef.h"
 #include "Math/MathTypes.h"
 #include "ToolCommon.h"
 
-namespace Function
-{
 class Transform;
-}
+
 UI_DRAWER_NAMESPACE_BEGIN
 
 class PropertyDrawer

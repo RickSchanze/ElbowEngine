@@ -11,6 +11,8 @@
 #include "Utils/ReflUtils.h"
 #include "Utils/StringUtils.h"
 
+#include "Component/Transform.h"
+
 #include <imgui.h>
 
 #define DRAG_FLOAT_V_SPEED 0.05f

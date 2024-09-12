@@ -9,6 +9,8 @@
 
 #include "Utils/ContainerUtils.h"
 
+#include "Light.generated.h"
+
 GENERATED_SOURCE()
 
 FUNCTION_NAMESPACE_BEGIN
