@@ -21,6 +21,8 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/MemoryUtils.h"
 
+#include "Profiler/ProfileMacro.h"
+
 FUNCTION_NAMESPACE_BEGIN
 
 RenderPipeline::RenderPipeline()
@@ -47,6 +49,7 @@ void RenderPipeline::DrawBackbuffer(const RenderContextDrawParam& draw_param)
 
 void RenderPipeline::Submit(RenderContextDrawParam& param)
 {
+    PROFILE_SCOPE_AUTO;
     RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
     submit_params.semaphores_to_wait = {param.render_begin_semaphore};
     submit_params.wait_stages        = {vk::PipelineStageFlagBits::eColorAttachmentOutput};

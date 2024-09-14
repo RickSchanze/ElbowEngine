@@ -4,7 +4,7 @@
  * @Date 24-7-11
  * @brief 
  */
-
+#include "Profiler/ProfileMacro.h"
 #include "LiteForwardRenderPipeline.h"
 
 #include "Component/Camera.h"
@@ -33,6 +33,8 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
 {
     // TODO: 将Camera加入到渲染参数
     // TODO: 遮挡剔除
+    // TODO: 这些整理工作应该在逻辑部分运行而不是渲染部分
+    PROFILE_SCOPE_AUTO;
     Comp::Camera* main = Comp::Camera::Main;
     Super::DrawBackbuffer(draw_param);
     auto cb             = draw_param.command_buffer;
@@ -42,6 +44,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     auto light = Comp::LightManager::Get()->GetLights();
     if (!light.empty())
     {
+        PROFILE_SCOPE("Shadow Pass");
         shadow_material_->SetModel(model_instances_.models, model_instances_.size);
         for (int i = 0; i < 6; i++)
         {
@@ -58,33 +61,29 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
         }
     }
     auto* out_view = shadow_pass_->GetOutputCubemapView();
-    // 走渲染pass
-    forward_pass_->Begin(cb, main->background_color);
-    for (auto& [material, meshes]: meshes_to_draw)
     {
-        material->Use(cb);
-        material->SetPostionViewProjection(main);
-        material->SetCubeTexture("shadowCubeMap", *out_view, Sampler::GetDefaultSampler());
-        material->SetModel(model_instances_.models, model_instances_.size);
-        for (int i = 0; i < meshes.size(); i++)
+        PROFILE_SCOPE("Object Shading Pass");
+        // 走渲染pass
+        forward_pass_->Begin(cb, main->background_color);
+        for (auto& [material, meshes]: meshes_to_draw)
         {
-            TArray dynamic_offsets = {i * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
-            material->DrawMesh(cb, *meshes[i], dynamic_offsets);
+            material->Use(cb);
+            material->SetPostionViewProjection(main);
+            material->SetCubeTexture("shadowCubeMap", *out_view, Sampler::GetDefaultSampler());
+            material->SetModel(model_instances_.models, model_instances_.size);
+            for (int i = 0; i < meshes.size(); i++)
+            {
+                TArray dynamic_offsets = {i * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
+                material->DrawMesh(cb, *meshes[i], dynamic_offsets);
+            }
         }
+        forward_pass_->End(cb);
     }
-    forward_pass_->End(cb);
 
-    // if (g_engine_statistics.frame_count % 1000 == 0)
-    // {
-    //     sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
-    // }
-    if (g_engine_statistics.frame_count % 3000 == 0)
-    {
-        // sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
-    }
     // 绘制skybox
     if (sky_box_material_->HasSetSkyTexture())
     {
+        PROFILE_SCOPE("Skybox Pass");
         skybox_pass_->Begin(cb, main->background_color);
         sky_box_material_->Use(cb);
         sky_box_material_->SetProjectionView(main);

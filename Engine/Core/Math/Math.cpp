@@ -13,6 +13,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
+#include <random>
 
 bool Math::ApproximatelyEqual(float a, float b, float tolerance)
 {
@@ -149,4 +150,16 @@ Matrix4x4 Math::Perspective(float fov, float aspect, float near, float far)
 Vector2 Math::Multiply(Vector2 a, float num)
 {
     return {a.x * num, a.y * num};
+}
+
+int32_t Math::RandomInt(int32_t min, int32_t max)
+{
+    // 使用静态局部变量来保持生成器和分布的状态
+    static std::random_device rd;  // 获得一个随机种子
+    static std::mt19937 gen(rd()); // 使用Mersenne Twister引擎
+
+    // 每次调用时创建一个新的分布对象
+    std::uniform_int_distribution<> distrib(min, max - 1);
+
+    return distrib(gen); // 返回生成的随机数
 }

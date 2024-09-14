@@ -8,3 +8,4 @@
 #pragma once
 
 #define WITH_EDITOR
+#define ENABLE_PROFILE

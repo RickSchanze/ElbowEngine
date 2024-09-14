@@ -15,6 +15,8 @@
 #include "Utils/ContainerUtils.h"
 #include "Utils/StringUtils.h"
 
+#include "Profiler/ProfileMacro.h"
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 VulkanContext::~VulkanContext()
@@ -169,6 +171,7 @@ void VulkanContext::PrepareFrameRender()
 
 void VulkanContext::PostFrameRender()
 {
+    PROFILE_SCOPE_AUTO;
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
     TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
@@ -178,7 +181,11 @@ void VulkanContext::PostFrameRender()
         .setImageIndices(g_engine_statistics.current_image_index)   //
         .setWaitSemaphores(all_wait_semaphores_);                   //
 
-    const auto Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
+    vk::Result Result;
+    {
+        PROFILE_SCOPE("Present");
+        Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
+    }
 
     if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR)
     {
@@ -191,8 +198,10 @@ void VulkanContext::PostFrameRender()
         throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
     }
 
-    logical_device_->GetPresentQueue().waitIdle();
-
+    {
+        PROFILE_SCOPE("Wait For Present");
+        logical_device_->GetPresentQueue().waitIdle();
+    }
     for (auto& semaphore: all_wait_semaphores_)
     {
         logical_device_->DestroySemaphore(semaphore);

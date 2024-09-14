@@ -103,6 +103,14 @@ public:
     static Matrix4x4 Perspective(float fov, float aspect, float near, float far);
 
     static Vector2 Multiply(Vector2 a, float num);
+
+    /**
+     * 随机整数，[min, max)
+     * @param min
+     * @param max
+     * @return
+     */
+    static int32_t RandomInt(int32_t min, int32_t max);
 };
 
 template<typename T>

@@ -55,6 +55,8 @@ add_library(${PROJECT_NAME}
         Interface/IStringify.h
         CachedString.h
         CachedString.cpp
+        Profiler/ProfileMacro.cpp
+        Profiler/ProfileMacro.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -79,3 +81,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+
+find_package(Tracy CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)

@@ -6,6 +6,7 @@
  */
 
 #include "EngineApplication.h"
+#include "Profiler/ProfileMacro.h"
 
 #include "CoreEvents.h"
 #include "GameObject/GameObject.h"
@@ -167,29 +168,34 @@ void EngineApplication::Run()
 {
     while (!glfwWindowShouldClose(window_->GetGLFWWindowHandle()))
     {
+        PROFILE_SCOPE_AUTO;
         // Tick逻辑
-        InternalTick();
-        window_->Tick(g_engine_statistics.time_delta);
-
-        // Tick GameObject
-        Function::GameObject::TickObjects(g_engine_statistics.time_delta);
+        {
+            PROFILE_SCOPE("Tick Logic");
+            InternalTick();
+            window_->Tick(g_engine_statistics.time_delta);
+            // Tick GameObject
+            Function::GameObject::TickObjects(g_engine_statistics.time_delta);
+        }
 
         // Tick渲染
         ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
         if (render_context_->CanRender())
         {
+            PROFILE_SCOPE("Tick Render");
             render_context_->PrepareFrameRender();
             window_->BeginImGuiFrame();
-
-            Window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);
-
-            DrawAppUI();
+            {
+                PROFILE_SCOPE("Tick Editor Window");
+                Window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);
+                DrawAppUI();
+            }
             g_engine_statistics.ResetDrawCalls();
-
-
-            render_context_->Draw(render_context_->CanRenderBackbuffer());
-
-            render_context_->PostFrameRender();
+            {
+                PROFILE_SCOPE("Tick Scene Object");
+                render_context_->Draw(render_context_->CanRenderBackbuffer());
+                render_context_->PostFrameRender();
+            }
         }
     }
 }
