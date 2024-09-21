@@ -81,7 +81,7 @@ public:
             info.height           = height_;
             info.layers           = 1;
             framebuffer_names_[i] = std::string("ImGuiFrameBuffer_") + std::to_string(i);
-            framebuffers_[i]      = new Framebuffer(info, framebuffer_names_[i].c_str());
+            framebuffers_[i]      = New<Framebuffer>(info, framebuffer_names_[i].c_str());
         }
     }
 
@@ -89,7 +89,7 @@ public:
     {
         for (auto& framebuffer: framebuffers_)
         {
-            delete framebuffer;
+            Delete(framebuffer);
         }
         framebuffers_.clear();
     }
@@ -194,7 +194,7 @@ void RealImGuiGraphicsPipeline::Initialize()
 
     command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
 
-    render_pass_ = new ImGuiRenderPass("ImGuiRenderPass");
+    render_pass_ = New<ImGuiRenderPass>("ImGuiRenderPass");
     render_pass_->Initialize();
 
     // 初始化Imgui
@@ -210,7 +210,7 @@ void RealImGuiGraphicsPipeline::Finialize()
     if (descriptor_pool_ == nullptr) return;
     command_pool_->Finialize();
     render_pass_->CleanFrameBuffer();
-    delete render_pass_;
+    Delete(render_pass_);
     render_pass_ = nullptr;
     ImGui_ImplVulkan_Shutdown();
     context_->GetLogicalDevice()->DestroyDescriptorPool(descriptor_pool_);
@@ -290,7 +290,7 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
     ImGui::CreateContext();
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
-    imgui_graphics_pipeline_ = new RealImGuiGraphicsPipeline();
+    imgui_graphics_pipeline_ = New<RealImGuiGraphicsPipeline>();
     Function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
@@ -356,7 +356,7 @@ void GlfwWindow::Finalize()
 {
     if (imgui_graphics_pipeline_)
     {
-        delete imgui_graphics_pipeline_;
+        Delete(imgui_graphics_pipeline_);
         imgui_graphics_pipeline_ = nullptr;
     }
     glfwDestroyWindow(window_handle_);

@@ -101,17 +101,17 @@ void PointLightShadowPass::SetupFramebuffer()
     {
         attachments[0] = shadow_map_->GetFaceView(static_cast<Cubemap::ECubemapFace>(i))->GetHandle();
         fb.setAttachments(attachments);
-        cubemap_framebuffers_[i] = new Framebuffer(fb);
+        cubemap_framebuffers_[i] = New<Framebuffer>(fb);
     }
 }
 
 void PointLightShadowPass::CleanFrameBuffer()
 {
-    delete depth_view_;
-    delete depth_;
+    Delete(depth_view_);
+    Delete(depth_);
     for (auto& framebuffer: cubemap_framebuffers_)
     {
-        delete framebuffer;
+        Delete(framebuffer);
     }
     CleanCubemap();
     depth_      = nullptr;
@@ -130,13 +130,13 @@ void PointLightShadowPass::SetupCubemap()
     cube_info.name      = "PointLightShadowPass_Cube";
     cube_info.width     = width_;
     cube_info.height    = height_;
-    shadow_map_         = new Cubemap(cube_info);
+    shadow_map_         = New<Cubemap>(cube_info);
     shadow_map_->Initialize();
 }
 
 void PointLightShadowPass::CleanCubemap()
 {
-    delete shadow_map_;
+    Delete(shadow_map_);
     shadow_map_ = nullptr;
 }
 

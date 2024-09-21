@@ -139,7 +139,7 @@ void ShaderManager::DestroyAll()
 {
     for (auto& val: shaders_ | std::views::values)
     {
-        delete val;
+        Delete(val);
     }
     shaders_.clear();
 }

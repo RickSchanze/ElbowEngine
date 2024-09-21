@@ -56,7 +56,7 @@ private:
 
     TSharedPtr<Instance>      vulkan_instance_;
     TUniquePtr<SurfaceBase>   surface_;
-    TSharedPtr<VulkanContext> vulkan_context_;
+    TUniquePtr<VulkanContext> vulkan_context_;
 
     TArray<const char*> extensions_;
 };

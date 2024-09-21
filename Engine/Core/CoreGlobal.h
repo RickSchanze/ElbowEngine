@@ -12,6 +12,7 @@
 #include "Object/ObjectManager.h"
 #include "Path/Path.h"
 #include "Singleton/Singleton.h"
+#include "Profiler/ProfileMacro.h"
 
 extern Logger g_logger;
 
@@ -112,6 +113,36 @@ public:
     static void     SetObjectID(const TUniquePtr<Object>& Obj, uint32_t ID);
 };
 
+template <typename T, typename... Args>
+T* New(Args&&... args) {
+#ifdef ENABLE_PROFILING
+    MemoryTraceAllocator<T> allocator;
+    T* ptr = allocator.allocate(1); // 分配 1 个对象的内存
+    try {
+        new (ptr) T(std::forward<Args>(args)...); // 调用构造函数
+    } catch (...) {
+        allocator.deallocate(ptr, 1);
+        throw;
+    }
+    return ptr;
+#else
+    return new T(std::forward<Args>(args)...);
+#endif
+}
+
+template <typename T>
+void Delete(T* ptr) {
+#ifdef ENABLE_PROFILING
+    if (ptr) {
+        ptr->~T(); // 调用析构函数
+        MemoryTraceAllocator<T> allocator;
+        allocator.deallocate(ptr, 1); // 释放内存
+    }
+#else
+    delete ptr;
+#endif
+}
+
 /**
  * 新建一个对象，自动选择合适的ID
  * @tparam T 对象类型 必须是Object的子类
@@ -125,7 +156,7 @@ public:
  */
 template<typename T, ENewReturnType Strategy = ENewReturnType::Raw, typename... Args>
     requires IsObject<T>
-typename NewReturnType<T, Strategy>::Type New(const String& name = L"", Args&&... args)
+typename NewReturnType<T, Strategy>::Type NewObject(const String& name = L"", Args&&... args)
 {
     // T不能是个单例
     static_assert(!std::is_base_of_v<Singleton<T>, T>, "T can not be a singleton.");
@@ -134,7 +165,7 @@ typename NewReturnType<T, Strategy>::Type New(const String& name = L"", Args&&..
     typename NewReturnType<T, Strategy>::Type rtn;
     if constexpr (Strategy == ENewReturnType::Raw)
     {
-        rtn = new T(Forward<Args>(args)...);
+        rtn = New<T>(Forward<Args>(args)...);
     }
     else if constexpr (Strategy == ENewReturnType::SharedPtr)
     {

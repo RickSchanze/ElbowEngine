@@ -60,7 +60,7 @@ void SkyboxPass::SetupFramebuffer()
         fb.height             = height_;
         fb.layers             = 1;
         framebuffer_names_[i] = "SkyboxPass_Framebuffer_" + std::to_string(i);
-        framebuffers_[i]      = new Framebuffer(fb, framebuffer_names_[i].c_str());
+        framebuffers_[i]      = New<Framebuffer>(fb, framebuffer_names_[i].c_str());
     }
 }
 
@@ -68,7 +68,7 @@ void SkyboxPass::CleanFrameBuffer()
 {
     for (auto& buffer: framebuffers_)
     {
-        delete buffer;
+        Delete(buffer);
     }
     framebuffers_.clear();
     framebuffer_names_.clear();

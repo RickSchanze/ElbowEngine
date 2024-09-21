@@ -54,12 +54,12 @@ EngineApplication::EngineApplication(const String& project_path, const String& w
     }
     window_title_ = window_title;
     instance_     = this;
-    editor_style_ = new DeepDarkStyle();
+    editor_style_ = New<DeepDarkStyle>();
 }
 
 EngineApplication::~EngineApplication()
 {
-    delete editor_style_;
+    Delete(editor_style_);
     Finitialize();
 }
 
@@ -115,36 +115,36 @@ void EngineApplication::Initialize()
     // 设置初始化RenderApplication需要的值
     RegisterEvents();
     render_application_ = MakeUnique<RHI::Vulkan::VulkanApplication>();
-    auto Surface        = window_->GetWindowSurface();
-    render_application_->SetWindowSurface(Move(Surface));
+    auto surface        = window_->GetWindowSurface();
+    render_application_->SetWindowSurface(Move(surface));
     render_application_->SetExtensions(window_->GetRequiredExtensions());
 
     render_application_->Initialize();
     window_->InitImGui(render_application_->GetContext());
     editor_style_->SetStyle();
-    render_context_ = new Function::RenderContext();
+    render_context_ = New<Function::RenderContext>();
 
-    camera_object_ = New<Function::GameObject>(L"摄像机", nullptr);
+    camera_object_ = NewObject<Function::GameObject>(L"摄像机", nullptr);
     camera_object_->AddComponent<Function::Comp::Camera>();
-    auto mesh_obj  = New<Function::GameObject>(L"AK-47_1");
+    auto mesh_obj  = NewObject<Function::GameObject>(L"AK-47_1");
     auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
     mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
     auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK-47材质");
     mesh_comp->SetMaterial(mat);
     mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
 
-    auto obj2 = New<Function::GameObject>(L"AK-47_2", mesh_obj);
+    auto obj2 = NewObject<Function::GameObject>(L"AK-47_2", mesh_obj);
     obj2->AddComponent<Function::Comp::SpaceCircle>();
     auto mesh_cmp = obj2->AddComponent<Function::Comp::StaticMesh>();
     mesh_cmp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
     mesh_cmp->SetMaterial(mat);
 
-    auto* light_obj = New<Function::GameObject>(L"点光源");
+    auto* light_obj = NewObject<Function::GameObject>(L"点光源");
     mesh_obj->GetTransform().SetPosition(Vector3(100, 0, 0));
     light_obj->GetTransform().SetPosition(Vector3(0, 0, 10));
     light_obj->AddComponent<Function::Comp::Light>();
 
-    auto wall = New<Function::GameObject>(L"方块");
+    auto wall = NewObject<Function::GameObject>(L"方块");
     wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
     wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
 
@@ -155,7 +155,7 @@ void EngineApplication::Finitialize() const
 {
     OnAppExit.Broadcast();
     if (!IsValid()) return;
-    delete render_context_;
+    Delete(render_context_);
     RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
     window_->ShutdownImGui();
     // vulkan device失效前释放所有资产

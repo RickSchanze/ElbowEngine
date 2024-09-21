@@ -31,12 +31,12 @@ GameObject::~GameObject()
     for (auto component: components_)
     {
         component->EndPlay();
-        delete component;
+        Delete(component);
     }
     components_.clear();
     for (int i = sub_game_objects_.size() - 1; i >= 0; i--)
     {
-        delete sub_game_objects_[i];
+        Delete(sub_game_objects_[i]);
     }
     if (parent_oject_ != nullptr)
     {
@@ -148,7 +148,7 @@ void GameObject::DestroyComponent(Component* component)
 {
     component->EndPlay();
     std::erase(components_, component);
-    delete component;
+    Delete(component);
 }
 
 void GameObject::MarkTransformDirty()

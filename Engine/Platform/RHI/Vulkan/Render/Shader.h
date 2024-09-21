@@ -216,7 +216,7 @@ public:
         {
             return s;
         }
-        T* shader = new T(Protected{}, device, path, name);
+        T* shader = New<T>(Protected{}, device, path, name);
         shader->RegisterShaderVariables();
         ShaderManager::RegisterShader(path, shader);
         return shader;

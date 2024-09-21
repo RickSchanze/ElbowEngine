@@ -77,8 +77,7 @@ void VulkanContext::InitProfiling()
             reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(
                 vkGetInstanceProcAddr(GetVulkanInstance()->GetHandle(), "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT")
             ),
-            reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(vkGetDeviceProcAddr(GetLogicalDevice()->GetHandle(), "vkGetCalibratedTimestampEXT")),
-            vkGetCalibratedTimestampsEXT
+            reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(vkGetDeviceProcAddr(GetLogicalDevice()->GetHandle(), "vkGetCalibratedTimestampEXT"))
         );
         ctxs[i]->Name(command_buffer_names[i], STRLEN(command_buffer_names[i]));
     }
@@ -198,11 +197,11 @@ void VulkanContext::Finalize()
 
     for (auto view: back_buffer_views_)
     {
-        delete view;
+        Delete(view);
     }
     for (auto back_buffer: back_buffers_)
     {
-        delete back_buffer;
+        Delete(back_buffer);
     }
 
 #ifdef ENABLE_PROFILING
@@ -448,7 +447,7 @@ void VulkanContext::OnBackBufferResized(int w, int h)
         auto& back_buffer = context->back_buffers_[i];
         if (back_buffer == nullptr || w > back_buffer->GetWidth() || h > back_buffer->GetHeight())
         {
-            delete back_buffer;
+            Delete(back_buffer);
 
             ImageInfo info;
             info.format = context->GetSwapChainImageFormat();
@@ -457,10 +456,10 @@ void VulkanContext::OnBackBufferResized(int w, int h)
             info.tiling = vk::ImageTiling::eOptimal;
             info.usage  = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
             info.name   = AnsiString("Backbuffer") + std::to_string(i);
-            back_buffer = new Image(info);
+            back_buffer = New<Image>(info);
             back_buffer->Initialize();
             auto& view = context->back_buffer_views_[i];
-            delete view;
+            Delete(view);
             ImageViewInfo view_info;
             view_info.format = context->GetSwapChainImageFormat();
             view_info.mip_levels = 1;

@@ -56,7 +56,7 @@ public:
         requires std::derived_from<T, Comp::Component>
     T* AddComponent()
     {
-        T* component = New<T>();
+        T* component = NewObject<T>();
         if (!component->can_instanced)
         {
             LOG_ERROR_CATEGORY(Object.Component, L"组件{}不能被AddComponent实例化", component->GetName());

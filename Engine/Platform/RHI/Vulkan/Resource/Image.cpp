@@ -41,7 +41,7 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    auto view = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info), view_info.name);
+    auto view = New<ImageView>(context.GetLogicalDevice()->GetHandle().createImageView(view_info_create_info), view_info.name);
     return view;
 }
 
@@ -89,7 +89,7 @@ Image::Image(ImageInfo create_info) : image_info_(std::move(create_info)) {}
 
 Image* Image::Create(const ImageInfo& info)
 {
-    Image* new_img = new Image(info);
+    Image* new_img = New<Image>(info);
     new_img->Initialize();
     return new_img;
 }
@@ -190,7 +190,7 @@ ImageView* Image::CreateImageView(const ImageViewInfo& view_info) const
                            .setG(vk::ComponentSwizzle::eIdentity)
                            .setB(vk::ComponentSwizzle::eIdentity)
                            .setA(vk::ComponentSwizzle::eIdentity));
-    return new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.name);
+    return New<ImageView>(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_info.name);
 }
 
 Cubemap::Cubemap(const ImageInfo& image_info) : Super(image_info) {}
@@ -209,18 +209,18 @@ void Cubemap::Initialize()
     view_create_info.subresourceRange.layerCount = 6;
     cubemap_image_view_name_                     = image_info_.name + "_CubemapView";
     cubemap_image_view_ =
-        new ImageView(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.c_str());
+        New<ImageView>(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.c_str());
 }
 
 Cubemap::~Cubemap()
 {
     for (auto& view: cubemap_image_face_views_)
     {
-        delete view;
+        Delete(view);
     }
     cubemap_image_face_views_.clear();
     cubemap_face_view_names_.clear();
-    delete cubemap_image_view_;
+    Delete(cubemap_image_view_);
     cubemap_image_view_ = nullptr;
 }
 
@@ -240,7 +240,7 @@ void Cubemap::CreateCubemapImageViews(const AnsiString& name)
         // clang-format off
         view_create_info.subresourceRange.baseArrayLayer = i;
         cubemap_face_view_names_[i] = name + "_" + std::to_string(i);
-        cubemap_image_face_views_[i] = new ImageView(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_face_view_names_[i].c_str());
+        cubemap_image_face_views_[i] = New<ImageView>(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_face_view_names_[i].c_str());
         // clang-format on
     }
 }
@@ -430,7 +430,7 @@ Sampler* Sampler::Create(const SamplerInfo& info)
     {
         return samplers_[Id];
     }
-    return new Sampler(ResourceProtected{}, info);
+    return New<Sampler>(ResourceProtected{}, info);
 }
 
 Sampler& Sampler::GetDefaultSampler()

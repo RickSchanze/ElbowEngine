@@ -45,7 +45,6 @@ class Texture : public IResource, public IRHIResourceContainer<RHI::Vulkan::Text
 public:
     Texture() = default;
 
-
     static Texture* Create(
         const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal
@@ -84,15 +83,15 @@ public:
 
     static Texture* GetDefaultLackTexture();
 
-    vk::Image  GetLowlevelImage() const;
-    vk::Format GetLowlevelFormat() const;
+    vk::Image  GetLowLevelImage() const;
+    vk::Format GetLowLevelFormat() const;
 
-protected:
     Texture(
         const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition_to_layout = vk::ImageLayout::eShaderReadOnlyOptimal
     );
 
+protected:
     Path          path_;
     int32_t       width_    = 0;
     int32_t       height_   = 0;

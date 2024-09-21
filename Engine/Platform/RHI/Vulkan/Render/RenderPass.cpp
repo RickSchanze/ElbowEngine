@@ -9,10 +9,9 @@
 
 #include <ranges>
 #include <utility>
-
+#include "Framebuffer.h"
 #include "CommandPool.h"
 #include "CoreGlobal.h"
-#include "Framebuffer.h"
 #include "LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
@@ -45,10 +44,10 @@ RenderPass::RenderTarget::~RenderTarget()
 {
     if (!is_swapchain)
     {
-        delete image;
-        delete image_view;
+        Delete(image);
+        Delete(image_view);
     }
-    delete framebuffer;
+    Delete(framebuffer);
 }
 
 bool RenderPass::IsValid() const
@@ -299,7 +298,7 @@ void RenderPassManager::DestroyRenderPasses()
     for (auto render_pass: Get()->render_passes_ | std::views::values)
     {
         render_pass->CleanFrameBuffer();
-        delete render_pass;
+        Delete(render_pass);
     }
     Get()->render_passes_.clear();
 }

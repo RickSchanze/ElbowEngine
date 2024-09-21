@@ -31,7 +31,7 @@ void Path::SetProjectWorkPath(StringView PathStr)
         // 去掉最后的'/'或者'\\'
         PathStr.remove_suffix(1);
     }
-    s_project_work_path_        = new Path{};
+    s_project_work_path_        = New<Path>();
     s_project_work_path_->path_ = PathStr;
     if (!s_project_work_path_->IsExist())
     {

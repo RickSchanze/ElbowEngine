@@ -17,7 +17,7 @@ RenderContext::~RenderContext()
 {
     if (render_pipeline_ != nullptr)
     {
-        delete render_pipeline_;
+        Delete(render_pipeline_);
         render_pipeline_ = nullptr;
     }
     s_render_context_ = nullptr;
@@ -38,7 +38,7 @@ void RenderContext::Draw(bool draw_backbuffer)
 {
     if (render_pipeline_ == nullptr)
     {
-        SetRenderPipeline(new LiteForwardRenderPipeline());
+        SetRenderPipeline(New<LiteForwardRenderPipeline>());
     }
 
     RenderContextDrawParam draw_param;
@@ -61,7 +61,7 @@ void RenderContext::PostFrameRender() const
 
 void RenderContext::SetRenderPipeline(RenderPipeline* new_render_pipeline)
 {
-    delete render_pipeline_;
+    Delete(render_pipeline_);
     render_pipeline_ = new_render_pipeline;
     render_pipeline_->Build();
 }

@@ -173,12 +173,12 @@ public:
         if (mats.contains(name))
         {
             LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
-            delete mats[name];
-            mats[name] = new T(vert, frag, render_pass, config, name);
+            Delete(mats[name]);
+            mats[name] = New<T>(vert, frag, render_pass, config, name);
         }
         else
         {
-            mats[name] = new T(vert, frag, render_pass, config, name);
+            mats[name] = New<T>(vert, frag, render_pass, config, name);
         }
         return static_cast<T*>(mats[name]);
 

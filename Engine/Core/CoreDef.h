@@ -3,12 +3,15 @@
 */
 #pragma once
 
-#include <ranges>
 #include <chrono>
+#include <ranges>
 
 #include "CoreMacro.h"
 
 // 一些Typedef
+#include "Profiler/ProfileMacro.h"
+
+
 #include <functional>
 
 // std::reference_wrapper -> Ref
@@ -76,9 +79,6 @@ using TOptional = std::optional<T>;
 #include <memory>
 template<typename T>
 using TSharedPtr = std::shared_ptr<T>;
-// std::unique_ptr -> UniquePtr
-template<typename T>
-using TUniquePtr = std::unique_ptr<T>;
 // std::weak_ptr -> WeakPtr
 template<typename T>
 using TWeakPtr = std::weak_ptr<T>;
@@ -86,13 +86,112 @@ using TWeakPtr = std::weak_ptr<T>;
 template<typename T, typename... Args>
 TSharedPtr<T> MakeShared(Args&&... args)
 {
+#ifdef ENABLE_PROFILING
+    return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
+#else
     return std::make_shared<T>(std::forward<Args>(args)...);
+#endif
 }
-// std::make_unique -> MakeUnique
+
+template<typename T>
+class TUniquePtr
+{
+public:
+    // 构造函数
+    template<typename... Args>
+    static TUniquePtr<T> Create(Args&&... args)
+    {
+#ifdef ENABLE_PROFILING
+        MemoryTraceAllocator<T> allocator;
+        T*                      ptr = allocator.allocate(1);
+        try
+        {
+            new (ptr) T(std::forward<Args>(args)...);
+        }
+        catch (...)
+        {
+            allocator.deallocate(ptr, 1);
+            throw;
+        }
+#else
+        T* ptr = new T(std::forward<Args>(args)...);
+#endif
+        return TUniquePtr<T>(ptr);
+    }
+
+    // 默认构造函数
+    TUniquePtr() noexcept = default;
+
+    // 构造函数
+    TUniquePtr(T* ptr) noexcept : ptr_(ptr) {}
+
+    // 移动构造函数
+    TUniquePtr(TUniquePtr&& other) noexcept : ptr_(other.ptr_) { other.ptr_ = nullptr; }
+
+    // 移动赋值运算符
+    TUniquePtr& operator=(TUniquePtr&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Reset();
+            std::swap(ptr_, other.ptr_);
+        }
+        return *this;
+    }
+
+    // 子类到父类的转换
+    template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
+    TUniquePtr(TUniquePtr<U>&& other) noexcept : ptr_(other.Release()) {}
+
+    // 删除拷贝构造函数和赋值运算符
+                TUniquePtr(const TUniquePtr&) = delete;
+    TUniquePtr& operator=(const TUniquePtr&)  = delete;
+
+    // 析构函数
+    ~TUniquePtr() { Reset(); }
+
+    // 重置指针
+    void Reset(T* ptr = nullptr) noexcept
+    {
+        if (ptr_)
+        {
+#ifdef ENABLE_PROFILING
+            MemoryTraceDeleter<T>()(ptr_);
+#else
+            delete ptr_;
+#endif
+        }
+        ptr_ = ptr;
+    }
+
+    // 释放指针
+    T* Release() noexcept
+    {
+        T* temp = ptr_;
+        ptr_    = nullptr;
+        return temp;
+    }
+
+    // 获取指针
+    T* Get() const noexcept { return ptr_; }
+
+    // 解引用运算符
+    T& operator*() const { return *ptr_; }
+
+    // 成员访问运算符
+    T* operator->() const noexcept { return ptr_; }
+
+    // 检查指针是否为空
+    explicit operator bool() const noexcept { return ptr_ != nullptr; }
+
+private:
+    T* ptr_ = nullptr;
+};
+
 template<typename T, typename... Args>
 TUniquePtr<T> MakeUnique(Args&&... args)
 {
-    return std::make_unique<T>(std::forward<Args>(args)...);
+    return TUniquePtr<T>::Create(std::forward<Args>(args)...);
 }
 
 // std::forward -> Forward
@@ -182,14 +281,14 @@ Type TypeOf()
     }
 
 // 反射宏
-#define _CONCAT2(a,b) a##b
-#define CONCAT2(a,b) _CONCAT2(a,b)
+#define _CONCAT2(a, b) a##b
+#define CONCAT2(a, b) _CONCAT2(a, b)
 #ifdef REFLECTION
-#define ECLASS(...) extern void CONCAT2(REFLECTION_CLASS_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
-#define ESTRUCT(...) extern void CONCAT2(REFLECTION_STRUCT_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
+#define ECLASS(...) extern void CONCAT2(REFLECTION_CLASS_TRAIT, __LINE__)(const char* param = #__VA_ARGS__);
+#define ESTRUCT(...) extern void CONCAT2(REFLECTION_STRUCT_TRAIT, __LINE__)(const char* param = #__VA_ARGS__);
 #define EPROPERTY(...) __attribute__((annotate("Property, " #__VA_ARGS__)))
 #define EFUNCTION(...) __attribute__((annotate("Function, " #__VA_ARGS__)))
-#define EENUM(...) extern void CONCAT2(REFLECTION_ENUM_TRAIT, __LINE__) (const char* param = #__VA_ARGS__);
+#define EENUM(...) extern void CONCAT2(REFLECTION_ENUM_TRAIT, __LINE__)(const char* param = #__VA_ARGS__);
 #define EVALUE(...) __attribute__((annotate("Value, " #__VA_ARGS__)))
 #else
 #define ECLASS(...)

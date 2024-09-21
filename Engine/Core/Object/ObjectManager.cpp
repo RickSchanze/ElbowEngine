@@ -67,7 +67,7 @@ void ObjectManager::DestroyAllObjects()
         // 组件由对象自己释放
         if (!obj_to_del->IsComponent())
         {
-            delete m->objects_.begin()->second;
+            Delete(m->objects_.begin()->second);
         }
         else
         {

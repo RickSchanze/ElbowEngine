@@ -19,7 +19,7 @@ RESOURCE_NAMESPACE_BEGIN
 
 SubMesh::~SubMesh()
 {
-    delete mesh_rhi_resource_;
+    Delete(mesh_rhi_resource_);
 }
 
 RHI::Vulkan::Mesh* SubMesh::GetRHIResource()
@@ -29,7 +29,7 @@ RHI::Vulkan::Mesh* SubMesh::GetRHIResource()
 
 void SubMesh::LoadRHI()
 {
-    mesh_rhi_resource_ = new RHI::Vulkan::Mesh(vertices_, indices_, false);
+    mesh_rhi_resource_ = New<RHI::Vulkan::Mesh>(vertices_, indices_, false);
 }
 
 Mesh::Mesh(Protected, const Path& mesh_path) : path_(mesh_path)
@@ -43,7 +43,7 @@ Mesh* Mesh::Create(const Path& model_path)
     auto* cached_model = ResourceManager::Get()->GetResource<Mesh>(model_path);
     if (cached_model == nullptr)
     {
-        cached_model = new Mesh(Protected{}, model_path);
+        cached_model = New<Mesh>(Protected{}, model_path);
     }
     return cached_model;
 }

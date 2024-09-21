@@ -69,7 +69,7 @@ void SimpleObjectShadingPass::SetupFramebuffer()
         fb.height             = height_;
         fb.layers             = 1;
         framebuffer_names_[i] = "SimpleObjectShadingPassFramebuffer" + std::to_string(i);
-        framebuffers_[i]      = new Framebuffer(fb, framebuffer_names_[i].c_str());
+        framebuffers_[i]      = New<Framebuffer>(fb, framebuffer_names_[i].c_str());
     }
 }
 
@@ -77,7 +77,7 @@ void SimpleObjectShadingPass::CleanFrameBuffer()
 {
     for (auto& framebuffer: framebuffers_)
     {
-        delete framebuffer;
+        Delete(framebuffer);
     }
     depth_image_->Destroy();
     depth_image_view_->Destroy();

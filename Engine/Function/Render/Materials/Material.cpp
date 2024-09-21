@@ -55,9 +55,9 @@ Material::Material(const Path& vert, const Path& frag, const MaterialConfig& con
     ParseShaderParameters();
     PipelineInfo pipeline_info;
     ConfigPipelineByMaterial(pipeline_info, config);
-    pipeline_info.shader_program                         = shader_program_;
-    pipeline_info.render_pass = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
-    pipeline_                 = new GraphicsPipeline(pipeline_info);
+    pipeline_info.shader_program = shader_program_;
+    pipeline_info.render_pass    = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
+    pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
 Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config, const String& name)
@@ -68,9 +68,9 @@ Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const T
     ParseShaderParameters();
     PipelineInfo pipeline_info;
     ConfigPipelineByMaterial(pipeline_info, config);
-    pipeline_info.shader_program                         = shader_program_;
-    pipeline_info.render_pass                            = RenderPassManager::Get()->GetRenderPass(pass_type);
-    pipeline_                                            = new GraphicsPipeline(pipeline_info);
+    pipeline_info.shader_program = shader_program_;
+    pipeline_info.render_pass    = RenderPassManager::Get()->GetRenderPass(pass_type);
+    pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
 Material::Material(
@@ -83,15 +83,15 @@ Material::Material(
     ParseShaderParameters();
     PipelineInfo pipeline_info;
     ConfigPipelineByMaterial(pipeline_info, config);
-    pipeline_info.shader_program                         = shader_program_;
-    pipeline_info.render_pass                            = render_pass;
-    pipeline_                                            = new GraphicsPipeline(pipeline_info);
+    pipeline_info.shader_program = shader_program_;
+    pipeline_info.render_pass    = render_pass;
+    pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
 Material::~Material()
 {
     shader_program_ = nullptr;
-    delete pipeline_;
+    Delete(pipeline_);
     pipeline_ = nullptr;
 }
 
@@ -252,7 +252,7 @@ void MaterialManager::DestroyMaterials()
     auto& mats = Get()->materials_;
     for (auto& mat: mats | std::views::values)
     {
-        delete mat;
+        Delete(mat);
     }
     mats.clear();
 }
@@ -273,12 +273,12 @@ Material* MaterialManager::CreateMaterial(const Path& vert, const Path& frag, co
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
-        delete mats[name];
-        mats[name] = new Material(vert, frag, config, name);
+        Delete(mats[name]);
+        mats[name] = New<Material>(vert, frag, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, config, name);
+        mats[name] = New<Material>(vert, frag, config, name);
     }
     return mats[name];
 }
@@ -291,12 +291,12 @@ Material* MaterialManager::CreateMaterial(
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
-        delete mats[name];
-        mats[name] = new Material(vert, frag, pass_type, config, name);
+        Delete(mats[name]);
+        mats[name] = New<Material>(vert, frag, pass_type, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, pass_type, config, name);
+        mats[name] = New<Material>(vert, frag, pass_type, config, name);
     }
     return mats[name];
 }
@@ -309,12 +309,12 @@ Material* MaterialManager::CreateMaterial(
     if (mats.contains(name))
     {
         LOG_WARNING_CATEGORY(Material, L"已存在同名材质{},进行覆盖", name);
-        delete mats[name];
-        mats[name] = new Material(vert, frag, render_pass, config, name);
+        Delete(mats[name]);
+        mats[name] = New<Material>(vert, frag, render_pass, config, name);
     }
     else
     {
-        mats[name] = new Material(vert, frag, render_pass, config, name);
+        mats[name] = New<Material>(vert, frag, render_pass, config, name);
     }
     return mats[name];
 }

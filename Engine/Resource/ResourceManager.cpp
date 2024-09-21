@@ -40,7 +40,7 @@ void ResourceManager::DestroyAllResources()
 {
     for (const auto& resource: resource_map_ | std::views::values)
     {
-        delete resource;
+        Delete(resource);
     }
     resource_map_.clear();
 }
@@ -52,7 +52,7 @@ void ResourceManager::DestroyResource(const Path& path)
         LOG_ERROR_CATEGORY(Resource.Manager, L"试图释放不存在的资源: {}", path.ToRelativeString());
         return;
     }
-    delete resource_map_[path];
+    Delete(resource_map_[path]);
     resource_map_.erase(path);
 }
 

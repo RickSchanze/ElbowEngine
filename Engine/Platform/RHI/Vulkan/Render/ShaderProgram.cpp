@@ -68,7 +68,7 @@ public:
     {
         for (const auto& v: shader_programs_ | std::views::values)
         {
-            delete v;
+            Delete(v);
         }
         shader_programs_.clear();
     }
@@ -114,7 +114,7 @@ ShaderProgram* ShaderProgram::Create(Shader* vert, Shader* frag, const EShaderDe
     {
         return prog;
     }
-    prog = new ShaderProgram(device, vert, frag, destroy_time, debug_name);
+    prog = New<ShaderProgram>(device, vert, frag, destroy_time, debug_name);
     ShaderProgramManager::Register(prog);
     return prog;
 }
@@ -321,7 +321,7 @@ void ShaderProgram::CreateUniformBuffers()
             TArray<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
             for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
             {
-                new_buffer[i] = new Buffer(
+                new_buffer[i] = New<Buffer>(
                     value.size,
                     vk::BufferUsageFlagBits::eUniformBuffer,
                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
@@ -339,7 +339,7 @@ void ShaderProgram::DestroyUniformBuffers()
     {
         for (auto& buffer: value)
         {
-            delete buffer;
+            Delete(buffer);
         }
     }
     uniform_buffers_.clear();

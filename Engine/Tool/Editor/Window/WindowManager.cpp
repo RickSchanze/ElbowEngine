@@ -37,7 +37,7 @@ WindowBase* WindowManager::GetOrCreateWindow(const Type& type)
                     {
                         auto* old = mgr->singleton_windows_[type];
                         LOG_INFO_CATEGORY(Tool.Window, L"窗口 {} 已存在,执行替换", window->GetName());
-                        delete old;
+                        Delete(old);
                     }
                     else
                     {
@@ -66,7 +66,7 @@ void WindowManager::DestroyWindow(const Type& type)
     if (mgr.singleton_windows_.contains(type))
     {
         ObjectManager::Get()->RemoveObject(mgr.singleton_windows_[type]->GetID());
-        delete mgr.singleton_windows_[type];
+        Delete(mgr.singleton_windows_[type]);
         mgr.singleton_windows_.erase(type);
     }
     else
