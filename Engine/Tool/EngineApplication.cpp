@@ -168,6 +168,8 @@ void EngineApplication::Run()
 {
     while (!glfwWindowShouldClose(window_->GetGLFWWindowHandle()))
     {
+        MARK_FRAME_AUTO;
+        // FrameMarkNamed("ElbowEngine Frame");
         PROFILE_SCOPE_AUTO;
         // Tick逻辑
         {

@@ -63,12 +63,24 @@ struct VulkanProfilerCounter
 
 void VulkanContext::InitProfiling()
 {
+    static constexpr char command_buffer_names[5][22] = {
+        "Vulkan_CommandBuffer1", "Vulkan_CommandBuffer2", "Vulkan_CommandBuffer3", "Vulkan_CommandBuffer4", "Vulkan_CommandBuffer5"
+    };
     ctxs.resize(command_buffers_.size());
     for (int i = 0; i < command_buffers_.size(); i++)
     {
-        ctxs[i] = TracyVkContext(
-            GetPhysicalDevice()->GetHandle(), GetLogicalDevice()->GetHandle(), GetLogicalDevice()->GetGraphicsQueue(), command_buffers_[i]
+        ctxs[i] = TracyVkContextCalibrated(
+            GetPhysicalDevice()->GetHandle(),
+            GetLogicalDevice()->GetHandle(),
+            GetLogicalDevice()->GetGraphicsQueue(),
+            command_buffers_[i],
+            reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(
+                vkGetInstanceProcAddr(GetVulkanInstance()->GetHandle(), "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT")
+            ),
+            reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(vkGetDeviceProcAddr(GetLogicalDevice()->GetHandle(), "vkGetCalibratedTimestampEXT")),
+            vkGetCalibratedTimestampsEXT
         );
+        ctxs[i]->Name(command_buffer_names[i], STRLEN(command_buffer_names[i]));
     }
 }
 
@@ -85,10 +97,20 @@ void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
 {
     VulkanProfilerCounter _;
     ;
-    static tracy::SourceLocationData location{
-        name, TracyFunction, TracyFile, (uint32_t)TracyLine, GetColor(VulkanProfilerCounter::counter)
-    };
-    scope = MakeUnique<tracy::VkCtxScope>(ctxs[g_engine_statistics.current_image_index], &location, (VkCommandBuffer)cmd.GetNativePtr(), true);
+    static tracy::SourceLocationData location{name, TracyFunction, TracyFile, (uint32_t)TracyLine, GetColor(VulkanProfilerCounter::counter)};
+    location.name = name;
+    scope         = MakeUnique<tracy::VkCtxScope>(
+        ctxs[g_engine_statistics.current_image_index],
+        location.line,
+        "VulkanContext.cpp",
+        STRLEN("VulkanContext.cpp"),
+        "BeginProfile",
+        STRLEN("BeginProfile"),
+        name,
+        strlen(name),
+        (VkCommandBuffer)cmd.GetNativePtr(),
+        true
+    );
 }
 
 void VulkanContext::EndProfile()
@@ -117,11 +139,15 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
     }
     renderer_id_ = s_renderer_id_count_++;
     LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
-    vulkan_instance_      = instance;
-    physical_device_      = vulkan_instance_->PickPhysicalDevice();
-    const auto Properties = physical_device_->GetProperties();
-    auto       Name       = StringUtils::FromAnsiString(Properties.deviceName);
-    LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", Name);
+    vulkan_instance_ = instance;
+    physical_device_ = vulkan_instance_->PickPhysicalDevice();
+    for (auto extension: physical_device_->s_device_required_extensions)
+    {
+        LOG_INFO_ANSI_CATEGORY(Vulkan, "启用的扩展: {}", extension);
+    }
+    const auto properties = physical_device_->GetProperties();
+    auto       name       = StringUtils::FromAnsiString(properties.deviceName);
+    LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", name);
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
     swap_chain_     = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, 1920, 1080);
     // 初始化命令生产者

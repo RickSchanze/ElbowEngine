@@ -241,8 +241,8 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
     {
         auto& buffer = buffers[i];
         buffer->MapMemory();
-        auto* map_res = buffer->GetMappedCpuMemory();
-        memcpy(map_res, data, size);
+        buffer->GetMappedCpuMemory();
+        buffer->Memcpy(data, size);
         buffer->FlushMemory();
     }
 }

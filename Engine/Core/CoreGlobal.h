@@ -196,6 +196,12 @@ struct EngineStatistics
     void IncreaseDrawCall(const int32_t count = 1);
 };
 
+// 编译时获得常量字符串长度
+template <std::size_t N>
+constexpr std::size_t STRLEN(const char (&str)[N]) {
+    return N - 1; // 字符串字面量包含结尾的 '\0'，所以减去 1
+}
+
 extern EngineStatistics g_engine_statistics;
 
 extern String STRING_NONE;

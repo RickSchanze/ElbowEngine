@@ -28,7 +28,9 @@ class PhysicalDevice
 public:
     static inline TArray<const char*> s_device_required_extensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        // VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+#ifdef ENABLE_PROFILING
+        VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+#endif
     };
     static TArray<const char*> GetDeviceRequiredExtensions() { return s_device_required_extensions; }
 
@@ -61,10 +63,10 @@ public:
 
     /**
      * 判断一个Device是否合适
-     * @param InDevice
+     * @param device
      * @return
      */
-    static bool IsDeviceSuitable(const PhysicalDevice& InDevice);
+    static bool IsDeviceSuitable(const PhysicalDevice& device);
 
     PhysicalDevice& SetVulkanPhysicalDevice(vk::PhysicalDevice device);
 

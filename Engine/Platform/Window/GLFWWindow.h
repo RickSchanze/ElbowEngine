@@ -33,7 +33,7 @@ struct GLFWWindowSurface : RHI::Vulkan::SurfaceBase
     GLFWwindow* mWindow;
 };
 
-class ImGuiGraphicsPipeline;
+class RealImGuiGraphicsPipeline;
 
 class GlfwWindow {
 public:
@@ -77,7 +77,7 @@ private:
     GLFWwindow* window_handle_ = nullptr;
     String      window_title_;
 
-    ImGuiGraphicsPipeline* imgui_graphics_pipeline_ = nullptr;
+    RealImGuiGraphicsPipeline* imgui_graphics_pipeline_ = nullptr;
 
     int width_;
     int height_;

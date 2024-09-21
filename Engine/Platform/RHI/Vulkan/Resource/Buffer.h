@@ -27,7 +27,7 @@ public:
     void  UnmapMemory();
     void  FlushMemory() const;
 
-    void Memcpy(void* data, size_t size) const;
+    void Memcpy(const void* data, size_t size) const;
 
     bool IsMemoryMapped() const;
 

@@ -10,6 +10,8 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
+#include "Profiler/ProfileMacro.h"
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 Buffer::Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const AnsiString& name)
@@ -47,6 +49,7 @@ void Buffer::MapMemory()
     auto* context = VulkanContext::Get();
     if (mapped_ == nullptr)
     {
+        PROFILE_SCOPE_AUTO;
         context->GetLogicalDevice()->MapMemory(memory_, size_, 0, &mapped_);
     }
 }
@@ -56,6 +59,7 @@ void Buffer::UnmapMemory()
     auto* context = VulkanContext::Get();
     if (mapped_ != nullptr)
     {
+        PROFILE_SCOPE_AUTO;
         context->GetLogicalDevice()->UnmapMemory(memory_);
     }
     mapped_ = nullptr;
@@ -63,6 +67,7 @@ void Buffer::UnmapMemory()
 
 void Buffer::FlushMemory() const
 {
+    PROFILE_SCOPE_AUTO;
     auto*                 context = VulkanContext::Get();
     vk::MappedMemoryRange range;
     range.memory = memory_;
@@ -70,8 +75,9 @@ void Buffer::FlushMemory() const
     context->GetLogicalDevice()->FlushMappedMemory({range});
 }
 
-void Buffer::Memcpy(void* data, size_t size) const
+void Buffer::Memcpy(const void* data, size_t size) const
 {
+    PROFILE_SCOPE_AUTO;
     auto c = memcpy(mapped_, data, size);
 }
 

@@ -15,6 +15,7 @@
 #include "Input/Input.h"
 #include "Path/Path.h"
 #include "Render/Event.h"
+#include "RHI/Vulkan/CommandBuffer.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
@@ -22,6 +23,8 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan_to_string.hpp"
+
+#include "Profiler/ProfileMacro.h"
 
 using namespace RHI::Vulkan;
 
@@ -110,20 +113,20 @@ public:
     TArray<AnsiString>   framebuffer_names_;
 };
 
-class ImGuiGraphicsPipeline : public ImguiGraphicsPipeline
+class RealImGuiGraphicsPipeline : public ImguiGraphicsPipeline
 {
 public:
-    explicit ImGuiGraphicsPipeline()
+    explicit RealImGuiGraphicsPipeline()
     {
         context_ = VulkanContext::Get();
         Initialize();
-        OnAppWindowResized.AddObject(this, &ImGuiGraphicsPipeline::Rebuild);
+        OnAppWindowResized.AddObject(this, &RealImGuiGraphicsPipeline::Rebuild);
     }
 
     void Initialize();
     void Finialize();
 
-    ~ImGuiGraphicsPipeline() override;
+    ~RealImGuiGraphicsPipeline() override;
 
 protected:
     void CreateDescriptorPool();
@@ -170,7 +173,7 @@ vk::Framebuffer ImGuiRenderPass::GetCurrentFramebufferHandle()
     return nullptr;
 }
 
-void ImGuiGraphicsPipeline::Initialize()
+void RealImGuiGraphicsPipeline::Initialize()
 {
     if (descriptor_pool_ != nullptr) return;
     ImGui_ImplVulkan_InitInfo Info{};
@@ -202,7 +205,7 @@ void ImGuiGraphicsPipeline::Initialize()
     ImGui_ImplVulkan_Init(&Info, render_pass_->GetHandle());
 }
 
-void ImGuiGraphicsPipeline::Finialize()
+void RealImGuiGraphicsPipeline::Finialize()
 {
     if (descriptor_pool_ == nullptr) return;
     command_pool_->Finialize();
@@ -214,13 +217,14 @@ void ImGuiGraphicsPipeline::Finialize()
     descriptor_pool_ = nullptr;
 }
 
-ImGuiGraphicsPipeline::~ImGuiGraphicsPipeline()
+RealImGuiGraphicsPipeline::~RealImGuiGraphicsPipeline()
 {
     Finialize();
 }
 
-void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
+void RealImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
 {
+    PROFILE_SCOPE_AUTO;
     vk::CommandBufferBeginInfo begin_info          = {};
     int32_t                    current_image_index = g_engine_statistics.current_image_index;
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -228,8 +232,8 @@ void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     render_pass_info.renderPass              = render_pass_->GetHandle();
     render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
+    RHI::GetGfxContext().BeginProfile("ImGui Pass GPU", CommandBufferVulkan(cb));
     cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
-
     ImGui::Render();
     vk::Viewport viewport;
     viewport.x        = 0;
@@ -246,9 +250,10 @@ void ImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     auto* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, cb);
     cb.endRenderPass();
+    RHI::GetGfxContext().EndProfile();
 }
 
-void ImGuiGraphicsPipeline::CreateDescriptorPool()
+void RealImGuiGraphicsPipeline::CreateDescriptorPool()
 {
     vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
     vk::DescriptorPoolCreateInfo PoolCreateInfo;
@@ -285,7 +290,7 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
     ImGui::CreateContext();
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
-    imgui_graphics_pipeline_ = new ImGuiGraphicsPipeline();
+    imgui_graphics_pipeline_ = new RealImGuiGraphicsPipeline();
     Function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
