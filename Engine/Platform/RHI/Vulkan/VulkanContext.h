@@ -8,6 +8,7 @@
 #pragma once
 #include "Render/LogicalDevice.h"
 #include "Render/SwapChain.h"
+#include "RHI/GfxContext.h"
 #include "Utils/ContainerUtils.h"
 #include "VulkanCommon.h"
 
@@ -40,12 +41,12 @@ struct GraphicsQueueSubmitParams
     bool                           has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
 };
 
-class VulkanContext
+class VulkanContext : public GfxContext
 {
 public:
     VulkanContext() = default;
 
-    virtual ~VulkanContext();
+    ~VulkanContext() override;
 
     bool CanRenderBackbuffer() const;
 
@@ -59,6 +60,22 @@ protected:
     };
 
 public:
+    /** Begin GfxContext */
+
+    EGraphicsAPI GetAPI() const override;
+
+#ifdef ENABLE_PROFILING
+
+    void InitProfiling() override;
+    void DeInitProfiling() override;
+    void BeginProfile(const char* name, const CommandBuffer& cmd) override;
+    void EndProfile() override;
+    void CollectProfileData(const CommandBuffer& cmd) override;
+
+#endif
+
+    /** End GfxContext */
+
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
     explicit VulkanContext(Protected, const TSharedPtr<Instance>& instance);
 

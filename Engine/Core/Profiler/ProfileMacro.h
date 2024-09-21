@@ -9,12 +9,10 @@
 
 #include "CoreMacro.h"
 
-
-#ifdef ENABLE_PROFILE
-#define TRACY_ENABLE
+#ifdef ENABLE_PROFILING
 #include "tracy/Tracy.hpp"
 
-int32_t GetColor(int index);
+uint32_t GetColor(int index);
 
 struct ColorScoped
 {
@@ -31,13 +29,12 @@ struct ColorScoped
     }
 };
 
-static int32_t GetColor()
+static uint32_t GetColor()
 {
     return GetColor(ColorScoped::level);
 }
 
 #define COLOR_SCOPED ColorScoped __color_scope##__LINE__;
-
 #define PROFILE_SCOPE_AUTO ZoneScoped; COLOR_SCOPED ZoneColor(GetColor());
 #define PROFILE_SCOPE(name) ZoneScopedN(name); COLOR_SCOPED ZoneColor(GetColor());
 #else

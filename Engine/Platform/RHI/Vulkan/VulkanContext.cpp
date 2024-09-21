@@ -17,6 +17,11 @@
 
 #include "Profiler/ProfileMacro.h"
 
+// for profiling GPU
+#include "CommandBuffer.h"
+#include "RHI/CommandBuffer.h"
+#include "tracy/TracyVulkan.hpp"
+
 RHI_VULKAN_NAMESPACE_BEGIN
 
 VulkanContext::~VulkanContext()
@@ -37,6 +42,67 @@ TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
     return Rtn;
 }
+
+EGraphicsAPI VulkanContext::GetAPI() const
+{
+    return EGraphicsAPI::Vulkan;
+}
+
+#ifdef ENABLE_PROFILING
+
+static TArray<TracyVkCtx>            ctxs;
+static TUniquePtr<tracy::VkCtxScope> scope;
+
+struct VulkanProfilerCounter
+{
+    static inline int counter = 0;
+                      VulkanProfilerCounter() { counter++; }
+
+    ~VulkanProfilerCounter() { counter--; }
+};
+
+void VulkanContext::InitProfiling()
+{
+    ctxs.resize(command_buffers_.size());
+    for (int i = 0; i < command_buffers_.size(); i++)
+    {
+        ctxs[i] = TracyVkContext(
+            GetPhysicalDevice()->GetHandle(), GetLogicalDevice()->GetHandle(), GetLogicalDevice()->GetGraphicsQueue(), command_buffers_[i]
+        );
+    }
+}
+
+void VulkanContext::DeInitProfiling()
+{
+    for (int i = 0; i < ctxs.size(); i++)
+    {
+        TracyVkDestroy(ctxs[i]);
+    }
+    ctxs.clear();
+}
+
+void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
+{
+    VulkanProfilerCounter _;
+    ;
+    static tracy::SourceLocationData location{
+        name, TracyFunction, TracyFile, (uint32_t)TracyLine, GetColor(VulkanProfilerCounter::counter)
+    };
+    scope = MakeUnique<tracy::VkCtxScope>(ctxs[g_engine_statistics.current_image_index], &location, (VkCommandBuffer)cmd.GetNativePtr(), true);
+}
+
+void VulkanContext::EndProfile()
+{
+    scope = nullptr;
+}
+
+void VulkanContext::CollectProfileData(const CommandBuffer& cmd)
+{
+    const uint32_t index = g_engine_statistics.current_image_index;
+    TracyVkCollect(ctxs[index], static_cast<VkCommandBuffer>(cmd.GetNativePtr()));
+}
+
+#endif
 
 VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
 {
@@ -67,6 +133,7 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
 
 VulkanContext* VulkanContext::Get()
 {
+    // TODO: 单例不在这里写，使用GfxContext
     if (s_context_ == nullptr)
     {
         throw VulkanException(L"VulkanContext未初始化");
@@ -82,6 +149,12 @@ void VulkanContext::Initialize()
     OnBackBufferResized(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
     OnAppWindowResized.Add(&VulkanContext::RebuildSwapChain);
     OnBackbufferResize.Add(&VulkanContext::OnBackBufferResized);
+
+#ifdef ENABLE_PROFILING
+    InitProfiling();
+#endif
+    // TODO: SetGfxContext不应该在这里
+    SetGfxContext(this);
 }
 
 void VulkanContext::Finalize()
@@ -105,6 +178,10 @@ void VulkanContext::Finalize()
     {
         delete back_buffer;
     }
+
+#ifdef ENABLE_PROFILING
+    DeInitProfiling();
+#endif
 
     logical_device_->Finialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
@@ -269,6 +346,9 @@ vk::CommandBuffer VulkanContext::BeginRecordCommandBuffer()
 
 void VulkanContext::EndRecordCommandBuffer()
 {
+#ifdef ENABLE_PROFILING
+    CollectProfileData(CommandBufferVulkan(GetCurrentCommandBuffer()));
+#endif
     GetCurrentCommandBuffer().end();
 }
 
@@ -345,13 +425,13 @@ void VulkanContext::OnBackBufferResized(int w, int h)
             delete back_buffer;
 
             ImageInfo info;
-            info.format         = context->GetSwapChainImageFormat();
-            info.width          = w;
-            info.height         = h;
-            info.tiling         = vk::ImageTiling::eOptimal;
-            info.usage          = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-            info.name           = AnsiString("Backbuffer") + std::to_string(i);
-            back_buffer         = new Image(info);
+            info.format = context->GetSwapChainImageFormat();
+            info.width  = w;
+            info.height = h;
+            info.tiling = vk::ImageTiling::eOptimal;
+            info.usage  = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+            info.name   = AnsiString("Backbuffer") + std::to_string(i);
+            back_buffer = new Image(info);
             back_buffer->Initialize();
             auto& view = context->back_buffer_views_[i];
             delete view;
@@ -362,7 +442,5 @@ void VulkanContext::OnBackBufferResized(int w, int h)
         }
     }
 }
-
-
 
 RHI_VULKAN_NAMESPACE_END

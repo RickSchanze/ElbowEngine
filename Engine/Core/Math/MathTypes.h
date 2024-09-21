@@ -117,10 +117,18 @@ public:
     static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
     static Color Invalid() { return {-1, -1, -1, -1}; }
 
+    /** 讲一个0-1的表示颜色的值转换为0-255的值 */
+    static uint8_t FloatToByte(float value);
+
     bool IsValid() const;
 
     Color operator*(const Color& other)const;
     Color operator*(const float scalar)const;
+
+    /** 转换Int带alpha通道 */
+    uint32_t ToUInt() const;
+    /** 转换为没有alpha通道的Int */
+    uint32_t ToUIntNoAlpha() const;
 
 #if USE_IMGUI
     Color() = default;

@@ -15,6 +15,7 @@
 #include "RenderPasses/PointLightShadowPass.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
 #include "RenderPasses/SkyboxPass.h"
+#include "RHI/Vulkan/CommandBuffer.h"
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
@@ -39,12 +40,15 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     Super::DrawBackbuffer(draw_param);
     auto cb             = draw_param.command_buffer;
     auto meshes_to_draw = CollectMeshesWithMaterial();
+    auto& context = RHI::GetGfxContext();
+    auto cmd = CommandBufferVulkan(draw_param.command_buffer);
 
     // 走一遍shadow pass
     auto light = Comp::LightManager::Get()->GetLights();
     if (!light.empty())
     {
         PROFILE_SCOPE("Shadow Pass");
+        context.BeginProfile("Shadow Pass GPU", cmd);
         shadow_material_->SetModel(model_instances_.models, model_instances_.size);
         for (int i = 0; i < 6; i++)
         {
@@ -59,10 +63,12 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
             }
             shadow_pass_->EndDrawFace(cb);
         }
+        context.EndProfile();
     }
     auto* out_view = shadow_pass_->GetOutputCubemapView();
     {
         PROFILE_SCOPE("Object Shading Pass");
+        context.BeginProfile("Object Shading Pass GPU", cmd);
         // 走渲染pass
         forward_pass_->Begin(cb, main->background_color);
         for (auto& [material, meshes]: meshes_to_draw)
@@ -78,17 +84,20 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
             }
         }
         forward_pass_->End(cb);
+        context.EndProfile();
     }
 
     // 绘制skybox
     if (sky_box_material_->HasSetSkyTexture())
     {
         PROFILE_SCOPE("Skybox Pass");
+        context.BeginProfile("Skybox Pass GPU", cmd);
         skybox_pass_->Begin(cb, main->background_color);
         sky_box_material_->Use(cb);
         sky_box_material_->SetProjectionView(main);
         sky_box_material_->DrawSkybox(cb);
         skybox_pass_->End(cb);
+        context.EndProfile();
     }
 }
 

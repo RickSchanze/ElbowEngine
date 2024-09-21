@@ -146,6 +146,11 @@ Rotator Rotator::ToRotatorRadian() const
     return r;
 }
 
+uint8_t Color::FloatToByte(float value)
+{
+    return static_cast<uint8_t>(std::round(value * 255.0f));
+}
+
 bool Color::IsValid() const
 {
     return r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && a >= 0 && a <= 1;
@@ -159,6 +164,16 @@ Color Color::operator*(const Color& other) const
 Color Color::operator*(const float scalar) const
 {
     return {r * scalar, g * scalar, b * scalar, a * scalar};
+}
+
+uint32_t Color::ToUInt() const
+{
+    return FloatToByte(a) << 24 | FloatToByte(r) << 16 | FloatToByte(g) << 8 | FloatToByte(b);
+}
+
+uint32_t Color::ToUIntNoAlpha() const
+{
+    return FloatToByte(r) << 16 | FloatToByte(g) << 8 | FloatToByte(b);
 }
 
 bool Color::operator==(const Color& other) const

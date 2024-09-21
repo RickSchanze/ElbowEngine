@@ -10,7 +10,7 @@
 #include "CoreDef.h"
 #include "Math/Math.h"
 
-int32_t GetColor(int index)
+uint32_t GetColor(int index)
 {
     TStaticArray colors = {
         0xff4500,   // OrangeRed

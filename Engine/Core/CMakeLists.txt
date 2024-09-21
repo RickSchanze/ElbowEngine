@@ -82,5 +82,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
-find_package(Tracy CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
+target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)

@@ -59,6 +59,12 @@ add_library(Platform
         RHI/Vulkan/VulkanUtils.h
         RHI/Vulkan/VulkanUtils.cpp
         PlatformEvents.h
+        RHI/GfxContext.h
+        RHI/CommandBuffer.h
+        PlatformCommon.h
+        RHI/Vulkan/CommandBuffer.cpp
+        RHI/Vulkan/CommandBuffer.h
+        RHI/GfxContext.cpp
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

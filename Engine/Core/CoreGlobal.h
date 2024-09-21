@@ -55,8 +55,6 @@ extern Logger g_logger;
 #define ASSERT_CATEGORY(Category, Condition, Message, ...) \
     if (!(Condition)) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
 
-#define ASSETC
-
 #define NEVER_ENTRY_CRITICAL() g_logger.Critical("This function should never be executed {}:{}", __FILE__, __LINE__);
 #define NEVER_ENTRY_WARNING() g_logger.Warning("This function should never be executed {}:{}", __FILE__, __LINE__);
 

@@ -48,8 +48,5 @@
   }, {
     "name" : "nlohmann-json",
     "version>=" : "3.11.3"
-  }, {
-    "name" : "tracy",
-    "version>=" : "0.11.0"
   } ]
 }

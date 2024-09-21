@@ -128,7 +128,7 @@ IncludeCategories:
 # 缩进case标签
 IndentCaseLabels: false
 # 要使用的预处理器指令缩进样式
-IndentPPDirectives: AfterHash
+IndentPPDirectives: None
 # 缩进宽度
 IndentWidth: 4
 # 函数返回类型换行时，缩进函数声明或函数定义的函数名
