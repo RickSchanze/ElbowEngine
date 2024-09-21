@@ -1,3 +1,6 @@
 [submodule "Engine/ThirdParty/IconFontCppHeaders"]
 	path = Engine/ThirdParty/IconFontCppHeaders
 	url = https://github.com/RickSchanze/IconFontCppHeaders
+[submodule "Engine/ThirdParty/tracy"]
+	path = Engine/ThirdParty/tracy
+	url = https://github.com/RickSchanze/tracy
