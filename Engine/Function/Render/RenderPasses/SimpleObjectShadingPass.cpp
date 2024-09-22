@@ -54,10 +54,10 @@ void SimpleObjectShadingPass::SetupFramebuffer()
     depth_image_view_info.format       = VulkanContext::Get()->GetDepthImageFormat();
     depth_image_view_info.aspect_flags = vk::ImageAspectFlagBits::eDepth;
     depth_image_view_info.name         = "SimpleObjectShadingPassDepthImageView";
-    depth_image_view_                  = depth_image_->CreateImageView(depth_image_view_info);
-    attachments[1]                     = depth_image_view_->GetHandle();
+    depth_image_view                  = depth_image_->CreateImageView(depth_image_view_info);
+    attachments[1]                     = depth_image_view->GetHandle();
 
-    framebuffers_.resize(g_engine_statistics.graphics.swapchain_image_count);
+    framebuffers.resize(g_engine_statistics.graphics.swapchain_image_count);
     framebuffer_names_.resize(g_engine_statistics.graphics.swapchain_image_count);
     for (int i = 0; i < g_engine_statistics.graphics.swapchain_image_count; i++)
     {
@@ -69,38 +69,27 @@ void SimpleObjectShadingPass::SetupFramebuffer()
         fb.height             = height_;
         fb.layers             = 1;
         framebuffer_names_[i] = "SimpleObjectShadingPassFramebuffer" + std::to_string(i);
-        framebuffers_[i]      = New<Framebuffer>(fb, framebuffer_names_[i].c_str());
+        framebuffers[i]      = New<Framebuffer>(fb, framebuffer_names_[i].c_str());
     }
 }
 
 void SimpleObjectShadingPass::CleanFrameBuffer()
 {
-    for (auto& framebuffer: framebuffers_)
+    for (auto& framebuffer: framebuffers)
     {
         Delete(framebuffer);
     }
     depth_image_->Destroy();
-    depth_image_view_->Destroy();
-    framebuffers_.clear();
+    depth_image_view->Destroy();
+    framebuffers.clear();
 }
 
 void SimpleObjectShadingPass::SetupSubpassDependency()
 {
-    vk::SubpassDependency dependency;
-    dependency
-        // 指定被依赖的子流程索引和依赖被依赖的子
-        // 流程索引
-        .setSrcSubpass(VK_SUBPASS_EXTERNAL)                                   // 代表使用渲染流程开始前的隐含子流程
-        .setDstSubpass(0)                                                     // 设为0代表之前创建的子流程所有，必须大于srcSubpass(避免循环依赖)
-        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定需要等待的管线阶段
-        .setSrcAccessMask(vk::AccessFlagBits::eNone)                          // 指定子进行的操作类型
-        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)   // 指定等待的管线阶段
-        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);   // 指定子进行的操作类型
-    dependencies_.push_back(dependency);
 }
 
 vk::Framebuffer SimpleObjectShadingPass::GetCurrentFramebufferHandle(){
-    return framebuffers_[g_engine_statistics.current_image_index]->GetHandle();
+    return framebuffers[g_engine_statistics.current_image_index]->GetHandle();
 }
 
 FUNCTION_NAMESPACE_END

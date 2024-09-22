@@ -151,7 +151,7 @@ VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
     swap_chain_     = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, 1920, 1080);
     // 初始化命令生产者
     command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
-    CreateSyncObjecs();
+    CreateSyncObjects();
     CreateCommandBuffers();
     Initialize();
 }
@@ -239,13 +239,13 @@ vk::Semaphore VulkanContext::SubmitGraphicsQueue(GraphicsQueueSubmitParams submi
 void VulkanContext::PrepareFrameRender()
 {
     // 等待当前帧的指令缓冲结束执行
-    const TStaticArray fences      = {in_flight_fences_[g_engine_statistics.current_frame_index]};
-    vk::Result         wait_result = logical_device_->WaitForFences(fences);
-    if (wait_result != vk::Result::eSuccess)
-    {
-        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"等待指令缓冲执行失败");
-        return;
-    }
+    // const TStaticArray fences      = {in_flight_fences_[g_engine_statistics.current_frame_index]};
+    // vk::Result         wait_result = logical_device_->WaitForFences(fences);
+    // if (wait_result != vk::Result::eSuccess)
+    // {
+    //     LOG_CRITIAL_CATEGORY(Vulkan.Render, L"等待指令缓冲执行失败");
+    //     return;
+    // }
     // 获取可用图像索引
     VkResult acquire_result = vkAcquireNextImageKHR(
         logical_device_->GetHandle(),
@@ -268,8 +268,16 @@ void VulkanContext::PrepareFrameRender()
         return;
     }
     // 重置当前帧的Fence
-    logical_device_->ResetFences(fences);
+    // logical_device_->ResetFences(fences);
 }
+
+constexpr char frame_messages[][18] = {
+    "Present Message 1",
+    "Present Message 2",
+    "Present Message 3",
+    "Present Message 4",
+    "Present Message 5",
+};
 
 void VulkanContext::PostFrameRender()
 {
@@ -286,6 +294,7 @@ void VulkanContext::PostFrameRender()
     vk::Result Result;
     {
         PROFILE_SCOPE("Present");
+        TracyMessage(frame_messages[g_engine_statistics.current_image_index], STRLEN(frame_messages[g_engine_statistics.current_image_index]));
         Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
     }
 
@@ -299,7 +308,6 @@ void VulkanContext::PostFrameRender()
     {
         throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
     }
-
     {
         PROFILE_SCOPE("Wait For Present");
         logical_device_->GetPresentQueue().waitIdle();
@@ -387,10 +395,9 @@ bool VulkanContext::IsBackBufferValid() const
     return !back_buffers_.empty() && !back_buffer_views_.empty() && back_buffers_[0]->IsValid() && back_buffer_views_[0]->IsValid();
 }
 
-void VulkanContext::CreateSyncObjecs()
+void VulkanContext::CreateSyncObjects()
 {
     image_available_semaphores_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
-    in_flight_fences_.resize(g_engine_statistics.graphics.parallel_render_frame_count);
 
     vk::SemaphoreCreateInfo SemaphoreInfo = {};
     vk::FenceCreateInfo     FenceInfo     = {};
@@ -400,7 +407,6 @@ void VulkanContext::CreateSyncObjecs()
     for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         image_available_semaphores_[i] = logical_device_->GetHandle().createSemaphore(SemaphoreInfo);
-        in_flight_fences_[i]           = logical_device_->GetHandle().createFence(FenceInfo);
     }
 }
 
@@ -409,7 +415,6 @@ void VulkanContext::CleanSyncObjects() const
     for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
     {
         logical_device_->GetHandle().destroySemaphore(image_available_semaphores_[i]);
-        logical_device_->GetHandle().destroyFence(in_flight_fences_[i]);
     }
 }
 

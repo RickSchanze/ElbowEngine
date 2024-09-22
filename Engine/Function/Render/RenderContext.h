@@ -51,12 +51,6 @@ public:
 
     vk::Semaphore SubmitPipeline(const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr) const;
 
-    /**
-     * 获得当前帧结束时需要触发的Fence
-     * @return
-     */
-    vk::Fence GetInFlightFence() const;
-
     void RegisterDrawMesh(Comp::Mesh* mesh);
 
     void UnregisterDrawMesh(Comp::Mesh* mesh);

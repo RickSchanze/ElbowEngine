@@ -125,7 +125,6 @@ public:
     TSharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
 
     vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
-    vk::Fence     GetInFlightFence() const { return in_flight_fences_[g_engine_statistics.current_frame_index]; }
 
     uint32_t GetMinUniformBufferOffsetAlignment() const;
 
@@ -146,7 +145,7 @@ public:
     bool IsBackBufferValid() const;
 
 protected:
-    void CreateSyncObjecs();
+    void CreateSyncObjects();
     void CleanSyncObjects() const;
 
     void CreateCommandBuffers();
@@ -170,7 +169,6 @@ private:
     TSharedPtr<Instance>       vulkan_instance_;
 
     TArray<vk::Semaphore> image_available_semaphores_;
-    TArray<vk::Fence>     in_flight_fences_;
 
     // 一次QueuePresent提交时需要等待的所有 Semaphore
     TArray<vk::Semaphore> all_wait_semaphores_;

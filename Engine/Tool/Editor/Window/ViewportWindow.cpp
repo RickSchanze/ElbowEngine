@@ -25,6 +25,7 @@ ViewportWindow::ViewportWindow()
     // 因此先设为true 等待重构
     singleton_ = true;
     OnAppWindowResized.Add(&ThisClass::OnWindowResized);
+    // OnAppWindowResized.Broadcast(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
 }
 
 void ViewportWindow::OnWindowResized(int w, int h)

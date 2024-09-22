@@ -243,7 +243,7 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
         buffer->MapMemory();
         buffer->GetMappedCpuMemory();
         buffer->Memcpy(data, size);
-        buffer->FlushMemory();
+        // buffer->FlushMemory();
     }
 }
 

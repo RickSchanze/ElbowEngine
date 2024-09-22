@@ -49,10 +49,11 @@ public:
     EPROPERTY(Label = "远平面")
     float far_plane = 1000.f;
 
+    EPROPERTY(Label = "绘制天空盒")
+    bool draw_skybox = true;
+
 protected:
     void HandleInput();
-
-
 
     EPROPERTY(Name = movement_speed, Label = "摄像机移动速度")
     float movement_speed_ = 0.3f;

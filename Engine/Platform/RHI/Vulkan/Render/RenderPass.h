@@ -62,6 +62,8 @@ struct RenderPassAttachmentImageInfo
 class RenderPass : public IRHIResource
 {
 public:
+    typedef RenderPass ThisClass;
+
     struct RenderTarget
     {
     public:

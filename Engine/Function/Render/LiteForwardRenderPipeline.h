@@ -12,6 +12,10 @@
 
 namespace Function
 {
+class PostImageLayoutTransitionPass;
+}
+namespace Function
+{
 class SkyboxPass;
 }
 namespace Function
@@ -45,12 +49,12 @@ public:
 
     void DrawBackbuffer(const RenderContextDrawParam& draw_param) override;
     void Build() override;
-    void Rebuild(int w, int h) override;
 
 private:
-    SimpleObjectShadingPass* forward_pass_ = nullptr;
-    PointLightShadowPass*    shadow_pass_  = nullptr;
-    SkyboxPass*              skybox_pass_  = nullptr;
+    SimpleObjectShadingPass*       forward_pass_         = nullptr;
+    PointLightShadowPass*          shadow_pass_          = nullptr;
+    SkyboxPass*                    skybox_pass_          = nullptr;
+    PostImageLayoutTransitionPass* post_transition_pass_ = nullptr;
 
     Material*       shadow_material_  = nullptr;
     SkyboxMaterial* sky_box_material_ = nullptr;

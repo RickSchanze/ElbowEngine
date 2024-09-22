@@ -1,7 +1,7 @@
 /**
- * @file SkyboxPass.h
+ * @file PostImageLayoutTransitionPass.h
  * @author Echo 
- * @Date 24-8-18
+ * @Date 24-9-22
  * @brief 
  */
 
@@ -9,25 +9,18 @@
 #include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 
-namespace RHI::Vulkan
-{
-class Mesh;
-}
 FUNCTION_NAMESPACE_BEGIN
 
-// TODO: 也许可以共享Framebuffer
-class SkyboxPass : public RHI::Vulkan::RenderPass
-{
-public:
-    SkyboxPass(uint32_t width, uint32_t height, const AnsiString& name);
+class PostImageLayoutTransitionPass : public RHI::Vulkan::RenderPass {
 
+public:
     void            SetupAttachments() override;
     void            SetupFramebuffer() override;
     void            CleanFrameBuffer() override;
     vk::Framebuffer GetCurrentFramebufferHandle() override;
     void            SetupSubpassDependency() override;
 
-    RHI::Vulkan::ImageView* external_depth_view = nullptr; // 来自外部的深度View 不由自己清理
+    PostImageLayoutTransitionPass(uint32_t width, uint32_t height, const AnsiString& name);
 
 public:
     TArray<RHI::Vulkan::Framebuffer*> framebuffers;

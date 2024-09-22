@@ -25,6 +25,8 @@ set(MATERIAL_FILE
         Render/Materials/Material.cpp
         Render/Materials/SkyboxMaterial.h
         Render/Materials/SkyboxMaterial.cpp
+        Render/RenderPasses/PostImageLayoutTransitionPass.cpp
+        Render/RenderPasses/PostImageLayoutTransitionPass.h
 )
 
 add_library(${PROJECT_NAME}

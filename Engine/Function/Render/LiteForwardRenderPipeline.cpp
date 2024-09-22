@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Render/Materials/SkyboxMaterial.h"
 #include "RenderPasses/PointLightShadowPass.h"
+#include "RenderPasses/PostImageLayoutTransitionPass.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
 #include "RenderPasses/SkyboxPass.h"
 #include "RHI/Vulkan/CommandBuffer.h"
@@ -42,6 +43,11 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     auto meshes_to_draw = CollectMeshesWithMaterial();
     auto& context = RHI::GetGfxContext();
     auto cmd = CommandBufferVulkan(draw_param.command_buffer);
+
+    skybox_pass_->external_depth_view = forward_pass_->depth_image_view;
+    skybox_pass_->framebuffers = forward_pass_->framebuffers;
+
+    post_transition_pass_->framebuffers = skybox_pass_->framebuffers;
 
     // 走一遍shadow pass
     auto light = Comp::LightManager::Get()->GetLights();
@@ -88,7 +94,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     }
 
     // 绘制skybox
-    if (sky_box_material_->HasSetSkyTexture())
+    if (sky_box_material_->HasSetSkyTexture() && main->draw_skybox)
     {
         PROFILE_SCOPE("Skybox Pass");
         context.BeginProfile("Skybox Pass GPU", cmd);
@@ -97,6 +103,14 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
         sky_box_material_->SetProjectionView(main);
         sky_box_material_->DrawSkybox(cb);
         skybox_pass_->End(cb);
+        context.EndProfile();
+    }
+
+    {
+        PROFILE_SCOPE("Post Image Transition Pass")
+        context.BeginProfile("Post Image Transition Pass", cmd);
+        post_transition_pass_->Begin(cb, main->background_color);
+        post_transition_pass_->End(cb);
         context.EndProfile();
     }
 }
@@ -112,9 +126,12 @@ void LiteForwardRenderPipeline::Build()
     RegisterRenderPass(shadow_pass_);
 
     skybox_pass_                      = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
-    skybox_pass_->external_depth_view = forward_pass_->GetDepthView();
     skybox_pass_->Initialize();
     RegisterRenderPass(skybox_pass_);
+
+    post_transition_pass_ = RenderPassManager::GetOrCreateRenderPass<PostImageLayoutTransitionPass>(0, 0, "PostImageLayoutTransitionPass");
+    post_transition_pass_->Initialize();
+    RegisterRenderPass(post_transition_pass_);
 
     MaterialConfig config;
 
@@ -129,17 +146,9 @@ void LiteForwardRenderPipeline::Build()
     config.use_depth_write                   = false;
     sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial", config);
 
-    // sky_box_material_->SetSkySphereTexture(Resource::Texture::Create(L"Textures/Sky.hdr", Resource::ETextureUsage::Skybox2D));
-    // sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
+    sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
 
     AddImGuiGraphicsPipeline();
-}
-
-void LiteForwardRenderPipeline::Rebuild(int w, int h)
-{
-    forward_pass_->ResizeFramebuffer(w, h);
-    skybox_pass_->external_depth_view = forward_pass_->GetDepthView();
-    skybox_pass_->ResizeFramebuffer(w, h);
 }
 
 FUNCTION_NAMESPACE_END
