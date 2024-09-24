@@ -52,6 +52,9 @@ public:
     EPROPERTY(Label = "绘制天空盒")
     bool draw_skybox = true;
 
+    EPROPERTY(Label = "绘制网格线")
+    bool draw_grid = true;
+
 protected:
     void HandleInput();
 
@@ -62,7 +65,7 @@ protected:
     bool enable_input_ = true;
 
     EPROPERTY(Name = mouse_sensitity, Label = "鼠标灵敏度")
-    float mouse_sensitivity_ = 0.3f;
+    float mouse_sensitivity_ = 0.001f;
 
 
     bool focused_ = false;

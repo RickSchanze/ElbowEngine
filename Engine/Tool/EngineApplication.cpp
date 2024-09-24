@@ -125,28 +125,11 @@ void EngineApplication::Initialize()
     render_context_ = New<Function::RenderContext>();
 
     camera_object_ = NewObject<Function::GameObject>(L"摄像机", nullptr);
-    camera_object_->AddComponent<Function::Comp::Camera>();
-    auto mesh_obj  = NewObject<Function::GameObject>(L"AK-47_1");
-    auto mesh_comp = mesh_obj->AddComponent<Function::Comp::StaticMesh>();
-    mesh_comp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-    auto* mat = Function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK-47材质");
-    mesh_comp->SetMaterial(mat);
-    mat->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png");
-
-    auto obj2 = NewObject<Function::GameObject>(L"AK-47_2", mesh_obj);
-    obj2->AddComponent<Function::Comp::SpaceCircle>();
-    auto mesh_cmp = obj2->AddComponent<Function::Comp::StaticMesh>();
-    mesh_cmp->SetMesh(L"Models/AK47/AK47_CS2.fbx");
-    mesh_cmp->SetMaterial(mat);
+    camera_object_->AddComponent<Function::Comp::Camera>()->draw_skybox = false;
 
     auto* light_obj = NewObject<Function::GameObject>(L"点光源");
-    mesh_obj->GetTransform().SetPosition(Vector3(100, 0, 0));
-    light_obj->GetTransform().SetPosition(Vector3(0, 0, 10));
+    light_obj->GetTransform().SetPosition(Vector3(0, 100, 0));
     light_obj->AddComponent<Function::Comp::Light>();
-
-    auto wall = NewObject<Function::GameObject>(L"方块");
-    wall->AddComponent<Function::Comp::StaticMesh>()->SetMesh(L"Models/Cube.fbx").SetMaterial(mat);
-    wall->GetTransform().SetScale({1.f, 0.01f, 1.f}).SetPosition({150, 0, 0});
 
     LogEndInit();
 }

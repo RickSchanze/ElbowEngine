@@ -121,13 +121,15 @@ public:
                 }
             }
         }
-        Shader::CompileShaderCode2Spirv(path.GetFileName(), path.ReadAllText(), stage, code);
-        spirv_path.WriteAllBinary(code);
-        auto new_spirv_hash               = HashUtils::ComputeSHA256(spirv_path);
-        json_[key.c_str()]["source_hash"] = new_source_hash.value();
-        json_[key.c_str()]["spirv_hash"]  = new_spirv_hash.value();
-        Path cache_json_path              = L"Cache/Shaders/shader_cache.json";
-        cache_json_path.WriteAllText(json_.dump());
+        if (Shader::CompileShaderCode2Spirv(path.GetFileName(), path.ReadAllText(), stage, code))
+        {
+            spirv_path.WriteAllBinary(code);
+            auto new_spirv_hash               = HashUtils::ComputeSHA256(spirv_path);
+            json_[key.c_str()]["source_hash"] = new_source_hash.value();
+            json_[key.c_str()]["spirv_hash"]  = new_spirv_hash.value();
+            Path cache_json_path              = L"Cache/Shaders/shader_cache.json";
+            cache_json_path.WriteAllText(json_.dump());
+        }
     }
 
 protected:

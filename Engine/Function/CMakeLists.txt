@@ -27,6 +27,8 @@ set(MATERIAL_FILE
         Render/Materials/SkyboxMaterial.cpp
         Render/RenderPasses/PostImageLayoutTransitionPass.cpp
         Render/RenderPasses/PostImageLayoutTransitionPass.h
+        Render/Shaders/InfiniteGridShader.cpp
+        Render/Shaders/InfiniteGridShader.h
 )
 
 add_library(${PROJECT_NAME}

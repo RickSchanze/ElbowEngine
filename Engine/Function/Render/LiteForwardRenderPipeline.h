@@ -56,8 +56,9 @@ private:
     SkyboxPass*                    skybox_pass_          = nullptr;
     PostImageLayoutTransitionPass* post_transition_pass_ = nullptr;
 
-    Material*       shadow_material_  = nullptr;
-    SkyboxMaterial* sky_box_material_ = nullptr;
+    Material*       shadow_material_        = nullptr;
+    Material*       infinite_grid_material_ = nullptr;
+    SkyboxMaterial* sky_box_material_       = nullptr;
 };
 
 FUNCTION_NAMESPACE_END

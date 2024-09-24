@@ -15,30 +15,20 @@
 
 #include <glm/fwd.hpp>
 
-namespace RHI::Vulkan
-{
-class RenderPass;
-}
 namespace Function::Comp
 {
 class Mesh;
-}
-namespace Function::Comp
-{
 class Camera;
-}
+}   // namespace Function::Comp
+
 namespace RHI::Vulkan
 {
+class RenderPass;
 class GraphicsPipeline;
-}
-namespace RHI::Vulkan
-{
 class ShaderProgram;
-}
-namespace RHI::Vulkan
-{
 class Shader;
-}
+}   // namespace RHI::Vulkan
+
 FUNCTION_NAMESPACE_BEGIN
 
 /**
@@ -64,6 +54,7 @@ struct MaterialConfig
     bool            use_counter_clock_wise_front_face = true;   // 正面是不是逆时针
     bool            use_depth_test                    = true;   // 是否使用深度测试
     bool            use_depth_write                   = true;   // 是否使用深度写入
+    bool            has_vertex_input_binding          = true;   // 是否有顶点输入绑定
     EDepthCompareOp depth_compare_op                  = EDepthCompareOp::LessOrEqual;
 };
 
@@ -97,7 +88,7 @@ public:
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 
-    void SetPostionViewProjection(Comp::Camera* camera);
+    void SetPositionViewProjection(Comp::Camera* camera);
 
     void SetModel(glm::mat4* models, size_t size);
 
@@ -106,6 +97,8 @@ public:
     void SetPointLights(void* data, size_t size);
 
     void DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
+
+    void Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 
     void PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const;
 

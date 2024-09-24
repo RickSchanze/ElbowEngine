@@ -101,6 +101,10 @@ void VulkanApplication::CreateInstance()
         extensions_.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         InstanceCreateInfo.setEnabledLayerCount(ValidationLayer::gValidationLayers.size())
             .setPpEnabledLayerNames(ValidationLayer::gValidationLayers.data());
+        for (const auto& extension : ValidationLayer::gValidationLayers)
+        {
+            LOG_INFO_ANSI_CATEGORY(Vulkan, "启用校验层: {}", extension);
+        }
     }
     InstanceCreateInfo.setPApplicationInfo(&AppInfo).setEnabledExtensionCount(extensions_.size()).setPpEnabledExtensionNames(extensions_.data());
     vulkan_instance_ = MakeShared<Instance>();

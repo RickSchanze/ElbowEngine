@@ -167,16 +167,16 @@ TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribu
 
 TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
 {
-    TArray<vk::VertexInputBindingDescription> BindingDescs;
-    vk::VertexInputBindingDescription         Desc{};
+    TArray<vk::VertexInputBindingDescription> binding_descriptions;
+    vk::VertexInputBindingDescription         desc{};
     // clang-format off
-    Desc
+    desc
         .setBinding(0)
         .setStride(GetStride())
         .setInputRate(vk::VertexInputRate::eVertex);
     // clang-format on
-    BindingDescs.push_back(Desc);
-    return BindingDescs;
+    binding_descriptions.push_back(desc);
+    return binding_descriptions;
 }
 
 uint32_t ShaderProgram::GetStride() const

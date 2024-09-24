@@ -43,6 +43,7 @@ static void ConfigPipelineByMaterial(RHI::Vulkan::PipelineInfo& pipeline_info, c
     case EDepthCompareOp::Always: op = vk::CompareOp::eAlways; break;
     }
     pipeline_info.depth_stencil_stage.depth_compare_op = op;
+    pipeline_info.has_vertex_binding                   = config.has_vertex_input_binding;
 }
 
 Material::Material(const Path& vert, const Path& frag, const MaterialConfig& config, const String& name)
@@ -57,6 +58,7 @@ Material::Material(const Path& vert, const Path& frag, const MaterialConfig& con
     ConfigPipelineByMaterial(pipeline_info, config);
     pipeline_info.shader_program = shader_program_;
     pipeline_info.render_pass    = RenderPassManager::GetOrCreateRenderPass<SimpleObjectShadingPass>(0, 0, "SimpleForwardPass");
+    pipeline_info.name_          = StringUtils::ToAnsiString(name);
     pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
@@ -70,6 +72,7 @@ Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const T
     ConfigPipelineByMaterial(pipeline_info, config);
     pipeline_info.shader_program = shader_program_;
     pipeline_info.render_pass    = RenderPassManager::Get()->GetRenderPass(pass_type);
+    pipeline_info.name_          = StringUtils::ToAnsiString(name);
     pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
@@ -85,6 +88,7 @@ Material::Material(
     ConfigPipelineByMaterial(pipeline_info, config);
     pipeline_info.shader_program = shader_program_;
     pipeline_info.render_pass    = render_pass;
+    pipeline_info.name_          = StringUtils::ToAnsiString(name);
     pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
@@ -137,7 +141,7 @@ void Material::Use(vk::CommandBuffer cb, uint32_t width, uint32_t height, int x,
     pipeline_->UpdateViewport(cb, width, height, x, y);
 }
 
-void Material::SetPostionViewProjection(Comp::Camera* camera)
+void Material::SetPositionViewProjection(Comp::Camera* camera)
 {
     if (camera == nullptr)
     {
@@ -152,6 +156,11 @@ void Material::SetPostionViewProjection(Comp::Camera* camera)
     ubo_view.proj   = camera->GetProjectionMatrix();
     ubo_view.view   = camera->GetViewMatrix();
     ubo_view.camera = camera->GetTransform().ToGPUMat4();
+    ubo_view.camera[0][3] = camera->near_plane;
+    ubo_view.camera[1][0] = camera->far_plane;
+    ubo_view.camera[1][1] = camera->background_color.r;
+    ubo_view.camera[2][2] = camera->background_color.g;
+    ubo_view.camera[2][3] = camera->background_color.b;
     shader_program_->SetUniformBuffer("ubo_view", &ubo_view.proj, sizeof(UboView));
 }
 
@@ -183,6 +192,12 @@ void Material::DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArr
         pipeline_->BindDescriptorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0, dynamic_offsets);
         pipeline_->DrawIndexed(cb, mesh_to_draw.GetIndices().size());
     }
+}
+
+void Material::Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
+{
+    pipeline_->BindDescriptorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics);
+    pipeline_->Draw(cb, vertex_count, instance_count, first_vertex, first_instance);
 }
 
 void Material::PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const

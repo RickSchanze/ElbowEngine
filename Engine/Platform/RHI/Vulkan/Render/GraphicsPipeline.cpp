@@ -96,9 +96,8 @@ void GraphicsPipeline::DrawIndexed(
     g_engine_statistics.IncreaseDrawCall();
 }
 
-void GraphicsPipeline::Draw(
-    vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance
-) const
+void GraphicsPipeline::Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
+    const
 {
     cb.draw(vertex_count, instance_count, first_vertex, first_instance);
     g_engine_statistics.IncreaseDrawCall();
@@ -155,14 +154,16 @@ void GraphicsPipeline::CreatePipeline()
     auto binding_desc   = shader_program_->GetVertexInputBindingDescription();
     auto attribute_desc = shader_program_->GetVertexInputAttributeDescriptions();
 
-    vk::PipelineVertexInputStateCreateInfo VertexInputInfo = {};
-    VertexInputInfo   //
-        .setVertexBindingDescriptions(binding_desc)
-        .setVertexAttributeDescriptions(attribute_desc);
+    vk::PipelineVertexInputStateCreateInfo vertex_input_info = {};
+    vertex_input_info.setVertexAttributeDescriptions(attribute_desc);
+    if (pipeline_info_.has_vertex_binding)
+    {
+        vertex_input_info.setVertexBindingDescriptions(binding_desc);
+    }
 
     // 配置输入装配
-    vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo = {};
-    InputAssemblyInfo                                        //
+    vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = {};
+    input_assembly_info                                      //
         .setTopology(vk::PrimitiveTopology::eTriangleList)   // 每三个顶点构成一个图元
         .setPrimitiveRestartEnable(false);
     /************************* Shader配置结束 ************************/
@@ -295,8 +296,8 @@ void GraphicsPipeline::CreatePipeline()
     // 定义管线
     vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
     pipeline_create_info.setStages(shader_stages)
-        .setPVertexInputState(&VertexInputInfo)
-        .setPInputAssemblyState(&InputAssemblyInfo)
+        .setPVertexInputState(&vertex_input_info)
+        .setPInputAssemblyState(&input_assembly_info)
         .setPViewportState(&viewport_state_create_info)
         .setPRasterizationState(&rasterizer_info)
         .setPMultisampleState(&multisample_info)

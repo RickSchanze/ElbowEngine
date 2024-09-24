@@ -4,8 +4,8 @@
  * @Date 24-7-11
  * @brief 
  */
-#include "Profiler/ProfileMacro.h"
 #include "LiteForwardRenderPipeline.h"
+#include "Profiler/ProfileMacro.h"
 
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
@@ -20,6 +20,7 @@
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
+#include "Shaders/InfiniteGridShader.h"
 #include "Shaders/PointLightShadowPassShader.h"
 #include "Shaders/SkySphereShader.h"
 
@@ -39,13 +40,13 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     PROFILE_SCOPE_AUTO;
     Comp::Camera* main = Comp::Camera::Main;
     Super::DrawBackbuffer(draw_param);
-    auto cb             = draw_param.command_buffer;
-    auto meshes_to_draw = CollectMeshesWithMaterial();
-    auto& context = RHI::GetGfxContext();
-    auto cmd = CommandBufferVulkan(draw_param.command_buffer);
+    auto  cb             = draw_param.command_buffer;
+    auto  meshes_to_draw = CollectMeshesWithMaterial();
+    auto& context        = RHI::GetGfxContext();
+    auto  cmd            = CommandBufferVulkan(draw_param.command_buffer);
 
     skybox_pass_->external_depth_view = forward_pass_->depth_image_view;
-    skybox_pass_->framebuffers = forward_pass_->framebuffers;
+    skybox_pass_->framebuffers        = forward_pass_->framebuffers;
 
     post_transition_pass_->framebuffers = skybox_pass_->framebuffers;
 
@@ -77,10 +78,17 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
         context.BeginProfile("Object Shading Pass GPU", cmd);
         // 走渲染pass
         forward_pass_->Begin(cb, main->background_color);
+        if (main->draw_grid)
+        {
+            PROFILE_SCOPE("Draw Infinite Grid");
+            infinite_grid_material_->Use(cb);
+            infinite_grid_material_->SetPositionViewProjection(main);
+            infinite_grid_material_->Draw(cb, 6);
+        }
         for (auto& [material, meshes]: meshes_to_draw)
         {
             material->Use(cb);
-            material->SetPostionViewProjection(main);
+            material->SetPositionViewProjection(main);
             material->SetCubeTexture("shadowCubeMap", *out_view, Sampler::GetDefaultSampler());
             material->SetModel(model_instances_.models, model_instances_.size);
             for (int i = 0; i < meshes.size(); i++)
@@ -89,6 +97,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
                 material->DrawMesh(cb, *meshes[i], dynamic_offsets);
             }
         }
+
         forward_pass_->End(cb);
         context.EndProfile();
     }
@@ -125,7 +134,7 @@ void LiteForwardRenderPipeline::Build()
     shadow_pass_->Initialize();
     RegisterRenderPass(shadow_pass_);
 
-    skybox_pass_                      = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
+    skybox_pass_ = RenderPassManager::GetOrCreateRenderPass<SkyboxPass>(0, 0, "SkyboxPass");
     skybox_pass_->Initialize();
     RegisterRenderPass(skybox_pass_);
 
@@ -139,14 +148,19 @@ void LiteForwardRenderPipeline::Build()
     Shader* shadow_frag = Shader::Create<PointLightShadowPassFragShader>(L"Shaders/PointLightShadow.frag", "PointLightShadowFrag");
     shadow_material_    = MaterialManager::CreateMaterial(shadow_vert, shadow_frag, shadow_pass_, L"PointLightShadowMaterial");
 
-    Shader* sky_vert = Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert", "SkySphereVert");
-    Shader* sky_frag = Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag", "SkySphereFrag");
-
+    Shader* sky_vert                         = Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert", "SkySphereVert");
+    Shader* sky_frag                         = Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag", "SkySphereFrag");
     config.use_counter_clock_wise_front_face = false;
     config.use_depth_write                   = false;
     sky_box_material_ = MaterialManager::CreateMaterial<SkyboxMaterial>(sky_vert, sky_frag, skybox_pass_, L"SkyboxMaterial", config);
-
     sky_box_material_->SetSkyBoxTexture(L"Textures/LearnOpenGLSkyBox");
+
+    config.use_counter_clock_wise_front_face = true;
+    config.use_depth_write                   = true;
+    config.has_vertex_input_binding          = false;
+    Shader* inf_grid_vert                    = Shader::Create<InfiniteGridVertShader>(L"Shaders/InfiniteGrid/Infinite.vert", "InfiniteGridVert");
+    Shader* inf_grid_frag                    = Shader::Create<InfiniteGridFragShader>(L"Shaders/InfiniteGrid/Infinite.frag", "InfiniteGridFrag");
+    infinite_grid_material_ = MaterialManager::CreateMaterial(inf_grid_vert, inf_grid_frag, forward_pass_, L"InfinityGridMaterial", config);
 
     AddImGuiGraphicsPipeline();
 }

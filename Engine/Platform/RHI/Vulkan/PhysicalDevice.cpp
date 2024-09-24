@@ -157,6 +157,8 @@ vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const
         queue_create_infos.push_back(queue_create_info);
     }
     // 指定要使用的设备特性
+    vk::PhysicalDeviceRobustness2FeaturesEXT robustness2_features;
+    robustness2_features.nullDescriptor = true;
     vk::PhysicalDeviceFeatures device_features{};
     device_features.setSamplerAnisotropy(true);   // 开启采样器各向异性过滤支持
     device_features.setGeometryShader(true);
@@ -164,9 +166,10 @@ vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const
     // 创建逻辑设备
     vk::DeviceCreateInfo device_info{};
     device_info
-        .setQueueCreateInfos(queue_create_infos)                    // 设置队列创建信息
-        .setPEnabledFeatures(&device_features)                      // 设置要求的设备特性
-        .setPEnabledExtensionNames(s_device_required_extensions);   // 设置启用的扩展名
+        .setQueueCreateInfos(queue_create_infos)                   // 设置队列创建信息
+        .setPEnabledFeatures(&device_features)                     // 设置要求的设备特性
+        .setPEnabledExtensionNames(s_device_required_extensions)   // 设置启用的扩展名
+        .setPNext(&robustness2_features);
     // 校验层
     auto validation_layers = ValidationLayer::GetValidationLayerNames();
     if (ValidationLayer::IsEnable())

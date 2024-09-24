@@ -111,6 +111,9 @@ struct PipelineInfo
     int32_t                         dynamic_state_enabled     = EPDSE_Viewport | EPDSE_Scissor;
     bool                            push_light_count_constant = true;   // 是否将光照数量push进shader里
 
+    // 是否在创建管线布局时有输入顶点信息
+    bool has_vertex_binding = true;
+
     AnsiString         name_;
     TArray<AnsiString> command_buffer_names;
     AnsiString         pipeline_layout_name_;

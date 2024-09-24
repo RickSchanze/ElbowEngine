@@ -87,6 +87,7 @@ fabric.properties
 !CodeGenerator/bin
 
 *.spv
-Content/Cache
+/Content/Cache/*
+
 
 __pycache__
