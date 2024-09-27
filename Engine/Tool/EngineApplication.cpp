@@ -124,12 +124,18 @@ void EngineApplication::Initialize()
     editor_style_->SetStyle();
     render_context_ = New<Function::RenderContext>();
 
-    camera_object_ = NewObject<Function::GameObject>(L"摄像机", nullptr);
+    camera_object_                                                      = NewObject<Function::GameObject>(L"摄像机", nullptr);
     camera_object_->AddComponent<Function::Comp::Camera>()->draw_skybox = false;
 
     auto* light_obj = NewObject<Function::GameObject>(L"点光源");
     light_obj->GetTransform().SetPosition(Vector3(0, 100, 0));
     light_obj->AddComponent<Function::Comp::Light>();
+
+    NewObject<Function::GameObject>(L"AK")
+        ->AddComponent<Function::Comp::StaticMesh>()
+        ->SetMesh(L"Models/AK47/AK47_CS2.fbx")
+        .SetMaterial(&Function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK47Mat")
+                          ->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png"));
 
     LogEndInit();
 }

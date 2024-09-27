@@ -11,6 +11,8 @@ layout(location = 0) out vec3 nearPoint;
 layout(location = 1) out vec3 farPoint;
 layout(location = 2) out vec3 cameraPos;
 layout(location = 3) out vec3 clearColor;
+layout(location = 4) out mat4 proj;
+layout(location = 8) out mat4 view;
 
 // Grid position are in xy clipped space
 vec3 gridPlane[6] = vec3[] (
@@ -35,4 +37,6 @@ void main() {
     gl_Position = vec4(p, 1.0);
     cameraPos = vec3(ubo_view.camera[0][0], ubo_view.camera[0][1], ubo_view.camera[0][2]);
     clearColor = vec3(0.5, 0.5, 0.5);
+    proj = ubo_view.proj;
+    view = ubo_view.view;
 }

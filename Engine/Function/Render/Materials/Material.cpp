@@ -114,10 +114,11 @@ void Material::SetTexture(const AnsiString& name, Resource::Texture* texture)
     LOG_WARNING_CATEGORY(Material, L"设置材质纹理{}参数{}失败", name_, StringUtils::FromAnsiString(name));
 }
 
-void Material::SetTexture(const AnsiString& name, const Path& path)
+Material& Material::SetTexture(const AnsiString& name, const Path& path)
 {
     auto* new_tex = Resource::Texture::Create(path);
     SetTexture(name, new_tex);
+    return *this;
 }
 
 void Material::SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler)

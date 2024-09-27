@@ -80,8 +80,8 @@ public:
     ~Material() override;
 
     // SetTexture的不同重载
-    void SetTexture(const AnsiString& name, Resource::Texture* texture);
-    void SetTexture(const AnsiString& name, const Path& path);
+    void      SetTexture(const AnsiString& name, Resource::Texture* texture);
+    Material &SetTexture(const AnsiString& name, const Path& path);
     void SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
 
     void SetCubeTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
