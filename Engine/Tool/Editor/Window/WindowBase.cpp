@@ -17,7 +17,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 void WindowBase::Tick(float delta_time)
 {
@@ -64,7 +64,7 @@ WindowBase& WindowBase::SetVisible(EWindowVisibility InVisible)
 {
     if (InVisible != visible_)
     {
-        auto OldVisiable = visible_;
+        auto old_visible = visible_;
         visible_         = InVisible;
 
         if (visible_ == EWindowVisibility::Visible)
@@ -78,7 +78,7 @@ WindowBase& WindowBase::SetVisible(EWindowVisibility InVisible)
             imgui_show_window_ = false;
         }
 
-        OnVisibilityChanged.Broadcast(OldVisiable, InVisible);
+        OnVisibilityChanged.Broadcast(old_visible, InVisible);
     }
     return *this;
 }
@@ -98,4 +98,4 @@ void WindowBase::Draw(float delta_time)
     ImGuiHelper::WarningBox(U8("这个窗口没有实现\"Draw\"方法。"));
 }
 
-WINDOW_NAMESPACE_END
+}

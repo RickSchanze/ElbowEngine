@@ -24,7 +24,8 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window
+{
 
 DetailWindow::DetailWindow()
 {
@@ -60,7 +61,7 @@ void DetailWindow::Draw(float delta_time)
 void DetailWindow::DrawSelectedObject(Function::GameObject* game_object)
 {
     ImGui::Text(U8("对象名: %s, ID: %d"), game_object->GetCachedAnsiString().c_str(), game_object->GetID());
-    Drawer::PropertyDrawer::DrawTransform(game_object->GetTransform());
+    drawer::PropertyDrawer::DrawTransform(game_object->GetTransform());
     const auto& components = game_object->GetComponents();
     for (auto* comp: components)
     {
@@ -90,10 +91,10 @@ void DetailWindow::DrawComponent(Function::Comp::Component* comp)
             {
                 ImGuiHelper::WarningBox(U8("这个属性与组件本身名称相同，这可能导致对这个属性的修改不生效"));
             }
-            Drawer::PropertyDrawer::DrawProperty(prop, comp);
+            drawer::PropertyDrawer::DrawProperty(prop, comp);
         }
     }
 }
 
-WINDOW_NAMESPACE_END
+}
 

@@ -11,7 +11,8 @@
 
 #include <imgui.h>
 
-WIDGET_NAMESPACE_BEGIN
+namespace tool::widget
+{
 
 void WidgetBase::Text(const char* str, Color foreground, Color background)
 {
@@ -42,4 +43,4 @@ void WidgetBase::Text(const AnsiString& str, Color foreground, Color background)
     Text(str.c_str(), foreground, background);
 }
 
-WIDGET_NAMESPACE_END
+}   // namespace tool::widgets

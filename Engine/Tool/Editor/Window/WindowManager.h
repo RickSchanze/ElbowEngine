@@ -10,12 +10,12 @@
 #include "Singleton/Singleton.h"
 #include "ToolCommon.h"
 
-namespace Tool::Window
+namespace tool::window
 {
 class WindowBase;
 }
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 // 存储所有Window Object
 // @Note: 存储的所有对象最后由ObjectManager清理
@@ -71,4 +71,4 @@ protected:
     TArray<WindowBase*> visible_windows_;
 };
 
-WINDOW_NAMESPACE_END
+}

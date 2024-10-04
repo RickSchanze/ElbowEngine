@@ -10,7 +10,7 @@
 
 #include "ViewportWindow.generated.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class ViewportWindow : public WindowBase {
@@ -23,4 +23,4 @@ public:
     static void OnWindowResized(int w, int h);
 };
 
-WINDOW_NAMESPACE_END
+}

@@ -15,7 +15,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 static void OnSceneViewportWindowVisibleChanged(EWindowVisibility old, EWindowVisibility New)
 {
@@ -42,4 +42,4 @@ void SceneViewportWindow::Draw(float delta_time)
     ImGuiHelper::ImageBackbuffer(width_, height_);
 }
 
-WINDOW_NAMESPACE_END
+}

@@ -13,7 +13,7 @@
 #include "Utils/StringUtils.h"
 #include "WindowBase.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 WindowBase* WindowManager::GetOrCreateWindow(const Type& type)
 {
@@ -116,4 +116,4 @@ void WindowManager::RemoveVisibleWindow(WindowBase* window)
     }
 }
 
-WINDOW_NAMESPACE_END
+}

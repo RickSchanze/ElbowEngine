@@ -18,7 +18,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 StatisticsWindow::StatisticsWindow() {
     name_       = L"Window_Statistics";
@@ -44,4 +44,4 @@ void StatisticsWindow::Draw(float InDeltaTime) {
     ImGui::Text(U8("并行渲染帧索引: %d"), g_engine_statistics.current_frame_index);
 }
 
-WINDOW_NAMESPACE_END
+}

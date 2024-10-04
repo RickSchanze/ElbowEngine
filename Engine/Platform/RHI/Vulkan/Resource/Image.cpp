@@ -357,9 +357,9 @@ void Texture::LoadDefaultTextures()
 {
     if (!default_textures_loaded_)
     {
-        Platform::OnRequestLoadDefaultLackTexture.Broadcast(&s_default_lack_texture_, &s_default_lack_texture_view_);
+        platform::OnRequestLoadDefaultLackTexture.Broadcast(&s_default_lack_texture_, &s_default_lack_texture_view_);
         default_textures_loaded_ = true;
-        Platform::OnRequestLoadDefaultLackTexture.Clear();
+        platform::OnRequestLoadDefaultLackTexture.Clear();
     }
 }
 

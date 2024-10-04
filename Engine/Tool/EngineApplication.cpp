@@ -43,8 +43,8 @@ namespace Function::Comp
 {
 class StaticMesh;
 }
-TOOL_NAMESPACE_BEGIN
-
+namespace tool
+{
 EngineApplication::EngineApplication(const String& project_path, const String& window_title)
 {
     Path::SetProjectWorkPath(project_path);
@@ -108,7 +108,7 @@ void EngineApplication::Initialize()
 {
     // 创建并初始化GlfwWindow
     LogBeginInit();
-    window_ = MakeUnique<Platform::Window::GlfwWindow>(window_title_, 1920, 1080);
+    window_ = MakeUnique<platform::window::GlfwWindow>(window_title_, 1920, 1080);
     window_->Initialize();
     window_->SetFrameBufferResizedCallback(&ThisClass::FrameBufferResizeCallback);
     // 创建并初始化VulkanApplication
@@ -178,7 +178,7 @@ void EngineApplication::Run()
             window_->BeginImGuiFrame();
             {
                 PROFILE_SCOPE("Tick Editor Window");
-                Window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);
+                window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);
                 DrawAppUI();
             }
             g_engine_statistics.ResetDrawCalls();
@@ -261,49 +261,48 @@ void EngineApplication::DrawWindowMenu()
 }
 
 template<typename T>
-    requires std::is_base_of_v<Window::WindowBase, T>
+    requires std::is_base_of_v<window::WindowBase, T>
 void OpenWindow()
 {
-    auto window = Window::WindowManager::GetOrCreateWindow<T>();
+    auto window = window::WindowManager::GetOrCreateWindow<T>();
     if (window)
     {
-        window->SetVisible(Window::EWindowVisibility::Visible);
+        window->SetVisible(window::EWindowVisibility::Visible);
     }
 }
 
 void EngineApplication::OnOpenStatisticsWindow()
 {
-    OpenWindow<Window::StatisticsWindow>();
+    OpenWindow<window::StatisticsWindow>();
 }
 
 void EngineApplication::OnOpenOutlineWindow()
 {
-    OpenWindow<Window::OutlineWindow>();
+    OpenWindow<window::OutlineWindow>();
 }
 
 void EngineApplication::OnOpenDetailWindow()
 {
-    OpenWindow<Window::DetailWindow>();
+    OpenWindow<window::DetailWindow>();
 }
 
 void EngineApplication::OnOpenImGuiDemoWindow()
 {
-    OpenWindow<Window::ImGuiDemoWindow>();
+    OpenWindow<window::ImGuiDemoWindow>();
 }
 
 void EngineApplication::OnOpenSceneWindow()
 {
-    OpenWindow<Window::SceneViewportWindow>();
+    OpenWindow<window::SceneViewportWindow>();
 }
 
 void EngineApplication::OnOpenLightSettingWindow()
 {
-    OpenWindow<Window::LightSettingWindow>();
+    OpenWindow<window::LightSettingWindow>();
 }
 
 void EngineApplication::OnOpenConsoleWindow()
 {
-    OpenWindow<Window::ConsoleWindow>();
+    OpenWindow<window::ConsoleWindow>();
 }
-
-TOOL_NAMESPACE_END
+}

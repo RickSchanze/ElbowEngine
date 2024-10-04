@@ -14,19 +14,19 @@
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
 
-namespace rhi::vulkan {
+namespace rhi::vulkan
+{
 class RenderPass;
 class IGraphicsPipeline;
 class VulkanContext;
 class ImguiGraphicsPipeline;
-}
+}   // namespace rhi::vulkan
 
-PLATFORM_WINDOW_NAMESPACE_BEGIN
-
+namespace platform::window
+{
 struct GLFWWindowSurface : rhi::vulkan::SurfaceBase
 {
-    explicit GLFWWindowSurface(rhi::vulkan::Instance* InParentInstance, GLFWwindow* InWindow) :
-        SurfaceBase(InParentInstance), mWindow(InWindow) {}
+    explicit GLFWWindowSurface(rhi::vulkan::Instance* InParentInstance, GLFWwindow* InWindow) : SurfaceBase(InParentInstance), mWindow(InWindow) {}
 
     void Initialize() override;
 
@@ -35,11 +35,12 @@ struct GLFWWindowSurface : rhi::vulkan::SurfaceBase
 
 class RealImGuiGraphicsPipeline;
 
-class GlfwWindow {
+class GlfwWindow
+{
 public:
     typedef GlfwWindow ThisClass;
-    explicit GlfwWindow(String window_title, const int width, const int height) :
-        window_title_(Move(window_title)), width_(width), height_(height) {
+    explicit GlfwWindow(String window_title, const int width, const int height) : window_title_(Move(window_title)), width_(width), height_(height)
+    {
         g_engine_statistics.window_size.height = height;
         g_engine_statistics.window_size.width  = width;
     }
@@ -52,9 +53,7 @@ public:
 
     Size2D GetWindowSize();
 
-    void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const {
-        glfwSetFramebufferSizeCallback(window_handle_, Callback);
-    }
+    void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const { glfwSetFramebufferSizeCallback(window_handle_, Callback); }
 
     void InitImGui(Ref<rhi::vulkan::VulkanContext> InContext);
     void SetupImGuiFonts();
@@ -83,4 +82,4 @@ private:
     int height_;
 };
 
-PLATFORM_WINDOW_NAMESPACE_END
+}   // namespace platform

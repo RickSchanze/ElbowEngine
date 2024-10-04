@@ -14,12 +14,12 @@
 #include "Log/LogRecorder.h"
 #include "Math/MathTypes.h"
 
-namespace Tool::Widgets
+namespace tool::widget
 {
 class ToggleButton;
 }
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class ConsoleWindow : public WindowBase
@@ -71,10 +71,10 @@ private:
     TArray<TList<Log>::const_iterator> filtered_logs_;
     int32_t                            filtered_logs_size_ = 0;
 
-    TUniquePtr<Widgets::ToggleButton> button_filter_info_;
-    TUniquePtr<Widgets::ToggleButton> button_filter_warning_;
-    TUniquePtr<Widgets::ToggleButton> button_filter_error_;
-    TUniquePtr<Widgets::Button>       button_filter_clear_;
+    TUniquePtr<widget::ToggleButton> button_filter_info_;
+    TUniquePtr<widget::ToggleButton> button_filter_warning_;
+    TUniquePtr<widget::ToggleButton> button_filter_error_;
+    TUniquePtr<widget::Button>       button_filter_clear_;
 };
 
-WINDOW_NAMESPACE_END
+}

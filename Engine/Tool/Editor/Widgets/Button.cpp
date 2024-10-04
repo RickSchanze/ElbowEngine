@@ -9,7 +9,8 @@
 
 #include "ImGui/ImGuiHelper.h"
 
-WIDGET_NAMESPACE_BEGIN
+namespace tool::widget
+{
 
 Button::Button()
 {
@@ -91,4 +92,4 @@ EButtonState Button::GetState() const
     return state_;
 }
 
-WIDGET_NAMESPACE_END
+}   // namespace tool::widgets

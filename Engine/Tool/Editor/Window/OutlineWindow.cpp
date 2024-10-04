@@ -13,7 +13,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 static bool TreeNodeHasSelected = false;
 
@@ -56,4 +56,4 @@ void OutlineWindow::DrawGameObject(Function::GameObject* game_object)
     }
 }
 
-WINDOW_NAMESPACE_END
+}

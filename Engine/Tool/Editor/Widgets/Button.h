@@ -9,7 +9,7 @@
 #include "CachedString.h"
 #include "WidgetBase.h"
 
-namespace Tool::Widgets
+namespace tool::widget
 {
 
 enum class EButtonState
@@ -40,8 +40,6 @@ public:
     Color pressed_color;
     Color text_color;
 
-
-
 protected:
     EButtonState state_ = EButtonState::Normal;
     CachedString text_;
@@ -51,4 +49,4 @@ protected:
     TFunction<void()> OnClick;
 };
 
-}   // namespace Tool::Widget
+}

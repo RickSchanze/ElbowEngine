@@ -28,8 +28,8 @@
 
 using namespace rhi::vulkan;
 
-PLATFORM_WINDOW_NAMESPACE_BEGIN
-
+namespace platform::window
+{
 class ImGuiRenderPass : public RenderPass
 {
 public:
@@ -379,5 +379,4 @@ void GlfwWindow::RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipe
 {
     *pipeline = imgui_graphics_pipeline_;
 }
-
-PLATFORM_WINDOW_NAMESPACE_END
+}

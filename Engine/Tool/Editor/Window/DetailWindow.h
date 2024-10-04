@@ -20,12 +20,9 @@ class Component;
 }
 }   // namespace Function
 
-namespace Tool::Window
+namespace tool::window
 {
 class OutlineWindow;
-}
-
-WINDOW_NAMESPACE_BEGIN
 
 ECLASS()
 class DetailWindow : public WindowBase
@@ -45,4 +42,4 @@ protected:
     int32_t        selected_object_id_ = -1;
 };
 
-WINDOW_NAMESPACE_END
+}

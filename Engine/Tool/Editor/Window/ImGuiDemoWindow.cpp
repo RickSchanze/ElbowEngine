@@ -13,7 +13,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ImGuiDemoWindow::ImGuiDemoWindow()
 {
@@ -25,4 +25,4 @@ void ImGuiDemoWindow::Draw(float InDeltaTime)
 {
     ImGuiHelper::ShowDemoWindow();
 }
-WINDOW_NAMESPACE_END
+}

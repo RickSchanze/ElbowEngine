@@ -8,7 +8,7 @@
 #pragma once
 #include "Button.h"
 
-WIDGET_NAMESPACE_BEGIN
+namespace tool::widget {
 
 class ToggleButton : public Button {
 public:
@@ -31,4 +31,4 @@ protected:
     EButtonState previous_state_;
 };
 
-WIDGET_NAMESPACE_END
+}

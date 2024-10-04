@@ -11,7 +11,7 @@
 
 #include "DebugWindow.generated.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class StatisticsWindow : public WindowBase {
@@ -28,5 +28,5 @@ protected:
 };
 
 
-WINDOW_NAMESPACE_END
+}
 

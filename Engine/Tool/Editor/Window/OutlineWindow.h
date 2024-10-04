@@ -14,7 +14,7 @@ namespace Function {
 class GameObject;
 }
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 // 世界大纲窗口
 ECLASS()
@@ -32,4 +32,4 @@ public:
    int32_t selected_object_id = 0;
 };
 
-WINDOW_NAMESPACE_END
+}

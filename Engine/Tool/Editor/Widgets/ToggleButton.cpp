@@ -9,7 +9,7 @@
 
 #include "ImGui/ImGuiHelper.h"
 
-WIDGET_NAMESPACE_BEGIN
+namespace tool::widget {
 
 ToggleButton::ToggleButton(bool default_toggle_on)
 {
@@ -84,4 +84,4 @@ ToggleButton& ToggleButton::SetEventOnToggleOff(TFunction<void()> on_toggle_off)
     return *this;
 }
 
-WIDGET_NAMESPACE_END
+}

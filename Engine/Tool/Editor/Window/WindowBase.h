@@ -13,12 +13,13 @@
 
 #include "WindowBase.generated.h"
 
-namespace Tool::Widget
+namespace tool::widget
 {
 class WidgetBase;
 }
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window
+{
 
 EENUM()
 enum class EWindowVisibility
@@ -46,7 +47,7 @@ public:
 
     ~WindowBase() override = default;
 
-    void AddWidget(Widget::WidgetBase* Widget) { widgets_.push_back(Widget); }
+    void AddWidget(widget::WidgetBase* Widget) { widgets_.push_back(Widget); }
 
     void          SetWindowName(const String& InWindowName);
     const String& GetWindowName() const { return window_name_; }
@@ -77,7 +78,7 @@ protected:
 
     AnsiString cached_ansi_window_name_;
 
-    TArray<Widget::WidgetBase*> widgets_;
+    TArray<widget::WidgetBase*> widgets_;
 
     bool dirty_       = true;
     bool constructed_ = false;
@@ -94,4 +95,4 @@ private:
     bool imgui_show_window_ = true;
 };
 
-WINDOW_NAMESPACE_END
+}

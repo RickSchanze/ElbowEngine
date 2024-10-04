@@ -16,7 +16,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ConsoleWindow::ConsoleWindow()
 {
@@ -28,23 +28,23 @@ void ConsoleWindow::Construct()
 {
     Super::Construct();
     // clang-format off
-    button_filter_error_ = MakeUnique<Widgets::ToggleButton>(true);
+    button_filter_error_ = MakeUnique<widget::ToggleButton>(true);
     button_filter_error_->SetEventOnToggleOn([this] { selected_level_flags_ |= 1 << 2; })
         .SetEventOnToggleOff([this] { selected_level_flags_ ^= 1 << 2; })
         .SetTooltipText(L"筛选等级大于等于Error的日志");
 
-    button_filter_warning_ = MakeUnique<Widgets::ToggleButton>(true);
+    button_filter_warning_ = MakeUnique<widget::ToggleButton>(true);
     button_filter_warning_->SetEventOnToggleOn([this] { selected_level_flags_ |= 1 << 1; })
         .SetEventOnToggleOff([this] { selected_level_flags_ ^= 1 << 1; })
         .SetTooltipText(L"筛选等级等于Warning的日志");
 
-    button_filter_info_ = MakeUnique<Widgets::ToggleButton>(true);
+    button_filter_info_ = MakeUnique<widget::ToggleButton>(true);
     button_filter_info_->SetEventOnToggleOn([this] { selected_level_flags_ |= 1; })
         .SetEventOnToggleOff([this] { selected_level_flags_ ^= 1; })
         .SetTooltipText(L"筛选等级等于Info的日志");
     // clang-format on
 
-    button_filter_clear_ = MakeUnique<Widgets::Button>();
+    button_filter_clear_ = MakeUnique<widget::Button>();
     button_filter_clear_->SetTooltipText(L"清空日志").SetText(ICON_MD_CLEAR).SetEventOnClick([this] {
         g_log_recorder.Clear();
         selected_index_ = -1;
@@ -249,4 +249,4 @@ void ConsoleWindow::FilterLogsByLevel(const TList<Log>&logs){
     }
 }
 
-WINDOW_NAMESPACE_END
+}

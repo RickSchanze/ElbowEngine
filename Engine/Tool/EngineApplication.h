@@ -26,8 +26,8 @@ namespace rhi::vulkan
 class VulkanApplication;
 }
 
-TOOL_NAMESPACE_BEGIN
-
+namespace tool
+{
 class EngineApplication
 {
 public:
@@ -63,21 +63,21 @@ protected:
     // clang-format off
     // 为整个应用程序绘制UI 不抽象出独立Window
     void DrawAppUI();
-        // 绘制主菜单上的"窗口"菜单
-        void DrawWindowMenu();
-            // 窗口下的"数据窗口"
-            void OnOpenStatisticsWindow();
-            // 窗口下的"大纲"
-            void OnOpenOutlineWindow();
-            // 窗口下的"细节"
-            void OnOpenDetailWindow();
-            // 窗口下的"ImGui示例"
-            void OnOpenImGuiDemoWindow();
-            // 窗口下的"场景"
-            void OnOpenSceneWindow();
-            // 窗口下的"光照设置"
-            void OnOpenLightSettingWindow();
-            void OnOpenConsoleWindow();
+    // 绘制主菜单上的"窗口"菜单
+    void DrawWindowMenu();
+    // 窗口下的"数据窗口"
+    void OnOpenStatisticsWindow();
+    // 窗口下的"大纲"
+    void OnOpenOutlineWindow();
+    // 窗口下的"细节"
+    void OnOpenDetailWindow();
+    // 窗口下的"ImGui示例"
+    void OnOpenImGuiDemoWindow();
+    // 窗口下的"场景"
+    void OnOpenSceneWindow();
+    // 窗口下的"光照设置"
+    void OnOpenLightSettingWindow();
+    void OnOpenConsoleWindow();
     // clang-format on
 
 private:
@@ -87,7 +87,7 @@ private:
     }
 
     TUniquePtr<rhi::vulkan::VulkanApplication> render_application_;
-    TUniquePtr<Platform::Window::GlfwWindow>   window_;
+    TUniquePtr<platform::window::GlfwWindow>   window_;
     Function::RenderContext*                   render_context_ = nullptr;
 
     static inline EngineApplication* instance_ = nullptr;
@@ -102,5 +102,4 @@ private:
 
     EditorImGuiStyle* editor_style_;
 };
-
-TOOL_NAMESPACE_END
+}

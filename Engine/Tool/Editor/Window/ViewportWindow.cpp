@@ -14,7 +14,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ViewportWindow::ViewportWindow()
 {
@@ -42,4 +42,4 @@ void ViewportWindow::OnWindowResized(int w, int h)
     }
 }
 
-WINDOW_NAMESPACE_END
+}

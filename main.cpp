@@ -13,7 +13,7 @@ int main()
     SetConsoleOutputCP(65001);
     try
     {
-        Tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};
+        tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};
         App.Initialize();
         App.Run();
         App.Finitialize();

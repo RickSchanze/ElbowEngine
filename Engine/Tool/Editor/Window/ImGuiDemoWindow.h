@@ -10,7 +10,7 @@
 
 #include "ImGuiDemoWindow.generated.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class ImGuiDemoWindow : public WindowBase {
@@ -20,4 +20,4 @@ public:
     void Draw(float InDeltaTime) override;
 };
 
-WINDOW_NAMESPACE_END
+}

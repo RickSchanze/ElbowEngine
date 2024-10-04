@@ -14,7 +14,7 @@ namespace rhi::vulkan
 class Texture;
 }
 
-namespace Platform
+namespace platform
 {
 
 struct RequestLoadEngineDefaultLackTextureEvent

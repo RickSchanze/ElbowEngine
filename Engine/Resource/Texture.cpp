@@ -370,7 +370,7 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
 
 struct RegisterOnEngineDefaultTextureLoad
 {
-    RegisterOnEngineDefaultTextureLoad() { Platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
+    RegisterOnEngineDefaultTextureLoad() { platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
     }
 };
 

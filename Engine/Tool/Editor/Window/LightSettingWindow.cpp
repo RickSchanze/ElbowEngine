@@ -15,7 +15,7 @@
 
 GENERATED_SOURCE()
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 LightSettingWindow::LightSettingWindow()
 {
@@ -48,5 +48,5 @@ void LightSettingWindow::Draw(float delta_time)
     }
 }
 
-WINDOW_NAMESPACE_END
+}
 

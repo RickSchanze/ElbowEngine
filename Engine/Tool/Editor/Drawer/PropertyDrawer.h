@@ -8,12 +8,11 @@
 #pragma once
 #include "CoreDef.h"
 #include "Math/MathTypes.h"
-#include "ToolCommon.h"
 
 class Transform;
 
-UI_DRAWER_NAMESPACE_BEGIN
-
+namespace tool::drawer
+{
 class PropertyDrawer
 {
 public:
@@ -27,5 +26,4 @@ public:
     static void    DrawProperty(Property prop, const rttr::instance& obj);
     static void    DrawTransform(Transform& transform);
 };
-
-UI_DRAWER_NAMESPACE_END
+}

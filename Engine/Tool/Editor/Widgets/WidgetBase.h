@@ -7,9 +7,8 @@
 
 #pragma once
 #include "Math/MathTypes.h"
-#include "ToolCommon.h"
 
-WIDGET_NAMESPACE_BEGIN
+namespace tool::widget {
 
 class WidgetBase
 {
@@ -21,4 +20,4 @@ public:
     void Text(const AnsiString& str, Color foreground = Color::Invalid(), Color background = Color::Invalid());
 };
 
-WIDGET_NAMESPACE_END
+}

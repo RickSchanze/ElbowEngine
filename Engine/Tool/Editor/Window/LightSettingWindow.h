@@ -11,7 +11,7 @@
 
 #include "LightSettingWindow.generated.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class LightSettingWindow : public WindowBase
@@ -22,4 +22,4 @@ public:
     void Draw(float delta_time) override;
 };
 
-WINDOW_NAMESPACE_END
+}

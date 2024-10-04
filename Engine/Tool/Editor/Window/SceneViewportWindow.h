@@ -11,7 +11,7 @@
 
 #include "SceneViewportWindow.generated.h"
 
-WINDOW_NAMESPACE_BEGIN
+namespace tool::window {
 
 ECLASS()
 class SceneViewportWindow : public ViewportWindow
@@ -27,4 +27,4 @@ private:
     int old_h_;
 };
 
-WINDOW_NAMESPACE_END
+}
