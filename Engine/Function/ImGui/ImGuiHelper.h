@@ -17,12 +17,9 @@
 #    include <imgui.h>
 #endif
 
-namespace Resource
+namespace res
 {
 class TextureCube;
-}
-namespace Resource
-{
 class Texture;
 }
 class CachedString;
@@ -82,8 +79,8 @@ public:
 
     /** 与ElbowEngine结合起来的无状态控件 **/
     static void Text(CachedString& str);
-    static void Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
-    static void Image(Resource::TextureCube* texture_cube, int max_wdith = 500, int max_height = 500);
+    static void Image(res::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
+    static void Image(res::TextureCube* texture_cube, int max_wdith = 500, int max_height = 500);
     static void Image(rhi::vulkan::ImageView* view, rhi::vulkan::Sampler* sampler, int width, int height, int max_width, int max_height);
     /**
      * 适应窗口宽度的显示image
@@ -91,7 +88,7 @@ public:
      * @param max_width
      * @param max_height
      */
-    static void Image(Resource::Texture* texture, int max_width = 500, int max_height = 500);
+    static void Image(res::Texture* texture, int max_width = 500, int max_height = 500);
     static void WarningBox(const char* text);
     static void ErrorBox(const char* text);
     static void ImageBackbuffer(int32_t width, int32_t height);

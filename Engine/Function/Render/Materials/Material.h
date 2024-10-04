@@ -80,7 +80,7 @@ public:
     ~Material() override;
 
     // SetTexture的不同重载
-    void      SetTexture(const AnsiString& name, Resource::Texture* texture);
+    void      SetTexture(const AnsiString& name, res::Texture* texture);
     Material &SetTexture(const AnsiString& name, const Path& path);
     void SetTexture(const AnsiString& name, const rhi::vulkan::ImageView& view, const rhi::vulkan::Sampler& sampler);
 
@@ -114,7 +114,7 @@ public:
      * @param name
      * @return
      */
-    Resource::Texture* GetTextureValue(const AnsiString& name);
+    res::Texture* GetTextureValue(const AnsiString& name);
 
 protected:
     /**
@@ -130,7 +130,7 @@ protected:
     rhi::vulkan::GraphicsPipeline* pipeline_       = nullptr;
 
     // 存储shader里所有的纹理参数
-    THashMap<AnsiString, Resource::Texture*> textures_maps_;
+    THashMap<AnsiString, res::Texture*> textures_maps_;
 
     bool texture_map_dirty_ = false;
 };

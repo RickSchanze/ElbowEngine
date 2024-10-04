@@ -25,7 +25,7 @@ public:
      * 一张贴图表示的，球面环境映射
      * @param texture
      */
-    void SetSkySphereTexture(Resource::Texture* texture);
+    void SetSkySphereTexture(res::Texture* texture);
 
     /**
      * 六张贴图表示的，立方体投映射
@@ -48,7 +48,7 @@ public:
     bool IsUsingSkyBox() const;
 
 protected:
-    Resource::Mesh* skybox_mesh_ = nullptr;
+    res::Mesh* skybox_mesh_ = nullptr;
     int use_skybox_; // 0: 未设置 1: 球面映射 -1: 立方体映射
 };
 

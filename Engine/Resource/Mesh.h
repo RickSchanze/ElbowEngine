@@ -13,7 +13,6 @@
 #include "Interface/IRHIResourceContainer.h"
 #include "Misc/Vertex.h"
 #include "Path/Path.h"
-#include "ResourceCommon.h"
 #include "RHI/Vulkan/Resource/VulkanModel.h"
 #include "Texture.h"
 
@@ -26,12 +25,9 @@ struct aiNode;
 struct aiMaterial;
 struct aiScene;
 struct aiMesh;
-namespace Resource
+namespace res
 {
 class Texture;
-}
-
-RESOURCE_NAMESPACE_BEGIN
 
 class SubMesh : public IRHIResourceContainer<rhi::vulkan::Mesh>
 {
@@ -94,5 +90,4 @@ private:
 
     Path path_;
 };
-
-RESOURCE_NAMESPACE_END
+}

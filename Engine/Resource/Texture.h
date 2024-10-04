@@ -11,7 +11,6 @@
 #include "Interface/IResource.h"
 #include "Interface/IRHIResourceContainer.h"
 #include "Path/Path.h"
-#include "ResourceCommon.h"
 #include "RHI/Vulkan/Resource/Image.h"
 
 namespace rhi::vulkan
@@ -22,8 +21,8 @@ class Sampler;
 class ImageView;
 }   // namespace rhi::vulkan
 
-RESOURCE_NAMESPACE_BEGIN
-
+namespace res
+{
 enum class ETextureUsage
 {
     None,
@@ -134,5 +133,4 @@ protected:
     TStaticArray<rhi::vulkan::ImageView*, 6> views_{};
     TStaticArray<AnsiString, 6> view_names_{};
 };
-
-RESOURCE_NAMESPACE_END
+}

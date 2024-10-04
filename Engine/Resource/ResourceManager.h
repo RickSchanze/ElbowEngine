@@ -16,15 +16,15 @@ namespace rhi::vulkan
 {
 struct SamplerInfo;
 }
-namespace Resource
+namespace res
 {
 class Mesh;
 class Texture;
 }   // namespace Resource
 class IResource;
 
-RESOURCE_NAMESPACE_BEGIN
-
+namespace res
+{
 class ResourceManager : public Singleton<ResourceManager>
 {
 public:
@@ -55,5 +55,4 @@ private:
     // TODO: 寻找更好的自动化资源管理方式
     THashMap<Path, IResource*> resource_map_;
 };
-
-RESOURCE_NAMESPACE_END
+}

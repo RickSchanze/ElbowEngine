@@ -23,7 +23,8 @@
 
 using namespace rhi::vulkan;
 
-RESOURCE_NAMESPACE_BEGIN
+namespace res
+{
 
 Texture::Texture(const Path& path, const ETextureUsage usage, const SamplerInfo& sampler_info, const vk::ImageLayout t) :
     path_(path), usage_(usage), sampler_info_(sampler_info), init_transition_to_layout_(t)
@@ -336,14 +337,14 @@ TextureCube::~TextureCube()
     }
 }
 
-RESOURCE_NAMESPACE_END
+}
 
 static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageView** out_texture_view)
 {
     // 引擎默认纹理资产的生命周期包含整个程序运行期间
     if (gResourceConfig.bInitialized)
     {
-        auto* DefaultLackTexture = Resource::Texture::Create(gResourceConfig.default_lack_texture_path);
+        auto* DefaultLackTexture = res::Texture::Create(gResourceConfig.default_lack_texture_path);
         if (DefaultLackTexture)
         {
             *out_texture                                          = DefaultLackTexture->GetRHIResource();

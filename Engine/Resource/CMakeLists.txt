@@ -3,7 +3,6 @@ project(Resource)
 add_library(${PROJECT_NAME}
         Texture.h
         Texture.cpp
-        ResourceCommon.h
         Mesh.h
         Mesh.cpp
         ResourceManager.h

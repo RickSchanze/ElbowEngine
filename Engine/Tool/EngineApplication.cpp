@@ -148,7 +148,7 @@ void EngineApplication::Finitialize() const
     rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
     window_->ShutdownImGui();
     // vulkan device失效前释放所有资产
-    Resource::ResourceManager::Get()->DestroyAllResources();
+    res::ResourceManager::Get()->DestroyAllResources();
     if (render_application_->IsValid()) render_application_->Finalize();
     if (window_->IsValid()) window_->Finalize();
 }

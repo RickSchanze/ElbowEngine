@@ -13,8 +13,8 @@
 
 #include <ranges>
 
-RESOURCE_NAMESPACE_BEGIN
-
+namespace res
+{
 ResourceManager::~ResourceManager() = default;
 
 void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource)
@@ -55,5 +55,4 @@ void ResourceManager::DestroyResource(const Path& path)
     Delete(resource_map_[path]);
     resource_map_.erase(path);
 }
-
-RESOURCE_NAMESPACE_END
+}

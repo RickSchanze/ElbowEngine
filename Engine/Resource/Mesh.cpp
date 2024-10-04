@@ -15,8 +15,8 @@
 #include "ResourceManager.h"
 #include "Utils/StringUtils.h"
 
-RESOURCE_NAMESPACE_BEGIN
-
+namespace res
+{
 SubMesh::~SubMesh()
 {
     Delete(mesh_rhi_resource_);
@@ -127,5 +127,4 @@ void Mesh::ProcessNode(const aiNode* node, const aiScene* scene)
         ProcessNode(node->mChildren[i], scene);
     }
 }
-
-RESOURCE_NAMESPACE_END
+}
