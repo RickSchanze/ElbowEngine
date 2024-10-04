@@ -14,13 +14,13 @@
 #include "ResourceCommon.h"
 #include "RHI/Vulkan/Resource/Image.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Texture;
 class Image;
 class Sampler;
 class ImageView;
-}   // namespace RHI::Vulkan
+}   // namespace rhi::vulkan
 
 RESOURCE_NAMESPACE_BEGIN
 
@@ -38,15 +38,15 @@ enum class ETextureUsage
  * 现在默认无法write/read(即创建就释放CPU侧资源)
  * TODO: 实现真正意义上的"RHI"
  */
-class Texture : public IResource, public IRHIResourceContainer<RHI::Vulkan::Texture>
+class Texture : public IResource, public IRHIResourceContainer<rhi::vulkan::Texture>
 {
-    friend class RHI::Vulkan::Texture;
+    friend class rhi::vulkan::Texture;
 
 public:
     Texture() = default;
 
     static Texture* Create(
-        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const RHI::Vulkan::SamplerInfo& sampler_info = {},
+        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const rhi::vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal
     );
 
@@ -63,8 +63,8 @@ public:
 
     bool IsDefaultLackTexture() const { return this == GetDefaultLackTexture(); }
 
-    RHI::Vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
-    RHI::Vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
+    rhi::vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
+    rhi::vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
 
     void Load() override;
 
@@ -79,7 +79,7 @@ public:
      */
     virtual bool IsCPUMemoryAvailable();
 
-    RHI::Vulkan::Texture* GetRHIResource() override;
+    rhi::vulkan::Texture* GetRHIResource() override;
 
     static Texture* GetDefaultLackTexture();
 
@@ -87,7 +87,7 @@ public:
     vk::Format GetLowLevelFormat() const;
 
     Texture(
-        const Path& path, ETextureUsage usage, const RHI::Vulkan::SamplerInfo& sampler_info = {},
+        const Path& path, ETextureUsage usage, const rhi::vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition_to_layout = vk::ImageLayout::eShaderReadOnlyOptimal
     );
 
@@ -99,11 +99,11 @@ protected:
     uint8_t*      data_     = nullptr;
     ETextureUsage usage_    = ETextureUsage::None;
 
-    RHI::Vulkan::Texture*   rhi_texture_      = nullptr;
-    RHI::Vulkan::ImageView* rhi_texture_view_ = nullptr;
-    RHI::Vulkan::Sampler*   rhi_sampler_      = nullptr;
+    rhi::vulkan::Texture*   rhi_texture_      = nullptr;
+    rhi::vulkan::ImageView* rhi_texture_view_ = nullptr;
+    rhi::vulkan::Sampler*   rhi_sampler_      = nullptr;
 
-    RHI::Vulkan::SamplerInfo sampler_info_;
+    rhi::vulkan::SamplerInfo sampler_info_;
 
 private:
     // 一开始要转换到什么Layout
@@ -119,19 +119,19 @@ public:
      * @param sampler_info
      * @return
      */
-    static TextureCube* Create(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+    static TextureCube* Create(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
 
-    explicit TextureCube(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info = {});
+    explicit TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
 
     void Load() override;
 
     // 创建的Texture*由ResourceManager管理
     ~TextureCube() override;
 
-    RHI::Vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
+    rhi::vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
 
 protected:
-    TStaticArray<RHI::Vulkan::ImageView*, 6> views_{};
+    TStaticArray<rhi::vulkan::ImageView*, 6> views_{};
     TStaticArray<AnsiString, 6> view_names_{};
 };
 

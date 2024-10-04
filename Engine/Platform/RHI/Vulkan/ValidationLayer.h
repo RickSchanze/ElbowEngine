@@ -11,21 +11,23 @@
 
 #include <vulkan/vulkan.hpp>
 
-RHI_VULKAN_NAMESPACE_BEGIN
+namespace rhi::vulkan
+{
 class Instance;
 
-class ValidationLayer final : public IRHIResource {
+class ValidationLayer final : public IRHIResource
+{
 public:
     typedef ValidationLayer ThisClass;
 
-    explicit ValidationLayer(Instance* InParentInstance) noexcept : mAttachedVulkanInstance(InParentInstance) {}
+    explicit ValidationLayer(Instance* InParentInstance) noexcept : vulkan_instance_(InParentInstance) {}
 
     void Initialize();
-    void Finialize();
+    void DeInitialize();
 
     void Destroy() override;
 
-    bool IsValid() const { return static_cast<bool>(mDebugMessengerCallback); }
+    bool IsValid() const { return static_cast<bool>(debug_messenger_callback_); }
 
 #if ELBOW_DEBUG
     static constexpr bool sEnableValidationLayer = true;
@@ -44,16 +46,14 @@ public:
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
     );
 
-    [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return mDebugMessengerCallback; }
+    [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return debug_messenger_callback_; }
     ValidationLayer&                         SetAttachedVulkanInstance(Instance* InInstance) noexcept;
 
 
-
 private:
-    vk::DebugUtilsMessengerEXT mDebugMessengerCallback;
+    vk::DebugUtilsMessengerEXT debug_messenger_callback_;
 
     // 验证层附加的Instance对象
-    Instance* mAttachedVulkanInstance = nullptr;
+    Instance* vulkan_instance_ = nullptr;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

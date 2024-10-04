@@ -19,13 +19,13 @@ namespace Function::Comp
 class Light;
 class Camera;
 }
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Cubemap;
 }
 FUNCTION_NAMESPACE_BEGIN
 
-class PointLightShadowPass : public RHI::Vulkan::RenderPass
+class PointLightShadowPass : public rhi::vulkan::RenderPass
 {
 public:
     PointLightShadowPass(uint32_t width, uint32_t height, const AnsiString& debug_name = "") : RenderPass(width, height, debug_name) {}
@@ -46,15 +46,15 @@ public:
     void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index, float near, float far);
     void EndDrawFace(vk::CommandBuffer cb);
 
-    RHI::Vulkan::ImageView* GetOutputCubemapView() const;
+    rhi::vulkan::ImageView* GetOutputCubemapView() const;
 
 private:
-    RHI::Vulkan::Image*               depth_      = nullptr;
-    RHI::Vulkan::ImageView*           depth_view_ = nullptr;
+    rhi::vulkan::Image*               depth_      = nullptr;
+    rhi::vulkan::ImageView*           depth_view_ = nullptr;
 
-    TStaticArray<RHI::Vulkan::Framebuffer*, 6> cubemap_framebuffers_;
+    TStaticArray<rhi::vulkan::Framebuffer*, 6> cubemap_framebuffers_;
 
-    RHI::Vulkan::Cubemap* shadow_map_;
+    rhi::vulkan::Cubemap* shadow_map_;
 };
 
 FUNCTION_NAMESPACE_END

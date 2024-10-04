@@ -11,15 +11,15 @@
 #include "Instance.h"
 #include "Utils/StringUtils.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 void ValidationLayer::Initialize() {
     if constexpr (!sEnableValidationLayer) {
         LOG_INFO_CATEGORY(Vulkan, L"启用验证层: false");
         return;
     } else {
         LOG_INFO_CATEGORY(Vulkan, L"启用验证层: true");
-        if (!mAttachedVulkanInstance) {
+        if (!vulkan_instance_) {
             LOG_ERROR_CATEGORY(Vulkan, L"初始化验证层时，Vulkan实例为空");
             return;
         }
@@ -28,17 +28,17 @@ void ValidationLayer::Initialize() {
             .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
             .setPfnUserCallback(&ThisClass::DebugCallBack)
             .setPUserData(nullptr);
-        const auto& Dispatcher  = mAttachedVulkanInstance->GetDynamicDispatcher();
-        mDebugMessengerCallback = mAttachedVulkanInstance->GetHandle().createDebugUtilsMessengerEXT(CreateInfo, nullptr, Dispatcher);
+        const auto& Dispatcher  = vulkan_instance_->GetDynamicDispatcher();
+        debug_messenger_callback_ = vulkan_instance_->GetHandle().createDebugUtilsMessengerEXT(CreateInfo, nullptr, Dispatcher);
         LOG_INFO_CATEGORY(Vulkan, L"验证层初始化完成");
     }
 }
 
-void ValidationLayer::Finialize() {
+void ValidationLayer::DeInitialize() {
     if (!sEnableValidationLayer) return;
-    if (mAttachedVulkanInstance && mAttachedVulkanInstance->IsValid() && mDebugMessengerCallback) {
-        const auto& Dispatcher = mAttachedVulkanInstance->GetDynamicDispatcher();
-        mAttachedVulkanInstance->GetHandle().destroyDebugUtilsMessengerEXT(mDebugMessengerCallback, nullptr, Dispatcher);
+    if (vulkan_instance_ && vulkan_instance_->IsValid() && debug_messenger_callback_) {
+        const auto& Dispatcher = vulkan_instance_->GetDynamicDispatcher();
+        vulkan_instance_->GetHandle().destroyDebugUtilsMessengerEXT(debug_messenger_callback_, nullptr, Dispatcher);
         LOG_INFO_CATEGORY(Vulkan, L"验证层清理完成");
     } else {
         LOG_WARNING_CATEGORY(Vulkan, L"销毁验证层时，验证层本身或其AttachedVulkanInstance失效");
@@ -46,7 +46,7 @@ void ValidationLayer::Finialize() {
 }
 
 void ValidationLayer::Destroy() {
-    Finialize();
+    DeInitialize();
 }
 
 VkBool32 ValidationLayer::DebugCallBack(
@@ -73,8 +73,7 @@ VkBool32 ValidationLayer::DebugCallBack(
 }
 
 ValidationLayer& ValidationLayer::SetAttachedVulkanInstance(Instance* InInstance) noexcept {
-    mAttachedVulkanInstance = InInstance;
+    vulkan_instance_ = InInstance;
     return *this;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -61,7 +61,6 @@ add_library(Platform
         PlatformEvents.h
         RHI/GfxContext.h
         RHI/CommandBuffer.h
-        PlatformCommon.h
         RHI/Vulkan/CommandBuffer.cpp
         RHI/Vulkan/CommandBuffer.h
         RHI/GfxContext.cpp

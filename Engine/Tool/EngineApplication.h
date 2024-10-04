@@ -21,7 +21,7 @@ namespace Function
 class GameObject;
 class RenderContext;
 }   // namespace Function
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class VulkanApplication;
 }
@@ -86,7 +86,7 @@ private:
         OnAppWindowResized.Broadcast(width, height);
     }
 
-    TUniquePtr<RHI::Vulkan::VulkanApplication> render_application_;
+    TUniquePtr<rhi::vulkan::VulkanApplication> render_application_;
     TUniquePtr<Platform::Window::GlfwWindow>   window_;
     Function::RenderContext*                   render_context_ = nullptr;
 

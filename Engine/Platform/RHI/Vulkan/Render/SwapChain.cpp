@@ -12,8 +12,8 @@
 #include "RHI/Vulkan/VulkanContext.h"
 #include "RHI/Vulkan/VulkanStringify.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 TUniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
@@ -42,7 +42,7 @@ SwapChain::~SwapChain()
 {
     if (IsValid())
     {
-        Finialize(true);
+        DeInitialize(true);
     }
 }
 
@@ -133,7 +133,7 @@ void SwapChain::Initialize()
     }
 }
 
-void SwapChain::Finialize(bool log)
+void SwapChain::DeInitialize(bool log)
 {
     if (!IsValid()) return;
     for (const auto& ImageView: swapchain_image_views_)
@@ -151,7 +151,6 @@ void SwapChain::Finialize(bool log)
 
 void SwapChain::Destroy()
 {
-    Finialize(true);
+    DeInitialize(true);
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -15,8 +15,8 @@
 #include "LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 void RenderPassAttachmentParam::Init()
 {
     if (final_layout == vk::ImageLayout::eUndefined)
@@ -302,5 +302,4 @@ void RenderPassManager::DestroyRenderPasses()
     }
     Get()->render_passes_.clear();
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

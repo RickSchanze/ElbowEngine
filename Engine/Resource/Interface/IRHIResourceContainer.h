@@ -8,7 +8,7 @@
 #pragma once
 #include "RHI/Vulkan/Resource/Image.h"
 
-namespace RHI::Vulkan {
+namespace rhi::vulkan {
 class IRHIResource;
 }
 

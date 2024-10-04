@@ -17,17 +17,17 @@ class Mesh;
 class SubMesh;
 }   // namespace Resource
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class VulkanContext;
 
 class Mesh : public IRHIResource
 {
 public:
-    Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index);
+    Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index);
 
-    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index = false);
-    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index = false);
+    static TSharedPtr<Mesh> CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index = false);
+    static TUniquePtr<Mesh> CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index = false);
 
     ~Mesh() override;
 
@@ -52,5 +52,4 @@ private:
 
     bool ignore_index_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -13,21 +13,14 @@
 #include "VulkanCommon.h"
 
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class CommandPool;
 class GraphicsPipeline;
-}   // namespace RHI::Vulkan
-
-namespace RHI::Vulkan
-{
 class RenderPass;
-}
-
-RHI_VULKAN_NAMESPACE_BEGIN
 
 
-struct PreVulkanDeviceDestroyedSingnature : public TEvent<>
+struct PreVulkanDeviceDestroyedSignature : TEvent<>
 {
 };
 
@@ -36,7 +29,7 @@ class IGraphicsPipeline;
 struct GraphicsQueueSubmitParams
 {
     TArray<vk::Semaphore>          semaphores_to_wait;
-    TArray<vk::Semaphore>          semaphores_to_singal;
+    TArray<vk::Semaphore>          semaphores_to_signal;
     TArray<vk::PipelineStageFlags> wait_stages;
     bool                           has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
 };
@@ -52,7 +45,7 @@ public:
 
     static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance>& instance);
 
-    PreVulkanDeviceDestroyedSingnature PreVulkanDeviceDestroyed;
+    PreVulkanDeviceDestroyedSignature PreVulkanDeviceDestroyed;
 
 protected:
     struct Protected
@@ -181,5 +174,4 @@ private:
 
     bool wait_swapchain_rebuild_ = false;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

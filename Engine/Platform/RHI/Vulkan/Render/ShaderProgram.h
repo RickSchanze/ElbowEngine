@@ -9,13 +9,11 @@
 #include "CoreDef.h"
 #include "Shader.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Buffer;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
 
-// TODO: 延迟销毁特性
+// TODO: 去除延迟销毁特性
 enum class EShaderDestroyTime
 {
     BindOnce,   // 被管线绑定一次后就销毁
@@ -142,5 +140,4 @@ private:
     AnsiString         descriptor_pool_name_;
     TArray<AnsiString> descriptor_set_names_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

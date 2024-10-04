@@ -12,14 +12,14 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class PointLightShadowPassVertShader : public RHI::Vulkan::Shader
+class PointLightShadowPassVertShader : public rhi::vulkan::Shader
 {
     DECLARE_VERT_SHADER(PointLightShadowPassVertShader)
 public:
     void RegisterShaderVariables() override;
 };
 
-class PointLightShadowPassFragShader : public RHI::Vulkan::Shader
+class PointLightShadowPassFragShader : public rhi::vulkan::Shader
 {
     DECLARE_FRAG_SHADER(PointLightShadowPassFragShader)
 public:

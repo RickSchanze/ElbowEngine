@@ -14,7 +14,7 @@ REGISTER_RENDER_PASS_REFL(Function::SimpleObjectShadingPass);
 
 FUNCTION_NAMESPACE_BEGIN
 
-using namespace RHI::Vulkan;
+using namespace rhi::vulkan;
 
 SimpleObjectShadingPass::SimpleObjectShadingPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name) {}
 

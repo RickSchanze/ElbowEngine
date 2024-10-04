@@ -12,8 +12,8 @@
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "Utils/StringUtils.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 CommandPool::CommandPool(
     Private, const Ref<TUniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name
 ) : device_(device)
@@ -302,5 +302,4 @@ void CommandPool::EndSingleTimeCommands()
     DeviceHandle.freeCommandBuffers(pool_, {single_cmd_});
     single_cmd_ = nullptr;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

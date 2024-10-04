@@ -11,7 +11,7 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class PostImageLayoutTransitionPass : public RHI::Vulkan::RenderPass {
+class PostImageLayoutTransitionPass : public rhi::vulkan::RenderPass {
 
 public:
     void            SetupAttachments() override;
@@ -23,7 +23,7 @@ public:
     PostImageLayoutTransitionPass(uint32_t width, uint32_t height, const AnsiString& name);
 
 public:
-    TArray<RHI::Vulkan::Framebuffer*> framebuffers;
+    TArray<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
 FUNCTION_NAMESPACE_END

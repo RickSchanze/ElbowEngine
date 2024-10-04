@@ -81,7 +81,7 @@ void ImGuiHelper::Image(Resource::TextureCube* texture_cube, int max_wdith, int 
     Image(texture_cube->GetFaceView(5), texture_cube->GetSampler(), width, height, max_wdith, max_height);
 }
 
-void ImGuiHelper::Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width, int max_height)
+void ImGuiHelper::Image(rhi::vulkan::ImageView* view, rhi::vulkan::Sampler* sampler, int width, int height, int max_width, int max_height)
 {
     if (view == nullptr)
     {
@@ -89,7 +89,7 @@ void ImGuiHelper::Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* samp
     }
     if (imgui_textuers_.empty())
     {
-        RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ImGuiHelper::RemoveAllImGuiTextures);
+        rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ImGuiHelper::RemoveAllImGuiTextures);
     }
     VkDescriptorSet set;
     if (imgui_textuers_.contains(view))
@@ -229,13 +229,13 @@ void ImGuiHelper::ImageBackbuffer(int32_t width, int32_t height)
     if (back_image_texture_[g_engine_statistics.current_image_index] == nullptr)
     {
         back_image_texture_[g_engine_statistics.current_image_index] = ImGui_ImplVulkan_AddTexture(
-            RHI::Vulkan::Sampler::GetDefaultSampler().GetHandle(),
-            RHI::Vulkan::VulkanContext::Get()->GetBackbufferView(g_engine_statistics.current_image_index)->GetHandle(),
+            rhi::vulkan::Sampler::GetDefaultSampler().GetHandle(),
+            rhi::vulkan::VulkanContext::Get()->GetBackbufferView(g_engine_statistics.current_image_index)->GetHandle(),
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         );
     }
-    float uv1x = (float)width / (float)RHI::Vulkan::VulkanContext::Get()->GetActualBackbufferWidth();
-    float uv1y = (float)height / (float)RHI::Vulkan::VulkanContext::Get()->GetActualBackbufferHeight();
+    float uv1x = (float)width / (float)rhi::vulkan::VulkanContext::Get()->GetActualBackbufferWidth();
+    float uv1y = (float)height / (float)rhi::vulkan::VulkanContext::Get()->GetActualBackbufferHeight();
     ImGui::Image(
         back_image_texture_[g_engine_statistics.current_image_index], {static_cast<float>(width), static_cast<float>(height)}, {0, 0}, {uv1x, uv1y}
     );

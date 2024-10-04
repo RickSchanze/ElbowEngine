@@ -25,7 +25,7 @@
 #include "Shaders/SkySphereShader.h"
 
 
-using namespace RHI::Vulkan;
+using namespace rhi::vulkan;
 
 FUNCTION_NAMESPACE_BEGIN
 
@@ -42,7 +42,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     Super::DrawBackbuffer(draw_param);
     auto  cb             = draw_param.command_buffer;
     auto  meshes_to_draw = CollectMeshesWithMaterial();
-    auto& context        = RHI::GetGfxContext();
+    auto& context        = rhi::GetGfxContext();
     auto  cmd            = CommandBufferVulkan(draw_param.command_buffer);
 
     skybox_pass_->external_depth_view = forward_pass_->depth_image_view;

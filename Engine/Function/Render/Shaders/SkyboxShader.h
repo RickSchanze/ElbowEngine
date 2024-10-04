@@ -11,7 +11,7 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class SkyboxVertShader : public RHI::Vulkan::Shader
+class SkyboxVertShader : public rhi::vulkan::Shader
 {
 public:
     void RegisterShaderVariables() override;
@@ -20,7 +20,7 @@ private:
     DECLARE_VERT_SHADER(SkyboxVertShader)
 };
 
-class SkyboxFragShader : public RHI::Vulkan::Shader
+class SkyboxFragShader : public rhi::vulkan::Shader
 {
 public:
     void RegisterShaderVariables() override;

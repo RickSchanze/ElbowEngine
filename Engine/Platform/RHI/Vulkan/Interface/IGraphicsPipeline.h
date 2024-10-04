@@ -8,8 +8,8 @@
 #pragma once
 #include "RHI/Vulkan/VulkanCommon.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class IGraphicsPipeline
 {
 public:
@@ -22,5 +22,4 @@ public:
     virtual void Draw(vk::CommandBuffer cb) = 0;
     virtual void Rebuild(int w, int h) = 0;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -24,7 +24,7 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-static void ConfigPipelineByMaterial(RHI::Vulkan::PipelineInfo& pipeline_info, const MaterialConfig& config)
+static void ConfigPipelineByMaterial(rhi::vulkan::PipelineInfo& pipeline_info, const MaterialConfig& config)
 {
     pipeline_info.rasterization_stage.front_face =
         config.use_counter_clock_wise_front_face ? vk::FrontFace::eCounterClockwise : vk::FrontFace::eClockwise;
@@ -48,7 +48,7 @@ static void ConfigPipelineByMaterial(RHI::Vulkan::PipelineInfo& pipeline_info, c
 
 Material::Material(const Path& vert, const Path& frag, const MaterialConfig& config, const String& name)
 {
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     Shader* vert_shader = Shader::Create<StandardForwardVertShader>(vert, "StandardShaderVert");
     Shader* frag_shader = Shader::Create<StandardForwardFragShader>(frag, "StandardShaderFrag");
     shader_program_     = ShaderProgram::Create(vert_shader, frag_shader);
@@ -62,9 +62,9 @@ Material::Material(const Path& vert, const Path& frag, const MaterialConfig& con
     pipeline_                    = New<GraphicsPipeline>(pipeline_info);
 }
 
-Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config, const String& name)
+Material::Material(rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config, const String& name)
 {
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     shader_program_ = ShaderProgram::Create(vert, frag);
     name_           = name;
     ParseShaderParameters();
@@ -77,10 +77,10 @@ Material::Material(RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const T
 }
 
 Material::Material(
-    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+    rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
 )
 {
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     shader_program_ = ShaderProgram::Create(vert, frag);
     name_           = name;
     ParseShaderParameters();
@@ -121,12 +121,12 @@ Material& Material::SetTexture(const AnsiString& name, const Path& path)
     return *this;
 }
 
-void Material::SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler)
+void Material::SetTexture(const AnsiString& name, const rhi::vulkan::ImageView& view, const rhi::vulkan::Sampler& sampler)
 {
     shader_program_->SetTexture(name, view, sampler);
 }
 
-void Material::SetCubeTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler)
+void Material::SetCubeTexture(const AnsiString& name, const rhi::vulkan::ImageView& view, const rhi::vulkan::Sampler& sampler)
 {
     shader_program_->SetCubeTexture(name, view, sampler);
 }
@@ -201,7 +201,7 @@ void Material::Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instan
     pipeline_->Draw(cb, vertex_count, instance_count, first_vertex, first_instance);
 }
 
-void Material::PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const
+void Material::PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, rhi::vulkan::EShaderStage stage, void* data) const
 {
     cb.pushConstants(pipeline_->GetPipelineLayout(), ShaderStage2VKShaderStage(stage), offset, size, data);
 }
@@ -236,7 +236,7 @@ void Material::ParseShaderParameters()
         {
             continue;
         }
-        if (uniform.type == RHI::Vulkan::EUniformDescriptorType::Sampler2D)
+        if (uniform.type == rhi::vulkan::EUniformDescriptorType::Sampler2D)
         {
             if (!textures_maps_.contains(uniform.name))
             {
@@ -260,7 +260,7 @@ void Material::OnInspectorGUI()
 
 MaterialManager::MaterialManager()
 {
-    RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&MaterialManager::DestroyMaterials);
+    rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&MaterialManager::DestroyMaterials);
 }
 
 void MaterialManager::DestroyMaterials()
@@ -300,7 +300,7 @@ Material* MaterialManager::CreateMaterial(const Path& vert, const Path& frag, co
 }
 
 Material* MaterialManager::CreateMaterial(
-    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name, const MaterialConfig& config
+    rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, const Type& pass_type, const String& name, const MaterialConfig& config
 )
 {
     auto& mats = Get()->materials_;
@@ -318,7 +318,7 @@ Material* MaterialManager::CreateMaterial(
 }
 
 Material* MaterialManager::CreateMaterial(
-    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name, const MaterialConfig& config
+    rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const String& name, const MaterialConfig& config
 )
 {
     auto& mats = Get()->materials_;

@@ -13,8 +13,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class SurfaceBase : public IRHIResource {
 public:
     explicit SurfaceBase(Instance* InParentInstance) : mAttachedInstanceHandle(InParentInstance) {}
@@ -46,7 +46,7 @@ public:
     Instance();
 
     void Initialize();
-    void Finialize();
+    void DeInitialize();
     void Destroy() override;
 
     Instance& SetSurface(TUniquePtr<SurfaceBase> InSurface);
@@ -56,7 +56,7 @@ public:
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(vulkan_instance_handle_); }
     [[nodiscard]] vk::Instance GetHandle() const { return vulkan_instance_handle_; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
-    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const {return mSurface->GetSurfaceHandle();}
+    [[nodiscard]] vk::SurfaceKHR GetSurfaceHandle() const {return surface_->GetSurfaceHandle();}
 
     Instance& SetInstanceCreateInfo(const vk::InstanceCreateInfo &InCreateInfo) { mInstanceCreateInfo = InCreateInfo; return *this; }
     // clang-format on
@@ -75,11 +75,10 @@ private:
     // 验证层
     TUniquePtr<ValidationLayer> validation_layer_;
     // 窗口表面
-    TUniquePtr<SurfaceBase>     mSurface;
+    TUniquePtr<SurfaceBase>     surface_;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic   dynamic_dispatcher_;
     // 实例创建信息
     vk::InstanceCreateInfo      mInstanceCreateInfo;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

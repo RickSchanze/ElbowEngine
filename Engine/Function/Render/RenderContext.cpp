@@ -25,7 +25,7 @@ RenderContext::~RenderContext()
 
 RenderContext::RenderContext()
 {
-    vulkan_context_   = RHI::Vulkan::VulkanContext::Get();
+    vulkan_context_   = rhi::vulkan::VulkanContext::Get();
     s_render_context_ = this;
 }
 
@@ -66,7 +66,7 @@ void RenderContext::SetRenderPipeline(RenderPipeline* new_render_pipeline)
     render_pipeline_->Build();
 }
 
-vk::Semaphore RenderContext::SubmitPipeline(const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, const vk::Fence fence_to_trigger) const
+vk::Semaphore RenderContext::SubmitPipeline(const rhi::vulkan::GraphicsQueueSubmitParams& draw_param, const vk::Fence fence_to_trigger) const
 {
     return vulkan_context_->SubmitGraphicsQueue(draw_param, fence_to_trigger);
 }

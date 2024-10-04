@@ -9,11 +9,9 @@
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class LogicalDevice;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
 
 class ImageView : public IRHIResource
 {
@@ -37,5 +35,4 @@ private:
 
     AnsiString debug_name_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}   // namespace rhi::vulkan

@@ -9,20 +9,12 @@
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
-
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class SwapChain;
-}
-namespace RHI::Vulkan
-{
 class PhysicalDevice;
-}
-namespace RHI::Vulkan
-{
 class Instance;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
+
 
 class LogicalDevice final : public IRHIResource
 {
@@ -37,7 +29,7 @@ public:
 
     explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
 
-    void Finialize();
+    void DeInitialize();
 
     void Destroy() override;
 
@@ -157,5 +149,4 @@ private:
     PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT_ = nullptr;
 #endif
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -8,11 +8,11 @@
 #pragma once
 #include "VulkanCommon.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
-class VulkanUtils {
+namespace rhi::vulkan
+{
+class VulkanUtils
+{
 public:
-    static size_t GetDynamicUniformModelAligment();
+    static size_t GetDynamicUniformModelAlignment();
 };
-
-RHI_VULKAN_NAMESPACE_END
+}   // namespace rhi::vulkan

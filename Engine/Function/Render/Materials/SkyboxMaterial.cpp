@@ -19,7 +19,7 @@
 FUNCTION_NAMESPACE_BEGIN
 
 SkyboxMaterial::SkyboxMaterial(
-    RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+    rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
 ) : Material(vert, frag, render_pass, config, name)
 {
     if (!shader_program_->HasShaderUniform("sky"))
@@ -41,13 +41,13 @@ void SkyboxMaterial::SetSkySphereTexture(Resource::Texture* texture)
     }
     if (use_skybox_ != 1)
     {
-        RHI::Vulkan::Shader* vert = RHI::Vulkan::Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert");
-        RHI::Vulkan::Shader* frag = RHI::Vulkan::Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag");
-        shader_program_           = RHI::Vulkan::ShaderProgram::Create(vert, frag);
+        rhi::vulkan::Shader* vert = rhi::vulkan::Shader::Create<SkySphereVertShader>(L"Shaders/SkySphere.vert");
+        rhi::vulkan::Shader* frag = rhi::vulkan::Shader::Create<SkySphereFragShader>(L"Shaders/SkySphere.frag");
+        shader_program_           = rhi::vulkan::ShaderProgram::Create(vert, frag);
         auto info                 = pipeline_->GetPipelineInfo();
         info.shader_program       = shader_program_;
         Delete(pipeline_);
-        pipeline_ = New<RHI::Vulkan::GraphicsPipeline>(info);
+        pipeline_ = New<rhi::vulkan::GraphicsPipeline>(info);
         LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立球面环境映射");
     }
     SetTexture("sky", texture);
@@ -58,13 +58,13 @@ void SkyboxMaterial::SetSkyBoxTexture(const Path& path)
 {
     if (use_skybox_ != -1)
     {
-        RHI::Vulkan::Shader* vert = RHI::Vulkan::Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert");
-        RHI::Vulkan::Shader* frag = RHI::Vulkan::Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag");
-        shader_program_           = RHI::Vulkan::ShaderProgram::Create(vert, frag);
+        rhi::vulkan::Shader* vert = rhi::vulkan::Shader::Create<SkyboxVertShader>(L"Shaders/Skybox.vert");
+        rhi::vulkan::Shader* frag = rhi::vulkan::Shader::Create<SkyboxFragShader>(L"Shaders/Skybox.frag");
+        shader_program_           = rhi::vulkan::ShaderProgram::Create(vert, frag);
         auto info                 = pipeline_->GetPipelineInfo();
         info.shader_program       = shader_program_;
         Delete(pipeline_);
-        pipeline_ = New<RHI::Vulkan::GraphicsPipeline>(info);
+        pipeline_ = New<rhi::vulkan::GraphicsPipeline>(info);
         LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立方体贴图");
     }
 

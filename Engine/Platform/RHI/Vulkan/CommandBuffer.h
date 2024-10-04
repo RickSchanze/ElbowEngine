@@ -9,8 +9,8 @@
 #include "RHI/CommandBuffer.h"
 #include "VulkanCommon.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class CommandBufferVulkan : public CommandBuffer
 {
 public:
@@ -21,5 +21,4 @@ public:
 private:
     vk::CommandBuffer cmd_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

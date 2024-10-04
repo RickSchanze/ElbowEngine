@@ -20,8 +20,8 @@
 
 #include <utility>
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 vk::DescriptorType GetVkDescriptorType(const EUniformDescriptorType type)
 {
     switch (type)
@@ -289,5 +289,4 @@ Shader::~Shader()
     const auto& device = device_.get();
     device.DestroyShaderModule(shader_module_);
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -16,8 +16,8 @@
 
 #include "RHI/Vulkan/Resource/Buffer.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class ShaderProgramManager
 {
     struct ShaderPath
@@ -487,5 +487,4 @@ void ShaderProgram::DestroyDescriptorSetLayout()
     device->DestroyDescriptorSetLayout(descriptor_set_layout_);
     descriptor_set_layout_ = nullptr;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

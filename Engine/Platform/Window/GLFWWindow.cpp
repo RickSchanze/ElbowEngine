@@ -26,7 +26,7 @@
 
 #include "Profiler/ProfileMacro.h"
 
-using namespace RHI::Vulkan;
+using namespace rhi::vulkan;
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
@@ -232,7 +232,7 @@ void RealImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     render_pass_info.renderPass              = render_pass_->GetHandle();
     render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
     render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
-    RHI::GetGfxContext().BeginProfile("ImGui Pass GPU", CommandBufferVulkan(cb));
+    rhi::GetGfxContext().BeginProfile("ImGui Pass GPU", CommandBufferVulkan(cb));
     cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
     ImGui::Render();
     vk::Viewport viewport;
@@ -250,7 +250,7 @@ void RealImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
     auto* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, cb);
     cb.endRenderPass();
-    RHI::GetGfxContext().EndProfile();
+    rhi::GetGfxContext().EndProfile();
 }
 
 void RealImGuiGraphicsPipeline::CreateDescriptorPool()
@@ -375,7 +375,7 @@ void GlfwWindow::SetMouseVisible(const bool InVisible) const
     glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-void GlfwWindow::RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline) const
+void GlfwWindow::RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const
 {
     *pipeline = imgui_graphics_pipeline_;
 }

@@ -31,11 +31,11 @@ namespace Function
 class SimpleObjectShadingPass;
 }
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class RenderPass;
 }
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class GraphicsPipeline;
 }

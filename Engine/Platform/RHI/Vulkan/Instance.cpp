@@ -10,8 +10,8 @@
 #include "CoreGlobal.h"
 #include "Utils/StringUtils.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 SurfaceBase& SurfaceBase::SetInstanceHandle(Instance* InInstanceHandle) {
     mAttachedInstanceHandle = InInstanceHandle;
     return *this;
@@ -49,16 +49,16 @@ void Instance::Initialize() {
     InitializeSurface();
 }
 
-void Instance::Finialize() {
+void Instance::DeInitialize() {
     if (!IsValid()) return;
-    mSurface->Finialize();
-    validation_layer_->Finialize();
+    surface_->Finialize();
+    validation_layer_->DeInitialize();
     vulkan_instance_handle_.destroy();
     vulkan_instance_handle_ = VK_NULL_HANDLE;
 }
 
 void Instance::Destroy() {
-    Finialize();
+    DeInitialize();
 }
 
 const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
@@ -66,8 +66,8 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
 }
 
 Instance& Instance::SetSurface(TUniquePtr<SurfaceBase> InSurface) {
-    mSurface = Move(InSurface);
-    mSurface->SetInstanceHandle(this);
+    surface_ = Move(InSurface);
+    surface_->SetInstanceHandle(this);
     return *this;
 }
 
@@ -76,8 +76,8 @@ TArray<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
 }
 
 void Instance::InitializeSurface() {
-    mSurface->SetInstanceHandle(this);
-    mSurface->Initialize();
+    surface_->SetInstanceHandle(this);
+    surface_->Initialize();
     LOG_INFO_CATEGORY(Vulkan, L"Surface初始化完成");
 }
 
@@ -85,5 +85,4 @@ TUniquePtr<PhysicalDevice> Instance::PickPhysicalDevice() {
     auto PhysicalDevice = PhysicalDevice::PickPhysicalDevice(this);
     return PhysicalDevice;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

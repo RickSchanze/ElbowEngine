@@ -22,8 +22,8 @@
 #include "RHI/CommandBuffer.h"
 #include "tracy/TracyVulkan.hpp"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 VulkanContext::~VulkanContext()
 {
     if (IsValid())
@@ -193,7 +193,7 @@ void VulkanContext::Finalize()
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外
-    swap_chain_->Finialize(true);
+    swap_chain_->DeInitialize(true);
 
     for (auto view: back_buffer_views_)
     {
@@ -208,7 +208,7 @@ void VulkanContext::Finalize()
     DeInitProfiling();
 #endif
 
-    logical_device_->Finialize();
+    logical_device_->DeInitialize();
     LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
 }
 
@@ -227,10 +227,10 @@ vk::Semaphore VulkanContext::SubmitGraphicsQueue(GraphicsQueueSubmitParams submi
         // 如果这次提交需要自己生成一个信号量触发
         constexpr vk::SemaphoreCreateInfo create_info;
         rtn_semaphore = logical_device_->CreateDeviceSemaphore(create_info);
-        submit_params.semaphores_to_singal.push_back(rtn_semaphore);
+        submit_params.semaphores_to_signal.push_back(rtn_semaphore);
         all_wait_semaphores_.push_back(rtn_semaphore);
     }
-    submit_info.setSignalSemaphores(submit_params.semaphores_to_singal);
+    submit_info.setSignalSemaphores(submit_params.semaphores_to_signal);
     submit_info.pWaitDstStageMask = submit_params.wait_stages.data();
     graphics_queue.submit(submit_info, fence_to_trigger);
     return rtn_semaphore;
@@ -341,7 +341,7 @@ void VulkanContext::RebuildSwapChain(int w, int h)
         OnAppNeedWait.Broadcast();
         return;
     }
-    Get()->swap_chain_->Finialize(false);
+    Get()->swap_chain_->DeInitialize(false);
     Get()->swap_chain_                     = Get()->logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, w, h, false);
     g_engine_statistics.window_size.width  = w;
     g_engine_statistics.window_size.height = h;
@@ -472,5 +472,4 @@ void VulkanContext::OnBackBufferResized(int w, int h)
         }
     }
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

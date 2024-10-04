@@ -9,21 +9,24 @@
 
 #include "CoreGlobal.h"
 
-static RHI::GfxContext* g_context;
+static rhi::GfxContext* g_context;
 
-RHI::GfxContext& RHI::GetGfxContext()
+namespace rhi
+{
+GfxContext& GetGfxContext()
 {
     ASSERT_CATEGORY(RHI, g_context != nullptr, L"GfxContext为空");
     return *g_context;
 }
 
-void RHI::SetGfxContext(GfxContext* context)
+void SetGfxContext(GfxContext* context)
 {
     ASSERT_CATEGORY(RHI, context != nullptr, L"传入GfxContext为空");
     g_context = context;
 }
 
-void RHI::ClearGfxContext()
+void ClearGfxContext()
 {
     g_context = nullptr;
+}
 }

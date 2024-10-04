@@ -22,14 +22,14 @@ SubMesh::~SubMesh()
     Delete(mesh_rhi_resource_);
 }
 
-RHI::Vulkan::Mesh* SubMesh::GetRHIResource()
+rhi::vulkan::Mesh* SubMesh::GetRHIResource()
 {
     return mesh_rhi_resource_;
 }
 
 void SubMesh::LoadRHI()
 {
-    mesh_rhi_resource_ = New<RHI::Vulkan::Mesh>(vertices_, indices_, false);
+    mesh_rhi_resource_ = New<rhi::vulkan::Mesh>(vertices_, indices_, false);
 }
 
 Mesh::Mesh(Protected, const Path& mesh_path) : path_(mesh_path)

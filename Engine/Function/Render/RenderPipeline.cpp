@@ -50,7 +50,7 @@ void RenderPipeline::DrawBackbuffer(const RenderContextDrawParam& draw_param)
 void RenderPipeline::Submit(RenderContextDrawParam& param)
 {
     PROFILE_SCOPE_AUTO;
-    RHI::Vulkan::GraphicsQueueSubmitParams submit_params;
+    rhi::vulkan::GraphicsQueueSubmitParams submit_params;
     submit_params.semaphores_to_wait = {param.render_begin_semaphore};
     submit_params.wait_stages        = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
@@ -167,7 +167,7 @@ void RenderPipeline::PrepareDrawMeshes()
     draw_meshs_ = CollectMeshesWithMaterial();
 }
 
-vk::Semaphore RenderPipeline::Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger) const
+vk::Semaphore RenderPipeline::Submit(const rhi::vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger) const
 {
     return context_->SubmitPipeline(submit_params, fence_to_trigger);
 }
@@ -182,12 +182,12 @@ void RenderPipeline::DrawImGuiPipeline(vk::CommandBuffer cb) const
     imgui_pipeline_->Draw(cb);
 }
 
-void RenderPipeline::RegisterRenderPass(RHI::Vulkan::RenderPass* render_pass)
+void RenderPipeline::RegisterRenderPass(rhi::vulkan::RenderPass* render_pass)
 {
     saved_render_passes_.push_back(render_pass);
 }
 
-void RenderPipeline::UnregisterRenderPass(RHI::Vulkan::RenderPass* render_pass)
+void RenderPipeline::UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass)
 {
     ContainerUtils::Remove(saved_render_passes_, render_pass);
 }

@@ -18,8 +18,8 @@
 
 #include <ranges>
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 GraphicsPipeline::~GraphicsPipeline()
 {
     DestroyPipeline();
@@ -337,5 +337,4 @@ void GraphicsPipeline::Rebuild()
         CreatePipeline();
     }
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

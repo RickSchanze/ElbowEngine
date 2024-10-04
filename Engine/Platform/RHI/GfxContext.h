@@ -8,10 +8,9 @@
 #pragma once
 #include "CommandBuffer.h"
 #include "CoreMacro.h"
-#include "PlatformCommon.h"
 
-RHI_NAMESPACE_BEGIN
-
+namespace rhi
+{
 class CommandBuffer;
 
 enum class EGraphicsAPI
@@ -51,5 +50,4 @@ void SetGfxContext(GfxContext* context);
  * !!! IMPORTANT !!!: 不会调用析构函数！！！！
  */
 void ClearGfxContext();
-
-RHI_NAMESPACE_END
+}

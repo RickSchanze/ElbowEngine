@@ -16,12 +16,12 @@ namespace Function::Comp
 {
 class Mesh;
 }
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 struct GraphicsQueueSubmitParams;
 class VulkanContext;
 class IGraphicsPipeline;
-}   // namespace RHI::Vulkan
+}   // namespace rhi::vulkan
 
 FUNCTION_NAMESPACE_BEGIN
 
@@ -49,7 +49,7 @@ public:
 
     void SetRenderPipeline(RenderPipeline* new_render_pipeline);
 
-    vk::Semaphore SubmitPipeline(const RHI::Vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr) const;
+    vk::Semaphore SubmitPipeline(const rhi::vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr) const;
 
     void RegisterDrawMesh(Comp::Mesh* mesh);
 
@@ -76,7 +76,7 @@ public:
     static inline bool has_back_buffer = false;
 
 private:
-    RHI::Vulkan::VulkanContext* vulkan_context_  = nullptr;
+    rhi::vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;
 
     TArray<Comp::Mesh*> mesh_to_draw_;

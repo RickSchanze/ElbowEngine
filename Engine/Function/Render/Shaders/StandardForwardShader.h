@@ -11,7 +11,7 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class StandardForwardVertShader : public RHI::Vulkan::Shader
+class StandardForwardVertShader : public rhi::vulkan::Shader
 {
     DECLARE_VERT_SHADER(StandardForwardVertShader)
 
@@ -19,7 +19,7 @@ public:
     void RegisterShaderVariables() override;
 };
 
-class StandardForwardFragShader : public RHI::Vulkan::Shader
+class StandardForwardFragShader : public rhi::vulkan::Shader
 {
     DECLARE_FRAG_SHADER(StandardForwardFragShader)
 

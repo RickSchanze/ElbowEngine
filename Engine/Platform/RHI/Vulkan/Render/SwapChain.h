@@ -10,18 +10,13 @@
 #include "RHI/Vulkan/Resource/Image.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
-
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class LogicalDevice;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
 
 class SwapChain final : public IRHIResource
 {
 public:
-    SwapChain();
-
     static TUniquePtr<SwapChain> CreateUnique(
         vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
@@ -56,7 +51,7 @@ public:
     TArray<TSharedPtr<ImageView>>& GetImageViews() { return swapchain_image_views_; }
 
     void Initialize();
-    void Finialize(bool log);
+    void DeInitialize(bool log);
 
     int32_t GetSwapchainImageCount() const { return static_cast<uint32_t>(swap_chain_images_.size()); }
 
@@ -72,4 +67,4 @@ private:
     LogicalDevice* associated_logical_device_ = nullptr;
 };
 
-RHI_VULKAN_NAMESPACE_END
+}

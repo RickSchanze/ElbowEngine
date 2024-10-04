@@ -13,7 +13,7 @@
 
 #include <glm/glm.hpp>
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class RenderPass;
 }
@@ -30,11 +30,11 @@ namespace Function
 class RenderContext;
 }
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class IGraphicsPipeline;
 class ImguiGraphicsPipeline;
-}   // namespace RHI::Vulkan
+}   // namespace rhi::vulkan
 
 FUNCTION_NAMESPACE_BEGIN
 
@@ -99,18 +99,18 @@ protected:
     void PrepareFrame();
     void PrepareDrawMeshes();
 
-    vk::Semaphore Submit(const RHI::Vulkan::GraphicsQueueSubmitParams& submit_params, vk::Fence fence_to_trigger = nullptr) const;
+    vk::Semaphore Submit(const rhi::vulkan::GraphicsQueueSubmitParams& submit_params, vk::Fence fence_to_trigger = nullptr) const;
 
     void AddImGuiGraphicsPipeline();
     void DrawImGuiPipeline(vk::CommandBuffer cb) const;
 
-    void RegisterRenderPass(RHI::Vulkan::RenderPass* render_pass);
-    void UnregisterRenderPass(RHI::Vulkan::RenderPass* render_pass);
+    void RegisterRenderPass(rhi::vulkan::RenderPass* render_pass);
+    void UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass);
 
     THashMap<Material*, TArray<Comp::Mesh*>> CollectMeshesWithMaterial() const;
 
     RenderContext*                      context_        = nullptr;
-    RHI::Vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
+    rhi::vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
 
     UBOModelInstance model_instances_;
 
@@ -118,7 +118,7 @@ protected:
     // 每帧处理的需要绘制的mesh
     THashMap<Material*, TArray<Comp::Mesh*>> draw_meshs_;
 
-    TArray<RHI::Vulkan::RenderPass*> saved_render_passes_;
+    TArray<rhi::vulkan::RenderPass*> saved_render_passes_;
 
     String window_resized_event_handle_;
 };

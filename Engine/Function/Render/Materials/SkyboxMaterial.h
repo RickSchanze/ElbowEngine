@@ -8,7 +8,7 @@
 #pragma once
 #include "Material.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Mesh;
 }
@@ -18,7 +18,7 @@ class SkyboxMaterial : public Material
 {
 public:
     SkyboxMaterial(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
     );
 
     /**

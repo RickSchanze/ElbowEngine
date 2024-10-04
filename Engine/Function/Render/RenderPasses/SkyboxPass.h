@@ -9,14 +9,14 @@
 #include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Mesh;
 }
 FUNCTION_NAMESPACE_BEGIN
 
 // TODO: 也许可以共享Framebuffer
-class SkyboxPass : public RHI::Vulkan::RenderPass
+class SkyboxPass : public rhi::vulkan::RenderPass
 {
 public:
     SkyboxPass(uint32_t width, uint32_t height, const AnsiString& name);
@@ -27,10 +27,10 @@ public:
     vk::Framebuffer GetCurrentFramebufferHandle() override;
     void            SetupSubpassDependency() override;
 
-    RHI::Vulkan::ImageView* external_depth_view = nullptr; // 来自外部的深度View 不由自己清理
+    rhi::vulkan::ImageView* external_depth_view = nullptr; // 来自外部的深度View 不由自己清理
 
 public:
-    TArray<RHI::Vulkan::Framebuffer*> framebuffers;
+    TArray<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
 FUNCTION_NAMESPACE_END

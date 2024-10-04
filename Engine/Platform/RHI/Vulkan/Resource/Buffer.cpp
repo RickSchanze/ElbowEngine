@@ -12,8 +12,8 @@
 
 #include "Profiler/ProfileMacro.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 Buffer::Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const AnsiString& name)
 {
     size_         = size;
@@ -85,5 +85,4 @@ bool Buffer::IsMemoryMapped() const
 {
     return mapped_ != nullptr;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

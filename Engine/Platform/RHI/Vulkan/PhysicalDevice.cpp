@@ -9,9 +9,9 @@
 
 #include "CoreGlobal.h"
 #include "Instance.h"
-RHI_VULKAN_NAMESPACE_BEGIN
 
-
+namespace rhi::vulkan
+{
 TUniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance, const TFunction<bool(const PhysicalDevice&)>& pick_func)
 {
     auto         Rtn     = MakeUnique<PhysicalDevice>(instance);
@@ -179,5 +179,4 @@ vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const
     auto logical_device_handle = handle_.createDevice(device_info);
     return logical_device_handle;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

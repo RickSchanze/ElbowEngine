@@ -10,10 +10,6 @@
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan
-{
-class RenderPass;
-}
 
 #define REGISTER_RENDER_PASS_REFL(full_qualified_class_name)                               \
     RTTR_REGISTRATION                                                                      \
@@ -21,8 +17,9 @@ class RenderPass;
         rttr::registration::class_<full_qualified_class_name>(#full_qualified_class_name); \
     }
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
+class RenderPass;
 class LogicalDevice;
 class Framebuffer;
 class ImageView;
@@ -206,5 +203,4 @@ T* RenderPassManager::GetOrCreateRenderPass(uint32_t width, uint32_t height, con
     if (rp) return rp;
     return CreateRenderPass<T>(width, height, name);
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

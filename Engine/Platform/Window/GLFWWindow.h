@@ -14,7 +14,7 @@
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
 
-namespace RHI::Vulkan {
+namespace rhi::vulkan {
 class RenderPass;
 class IGraphicsPipeline;
 class VulkanContext;
@@ -23,9 +23,9 @@ class ImguiGraphicsPipeline;
 
 PLATFORM_WINDOW_NAMESPACE_BEGIN
 
-struct GLFWWindowSurface : RHI::Vulkan::SurfaceBase
+struct GLFWWindowSurface : rhi::vulkan::SurfaceBase
 {
-    explicit GLFWWindowSurface(RHI::Vulkan::Instance* InParentInstance, GLFWwindow* InWindow) :
+    explicit GLFWWindowSurface(rhi::vulkan::Instance* InParentInstance, GLFWwindow* InWindow) :
         SurfaceBase(InParentInstance), mWindow(InWindow) {}
 
     void Initialize() override;
@@ -56,7 +56,7 @@ public:
         glfwSetFramebufferSizeCallback(window_handle_, Callback);
     }
 
-    void InitImGui(Ref<RHI::Vulkan::VulkanContext> InContext);
+    void InitImGui(Ref<rhi::vulkan::VulkanContext> InContext);
     void SetupImGuiFonts();
     void ShutdownImGui() const;
 
@@ -70,7 +70,7 @@ public:
 
     void SetMouseVisible(bool InVisible) const;
 
-    void RegisterImGuiPipeline(RHI::Vulkan::ImguiGraphicsPipeline** pipeline) const;
+    void RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const;
 
 
 private:

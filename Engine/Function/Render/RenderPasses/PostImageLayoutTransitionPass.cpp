@@ -14,7 +14,7 @@ REGISTER_RENDER_PASS_REFL(Function::PostImageLayoutTransitionPass)
 
 void Function::PostImageLayoutTransitionPass::SetupAttachments()
 {
-    RHI::Vulkan::RenderPassAttachmentParam swapchain_image{};
+    rhi::vulkan::RenderPassAttachmentParam swapchain_image{};
     swapchain_image.load_op          = vk::AttachmentLoadOp::eDontCare;
     swapchain_image.store_op         = vk::AttachmentStoreOp::eStore;
     swapchain_image.sample_count     = sample_count;
@@ -23,10 +23,10 @@ void Function::PostImageLayoutTransitionPass::SetupAttachments()
     swapchain_image.final_layout     = vk::ImageLayout::eShaderReadOnlyOptimal;
     NewAttachment(swapchain_image);
 
-    RHI::Vulkan::RenderPassAttachmentParam depth;
+    rhi::vulkan::RenderPassAttachmentParam depth;
     depth.load_op          = vk::AttachmentLoadOp::eDontCare;
     depth.store_op         = vk::AttachmentStoreOp::eDontCare;
-    depth.format           = RHI::Vulkan::VulkanContext::Get()->GetDepthImageFormat();
+    depth.format           = rhi::vulkan::VulkanContext::Get()->GetDepthImageFormat();
     depth.reference_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     depth.initial_layout   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     depth.final_layout     = vk::ImageLayout::eDepthStencilAttachmentOptimal;

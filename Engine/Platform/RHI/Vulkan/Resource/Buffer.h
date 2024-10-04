@@ -9,8 +9,8 @@
 #include "CachedString.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class Buffer
 {
 public:
@@ -43,5 +43,4 @@ private:
     CachedString buffer_name_;
     CachedString memory_name_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

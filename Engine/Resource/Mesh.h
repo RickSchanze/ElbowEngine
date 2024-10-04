@@ -18,7 +18,7 @@
 #include "Texture.h"
 
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Mesh;
 }
@@ -33,9 +33,9 @@ class Texture;
 
 RESOURCE_NAMESPACE_BEGIN
 
-class SubMesh : public IRHIResourceContainer<RHI::Vulkan::Mesh>
+class SubMesh : public IRHIResourceContainer<rhi::vulkan::Mesh>
 {
-    friend class RHI::Vulkan::Mesh;
+    friend class rhi::vulkan::Mesh;
 
 public:
     TArray<Vertex>&   GetVertices() { return vertices_; }
@@ -46,7 +46,7 @@ public:
 
     bool IsValid() const { return !vertices_.empty(); }
 
-    RHI::Vulkan::Mesh* GetRHIResource() override;
+    rhi::vulkan::Mesh* GetRHIResource() override;
 
     // 初始化mMeshRHIResource成员
     void LoadRHI();
@@ -56,7 +56,7 @@ private:
     TArray<Texture*> textures_;
     TArray<uint32_t> indices_;
 
-    RHI::Vulkan::Mesh* mesh_rhi_resource_ = nullptr;
+    rhi::vulkan::Mesh* mesh_rhi_resource_ = nullptr;
 };
 
 class Mesh : public IResource

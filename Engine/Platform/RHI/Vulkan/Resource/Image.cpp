@@ -15,9 +15,8 @@
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
-
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 ImageBase::~ImageBase()
 {
     image_handle_ = VK_NULL_HANDLE;
@@ -459,5 +458,4 @@ void Sampler::InternalDestroy() const
         }
     }
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

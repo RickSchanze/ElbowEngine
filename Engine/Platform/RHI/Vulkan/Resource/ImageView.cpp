@@ -9,7 +9,10 @@
 
 #include "RHI/Vulkan/Render/LogicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
-RHI::Vulkan::ImageView::ImageView(const vk::ImageView& handle, const char* debug_name)
+
+namespace rhi::vulkan
+{
+ImageView::ImageView(const vk::ImageView& handle, const char* debug_name)
 {
     handle_ = handle;
     if (debug_name)
@@ -19,19 +22,20 @@ RHI::Vulkan::ImageView::ImageView(const vk::ImageView& handle, const char* debug
     }
 }
 
-RHI::Vulkan::ImageView::~ImageView()
+ImageView::~ImageView()
 {
     InternalDestroy();
 }
 
-void RHI::Vulkan::ImageView::InternalDestroy()
+void ImageView::InternalDestroy()
 {
     if (!IsValid()) return;
     VulkanContext::Get()->GetLogicalDevice()->GetHandle().destroy(handle_);
     handle_ = VK_NULL_HANDLE;
 }
 
-void RHI::Vulkan::ImageView::Destroy()
+void ImageView::Destroy()
 {
     InternalDestroy();
 }
+}   // namespace rhi::vulkan

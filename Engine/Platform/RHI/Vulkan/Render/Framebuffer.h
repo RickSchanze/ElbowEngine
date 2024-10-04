@@ -9,10 +9,9 @@
 #include "RHI/Vulkan/Interface/IRHIResource.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-namespace RHI::Vulkan {
+namespace rhi::vulkan
+{
 class RenderPass;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
 
 class Framebuffer : public IRHIResource {
 public:
@@ -31,5 +30,4 @@ public:
 protected:
     vk::Framebuffer handle_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

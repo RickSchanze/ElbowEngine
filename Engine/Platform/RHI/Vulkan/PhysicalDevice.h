@@ -12,7 +12,8 @@
 
 #include "vulkan/vulkan.hpp"
 
-RHI_VULKAN_NAMESPACE_BEGIN
+namespace rhi::vulkan
+{
 class Instance;
 
 struct QueueFamilyIndices
@@ -122,5 +123,4 @@ private:
     // 支持的FamilyIndices
     QueueFamilyIndices            supported_queue_family_indices_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

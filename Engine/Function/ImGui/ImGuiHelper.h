@@ -84,7 +84,7 @@ public:
     static void Text(CachedString& str);
     static void Image(Resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height);
     static void Image(Resource::TextureCube* texture_cube, int max_wdith = 500, int max_height = 500);
-    static void Image(RHI::Vulkan::ImageView* view, RHI::Vulkan::Sampler* sampler, int width, int height, int max_width, int max_height);
+    static void Image(rhi::vulkan::ImageView* view, rhi::vulkan::Sampler* sampler, int width, int height, int max_width, int max_height);
     /**
      * 适应窗口宽度的显示image
      * @param texture
@@ -187,7 +187,7 @@ public:
 private:
     static void RemoveAllImGuiTextures();
 
-    static inline THashMap<RHI::Vulkan::ImageView*, VkDescriptorSet> imgui_textuers_;
+    static inline THashMap<rhi::vulkan::ImageView*, VkDescriptorSet> imgui_textuers_;
 
     static inline TArray<VkDescriptorSet> back_image_texture_;
 

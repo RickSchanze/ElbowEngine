@@ -20,7 +20,7 @@ FUNCTION_NAMESPACE_BEGIN
 
 void PointLightShadowPass::SetupAttachments()
 {
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     // 交换链颜色缓冲
     // 交换链图像的用处随便选一个
     RenderPassAttachmentParam color_attachment{};
@@ -72,7 +72,7 @@ void PointLightShadowPass::SetupSubpassDependency()
 void PointLightShadowPass::SetupFramebuffer()
 {
     SetupCubemap();
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     // Depth
     ImageInfo depth;
     depth.width          = width_;
@@ -125,7 +125,7 @@ vk::Framebuffer PointLightShadowPass::GetCurrentFramebufferHandle()
 
 void PointLightShadowPass::SetupCubemap()
 {
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     ImageInfo cube_info = ImageInfo::CubemapInfo(vk::Format::eR32Sfloat);
     cube_info.name      = "PointLightShadowPass_Cube";
     cube_info.width     = width_;
@@ -152,7 +152,7 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
         LOG_ERROR_ANSI_CATEGORY(Vulkan, "Index {} out of range when getting face view matrix for point light shadow pass", index);
         return GetMatrix4x4Identity();
     }
-    using namespace RHI::Vulkan;
+    using namespace rhi::vulkan;
     auto    view      = glm::mat4(1.0f);
     Vector3 light_pos = light->GetWorldPosition();
     switch (index)
@@ -204,7 +204,7 @@ void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Co
     // Render scene from cube face's point of view
     // Update shader push constant block
     // Contains current face view matrix
-    mat->PushConstant(cb, 0, sizeof(Matrix4x4), RHI::Vulkan::EShaderStage::Vertex, &viewMatrix);
+    mat->PushConstant(cb, 0, sizeof(Matrix4x4), rhi::vulkan::EShaderStage::Vertex, &viewMatrix);
     mat->Use(cb, width_, height_);
     struct UboView
     {
@@ -223,7 +223,7 @@ void PointLightShadowPass::EndDrawFace(vk::CommandBuffer cb)
     cb.endRenderPass();
 }
 
-RHI::Vulkan::ImageView* PointLightShadowPass::GetOutputCubemapView() const
+rhi::vulkan::ImageView* PointLightShadowPass::GetOutputCubemapView() const
 {
     return shadow_map_->GetView();
 }

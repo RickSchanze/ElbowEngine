@@ -8,11 +8,10 @@
 #pragma once
 #include "RHI/Vulkan/VulkanCommon.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class LogicalDevice;
-}
-RHI_VULKAN_NAMESPACE_BEGIN
+
 
 class CommandPool
 {
@@ -82,5 +81,4 @@ private:
 
     vk::CommandBuffer single_cmd_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

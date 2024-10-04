@@ -9,8 +9,8 @@
 
 #include "RHI/Vulkan/VulkanContext.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 Framebuffer::Framebuffer(const vk::FramebufferCreateInfo& create_info, const char* name) {
     handle_ = VulkanContext::Get()->GetLogicalDevice()->GetHandle().createFramebuffer(create_info);
     if (name)
@@ -29,5 +29,4 @@ void Framebuffer::InternalDestroy() {
 Framebuffer::~Framebuffer() {
     InternalDestroy();
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

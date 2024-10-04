@@ -9,15 +9,17 @@
 #include "CoreDef.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
-interface IRHIResource {
+namespace rhi::vulkan
+{
+interface IRHIResource
+{
 protected:
-    struct ResourceProtected{};
+    struct ResourceProtected
+    {
+    };
 
 public:
     virtual ~IRHIResource() = default;
-    virtual void Destroy() = 0;
+    virtual void Destroy()  = 0;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}   // namespace rhi::vulkan

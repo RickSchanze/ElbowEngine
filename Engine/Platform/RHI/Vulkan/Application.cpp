@@ -10,8 +10,8 @@
 #include "CoreGlobal.h"
 #include "Utils/StringUtils.h"
 #include "ValidationLayer.h"
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 VulkanApplication::~VulkanApplication()
 {
     if (vulkan_instance_->IsValid())
@@ -73,7 +73,7 @@ void VulkanApplication::Finalize()
 {
     DestroyDefaultLoadedResource();
     if (vulkan_context_) vulkan_context_->Finalize();
-    if (vulkan_instance_) vulkan_instance_->Finialize();
+    if (vulkan_instance_) vulkan_instance_->DeInitialize();
 }
 
 void VulkanApplication::DestroyDefaultLoadedResource()
@@ -111,5 +111,4 @@ void VulkanApplication::CreateInstance()
     vulkan_instance_->SetSurface(Move(surface_));
     vulkan_instance_->SetInstanceCreateInfo(InstanceCreateInfo);
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

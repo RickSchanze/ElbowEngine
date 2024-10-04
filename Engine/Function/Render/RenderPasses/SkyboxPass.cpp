@@ -15,7 +15,7 @@ FUNCTION_NAMESPACE_BEGIN
 
 REGISTER_RENDER_PASS_REFL(Function::SkyboxPass)
 
-using namespace RHI::Vulkan;
+using namespace rhi::vulkan;
 
 SkyboxPass::SkyboxPass(uint32_t width, uint32_t height, const AnsiString& name) : RenderPass(width, height, name) {}
 

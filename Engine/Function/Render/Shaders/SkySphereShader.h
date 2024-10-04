@@ -11,14 +11,14 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class SkySphereVertShader : public RHI::Vulkan::Shader
+class SkySphereVertShader : public rhi::vulkan::Shader
 {
     DECLARE_VERT_SHADER(SkySphereVertShader)
 public:
     void RegisterShaderVariables() override;
 };
 
-class SkySphereFragShader : public RHI::Vulkan::Shader
+class SkySphereFragShader : public rhi::vulkan::Shader
 {
     DECLARE_FRAG_SHADER(SkySphereFragShader)
 public:

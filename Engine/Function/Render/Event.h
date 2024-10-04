@@ -10,14 +10,14 @@
 #include "Event/Event.h"
 
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class ImguiGraphicsPipeline;
 }
 
 FUNCTION_NAMESPACE_BEGIN
 
-struct RequireImGuiGraphicsPipelineEvent : TEvent<RHI::Vulkan::ImguiGraphicsPipeline** /** out_pipeline */>
+struct RequireImGuiGraphicsPipelineEvent : TEvent<rhi::vulkan::ImguiGraphicsPipeline** /** out_pipeline */>
 {
 };
 

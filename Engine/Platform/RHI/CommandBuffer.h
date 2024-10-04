@@ -6,10 +6,9 @@
  */
 
 #pragma once
-#include "PlatformCommon.h"
 
-RHI_NAMESPACE_BEGIN
-
+namespace rhi
+{
 class CommandBuffer
 {
 public:
@@ -17,5 +16,4 @@ public:
 
     virtual void* GetNativePtr() const = 0;
 };
-
-RHI_NAMESPACE_END
+}   // namespace rhi

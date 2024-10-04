@@ -16,11 +16,11 @@
 #include "Utils/StringUtils.h"
 #include "vulkan/vulkan.hpp"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 LogicalDevice::~LogicalDevice()
 {
-    Finialize();
+    DeInitialize();
 }
 
 TArray<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
@@ -45,7 +45,7 @@ LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const
     InitializePFNs();
 }
 
-void LogicalDevice::Finialize()
+void LogicalDevice::DeInitialize()
 {
     if (!IsValid()) return;
     handle_.destroy();
@@ -54,7 +54,7 @@ void LogicalDevice::Finialize()
 
 void LogicalDevice::Destroy()
 {
-    Finialize();
+    DeInitialize();
 }
 
 TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
@@ -324,14 +324,14 @@ void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& na
 }
 
 #define SET_DEBUG_NAME_BODY(obj_type_enum, obj_type)                                        \
-    if (ValidationLayer::sEnableValidationLayer)                                            \
-    {                                                                                       \
-        vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
-        name_info.pObjectName  = name;                                                      \
-        name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
-        name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
-        SetObjectDebugName(name_info);                                                      \
-    }
+if (ValidationLayer::sEnableValidationLayer)                                            \
+{                                                                                       \
+vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
+name_info.pObjectName  = name;                                                      \
+name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
+name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
+SetObjectDebugName(name_info);                                                      \
+}
 
 void LogicalDevice::SetCommandBufferDebugName(const vk::CommandBuffer handle, const char* name) const
 {
@@ -443,5 +443,4 @@ void LogicalDevice::InitializePFNs(){
     vkSetDebugUtilsObjectNameEXT_ = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(VulkanContext::Get()->GetVulkanInstance()->GetHandle(), "vkSetDebugUtilsObjectNameEXT"));
 #endif
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

@@ -12,7 +12,7 @@
 #include "Texture.h"
 
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 struct SamplerInfo;
 }

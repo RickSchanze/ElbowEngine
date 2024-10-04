@@ -13,18 +13,15 @@
 #include "Shader.h"
 #include "vulkan/vulkan.hpp"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class LogicalDevice;
-}
-namespace RHI::Vulkan
-{
 class GraphicsPipeline;
 }
 
 #define REGISTER_SHADER_VAR(shader_name, shader_stage, shader_binding, shader_size, shader_offset, shader_type, shader_range, update_manually_) \
     {                                                                                                                                           \
-        ::RHI::Vulkan::UniformDescriptor obj;                                                                                                   \
+        ::rhi::vulkan::UniformDescriptor obj;                                                                                                   \
         obj.name            = shader_name;                                                                                                      \
         obj.binding         = shader_binding;                                                                                                   \
         obj.type            = shader_type;                                                                                                      \
@@ -42,57 +39,57 @@ class GraphicsPipeline;
     REGISTER_SHADER_VAR(name, stage, binding++, size, offset, type, range, manually_update)
 
 #define REGISTER_SHADER_VAR_AUTO_StaticUniformBuffer(name, stage, size, offset, manually_update) \
-    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::RHI::Vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
+    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::rhi::vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
 
 #define REGISTER_SHADER_VAR_AUTO_DynamicUniformBuffer(name, stage, size, offset, range, manually_update) \
-    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::RHI::Vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
+    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::rhi::vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
 
 #define REGISTER_SHADER_VAR_AUTO_Sampler2D(name, stage, size, offset, manually_update) \
-    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::RHI::Vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
+    REGISTER_SHADER_VAR_AUTO(name, stage, size, offset, ::rhi::vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
 
 #define REGISTER_VERT_SHADER_VAR_AUTO(name, size, type, range, manually_update) \
-    REGISTER_SHADER_VAR_AUTO(name, ::RHI::Vulkan::EShaderStage::Vertex, size, 0, type, range, manually_update)
+    REGISTER_SHADER_VAR_AUTO(name, ::rhi::vulkan::EShaderStage::Vertex, size, 0, type, range, manually_update)
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO(name, size, type, range, manually_update) \
-    REGISTER_SHADER_VAR_AUTO(name, ::RHI::Vulkan::EShaderStage::Fragment, size, 0, type, range, manually_update)
+    REGISTER_SHADER_VAR_AUTO(name, ::rhi::vulkan::EShaderStage::Fragment, size, 0, type, range, manually_update)
 
 #define REGISTER_VERT_SHADER_VAR_AUTO_StaticUniformBuffer(name, size, manually_update) \
-    REGISTER_VERT_SHADER_VAR_AUTO(name, size, ::RHI::Vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
+    REGISTER_VERT_SHADER_VAR_AUTO(name, size, ::rhi::vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
 
 #define REGISTER_VERT_SHADER_VAR_AUTO_DynamicUniformBuffer(name, size, range, manually_update) \
-    REGISTER_VERT_SHADER_VAR_AUTO(name, size, ::RHI::Vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
+    REGISTER_VERT_SHADER_VAR_AUTO(name, size, ::rhi::vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
 
 #define REGISTER_VERT_SHADER_VAR_AUTO_Sampler2D(name, manually_update) \
-    REGISTER_VERT_SHADER_VAR_AUTO(name, 0, ::RHI::Vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
+    REGISTER_VERT_SHADER_VAR_AUTO(name, 0, ::rhi::vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO_StaticUniformBuffer(name, size, manually_update) \
-    REGISTER_FRAG_SHADER_VAR_AUTO(name, size, ::RHI::Vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
+    REGISTER_FRAG_SHADER_VAR_AUTO(name, size, ::rhi::vulkan::EUniformDescriptorType::UniformBuffer, 0, manually_update)
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO_DynamicUniformBuffer(name, size, range, manually_update) \
-    REGISTER_FRAG_SHADER_VAR_AUTO(name, size, ::RHI::Vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
+    REGISTER_FRAG_SHADER_VAR_AUTO(name, size, ::rhi::vulkan::EUniformDescriptorType::DynamicUniformBuffer, range, manually_update)
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO_Sampler2D(name, manually_update) \
-    REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::RHI::Vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
+    REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::rhi::vulkan::EUniformDescriptorType::Sampler2D, 0, manually_update)
 
 #define REGISTER_FRAG_SHADER_VAR_AUTO_SmaplerCube(name, manually_update) \
-    REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::RHI::Vulkan::EUniformDescriptorType::SamplerCube, 0, manually_update)
+    REGISTER_FRAG_SHADER_VAR_AUTO(name, 0, ::rhi::vulkan::EUniformDescriptorType::SamplerCube, 0, manually_update)
 
 #define REGISTER_SHADER_VAR_END()
 
 #define DECLARE_VERT_SHADER(type)                                                                                         \
 public:                                                                                                                   \
-    type(Protected, Ref<RHI::Vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) :     \
-        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Vertex, shader_name)                        \
+    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) :     \
+        Shader(Protected{}, device, shader_path, ::rhi::vulkan::EShaderStage::Vertex, shader_name)                        \
     {                                                                                                                     \
-        static_assert(std::is_base_of_v<::RHI::Vulkan::Shader, type>, "type must be derived from ::RHI::Vulkan::Shader"); \
+        static_assert(std::is_base_of_v<::rhi::vulkan::Shader, type>, "type must be derived from ::rhi::vulkan::Shader"); \
     }                                                                                                                     \
                                                                                                                           \
 private:
 
 #define DECLARE_FRAG_SHADER(type)                                                                                     \
 public:                                                                                                               \
-    type(Protected, Ref<RHI::Vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
-        Shader(Protected{}, device, shader_path, ::RHI::Vulkan::EShaderStage::Fragment, shader_name)                  \
+    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
+        Shader(Protected{}, device, shader_path, ::rhi::vulkan::EShaderStage::Fragment, shader_name)                  \
     {                                                                                                                 \
     }                                                                                                                 \
                                                                                                                       \
@@ -100,7 +97,7 @@ private:
 
 #define REGISTER_PUSH_CONSTANT(name_, offset_, stage_, size_) \
     {                                                         \
-        ::RHI::Vulkan::PushConstantDescriptor p;              \
+        ::rhi::vulkan::PushConstantDescriptor p;              \
         p.name   = name_;                                     \
         p.offset = offset_;                                   \
         p.stage  = stage_;                                    \
@@ -109,8 +106,8 @@ private:
     }
 
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 enum class EShaderStage : uint8_t
 {
     Vertex,
@@ -254,15 +251,14 @@ protected:
     // Shader的Cache
     static inline TSharedPtr<class ShaderCache> cache_;
 };
+}
 
-RHI_VULKAN_NAMESPACE_END
-
-inline vk::ShaderStageFlags ShaderStage2VKShaderStage(RHI::Vulkan::EShaderStage stage)
+inline vk::ShaderStageFlags ShaderStage2VKShaderStage(rhi::vulkan::EShaderStage stage)
 {
     switch (stage)
     {
-    case RHI::Vulkan::EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex; break;
-    case RHI::Vulkan::EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment; break;
-    case RHI::Vulkan::EShaderStage::None: break;}
+    case rhi::vulkan::EShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex; break;
+    case rhi::vulkan::EShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment; break;
+    case rhi::vulkan::EShaderStage::None: break;}
     return {};
 }

@@ -11,12 +11,9 @@
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/VulkanCommon.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Mesh;
-}
-namespace RHI::Vulkan
-{
 class Texture;
 class CommandPool;
 class VulkanContext;
@@ -28,9 +25,6 @@ class LogicalDevice;
 class ShaderProgram;
 class DefaultRenderPassProducer;
 class Model;
-}   // namespace RHI::Vulkan
-
-RHI_VULKAN_NAMESPACE_BEGIN
 class Shader;
 
 enum EPipelineDynamicStateEnabled
@@ -183,5 +177,4 @@ public:
     // clang-format on
     void Rebuild();
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

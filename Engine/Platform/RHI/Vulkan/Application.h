@@ -11,8 +11,8 @@
 #include "VulkanCommon.h"
 #include "VulkanContext.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class VulkanApplication
 {
 public:
@@ -60,5 +60,4 @@ private:
 
     TArray<const char*> extensions_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

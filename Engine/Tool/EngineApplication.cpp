@@ -114,7 +114,7 @@ void EngineApplication::Initialize()
     // 创建并初始化VulkanApplication
     // 设置初始化RenderApplication需要的值
     RegisterEvents();
-    render_application_ = MakeUnique<RHI::Vulkan::VulkanApplication>();
+    render_application_ = MakeUnique<rhi::vulkan::VulkanApplication>();
     auto surface        = window_->GetWindowSurface();
     render_application_->SetWindowSurface(Move(surface));
     render_application_->SetExtensions(window_->GetRequiredExtensions());
@@ -145,7 +145,7 @@ void EngineApplication::Finitialize() const
     OnAppExit.Broadcast();
     if (!IsValid()) return;
     Delete(render_context_);
-    RHI::Vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
+    rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
     window_->ShutdownImGui();
     // vulkan device失效前释放所有资产
     Resource::ResourceManager::Get()->DestroyAllResources();

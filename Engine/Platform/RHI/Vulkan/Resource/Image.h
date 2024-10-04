@@ -13,8 +13,8 @@
 #include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
+namespace rhi::vulkan
+{
 class CommandPool;
 
 struct ImageViewInfo
@@ -32,7 +32,7 @@ public:
 
     virtual ~ImageBase();
 
-    // 使用一个hanlde来初始化此Image
+    // 使用一个handle来初始化此Image
     explicit ImageBase(const vk::Image& img_handle) : image_handle_(img_handle) {}
 
     virtual bool IsValid() const { return static_cast<bool>(image_handle_); }
@@ -239,5 +239,4 @@ protected:
 
     static inline THashMap<size_t, Sampler*> samplers_;
 };
-
-RHI_VULKAN_NAMESPACE_END
+}

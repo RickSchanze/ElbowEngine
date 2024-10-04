@@ -9,7 +9,7 @@
 
 #include "Event/Event.h"
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class Texture;
 }
@@ -19,8 +19,8 @@ namespace Platform
 
 struct RequestLoadEngineDefaultLackTextureEvent
     : TEvent<
-          RHI::Vulkan::Texture** /** OutLackTexture*/,
-          RHI::Vulkan::ImageView** /** OutLackTextureView */>
+          rhi::vulkan::Texture** /** OutLackTexture*/,
+          rhi::vulkan::ImageView** /** OutLackTextureView */>
 {
 };
 

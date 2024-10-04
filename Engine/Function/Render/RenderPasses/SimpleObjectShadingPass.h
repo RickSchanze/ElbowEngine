@@ -11,7 +11,7 @@
 
 FUNCTION_NAMESPACE_BEGIN
 
-class SimpleObjectShadingPass : public RHI::Vulkan::RenderPass
+class SimpleObjectShadingPass : public rhi::vulkan::RenderPass
 {
 public:
     SimpleObjectShadingPass(uint32_t width, uint32_t height, const AnsiString& name);
@@ -22,15 +22,15 @@ public:
     void            SetupSubpassDependency() override;
     vk::Framebuffer GetCurrentFramebufferHandle() override;
 
-    RHI::Vulkan::ImageView* GetDepthView() const { return depth_image_view; }
+    rhi::vulkan::ImageView* GetDepthView() const { return depth_image_view; }
 
 public:
-    TArray<RHI::Vulkan::Framebuffer*> framebuffers;
-    RHI::Vulkan::ImageView*           depth_image_view = nullptr;
+    TArray<rhi::vulkan::Framebuffer*> framebuffers;
+    rhi::vulkan::ImageView*           depth_image_view = nullptr;
 
 private:
     TArray<AnsiString>                framebuffer_names_;
-    RHI::Vulkan::Image*               depth_image_      = nullptr;
+    rhi::vulkan::Image*               depth_image_      = nullptr;
 };
 
 FUNCTION_COMPONENT_NAMESPACE_END

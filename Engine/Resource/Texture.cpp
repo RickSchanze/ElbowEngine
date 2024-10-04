@@ -21,7 +21,7 @@
 #include "tinyexr.h"
 #include "Utils/PathUtils.h"
 
-using namespace RHI::Vulkan;
+using namespace rhi::vulkan;
 
 RESOURCE_NAMESPACE_BEGIN
 
@@ -80,7 +80,7 @@ void Texture::Load()
     texture_info.usage          = vk::ImageUsageFlagBits::eSampled;
     texture_info.name           = path_.ToRelativeAnsiString();
     texture_info.initial_layout = init_transition_to_layout_;
-    rhi_texture_                = New<RHI::Vulkan::Texture>(texture_info, data_);
+    rhi_texture_                = New<rhi::vulkan::Texture>(texture_info, data_);
     rhi_texture_->Initialize();
 
     ImageViewInfo view_info = {};
@@ -103,7 +103,7 @@ bool Texture::IsCPUMemoryAvailable()
     return data_ != nullptr;
 }
 
-RHI::Vulkan::Texture* Texture::GetRHIResource()
+rhi::vulkan::Texture* Texture::GetRHIResource()
 {
     return rhi_texture_;
 }
@@ -123,7 +123,7 @@ vk::Format Texture::GetLowLevelFormat() const
     return rhi_texture_->GetFormat();
 }
 
-TextureCube* TextureCube::Create(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info)
+TextureCube* TextureCube::Create(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
 {
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
@@ -139,7 +139,7 @@ TextureCube* TextureCube::Create(const Path& cube_folder, const RHI::Vulkan::Sam
     return cached_texture;
 }
 
-TextureCube::TextureCube(const Path& cube_folder, const RHI::Vulkan::SamplerInfo& sampler_info)
+TextureCube::TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
 {
     path_         = cube_folder;
     sampler_info_ = sampler_info;
@@ -277,7 +277,7 @@ void TextureCube::Load()
     image_info.create_flags = vk::ImageCreateFlagBits::eCubeCompatible;
     image_info.name         = GetPath().ToRelativeAnsiString();
 
-    rhi_texture_ = New<RHI::Vulkan::Texture>(image_info);
+    rhi_texture_ = New<rhi::vulkan::Texture>(image_info);
     rhi_texture_->Initialize();
 
     auto& pool = VulkanContext::Get()->GetCommandPool();

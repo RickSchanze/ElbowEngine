@@ -10,9 +10,9 @@
 #include "glm/glm.hpp"
 #include "VulkanContext.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
-size_t VulkanUtils::GetDynamicUniformModelAligment()
+namespace rhi::vulkan
+{
+size_t VulkanUtils::GetDynamicUniformModelAlignment()
 {
     static size_t dynamic_aligment = 0;
     if (dynamic_aligment == 0)
@@ -26,5 +26,4 @@ size_t VulkanUtils::GetDynamicUniformModelAligment()
     }
     return dynamic_aligment;
 }
-
-RHI_VULKAN_NAMESPACE_END
+}

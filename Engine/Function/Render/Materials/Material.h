@@ -21,13 +21,13 @@ class Mesh;
 class Camera;
 }   // namespace Function::Comp
 
-namespace RHI::Vulkan
+namespace rhi::vulkan
 {
 class RenderPass;
 class GraphicsPipeline;
 class ShaderProgram;
 class Shader;
-}   // namespace RHI::Vulkan
+}   // namespace rhi::vulkan
 
 FUNCTION_NAMESPACE_BEGIN
 
@@ -69,11 +69,11 @@ public:
     Material(const Path& vert, const Path& frag, const MaterialConfig& config = {}, const String& name = L"");
 
     Material(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config = {}, const String& name = L""
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, const Type& pass_type, const MaterialConfig& config = {}, const String& name = L""
     );
 
     Material(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const MaterialConfig& config = {},
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const MaterialConfig& config = {},
         const String& name = L""
     );
 
@@ -82,9 +82,9 @@ public:
     // SetTexture的不同重载
     void      SetTexture(const AnsiString& name, Resource::Texture* texture);
     Material &SetTexture(const AnsiString& name, const Path& path);
-    void SetTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
+    void SetTexture(const AnsiString& name, const rhi::vulkan::ImageView& view, const rhi::vulkan::Sampler& sampler);
 
-    void SetCubeTexture(const AnsiString& name, const RHI::Vulkan::ImageView& view, const RHI::Vulkan::Sampler& sampler);
+    void SetCubeTexture(const AnsiString& name, const rhi::vulkan::ImageView& view, const rhi::vulkan::Sampler& sampler);
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 
@@ -100,7 +100,7 @@ public:
 
     void Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 
-    void PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, RHI::Vulkan::EShaderStage stage, void* data) const;
+    void PushConstant(vk::CommandBuffer cb, uint32_t offset, uint32_t size, rhi::vulkan::EShaderStage stage, void* data) const;
 
     /**
      * 判断以name为名字的纹理参数是否已经被设置
@@ -126,8 +126,8 @@ public:
     void OnInspectorGUI() override;
 
 protected:
-    RHI::Vulkan::ShaderProgram*    shader_program_ = nullptr;
-    RHI::Vulkan::GraphicsPipeline* pipeline_       = nullptr;
+    rhi::vulkan::ShaderProgram*    shader_program_ = nullptr;
+    rhi::vulkan::GraphicsPipeline* pipeline_       = nullptr;
 
     // 存储shader里所有的纹理参数
     THashMap<AnsiString, Resource::Texture*> textures_maps_;
@@ -147,18 +147,18 @@ public:
     static Material* CreateMaterial(const Path& vert, const Path& frag, const String& name = {}, const MaterialConfig& config = {});
 
     static Material* CreateMaterial(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, const Type& pass_type, const String& name = {}, const MaterialConfig& config = {}
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, const Type& pass_type, const String& name = {}, const MaterialConfig& config = {}
     );
 
     static Material* CreateMaterial(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name = {},
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const String& name = {},
         const MaterialConfig& config = {}
     );
 
     template<typename T>
         requires std::is_base_of_v<Material, T>
     static T* CreateMaterial(
-        RHI::Vulkan::Shader* vert, RHI::Vulkan::Shader* frag, RHI::Vulkan::RenderPass* render_pass, const String& name = {},
+        rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const String& name = {},
         const MaterialConfig& config = {}
     )
     {

@@ -11,9 +11,9 @@
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-RHI_VULKAN_NAMESPACE_BEGIN
-
-Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
+namespace rhi::vulkan
+{
+Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
 {
     ignore_index_ = ignore_index;
     if (vertices.empty())
@@ -21,7 +21,7 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, boo
         LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据不合法");
         return;
     }
-    if (!ignore_index && indicies.empty())
+    if (!ignore_index && indices.empty())
     {
         LOG_ERROR_CATEGORY(Vulkan, L"传入索引数据不合法");
         return;
@@ -58,8 +58,8 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, boo
     if (!ignore_index)
     {
         // 索引缓冲
-        index_count_                       = static_cast<uint32_t>(indicies.size());
-        vk::DeviceSize   index_buffer_size = sizeof(indicies[0]) * index_count_;
+        index_count_                       = static_cast<uint32_t>(indices.size());
+        vk::DeviceSize   index_buffer_size = sizeof(indices[0]) * index_count_;
         vk::Buffer       index_staging_buffer;
         vk::DeviceMemory index_staging_buffer_memory;
         device->CreateBuffer(
@@ -70,7 +70,7 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, boo
             index_staging_buffer_memory
         );
         device->MapMemory(index_staging_buffer_memory, index_buffer_size, 0, &data);
-        memcpy(data, indicies.data(), index_buffer_size);
+        memcpy(data, indices.data(), index_buffer_size);
         device->UnmapMemory(index_staging_buffer_memory);
         device->CreateBuffer(
             index_buffer_size,
@@ -85,14 +85,14 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, boo
     }
 }
 
-TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
+TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
 {
-    return MakeShared<Mesh>(vertices, indicies, ignore_index);
+    return MakeShared<Mesh>(vertices, indices, ignore_index);
 }
 
-TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indicies, bool ignore_index)
+TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
 {
-    return MakeUnique<Mesh>(vertices, indicies, ignore_index);
+    return MakeUnique<Mesh>(vertices, indices, ignore_index);
 }
 
 Mesh::~Mesh()
@@ -124,5 +124,4 @@ void Mesh::Destroy()
 {
     InternalDestroy();
 }
-
-RHI_VULKAN_NAMESPACE_END
+}
