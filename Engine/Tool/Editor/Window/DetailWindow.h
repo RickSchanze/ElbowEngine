@@ -6,15 +6,15 @@
  */
 
 #pragma once
-#include "ToolCommon.h"
 #include "WindowBase.h"
 
 #include "DetailWindow.generated.h"
+#include "Render/Materials/Material.h"
 
-namespace Function
+namespace function
 {
 class GameObject;
-namespace Comp
+namespace comp
 {
 class Component;
 }
@@ -35,8 +35,8 @@ public:
     void Draw(float delta_time) override;
 
 protected:
-    void DrawSelectedObject(Function::GameObject* game_object);
-    void DrawComponent(Function::Comp::Component* comp);
+    void DrawSelectedObject(function::GameObject* game_object);
+    void DrawComponent(function::comp::Component* comp);
 
     OutlineWindow* outline_window_     = nullptr;
     int32_t        selected_object_id_ = -1;

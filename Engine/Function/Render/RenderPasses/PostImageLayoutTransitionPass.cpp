@@ -10,9 +10,11 @@
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-REGISTER_RENDER_PASS_REFL(Function::PostImageLayoutTransitionPass)
+REGISTER_RENDER_PASS_REFL(function::PostImageLayoutTransitionPass)
 
-void Function::PostImageLayoutTransitionPass::SetupAttachments()
+namespace function
+{
+void PostImageLayoutTransitionPass::SetupAttachments()
 {
     rhi::vulkan::RenderPassAttachmentParam swapchain_image{};
     swapchain_image.load_op          = vk::AttachmentLoadOp::eDontCare;
@@ -33,18 +35,19 @@ void Function::PostImageLayoutTransitionPass::SetupAttachments()
     NewDepthAttachment(depth);
 }
 
-void Function::PostImageLayoutTransitionPass::SetupFramebuffer() {}
+void PostImageLayoutTransitionPass::SetupFramebuffer() {}
 
-void Function::PostImageLayoutTransitionPass::CleanFrameBuffer() {}
+void PostImageLayoutTransitionPass::CleanFrameBuffer() {}
 
-vk::Framebuffer Function::PostImageLayoutTransitionPass::GetCurrentFramebufferHandle()
+vk::Framebuffer PostImageLayoutTransitionPass::GetCurrentFramebufferHandle()
 {
     return framebuffers[g_engine_statistics.current_image_index]->GetHandle();
 }
 
-void Function::PostImageLayoutTransitionPass::SetupSubpassDependency() {}
+void PostImageLayoutTransitionPass::SetupSubpassDependency() {}
 
-Function::PostImageLayoutTransitionPass::PostImageLayoutTransitionPass(uint32_t width, uint32_t height, const AnsiString& name) :
+PostImageLayoutTransitionPass::PostImageLayoutTransitionPass(uint32_t width, uint32_t height, const AnsiString& name) :
     RenderPass(width, height, name)
 {
+}
 }

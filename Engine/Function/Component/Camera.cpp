@@ -7,16 +7,17 @@
 
 #include "Camera.h"
 #include "CoreGlobal.h"
+#include "GameObject/GameObject.h"
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
-#include "GameObject/GameObject.h"
 
 #include "Camera.generated.h"
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp
+{
 
 Camera::Camera()
 {
@@ -116,4 +117,4 @@ void Camera::HandleInput()
     }
 }
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

@@ -12,7 +12,7 @@ namespace rhi::vulkan
 {
 class Mesh;
 }
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class SkyboxMaterial : public Material
 {
@@ -35,7 +35,7 @@ public:
 
     void OnInspectorGUI() override;
 
-    void SetProjectionView(Comp::Camera* camera);
+    void SetProjectionView(comp::Camera* camera);
 
     bool HasSetSkyTexture();
 
@@ -52,4 +52,4 @@ protected:
     int use_skybox_; // 0: 未设置 1: 球面映射 -1: 立方体映射
 };
 
-FUNCTION_NAMESPACE_END
+}

@@ -16,7 +16,8 @@
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function
+{
 
 SkyboxMaterial::SkyboxMaterial(
     rhi::vulkan::Shader* vert, rhi::vulkan::Shader* frag, rhi::vulkan::RenderPass* render_pass, const MaterialConfig& config, const String& name
@@ -88,7 +89,7 @@ void SkyboxMaterial::OnInspectorGUI()
     ImGuiHelper::WarningBox(U8("天空盒材质未设置"));
 }
 
-void SkyboxMaterial::SetProjectionView(Comp::Camera* camera)
+void SkyboxMaterial::SetProjectionView(comp::Camera* camera)
 {
     Matrix4x4 view[2];
     view[0] = camera->GetProjectionMatrix();
@@ -118,5 +119,4 @@ bool SkyboxMaterial::IsUsingSkyBox() const
     return use_skybox_ == -1;
 }
 
-
-FUNCTION_NAMESPACE_END
+}

@@ -7,4 +7,4 @@
 
 #include "IDetailGUIDrawer.h"
 
-INTERFACE_IMPL(Function::IDetailGUIDrawer)
+INTERFACE_IMPL(function::IDetailGUIDrawer)

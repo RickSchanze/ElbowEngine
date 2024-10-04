@@ -6,10 +6,9 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class PostImageLayoutTransitionPass : public rhi::vulkan::RenderPass {
 
@@ -26,4 +25,4 @@ public:
     TArray<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
-FUNCTION_NAMESPACE_END
+}

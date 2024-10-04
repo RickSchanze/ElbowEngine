@@ -36,7 +36,6 @@ add_library(${PROJECT_NAME}
         Component/Component.h
         GameObject/GameObject.cpp
         GameObject/GameObject.h
-        FunctionCommon.h
         Input/Input.cpp
         Input/Input.h
         Component/Camera.cpp

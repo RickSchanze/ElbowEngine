@@ -7,9 +7,8 @@
 
 #pragma once
 #include "CoreDef.h"
-#include "FunctionCommon.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 /**
  * 继承此接口的类 ImGui在绘制时会使用此接口返回的方法而不是默认方法
@@ -23,4 +22,4 @@ public:
     virtual void OnInspectorGUI() INTERFACE_METHOD
 };
 
-FUNCTION_NAMESPACE_END
+}

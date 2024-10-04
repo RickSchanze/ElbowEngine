@@ -14,7 +14,8 @@
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp
+{
 
 SpaceCircle::SpaceCircle()
 {
@@ -80,4 +81,4 @@ void SpaceCircle::PerformTranslate()
     game_object_->GetTransform().SetPosition(new_pos);
 }
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

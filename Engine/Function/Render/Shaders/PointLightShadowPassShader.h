@@ -6,11 +6,10 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/Shader.h"
 #include "type_traits"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class PointLightShadowPassVertShader : public rhi::vulkan::Shader
 {
@@ -26,4 +25,4 @@ public:
     void RegisterShaderVariables() override;
 };
 
-FUNCTION_NAMESPACE_END
+}

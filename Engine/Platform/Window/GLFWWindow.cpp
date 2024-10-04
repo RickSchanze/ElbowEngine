@@ -291,7 +291,7 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
     imgui_graphics_pipeline_ = New<RealImGuiGraphicsPipeline>();
-    Function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
+    function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
 

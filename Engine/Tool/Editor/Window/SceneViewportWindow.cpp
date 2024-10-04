@@ -19,7 +19,7 @@ namespace tool::window {
 
 static void OnSceneViewportWindowVisibleChanged(EWindowVisibility old, EWindowVisibility New)
 {
-    Function::RenderContext::has_back_buffer = New == EWindowVisibility::Visible ? true : false;
+    function::RenderContext::has_back_buffer = New == EWindowVisibility::Visible ? true : false;
 }
 
 SceneViewportWindow::SceneViewportWindow()

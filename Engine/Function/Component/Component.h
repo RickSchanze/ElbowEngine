@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "FunctionCommon.h"
 #include "Object/Object.h"
 #include "Math/MathTypes.h"
 
@@ -15,12 +14,12 @@
 
 class Transform;
 
-namespace Function
+namespace function
 {
 class GameObject;
 }
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 ECLASS()
 class Component : public Object
@@ -61,4 +60,4 @@ protected:
     bool can_instanced = true;
 };
 
-FUNCTION_NAMESPACE_END
+}

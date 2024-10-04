@@ -13,7 +13,7 @@
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 Autoroatation::Autoroatation()
 {
@@ -47,4 +47,4 @@ Autoroatation& Autoroatation::SetRotationEnabled(bool enabled)
     return *this;
 }
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

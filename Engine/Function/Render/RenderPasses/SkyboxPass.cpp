@@ -11,9 +11,9 @@
 #include "Misc/Vertex.h"
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/VulkanContext.h"
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
-REGISTER_RENDER_PASS_REFL(Function::SkyboxPass)
+REGISTER_RENDER_PASS_REFL(function::SkyboxPass)
 
 using namespace rhi::vulkan;
 
@@ -56,4 +56,4 @@ void SkyboxPass::SetupSubpassDependency()
 {
 }
 
-FUNCTION_NAMESPACE_END
+}

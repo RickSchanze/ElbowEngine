@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
+
 #include "RHI/Vulkan/Render/Shader.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class SkyboxVertShader : public rhi::vulkan::Shader
 {
@@ -29,4 +29,4 @@ private:
     DECLARE_FRAG_SHADER(SkyboxFragShader)
 };
 
-FUNCTION_NAMESPACE_END
+}

@@ -47,10 +47,10 @@ void DetailWindow::Draw(float delta_time)
             selected_object_id_ = outline_window_->selected_object_id;
         }
     }
-    Function::GameObject* object_to_draw = nullptr;
+    function::GameObject* object_to_draw = nullptr;
     if (selected_object_id_ != 0)
     {
-        object_to_draw = ObjectManager::Get()->GetObjectById<Function::GameObject>(selected_object_id_);
+        object_to_draw = ObjectManager::Get()->GetObjectById<function::GameObject>(selected_object_id_);
     }
     if (object_to_draw)
     {
@@ -58,7 +58,7 @@ void DetailWindow::Draw(float delta_time)
     }
 }
 
-void DetailWindow::DrawSelectedObject(Function::GameObject* game_object)
+void DetailWindow::DrawSelectedObject(function::GameObject* game_object)
 {
     ImGui::Text(U8("对象名: %s, ID: %d"), game_object->GetCachedAnsiString().c_str(), game_object->GetID());
     drawer::PropertyDrawer::DrawTransform(game_object->GetTransform());
@@ -69,12 +69,12 @@ void DetailWindow::DrawSelectedObject(Function::GameObject* game_object)
     }
 }
 
-void DetailWindow::DrawComponent(Function::Comp::Component* comp)
+void DetailWindow::DrawComponent(function::comp::Component* comp)
 {
     if (comp == nullptr || !comp->IsValid()) return;
-    if (comp->IsImplemented<Function::IDetailGUIDrawer>())
+    if (comp->IsImplemented<function::IDetailGUIDrawer>())
     {
-        auto* drawer = comp->As<Function::IDetailGUIDrawer>();
+        auto* drawer = comp->As<function::IDetailGUIDrawer>();
         if (drawer != nullptr)
         {
             drawer->OnInspectorGUI();

@@ -27,10 +27,10 @@ LightSettingWindow::LightSettingWindow()
 void LightSettingWindow::Draw(float delta_time)
 {
     ImGuiHelper::SeparatorText(U8("天空盒设置"));
-    auto* material = Function::MaterialManager::GetMaterial(L"SkyboxMaterial");
+    auto* material = function::MaterialManager::GetMaterial(L"SkyboxMaterial");
     if (material != nullptr && material->GetTextureValue("sky") != nullptr && !material->GetTextureValue("sky")->IsDefaultLackTexture())
     {
-        auto* sky_mat = static_cast<Function::SkyboxMaterial*>(material);
+        auto* sky_mat = static_cast<function::SkyboxMaterial*>(material);
         if (sky_mat->IsUsingSkyBox())
         {
             res::TextureCube* cube = static_cast<res::TextureCube*>(sky_mat->GetTextureValue("sky"));

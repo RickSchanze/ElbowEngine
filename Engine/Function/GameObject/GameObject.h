@@ -8,15 +8,14 @@
 #pragma once
 #include "Component/Transform.h"
 #include "CoreGlobal.h"
-#include "FunctionCommon.h"
 #include "Object/Object.h"
 
-namespace Function::Comp
+namespace function::comp
 {
 class Component;
 }   // namespace Function::Comp
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class GameObject : public Object
 {
@@ -53,7 +52,7 @@ public:
     static void TickObjects(float delta_time);
 
     template<typename T>
-        requires std::derived_from<T, Comp::Component>
+        requires std::derived_from<T, comp::Component>
     T* AddComponent()
     {
         T* component = NewObject<T>();
@@ -71,7 +70,7 @@ public:
     }
 
     template<typename T>
-        requires std::derived_from<T, Comp::Component>
+        requires std::derived_from<T, comp::Component>
     T* GetComponent() const
     {
         for (auto component: components_)
@@ -85,7 +84,7 @@ public:
     }
 
     // 销毁一个Component
-    void DestroyComponent(Comp::Component* component);
+    void DestroyComponent(comp::Component* component);
 
     // 获取此对象的parent
     GameObject* GetParent() const { return parent_oject_; }
@@ -100,7 +99,7 @@ public:
     Transform& GetTransform() { return transform_; }
 
     // 获取这个对象的所有Components
-    TArray<Comp::Component*>& GetComponents() { return components_; }
+    TArray<comp::Component*>& GetComponents() { return components_; }
 
     static const TArray<GameObject*>& GetRootGameObjects() { return s_root_objects_; }
 
@@ -115,11 +114,11 @@ protected:
     Transform transform_;
     bool      transform_dirty_;   // transform有变化时为true
 
-    TArray<Comp::Component*> components_;
+    TArray<comp::Component*> components_;
     TArray<GameObject*>      sub_game_objects_;
     GameObject*              parent_oject_ = nullptr;
 
     static inline TArray<GameObject*> s_root_objects_;
 };
 
-FUNCTION_NAMESPACE_END
+}

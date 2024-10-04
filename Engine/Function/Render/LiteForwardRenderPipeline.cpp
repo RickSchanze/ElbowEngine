@@ -27,7 +27,8 @@
 
 using namespace rhi::vulkan;
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function
+{
 
 #undef near
 #undef far
@@ -38,7 +39,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     // TODO: 遮挡剔除
     // TODO: 这些整理工作应该在逻辑部分运行而不是渲染部分
     PROFILE_SCOPE_AUTO;
-    Comp::Camera* main = Comp::Camera::Main;
+    comp::Camera* main = comp::Camera::Main;
     Super::DrawBackbuffer(draw_param);
     auto  cb             = draw_param.command_buffer;
     auto  meshes_to_draw = CollectMeshesWithMaterial();
@@ -51,7 +52,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
     post_transition_pass_->framebuffers = skybox_pass_->framebuffers;
 
     // 走一遍shadow pass
-    auto light = Comp::LightManager::Get()->GetLights();
+    auto light = comp::LightManager::Get()->GetLights();
     if (!light.empty())
     {
         PROFILE_SCOPE("Shadow Pass");
@@ -165,4 +166,4 @@ void LiteForwardRenderPipeline::Build()
     AddImGuiGraphicsPipeline();
 }
 
-FUNCTION_NAMESPACE_END
+}

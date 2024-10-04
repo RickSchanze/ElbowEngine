@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
+
 #include "RHI/Vulkan/Render/Shader.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class StandardForwardVertShader : public rhi::vulkan::Shader
 {
@@ -27,4 +27,4 @@ public:
     void RegisterShaderVariables() override;
 };
 
-FUNCTION_NAMESPACE_END
+}

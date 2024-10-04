@@ -9,9 +9,9 @@
 #include "Component/Component.h"
 #include "Component/Transform.h"
 
-using namespace Function::Comp;
+using namespace function::comp;
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 GameObject::GameObject(GameObject* InParent) : Object(EOF_IsGameObject), transform_(this)
 {
@@ -180,4 +180,4 @@ void GameObject::ApplyTransformDeltas()
     transform_dirty_ = false;
 }
 
-FUNCTION_NAMESPACE_END
+}

@@ -7,14 +7,13 @@
 
 #pragma once
 #include "Component/Component.h"
-#include "FunctionCommon.h"
 #include "Math/MathTypes.h"
 #include "Singleton/Singleton.h"
 
 #include "Light.generated.h"
 
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 EENUM()
 enum class ELightType
@@ -71,4 +70,4 @@ private:
     TArray<Light*> lights_;
 };
 
-FUNCTION_NAMESPACE_END
+}

@@ -9,6 +9,8 @@
 
 #include "Math/MathTypes.h"
 
+namespace function
+{
 void InfiniteGridVertShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(0);
@@ -17,3 +19,4 @@ void InfiniteGridVertShader::RegisterShaderVariables()
 }
 
 void InfiniteGridFragShader::RegisterShaderVariables() {}
+}   // namespace function

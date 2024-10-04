@@ -17,7 +17,7 @@
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 Mesh::Mesh()
 {
@@ -83,4 +83,4 @@ Material* Mesh::GetMaterial() const
     return material_;
 }
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

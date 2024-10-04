@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "FunctionCommon.h"
 #include "RenderContext.h"
 #include "Utils/MemoryUtils.h"
 
@@ -17,16 +16,13 @@ namespace rhi::vulkan
 {
 class RenderPass;
 }
-namespace Function::Comp
+namespace function::comp
 {
 class Camera;
 }
-namespace Function
+namespace function
 {
 class Material;
-}
-namespace Function
-{
 class RenderContext;
 }
 
@@ -36,7 +32,7 @@ class IGraphicsPipeline;
 class ImguiGraphicsPipeline;
 }   // namespace rhi::vulkan
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 /**
  * 对应shader中的ubo_view
@@ -107,7 +103,7 @@ protected:
     void RegisterRenderPass(rhi::vulkan::RenderPass* render_pass);
     void UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass);
 
-    THashMap<Material*, TArray<Comp::Mesh*>> CollectMeshesWithMaterial() const;
+    THashMap<Material*, TArray<comp::Mesh*>> CollectMeshesWithMaterial() const;
 
     RenderContext*                      context_        = nullptr;
     rhi::vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
@@ -116,11 +112,11 @@ protected:
 
 protected:
     // 每帧处理的需要绘制的mesh
-    THashMap<Material*, TArray<Comp::Mesh*>> draw_meshs_;
+    THashMap<Material*, TArray<comp::Mesh*>> draw_meshes_;
 
     TArray<rhi::vulkan::RenderPass*> saved_render_passes_;
 
     String window_resized_event_handle_;
 };
 
-FUNCTION_NAMESPACE_END
+}

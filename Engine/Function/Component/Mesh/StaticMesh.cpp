@@ -14,7 +14,7 @@
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 StaticMesh::StaticMesh()
 {
@@ -44,4 +44,4 @@ StaticMesh& StaticMesh::SetMesh(const Path& mesh_path)
 }
 
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

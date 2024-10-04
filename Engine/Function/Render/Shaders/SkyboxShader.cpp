@@ -8,7 +8,9 @@
 #include "SkyboxShader.h"
 #include "Math/MathTypes.h"
 
-void Function::SkyboxVertShader::RegisterShaderVariables()
+namespace function
+{
+void SkyboxVertShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(0)
     struct UBOView
@@ -20,9 +22,10 @@ void Function::SkyboxVertShader::RegisterShaderVariables()
     REGISTER_SHADER_VAR_END()
 }
 
-void Function::SkyboxFragShader::RegisterShaderVariables()
+void SkyboxFragShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(1)
     REGISTER_FRAG_SHADER_VAR_AUTO_SmaplerCube("sky", false);
     REGISTER_SHADER_VAR_END()
+}
 }

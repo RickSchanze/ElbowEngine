@@ -11,7 +11,8 @@
 #include "RenderPipeline.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function
+{
 
 RenderContext::~RenderContext()
 {
@@ -44,7 +45,7 @@ void RenderContext::Draw(bool draw_backbuffer)
     RenderContextDrawParam draw_param;
     draw_param.render_begin_semaphore = vulkan_context_->GetRenderBeginWaitSemphore();
     // draw_param.render_end_fence       = vulkan_context_->GetInFlightFence();
-    draw_param.command_buffer = BeginRecordCommandBuffer();
+    draw_param.command_buffer         = BeginRecordCommandBuffer();
     if (draw_backbuffer)
     {
         render_pipeline_->DrawBackbuffer(draw_param);
@@ -71,12 +72,12 @@ vk::Semaphore RenderContext::SubmitPipeline(const rhi::vulkan::GraphicsQueueSubm
     return vulkan_context_->SubmitGraphicsQueue(draw_param, fence_to_trigger);
 }
 
-void RenderContext::RegisterDrawMesh(Comp::Mesh* mesh)
+void RenderContext::RegisterDrawMesh(comp::Mesh* mesh)
 {
     ContainerUtils::AddUnique(mesh_to_draw_, mesh);
 }
 
-void RenderContext::UnregisterDrawMesh(Comp::Mesh* mesh)
+void RenderContext::UnregisterDrawMesh(comp::Mesh* mesh)
 {
     ContainerUtils::Remove(mesh_to_draw_, mesh);
 }
@@ -112,4 +113,4 @@ bool RenderContext::CanRenderBackbuffer() const
 }
 
 
-FUNCTION_NAMESPACE_END
+}   // namespace function

@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
+
 #include "RHI/Vulkan/Render/RenderPass.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class SimpleObjectShadingPass : public rhi::vulkan::RenderPass
 {
@@ -33,4 +33,4 @@ private:
     rhi::vulkan::Image*               depth_image_      = nullptr;
 };
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

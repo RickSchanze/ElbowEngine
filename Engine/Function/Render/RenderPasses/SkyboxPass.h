@@ -6,14 +6,14 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
+
 #include "RHI/Vulkan/Render/RenderPass.h"
 
 namespace rhi::vulkan
 {
 class Mesh;
 }
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 // TODO: 也许可以共享Framebuffer
 class SkyboxPass : public rhi::vulkan::RenderPass
@@ -33,4 +33,4 @@ public:
     TArray<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
-FUNCTION_NAMESPACE_END
+}

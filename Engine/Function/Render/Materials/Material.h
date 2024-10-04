@@ -8,14 +8,13 @@
 #pragma once
 #include "Component/Interface/IDetailGUIDrawer.h"
 #include "CoreDef.h"
-#include "FunctionCommon.h"
 #include "Object/Object.h"
 #include "ResourceManager.h"
 #include "RHI/Vulkan/Render/Shader.h"
 
 #include <glm/fwd.hpp>
 
-namespace Function::Comp
+namespace function::comp
 {
 class Mesh;
 class Camera;
@@ -29,7 +28,7 @@ class ShaderProgram;
 class Shader;
 }   // namespace rhi::vulkan
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 /**
  * 材质的封装
@@ -88,7 +87,7 @@ public:
 
     void Use(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int x = 0, int y = 0) const;
 
-    void SetPositionViewProjection(Comp::Camera* camera);
+    void SetPositionViewProjection(comp::Camera* camera);
 
     void SetModel(glm::mat4* models, size_t size);
 
@@ -96,7 +95,7 @@ public:
 
     void SetPointLights(void* data, size_t size);
 
-    void DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
+    void DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
 
     void Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 
@@ -181,4 +180,4 @@ private:
     THashMap<String, Material*> materials_;
 };
 
-FUNCTION_NAMESPACE_END
+}

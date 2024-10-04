@@ -14,9 +14,9 @@
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-REGISTER_RENDER_PASS_REFL(Function::PointLightShadowPass)
+REGISTER_RENDER_PASS_REFL(function::PointLightShadowPass)
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 void PointLightShadowPass::SetupAttachments()
 {
@@ -145,7 +145,7 @@ void PointLightShadowPass::ResizeFramebuffer(int w, int h)
     // Cubemap不需要Resize
 }
 
-Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
+Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(comp::Light* light, int index)
 {
     if (index < 0 || index > 5)
     {
@@ -184,7 +184,7 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(Comp::Light* light, int index)
 #undef near
 #undef far
 
-void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index, float near, float far)
+void PointLightShadowPass::BeginDrawFace(vk::CommandBuffer cb, Material* mat, comp::Light* light, int index, float near, float far)
 {
     vk::ClearValue clear_value[2];
     clear_value[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -228,4 +228,4 @@ rhi::vulkan::ImageView* PointLightShadowPass::GetOutputCubemapView() const
     return shadow_map_->GetView();
 }
 
-FUNCTION_NAMESPACE_END
+}

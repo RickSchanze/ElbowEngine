@@ -8,11 +8,10 @@
 #pragma once
 
 #include "CoreDef.h"
-#include "FunctionCommon.h"
 
 #include <vulkan/vulkan.hpp>
 
-namespace Function::Comp
+namespace function::comp
 {
 class Mesh;
 }
@@ -23,7 +22,7 @@ class VulkanContext;
 class IGraphicsPipeline;
 }   // namespace rhi::vulkan
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 class RenderPipeline;
 
@@ -51,13 +50,13 @@ public:
 
     vk::Semaphore SubmitPipeline(const rhi::vulkan::GraphicsQueueSubmitParams& draw_param, vk::Fence fence_to_trigger = nullptr) const;
 
-    void RegisterDrawMesh(Comp::Mesh* mesh);
+    void RegisterDrawMesh(comp::Mesh* mesh);
 
-    void UnregisterDrawMesh(Comp::Mesh* mesh);
+    void UnregisterDrawMesh(comp::Mesh* mesh);
 
     void UnregisterAllDrawMesh();
 
-    const TArray<Comp::Mesh*>& GetDrawMeshes() const { return mesh_to_draw_; }
+    const TArray<comp::Mesh*>& GetDrawMeshes() const { return mesh_to_draw_; }
 
     uint32_t GetMinUniformBufferOffsetAlignment() const;
 
@@ -79,9 +78,9 @@ private:
     rhi::vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;
 
-    TArray<Comp::Mesh*> mesh_to_draw_;
+    TArray<comp::Mesh*> mesh_to_draw_;
 
     static inline RenderContext* s_render_context_ = nullptr;
 };
 
-FUNCTION_NAMESPACE_END
+}

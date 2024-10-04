@@ -23,7 +23,7 @@
 
 #include "Profiler/ProfileMacro.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 RenderPipeline::RenderPipeline()
 {
@@ -130,7 +130,7 @@ void RenderPipeline::PrepareModelUniformBuffer()
 
 void RenderPipeline::PrepareLight()
 {
-    auto lights = Comp::LightManager::Get()->GetLights();
+    auto lights = comp::LightManager::Get()->GetLights();
     struct PointLight
     {
         Vector4 pos;
@@ -140,7 +140,7 @@ void RenderPipeline::PrepareLight()
     for (auto* light: lights)
     {
         // 处理直射光
-        if (light->GetLightType() == Comp::ELightType::Point)
+        if (light->GetLightType() == comp::ELightType::Point)
         {
             PointLight light_data{};
             light_data.color = Math::ToVector4(light->GetLightColor());
@@ -149,7 +149,7 @@ void RenderPipeline::PrepareLight()
             lights_data.push_back(light_data);
         }
     }
-    for (auto* mat: draw_meshs_ | std::views::keys)
+    for (auto* mat: draw_meshes_ | std::views::keys)
     {
         mat->SetPointLights(lights_data.data(), lights_data.size() * sizeof(PointLight));
     }
@@ -164,7 +164,7 @@ void RenderPipeline::PrepareFrame()
 
 void RenderPipeline::PrepareDrawMeshes()
 {
-    draw_meshs_ = CollectMeshesWithMaterial();
+    draw_meshes_ = CollectMeshesWithMaterial();
 }
 
 vk::Semaphore RenderPipeline::Submit(const rhi::vulkan::GraphicsQueueSubmitParams& submit_params, const vk::Fence fence_to_trigger) const
@@ -192,9 +192,9 @@ void RenderPipeline::UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass)
     ContainerUtils::Remove(saved_render_passes_, render_pass);
 }
 
-THashMap<Material*, TArray<Comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const
+THashMap<Material*, TArray<comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const
 {
-    THashMap<Material*, TArray<Comp::Mesh*>> rtn;
+    THashMap<Material*, TArray<comp::Mesh*>> rtn;
     for (auto& mesh: context_->GetDrawMeshes())
     {
         if (mesh->GetMaterial() == nullptr)
@@ -207,4 +207,4 @@ THashMap<Material*, TArray<Comp::Mesh*>> RenderPipeline::CollectMeshesWithMateri
     return rtn;
 }
 
-FUNCTION_NAMESPACE_END
+}

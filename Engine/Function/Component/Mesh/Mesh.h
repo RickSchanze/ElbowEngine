@@ -15,7 +15,7 @@
  * 表示Mesh的基类
  */
 
-namespace Function
+namespace function
 {
 class Material;
 }
@@ -25,7 +25,7 @@ class SubMesh;
 class Mesh;
 }
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 ECLASS()
 class Mesh : public Component, public IDetailGUIDrawer
@@ -55,4 +55,4 @@ protected:
     Material*       material_ = nullptr;
 };
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

@@ -10,7 +10,7 @@
 
 #include "Autorotation.generated.h"
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 ECLASS()
 class Autoroatation : public Component
@@ -38,4 +38,4 @@ protected:
     bool rotation_ = true;
 };
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

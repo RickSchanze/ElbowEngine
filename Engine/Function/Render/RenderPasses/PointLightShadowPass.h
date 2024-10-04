@@ -7,23 +7,21 @@
 
 #pragma once
 #include "Component/Camera.h"
-#include "FunctionCommon.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 
-namespace Function
-{
-class Material;
-}
-namespace Function::Comp
+namespace function::comp
 {
 class Light;
 class Camera;
-}
+}   // namespace function::comp
 namespace rhi::vulkan
 {
 class Cubemap;
 }
-FUNCTION_NAMESPACE_BEGIN
+namespace function
+{
+
+class Material;
 
 class PointLightShadowPass : public rhi::vulkan::RenderPass
 {
@@ -41,20 +39,20 @@ public:
 
     void ResizeFramebuffer(int w, int h) override;
 
-    Matrix4x4 GetFaceViewMatrix(Comp::Light* camera, int index);
+    Matrix4x4 GetFaceViewMatrix(comp::Light* camera, int index);
 
-    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, Comp::Light* light, int index, float near, float far);
+    void BeginDrawFace(vk::CommandBuffer cb, Material* mat, comp::Light* light, int index, float near, float far);
     void EndDrawFace(vk::CommandBuffer cb);
 
     rhi::vulkan::ImageView* GetOutputCubemapView() const;
 
 private:
-    rhi::vulkan::Image*               depth_      = nullptr;
-    rhi::vulkan::ImageView*           depth_view_ = nullptr;
+    rhi::vulkan::Image*     depth_      = nullptr;
+    rhi::vulkan::ImageView* depth_view_ = nullptr;
 
     TStaticArray<rhi::vulkan::Framebuffer*, 6> cubemap_framebuffers_;
 
     rhi::vulkan::Cubemap* shadow_map_;
 };
 
-FUNCTION_NAMESPACE_END
+}   // namespace function

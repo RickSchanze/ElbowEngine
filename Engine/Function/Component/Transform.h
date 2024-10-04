@@ -11,10 +11,10 @@
 
 class Transform
 {
-    friend class Function::GameObject;
+    friend class function::GameObject;
 
 public:
-    Transform(Function::GameObject* owner = nullptr);
+    Transform(function::GameObject* owner = nullptr);
 
     static Transform Identity();
 
@@ -65,5 +65,5 @@ protected:
     Rotator world_rotator_;
 
     bool                  composited_mat_dirty_;
-    Function::GameObject* owner_;
+    function::GameObject* owner_;
 };

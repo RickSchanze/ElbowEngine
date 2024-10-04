@@ -9,7 +9,9 @@
 
 #include "Math/MathTypes.h"
 
-void Function::PointLightShadowPassVertShader::RegisterShaderVariables()
+namespace  function
+{
+void PointLightShadowPassVertShader::RegisterShaderVariables()
 {
     REGISTER_SHADER_VAR_BEGIN(0);
     REGISTER_VERT_SHADER_VAR_AUTO_StaticUniformBuffer("ubo_view", 2 * sizeof(Matrix4x4), false);
@@ -20,4 +22,5 @@ void Function::PointLightShadowPassVertShader::RegisterShaderVariables()
     REGISTER_SHADER_VAR_END()
 }
 
-void Function::PointLightShadowPassFragShader::RegisterShaderVariables() {}
+void PointLightShadowPassFragShader::RegisterShaderVariables() {}
+}

@@ -7,12 +7,11 @@
 
 #pragma once
 #include "Component/Component.h"
-#include "FunctionCommon.h"
 #include "Math/MathTypes.h"
 
 #include "SpaceCircle.generated.h"
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 ECLASS()
 class SpaceCircle : public Component
@@ -71,4 +70,4 @@ protected:
     bool axis_dirty_ = true;
 };
 
-FUNCTION_NAMESPACE_END
+}

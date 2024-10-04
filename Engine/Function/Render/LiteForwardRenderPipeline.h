@@ -6,30 +6,18 @@
  */
 
 #pragma once
-#include "FunctionCommon.h"
+
 #include "RenderContext.h"
 #include "RenderPipeline.h"
 
-namespace Function
+namespace function
 {
 class PostImageLayoutTransitionPass;
-}
-namespace Function
-{
 class SkyboxPass;
-}
-namespace Function
-{
 class SkyboxMaterial;
-}
-namespace Function
-{
 class PointLightShadowPass;
-}
-namespace Function
-{
 class SimpleObjectShadingPass;
-}
+}   // namespace function
 
 namespace rhi::vulkan
 {
@@ -40,7 +28,8 @@ namespace rhi::vulkan
 class GraphicsPipeline;
 }
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function
+{
 
 class LiteForwardRenderPipeline : public RenderPipeline
 {
@@ -61,4 +50,4 @@ private:
     SkyboxMaterial* sky_box_material_       = nullptr;
 };
 
-FUNCTION_NAMESPACE_END
+}   // namespace function

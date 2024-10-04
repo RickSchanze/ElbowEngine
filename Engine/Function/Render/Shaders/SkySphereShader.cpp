@@ -9,7 +9,7 @@
 
 #include "Math/MathTypes.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 void SkySphereVertShader::RegisterShaderVariables()
 {
@@ -30,4 +30,4 @@ void SkySphereFragShader::RegisterShaderVariables()
     REGISTER_SHADER_VAR_END()
 }
 
-FUNCTION_NAMESPACE_END
+}

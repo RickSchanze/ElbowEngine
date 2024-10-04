@@ -19,7 +19,7 @@ RTTR_REGISTRATION
         .property("scale", &Transform::GetScale, rttr::select_overload<Transform&(Vector3)>(&Transform::SetScale));
 }
 
-Transform::Transform(Function::GameObject* owner) :
+Transform::Transform(function::GameObject* owner) :
     composited_mat_(GetMatrix4x4Identity()), position_(), scale_(1, 1, 1), rotator_(Rotator()), composited_mat_dirty_(true), owner_(owner),
     world_position_(Constant::ZeroVector), world_rotator_(Rotator()), world_scale_(1, 1, 1)
 {

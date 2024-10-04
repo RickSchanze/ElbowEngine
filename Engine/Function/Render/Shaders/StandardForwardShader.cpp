@@ -9,7 +9,7 @@
 
 #include <glm/glm.hpp>
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 void StandardForwardVertShader::RegisterShaderVariables()
 {
@@ -30,4 +30,4 @@ void StandardForwardFragShader::RegisterShaderVariables()
     REGISTER_SHADER_VAR_END()
 }
 
-FUNCTION_NAMESPACE_END
+}

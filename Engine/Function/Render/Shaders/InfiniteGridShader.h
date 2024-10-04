@@ -8,7 +8,10 @@
 #pragma once
 #include "RHI/Vulkan/Render/Shader.h"
 
-class InfiniteGridVertShader : public rhi::vulkan::Shader  {
+namespace function
+{
+class InfiniteGridVertShader : public rhi::vulkan::Shader
+{
 public:
     void RegisterShaderVariables() override;
 
@@ -24,3 +27,4 @@ public:
 private:
     DECLARE_FRAG_SHADER(InfiniteGridFragShader);
 };
+}   // namespace function

@@ -11,7 +11,7 @@
 #include "Path/Path.h"
 #include "StaticMesh.generated.h"
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 ECLASS()
 class StaticMesh : public Mesh {
@@ -26,4 +26,4 @@ public:
     StaticMesh& SetMesh(const Path& mesh_path);
 };
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

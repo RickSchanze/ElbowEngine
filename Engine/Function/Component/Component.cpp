@@ -15,7 +15,7 @@
 
 GENERATED_SOURCE()
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp {
 
 Component:: Component() : Object(EOF_IsComponent) {}
 
@@ -67,4 +67,4 @@ Vector3 Component::GetWorldPosition() const
     return transform_->GetWorldPosition();
 }
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}

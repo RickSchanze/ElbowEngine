@@ -10,9 +10,9 @@
 #include "RHI/Vulkan/Render/Framebuffer.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
-REGISTER_RENDER_PASS_REFL(Function::SimpleObjectShadingPass);
+REGISTER_RENDER_PASS_REFL(function::SimpleObjectShadingPass);
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 using namespace rhi::vulkan;
 
@@ -92,4 +92,4 @@ vk::Framebuffer SimpleObjectShadingPass::GetCurrentFramebufferHandle(){
     return framebuffers[g_engine_statistics.current_image_index]->GetHandle();
 }
 
-FUNCTION_NAMESPACE_END
+}

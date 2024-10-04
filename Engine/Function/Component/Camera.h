@@ -8,7 +8,6 @@
 #pragma once
 #include "Component.h"
 #include "CoreDef.h"
-#include "FunctionCommon.h"
 #include "Math/MathTypes.h"
 
 #include "Camera.generated.h"
@@ -16,7 +15,8 @@
 #undef near
 #undef far
 
-FUNCTION_COMPONENT_NAMESPACE_BAGIN
+namespace function::comp
+{
 
 ECLASS()
 
@@ -71,6 +71,6 @@ protected:
     bool focused_ = false;
 };
 
-FUNCTION_COMPONENT_NAMESPACE_END
+}
 
-// FUNCTION_NAMESPACE_END
+// }

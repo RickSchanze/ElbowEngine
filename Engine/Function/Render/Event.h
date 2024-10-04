@@ -15,7 +15,7 @@ namespace rhi::vulkan
 class ImguiGraphicsPipeline;
 }
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 struct RequireImGuiGraphicsPipelineEvent : TEvent<rhi::vulkan::ImguiGraphicsPipeline** /** out_pipeline */>
 {
@@ -23,4 +23,4 @@ struct RequireImGuiGraphicsPipelineEvent : TEvent<rhi::vulkan::ImguiGraphicsPipe
 
 inline RequireImGuiGraphicsPipelineEvent OnRequireImGuiGraphicsPipeline;
 
-FUNCTION_NAMESPACE_END
+}

@@ -25,7 +25,7 @@ OutlineWindow::OutlineWindow()
 
 void OutlineWindow::Draw(float InDeltaTime)
 {
-    auto objs = Function::GameObject::GetRootGameObjects();
+    auto objs = function::GameObject::GetRootGameObjects();
     for (auto& obj: objs)
     {
         DrawGameObject(obj);
@@ -33,7 +33,7 @@ void OutlineWindow::Draw(float InDeltaTime)
     TreeNodeHasSelected = false;
 }
 
-void OutlineWindow::DrawGameObject(Function::GameObject* game_object)
+void OutlineWindow::DrawGameObject(function::GameObject* game_object)
 {
     if (game_object == nullptr) return;
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;

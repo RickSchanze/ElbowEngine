@@ -8,6 +8,7 @@
 #pragma once
 #include "WindowBase.h"
 
+#include "Component/Script/Autorotation.h"
 #include "OutlineWindow.generated.h"
 
 namespace Function {
@@ -26,7 +27,7 @@ public:
     void Draw(float InDeltaTime) override;
 
 protected:
-    void DrawGameObject(Function::GameObject* game_object);
+    void DrawGameObject(function::GameObject* game_object);
 
 public:
    int32_t selected_object_id = 0;

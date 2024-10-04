@@ -16,7 +16,7 @@
 
 class EditorImGuiStyle;
 
-namespace Function
+namespace function
 {
 class GameObject;
 class RenderContext;
@@ -88,7 +88,7 @@ private:
 
     TUniquePtr<rhi::vulkan::VulkanApplication> render_application_;
     TUniquePtr<platform::window::GlfwWindow>   window_;
-    Function::RenderContext*                   render_context_ = nullptr;
+    function::RenderContext*                   render_context_ = nullptr;
 
     static inline EngineApplication* instance_ = nullptr;
 
@@ -98,7 +98,7 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> last_frame_time_;
 
     // 暂时测试
-    Function::GameObject* camera_object_ = nullptr;
+    function::GameObject* camera_object_ = nullptr;
 
     EditorImGuiStyle* editor_style_;
 };

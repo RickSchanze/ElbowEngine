@@ -22,7 +22,7 @@
 #include "RHI/Vulkan/Render/ShaderProgram.h"
 #include "Utils/StringUtils.h"
 
-FUNCTION_NAMESPACE_BEGIN
+namespace function {
 
 static void ConfigPipelineByMaterial(rhi::vulkan::PipelineInfo& pipeline_info, const MaterialConfig& config)
 {
@@ -142,7 +142,7 @@ void Material::Use(vk::CommandBuffer cb, uint32_t width, uint32_t height, int x,
     pipeline_->UpdateViewport(cb, width, height, x, y);
 }
 
-void Material::SetPositionViewProjection(Comp::Camera* camera)
+void Material::SetPositionViewProjection(comp::Camera* camera)
 {
     if (camera == nullptr)
     {
@@ -180,7 +180,7 @@ void Material::SetPointLights(void* data, size_t size)
     shader_program_->SetUniformBuffer("ubo_point_lights", data, size);
 }
 
-void Material::DrawMesh(vk::CommandBuffer cb, const Comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets)
+void Material::DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets)
 {
     if (pipeline_ == nullptr)
     {
@@ -335,4 +335,4 @@ Material* MaterialManager::CreateMaterial(
     return mats[name];
 }
 
-FUNCTION_NAMESPACE_END
+}
