@@ -19,15 +19,13 @@ namespace function::comp
 {
 
 ECLASS()
-
-class Camera : public Component
+class Camera : public TickableComponent
 {
     GENERATED_BODY(Camera)
-
 public:
     explicit Camera();
 
-    void Tick(float delta_time) override;
+    void Tick() override;
 
     void BeginPlay() override;
 
@@ -59,13 +57,13 @@ protected:
     void HandleInput();
 
     EPROPERTY(Name = movement_speed, Label = "摄像机移动速度")
-    float movement_speed_ = 0.3f;
+    float movement_speed_ = 10.f;
 
     EPROPERTY(Name = enable_input, Label = "启用输入")
     bool enable_input_ = true;
 
     EPROPERTY(Name = mouse_sensitity, Label = "鼠标灵敏度")
-    float mouse_sensitivity_ = 0.001f;
+    float mouse_sensitivity_ = 45.f;
 
 
     bool focused_ = false;

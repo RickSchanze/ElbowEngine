@@ -24,9 +24,8 @@ Camera::Camera()
     SetName(L"摄像机组件");
 }
 
-void Camera::Tick(const float delta_time)
+void Camera::Tick()
 {
-    Component::Tick(delta_time);
     if (enable_input_)
     {
         HandleInput();
@@ -57,7 +56,7 @@ void Camera::SetWindowFocused(bool focused)
 {
     focused_ = focused;
 
-    // 如果foucsed（现在是按下了右键）则隐藏鼠标
+    // 如果focused（现在是按下了右键）则隐藏鼠标
     g_engine_statistics.is_hide_mouse = focused_;
 }
 
@@ -68,19 +67,19 @@ void Camera::HandleInput()
         Transform& transform = game_object_->GetTransform();
         if (Input::IsKeyDown(KeyCode::W))
         {
-            transform.Translate(movement_speed_ * transform_->GetForwardVector());
+            transform.Translate(movement_speed_ * transform_->GetForwardVector() * GetFrameTime());
         }
         if (Input::IsKeyDown(KeyCode::S))
         {
-            transform.Translate(-movement_speed_ * transform_->GetForwardVector());
+            transform.Translate(-movement_speed_ * transform_->GetForwardVector() * GetFrameTime());
         }
         if (Input::IsKeyDown(KeyCode::A))
         {
-            transform.Translate(-movement_speed_ * transform_->GetRightVector());
+            transform.Translate(-movement_speed_ * transform_->GetRightVector() * GetFrameTime());
         }
         if (Input::IsKeyDown(KeyCode::D))
         {
-            transform.Translate(movement_speed_ * transform_->GetRightVector());
+            transform.Translate(movement_speed_ * transform_->GetRightVector() * GetFrameTime());
         }
         if (Input::IsKeyDown(KeyCode::Escape))
         {
@@ -88,15 +87,15 @@ void Camera::HandleInput()
         }
         if (Input::IsKeyDown(KeyCode::Q))
         {
-            transform.Translate(movement_speed_ * Constant::UpVector);
+            transform.Translate(movement_speed_ * Constant::UpVector * GetFrameTime());
         }
         if (Input::IsKeyDown(KeyCode::E))
         {
-            transform.Translate(-movement_speed_ * Constant::UpVector);
+            transform.Translate(-movement_speed_ * Constant::UpVector * GetFrameTime());
         }
         SetWindowFocused(true);
         auto mouse_delta = Input::GetMouseDelta();
-        mouse_delta *= mouse_sensitivity_;
+        mouse_delta = mouse_delta * (mouse_sensitivity_ * GetFrameTime());
         Rotator r;
         r.yaw           = mouse_delta.x;
         r.pitch         = -mouse_delta.y;

@@ -13,13 +13,13 @@
 namespace function::comp {
 
 ECLASS()
-class Autoroatation : public Component
+class Autoroatation : public TickableComponent
 {
     GENERATED_BODY(Autoroatation)
 public:
     Autoroatation();
 
-    void Tick(float delta_time) override;
+    void Tick() override;
 
     Autoroatation& SetRotationSpeed(float speed);
 

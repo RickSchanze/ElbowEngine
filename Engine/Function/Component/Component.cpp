@@ -12,12 +12,14 @@
 #include "Utils/StringUtils.h"
 
 #include "Component.generated.h"
+#include "World/TickManager.h"
 
 GENERATED_SOURCE()
 
-namespace function::comp {
+namespace function::comp
+{
 
-Component:: Component() : Object(EOF_IsComponent) {}
+Component::Component() : Object(EOF_IsComponent) {}
 
 Component::~Component() = default;
 
@@ -67,4 +69,14 @@ Vector3 Component::GetWorldPosition() const
     return transform_->GetWorldPosition();
 }
 
+TickableComponent::TickableComponent()
+{
+    TickManager::Get()->Add(this);
 }
+
+TickableComponent::~TickableComponent()
+{
+    TickManager::Get()->Remove(this);
+}
+
+}   // namespace function::comp

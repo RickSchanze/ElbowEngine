@@ -60,6 +60,11 @@ Vector2 Vector2::operator*=(const float scalar)
     return Vector2(x * scalar, y * scalar);
 }
 
+Vector2 Vector2::operator*(float x) const
+{
+    return {this->x * x, y * x};
+}
+
 
 Vector3 Rotator::GetForwardVector() const
 {

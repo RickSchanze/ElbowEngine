@@ -14,14 +14,14 @@
 namespace function::comp {
 
 ECLASS()
-class SpaceCircle : public Component
+class SpaceCircle : public TickableComponent
 {
     GENERATED_BODY(SpaceCircle)
 
 public:
     SpaceCircle();
 
-    void Tick(float DeltaTime) override;
+    void Tick() override;
 
 
     void  SetScale(float scale);

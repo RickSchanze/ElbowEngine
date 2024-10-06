@@ -20,7 +20,6 @@ enum class KeyCode {
 
 class Input {
 public:
-    static void InternalTick();
     static bool IsKeyDown(KeyCode InCode);
     static bool IsKeyPressed(KeyCode InCode);
     static bool IsKeyReleased(KeyCode InCode);

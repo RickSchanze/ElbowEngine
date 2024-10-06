@@ -6,8 +6,8 @@
  */
 
 #include "Autorotation.h"
-
 #include "Component/Transform.h"
+#include "CoreGlobal.h"
 
 #include "Autorotation.generated.h"
 
@@ -20,11 +20,11 @@ Autoroatation::Autoroatation()
     SetName(L"自转");
 }
 
-void Autoroatation::Tick(float delta_time)
+void Autoroatation::Tick()
 {
     if (rotation_)
     {
-        auto delta          = delta_time * rotation_speed_;
+        auto delta          = GetFrameTime() * rotation_speed_;
         auto delta_rotation = Rotator(rotation_axis_ * delta);
         GetTransform().Rotate(delta_rotation);
     }

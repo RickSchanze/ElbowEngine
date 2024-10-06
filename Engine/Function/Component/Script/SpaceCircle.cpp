@@ -22,13 +22,13 @@ SpaceCircle::SpaceCircle()
     name_ = L"空间球形轨迹";
 }
 
-void SpaceCircle::Tick(float DeltaTime)
+void SpaceCircle::Tick()
 {
     if (!auto_run_)
     {
         return;
     }
-    scale_ = Math::Mod(scale_ + speed_ * DeltaTime, 1.f);
+    scale_ = Math::Mod(scale_ + speed_ * GetFrameTime(), 1.f);
     PerformTranslate();
 }
 

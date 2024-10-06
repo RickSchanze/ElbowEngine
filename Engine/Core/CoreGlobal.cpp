@@ -46,6 +46,11 @@ void EngineStatistics::IncreaseDrawCall(const int32_t count)
     graphics.draw_calls += count;
 }
 
+float GetFrameTime()
+{
+    return g_engine_statistics.time_delta;
+}
+
 EngineStatistics g_engine_statistics = {};
 
 String STRING_NONE;

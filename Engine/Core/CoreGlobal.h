@@ -11,8 +11,8 @@
 #include "Object/Object.h"
 #include "Object/ObjectManager.h"
 #include "Path/Path.h"
-#include "Singleton/Singleton.h"
 #include "Profiler/ProfileMacro.h"
+#include "Singleton/Singleton.h"
 
 extern Logger g_logger;
 
@@ -113,14 +113,18 @@ public:
     static void     SetObjectID(const TUniquePtr<Object>& Obj, uint32_t ID);
 };
 
-template <typename T, typename... Args>
-T* New(Args&&... args) {
+template<typename T, typename... Args>
+T* New(Args&&... args)
+{
 #ifdef ENABLE_PROFILING
     MemoryTraceAllocator<T> allocator;
-    T* ptr = allocator.allocate(1); // 分配 1 个对象的内存
-    try {
-        new (ptr) T(std::forward<Args>(args)...); // 调用构造函数
-    } catch (...) {
+    T*                      ptr = allocator.allocate(1);   // 分配 1 个对象的内存
+    try
+    {
+        new (ptr) T(std::forward<Args>(args)...);   // 调用构造函数
+    }
+    catch (...)
+    {
         allocator.deallocate(ptr, 1);
         throw;
     }
@@ -130,13 +134,15 @@ T* New(Args&&... args) {
 #endif
 }
 
-template <typename T>
-void Delete(T* ptr) {
+template<typename T>
+void Delete(T* ptr)
+{
 #ifdef ENABLE_PROFILING
-    if (ptr) {
-        ptr->~T(); // 调用析构函数
+    if (ptr)
+    {
+        ptr->~T();   // 调用析构函数
         MemoryTraceAllocator<T> allocator;
-        allocator.deallocate(ptr, 1); // 释放内存
+        allocator.deallocate(ptr, 1);   // 释放内存
     }
 #else
     delete ptr;
@@ -228,7 +234,7 @@ struct EngineStatistics
 };
 
 // 编译时获得常量字符串长度
-template <std::size_t N>
+template<std::size_t N>
 constexpr std::size_t STRLEN(const char (&str)[N]) {
     return N - 1; // 字符串字面量包含结尾的 '\0'，所以减去 1
 }
@@ -236,3 +242,5 @@ constexpr std::size_t STRLEN(const char (&str)[N]) {
 extern EngineStatistics g_engine_statistics;
 
 extern String STRING_NONE;
+
+float GetFrameTime();

@@ -9,6 +9,7 @@
 #include "Component/Transform.h"
 #include "CoreGlobal.h"
 #include "Object/Object.h"
+#include "World/ITickable.h"
 
 namespace function::comp
 {
@@ -17,10 +18,10 @@ class Component;
 
 namespace function {
 
-class GameObject : public Object
+class GameObject : public Object, public ITickable
 {
 public:
-    explicit GameObject(GameObject* InParent = nullptr);
+    explicit GameObject(GameObject* parent = nullptr);
 
     ~GameObject() override;
 
@@ -28,28 +29,9 @@ public:
     void BeginPlay();
     void EndPlay();
 
-    // Tick所有Component
-    void PreTickComponents(float delta_time);
-    void TickComponents(float delta_time);
-    void PostTickComponents(float delta_time);
-
-    // GameObject本身做的Tick
-    // 对transform的变化的实施会在PostTickObject函数里
-    void PreTickObject(float delta_time);
-    void TickObject(float delta_time);
-    void PostTickObject(float delta_time);
-
-    // 先TickComponent 再TickObject
-    // PreTickComponents -> PreTickObject -> TickComponents -> TickObject -> PostTickComponents -> PostTickObject
-    void PreTick(float delta_time);
-    void Tick(float delta_time);
-    void PostTick(float delta_time);
-
-    /**
-     * Tick所有GameObject
-     * @param delta_time
-     */
-    static void TickObjects(float delta_time);
+    void PreTick() override;
+    void Tick() override;
+    void PostTick() override;
 
     template<typename T>
         requires std::derived_from<T, comp::Component>
@@ -87,7 +69,7 @@ public:
     void DestroyComponent(comp::Component* component);
 
     // 获取此对象的parent
-    GameObject* GetParent() const { return parent_oject_; }
+    GameObject* GetParent() const { return parent_object_; }
 
     // 获取这个对象的所有子对象
     TArray<GameObject*>& GetChildren() { return sub_game_objects_; }
@@ -112,11 +94,11 @@ private:
 
 protected:
     Transform transform_;
-    bool      transform_dirty_;   // transform有变化时为true
+    bool      transform_dirty_{};   // transform有变化时为true
 
     TArray<comp::Component*> components_;
     TArray<GameObject*>      sub_game_objects_;
-    GameObject*              parent_oject_ = nullptr;
+    GameObject*              parent_object_ = nullptr;
 
     static inline TArray<GameObject*> s_root_objects_;
 };

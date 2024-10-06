@@ -14,7 +14,7 @@
 #include <glm/glm.hpp>
 
 #if USE_IMGUI
-#    include <imgui.h>
+#include <imgui.h>
 #endif
 
 struct Size2D : IStringify
@@ -41,6 +41,7 @@ struct Vector2
     Vector2 operator+(const Vector2& other);
 
     Vector2 operator*=(const float scalar);
+    Vector2 operator*(float x) const;
 
     float x;
     float y;
@@ -122,8 +123,8 @@ public:
 
     bool IsValid() const;
 
-    Color operator*(const Color& other)const;
-    Color operator*(const float scalar)const;
+    Color operator*(const Color& other) const;
+    Color operator*(const float scalar) const;
 
     /** 转换Int带alpha通道 */
     uint32_t ToUInt() const;

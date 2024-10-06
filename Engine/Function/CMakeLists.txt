@@ -29,6 +29,10 @@ set(MATERIAL_FILE
         Render/RenderPasses/PostImageLayoutTransitionPass.h
         Render/Shaders/InfiniteGridShader.cpp
         Render/Shaders/InfiniteGridShader.h
+        World/TickManager.cpp
+        World/TickManager.h
+        World/ITickable.cpp
+        World/ITickable.h
 )
 
 add_library(${PROJECT_NAME}

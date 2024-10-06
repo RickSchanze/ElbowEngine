@@ -367,7 +367,6 @@ void GlfwWindow::Finalize()
 void GlfwWindow::Tick(float DeltaTime)
 {
     glfwPollEvents();
-    Input::InternalTick();
 }
 
 void GlfwWindow::SetMouseVisible(const bool InVisible) const

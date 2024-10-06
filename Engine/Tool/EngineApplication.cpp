@@ -20,7 +20,6 @@
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
-#include "Component/Script/SpaceCircle.h"
 #include "Editor/Window/ConsoleWindow.h"
 #include "Editor/Window/DebugWindow.h"
 #include "Editor/Window/DetailWindow.h"
@@ -35,6 +34,7 @@
 #include "ResourceManager.h"
 
 #include "Window/GLFWWindow.h"
+#include "World/TickManager.h"
 
 #include <imgui.h>
 
@@ -160,13 +160,14 @@ void EngineApplication::Run()
         MARK_FRAME_AUTO;
         // FrameMarkNamed("ElbowEngine Frame");
         PROFILE_SCOPE_AUTO;
+        // TODO: Tick完全由TickManager管理
         // Tick逻辑
         {
             PROFILE_SCOPE("Tick Logic");
             InternalTick();
             window_->Tick(g_engine_statistics.time_delta);
-            // Tick GameObject
-            function::GameObject::TickObjects(g_engine_statistics.time_delta);
+            // Tick逻辑
+            function::TickManager::Get()->PerformTickLogic();
         }
 
         // Tick渲染

@@ -9,10 +9,6 @@
 
 #include "imgui.h"
 
-void Input::InternalTick()
-{
-}
-
 bool Input::IsKeyDown(KeyCode InCode)
 {
     return ImGui::IsKeyDown(static_cast<ImGuiKey>(static_cast<int>(InCode)));

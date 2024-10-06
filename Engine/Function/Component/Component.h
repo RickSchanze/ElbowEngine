@@ -11,6 +11,7 @@
 #include "Math/MathTypes.h"
 
 #include "Component.generated.h"
+#include "World/ITickable.h"
 
 class Transform;
 
@@ -32,9 +33,6 @@ public:
 
     ~Component() override;
 
-    virtual void PreTick(float delta_time) {}
-    virtual void Tick(float delta_time) {}
-    virtual void PostTick(float delta_time) {}
     virtual void BeginPlay();
     virtual void EndPlay();
     virtual void OnEnable() {}
@@ -58,6 +56,18 @@ protected:
 
     // 能否被AddComponent函数实例化
     bool can_instanced = true;
+};
+
+ECLASS()
+class TickableComponent : public Component, public ITickable
+{
+public:
+    TickableComponent();
+    ~TickableComponent() override;
+
+    void PreTick() override {}
+    void Tick() override {}
+    void PostTick() override {}
 };
 
 }
