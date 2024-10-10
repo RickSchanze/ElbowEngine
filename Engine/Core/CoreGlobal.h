@@ -27,6 +27,8 @@ extern Logger g_logger;
 
 #define LOG_WARNING(Text, ...) g_logger.Warning(L##Text, __VA_ARGS__)
 #define LOG_WARNING_CATEGORY(Category, Text, ...) g_logger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_WARNING_ANSI(Text, ...) g_logger.Warning(##Text, __VA_ARGS__)
+#define LOG_WARNING_ANSI_CATEGORY(Category, Text, ...) g_logger.Warning("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_ERROR(Text, ...) g_logger.Error(L##Text, __VA_ARGS__)
 #define LOG_ERROR_CATEGORY(Category, Text, ...) g_logger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
@@ -235,8 +237,20 @@ struct EngineStatistics
 
 // 编译时获得常量字符串长度
 template<std::size_t N>
-constexpr std::size_t STRLEN(const char (&str)[N]) {
-    return N - 1; // 字符串字面量包含结尾的 '\0'，所以减去 1
+constexpr std::size_t STRLEN(const char (&str)[N])
+{
+    return N - 1;   // 字符串字面量包含结尾的 '\0'，所以减去 1
+}
+
+// 获取枚举字符串的函数
+template<typename EnumType>
+    requires std::is_enum_v<EnumType>
+constexpr const char* GetEnumString(EnumType type);
+
+template <typename EnumType>
+constexpr int GetEnumValue(EnumType t)
+{
+    return static_cast<int>(t);
 }
 
 extern EngineStatistics g_engine_statistics;

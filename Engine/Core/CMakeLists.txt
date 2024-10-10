@@ -57,6 +57,22 @@ add_library(${PROJECT_NAME}
         CachedString.cpp
         Profiler/ProfileMacro.cpp
         Profiler/ProfileMacro.h
+        Async/Coroutine/Task.cpp
+        Async/Coroutine/Task.h
+        Async/Coroutine/Promise.cpp
+        Async/Coroutine/Promise.h
+        Async/Coroutine/Awaiter.cpp
+        Async/Coroutine/Awaiter.h
+        Async/Coroutine/IExecutor.h
+        Async/Coroutine/Result.cpp
+        Async/Coroutine/Result.h
+        Async/Coroutine/CoroutineExecutorManager.cpp
+        Async/Coroutine/CoroutineExecutorManager.h
+        Async/Coroutine/MainThreadExecutor.cpp
+        Async/Coroutine/MainThreadExecutor.h
+        Async/Coroutine/CoroutineCommon.h
+        Async/Coroutine/WaitForFrame.cpp
+        Async/Coroutine/WaitForFrame.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
