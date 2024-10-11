@@ -11,19 +11,11 @@
 
 namespace async::coro
 {
-
+struct AwaiterBase;
 enum class EExecutorType
 {
     MainThread,   // 在主线程运行的Executor
     Count,
-};
-
-// TODO: 优化
-struct AwaiterUpdater
-{
-    TFunction<void()> updater;
-    TFunction<bool()> judger;
-    TFunction<void()> waker;
 };
 
 class IExecutor
@@ -31,7 +23,7 @@ class IExecutor
 public:
     virtual ~IExecutor() = default;
 
-    virtual void Install(const AwaiterUpdater& updater) = 0;
+    virtual void Install(const AwaiterBase& updater) = 0;
 };
 
 }   // namespace async::coro

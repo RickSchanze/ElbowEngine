@@ -14,9 +14,14 @@ class MainThreadExecutor : public IExecutor {
 public:
     MainThreadExecutor();
 
-    virtual void Install(const AwaiterUpdater& updater) override;
+    void Install(const AwaiterBase& awaiter) override;
+
+    void PerformEarlyUpdate() const;
+    void PerformUpdate() const;
+    void PerformLateUpdate() const;
 
 private:
-    TArray<AwaiterUpdater> updaters_;
+    // TODO: TList有可能更好
+    TArray<AwaiterBase*> awaiters_;
 };
 }

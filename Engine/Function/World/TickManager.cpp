@@ -7,6 +7,8 @@
 
 #include "TickManager.h"
 
+#include "Async/Coroutine/CoroutineExecutorManager.h"
+#include "Async/Coroutine/MainThreadExecutor.h"
 #include "ITickable.h"
 
 namespace function
@@ -26,6 +28,13 @@ static void TickPreTick(const TArray<ITickable*>& objects_, const TArray<ITickab
     {
         other->PreTick();
     }
+
+    // 运行主线程协程EarlyUpdate
+    auto* executor = async::coro::CoroutineExecutorManager::Get()->GetExecutor(async::coro::EExecutorType::MainThread);
+    if (executor)
+    {
+        static_cast<async::coro::MainThreadExecutor*>(executor)->PerformEarlyUpdate();
+    }
 }
 
 static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
@@ -42,6 +51,13 @@ static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*
     {
         other->Tick();
     }
+
+    // 运行主线程协程Update
+    auto* executor = async::coro::CoroutineExecutorManager::Get()->GetExecutor(async::coro::EExecutorType::MainThread);
+    if (executor)
+    {
+        static_cast<async::coro::MainThreadExecutor*>(executor)->PerformUpdate();
+    }
 }
 
 static void TickPostTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
@@ -57,6 +73,13 @@ static void TickPostTick(const TArray<ITickable*>& objects_, const TArray<ITicka
     for (auto& other : others)
     {
         other->PostTick();
+    }
+
+    // 运行主线程协程LateUpdate
+    auto* executor = async::coro::CoroutineExecutorManager::Get()->GetExecutor(async::coro::EExecutorType::MainThread);
+    if (executor)
+    {
+        static_cast<async::coro::MainThreadExecutor*>(executor)->PerformLateUpdate();
     }
 }
 

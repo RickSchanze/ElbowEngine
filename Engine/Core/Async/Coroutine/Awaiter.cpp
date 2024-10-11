@@ -13,7 +13,7 @@ namespace async::coro
 
 bool Awaiter<void>::await_ready() const
 {
-    return CanSuspend();
+    return !CanSuspend();
 }
 
 void Awaiter<void>::await_suspend(std::coroutine_handle<void> handle)

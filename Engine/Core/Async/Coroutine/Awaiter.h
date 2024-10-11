@@ -16,12 +16,22 @@
 namespace async::coro
 {
 
+struct AwaiterBase
+{
+    virtual void EarlyUpdate() {}
+    virtual void Update() {}
+    virtual void LateUpdate() {}
+    virtual bool CanAwake() = 0;
+    virtual void Awake()    = 0;
+};
+
 template<>
-struct Awaiter<void>
+struct Awaiter<void> : AwaiterBase
 {
     virtual ~Awaiter() = default;
+
     /// 返回true时表示协程运行完成了
-    bool     await_ready() const;
+    bool await_ready() const;
 
     /// 返回void/true表示协程执行权交给协程caller, 之后被resume时继续执行协程函数
     /// 返回false代表直接执行await_resume
@@ -32,6 +42,8 @@ struct Awaiter<void>
     Awaiter(Awaiter&) = delete;
 
     Awaiter& operator=(Awaiter&) = delete;
+
+    Awaiter() = default;
 
     void Resume() const;
 
