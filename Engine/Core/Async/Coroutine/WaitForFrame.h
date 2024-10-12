@@ -26,8 +26,7 @@ struct WaitForFrame : Awaiter<void>
     bool CanSuspend() const override;
 
 private:
-    uint64_t frame_count_;
-    uint64_t frame_counter_ = 0;
+    uint64_t target_frame_;
 };
 
 }

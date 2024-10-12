@@ -11,7 +11,7 @@
 
 async::coro::WaitForFrame::WaitForFrame(uint64_t frame_count)
 {
-    frame_count_ = frame_count;
+    target_frame_ = g_engine_statistics.frame_count + frame_count;
 }
 
 void async::coro::WaitForFrame::AfterSuspend()
@@ -21,12 +21,11 @@ void async::coro::WaitForFrame::AfterSuspend()
 
 void async::coro::WaitForFrame::Update()
 {
-    frame_counter_++;
 }
 
 bool async::coro::WaitForFrame::CanAwake()
 {
-    return frame_counter_ > frame_count_;
+    return g_engine_statistics.frame_count >= target_frame_;
 }
 
 void async::coro::WaitForFrame::Awake() {}

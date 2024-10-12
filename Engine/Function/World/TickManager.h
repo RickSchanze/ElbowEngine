@@ -9,6 +9,7 @@
 #include "CoreDef.h"
 #include "Singleton/Singleton.h"
 #include "Utils/ContainerUtils.h"
+#include "CoreGlobal.h"
 
 namespace function::comp
 {
@@ -22,6 +23,14 @@ class GameObject;
 namespace function
 {
 class ITickable;
+
+enum class ETickStage
+{
+    PreTick,
+    Tick,
+    PostTick,
+    Count, // 无效Tick阶段
+};
 
 class TickManager : public Singleton<TickManager>
 {
@@ -62,12 +71,28 @@ public:
         }
     }
 
-    void PerformTickLogic() const;
+    void PerformTickLogic();
+
+    ETickStage GetTickStage() const;
 
 private:
     // 所有可Tick对象
     TArray<ITickable*> tickables_;
     TArray<ITickable*> tickable_game_objects_;
     TArray<ITickable*> tickable_components_;
+
+    ETickStage tick_stage_ = ETickStage::Count;
 };
 }   // namespace function
+
+template<>
+constexpr const char* GetEnumString<function::ETickStage>(function::ETickStage stage)
+{
+    switch (stage)
+    {
+    case function::ETickStage::PreTick: return "PreTick";
+    case function::ETickStage::Tick: return "Tick";
+    case function::ETickStage::PostTick: return "PostTick";
+    }
+    return "OutOfRange";
+}

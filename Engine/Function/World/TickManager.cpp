@@ -16,15 +16,15 @@ namespace function
 
 static void TickPreTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
 {
-    for (auto& comp : comps)
+    for (auto& comp: comps)
     {
         comp->PreTick();
     }
-    for (auto& obj : objects_)
+    for (auto& obj: objects_)
     {
         obj->PreTick();
     }
-    for (auto& other : others)
+    for (auto& other: others)
     {
         other->PreTick();
     }
@@ -39,15 +39,15 @@ static void TickPreTick(const TArray<ITickable*>& objects_, const TArray<ITickab
 
 static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
 {
-    for (auto& comp : comps)
+    for (auto& comp: comps)
     {
         comp->Tick();
     }
-    for (auto& obj : objects_)
+    for (auto& obj: objects_)
     {
         obj->Tick();
     }
-    for (auto& other : others)
+    for (auto& other: others)
     {
         other->Tick();
     }
@@ -62,15 +62,15 @@ static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*
 
 static void TickPostTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
 {
-    for (auto& comp : comps)
+    for (auto& comp: comps)
     {
         comp->PostTick();
     }
-    for (auto& obj : objects_)
+    for (auto& obj: objects_)
     {
         obj->PostTick();
     }
-    for (auto& other : others)
+    for (auto& other: others)
     {
         other->PostTick();
     }
@@ -83,12 +83,20 @@ static void TickPostTick(const TArray<ITickable*>& objects_, const TArray<ITicka
     }
 }
 
-void TickManager::PerformTickLogic() const
+void TickManager::PerformTickLogic()
 {
-    // PreTick
+    tick_stage_ = ETickStage::PreTick;
     TickPreTick(tickable_game_objects_, tickable_components_, tickables_);
+    tick_stage_ = ETickStage::Tick;
     TickTick(tickable_game_objects_, tickable_components_, tickables_);
+    tick_stage_ = ETickStage::PostTick;
     TickPostTick(tickable_game_objects_, tickable_components_, tickables_);
+    tick_stage_ = ETickStage::Count;
+}
+
+ETickStage TickManager::GetTickStage() const
+{
+    return tick_stage_;
 }
 
 }
