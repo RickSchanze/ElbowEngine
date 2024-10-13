@@ -33,6 +33,8 @@ set(MATERIAL_FILE
         World/TickManager.h
         World/ITickable.cpp
         World/ITickable.h
+        Component/FunctionTestComponent.cpp
+        Component/FunctionTestComponent.h
 )
 
 add_library(${PROJECT_NAME}
@@ -58,6 +60,8 @@ add_library(${PROJECT_NAME}
         Component/Script/SpaceCircle.cpp
         Component/Script/Autorotation.h
         Component/Script/Autorotation.cpp
+        Component/FunctionTestComponent.h
+        Component/FunctionTestComponent.cpp
         Render/RenderContext.h
         Render/RenderContext.cpp
         Render/LiteForwardRenderPipeline.h
@@ -70,6 +74,8 @@ add_library(${PROJECT_NAME}
         ${MATERIAL_FILE}
         ImGui/ImGuiHelper.h
         ImGui/ImGuiHelper.cpp
+        World/AsyncOperation/WaitForFrame.h
+        World/AsyncOperation/WaitForFrame.cpp
 )
 
 add_library(Engine::Function ALIAS ${PROJECT_NAME})

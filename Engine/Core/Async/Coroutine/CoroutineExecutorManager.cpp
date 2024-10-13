@@ -34,4 +34,12 @@ void CoroutineExecutorManager::UnregisterExecutor(EExecutorType type)
     }
 }
 
+CoroutineExecutorManager::~CoroutineExecutorManager()
+{
+    for (auto* executor: executors_)
+    {
+        Delete(executor);
+    }
+}
+
 }

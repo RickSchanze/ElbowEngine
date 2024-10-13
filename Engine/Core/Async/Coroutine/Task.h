@@ -9,9 +9,6 @@
 
 #include "CoreDef.h"
 #include "IExecutor.h"
-
-#include <coroutine>
-
 #include "CoroutineCommon.h"
 
 #include "Promise.h"
@@ -24,20 +21,28 @@ struct Task<void, EExecutorType::MainThread>
 {
     using promise_type = Promise<void>;
 
-    explicit Task(const std::coroutine_handle<promise_type> handle) noexcept : handle_(handle) {}
+    explicit Task(promise_type* handle) noexcept : promise_(handle) {}
+
+    explicit Task() noexcept : promise_(nullptr) {}
 
     Task(Task& other) = delete;
 
     Task& operator=(Task& other) = delete;
 
-    Task(Task&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
+    Task(Task&& other) noexcept : promise_(std::exchange(other.promise_, {})) {}
+
+    Task& operator=(Task&& other) noexcept;
 
     ~Task();
 
     bool IsCompleted() const;
 
+    void Forget() noexcept;
+
+    bool IsForget() const noexcept;
+
 private:
-    std::coroutine_handle<promise_type> handle_;
+    promise_type* promise_;
 };
 
 }   // namespace async::coro

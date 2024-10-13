@@ -50,6 +50,18 @@ public:
     }
 
     template<typename ContainerT>
+        requires std::random_access_iterator<typename ContainerT::iterator>
+    static bool RemoveAt(ContainerT& container, int32_t index)
+    {
+        if (index < 0 || index >= container.size())
+        {
+            return false;
+        }
+        container.erase(container.begin() + index);
+        return true;
+    }
+
+    template<typename ContainerT>
     static TOptional<typename ContainerT::value_type> First(
         const ContainerT&                                              container,
         const TFunction<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }

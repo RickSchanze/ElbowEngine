@@ -27,7 +27,7 @@ void async::coro::MainThreadExecutor::Install(const AwaiterBase& awaiter)
     }
 }
 
-void async::coro::MainThreadExecutor::PerformEarlyUpdate() const
+void async::coro::MainThreadExecutor::PerformEarlyUpdate()
 {
     for (int i = static_cast<int>(awaiters_.size()) - 1; i >= 0; i--)
     {
@@ -41,7 +41,7 @@ void async::coro::MainThreadExecutor::PerformEarlyUpdate() const
     }
 }
 
-void async::coro::MainThreadExecutor::PerformUpdate() const
+void async::coro::MainThreadExecutor::PerformUpdate()
 {
     for (int i = static_cast<int>(awaiters_.size()) - 1; i >= 0; i--)
     {
@@ -55,7 +55,7 @@ void async::coro::MainThreadExecutor::PerformUpdate() const
     }
 }
 
-void async::coro::MainThreadExecutor::PerformLateUpdate() const
+void async::coro::MainThreadExecutor::PerformLateUpdate()
 {
     for (int i = static_cast<int>(awaiters_.size()) - 1; i >= 0; i--)
     {
@@ -65,6 +65,19 @@ void async::coro::MainThreadExecutor::PerformLateUpdate() const
         {
             awaiter->Awake();
             ContainerUtils::Remove(awaiters_, awaiter);
+        }
+    }
+}
+
+void async::coro::MainThreadExecutor::RemoveAwaiterByHandle(void* handle)
+{
+    for (int i = static_cast<int>(awaiters_.size()) - 1; i >= 0; i--)
+    {
+        auto* awaiter = awaiters_[i];
+        if (awaiter->GetCoroutineHandle() == handle)
+        {
+            ContainerUtils::Remove(awaiters_, awaiter);
+            return;
         }
     }
 }

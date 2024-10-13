@@ -48,7 +48,9 @@ public:
     void LogEndInit();
 
     void Initialize();
-    void Finitialize() const;
+    void DeInitialize() const;
+
+    void InitializeCoroutineContext();
 
     void Run();
 
@@ -79,6 +81,12 @@ protected:
     void OnOpenLightSettingWindow();
     void OnOpenConsoleWindow();
     // clang-format on
+
+protected:
+#ifdef ENABLE_TEST
+    void FunctionalityTest();
+#endif
+
 
 private:
     static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)

@@ -7,18 +7,33 @@
 
 #include "Promise.h"
 #include "Awaiter.h"
+#include "CoroutineExecutorManager.h"
+#include "MainThreadExecutor.h"
 #include "Task.h"
 
 namespace async::coro
 {
+
 Task<void> Promise<void>::get_return_object()
 {
-    return Task<void>(std::coroutine_handle<Promise>::from_promise(*this));
+    return Task<void>{this};
+}
+
+ForgetAwaiter Promise<void>::final_suspend() noexcept
+{
+    if (!forget_)
+    {
+        destroyed_ = true;
+        void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
+        auto* executor = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
+        executor->RemoveAwaiterByHandle(raw_handle);
+    }
+    return ForgetAwaiter{forget_};
 }
 
 Awaiter<void> Promise<void>::initial_suspend() noexcept
 {
-    return AwaiterFactory::Create<void>(EExecutorType::MainThread);
+    return {};
 }
 
 void Promise<void>::unhandled_exception() noexcept
@@ -38,6 +53,22 @@ bool Promise<void>::IsCompleted() const
         return true;
     }
     return false;
+}
+
+void Promise<void>::Destroy()
+{
+    if (!destroyed_)
+    {
+        destroyed_ = true;
+        void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
+        auto* executor = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
+        executor->RemoveAwaiterByHandle(raw_handle);
+        std::coroutine_handle<Promise>::from_promise(*this).destroy();
+    }
+}
+
+Promise<void>::~Promise()
+{
 }
 
 }   // namespace async::coro

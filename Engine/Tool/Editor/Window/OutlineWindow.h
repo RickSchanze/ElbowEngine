@@ -11,10 +11,6 @@
 #include "Component/Script/Autorotation.h"
 #include "OutlineWindow.generated.h"
 
-namespace Function {
-class GameObject;
-}
-
 namespace tool::window {
 
 // 世界大纲窗口

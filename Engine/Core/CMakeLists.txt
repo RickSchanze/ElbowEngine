@@ -71,8 +71,6 @@ add_library(${PROJECT_NAME}
         Async/Coroutine/MainThreadExecutor.cpp
         Async/Coroutine/MainThreadExecutor.h
         Async/Coroutine/CoroutineCommon.h
-        Async/Coroutine/WaitForFrame.cpp
-        Async/Coroutine/WaitForFrame.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

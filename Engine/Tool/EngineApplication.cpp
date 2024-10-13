@@ -17,7 +17,10 @@
 
 #include "Utils/ContainerUtils.h"
 
+#include "Async/Coroutine/CoroutineExecutorManager.h"
+#include "Async/Coroutine/MainThreadExecutor.h"
 #include "Component/Camera.h"
+#include "Component/FunctionTestComponent.h"
 #include "Component/Light/Light.h"
 #include "Component/Mesh/StaticMesh.h"
 #include "Editor/Window/ConsoleWindow.h"
@@ -60,7 +63,7 @@ EngineApplication::EngineApplication(const String& project_path, const String& w
 EngineApplication::~EngineApplication()
 {
     Delete(editor_style_);
-    Finitialize();
+    DeInitialize();
 }
 
 EngineApplication& EngineApplication::Instance()
@@ -89,6 +92,15 @@ void EngineApplication::LogBeginInit()
 
 void EngineApplication::LogEndInit()
 {
+#ifdef ENABLE_TEST
+    LOG_INFO_ANSI_CATEGORY(Engine, "测试:启用");
+#endif
+#ifdef ENABLE_PROFILING
+    LOG_INFO_ANSI_CATEGORY(Engine, "Profiling: 启用");
+#endif
+#ifdef WITH_EDITOR
+    LOG_INFO_ANSI_CATEGORY(Engine, "Editor: 启用");
+#endif
     LOG_INFO_CATEGORY(Engine, L"引擎初始化完成");
 }
 
@@ -108,6 +120,7 @@ void EngineApplication::Initialize()
 {
     // 创建并初始化GlfwWindow
     LogBeginInit();
+    InitializeCoroutineContext();
     window_ = MakeUnique<platform::window::GlfwWindow>(window_title_, 1920, 1080);
     window_->Initialize();
     window_->SetFrameBufferResizedCallback(&ThisClass::FrameBufferResizeCallback);
@@ -124,7 +137,8 @@ void EngineApplication::Initialize()
     editor_style_->SetStyle();
     render_context_ = New<function::RenderContext>();
 
-    camera_object_                                                      = NewObject<function::GameObject>(L"摄像机", nullptr);
+    camera_object_ = NewObject<function::GameObject>(L"摄像机", nullptr);
+
     camera_object_->AddComponent<function::comp::Camera>()->draw_skybox = false;
 
     auto* light_obj = NewObject<function::GameObject>(L"点光源");
@@ -137,10 +151,14 @@ void EngineApplication::Initialize()
         .SetMaterial(&function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK47Mat")
                           ->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png"));
 
+#ifdef ENABLE_TEST
+    FunctionalityTest();
+#endif
+
     LogEndInit();
 }
 
-void EngineApplication::Finitialize() const
+void EngineApplication::DeInitialize() const
 {
     OnAppExit.Broadcast();
     if (!IsValid()) return;
@@ -151,6 +169,14 @@ void EngineApplication::Finitialize() const
     res::ResourceManager::Get()->DestroyAllResources();
     if (render_application_->IsValid()) render_application_->Finalize();
     if (window_->IsValid()) window_->Finalize();
+}
+
+void EngineApplication::InitializeCoroutineContext()
+{
+    using namespace async::coro;
+    auto* executor = New<MainThreadExecutor>();
+    CoroutineExecutorManager::Get()->RegisterExecutor(EExecutorType::MainThread, executor);
+    LOG_INFO_ANSI_CATEGORY(Engine, "初始化主线程协程运行环境");
 }
 
 void EngineApplication::Run()
@@ -306,4 +332,10 @@ void EngineApplication::OnOpenConsoleWindow()
 {
     OpenWindow<window::ConsoleWindow>();
 }
+
+void EngineApplication::FunctionalityTest()
+{
+    NewObject<function::GameObject>(L"功能测试用GameObject")->AddComponent<function::comp::FunctionTestComponent>();
+}
+
 }

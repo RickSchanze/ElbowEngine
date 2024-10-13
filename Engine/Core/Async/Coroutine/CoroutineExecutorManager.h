@@ -39,6 +39,8 @@ public:
         return static_cast<T*>(GetExecutor(type));
     }
 
+    ~CoroutineExecutorManager() override;
+
 private:
     TStaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};
 };
