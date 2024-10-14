@@ -1,4 +1,5 @@
 # 注意事项
+## 1. 反射标注
 由于编写时使用RTTR作为反射库并且通过libTooling自己编写CodeGenerator工具  
 因此所有具有需要反射类的文件的最后一个包含文件都必须是"xxx.generated.h"   
 例如：
@@ -22,7 +23,7 @@ A.cpp:
 GENRATED_SOURCE() // 必要，位置随意
 ```
 按照上述规则来即可顺利注册反射代码。
-# 当前有意义的属性标志（PROPERTY）
+### 1.1当前有意义的属性标志（PROPERTY）
 1. Label  
 标识UI显示的这个字段的名字
 ```C++
@@ -62,5 +63,8 @@ PROPERTY(Getter = GetHello)
 int mHello;
 ```
 
-# 当前有意义的函数标志（FUNCTION）
-
+### 1.2 当前有意义的函数标志（FUNCTION）
+# 2. Profiler
++ 开启ENABLE_PROFILE时, 如果不连接Server, 就会导致内存泄露, 连接Server一次后就不再泄露
++ 这是tracy本身的问题
++ 当前tracy使用的版本是0.11.1，其他协议版本不可用

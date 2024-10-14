@@ -28,16 +28,15 @@ void FunctionTestComponent::BeginPlay()
 void FunctionTestComponent::Tick()
 {
     TickableComponent::Tick();
-    // if (tasks_.size() > 5)
-    // {
-    //     tasks_.pop_back();
-    //     tasks_.push_front(Move(TestWaitFormFrame()));
-    // }
-    // else
-    // {
-    //     tasks_.push_front(Move(TestWaitFormFrame()));
-    // }
-    // TestWaitFormFrame().Forget();
+    if (tasks_.size() > 5)
+    {
+        tasks_.pop_back();
+        tasks_.push_front(Move(TestWaitFormFrame()));
+    }
+    else
+    {
+        tasks_.push_front(Move(TestWaitFormFrame()));
+    }
 }
 
 async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()

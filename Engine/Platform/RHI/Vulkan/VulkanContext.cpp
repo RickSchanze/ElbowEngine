@@ -306,7 +306,9 @@ void VulkanContext::PostFrameRender()
     vk::Result Result;
     {
         PROFILE_SCOPE("Present");
-        // TracyMessage(frame_messages[g_engine_statistics.current_image_index], STRLEN(frame_messages[g_engine_statistics.current_image_index]));
+        SEND_MESSAGE_TO_PROFILER(
+            frame_messages[g_engine_statistics.current_image_index], STRLEN(frame_messages[g_engine_statistics.current_image_index])
+        );
         Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
     }
 

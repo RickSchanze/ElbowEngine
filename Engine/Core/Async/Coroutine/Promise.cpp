@@ -23,10 +23,13 @@ ForgetAwaiter Promise<void>::final_suspend() noexcept
 {
     if (!forget_)
     {
-        destroyed_ = true;
         void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
         auto* executor = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
         executor->RemoveAwaiterByHandle(raw_handle);
+    }
+    else
+    {
+        destroyed_ = true;
     }
     return ForgetAwaiter{forget_};
 }

@@ -97,9 +97,11 @@ bool operator!=(const MemoryTraceAllocator<T>&, const MemoryTraceAllocator<U>&)
     COLOR_SCOPED ZoneColor(GetColor());
 #define MARK_FRAME(name) FrameMarkNamed(name)
 #define MARK_FRAME_AUTO FrameMark
+#define SEND_MESSAGE_TO_PROFILER(txt, size) TracyMessage(txt, size)
 #else
 #define PROFILE_SCOPE_AUTO
 #define PROFILE_SCOPE(name)
 #define MARK_FRAME(name)
 #define MARK_FRAME_AUTO
+#define SEND_MESSAGE_TO_PROFILER(txt, size)
 #endif
