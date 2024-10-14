@@ -57,7 +57,6 @@ public:
 
     EGraphicsAPI GetAPI() const override;
 
-#ifdef ENABLE_PROFILING
 
     void InitProfiling() override;
     void DeInitProfiling() override;
@@ -65,7 +64,6 @@ public:
     void EndProfile() override;
     void CollectProfileData(const CommandBuffer& cmd) override;
 
-#endif
 
     /** End GfxContext */
 

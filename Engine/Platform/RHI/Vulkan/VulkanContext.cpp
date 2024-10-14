@@ -61,8 +61,11 @@ struct VulkanProfilerCounter
     ~VulkanProfilerCounter() { counter--; }
 };
 
+#endif
+
 void VulkanContext::InitProfiling()
 {
+#ifdef ENABLE_PROFILING
     static constexpr char command_buffer_names[5][22] = {
         "Vulkan_CommandBuffer1", "Vulkan_CommandBuffer2", "Vulkan_CommandBuffer3", "Vulkan_CommandBuffer4", "Vulkan_CommandBuffer5"
     };
@@ -81,19 +84,23 @@ void VulkanContext::InitProfiling()
         );
         ctxs[i]->Name(command_buffer_names[i], STRLEN(command_buffer_names[i]));
     }
+#endif
 }
 
 void VulkanContext::DeInitProfiling()
 {
+#ifdef ENABLE_PROFILING
     for (int i = 0; i < ctxs.size(); i++)
     {
         TracyVkDestroy(ctxs[i]);
     }
     ctxs.clear();
+#endif
 }
 
 void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
 {
+#ifdef ENABLE_PROFILING
     VulkanProfilerCounter _;
     ;
     static tracy::SourceLocationData location{name, TracyFunction, TracyFile, (uint32_t)TracyLine, GetColor(VulkanProfilerCounter::counter)};
@@ -110,20 +117,25 @@ void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
         (VkCommandBuffer)cmd.GetNativePtr(),
         true
     );
+#endif
 }
 
 void VulkanContext::EndProfile()
 {
+#ifdef ENABLE_PROFILING
     scope = nullptr;
+#endif
 }
 
 void VulkanContext::CollectProfileData(const CommandBuffer& cmd)
 {
+#ifdef ENABLE_PROFILING
     const uint32_t index = g_engine_statistics.current_image_index;
     TracyVkCollect(ctxs[index], static_cast<VkCommandBuffer>(cmd.GetNativePtr()));
+#endif
 }
 
-#endif
+
 
 VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
 {
@@ -294,7 +306,7 @@ void VulkanContext::PostFrameRender()
     vk::Result Result;
     {
         PROFILE_SCOPE("Present");
-        TracyMessage(frame_messages[g_engine_statistics.current_image_index], STRLEN(frame_messages[g_engine_statistics.current_image_index]));
+        // TracyMessage(frame_messages[g_engine_statistics.current_image_index], STRLEN(frame_messages[g_engine_statistics.current_image_index]));
         Result = logical_device_->GetPresentQueue().presentKHR(&PresentInfo);
     }
 

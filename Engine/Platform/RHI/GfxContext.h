@@ -29,7 +29,6 @@ public:
      */
     virtual EGraphicsAPI GetAPI() const = 0;
 
-#ifdef ENABLE_PROFILING
 
     virtual void InitProfiling()                                          = 0;
     virtual void DeInitProfiling()                                        = 0;
@@ -37,7 +36,6 @@ public:
     virtual void EndProfile()                                             = 0;
     virtual void CollectProfileData(const CommandBuffer& cmd)             = 0;
 
-#endif
 };
 
 GfxContext& GetGfxContext();
