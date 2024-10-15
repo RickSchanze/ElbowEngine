@@ -19,7 +19,6 @@ struct WaitForFrame;
 }
 namespace async::coro
 {
-
 struct AwaiterBase
 {
     virtual ~     AwaiterBase() = default;

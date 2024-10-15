@@ -68,3 +68,43 @@ int mHello;
 + 开启ENABLE_PROFILE时, 如果不连接Server, 就会导致内存泄露, 连接Server一次后就不再泄露
 + 这是tracy本身的问题
 + 当前tracy使用的版本是0.11.1，其他协议版本不可用
+# 3. 协程
+主线程协程必须调用Forget(), 或者co_await, 或者保存起来, 否则协程将不会运行。
+```C++
+async::coro::Task<void> TestWaitFormFrame()
+{
+    using namespace async::coro;
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "测试等待几帧的协程");
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "当前帧: {}", g_engine_statistics.frame_count);
+    co_await WaitForFrame(3);
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "等待3帧后的帧数: {}", g_engine_statistics.frame_count);
+}
+```
+正确用法:
+```C++
+void SomeNonCoroFunc() {
+    TestWaitForFrame().Forget(); // 表示不关心结果, 并且可以正常运行
+}
+
+Task<void> a;
+void SomeNonCoroFunc() {
+    a = Move(TestWaitForFrame()); // 关心结果,
+    // 后续可以通过a.IsCompleted()来查询
+}
+
+Task<void> SomeCoroFunc() {
+    // ...
+    co_await TestWaitFormFrame(); // 等TestWaitForFrame运行完后再继续执行(单线程)
+    // ...
+}
+```
+错误用法: 
+```C++
+void SomeNonCoroFunc() {
+    TestWaitForFrame(); // 协程对象函数退出时析构, 因此不会运行
+}
+
+Task<void> SomeCoroFunc() {
+    TestWaitFormFrame(); // 与上同理
+}
+```

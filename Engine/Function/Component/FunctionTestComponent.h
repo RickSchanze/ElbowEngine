@@ -31,6 +31,8 @@ public:
     void Tick() override;
 
     async::coro::Task<void> TestWaitFormFrame();
+    async::coro::Task<void> TestAwaitTask();
+    async::coro::Task<void> TestAwaitTask2();
 
 private:
     EPROPERTY()

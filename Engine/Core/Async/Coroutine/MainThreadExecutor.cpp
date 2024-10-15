@@ -23,7 +23,7 @@ void async::coro::MainThreadExecutor::Install(const AwaiterBase& awaiter)
     }
     else
     {
-        awaiters_.push_back(pawaiter);
+        awaiters_.insert(awaiters_.begin(), pawaiter);
     }
 }
 

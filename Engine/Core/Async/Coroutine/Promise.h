@@ -11,7 +11,6 @@
 #include "Result.h"
 #include "Task.h"
 
-
 #include <coroutine>
 
 namespace async::coro
@@ -33,6 +32,8 @@ struct ForgetAwaiter
 template<>
 struct Promise<void, EExecutorType::MainThread>
 {
+    Promise();
+
     Task<void> get_return_object();
 
     /// 结束后总是挂起，由我们自己控制协程的销毁
@@ -48,6 +49,12 @@ struct Promise<void, EExecutorType::MainThread>
     AwaiterType await_transform(AwaiterType&& awaiter)
     {
         return awaiter;
+    }
+
+    template <typename ReturnType>
+    TaskAwaiter<ReturnType> await_transform(Task<ReturnType, EExecutorType::MainThread>&& task)
+    {
+        return TaskAwaiter<ReturnType>(Move(task));
     }
 
     void return_void() noexcept;

@@ -10,6 +10,7 @@
 #ifdef ENABLE_TEST
 #include "World/AsyncOperation/WaitForFrame.h"
 #include "Async/Coroutine/Task.h"
+#include "Async/Coroutine/TaskAwaiter.h"
 
 namespace function::comp
 {
@@ -21,22 +22,12 @@ FunctionTestComponent::FunctionTestComponent()
 void FunctionTestComponent::BeginPlay()
 {
     TickableComponent::BeginPlay();
-    TestWaitFormFrame();
-    // TestWaitFormFrame().Forget();
+    TestAwaitTask().Forget();
 }
 
 void FunctionTestComponent::Tick()
 {
     TickableComponent::Tick();
-    if (tasks_.size() > 5)
-    {
-        tasks_.pop_back();
-        tasks_.push_front(Move(TestWaitFormFrame()));
-    }
-    else
-    {
-        tasks_.push_front(Move(TestWaitFormFrame()));
-    }
 }
 
 async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()
@@ -46,6 +37,13 @@ async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()
     LOG_INFO_ANSI_CATEGORY(Test.Coro, "当前帧: {}", g_engine_statistics.frame_count);
     co_await WaitForFrame(3);
     LOG_INFO_ANSI_CATEGORY(Test.Coro, "等待3帧后的帧数: {}", g_engine_statistics.frame_count);
+}
+
+async::coro::Task<void> FunctionTestComponent::TestAwaitTask()
+{
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "测试AwaitTaskBegin");
+    co_await TestWaitFormFrame();
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "测试AwaitTaskEnd");
 }
 
 }   // namespace function::comp

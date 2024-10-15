@@ -32,7 +32,7 @@ Task<void>::~Task()
 
 bool Task<void>::IsCompleted() const
 {
-    return std::coroutine_handle<promise_type>::from_address(promise_).promise().IsCompleted();
+    return promise_->IsCompleted();
 }
 
 void Task<void, EExecutorType::MainThread>::Forget() noexcept

@@ -10,9 +10,6 @@
 
 namespace async::coro
 {
-template <typename T>
-struct AwaiterImpl;
-
 template<typename T, EExecutorType = EExecutorType::MainThread>
 struct Task;
 
@@ -24,4 +21,7 @@ struct Awaiter;
 
 template <typename T>
 struct Result;
+
+template <typename T>
+struct TaskAwaiter;
 }
