@@ -73,6 +73,7 @@ add_library(${PROJECT_NAME}
         Async/Coroutine/CoroutineCommon.h
         Async/Coroutine/TaskAwaiter.cpp
         Async/Coroutine/TaskAwaiter.h
+        Async/Coroutine/Coroutine.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

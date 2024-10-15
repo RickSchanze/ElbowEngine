@@ -9,8 +9,7 @@
 
 #ifdef ENABLE_TEST
 #include "World/AsyncOperation/WaitForFrame.h"
-#include "Async/Coroutine/Task.h"
-#include "Async/Coroutine/TaskAwaiter.h"
+#include "Async/Coroutine/Coroutine.h"
 
 namespace function::comp
 {
