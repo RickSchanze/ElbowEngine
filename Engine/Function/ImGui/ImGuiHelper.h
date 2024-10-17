@@ -13,7 +13,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 #    include <imgui.h>
 #endif
 
@@ -103,7 +103,7 @@ public:
     template<typename... Args>
     static void Text(const char* fmt, Args&&... args)
     {
-#if USE_IMGUI
+#ifdef USE_IMGUI
         ImGui::Text(fmt, Forward<Args>(args)...);
 #endif
     }
@@ -111,7 +111,7 @@ public:
     template<typename... Args>
     static void TextColored(const ImVec4& color, const char* fmt, Args&&... args)
     {
-#if USE_IMGUI
+#ifdef USE_IMGUI
         ImGui::TextColored(color, fmt, Forward<Args>(args)...);
 #endif
     }
@@ -119,7 +119,7 @@ public:
     template<typename... Args>
     static void TextWrapped(const char* fmt, Args&&... args)
     {
-#if USE_IMGUI
+#ifdef USE_IMGUI
         ImGui::TextWrapped(fmt, Forward<Args>(args)...);
 #endif
     }

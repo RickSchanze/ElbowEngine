@@ -13,7 +13,7 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 #include <imgui.h>
 #endif
 
@@ -34,7 +34,7 @@ struct Vector2
 {
     operator glm::vec2();
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
     operator ImVec2();
 #endif
 
@@ -131,7 +131,7 @@ public:
     /** 转换为没有alpha通道的Int */
     uint32_t ToUIntNoAlpha() const;
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
     Color() = default;
     Color(ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
     Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}

@@ -8,6 +8,8 @@
 #pragma once
 #include "CoreDef.h"
 #include "CoroutineCommon.h"
+#include "CoroutineExecutorManager.h"
+#include "MainThreadExecutor.h"
 #include "Result.h"
 #include "Task.h"
 
@@ -25,6 +27,89 @@ struct ForgetAwaiter
     bool forget = false;
 };
 
+template<typename T>
+struct Promise<T, EExecutorType::MainThread>
+{
+    using ReturnType = T;
+
+    Task<ReturnType> get_return_object()
+    {
+        return Task<ReturnType>{this};
+    }
+
+    Awaiter<T> initial_suspend() noexcept
+    {
+        return {};
+    }
+
+    ForgetAwaiter final_suspend()noexcept
+    {
+        if (!forget_)
+        {
+            void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
+            auto* executor   = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
+            executor->RemoveAwaiterByHandle(raw_handle);
+        }
+        else
+        {
+            destroyed_ = true;
+        }
+        return ForgetAwaiter{forget_};
+    }
+
+    void return_value(T value)
+    {
+        result_ = value;
+    }
+
+    void unhandled_exception()
+    {
+        result_ = Result<T>{std::current_exception()};
+    }
+
+    TOptional<T> GetResult()
+    {
+        if (result_.has_value())
+        {
+            return result_->Get();
+        }
+        return std::nullopt;
+    }
+
+    bool IsCompleted() const
+    {
+        return result_.has_value();
+    }
+
+    bool IsForget() const noexcept
+    {
+        return forget_;
+    }
+
+    void Forget()
+    {
+        forget_ = true;
+    }
+
+    void Destroy()
+    {
+        if (!destroyed_)
+        {
+            destroyed_       = true;
+            void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
+            auto* executor   = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
+            executor->RemoveAwaiterByHandle(raw_handle);
+            std::coroutine_handle<Promise>::from_promise(*this).destroy();
+        }
+    }
+
+private:
+    TOptional<Result<ReturnType>> result_;
+
+    bool destroyed_ = false;
+    bool forget_ = false;
+};
+
 
 /**
  * 当前是主线程协程，不提供Wait，不然可能会卡主线程
@@ -32,9 +117,10 @@ struct ForgetAwaiter
 template<>
 struct Promise<void, EExecutorType::MainThread>
 {
+    using ReturnType = void;
     Promise();
 
-    Task<void> get_return_object();
+    Task<void> get_return_object() { return Task<void>{this}; }
 
     /// 结束后总是挂起，由我们自己控制协程的销毁
     ForgetAwaiter final_suspend() noexcept;
@@ -51,7 +137,7 @@ struct Promise<void, EExecutorType::MainThread>
         return awaiter;
     }
 
-    template <typename ReturnType>
+    template<typename ReturnType>
     TaskAwaiter<ReturnType> await_transform(Task<ReturnType, EExecutorType::MainThread>&& task)
     {
         return TaskAwaiter<ReturnType>(Move(task));
@@ -74,7 +160,7 @@ struct Promise<void, EExecutorType::MainThread>
 
 private:
     TOptional<Result<void>> result_;
-    bool forget_ = false;
-    bool destroyed_ = false;
+    bool                    forget_    = false;
+    bool                    destroyed_ = false;
 };
 }   // namespace async::coro

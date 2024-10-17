@@ -16,10 +16,6 @@ namespace async::coro
 
 Promise<void, EExecutorType::MainThread>::Promise() = default;
 
-Task<void> Promise<void>::get_return_object()
-{
-    return Task<void>{this};
-}
 
 ForgetAwaiter Promise<void>::final_suspend() noexcept
 {
@@ -28,7 +24,6 @@ ForgetAwaiter Promise<void>::final_suspend() noexcept
         void* raw_handle = std::coroutine_handle<Promise>::from_promise(*this).address();
         auto* executor   = static_cast<MainThreadExecutor*>(CoroutineExecutorManager::Get()->GetExecutor(EExecutorType::MainThread));
         executor->RemoveAwaiterByHandle(raw_handle);
-        result_ = Result<void>{};
     }
     else
     {

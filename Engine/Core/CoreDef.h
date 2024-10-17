@@ -334,6 +334,3 @@ Type TypeOf()
     {                                                            \
         rttr::registration::class_<type>(#type).constructor<>(); \
 }
-
-// IMGUI开关
-#define USE_IMGUI 1

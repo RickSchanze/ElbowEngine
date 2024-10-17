@@ -11,6 +11,28 @@
 
 namespace async::coro
 {
+template <typename T>
+struct Result
+{
+    explicit Result() = default;
+    explicit Result(const T& result) : result_(result) {}
+    explicit Result(const std::exception_ptr& exception_ptr) : exception_ptr_(exception_ptr) {}
+
+    T Get() const
+    {
+        if (exception_ptr_)
+        {
+            std::rethrow_exception(exception_ptr_);
+        }
+        return result_;
+    }
+
+private:
+    std::exception_ptr exception_ptr_ = nullptr;
+    T result_;
+};
+
+
 template<>
 struct Result<void>
 {

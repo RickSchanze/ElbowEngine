@@ -8,13 +8,19 @@
 #pragma once
 
 #include "CoreDef.h"
-#include "IExecutor.h"
 #include "CoroutineCommon.h"
+#include "IExecutor.h"
 
 #include "Promise.h"
 
 namespace async::coro
 {
+
+template<typename T>
+struct Task<T, EExecutorType::MainThread>
+{
+    using promise_type = Promise<T>;
+};
 
 template<>
 struct Task<void, EExecutorType::MainThread>
