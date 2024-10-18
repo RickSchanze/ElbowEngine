@@ -32,12 +32,16 @@ public:
 
     async::coro::Task<void> TestWaitFormFrame();
     async::coro::Task<void> TestAwaitTask();
+    async::coro::Task<int> TestReturnTask();
+    async::coro::Task<int> TestTask2();
+    async::coro::Task<void> TestTask3();
 
 private:
     EPROPERTY()
     bool tested_ = false;
 
     std::deque<async::coro::Task<void>> tasks_;
+    async::coro::Task<int> my_task_;
 };
 
 }   // namespace function::comp

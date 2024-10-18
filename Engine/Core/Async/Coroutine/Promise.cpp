@@ -16,7 +16,6 @@ namespace async::coro
 
 Promise<void, EExecutorType::MainThread>::Promise() = default;
 
-
 ForgetAwaiter Promise<void>::final_suspend() noexcept
 {
     if (!forget_)
@@ -44,7 +43,7 @@ void Promise<void>::unhandled_exception() noexcept
 
 void Promise<void>::return_void() noexcept
 {
-    result_ = {};
+    result_ = Result<void>{};
 }
 
 bool Promise<void>::IsCompleted() const

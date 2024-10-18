@@ -7,6 +7,7 @@
 
 #pragma once
 #include "IExecutor.h"
+#include <coroutine>
 
 namespace async::coro
 {

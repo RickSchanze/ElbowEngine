@@ -55,7 +55,7 @@ struct Awaiter : AwaiterBase
 
     /// 返回void/true表示协程执行权交给协程caller, 之后被resume时继续执行协程函数
     /// 返回false代表直接执行await_resume
-    void await_suspend(std::coroutine_handle<PromiseType> handle)
+    void await_suspend(std::coroutine_handle<> handle)
     {
         // 在这里插入调度器执行
         handle_ = handle;
@@ -64,12 +64,11 @@ struct Awaiter : AwaiterBase
 
     T await_resume()
     {
-        AfterResume();
         if constexpr (!std::is_same_v<ReturnType, void>)
         {
-            T res   = handle_.promise().GetResult();
-            handle_ = nullptr;
-            return res;
+            T result = AfterResume();
+            handle_  = nullptr;
+            return result;
         }
         else
         {
@@ -91,14 +90,20 @@ struct Awaiter : AwaiterBase
     // 这里默认什么都没做, 请务必实现这个方法
     virtual void AfterSuspend() { NEVER_ENTRY_WARNING(); }
 
-    virtual bool CanSuspend() const
+    virtual bool CanSuspend() const { return false; }
+
+    virtual T AfterResume()
     {
         NEVER_ENTRY_WARNING();
-        return false;
+        if constexpr (!std::is_same_v<ReturnType, void>)
+        {
+            return {};
+        }
+        else
+        {
+            return;
+        }
     }
-
-    // 在这里默认调用了handle的resume()
-    virtual void AfterResume() {}
 
     bool CanAwake() override
     {
@@ -111,7 +116,7 @@ struct Awaiter : AwaiterBase
     void* GetCoroutineHandle() override { return handle_.address(); }
 
 protected:
-    std::coroutine_handle<PromiseType> handle_  = nullptr;
+    std::coroutine_handle<> handle_ = nullptr;
 };
 
 }   // namespace async::coro

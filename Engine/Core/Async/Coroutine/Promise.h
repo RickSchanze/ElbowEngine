@@ -37,7 +37,7 @@ struct Promise<T, EExecutorType::MainThread>
         return Task<ReturnType>{this};
     }
 
-    Awaiter<T> initial_suspend() noexcept
+    std::suspend_never initial_suspend() noexcept
     {
         return {};
     }
@@ -57,9 +57,22 @@ struct Promise<T, EExecutorType::MainThread>
         return ForgetAwaiter{forget_};
     }
 
+    template<typename AwaiterType>
+        requires std::is_base_of_v<AwaiterBase, AwaiterType>
+    AwaiterType await_transform(AwaiterType&& awaiter)
+    {
+        return awaiter;
+    }
+
+    template<typename ReturnType>
+    TaskAwaiter<ReturnType> await_transform(Task<ReturnType, EExecutorType::MainThread>&& task)
+    {
+        return TaskAwaiter<ReturnType>(Move(task));
+    }
+
     void return_value(T value)
     {
-        result_ = value;
+        result_ = Result<T>{value};
     }
 
     void unhandled_exception()

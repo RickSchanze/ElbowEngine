@@ -21,12 +21,13 @@ FunctionTestComponent::FunctionTestComponent()
 void FunctionTestComponent::BeginPlay()
 {
     TickableComponent::BeginPlay();
-    TestAwaitTask().Forget();
+
 }
 
 void FunctionTestComponent::Tick()
 {
     TickableComponent::Tick();
+    TestTask3().Forget();
 }
 
 async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()
@@ -43,6 +44,27 @@ async::coro::Task<void> FunctionTestComponent::TestAwaitTask()
     LOG_INFO_ANSI_CATEGORY(Test.Coro, "测试AwaitTaskBegin");
     co_await TestWaitFormFrame();
     LOG_INFO_ANSI_CATEGORY(Test.Coro, "测试AwaitTaskEnd");
+}
+
+async::coro::Task<int> FunctionTestComponent::TestReturnTask()
+{
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "Begin 测试带返回值的Task");
+    co_await TestWaitFormFrame();
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "End 测试带返回值的Task");
+    co_return 12;
+}
+
+async::coro::Task<int> FunctionTestComponent::TestTask2()
+{
+    int a = co_await TestReturnTask();
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "TestTask2: {}", a);
+    co_return 15;
+}
+
+async::coro::Task<void> FunctionTestComponent::TestTask3()
+{
+    int a = co_await TestTask2();
+    LOG_INFO_ANSI_CATEGORY(Test.Coro, "TestTask3: {}", a);
 }
 
 }   // namespace function::comp
