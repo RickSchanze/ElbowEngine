@@ -6,9 +6,9 @@
  */
 
 #include "OutlineWindow.h"
-#include <imgui.h>
-
+#include "ImGui/ImGuiHelper.h"
 #include "GameObject/GameObject.h"
+
 #include "OutlineWindow.generated.h"
 
 GENERATED_SOURCE()
@@ -36,15 +36,15 @@ void OutlineWindow::Draw(float InDeltaTime)
 void OutlineWindow::DrawGameObject(function::GameObject* game_object)
 {
     if (game_object == nullptr) return;
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    int flags = EImGuiTNF_OpenOnArrow | EImGuiTNF_OpenOnDoubleClick;
     if (!game_object->HasChildren())
     {
-        flags |= ImGuiTreeNodeFlags_Leaf;
+        flags |= EImGuiTNF_Leaf;
     }
     // TODO: 递归改循环
-    if (ImGui::TreeNodeEx(game_object->GetCachedAnsiString().c_str(), flags))
+    if (ImGuiHelper::TreeNodeEx(game_object->GetCachedAnsiString().c_str(), flags))
     {
-        if (ImGui::IsItemClicked())
+        if (ImGuiHelper::IsItemClicked())
         {
             selected_object_id = game_object->GetID();
         }
@@ -52,7 +52,7 @@ void OutlineWindow::DrawGameObject(function::GameObject* game_object)
         {
             DrawGameObject(child);
         }
-        ImGui::TreePop();
+        ImGuiHelper::TreePop();
     }
 }
 

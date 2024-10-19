@@ -13,15 +13,15 @@
 
 #include <vulkan/vulkan_core.h>
 
-#ifdef USE_IMGUI
-#    include <imgui.h>
+#if USE_IMGUI
+#include <imgui.h>
 #endif
 
 namespace res
 {
 class TextureCube;
 class Texture;
-}
+}   // namespace res
 class CachedString;
 /**
  * ImGui wrapper
@@ -29,6 +29,7 @@ class CachedString;
  * 目的：实现ImGui开关
  */
 
+// clang-format off
 enum EImGuiChildFlags
 {
     EImGuiCF_None                   = 0,
@@ -70,6 +71,39 @@ enum EImGuiWindowFlags
     EImGuiWF_NoInputs                  = EImGuiWF_NoMouseInputs | EImGuiWF_NoNavInputs | EImGuiWF_NoNavFocus,
 };
 
+enum EImGuiTreeNodeFlags
+{
+    EImGuiTNF_None                 = 0,
+    EImGuiTNF_Selected             = 1 << 0,   // Draw as selected
+    EImGuiTNF_Framed               = 1 << 1,   // Draw frame with background (e.g. for CollapsingHeader)
+    EImGuiTNF_AllowOverlap         = 1 << 2,   // Hit testing to allow subsequent widgets to overlap this one
+    EImGuiTNF_NoTreePushOnOpen     = 1 << 3,   // Don't do a TreePush() when open (e.g. for CollapsingHeader) = no extra indent nor pushing on ID stack
+    EImGuiTNF_NoAutoOpenOnLog      = 1 << 4,   // Don't automatically and temporarily open node when Logging is active (by default logging will automatically open tree nodes)
+    EImGuiTNF_DefaultOpen          = 1 << 5,   // Default node to be open
+    EImGuiTNF_OpenOnDoubleClick    = 1 << 6,   // Need double-click to open node
+    EImGuiTNF_OpenOnArrow          = 1<< 7,   // Only open when clicking on the arrow part. If ImGuiTNF_OpenOnDoubleClick is also set, single-click arrow or double-click all box to open.
+    EImGuiTNF_Leaf                 = 1 << 8,   // No collapsing, no arrow (use as a convenience for leaf nodes).
+    EImGuiTNF_Bullet               = 1 << 9,   // Display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't set the _Leaf flag!
+    EImGuiTNF_FramePadding         = 1<< 10,   // Use FramePadding (even for an unframed text node) to vertically align text baseline to regular widget height. Equivalent to calling AlignTextToFramePadding().
+    EImGuiTNF_SpanAvailWidth       = 1<< 11,   // Extend hit box to the right-most edge, even if not framed. This is not the default in order to allow adding other items on the same line. In the future we may refactor the hit system to be front-to-back, allowing natural overlaps and then this can become the default.
+    EImGuiTNF_SpanFullWidth        = 1 << 12,   // Extend hit box to the left-most and right-most edges (bypass the indented area).
+    EImGuiTNF_SpanAllColumns       = 1 << 13,   // Frame will span all columns of its container table (text will still fit in current column)
+    EImGuiTNF_NavLeftJumpsBackHere = 1 << 14,   // (WIP) Nav: left direction may move to this TreeNode() from any of its child (items submitted between TreeNode and TreePop)
+    //ImGuiTNF_NoScrollOnOpen      = 1 << 15,  // FIXME: TODO: Disable automatic scroll on TreePop() if node got just open and contents is not visible
+    EImGuiTNF_CollapsingHeader     = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog,
+};
+
+enum EImGuiSliderFlags
+{
+    EImGuiSF_None                   = 0,
+    EImGuiSF_AlwaysClamp            = 1 << 4,       // Clamp value to min/max bounds when input manually with CTRL+Click. By default CTRL+Click allows going out of bounds.
+    EImGuiSF_Logarithmic            = 1 << 5,       // Make the widget logarithmic (linear otherwise). Consider using ImGuiSF_NoRoundToFormat with this if using a format-string with small amount of digits.
+    EImGuiSF_NoRoundToFormat        = 1 << 6,       // Disable rounding underlying value to match precision of the display format string (e.g. %.3f values are rounded to those 3 digits)
+    EImGuiSF_NoInput                = 1 << 7,       // Disable CTRL+Click or Enter key allowing to input text directly into the widget
+    EImGuiSF_InvalidMask_           = 0x7000000F,   // [Internal] We treat using those bits as being potentially a 'float power' argument from the previous API that has got miscast to this enum, and will trigger an assert if needed.
+};
+
+// ImGui Wrapper
 class ImGuiHelper
 {
 public:
@@ -100,6 +134,7 @@ public:
     ///////////
 
     /** 原生ImGui无状态控件 **/
+    // clang-format off
     template<typename... Args>
     static void Text(const char* fmt, Args&&... args)
     {
@@ -109,9 +144,9 @@ public:
     }
 
     template<typename... Args>
-    static void TextColored(const ImVec4& color, const char* fmt, Args&&... args)
+    static void TextColored(const Color& color, const char* fmt, Args&&... args)
     {
-#ifdef USE_IMGUI
+#if USE_IMGUI
         ImGui::TextColored(color, fmt, Forward<Args>(args)...);
 #endif
     }
@@ -119,7 +154,7 @@ public:
     template<typename... Args>
     static void TextWrapped(const char* fmt, Args&&... args)
     {
-#ifdef USE_IMGUI
+#if USE_IMGUI
         ImGui::TextWrapped(fmt, Forward<Args>(args)...);
 #endif
     }
@@ -131,6 +166,12 @@ public:
     static void SameLine(float offset_from_start_x = 0, float spacing = 0);
     static void SeparatorText(const char* label);
     static void ShowDemoWindow();
+    static bool TreeNodeEx(const char* label, int flags);
+    static void TreePop();
+
+    // flags: EImGuiSliderFlag
+    static bool DragFloat3(const char* label, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", int flags = 0);
+    // clang-format on
     ///////////////////////////
 
 
@@ -180,6 +221,7 @@ public:
     static Color GetButtonPressedColor();
     static Color GetWindowBackgroundColor();
     //////////////////
+
 
 private:
     static void RemoveAllImGuiTextures();

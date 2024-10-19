@@ -7,13 +7,11 @@
 
 #include "PropertyDrawer.h"
 
+#include "Component/Transform.h"
 #include "CoreGlobal.h"
+#include "ImGui/ImGuiHelper.h"
 #include "Utils/ReflUtils.h"
 #include "Utils/StringUtils.h"
-
-#include "Component/Transform.h"
-
-#include <imgui.h>
 
 #define DRAG_FLOAT_V_SPEED 0.05f
 
@@ -22,14 +20,14 @@ namespace tool::drawer
 Vector3 PropertyDrawer::DrawProperty(const char* name, const Vector3& value)
 {
     Vector3 Vec = value;
-    ImGui::DragFloat3(name, &Vec.x, DRAG_FLOAT_V_SPEED);
+    ImGuiHelper::DragFloat3(name, &Vec.x, DRAG_FLOAT_V_SPEED);
     return Vec;
 }
 
 Rotator PropertyDrawer::DrawProperty(const char* name, const Rotator& value)
 {
     Rotator Rot = value;
-    ImGui::DragFloat3(name, &Rot.yaw, DRAG_FLOAT_V_SPEED);
+    ImGuiHelper::DragFloat3(name, &Rot.yaw, DRAG_FLOAT_V_SPEED);
     return Rot;
 }
 
@@ -66,23 +64,23 @@ String PropertyDrawer::DrawProperty(const char* name, const String& value)
 }
 
 #define VALUE_SETTER(TypeName)                                                             \
-if (prop.get_type().get_name() == #TypeName)                                           \
-{                                                                                      \
-auto       vec                   = prop.get_value(obj);                            \
-auto       label_name            = prop.get_name().data();                         \
-const auto registered_label_name = ReflUtils::GetPropertyAttribute(prop, "Label"); \
-if (!registered_label_name.empty())                                                \
-{                                                                                  \
-label_name = registered_label_name.c_str();                                    \
-}                                                                                  \
-auto     value     = vec.get_value<TypeName>();                                    \
-TypeName new_value = DrawProperty(label_name, value);                              \
-if (new_value != value)                                                            \
-{                                                                                  \
-bool _ = prop.set_value(obj, new_value);                                       \
-}                                                                                  \
-return;                                                                            \
-}
+    if (prop.get_type().get_name() == #TypeName)                                           \
+    {                                                                                      \
+        auto       vec                   = prop.get_value(obj);                            \
+        auto       label_name            = prop.get_name().data();                         \
+        const auto registered_label_name = ReflUtils::GetPropertyAttribute(prop, "Label"); \
+        if (!registered_label_name.empty())                                                \
+        {                                                                                  \
+            label_name = registered_label_name.c_str();                                    \
+        }                                                                                  \
+        auto     value     = vec.get_value<TypeName>();                                    \
+        TypeName new_value = DrawProperty(label_name, value);                              \
+        if (new_value != value)                                                            \
+        {                                                                                  \
+            bool _ = prop.set_value(obj, new_value);                                       \
+        }                                                                                  \
+        return;                                                                            \
+    }
 
 void PropertyDrawer::DrawProperty(const Property prop, const rttr::instance& obj)
 {

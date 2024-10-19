@@ -133,7 +133,9 @@ void EngineApplication::Initialize()
     render_application_->SetExtensions(window_->GetRequiredExtensions());
 
     render_application_->Initialize();
+#if USE_IMGUI
     window_->InitImGui(render_application_->GetContext());
+#endif
     editor_style_->SetStyle();
     render_context_ = New<function::RenderContext>();
 
@@ -164,7 +166,9 @@ void EngineApplication::DeInitialize() const
     if (!IsValid()) return;
     Delete(render_context_);
     rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
+#if USE_IMGUI
     window_->ShutdownImGui();
+#endif
     // vulkan device失效前释放所有资产
     res::ResourceManager::Get()->DestroyAllResources();
     if (render_application_->IsValid()) render_application_->Finalize();
@@ -202,7 +206,9 @@ void EngineApplication::Run()
         {
             PROFILE_SCOPE("Tick Render");
             render_context_->PrepareFrameRender();
+#if USE_IMGUI
             window_->BeginImGuiFrame();
+#endif
             {
                 PROFILE_SCOPE("Tick Editor Window");
                 window::WindowManager::Get()->DrawVisibleWindows(g_engine_statistics.time_delta);

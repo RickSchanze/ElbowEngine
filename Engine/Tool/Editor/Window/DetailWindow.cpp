@@ -60,7 +60,7 @@ void DetailWindow::Draw(float delta_time)
 
 void DetailWindow::DrawSelectedObject(function::GameObject* game_object)
 {
-    ImGui::Text(U8("对象名: %s, ID: %d"), game_object->GetCachedAnsiString().c_str(), game_object->GetID());
+    ImGuiHelper::Text("对象名: %s, ID: %d", game_object->GetCachedAnsiString().c_str(), game_object->GetID());
     drawer::PropertyDrawer::DrawTransform(game_object->GetTransform());
     const auto& components = game_object->GetComponents();
     for (auto* comp: components)

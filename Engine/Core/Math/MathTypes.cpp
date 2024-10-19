@@ -45,10 +45,12 @@ Vector2::operator glm::vec<2, float>()
     return {x, y};
 }
 
+#if USE_IMGUI
 Vector2::operator ImVec2()
 {
     return {x, y};
 }
+#endif
 
 Vector2 Vector2::operator+(const Vector2& other)
 {

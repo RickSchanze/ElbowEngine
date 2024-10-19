@@ -55,12 +55,14 @@ public:
 
     void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const { glfwSetFramebufferSizeCallback(window_handle_, Callback); }
 
+#if USE_IMGUI
     void InitImGui(Ref<rhi::vulkan::VulkanContext> InContext);
     void SetupImGuiFonts();
     void ShutdownImGui() const;
-
     void BeginImGuiFrame();
     void EndImGuiFrame();
+    void RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const;
+#endif
 
     void Initialize();
     void Finalize();
@@ -69,7 +71,7 @@ public:
 
     void SetMouseVisible(bool InVisible) const;
 
-    void RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const;
+
 
 
 private:

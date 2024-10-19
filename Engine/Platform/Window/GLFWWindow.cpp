@@ -10,8 +10,6 @@
 #include "CoreEvents.h"
 #include "GameObject/GameObject.h"
 #include "IconsMaterialDesign.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
 #include "Input/Input.h"
 #include "Path/Path.h"
 #include "Render/Event.h"
@@ -26,10 +24,17 @@
 
 #include "Profiler/ProfileMacro.h"
 
+#if USE_IMGUI
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+#endif
+
 using namespace rhi::vulkan;
 
 namespace platform::window
 {
+
+#if USE_IMGUI
 class ImGuiRenderPass : public RenderPass
 {
 public:
@@ -107,7 +112,11 @@ public:
 
     Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
 
-    vk::Framebuffer GetCurrentFramebufferHandle() override;
+    vk::Framebuffer GetCurrentFramebufferHandle() override
+    {
+        NEVER_ENTRY_WARNING()
+        return nullptr;
+    }
 
     TArray<Framebuffer*> framebuffers_;
     TArray<AnsiString>   framebuffer_names_;
@@ -123,16 +132,95 @@ public:
         OnAppWindowResized.AddObject(this, &RealImGuiGraphicsPipeline::Rebuild);
     }
 
-    void Initialize();
-    void Finialize();
+    void Initialize()
+    {
+        if (descriptor_pool_ != nullptr) return;
+        ImGui_ImplVulkan_InitInfo Info{};
+        Info.Instance       = context_->GetVulkanInstance()->GetHandle();
+        Info.PhysicalDevice = context_->GetPhysicalDevice()->GetHandle();
+        Info.Device         = context_->GetLogicalDevice()->GetHandle();
+        Info.QueueFamily    = context_->GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
+        Info.Queue          = context_->GetLogicalDevice()->GetGraphicsQueue();
+        // TODO: 填充PipelineCache
+        Info.PipelineCache  = nullptr;
+        Info.Subpass        = 0;
+        Info.MinImageCount  = context_->GetSwapChainImageCount();
+        Info.ImageCount     = context_->GetSwapChainImageCount();
+        Info.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
 
-    ~RealImGuiGraphicsPipeline() override;
+        CreateDescriptorPool();
+        Info.DescriptorPool = descriptor_pool_;
+
+        command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
+
+        render_pass_ = New<ImGuiRenderPass>("ImGuiRenderPass");
+        render_pass_->Initialize();
+
+        // 初始化Imgui
+        ImGui_ImplVulkan_LoadFunctions(
+            [](const char* Name, void* UserData) { return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name); },
+            context_->GetVulkanInstance()->GetHandle()
+        );
+        ImGui_ImplVulkan_Init(&Info, render_pass_->GetHandle());
+    }
+
+    void Finialize()
+    {
+        if (descriptor_pool_ == nullptr) return;
+        command_pool_->Finialize();
+        render_pass_->CleanFrameBuffer();
+        Delete(render_pass_);
+        render_pass_ = nullptr;
+        ImGui_ImplVulkan_Shutdown();
+        context_->GetLogicalDevice()->DestroyDescriptorPool(descriptor_pool_);
+        descriptor_pool_ = nullptr;
+    }
+
+    ~RealImGuiGraphicsPipeline() override
+    {
+        Finialize();
+    }
 
 protected:
-    void CreateDescriptorPool();
+    void CreateDescriptorPool()
+    {
+        vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
+        vk::DescriptorPoolCreateInfo PoolCreateInfo;
+        PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(50).setPoolSizes(PoolSizes);
+        descriptor_pool_ = context_->GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
+    }
 
 public:
-    void Draw(vk::CommandBuffer cb) override;
+    void Draw(vk::CommandBuffer cb) override
+    {
+        PROFILE_SCOPE_AUTO;
+        vk::CommandBufferBeginInfo begin_info          = {};
+        int32_t                    current_image_index = g_engine_statistics.current_image_index;
+        begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        vk::RenderPassBeginInfo render_pass_info = {};
+        render_pass_info.renderPass              = render_pass_->GetHandle();
+        render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
+        render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
+        rhi::GetGfxContext().BeginProfile("ImGui Pass GPU", CommandBufferVulkan(cb));
+        cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+        ImGui::Render();
+        vk::Viewport viewport;
+        viewport.x        = 0;
+        viewport.y        = 0;
+        viewport.width    = g_engine_statistics.window_size.width;
+        viewport.height   = g_engine_statistics.window_size.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        cb.setViewport(0, viewport);
+        vk::Rect2D scisor;
+        scisor.offset = vk::Offset2D{0, 0};
+        scisor.extent = VulkanContext::Get()->GetSwapChainExtent();
+        cb.setScissor(0, scisor);
+        auto* draw_data = ImGui::GetDrawData();
+        ImGui_ImplVulkan_RenderDrawData(draw_data, cb);
+        cb.endRenderPass();
+        rhi::GetGfxContext().EndProfile();
+    }
 
     void Rebuild(int w, int h) override
     {
@@ -152,6 +240,8 @@ private:
     ImGuiRenderPass*        render_pass_ = nullptr;
 };
 
+#endif
+
 void GLFWWindowSurface::Initialize()
 {
     if (mAttachedInstanceHandle->IsValid())
@@ -165,100 +255,6 @@ void GLFWWindowSurface::Initialize()
         }
         mSurfaceHandle = vk::SurfaceKHR(surface);
     }
-}
-
-vk::Framebuffer ImGuiRenderPass::GetCurrentFramebufferHandle()
-{
-    NEVER_ENTRY_WARNING()
-    return nullptr;
-}
-
-void RealImGuiGraphicsPipeline::Initialize()
-{
-    if (descriptor_pool_ != nullptr) return;
-    ImGui_ImplVulkan_InitInfo Info{};
-    Info.Instance       = context_->GetVulkanInstance()->GetHandle();
-    Info.PhysicalDevice = context_->GetPhysicalDevice()->GetHandle();
-    Info.Device         = context_->GetLogicalDevice()->GetHandle();
-    Info.QueueFamily    = context_->GetPhysicalDevice()->FindQueueFamilyIndices().graphics_family.value();
-    Info.Queue          = context_->GetLogicalDevice()->GetGraphicsQueue();
-    // TODO: 填充PipelineCache
-    Info.PipelineCache  = nullptr;
-    Info.Subpass        = 0;
-    Info.MinImageCount  = context_->GetSwapChainImageCount();
-    Info.ImageCount     = context_->GetSwapChainImageCount();
-    Info.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
-
-    CreateDescriptorPool();
-    Info.DescriptorPool = descriptor_pool_;
-
-    command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
-
-    render_pass_ = New<ImGuiRenderPass>("ImGuiRenderPass");
-    render_pass_->Initialize();
-
-    // 初始化Imgui
-    ImGui_ImplVulkan_LoadFunctions(
-        [](const char* Name, void* UserData) { return glfwGetInstanceProcAddress(static_cast<VkInstance>(UserData), Name); },
-        context_->GetVulkanInstance()->GetHandle()
-    );
-    ImGui_ImplVulkan_Init(&Info, render_pass_->GetHandle());
-}
-
-void RealImGuiGraphicsPipeline::Finialize()
-{
-    if (descriptor_pool_ == nullptr) return;
-    command_pool_->Finialize();
-    render_pass_->CleanFrameBuffer();
-    Delete(render_pass_);
-    render_pass_ = nullptr;
-    ImGui_ImplVulkan_Shutdown();
-    context_->GetLogicalDevice()->DestroyDescriptorPool(descriptor_pool_);
-    descriptor_pool_ = nullptr;
-}
-
-RealImGuiGraphicsPipeline::~RealImGuiGraphicsPipeline()
-{
-    Finialize();
-}
-
-void RealImGuiGraphicsPipeline::Draw(vk::CommandBuffer cb)
-{
-    PROFILE_SCOPE_AUTO;
-    vk::CommandBufferBeginInfo begin_info          = {};
-    int32_t                    current_image_index = g_engine_statistics.current_image_index;
-    begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    vk::RenderPassBeginInfo render_pass_info = {};
-    render_pass_info.renderPass              = render_pass_->GetHandle();
-    render_pass_info.framebuffer             = render_pass_->GetFramebuffer(current_image_index)->GetHandle();
-    render_pass_info.renderArea              = vk::Rect2D{{0, 0}, context_->GetSwapChainExtent()};
-    rhi::GetGfxContext().BeginProfile("ImGui Pass GPU", CommandBufferVulkan(cb));
-    cb.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
-    ImGui::Render();
-    vk::Viewport viewport;
-    viewport.x        = 0;
-    viewport.y        = 0;
-    viewport.width    = g_engine_statistics.window_size.width;
-    viewport.height   = g_engine_statistics.window_size.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    cb.setViewport(0, viewport);
-    vk::Rect2D scisor;
-    scisor.offset = vk::Offset2D{0, 0};
-    scisor.extent = VulkanContext::Get()->GetSwapChainExtent();
-    cb.setScissor(0, scisor);
-    auto* draw_data = ImGui::GetDrawData();
-    ImGui_ImplVulkan_RenderDrawData(draw_data, cb);
-    cb.endRenderPass();
-    rhi::GetGfxContext().EndProfile();
-}
-
-void RealImGuiGraphicsPipeline::CreateDescriptorPool()
-{
-    vk::DescriptorPoolSize       PoolSizes[] = {{vk::DescriptorType::eCombinedImageSampler, 1}};
-    vk::DescriptorPoolCreateInfo PoolCreateInfo;
-    PoolCreateInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet).setMaxSets(50).setPoolSizes(PoolSizes);
-    descriptor_pool_ = context_->GetLogicalDevice()->GetHandle().createDescriptorPool(PoolCreateInfo);
 }
 
 TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
@@ -285,6 +281,7 @@ Size2D GlfwWindow::GetWindowSize()
     return {width_, height_};
 }
 
+#if USE_IMGUI
 void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 {
     ImGui::CreateContext();
@@ -344,6 +341,12 @@ void GlfwWindow::EndImGuiFrame()
     // ImGui::Render();
 }
 
+void GlfwWindow::RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const
+{
+    *pipeline = imgui_graphics_pipeline_;
+}
+#endif
+
 void GlfwWindow::Initialize()
 {
     glfwInit();
@@ -374,8 +377,4 @@ void GlfwWindow::SetMouseVisible(const bool InVisible) const
     glfwSetInputMode(window_handle_, GLFW_CURSOR, InVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-void GlfwWindow::RegisterImGuiPipeline(rhi::vulkan::ImguiGraphicsPipeline** pipeline) const
-{
-    *pipeline = imgui_graphics_pipeline_;
-}
 }

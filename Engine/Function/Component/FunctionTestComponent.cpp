@@ -27,7 +27,7 @@ void FunctionTestComponent::BeginPlay()
 void FunctionTestComponent::Tick()
 {
     TickableComponent::Tick();
-    TestTask3().Forget();
+    // TestTask3().Forget();
 }
 
 async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()

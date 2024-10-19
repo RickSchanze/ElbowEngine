@@ -23,11 +23,10 @@ void WidgetBase::Text(const char* str, Color foreground, Color background)
 
     if (background.IsValid())
     {
-        auto list      = ImGui::GetWindowDrawList();
         auto draw_pos  = ImGuiHelper::GetCursorScreenPos();
         auto text_size = ImGuiHelper::CalcTextSize(str);
         ImGuiHelper::SetCursorScreenPos(draw_pos.x + ImGuiHelper::GetFramePadding().x, draw_pos.y);
-        list->AddRectFilled(draw_pos, draw_pos + text_size, static_cast<ImU32>(background));
+        ImGuiHelper::DrawRectFilled(draw_pos, draw_pos + text_size, background, 0);
     }
 
     ImGuiHelper::Text(str);
