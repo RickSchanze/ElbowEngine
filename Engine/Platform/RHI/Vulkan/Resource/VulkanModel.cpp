@@ -13,7 +13,7 @@
 
 namespace rhi::vulkan
 {
-Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
+Mesh::Mesh(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
 {
     ignore_index_ = ignore_index;
     if (vertices.empty())
@@ -85,12 +85,12 @@ Mesh::Mesh(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool
     }
 }
 
-TSharedPtr<Mesh> Mesh::CreateShared(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
+SharedPtr<Mesh> Mesh::CreateShared(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
 {
     return MakeShared<Mesh>(vertices, indices, ignore_index);
 }
 
-TUniquePtr<Mesh> Mesh::CreateUnique(const TArray<Vertex>& vertices, const TArray<uint32_t>& indices, bool ignore_index)
+UniquePtr<Mesh> Mesh::CreateUnique(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
 {
     return MakeUnique<Mesh>(vertices, indices, ignore_index);
 }

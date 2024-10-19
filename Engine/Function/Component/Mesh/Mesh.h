@@ -42,7 +42,7 @@ public:
     void OnDisable() override;
 
     res::Mesh*            GetMeshResource() const { return mesh_; }
-    TArray<res::SubMesh>& GetSubMeshes() const;
+    Array<res::SubMesh>& GetSubMeshes() const;
 
     void OnInspectorGUI() override;
 

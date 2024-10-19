@@ -21,10 +21,10 @@ protected:
     };
 
 public:
-    CommandPool(Private, Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name = nullptr);
+    CommandPool(Private, Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name = nullptr);
 
-    static TUniquePtr<CommandPool>
-    CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {}, const AnsiString& debug_name = nullptr);
+    static UniquePtr<CommandPool>
+    CreateUnique(Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {}, const AnsiString& debug_name = nullptr);
 
     void CreateCommandPool(vk::CommandPoolCreateFlags pool_flags);
     void CleanCommandPool();
@@ -48,15 +48,15 @@ public:
 
     void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer, uint64_t size);
 
-    void CopyImage(vk::Image src, vk::Image dst, const TArray<vk::ImageCopy>& copies);
+    void CopyImage(vk::Image src, vk::Image dst, const Array<vk::ImageCopy>& copies);
 
     void ResetCommandPool() const;
 
-    TArray<vk::CommandBuffer> CreateCommandBuffers(
-        const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name = nullptr, TArray<AnsiString>* out_debug_names = nullptr
+    Array<vk::CommandBuffer> CreateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name = nullptr, Array<AnsiString>* out_debug_names = nullptr
     ) const;
 
-    void DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const;
+    void DestroyCommandBuffers(const Array<vk::CommandBuffer>& command_buffers) const;
 
 protected:
 
@@ -75,7 +75,7 @@ protected:
 private:
     vk::CommandPool pool_ = nullptr;
 
-    Ref<TUniquePtr<LogicalDevice>> device_;
+    Ref<UniquePtr<LogicalDevice>> device_;
 
     AnsiString debug_name_;
 

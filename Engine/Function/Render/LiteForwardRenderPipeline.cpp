@@ -65,7 +65,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
             {
                 for (int j = 0; j < meshes.size(); j++)
                 {
-                    TArray dynamic_offsets = {j * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
+                    Array dynamic_offsets = {j * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
                     shadow_material_->DrawMesh(cb, *meshes[j], dynamic_offsets);
                 }
             }
@@ -94,7 +94,7 @@ void LiteForwardRenderPipeline::DrawBackbuffer(const RenderContextDrawParam& dra
             material->SetModel(model_instances_.models, model_instances_.size);
             for (int i = 0; i < meshes.size(); i++)
             {
-                TArray dynamic_offsets = {i * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
+                Array dynamic_offsets = {i * static_cast<uint32_t>(GetDynamicUniformModelAligment())};
                 material->DrawMesh(cb, *meshes[i], dynamic_offsets);
             }
         }

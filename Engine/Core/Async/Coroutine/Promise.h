@@ -89,7 +89,7 @@ struct Promise<T, EExecutorType::MainThread>
         }
     }
 
-    TOptional<T> GetResult()
+    Optional<T> GetResult()
     {
         if (result_.has_value())
         {
@@ -116,15 +116,15 @@ struct Promise<T, EExecutorType::MainThread>
         }
     }
 
-    void OnCompleted(const TFunction<void(T)>& func) { Func_OnCompleted = func; }
+    void OnCompleted(const Function<void(T)>& func) { Func_OnCompleted = func; }
 
-    void OnException(const TFunction<void(const std::exception&)>& func) { Func_OnException = func; }
+    void OnException(const Function<void(const std::exception&)>& func) { Func_OnException = func; }
 
 private:
-    TOptional<Result<ReturnType>> result_;
+    Optional<Result<ReturnType>> result_;
 
-    TFunction<void(T)>                     Func_OnCompleted;
-    TFunction<void(const std::exception&)> Func_OnException;
+    Function<void(T)>                     Func_OnCompleted;
+    Function<void(const std::exception&)> Func_OnException;
 
     bool destroyed_ = false;
     bool forget_    = false;
@@ -178,16 +178,16 @@ struct Promise<void, EExecutorType::MainThread>
 
     ~Promise();
 
-    void OnCompleted(const TFunction<void()>& func) { Func_OnCompleted = func; }
+    void OnCompleted(const Function<void()>& func) { Func_OnCompleted = func; }
 
-    void OnException(const TFunction<void(const std::exception&)>& func) { Func_OnException = func; }
+    void OnException(const Function<void(const std::exception&)>& func) { Func_OnException = func; }
 
 private:
-    TOptional<Result<void>> result_;
+    Optional<Result<void>> result_;
     bool                    forget_    = false;
     bool                    destroyed_ = false;
 
-    TFunction<void()>                      Func_OnCompleted;
-    TFunction<void(const std::exception&)> Func_OnException;
+    Function<void()>                      Func_OnCompleted;
+    Function<void(const std::exception&)> Func_OnException;
 };
 }   // namespace async::coro

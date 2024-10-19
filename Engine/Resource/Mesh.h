@@ -34,9 +34,9 @@ class SubMesh : public IRHIResourceContainer<rhi::vulkan::Mesh>
     friend class rhi::vulkan::Mesh;
 
 public:
-    TArray<Vertex>&   GetVertices() { return vertices_; }
-    TArray<Texture*>& GetTextures() { return textures_; }
-    TArray<uint32_t>& GetIndices() { return indices_; }
+    Array<Vertex>&   GetVertices() { return vertices_; }
+    Array<Texture*>& GetTextures() { return textures_; }
+    Array<uint32_t>& GetIndices() { return indices_; }
 
     ~SubMesh() override;
 
@@ -48,9 +48,9 @@ public:
     void LoadRHI();
 
 private:
-    TArray<Vertex>   vertices_;
-    TArray<Texture*> textures_;
-    TArray<uint32_t> indices_;
+    Array<Vertex>   vertices_;
+    Array<Texture*> textures_;
+    Array<uint32_t> indices_;
 
     rhi::vulkan::Mesh* mesh_rhi_resource_ = nullptr;
 };
@@ -71,7 +71,7 @@ public:
     Path GetPath() const override { return path_; }
     void Load() final;
 
-    TArray<SubMesh>& GetSubMeshes() { return sub_meshes_; }
+    Array<SubMesh>& GetSubMeshes() { return sub_meshes_; }
 
     int32_t GetVertexCount() const { return vertex_count_; }
     int32_t GetIndexCount() const { return index_count_; }
@@ -82,7 +82,7 @@ protected:
     void ProcessNode(const aiNode* node, const aiScene* scene);
 
 private:
-    TArray<SubMesh> sub_meshes_;
+    Array<SubMesh> sub_meshes_;
 
     int32_t vertex_count_ = 0;
     int32_t index_count_ = 0;

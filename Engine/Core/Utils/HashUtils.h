@@ -12,5 +12,5 @@
 
 class HashUtils {
 public:
-    static TOptional<AnsiString> ComputeSHA256(const Path& path);
+    static Optional<AnsiString> ComputeSHA256(const Path& path);
 };

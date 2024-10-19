@@ -30,7 +30,7 @@ public:
     rhi::vulkan::ImageView* external_depth_view = nullptr; // 来自外部的深度View 不由自己清理
 
 public:
-    TArray<rhi::vulkan::Framebuffer*> framebuffers;
+    Array<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
 }

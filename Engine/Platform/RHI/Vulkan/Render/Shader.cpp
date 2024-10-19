@@ -91,7 +91,7 @@ public:
     }
 
 #undef GetObject
-    void RequestShaderSpirv(const Path& path, EShaderStage stage, TArray<uint32_t>& code)
+    void RequestShaderSpirv(const Path& path, EShaderStage stage, Array<uint32_t>& code)
     {
         auto spirv_path      = Path(String(L"Cache/Shaders/") + path.GetFileName() + L".spv");
         auto key             = path.ToRelativeAnsiString();
@@ -151,7 +151,7 @@ Shader::Shader(Protected, const Ref<LogicalDevice> device, const Path& shader_pa
 {
     uint32_t*        shader_code_ptr  = nullptr;
     size_t           shader_code_size = 0;
-    TArray<uint32_t> shader_code;
+    Array<uint32_t> shader_code;
     if (!cache_)
     {
         cache_ = MakeShared<ShaderCache>();
@@ -201,7 +201,7 @@ static AnsiString PreprocessHeader(const AnsiString& source_name, EShaderStage s
     return {result.cbegin(), result.cend()};
 }
 
-bool CompileFile(const AnsiString& name, EShaderStage stage, const AnsiString& source, TArray<uint32_t>& output, bool optimize = false)
+bool CompileFile(const AnsiString& name, EShaderStage stage, const AnsiString& source, Array<uint32_t>& output, bool optimize = false)
 {
     shaderc::Compiler       compiler;
     shaderc::CompileOptions options;
@@ -230,7 +230,7 @@ bool CompileFile(const AnsiString& name, EShaderStage stage, const AnsiString& s
 }
 
 // TODO: 添加条件编译选项
-bool Shader::CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, TArray<uint32_t>& output)
+bool Shader::CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, Array<uint32_t>& output)
 {
     LOG_INFO_CATEGORY(Shader, L"正在编译 {} {}...", ShaderStageToString(shader_stage), shader_name);
     const AnsiString shader_ansi_string = StringUtils::ToAnsiString(shader_name);

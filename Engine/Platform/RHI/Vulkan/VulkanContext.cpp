@@ -37,7 +37,7 @@ bool VulkanContext::CanRenderBackbuffer() const
     return IsBackBufferValid();
 }
 
-TUniquePtr<VulkanContext> VulkanContext::CreateUnique(const TSharedPtr<Instance>& instance)
+UniquePtr<VulkanContext> VulkanContext::CreateUnique(const SharedPtr<Instance>& instance)
 {
     auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
     return Rtn;
@@ -137,7 +137,7 @@ void VulkanContext::CollectProfileData(const CommandBuffer& cmd)
 
 
 
-VulkanContext::VulkanContext(Protected, const TSharedPtr<Instance>& instance)
+VulkanContext::VulkanContext(Protected, const SharedPtr<Instance>& instance)
 {
     if (s_context_ == nullptr)
     {
@@ -296,7 +296,7 @@ void VulkanContext::PostFrameRender()
     PROFILE_SCOPE_AUTO;
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
-    TStaticArray       SwapChains  = {swap_chain_->GetHandle()};
+    StaticArray       SwapChains  = {swap_chain_->GetHandle()};
     // TODO: 这里需要等待的信号量需要再看看
     PresentInfo
         .setSwapchains(SwapChains)                                  //

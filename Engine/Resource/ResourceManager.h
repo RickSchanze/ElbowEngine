@@ -53,6 +53,6 @@ public:
 private:
     // TODO: Resource与Vulkan GPU Resource的映射
     // TODO: 寻找更好的自动化资源管理方式
-    THashMap<Path, IResource*> resource_map_;
+    HashMap<Path, IResource*> resource_map_;
 };
 }

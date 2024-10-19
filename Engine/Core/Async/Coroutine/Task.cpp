@@ -52,13 +52,13 @@ bool Task<void, EExecutorType::MainThread>::IsForget() const noexcept
     return false;
 }
 
-Task<void>& Task<void, EExecutorType::MainThread>::OnCompleted(TFunction<void()>&& func)
+Task<void>& Task<void, EExecutorType::MainThread>::OnCompleted(Function<void()>&& func)
 {
     promise_.promise().OnCompleted(func);
     return *this;
 }
 
-Task<void>& Task<void, EExecutorType::MainThread>::OnException(TFunction<void(const std::exception&)>&& func)
+Task<void>& Task<void, EExecutorType::MainThread>::OnException(Function<void(const std::exception&)>&& func)
 {
     promise_.promise().OnException(func);
     return *this;

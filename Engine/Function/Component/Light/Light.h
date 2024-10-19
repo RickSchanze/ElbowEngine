@@ -63,11 +63,11 @@ public:
 
     void Clear();
 
-    TArray<Light*> GetLights() const;
+    Array<Light*> GetLights() const;
 
 private:
     // Light是组件 其生命周期由GameObject管理
-    TArray<Light*> lights_;
+    Array<Light*> lights_;
 };
 
 }

@@ -180,7 +180,7 @@ void Material::SetPointLights(void* data, size_t size)
     shader_program_->SetUniformBuffer("ubo_point_lights", data, size);
 }
 
-void Material::DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets)
+void Material::DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const Array<uint32_t>& dynamic_offsets)
 {
     if (pipeline_ == nullptr)
     {

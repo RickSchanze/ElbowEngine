@@ -78,7 +78,7 @@ protected:
 
     AnsiString cached_ansi_window_name_;
 
-    TArray<widget::WidgetBase*> widgets_;
+    Array<widget::WidgetBase*> widgets_;
 
     bool dirty_       = true;
     bool constructed_ = false;

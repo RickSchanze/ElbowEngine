@@ -9,7 +9,7 @@
 #include "openssl/sha.h"
 #include <openssl/evp.h>
 
-TOptional<AnsiString> HashUtils::ComputeSHA256(const Path& path)
+Optional<AnsiString> HashUtils::ComputeSHA256(const Path& path)
 {
     std::ifstream file(path.ToAbsoluteAnsiString(), std::ios::binary);
     if (!file)

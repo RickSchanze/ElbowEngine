@@ -202,7 +202,7 @@ void RenderPass::SetupSubpassDescription()
     int32_t SpecialIndexMin = std::min(depth_attachment_index_, sample_resolve_index_);
     int32_t SpecialIndexMax = std::max(depth_attachment_index_, sample_resolve_index_);
 
-    TArray<vk::AttachmentReference> ColorAttachmentA, ColorAttachmentB, ColorAttachmentC;
+    Array<vk::AttachmentReference> ColorAttachmentA, ColorAttachmentB, ColorAttachmentC;
 
     if (SpecialIndexMax == -1)
     {
@@ -260,8 +260,8 @@ void RenderPass::SetupSubpassDescription()
 
 void RenderPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
 {
-    TStaticArray<vk::ClearValue, 2> clear_values;
-    clear_values[0].color        = vk::ClearColorValue{TStaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    StaticArray<vk::ClearValue, 2> clear_values;
+    clear_values[0].color        = vk::ClearColorValue{StaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
     clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
     vk::RenderPassBeginInfo render_pass_info;
@@ -277,7 +277,7 @@ void RenderPass::CreateRenderPass()
 {
     VulkanContext& context = *VulkanContext::Get();
 
-    TStaticArray<vk::SubpassDescription, 1> subpasses = {subpass_};
+    StaticArray<vk::SubpassDescription, 1> subpasses = {subpass_};
 
     vk::RenderPassCreateInfo Info{};
     Info.setAttachments(attachment_descs_).setSubpasses(subpasses).setDependencies(dependencies_);

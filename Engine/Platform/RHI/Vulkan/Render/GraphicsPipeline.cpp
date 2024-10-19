@@ -63,7 +63,7 @@ void GraphicsPipeline::UpdateScissor(vk::CommandBuffer cb, const uint32_t width,
     cb.setScissor(0, scisor);
 }
 
-void GraphicsPipeline::BindVertexBuffers(vk::CommandBuffer cb, const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets) const
+void GraphicsPipeline::BindVertexBuffers(vk::CommandBuffer cb, const Array<vk::Buffer>& buffers, const Array<vk::DeviceSize>& offsets) const
 {
     cb.bindVertexBuffers(0, buffers, offsets);
 }
@@ -80,8 +80,8 @@ void GraphicsPipeline::BindMesh(vk::CommandBuffer cb, const Mesh& mesh) const
 }
 
 void GraphicsPipeline::BindDescriptorSets(
-    vk::CommandBuffer cb, const TArray<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
-    const TArray<uint32_t>& dynamic_offsets
+    vk::CommandBuffer cb, const Array<vk::DescriptorSet>& descriptor_sets, const vk::PipelineBindPoint bind_point, const uint32_t first_set,
+    const Array<uint32_t>& dynamic_offsets
 ) const
 {
     cb.bindDescriptorSets(bind_point, pipeline_layout_, first_set, descriptor_sets, dynamic_offsets);
@@ -103,7 +103,7 @@ void GraphicsPipeline::Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_
     g_engine_statistics.IncreaseDrawCall();
 }
 
-TArray<vk::DescriptorSet> GraphicsPipeline::GetCurrentFrameDescriptorSet() const
+Array<vk::DescriptorSet> GraphicsPipeline::GetCurrentFrameDescriptorSet() const
 {
     return {shader_program_->GetDescriptorSets()[g_engine_statistics.current_frame_index]};
 }
@@ -135,7 +135,7 @@ void GraphicsPipeline::CreatePipeline()
     vert_info.setStage(vk::ShaderStageFlagBits::eVertex).setModule(shader_program_->GetVertShaderHandle()).setPName("main");
 
     // 配置frag shader的最大光照信息
-    TStaticArray<vk::SpecializationMapEntry, 1> specializations;
+    StaticArray<vk::SpecializationMapEntry, 1> specializations;
     specializations[0].constantID = 0;
     specializations[0].size       = sizeof(int32_t);
     specializations[0].offset     = 0;
@@ -148,7 +148,7 @@ void GraphicsPipeline::CreatePipeline()
     vk::PipelineShaderStageCreateInfo frag_info{};
     frag_info.setStage(vk::ShaderStageFlagBits::eFragment).setModule(shader_program_->GetFragShaderHandle()).setPName("main");
     frag_info.setPSpecializationInfo(&specialization_info);
-    TStaticArray<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {vert_info, frag_info};
+    StaticArray<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {vert_info, frag_info};
 
     // 配置顶点Shader的输入信息
     auto binding_desc   = shader_program_->GetVertexInputBindingDescription();
@@ -244,10 +244,10 @@ void GraphicsPipeline::CreatePipeline()
 
     // 指定管线布局(uniform)
     vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
-    TStaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
+    StaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
     pipeline_layout_info.setSetLayouts(layout);
 
-    TArray<vk::PushConstantRange> push_constant_ranges;
+    Array<vk::PushConstantRange> push_constant_ranges;
 
     // PushConstants
     for (const auto& push_constant: shader_program_->GetVertexPushConstants())
@@ -279,7 +279,7 @@ void GraphicsPipeline::CreatePipeline()
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo dynamic_state_info;
-    TArray<vk::DynamicState>           dynamic_states;
+    Array<vk::DynamicState>           dynamic_states;
     if (!(pipeline_info_.dynamic_state_enabled & EPDSE_None))
     {
         if (pipeline_info_.dynamic_state_enabled & EPDSE_Scissor)

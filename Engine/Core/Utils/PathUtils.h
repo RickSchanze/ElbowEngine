@@ -30,8 +30,8 @@ public:
      * @param recurse 是否递归查找子文件夹
      * @return
      */
-    static TArray<Path> FilterPath(
-        const Path& parent, const TFunction<bool(const Path& path_str)> &filter = FilterAlways, EPathFilterType filter_type = EPathFilterType::FilterAll,
+    static Array<Path> FilterPath(
+        const Path& parent, const Function<bool(const Path& path_str)> &filter = FilterAlways, EPathFilterType filter_type = EPathFilterType::FilterAll,
         bool recurse = false
     );
 };

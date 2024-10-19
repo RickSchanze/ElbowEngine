@@ -109,7 +109,7 @@ struct PipelineInfo
     bool has_vertex_binding = true;
 
     AnsiString         name_;
-    TArray<AnsiString> command_buffer_names;
+    Array<AnsiString> command_buffer_names;
     AnsiString         pipeline_layout_name_;
     AnsiString         pipeline_name_;
 };
@@ -132,13 +132,13 @@ public:
     void UpdateScissor(vk::CommandBuffer cb, uint32_t width = 0, uint32_t height = 0, int32_t offset_x = 0, int32_t offset_y = 0) const;
 
     // TODO: TArrayView?
-    void BindVertexBuffers(vk::CommandBuffer cb, const TArray<vk::Buffer>& buffers, const TArray<vk::DeviceSize>& offsets = {}) const;
+    void BindVertexBuffers(vk::CommandBuffer cb, const Array<vk::Buffer>& buffers, const Array<vk::DeviceSize>& offsets = {}) const;
     void BindIndexBuffer(vk::CommandBuffer cb, vk::Buffer buffer, vk::DeviceSize offset = 0) const;
     void BindMesh(vk::CommandBuffer cb, const Mesh& mesh) const;
 
     void BindDescriptorSets(
-        vk::CommandBuffer cb, const TArray<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics,
-        uint32_t first_set = 0, const TArray<uint32_t>& dynamic_offsets = {}
+        vk::CommandBuffer cb, const Array<vk::DescriptorSet>& descriptor_sets, vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics,
+        uint32_t first_set = 0, const Array<uint32_t>& dynamic_offsets = {}
     ) const;
 
     void DrawIndexed(
@@ -150,7 +150,7 @@ public:
 
     bool IsValid() const { return pipeline_ != nullptr && pipeline_layout_ != nullptr && render_pass_ != nullptr && shader_program_ != nullptr; }
 
-    TArray<vk::DescriptorSet> GetCurrentFrameDescriptorSet() const;
+    Array<vk::DescriptorSet> GetCurrentFrameDescriptorSet() const;
 
     ShaderProgram* GetShaderProgram() const { return shader_program_; }
 

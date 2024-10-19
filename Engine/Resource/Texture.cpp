@@ -150,8 +150,8 @@ TextureCube::TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo
 void TextureCube::Load()
 {
     // 找到所有需要加载的资产
-    TStaticArray<Texture*, 6> textures;
-    TArray<Path>              skybox_textures = PathUtils::FilterPath(
+    StaticArray<Texture*, 6> textures;
+    Array<Path>              skybox_textures = PathUtils::FilterPath(
         path_,
         [](const Path& p) {
             const String name = p.GetFileName();

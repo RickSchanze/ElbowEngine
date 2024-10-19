@@ -72,13 +72,13 @@ void ToggleButton::Draw()
     }
 }
 
-ToggleButton& ToggleButton::SetEventOnToggleOn(const TFunction<void()>& on_toggle_on)
+ToggleButton& ToggleButton::SetEventOnToggleOn(const Function<void()>& on_toggle_on)
 {
     OnToggleOn = on_toggle_on;
     return *this;
 }
 
-ToggleButton& ToggleButton::SetEventOnToggleOff(TFunction<void()> on_toggle_off)
+ToggleButton& ToggleButton::SetEventOnToggleOff(Function<void()> on_toggle_off)
 {
     OnToggleOff = on_toggle_off;
     return *this;

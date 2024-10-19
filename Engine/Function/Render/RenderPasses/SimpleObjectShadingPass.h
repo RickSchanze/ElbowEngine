@@ -25,11 +25,11 @@ public:
     rhi::vulkan::ImageView* GetDepthView() const { return depth_image_view; }
 
 public:
-    TArray<rhi::vulkan::Framebuffer*> framebuffers;
+    Array<rhi::vulkan::Framebuffer*> framebuffers;
     rhi::vulkan::ImageView*           depth_image_view = nullptr;
 
 private:
-    TArray<AnsiString>                framebuffer_names_;
+    Array<AnsiString>                framebuffer_names_;
     rhi::vulkan::Image*               depth_image_      = nullptr;
 };
 

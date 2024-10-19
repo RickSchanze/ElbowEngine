@@ -94,8 +94,8 @@ private:
         OnAppWindowResized.Broadcast(width, height);
     }
 
-    TUniquePtr<rhi::vulkan::VulkanApplication> render_application_;
-    TUniquePtr<platform::window::GlfwWindow>   window_;
+    UniquePtr<rhi::vulkan::VulkanApplication> render_application_;
+    UniquePtr<platform::window::GlfwWindow>   window_;
     function::RenderContext*                   render_context_ = nullptr;
 
     static inline EngineApplication* instance_ = nullptr;

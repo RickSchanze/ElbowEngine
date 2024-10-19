@@ -23,18 +23,18 @@ LogicalDevice::~LogicalDevice()
     DeInitialize();
 }
 
-TArray<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
+Array<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
 {
     return handle_.allocateDescriptorSets(alloc_info);
 }
 
-void LogicalDevice::FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array)
+void LogicalDevice::FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array)
     const
 {
     handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
-TUniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device)
+UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device)
 {
     return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, associated_physical_device);
 }
@@ -57,7 +57,7 @@ void LogicalDevice::Destroy()
     DeInitialize();
 }
 
-TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
+UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
 {
     const auto physical_device    = associated_physical_device_.get();
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
@@ -95,7 +95,7 @@ TUniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_i
 
     // 指定在多个队列族中使用交换链图像的方式
     const auto                      indicies             = physical_device.FindQueueFamilyIndices();
-    const TStaticArray<uint32_t, 2> queue_family_indices = {
+    const StaticArray<uint32_t, 2> queue_family_indices = {
         indicies.graphics_family.value(),
         indicies.present_family.value(),
     };
@@ -202,7 +202,7 @@ void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
     handle_.unmapMemory(InMemory);
 }
 
-void LogicalDevice::FlushMappedMemory(const TArray<vk::MappedMemoryRange>& ranges) const
+void LogicalDevice::FlushMappedMemory(const Array<vk::MappedMemoryRange>& ranges) const
 {
     handle_.flushMappedMemoryRanges(ranges);
 }
@@ -217,8 +217,8 @@ void LogicalDevice::ResetFences(const vk::ArrayProxy<vk::Fence> fences) const
     handle_.resetFences(fences);
 }
 
-TArray<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
-    const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name, TArray<AnsiString>* out_debug_names
+Array<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
+    const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name, Array<AnsiString>* out_debug_names
 ) const
 {
     auto rtn = handle_.allocateCommandBuffers(allocate_info);

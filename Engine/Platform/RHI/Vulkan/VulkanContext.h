@@ -28,9 +28,9 @@ class IGraphicsPipeline;
 // VulkanContext应该具有全局唯一单例
 struct GraphicsQueueSubmitParams
 {
-    TArray<vk::Semaphore>          semaphores_to_wait;
-    TArray<vk::Semaphore>          semaphores_to_signal;
-    TArray<vk::PipelineStageFlags> wait_stages;
+    Array<vk::Semaphore>          semaphores_to_wait;
+    Array<vk::Semaphore>          semaphores_to_signal;
+    Array<vk::PipelineStageFlags> wait_stages;
     bool                           has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
 };
 
@@ -43,7 +43,7 @@ public:
 
     bool CanRenderBackbuffer() const;
 
-    static TUniquePtr<VulkanContext> CreateUnique(const TSharedPtr<Instance>& instance);
+    static UniquePtr<VulkanContext> CreateUnique(const SharedPtr<Instance>& instance);
 
     PreVulkanDeviceDestroyedSignature PreVulkanDeviceDestroyed;
 
@@ -68,7 +68,7 @@ public:
     /** End GfxContext */
 
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanContext(Protected, const TSharedPtr<Instance>& instance);
+    explicit VulkanContext(Protected, const SharedPtr<Instance>& instance);
 
     // 获取全局单例
     static VulkanContext* Get();
@@ -99,21 +99,21 @@ public:
 
     int32_t GetSwapChainImageCount() const { return g_engine_statistics.graphics.swapchain_image_count; }
 
-    TArray<TSharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
+    Array<SharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
 
     ImageView* GetBackbufferView(int index) const { return back_buffer_views_[index]; }
 
-    const TUniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
+    const UniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
 
-    TUniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
+    UniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
 
-    TUniquePtr<CommandPool>& GetCommandPool() { return command_pool_; }
+    UniquePtr<CommandPool>& GetCommandPool() { return command_pool_; }
 
-    TUniquePtr<LogicalDevice>& GetLogicalDevice() { return logical_device_; }
+    UniquePtr<LogicalDevice>& GetLogicalDevice() { return logical_device_; }
 
-    TUniquePtr<PhysicalDevice>& GetPhysicalDevice() { return physical_device_; }
+    UniquePtr<PhysicalDevice>& GetPhysicalDevice() { return physical_device_; }
 
-    TSharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
+    SharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
 
     vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
 
@@ -152,23 +152,23 @@ private:
     static inline int32_t s_renderer_id_count_ = 0;
 
     // 交换链
-    TUniquePtr<SwapChain>      swap_chain_;
+    UniquePtr<SwapChain>      swap_chain_;
     // 游戏主线程的CommandPool
-    TUniquePtr<CommandPool>    command_pool_;
-    TUniquePtr<LogicalDevice>  logical_device_;
-    TUniquePtr<PhysicalDevice> physical_device_;
-    TSharedPtr<Instance>       vulkan_instance_;
+    UniquePtr<CommandPool>    command_pool_;
+    UniquePtr<LogicalDevice>  logical_device_;
+    UniquePtr<PhysicalDevice> physical_device_;
+    SharedPtr<Instance>       vulkan_instance_;
 
-    TArray<vk::Semaphore> image_available_semaphores_;
+    Array<vk::Semaphore> image_available_semaphores_;
 
     // 一次QueuePresent提交时需要等待的所有 Semaphore
-    TArray<vk::Semaphore> all_wait_semaphores_;
+    Array<vk::Semaphore> all_wait_semaphores_;
 
-    TArray<vk::CommandBuffer> command_buffers_;
-    TArray<AnsiString>        command_buffers_names_;
+    Array<vk::CommandBuffer> command_buffers_;
+    Array<AnsiString>        command_buffers_names_;
 
-    TArray<Image*>     back_buffers_;
-    TArray<ImageView*> back_buffer_views_;
+    Array<Image*>     back_buffers_;
+    Array<ImageView*> back_buffer_views_;
 
     bool wait_swapchain_rebuild_ = false;
 };

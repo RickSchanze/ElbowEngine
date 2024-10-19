@@ -46,7 +46,7 @@ void Mesh::OnDisable()
     RenderContext::Get()->UnregisterDrawMesh(this);
 }
 
-TArray<res::SubMesh>& Mesh::GetSubMeshes() const
+Array<res::SubMesh>& Mesh::GetSubMeshes() const
 {
     return mesh_->GetSubMeshes();
 }

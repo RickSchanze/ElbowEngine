@@ -77,9 +77,9 @@ public:
 
 private:
     // 所有可Tick对象
-    TArray<ITickable*> tickables_;
-    TArray<ITickable*> tickable_game_objects_;
-    TArray<ITickable*> tickable_components_;
+    Array<ITickable*> tickables_;
+    Array<ITickable*> tickable_game_objects_;
+    Array<ITickable*> tickable_components_;
 
     ETickStage tick_stage_ = ETickStage::Count;
 };

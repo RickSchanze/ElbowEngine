@@ -155,5 +155,5 @@ public:
     }
 
 private:
-    TSharedPtr<spdlog::logger> logger_;
+    SharedPtr<spdlog::logger> logger_;
 };

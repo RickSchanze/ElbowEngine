@@ -227,7 +227,7 @@ void ConsoleWindow::DrawSingleLog(const Log& log, bool even, Vector2 size)
     ImGuiHelper::PopChildWindowColor();
 }
 
-void ConsoleWindow::FilterLogsByLevel(const TList<Log>&logs){
+void ConsoleWindow::FilterLogsByLevel(const List<Log>&logs){
     if (logs.size() > filtered_logs_.size())
     {
         filtered_logs_.resize(logs.size());

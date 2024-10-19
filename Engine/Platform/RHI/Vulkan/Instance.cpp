@@ -65,13 +65,13 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
     return dynamic_dispatcher_;
 }
 
-Instance& Instance::SetSurface(TUniquePtr<SurfaceBase> InSurface) {
+Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
     surface_ = Move(InSurface);
     surface_->SetInstanceHandle(this);
     return *this;
 }
 
-TArray<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
+Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
     return vulkan_instance_handle_.enumeratePhysicalDevices();
 }
 
@@ -81,7 +81,7 @@ void Instance::InitializeSurface() {
     LOG_INFO_CATEGORY(Vulkan, L"Surface初始化完成");
 }
 
-TUniquePtr<PhysicalDevice> Instance::PickPhysicalDevice() {
+UniquePtr<PhysicalDevice> Instance::PickPhysicalDevice() {
     auto PhysicalDevice = PhysicalDevice::PickPhysicalDevice(this);
     return PhysicalDevice;
 }

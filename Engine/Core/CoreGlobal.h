@@ -95,13 +95,13 @@ struct NewReturnType<T, ENewReturnType::Raw>
 template<typename T>
 struct NewReturnType<T, ENewReturnType::SharedPtr>
 {
-    using Type = TSharedPtr<T>;
+    using Type = SharedPtr<T>;
 };
 
 template<typename T>
 struct NewReturnType<T, ENewReturnType::UniquePtr>
 {
-    using Type = TUniquePtr<T>;
+    using Type = UniquePtr<T>;
 };
 
 // 使用这个可以不在头文件引入ObjectManager.h
@@ -111,8 +111,8 @@ public:
     // 获得可用的ID
     static uint32_t GetAvailableID();
     static void     SetObjectID(Object* Obj, uint32_t ID);
-    static void     SetObjectID(const TSharedPtr<Object>& Obj, uint32_t ID);
-    static void     SetObjectID(const TUniquePtr<Object>& Obj, uint32_t ID);
+    static void     SetObjectID(const SharedPtr<Object>& Obj, uint32_t ID);
+    static void     SetObjectID(const UniquePtr<Object>& Obj, uint32_t ID);
 };
 
 template<typename T, typename... Args>

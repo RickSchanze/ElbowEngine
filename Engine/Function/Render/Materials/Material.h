@@ -62,7 +62,7 @@ class Material : public Object, public IDetailGUIDrawer
 public:
     // 参数名称白名单 如果参数名字在参数白名单中，那么就不会加入到这个Material中
     // 例如MVP矩阵 每帧设置 自然不用加入
-    static inline TArray<AnsiString> parameter_name_white_list = {"ubo_instance", "ubo_view"};
+    static inline Array<AnsiString> parameter_name_white_list = {"ubo_instance", "ubo_view"};
 
     // TODO: 这里应该是传入两个Shader而不是两个路径
     Material(const Path& vert, const Path& frag, const MaterialConfig& config = {}, const String& name = L"");
@@ -95,7 +95,7 @@ public:
 
     void SetPointLights(void* data, size_t size);
 
-    void DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const TArray<uint32_t>& dynamic_offsets);
+    void DrawMesh(vk::CommandBuffer cb, const comp::Mesh& mesh, const Array<uint32_t>& dynamic_offsets);
 
     void Draw(vk::CommandBuffer cb, uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 
@@ -129,7 +129,7 @@ protected:
     rhi::vulkan::GraphicsPipeline* pipeline_       = nullptr;
 
     // 存储shader里所有的纹理参数
-    THashMap<AnsiString, res::Texture*> textures_maps_;
+    HashMap<AnsiString, res::Texture*> textures_maps_;
 
     bool texture_map_dirty_ = false;
 };
@@ -177,7 +177,7 @@ public:
     }
 
 private:
-    THashMap<String, Material*> materials_;
+    HashMap<String, Material*> materials_;
 };
 
 }

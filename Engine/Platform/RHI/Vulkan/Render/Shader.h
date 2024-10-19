@@ -181,7 +181,7 @@ public:
     static void DestroyAll();
 
 protected:
-    static inline THashMap<String, Shader*> shaders_;
+    static inline HashMap<String, Shader*> shaders_;
 };
 
 // 输入Spirv文件路径，通过反射获取所有uniform变量
@@ -224,32 +224,32 @@ public:
     const Path&                      GetShaderPath() const { return shader_path_; }
     const vk::ShaderModule&          GetHandle() const { return shader_module_; }
     const EShaderStage&              GetShaderType() const { return shader_stage_; }
-    const TArray<UniformDescriptor>& GetUniformObjects() const { return uniform_descriptors_; }
-    const TArray<VertexInAttribute>& GetInAttributes() const { return in_attributes_; }
+    const Array<UniformDescriptor>& GetUniformObjects() const { return uniform_descriptors_; }
+    const Array<VertexInAttribute>& GetInAttributes() const { return in_attributes_; }
 
-    const TArray<PushConstantDescriptor>& GetPushConstantDescriptors() const { return push_constant_descriptors_; }
+    const Array<PushConstantDescriptor>& GetPushConstantDescriptors() const { return push_constant_descriptors_; }
     virtual void                          RegisterShaderVariables() = 0;
 
     static bool
-    CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, TArray<uint32_t>& output);
+    CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, Array<uint32_t>& output);
 
 protected:
     // 解析传入的Shader代码
     void ParseShaderCode(const uint32_t* shader_code, size_t shader_code_size, EShaderStage shader_stage);
 
 protected:
-    TArray<UniformDescriptor>      uniform_descriptors_;
-    TArray<PushConstantDescriptor> push_constant_descriptors_;
+    Array<UniformDescriptor>      uniform_descriptors_;
+    Array<PushConstantDescriptor> push_constant_descriptors_;
     EShaderStage                   shader_stage_ = EShaderStage::None;
     Path                           shader_path_;
     vk::ShaderModule               shader_module_;
     // 顶点着色器的输入属性
-    TArray<VertexInAttribute>      in_attributes_;
+    Array<VertexInAttribute>      in_attributes_;
     Ref<LogicalDevice>             device_;   // 使用此Shader的管线
     AnsiString                     shader_name_;
 
     // Shader的Cache
-    static inline TSharedPtr<class ShaderCache> cache_;
+    static inline SharedPtr<class ShaderCache> cache_;
 };
 }
 

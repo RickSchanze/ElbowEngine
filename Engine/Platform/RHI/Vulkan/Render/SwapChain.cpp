@@ -14,14 +14,14 @@
 
 namespace rhi::vulkan
 {
-TUniquePtr<SwapChain> SwapChain::CreateUnique(
+UniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
     return MakeUnique<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
-TSharedPtr<SwapChain> SwapChain::CreateShared(
+SharedPtr<SwapChain> SwapChain::CreateShared(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
@@ -46,7 +46,7 @@ SwapChain::~SwapChain()
     }
 }
 
-vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& available_formats)
+vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& available_formats)
 {
     // 看看设定的格式在不在列表
     for (const auto& AvailableFormat: available_formats)
@@ -60,7 +60,7 @@ vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const TArray<vk::Surface
     return available_formats[0];
 }
 
-vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& available_present_modes)
+vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& available_present_modes)
 {
     // FIFO: 垂直同步
     auto BestMode = vk::PresentModeKHR::eFifo;

@@ -17,10 +17,10 @@ class LogicalDevice;
 class SwapChain final : public IRHIResource
 {
 public:
-    static TUniquePtr<SwapChain> CreateUnique(
+    static UniquePtr<SwapChain> CreateUnique(
         vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
-    static TSharedPtr<SwapChain> CreateShared(
+    static SharedPtr<SwapChain> CreateShared(
         vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
 
@@ -32,9 +32,9 @@ public:
     ~SwapChain() override;
 
     // 表面格式
-    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const TArray<vk::SurfaceFormatKHR>& available_formats);
+    static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& available_formats);
     // 显示模式（垂直同步？）
-    static vk::PresentModeKHR   ChooseSwapPresentMode(const TArray<vk::PresentModeKHR>& available_present_modes);
+    static vk::PresentModeKHR   ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& available_present_modes);
     // 分辨率
     static vk::Extent2D         ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height);
 
@@ -48,7 +48,7 @@ public:
 
     vk::Extent2D GetExtent() const { return swapchain_extent_; }
 
-    TArray<TSharedPtr<ImageView>>& GetImageViews() { return swapchain_image_views_; }
+    Array<SharedPtr<ImageView>>& GetImageViews() { return swapchain_image_views_; }
 
     void Initialize();
     void DeInitialize(bool log);
@@ -59,8 +59,8 @@ public:
 
 private:
     vk::SwapchainKHR                   swapchain_handle_;
-    TArray<TSharedPtr<SwapChainImage>> swap_chain_images_;
-    TArray<TSharedPtr<ImageView>>      swapchain_image_views_;
+    Array<SharedPtr<SwapChainImage>> swap_chain_images_;
+    Array<SharedPtr<ImageView>>      swapchain_image_views_;
     vk::Format                         swapchain_image_format_;
     vk::Extent2D                       swapchain_extent_;
 

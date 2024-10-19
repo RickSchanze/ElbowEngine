@@ -12,10 +12,10 @@
 
 namespace rhi::vulkan
 {
-TUniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance, const TFunction<bool(const PhysicalDevice&)>& pick_func)
+UniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance, const Function<bool(const PhysicalDevice&)>& pick_func)
 {
     auto         Rtn     = MakeUnique<PhysicalDevice>(instance);
-    const TArray Devices = instance->EnumeratePhysicalDevices();
+    const Array Devices = instance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices)
     {
         PhysicalDevice TempDevice(instance);
@@ -58,7 +58,7 @@ PhysicalDevice& PhysicalDevice::SetVulkanPhysicalDevice(const vk::PhysicalDevice
 QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const
 {
     THROW_IF_NOT(VULKAN_CHECK_PTR(instance_), L"Physical::FindQueueFamilyIndices: 查找队列族索引时mAttachedInstance无效");
-    const TArray       QueueFamilies = handle_.getQueueFamilyProperties();
+    const Array       QueueFamilies = handle_.getQueueFamilyProperties();
     // 查找需要的队列族索引
     QueueFamilyIndices Rtn{};
     for (int i = 0; i < QueueFamilies.size(); i++)
@@ -82,10 +82,10 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const
     return {};
 }
 
-bool PhysicalDevice::CheckExtensionSupport(const TArray<const char*, std::allocator<const char*>>& required_extensions) const
+bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocator<const char*>>& required_extensions) const
 {
-    const TArray      extensions             = handle_.enumerateDeviceExtensionProperties();
-    TSet<const char*> my_required_extensions = {required_extensions.begin(), required_extensions.end()};
+    const Array      extensions             = handle_.enumerateDeviceExtensionProperties();
+    Set<const char*> my_required_extensions = {required_extensions.begin(), required_extensions.end()};
     for (const auto& extension: extensions)
     {
         my_required_extensions.erase(extension.extensionName);
@@ -104,7 +104,7 @@ PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() 
 }
 
 vk::Format
-PhysicalDevice::FindSupportFormat(const TArray<vk::Format>& candidates, const vk::ImageTiling tiling, const vk::FormatFeatureFlagBits features) const
+PhysicalDevice::FindSupportFormat(const Array<vk::Format>& candidates, const vk::ImageTiling tiling, const vk::FormatFeatureFlagBits features) const
 {
     for (const vk::Format& Format: candidates)
     {
@@ -135,7 +135,7 @@ uint32_t PhysicalDevice::FindMemoryType(const uint32_t type_filter, const vk::Me
     throw VulkanException(L"PhysicalDevice::FindMemoryType: 未找到合适的内存类型");
 }
 
-TUniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
+UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
 {
     const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
     return LogicalDevice::CreateUnique(LogicalDeviceHandle, *this);
@@ -144,8 +144,8 @@ TUniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const
 {
     QueueFamilyIndices                indices = FindQueueFamilyIndices();
-    TArray<vk::DeviceQueueCreateInfo> queue_create_infos;
-    TSet<uint32_t>                    unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
+    Array<vk::DeviceQueueCreateInfo> queue_create_infos;
+    Set<uint32_t>                    unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
     float                             queue_priority        = 1.0f;
     for (uint32_t QueueFamily: unique_queue_families)
     {

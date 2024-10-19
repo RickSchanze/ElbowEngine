@@ -130,7 +130,7 @@ public:
     rhi::vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
 
 protected:
-    TStaticArray<rhi::vulkan::ImageView*, 6> views_{};
-    TStaticArray<AnsiString, 6> view_names_{};
+    StaticArray<rhi::vulkan::ImageView*, 6> views_{};
+    StaticArray<AnsiString, 6> view_names_{};
 };
 }

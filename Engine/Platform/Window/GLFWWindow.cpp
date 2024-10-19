@@ -80,7 +80,7 @@ public:
         {
             vk::FramebufferCreateInfo info{};
             info.renderPass    = handle_;
-            TArray attachments = {VulkanContext::Get()->GetSwapChainImageViews()[i]->GetHandle()};
+            Array attachments = {VulkanContext::Get()->GetSwapChainImageViews()[i]->GetHandle()};
             info.setAttachments(attachments);
             info.width            = width_;
             info.height           = height_;
@@ -118,8 +118,8 @@ public:
         return nullptr;
     }
 
-    TArray<Framebuffer*> framebuffers_;
-    TArray<AnsiString>   framebuffer_names_;
+    Array<Framebuffer*> framebuffers_;
+    Array<AnsiString>   framebuffer_names_;
 };
 
 class RealImGuiGraphicsPipeline : public ImguiGraphicsPipeline
@@ -236,7 +236,7 @@ private:
     VulkanContext* context_;
 
     vk::DescriptorPool      descriptor_pool_ = nullptr;
-    TUniquePtr<CommandPool> command_pool_;
+    UniquePtr<CommandPool> command_pool_;
     ImGuiRenderPass*        render_pass_ = nullptr;
 };
 
@@ -257,15 +257,15 @@ void GLFWWindowSurface::Initialize()
     }
 }
 
-TUniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
+UniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
 {
     auto Surface = MakeUnique<GLFWWindowSurface>(nullptr, window_handle_);
     return Surface;
 }
 
-TArray<const char*> GlfwWindow::GetRequiredExtensions() const
+Array<const char*> GlfwWindow::GetRequiredExtensions() const
 {
-    TArray<const char*> Extensions;
+    Array<const char*> Extensions;
     uint32_t            Count = 0;
     const char**        Names = glfwGetRequiredInstanceExtensions(&Count);
     for (uint32_t i = 0; i < Count; ++i)

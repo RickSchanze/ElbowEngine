@@ -66,10 +66,10 @@ public:
 
     ~ObjectManager() override;
 
-    const THashMap<uint32_t, Object*>& GetAllObject() const { return objects_; }
+    const HashMap<uint32_t, Object*>& GetAllObject() const { return objects_; }
 
 
 private:
-    THashMap<uint32_t, Object*> objects_;
+    HashMap<uint32_t, Object*> objects_;
     int32_t                     id_count_ = 1;
 };

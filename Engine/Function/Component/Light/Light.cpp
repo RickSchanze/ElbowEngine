@@ -46,7 +46,7 @@ void LightManager::Clear()
     lights_.clear();
 }
 
-TArray<Light*> LightManager::GetLights() const
+Array<Light*> LightManager::GetLights() const
 {
     return lights_;
 }

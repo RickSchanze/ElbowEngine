@@ -54,14 +54,14 @@ public:
 
     vk::DescriptorSetLayout GetDescriptorSetLayout() const { return descriptor_set_layout_; }
 
-    const TArray<vk::DescriptorSet>& GetDescriptorSets() const { return descriptor_sets_; }
+    const Array<vk::DescriptorSet>& GetDescriptorSets() const { return descriptor_sets_; }
 
-    TArray<vk::VertexInputAttributeDescription> GetVertexInputAttributeDescriptions() const;
-    TArray<vk::VertexInputBindingDescription>   GetVertexInputBindingDescription() const;
+    Array<vk::VertexInputAttributeDescription> GetVertexInputAttributeDescriptions() const;
+    Array<vk::VertexInputBindingDescription>   GetVertexInputBindingDescription() const;
 
     uint32_t GetStride() const;
 
-    const THashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return uniforms_; }
+    const HashMap<AnsiString, UniformDescriptor>& GetUniforms() const { return uniforms_; }
 
     // 设置纹理
     bool SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler);
@@ -74,13 +74,13 @@ public:
      * 顶点着色器的所有PushConstant
      * @return
      */
-    const TArray<PushConstantDescriptor>& GetVertexPushConstants() const;
+    const Array<PushConstantDescriptor>& GetVertexPushConstants() const;
 
     /**
      * 片段着色器的所有PushConstant
      * @return
      */
-    const TArray<PushConstantDescriptor>& GetFragmentPushConstants() const;
+    const Array<PushConstantDescriptor>& GetFragmentPushConstants() const;
 
     /**
      * 更新一个Cubemap Sampler 用于Shader Read
@@ -117,9 +117,9 @@ private:
     };
 
     // 存储所有的Uniform变量
-    THashMap<AnsiString, UniformDescriptor> uniforms_;
-    TArray<VertexInAttribute>               vertex_input_attributes_;
-    THashMap<AnsiString, TextureStorage>    uniform_texture_storage_;
+    HashMap<AnsiString, UniformDescriptor> uniforms_;
+    Array<VertexInAttribute>               vertex_input_attributes_;
+    HashMap<AnsiString, TextureStorage>    uniform_texture_storage_;
 
     Shader*            vert_shader_;
     Shader*            frag_shader_;
@@ -127,9 +127,9 @@ private:
 
     // pvc指的是 projection-view-camera_position结构
     // TODO: 是否应该只分两个类即static ubo和dynamic ubo?
-    THashMap<AnsiString, TArray<Buffer*>> uniform_buffers_;
+    HashMap<AnsiString, Array<Buffer*>> uniform_buffers_;
 
-    TArray<vk::DescriptorSet> descriptor_sets_;
+    Array<vk::DescriptorSet> descriptor_sets_;
     vk::DescriptorPool        descriptor_pool_;
     vk::DescriptorSetLayout   descriptor_set_layout_;
 
@@ -138,6 +138,6 @@ private:
     AnsiString         name_;
     AnsiString         descriptor_set_layout_name_;
     AnsiString         descriptor_pool_name_;
-    TArray<AnsiString> descriptor_set_names_;
+    Array<AnsiString> descriptor_set_names_;
 };
 }

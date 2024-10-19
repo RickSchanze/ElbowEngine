@@ -74,7 +74,7 @@ public:
     }
 
 protected:
-    inline static THashMap<ShaderPath, ShaderProgram*, ShaderPathHash, ShaderPathEqual> shader_programs_;
+    inline static HashMap<ShaderPath, ShaderProgram*, ShaderPathHash, ShaderPathEqual> shader_programs_;
 };
 
 ShaderProgram::ShaderProgram(
@@ -139,9 +139,9 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
     return true;
 }
 
-TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
+Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
 {
-    TArray<vk::VertexInputAttributeDescription> AttributeDesc;
+    Array<vk::VertexInputAttributeDescription> AttributeDesc;
     for (const auto& Attribute: vertex_input_attributes_)
     {
         vk::VertexInputAttributeDescription Desc;
@@ -165,9 +165,9 @@ TArray<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribu
     return AttributeDesc;
 }
 
-TArray<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
+Array<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
 {
-    TArray<vk::VertexInputBindingDescription> binding_descriptions;
+    Array<vk::VertexInputBindingDescription> binding_descriptions;
     vk::VertexInputBindingDescription         desc{};
     // clang-format off
     desc
@@ -252,12 +252,12 @@ bool ShaderProgram::HasShaderUniform(const AnsiString& name) const
     return uniforms_.contains(name);
 }
 
-const TArray<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
+const Array<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
 {
     return vert_shader_->GetPushConstantDescriptors();
 }
 
-const TArray<PushConstantDescriptor>& ShaderProgram::GetFragmentPushConstants() const
+const Array<PushConstantDescriptor>& ShaderProgram::GetFragmentPushConstants() const
 {
     return frag_shader_->GetPushConstantDescriptors();
 }
@@ -288,7 +288,7 @@ bool ShaderProgram::SetCubeTexture(const AnsiString& name, const ImageView& imag
     image_info.sampler     = sampler.GetHandle();
     image_info.imageView   = image_view.GetHandle();
     image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-    TArray<vk::WriteDescriptorSet> write_descriptor_sets;
+    Array<vk::WriteDescriptorSet> write_descriptor_sets;
     for (const auto& descriptor_set: descriptor_sets_)
     {
         vk::WriteDescriptorSet write_descriptor_set;
@@ -318,7 +318,7 @@ void ShaderProgram::CreateUniformBuffers()
     {
         if (value.type == EUniformDescriptorType::UniformBuffer || value.type == EUniformDescriptorType::DynamicUniformBuffer)
         {
-            TArray<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
+            Array<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
             for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
             {
                 new_buffer[i] = New<Buffer>(
@@ -352,7 +352,7 @@ void ShaderProgram::CreateDescriptorSets()
         CreateDescriptorSetLayout();
     }
     VulkanContext&                context = *VulkanContext::Get();
-    TArray                        layouts(g_engine_statistics.graphics.parallel_render_frame_count, descriptor_set_layout_);
+    Array                        layouts(g_engine_statistics.graphics.parallel_render_frame_count, descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     // 描述符池对象销毁时会自动清除描述符集
@@ -372,9 +372,9 @@ void ShaderProgram::CreateDescriptorSets()
     const auto& sampler                   = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < descriptor_sets_.size(); i++)
     {
-        TArray<vk::WriteDescriptorSet>   descriptor_writes = {};
-        TArray<vk::DescriptorBufferInfo> buffer_infos;
-        TArray<vk::DescriptorImageInfo>  image_infos;
+        Array<vk::WriteDescriptorSet>   descriptor_writes = {};
+        Array<vk::DescriptorBufferInfo> buffer_infos;
+        Array<vk::DescriptorImageInfo>  image_infos;
 
         buffer_infos.reserve(uniforms_.size());
         image_infos.reserve(uniforms_.size());
@@ -431,7 +431,7 @@ void ShaderProgram::DestroyDescriptorSets()
 void ShaderProgram::CreateDescriptorPool()
 {
     const auto&                             device                = VulkanContext::Get()->GetLogicalDevice();
-    TStaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
+    StaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
     const auto                              swapchain_image_count = g_engine_statistics.graphics.swapchain_image_count;
 
     // Uniform Object
@@ -460,7 +460,7 @@ void ShaderProgram::CreateDescriptorSetLayout()
 {
     const auto& device = VulkanContext::Get()->GetLogicalDevice();
 
-    TArray<vk::DescriptorSetLayoutBinding> uniform_bindings;
+    Array<vk::DescriptorSetLayoutBinding> uniform_bindings;
     for (const auto& uniform_binding: GetUniforms() | std::views::values)
     {
         vk::DescriptorSetLayoutBinding binding;

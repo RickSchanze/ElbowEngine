@@ -19,14 +19,14 @@ public:
     Color toggle_color_on;
     Color toggle_color_off;
 
-    ToggleButton& SetEventOnToggleOn(const TFunction<void()>& on_toggle_on);
-    ToggleButton& SetEventOnToggleOff(TFunction<void()> on_toggle_off);
+    ToggleButton& SetEventOnToggleOn(const Function<void()>& on_toggle_on);
+    ToggleButton& SetEventOnToggleOff(Function<void()> on_toggle_off);
 
 
 protected:
     // TODO: 改成事件
-    TFunction<void()> OnToggleOn;
-    TFunction<void()> OnToggleOff;
+    Function<void()> OnToggleOn;
+    Function<void()> OnToggleOff;
 
     EButtonState previous_state_;
 };

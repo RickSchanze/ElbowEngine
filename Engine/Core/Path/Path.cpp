@@ -93,13 +93,13 @@ bool Path::IsFolder(const bool bMustExist) const
     return TempPath.has_filename() && !TempPath.has_extension();
 }
 
-TOptional<Path> Path::GetWorkPath() noexcept
+Optional<Path> Path::GetWorkPath() noexcept
 {
     if (s_project_work_path_ == nullptr) return {};
     return *s_project_work_path_;
 }
 
-TOptional<Path> Path::GetProjectMetaFilePath() noexcept
+Optional<Path> Path::GetProjectMetaFilePath() noexcept
 {
     if (s_project_work_path_ == nullptr) return std::nullopt;
     const auto ProjectName = s_project_work_path_->path_.stem().generic_wstring();
@@ -177,7 +177,7 @@ AnsiString Path::ReadAllText() const
     return content;
 }
 
-void Path::ReadAllBinary(TArray<char>& output) const
+void Path::ReadAllBinary(Array<char>& output) const
 {
     if (IsFolder())
     {
@@ -194,7 +194,7 @@ void Path::ReadAllBinary(TArray<char>& output) const
     output = shader_code;
 }
 
-void Path::ReadAllBinary(TArray<uint32_t>& output) const
+void Path::ReadAllBinary(Array<uint32_t>& output) const
 {
     if (IsFolder())
     {
@@ -217,7 +217,7 @@ void Path::ReadAllBinary(TArray<uint32_t>& output) const
     shader_file_stream.close();
 }
 
-void Path::WriteAllBinary(const TArray<char>& binary) const
+void Path::WriteAllBinary(const Array<char>& binary) const
 {
     std::ofstream file(ToAbsoluteAnsiString(), std::ios::out | std::ios::binary);
     if (!file)
@@ -236,7 +236,7 @@ void Path::WriteAllBinary(const TArray<char>& binary) const
     file.close();
 }
 
-void Path::WriteAllBinary(const TArray<uint32_t>& binary) const
+void Path::WriteAllBinary(const Array<uint32_t>& binary) const
 {
     std::ofstream file(ToAbsoluteAnsiString(), std::ios::out | std::ios::binary);
     if (!file)

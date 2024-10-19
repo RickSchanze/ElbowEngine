@@ -125,9 +125,9 @@ protected:
 
     vk::RenderPass handle_ = VK_NULL_HANDLE;
 
-    TArray<vk::AttachmentDescription> attachment_descs_;
-    TArray<vk::AttachmentReference>   attahcment_refs_;
-    TArray<vk::AttachmentReference>   subpass_color_attachment_refs_;
+    Array<vk::AttachmentDescription> attachment_descs_;
+    Array<vk::AttachmentReference>   attahcment_refs_;
+    Array<vk::AttachmentReference>   subpass_color_attachment_refs_;
 
     // 深度附着一个RenderPass最多只允许一个
     int32_t depth_attachment_index_ = -1;
@@ -135,7 +135,7 @@ protected:
     // 附着到交换链的图像Index
     int32_t swapchain_view_index_   = -1;
 
-    TArray<vk::SubpassDependency> dependencies_;
+    Array<vk::SubpassDependency> dependencies_;
 
     vk::SubpassDescription subpass_;
 
@@ -164,7 +164,7 @@ public:
     static void DestroyRenderPasses();
 
 private:
-    THashMap<Type, RenderPass*> render_passes_;
+    HashMap<Type, RenderPass*> render_passes_;
 };
 
 template<typename T>

@@ -55,15 +55,15 @@ struct Task<T, EExecutorType::MainThread>
 
     bool IsForget() const noexcept { return promise_.promise().IsForget(); }
 
-    TOptional<T> GetResult() { return promise_.promise().GetResult(); }
+    Optional<T> GetResult() { return promise_.promise().GetResult(); }
 
-    Task& OnCompleted(TFunction<void(T)>&& func)
+    Task& OnCompleted(Function<void(T)>&& func)
     {
         promise_.promise().OnCompleted(func);
         return *this;
     }
 
-    Task& OnException(TFunction<void(const std::exception&)>&& func)
+    Task& OnException(Function<void(const std::exception&)>&& func)
     {
         promise_.promise().OnException(func);
         return *this;
@@ -98,9 +98,9 @@ struct Task<void, EExecutorType::MainThread>
 
     bool IsForget() const noexcept;
 
-    Task& OnCompleted(TFunction<void()>&& func);
+    Task& OnCompleted(Function<void()>&& func);
 
-    Task& OnException(TFunction<void(const std::exception&)>&& func);
+    Task& OnException(Function<void(const std::exception&)>&& func);
 
 private:
     std::coroutine_handle<promise_type> promise_;

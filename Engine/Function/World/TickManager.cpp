@@ -14,7 +14,7 @@
 namespace function
 {
 
-static void TickPreTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
+static void TickPreTick(const Array<ITickable*>& objects_, const Array<ITickable*>& comps, const Array<ITickable*>& others)
 {
     for (auto& comp: comps)
     {
@@ -37,7 +37,7 @@ static void TickPreTick(const TArray<ITickable*>& objects_, const TArray<ITickab
     }
 }
 
-static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
+static void TickTick(const Array<ITickable*>& objects_, const Array<ITickable*>& comps, const Array<ITickable*>& others)
 {
     for (auto& comp: comps)
     {
@@ -60,7 +60,7 @@ static void TickTick(const TArray<ITickable*>& objects_, const TArray<ITickable*
     }
 }
 
-static void TickPostTick(const TArray<ITickable*>& objects_, const TArray<ITickable*>& comps, const TArray<ITickable*>& others)
+static void TickPostTick(const Array<ITickable*>& objects_, const Array<ITickable*>& comps, const Array<ITickable*>& others)
 {
     for (auto& comp: comps)
     {

@@ -47,8 +47,8 @@ public:
 
     [[nodiscard]] bool IsValid() const { return window_handle_ != nullptr; }
 
-    TUniquePtr<GLFWWindowSurface> GetWindowSurface();
-    TArray<const char*>           GetRequiredExtensions() const;
+    UniquePtr<GLFWWindowSurface> GetWindowSurface();
+    Array<const char*>           GetRequiredExtensions() const;
     GLFWwindow*                   GetGLFWWindowHandle() const { return window_handle_; }
 
     Size2D GetWindowSize();

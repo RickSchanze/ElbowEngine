@@ -18,8 +18,8 @@ class Instance;
 
 struct QueueFamilyIndices
 {
-    TOptional<uint32_t> graphics_family;
-    TOptional<uint32_t> present_family;
+    Optional<uint32_t> graphics_family;
+    Optional<uint32_t> present_family;
 
     [[nodiscard]] bool IsValid() const { return graphics_family.has_value() && present_family.has_value(); }
 };
@@ -27,20 +27,20 @@ struct QueueFamilyIndices
 class PhysicalDevice
 {
 public:
-    static inline TArray<const char*> s_device_required_extensions = {
+    static inline Array<const char*> s_device_required_extensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
 #if ENABLE_PROFILING
         VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
 #endif
     };
-    static TArray<const char*> GetDeviceRequiredExtensions() { return s_device_required_extensions; }
+    static Array<const char*> GetDeviceRequiredExtensions() { return s_device_required_extensions; }
 
     struct SwapChainSupportDetails
     {
         vk::SurfaceCapabilitiesKHR   capabilities;
-        TArray<vk::SurfaceFormatKHR> formats;
-        TArray<vk::PresentModeKHR>   present_modes;
+        Array<vk::SurfaceFormatKHR> formats;
+        Array<vk::PresentModeKHR>   present_modes;
     };
 
 public:
@@ -60,8 +60,8 @@ public:
      * @param pick_func 用来确定一个设备是否合适
      * @return
      */
-    static TUniquePtr<PhysicalDevice>
-    PickPhysicalDevice(Instance* instance, const TFunction<bool(const PhysicalDevice&)>& pick_func = &ThisClass::IsDeviceSuitable);
+    static UniquePtr<PhysicalDevice>
+    PickPhysicalDevice(Instance* instance, const Function<bool(const PhysicalDevice&)>& pick_func = &ThisClass::IsDeviceSuitable);
 
     /**
      * 判断一个Device是否合适
@@ -83,7 +83,7 @@ public:
      * @param required_extensions
      * @return
      */
-    bool CheckExtensionSupport(const TArray<const char*>& required_extensions) const;
+    bool CheckExtensionSupport(const Array<const char*>& required_extensions) const;
 
     /**
      * 查询此物理设备对交换链的支持情况
@@ -98,12 +98,12 @@ public:
      * @param features
      * @return
      */
-    vk::Format FindSupportFormat(const TArray<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features) const;
+    vk::Format FindSupportFormat(const Array<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features) const;
 
     uint32_t FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags properties) const;
 
 
-    TUniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
+    UniquePtr<LogicalDevice> CreateLogicalDeviceUnique();
     vk::Device                CreateLogicalDeviceHandle() const;
 
     [[nodiscard]] Instance* GetAttachedInstance() const { return instance_; }

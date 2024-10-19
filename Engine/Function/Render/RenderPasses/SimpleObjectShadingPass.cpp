@@ -41,7 +41,7 @@ void SimpleObjectShadingPass::SetupAttachments()
 
 void SimpleObjectShadingPass::SetupFramebuffer()
 {
-    TStaticArray<vk::ImageView, 2> attachments;
+    StaticArray<vk::ImageView, 2> attachments;
     // 深度图像
     ImageInfo                      depth_image_info{};
     depth_image_info.width  = width_;

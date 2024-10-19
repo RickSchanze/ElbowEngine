@@ -42,7 +42,7 @@ public:
     ~CoroutineExecutorManager() override;
 
 private:
-    TStaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};
+    StaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};
 };
 
 }

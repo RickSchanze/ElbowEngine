@@ -72,7 +72,7 @@ public:
     GameObject* GetParent() const { return parent_object_; }
 
     // 获取这个对象的所有子对象
-    TArray<GameObject*>& GetChildren() { return sub_game_objects_; }
+    Array<GameObject*>& GetChildren() { return sub_game_objects_; }
 
     // 这个对象是否有子对象？
     bool HasChildren() const { return !sub_game_objects_.empty(); }
@@ -81,9 +81,9 @@ public:
     Transform& GetTransform() { return transform_; }
 
     // 获取这个对象的所有Components
-    TArray<comp::Component*>& GetComponents() { return components_; }
+    Array<comp::Component*>& GetComponents() { return components_; }
 
-    static const TArray<GameObject*>& GetRootGameObjects() { return s_root_objects_; }
+    static const Array<GameObject*>& GetRootGameObjects() { return s_root_objects_; }
 
     void MarkTransformDirty();
 
@@ -96,11 +96,11 @@ protected:
     Transform transform_;
     bool      transform_dirty_{};   // transform有变化时为true
 
-    TArray<comp::Component*> components_;
-    TArray<GameObject*>      sub_game_objects_;
+    Array<comp::Component*> components_;
+    Array<GameObject*>      sub_game_objects_;
     GameObject*              parent_object_ = nullptr;
 
-    static inline TArray<GameObject*> s_root_objects_;
+    static inline Array<GameObject*> s_root_objects_;
 };
 
 }

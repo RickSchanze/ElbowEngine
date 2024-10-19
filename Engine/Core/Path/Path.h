@@ -83,13 +83,13 @@ public:
      * 获取工作目录 未设置则返回空
      * @return
      */
-    static TOptional<Path> GetWorkPath() noexcept;
+    static Optional<Path> GetWorkPath() noexcept;
 
     /**
      * 获取项目元数据文件路径
      * @return
      */
-    static TOptional<Path> GetProjectMetaFilePath() noexcept;
+    static Optional<Path> GetProjectMetaFilePath() noexcept;
 
     /**
      * 创建当前路径指示的文件
@@ -120,23 +120,23 @@ public:
      * 以二进制Char读取文件
      * @param output 如果读取失败，那么output会被清零
      */
-    void ReadAllBinary(TArray<char>& output) const;
+    void ReadAllBinary(Array<char>& output) const;
     /**
      * Shader编译将会使用这个
      * @param output
      */
-    void ReadAllBinary(TArray<uint32_t>& output) const;
+    void ReadAllBinary(Array<uint32_t>& output) const;
 
     /**
      * 写入二进制 不存在自动创建
      * @param binary
      */
-    void WriteAllBinary(const TArray<char>&binary) const;
+    void WriteAllBinary(const Array<char>&binary) const;
     /**
      * shader编译将会使用这个
      * @param binary
      */
-    void WriteAllBinary(const TArray<uint32_t>& binary) const;
+    void WriteAllBinary(const Array<uint32_t>& binary) const;
 
     /**
      * 写入文本 不存在自动创建

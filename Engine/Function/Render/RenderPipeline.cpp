@@ -136,7 +136,7 @@ void RenderPipeline::PrepareLight()
         Vector4 pos;
         Vector4 color;
     };
-    TArray<PointLight> lights_data;
+    Array<PointLight> lights_data;
     for (auto* light: lights)
     {
         // 处理直射光
@@ -192,9 +192,9 @@ void RenderPipeline::UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass)
     ContainerUtils::Remove(saved_render_passes_, render_pass);
 }
 
-THashMap<Material*, TArray<comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const
+HashMap<Material*, Array<comp::Mesh*>> RenderPipeline::CollectMeshesWithMaterial() const
 {
-    THashMap<Material*, TArray<comp::Mesh*>> rtn;
+    HashMap<Material*, Array<comp::Mesh*>> rtn;
     for (auto& mesh: context_->GetDrawMeshes())
     {
         if (mesh->GetMaterial() == nullptr)

@@ -75,9 +75,9 @@ void WindowManager::DestroyWindow(const Type& type)
     }
 }
 
-TArray<WindowBase*> WindowManager::GetWindows(const Type& type) const
+Array<WindowBase*> WindowManager::GetWindows(const Type& type) const
 {
-    TArray<WindowBase*> rtn;
+    Array<WindowBase*> rtn;
     for (auto* window: duplicated_windows_)
     {
         if (window->IsImplemented(type))

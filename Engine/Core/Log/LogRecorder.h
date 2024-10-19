@@ -35,7 +35,7 @@ struct CallStackFrame
 
 struct Log
 {
-    TArray<CallStackFrame>                             call_stack;
+    Array<CallStackFrame>                             call_stack;
     AnsiString                                         message;
     ELogLevel                                          level;
     AnsiString                                         filename;
@@ -61,7 +61,7 @@ public:
     explicit LogRecorder(size_t max_count = 100);
     void     PushLog(const spdlog::details::log_msg& msg);
 
-    const TList<Log>& GetLogs() const;
+    const List<Log>& GetLogs() const;
     size_t            GetSize() const;
     size_t            GetMaxSize() const;
     void              Clear();
@@ -76,7 +76,7 @@ public:
 
 private:
     ELogLevel  trace_level_ = ELogLevel::Warning;
-    TList<Log> logs_;
+    List<Log> logs_;
     size_t     max_log_counts_;
     size_t     size_;
 };

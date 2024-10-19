@@ -56,7 +56,7 @@ public:
 
     void UnregisterAllDrawMesh();
 
-    const TArray<comp::Mesh*>& GetDrawMeshes() const { return mesh_to_draw_; }
+    const Array<comp::Mesh*>& GetDrawMeshes() const { return mesh_to_draw_; }
 
     uint32_t GetMinUniformBufferOffsetAlignment() const;
 
@@ -78,7 +78,7 @@ private:
     rhi::vulkan::VulkanContext* vulkan_context_  = nullptr;
     RenderPipeline*             render_pipeline_ = nullptr;
 
-    TArray<comp::Mesh*> mesh_to_draw_;
+    Array<comp::Mesh*> mesh_to_draw_;
 
     static inline RenderContext* s_render_context_ = nullptr;
 };

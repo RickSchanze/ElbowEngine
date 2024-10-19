@@ -50,13 +50,13 @@ VulkanApplication& VulkanApplication::SetApiVersion(const uint32_t api_version) 
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetExtensions(const TArray<const char*>& extensions) noexcept
+VulkanApplication& VulkanApplication::SetExtensions(const Array<const char*>& extensions) noexcept
 {
     extensions_ = extensions;
     return *this;
 }
 
-VulkanApplication& VulkanApplication::SetWindowSurface(TUniquePtr<SurfaceBase> surface) noexcept
+VulkanApplication& VulkanApplication::SetWindowSurface(UniquePtr<SurfaceBase> surface) noexcept
 {
     surface_ = Move(surface);
     return *this;

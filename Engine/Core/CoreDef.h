@@ -37,31 +37,31 @@ ConstRef<T> MakeConstRef(const T& TValue)
 
 // std::function -> Function
 template<typename T>
-using TFunction = std::function<T>;
+using Function = std::function<T>;
 
 // std::vector -> Array
 #include <vector>
 template<typename T, typename Allocator = std::allocator<T>>
-using TArray = std::vector<T, Allocator>;
+using Array = std::vector<T, Allocator>;
 
 // std::array -> StaticArray
 #include <array>
 template<typename T, size_t Size>
-using TStaticArray = std::array<T, Size>;
+using StaticArray = std::array<T, Size>;
 
 // std::set -> Set
 #include <set>
 template<class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
-using TSet = std::set<KeyType, Comparator, Allocator>;
+using Set = std::set<KeyType, Comparator, Allocator>;
 
 // std::map -> Map
 #include <map>
 template<class KeyType, class ValueType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
-using TMap = std::map<KeyType, ValueType, Comparator, Allocator>;
+using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 #include <list>
 template<typename T, typename Allocator = std::allocator<T>>
-using TList = std::list<T, Allocator>;
+using List = std::list<T, Allocator>;
 
 // std::wstring -> String
 // unicode字符串,此项目中全部使用此字符串
@@ -73,18 +73,18 @@ typedef std::string  AnsiString;
 // std::optional -> Optional
 #include <optional>
 template<typename T>
-using TOptional = std::optional<T>;
+using Optional = std::optional<T>;
 
 // std::shared_ptr -> SharedPtr
 #include <memory>
 template<typename T>
-using TSharedPtr = std::shared_ptr<T>;
+using SharedPtr = std::shared_ptr<T>;
 // std::weak_ptr -> WeakPtr
 template<typename T>
-using TWeakPtr = std::weak_ptr<T>;
+using WeakPtr = std::weak_ptr<T>;
 // std::make_shared -> MakeShared
 template<typename T, typename... Args>
-TSharedPtr<T> MakeShared(Args&&... args)
+SharedPtr<T> MakeShared(Args&&... args)
 {
 #if ENABLE_PROFILING
     return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
@@ -94,12 +94,12 @@ TSharedPtr<T> MakeShared(Args&&... args)
 }
 
 template<typename T>
-class TUniquePtr
+class UniquePtr
 {
 public:
     // 构造函数
     template<typename... Args>
-    static TUniquePtr<T> Create(Args&&... args)
+    static UniquePtr<T> Create(Args&&... args)
     {
 #if ENABLE_PROFILING
         MemoryTraceAllocator<T> allocator;
@@ -116,20 +116,20 @@ public:
 #else
         T* ptr = new T(std::forward<Args>(args)...);
 #endif
-        return TUniquePtr<T>(ptr);
+        return UniquePtr<T>(ptr);
     }
 
     // 默认构造函数
-    TUniquePtr() noexcept = default;
+    UniquePtr() noexcept = default;
 
     // 构造函数
-    TUniquePtr(T* ptr) noexcept : ptr_(ptr) {}
+    UniquePtr(T* ptr) noexcept : ptr_(ptr) {}
 
     // 移动构造函数
-    TUniquePtr(TUniquePtr&& other) noexcept : ptr_(other.ptr_) { other.ptr_ = nullptr; }
+    UniquePtr(UniquePtr&& other) noexcept : ptr_(other.ptr_) { other.ptr_ = nullptr; }
 
     // 移动赋值运算符
-    TUniquePtr& operator=(TUniquePtr&& other) noexcept
+    UniquePtr& operator=(UniquePtr&& other) noexcept
     {
         if (this != &other)
         {
@@ -141,14 +141,14 @@ public:
 
     // 子类到父类的转换
     template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
-    TUniquePtr(TUniquePtr<U>&& other) noexcept : ptr_(other.Release()) {}
+    UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release()) {}
 
     // 删除拷贝构造函数和赋值运算符
-                TUniquePtr(const TUniquePtr&) = delete;
-    TUniquePtr& operator=(const TUniquePtr&)  = delete;
+                UniquePtr(const UniquePtr&) = delete;
+    UniquePtr& operator=(const UniquePtr&)  = delete;
 
     // 析构函数
-    ~TUniquePtr() { Reset(); }
+    ~UniquePtr() { Reset(); }
 
     // 重置指针
     void Reset(T* ptr = nullptr) noexcept
@@ -189,9 +189,9 @@ private:
 };
 
 template<typename T, typename... Args>
-TUniquePtr<T> MakeUnique(Args&&... args)
+UniquePtr<T> MakeUnique(Args&&... args)
 {
-    return TUniquePtr<T>::Create(std::forward<Args>(args)...);
+    return UniquePtr<T>::Create(std::forward<Args>(args)...);
 }
 
 // std::forward -> Forward
@@ -213,12 +213,12 @@ constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept
 template<
     class KeyType, class ValueType, class Hash = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
-using THashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
+using HashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
 // std::unordered_set -> HashSet
 #include <unordered_set>
 template<class KeyType, class Hasher = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>, class Alloc = std::allocator<KeyType>>
-using THashSet = std::unordered_set<KeyType, Hasher, KeyEqual, Alloc>;
+using HashSet = std::unordered_set<KeyType, Hasher, KeyEqual, Alloc>;
 
 template<typename T>
 constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept
@@ -229,7 +229,7 @@ constexpr T&& Forward(std::remove_reference_t<T>&& Arg) noexcept
 
 // std::dynamic_pointer_cast -> StaticPointerCast
 template<typename T, typename U>
-TSharedPtr<T> StaticPointerCast(const TSharedPtr<U>& InSharedPtr)
+SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
 {
     return std::static_pointer_cast<T>(InSharedPtr);
 }

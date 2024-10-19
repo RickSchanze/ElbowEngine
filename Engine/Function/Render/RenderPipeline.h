@@ -103,7 +103,7 @@ protected:
     void RegisterRenderPass(rhi::vulkan::RenderPass* render_pass);
     void UnregisterRenderPass(rhi::vulkan::RenderPass* render_pass);
 
-    THashMap<Material*, TArray<comp::Mesh*>> CollectMeshesWithMaterial() const;
+    HashMap<Material*, Array<comp::Mesh*>> CollectMeshesWithMaterial() const;
 
     RenderContext*                      context_        = nullptr;
     rhi::vulkan::ImguiGraphicsPipeline* imgui_pipeline_ = nullptr;
@@ -112,9 +112,9 @@ protected:
 
 protected:
     // 每帧处理的需要绘制的mesh
-    THashMap<Material*, TArray<comp::Mesh*>> draw_meshes_;
+    HashMap<Material*, Array<comp::Mesh*>> draw_meshes_;
 
-    TArray<rhi::vulkan::RenderPass*> saved_render_passes_;
+    Array<rhi::vulkan::RenderPass*> saved_render_passes_;
 
     String window_resized_event_handle_;
 };

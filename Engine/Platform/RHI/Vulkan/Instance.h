@@ -49,10 +49,10 @@ public:
     void DeInitialize();
     void Destroy() override;
 
-    Instance& SetSurface(TUniquePtr<SurfaceBase> InSurface);
+    Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
 
     // clang-format off
-    [[nodiscard]] TArray<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
+    [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(vulkan_instance_handle_); }
     [[nodiscard]] vk::Instance GetHandle() const { return vulkan_instance_handle_; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
@@ -65,7 +65,7 @@ public:
      * 选择一个合适的PhysicalDevice返回
      * @return
      */
-    TUniquePtr<PhysicalDevice> PickPhysicalDevice();
+    UniquePtr<PhysicalDevice> PickPhysicalDevice();
 
 protected:
     void InitializeSurface();
@@ -73,9 +73,9 @@ protected:
 private:
     vk::Instance                vulkan_instance_handle_;
     // 验证层
-    TUniquePtr<ValidationLayer> validation_layer_;
+    UniquePtr<ValidationLayer> validation_layer_;
     // 窗口表面
-    TUniquePtr<SurfaceBase>     surface_;
+    UniquePtr<SurfaceBase>     surface_;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic   dynamic_dispatcher_;
     // 实例创建信息

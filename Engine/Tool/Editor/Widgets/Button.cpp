@@ -81,7 +81,7 @@ Button& Button::SetTooltipText(const CachedString& str)
     return *this;
 }
 
-Button& Button::SetEventOnClick(const TFunction<void()>& func)
+Button& Button::SetEventOnClick(const Function<void()>& func)
 {
     OnClick = func;
     return *this;

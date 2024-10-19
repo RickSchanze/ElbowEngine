@@ -21,11 +21,11 @@ class LogicalDevice final : public IRHIResource
 public:
     ~LogicalDevice() override;
 
-    TArray<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const;
+    Array<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const;
 
-    void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const TArray<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
+    void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
 
-    static TUniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
+    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
 
     explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
 
@@ -41,7 +41,7 @@ public:
      * @param log 是否打log
      * @return
      */
-    TUniquePtr<SwapChain> CreateSwapChain(uint32_t swap_chain_image_count = 0, int32_t width = 0, int32_t height = 0, bool log = true);
+    UniquePtr<SwapChain> CreateSwapChain(uint32_t swap_chain_image_count = 0, int32_t width = 0, int32_t height = 0, bool log = true);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
@@ -84,14 +84,14 @@ public:
 
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
-    void FlushMappedMemory(const TArray<vk::MappedMemoryRange>& ranges) const;
+    void FlushMappedMemory(const Array<vk::MappedMemoryRange>& ranges) const;
 
     vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
 
     void ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
 
-    TArray<vk::CommandBuffer> AllocateCommandBuffers(
-        const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name = nullptr, TArray<AnsiString>* out_debug_names = {}
+    Array<vk::CommandBuffer> AllocateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name = nullptr, Array<AnsiString>* out_debug_names = {}
     ) const;
 
     void DestroySampler(vk::Sampler sampler) const;

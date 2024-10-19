@@ -73,7 +73,7 @@ void LogRecorder::PushLog(const spdlog::details::log_msg& msg)
     }
 }
 
-const TList<Log>& LogRecorder::GetLogs() const
+const List<Log>& LogRecorder::GetLogs() const
 {
     return logs_;
 }

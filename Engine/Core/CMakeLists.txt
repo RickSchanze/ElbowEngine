@@ -41,7 +41,6 @@ add_library(${PROJECT_NAME}
         CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
-        Event/Event.h
         Misc/Guid.cpp
         Misc/Guid.h
         Misc/Vertex.h
@@ -74,6 +73,7 @@ add_library(${PROJECT_NAME}
         Async/Coroutine/TaskAwaiter.cpp
         Async/Coroutine/TaskAwaiter.h
         Async/Coroutine/Coroutine.h
+        Event/Delegate.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

@@ -31,7 +31,7 @@ public:
     static void AddUnique(ContainerT& container, const typename ContainerT::value_type& value);
 
     template<typename KeyType, typename ValueType>
-    static bool ContainsValue(const THashMap<KeyType, ValueType> map, const ValueType& value)
+    static bool ContainsValue(const HashMap<KeyType, ValueType> map, const ValueType& value)
     {
         for (const auto& [key, val]: map)
         {
@@ -62,9 +62,9 @@ public:
     }
 
     template<typename ContainerT>
-    static TOptional<typename ContainerT::value_type> First(
+    static Optional<typename ContainerT::value_type> First(
         const ContainerT&                                              container,
-        const TFunction<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
+        const Function<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
     )
     {
         for (auto& item: container)

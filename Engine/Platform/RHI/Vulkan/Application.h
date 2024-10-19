@@ -25,8 +25,8 @@ public:
     VulkanApplication& SetAppVersion(uint32_t app_version) noexcept;
     VulkanApplication& SetEngineVersion(uint32_t engine_version) noexcept;
     VulkanApplication& SetApiVersion(uint32_t api_version) noexcept;
-    VulkanApplication& SetExtensions(const TArray<const char*>& extensions) noexcept;
-    VulkanApplication& SetWindowSurface(TUniquePtr<SurfaceBase> surface) noexcept;
+    VulkanApplication& SetExtensions(const Array<const char*>& extensions) noexcept;
+    VulkanApplication& SetWindowSurface(UniquePtr<SurfaceBase> surface) noexcept;
 
     void Initialize();
     void Finalize();
@@ -39,7 +39,7 @@ public:
     uint32_t             GetAppVersion() const noexcept { return app_version_; }
     uint32_t             GetEngineVersion() const noexcept { return engine_version_; }
     uint32_t             GetApiVersion() const noexcept { return api_version_; }
-    TSharedPtr<Instance> GetVulkanInstance() noexcept { return vulkan_instance_; }
+    SharedPtr<Instance> GetVulkanInstance() noexcept { return vulkan_instance_; }
     bool                 IsValid() const noexcept { return vulkan_instance_->IsValid(); }
     VulkanContext&       GetContext() const noexcept { return *vulkan_context_; }
 
@@ -54,10 +54,10 @@ private:
     uint32_t engine_version_ = VK_MAKE_VERSION(1, 0, 0);
     uint32_t api_version_    = VK_API_VERSION_1_3;
 
-    TSharedPtr<Instance>      vulkan_instance_;
-    TUniquePtr<SurfaceBase>   surface_;
-    TUniquePtr<VulkanContext> vulkan_context_;
+    SharedPtr<Instance>      vulkan_instance_;
+    UniquePtr<SurfaceBase>   surface_;
+    UniquePtr<VulkanContext> vulkan_context_;
 
-    TArray<const char*> extensions_;
+    Array<const char*> extensions_;
 };
 }

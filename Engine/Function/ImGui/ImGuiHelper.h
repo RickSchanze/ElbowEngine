@@ -226,9 +226,9 @@ public:
 private:
     static void RemoveAllImGuiTextures();
 
-    static inline THashMap<rhi::vulkan::ImageView*, VkDescriptorSet> imgui_textuers_;
+    static inline HashMap<rhi::vulkan::ImageView*, VkDescriptorSet> imgui_textuers_;
 
-    static inline TArray<VkDescriptorSet> back_image_texture_;
+    static inline Array<VkDescriptorSet> back_image_texture_;
 
     static inline float old_font_scale_;
 };

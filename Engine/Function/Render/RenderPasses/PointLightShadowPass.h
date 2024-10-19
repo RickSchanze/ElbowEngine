@@ -50,7 +50,7 @@ private:
     rhi::vulkan::Image*     depth_      = nullptr;
     rhi::vulkan::ImageView* depth_view_ = nullptr;
 
-    TStaticArray<rhi::vulkan::Framebuffer*, 6> cubemap_framebuffers_;
+    StaticArray<rhi::vulkan::Framebuffer*, 6> cubemap_framebuffers_;
 
     rhi::vulkan::Cubemap* shadow_map_;
 };

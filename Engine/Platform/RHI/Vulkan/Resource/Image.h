@@ -53,7 +53,7 @@ public:
 
     ImageView* CreateImageView(const ImageViewInfo& view_info) const;
 
-    TSharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const { return TSharedPtr<ImageView>{CreateImageView(view_info)}; }
+    SharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const { return SharedPtr<ImageView>{CreateImageView(view_info)}; }
 };
 
 struct ImageInfo
@@ -163,8 +163,8 @@ public:
     ImageView* GetView() const { return cubemap_image_view_; }
 
 protected:
-    TArray<ImageView*> cubemap_image_face_views_ = {};
-    TArray<AnsiString> cubemap_face_view_names_;
+    Array<ImageView*> cubemap_image_face_views_ = {};
+    Array<AnsiString> cubemap_face_view_names_;
     ImageView*         cubemap_image_view_ = nullptr;
     AnsiString         cubemap_image_view_name_;
 };
@@ -237,6 +237,6 @@ protected:
     vk::Sampler handle_;
     size_t      id_;
 
-    static inline THashMap<size_t, Sampler*> samplers_;
+    static inline HashMap<size_t, Sampler*> samplers_;
 };
 }

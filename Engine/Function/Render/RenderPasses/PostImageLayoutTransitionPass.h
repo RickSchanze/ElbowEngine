@@ -22,7 +22,7 @@ public:
     PostImageLayoutTransitionPass(uint32_t width, uint32_t height, const AnsiString& name);
 
 public:
-    TArray<rhi::vulkan::Framebuffer*> framebuffers;
+    Array<rhi::vulkan::Framebuffer*> framebuffers;
 };
 
 }

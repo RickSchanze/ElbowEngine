@@ -15,15 +15,15 @@
 namespace rhi::vulkan
 {
 CommandPool::CommandPool(
-    Private, const Ref<TUniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name
+    Private, const Ref<UniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name
 ) : device_(device)
 {
     debug_name_ = debug_name;
     CreateCommandPool(pool_flags);
 }
 
-TUniquePtr<CommandPool>
-CommandPool::CreateUnique(Ref<TUniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
+UniquePtr<CommandPool>
+CommandPool::CreateUnique(Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
 {
     return MakeUnique<CommandPool>(Private{}, device, pool_flags, debug_name);
 }
@@ -252,7 +252,7 @@ void CommandPool::CopyBuffer(const vk::Buffer src_buffer, const vk::Buffer dst_b
     EndSingleTimeCommands();
 }
 
-void CommandPool::CopyImage(vk::Image src, vk::Image dst, const TArray<vk::ImageCopy>& copies)
+void CommandPool::CopyImage(vk::Image src, vk::Image dst, const Array<vk::ImageCopy>& copies)
 {
     BeginSingleTimeCommands();
     single_cmd_.copyImage(src, vk::ImageLayout::eTransferSrcOptimal, dst, vk::ImageLayout::eTransferDstOptimal, copies);
@@ -264,13 +264,13 @@ void CommandPool::ResetCommandPool() const
     device_.get()->GetHandle().resetCommandPool(pool_);
 }
 
-TArray<vk::CommandBuffer>
-CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name, TArray<AnsiString>* out_debug_names) const
+Array<vk::CommandBuffer>
+CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name, Array<AnsiString>* out_debug_names) const
 {
     return device_.get()->AllocateCommandBuffers(alloc_info, debug_name, out_debug_names);
 }
 
-void CommandPool::DestroyCommandBuffers(const TArray<vk::CommandBuffer>& command_buffers) const
+void CommandPool::DestroyCommandBuffers(const Array<vk::CommandBuffer>& command_buffers) const
 {
     device_.get()->GetHandle().freeCommandBuffers(pool_, command_buffers);
 }

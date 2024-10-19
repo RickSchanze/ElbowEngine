@@ -44,12 +44,12 @@ public:
      * @param type window的type
      * @return
      */
-    TArray<WindowBase*> GetWindows(const Type& type) const;
+    Array<WindowBase*> GetWindows(const Type& type) const;
 
     template <typename T>
-    TArray<T*> GetWindows()
+    Array<T*> GetWindows()
     {
-        TArray<T*> rtn;
+        Array<T*> rtn;
         Type window_type = TypeOf<T>();
         for (auto window : GetWindows(window_type))
         {
@@ -65,10 +65,10 @@ public:
     void RemoveVisibleWindow(WindowBase* window);
 
 protected:
-    THashMap<Type, WindowBase*> singleton_windows_;
-    TArray<WindowBase*>         duplicated_windows_;
+    HashMap<Type, WindowBase*> singleton_windows_;
+    Array<WindowBase*>         duplicated_windows_;
 
-    TArray<WindowBase*> visible_windows_;
+    Array<WindowBase*> visible_windows_;
 };
 
 }
