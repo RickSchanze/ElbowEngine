@@ -8,7 +8,7 @@
 #pragma once
 #include "CoreMacro.h"
 
-#ifdef ENABLE_TEST
+#if ENABLE_TEST
 
 #include "Async/Coroutine/Task.h"
 #include "Component.h"

@@ -7,9 +7,9 @@
 
 #include "FunctionTestComponent.h"
 
-#ifdef ENABLE_TEST
-#include "World/AsyncOperation/WaitForFrame.h"
+#if ENABLE_TEST
 #include "Async/Coroutine/Coroutine.h"
+#include "World/AsyncOperation/WaitForFrame.h"
 
 namespace function::comp
 {
@@ -21,13 +21,13 @@ FunctionTestComponent::FunctionTestComponent()
 void FunctionTestComponent::BeginPlay()
 {
     TickableComponent::BeginPlay();
-
 }
 
 void FunctionTestComponent::Tick()
 {
     TickableComponent::Tick();
-    // TestTask3().Forget();
+    TestTask3().OnCompleted([] { LOG_INFO_ANSI_CATEGORY(Test.Coro, "回调Task3完成！！！！"); }).Forget();
+    TestTask2().OnCompleted([](int a) { LOG_INFO_ANSI_CATEGORY(Test.Coro, "回调task2完成!!{}", a); }).Forget();
 }
 
 async::coro::Task<void> FunctionTestComponent::TestWaitFormFrame()

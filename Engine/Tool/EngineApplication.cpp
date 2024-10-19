@@ -92,13 +92,13 @@ void EngineApplication::LogBeginInit()
 
 void EngineApplication::LogEndInit()
 {
-#ifdef ENABLE_TEST
+#if ENABLE_TEST
     LOG_INFO_ANSI_CATEGORY(Engine, "测试:启用");
 #endif
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
     LOG_INFO_ANSI_CATEGORY(Engine, "Profiling: 启用");
 #endif
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
     LOG_INFO_ANSI_CATEGORY(Engine, "Editor: 启用");
 #endif
     LOG_INFO_CATEGORY(Engine, L"引擎初始化完成");
@@ -153,7 +153,7 @@ void EngineApplication::Initialize()
         .SetMaterial(&function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK47Mat")
                           ->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png"));
 
-#ifdef ENABLE_TEST
+#if ENABLE_TEST
     FunctionalityTest();
 #endif
 

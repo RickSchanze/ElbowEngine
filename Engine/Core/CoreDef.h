@@ -86,7 +86,7 @@ using TWeakPtr = std::weak_ptr<T>;
 template<typename T, typename... Args>
 TSharedPtr<T> MakeShared(Args&&... args)
 {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
     return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
 #else
     return std::make_shared<T>(std::forward<Args>(args)...);
@@ -101,7 +101,7 @@ public:
     template<typename... Args>
     static TUniquePtr<T> Create(Args&&... args)
     {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
         MemoryTraceAllocator<T> allocator;
         T*                      ptr = allocator.allocate(1);
         try
@@ -155,7 +155,7 @@ public:
     {
         if (ptr_)
         {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
             MemoryTraceDeleter<T>()(ptr_);
 #else
             delete ptr_;
@@ -299,7 +299,7 @@ Type TypeOf()
 #define EVALUE(...)
 #endif
 
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
 #define EDITOR_META(...) (__VA_ARGS__)
 #else
 #define EDITOR_META(...)

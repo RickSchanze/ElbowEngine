@@ -32,17 +32,11 @@ struct Promise<T, EExecutorType::MainThread>
 {
     using ReturnType = T;
 
-    Task<ReturnType> get_return_object()
-    {
-        return Task<ReturnType>{this};
-    }
+    Task<ReturnType> get_return_object() { return Task<ReturnType>{std::coroutine_handle<Promise>::from_promise(*this)}; }
 
-    std::suspend_never initial_suspend() noexcept
-    {
-        return {};
-    }
+    std::suspend_never initial_suspend() noexcept { return {}; }
 
-    ForgetAwaiter final_suspend()noexcept
+    ForgetAwaiter final_suspend() noexcept
     {
         if (!forget_)
         {
@@ -73,11 +67,26 @@ struct Promise<T, EExecutorType::MainThread>
     void return_value(T value)
     {
         result_ = Result<T>{value};
+        if (Func_OnCompleted)
+        {
+            Func_OnCompleted(value);
+        }
     }
 
     void unhandled_exception()
     {
         result_ = Result<T>{std::current_exception()};
+        if (Func_OnException)
+        {
+            try
+            {
+                result_->Get();
+            }
+            catch (const std::exception& e)
+            {
+                Func_OnException(e);
+            }
+        }
     }
 
     TOptional<T> GetResult()
@@ -89,20 +98,11 @@ struct Promise<T, EExecutorType::MainThread>
         return std::nullopt;
     }
 
-    bool IsCompleted() const
-    {
-        return result_.has_value();
-    }
+    bool IsCompleted() const { return result_.has_value(); }
 
-    bool IsForget() const noexcept
-    {
-        return forget_;
-    }
+    bool IsForget() const noexcept { return forget_; }
 
-    void Forget()
-    {
-        forget_ = true;
-    }
+    void Forget() { forget_ = true; }
 
     void Destroy()
     {
@@ -116,11 +116,18 @@ struct Promise<T, EExecutorType::MainThread>
         }
     }
 
+    void OnCompleted(const TFunction<void(T)>& func) { Func_OnCompleted = func; }
+
+    void OnException(const TFunction<void(const std::exception&)>& func) { Func_OnException = func; }
+
 private:
     TOptional<Result<ReturnType>> result_;
 
+    TFunction<void(T)>                     Func_OnCompleted;
+    TFunction<void(const std::exception&)> Func_OnException;
+
     bool destroyed_ = false;
-    bool forget_ = false;
+    bool forget_    = false;
 };
 
 
@@ -133,7 +140,7 @@ struct Promise<void, EExecutorType::MainThread>
     using ReturnType = void;
     Promise();
 
-    Task<void> get_return_object() { return Task<void>{this}; }
+    Task<void> get_return_object() { return Task<void>{std::coroutine_handle<Promise>::from_promise(*this)}; }
 
     /// 结束后总是挂起，由我们自己控制协程的销毁
     ForgetAwaiter final_suspend() noexcept;
@@ -171,9 +178,16 @@ struct Promise<void, EExecutorType::MainThread>
 
     ~Promise();
 
+    void OnCompleted(const TFunction<void()>& func) { Func_OnCompleted = func; }
+
+    void OnException(const TFunction<void(const std::exception&)>& func) { Func_OnException = func; }
+
 private:
     TOptional<Result<void>> result_;
     bool                    forget_    = false;
     bool                    destroyed_ = false;
+
+    TFunction<void()>                      Func_OnCompleted;
+    TFunction<void(const std::exception&)> Func_OnException;
 };
 }   // namespace async::coro

@@ -14,13 +14,12 @@
 namespace async::coro
 {
 
-// TODO: Then(), Catch(), Finally(), WhenAll(), WhenAny()
 template<typename T>
 struct Task<T, EExecutorType::MainThread>
 {
     using promise_type = Promise<T>;
 
-    explicit Task(promise_type* handle) noexcept : promise_(handle) {}
+    explicit Task(std::coroutine_handle<promise_type> handle) noexcept : promise_(handle) {}
 
     explicit Task() noexcept : promise_(nullptr) {}
 
@@ -42,35 +41,36 @@ struct Task<T, EExecutorType::MainThread>
     ~Task()
     {
         if (promise_ == nullptr) return;
-        if (!promise_->IsForget())
+        auto& promise = promise_.promise();
+        if (!promise.IsForget())
         {
-            promise_->Destroy();
+            promise.Destroy();
             promise_ = nullptr;
         }
     }
 
-    bool IsCompleted() const
+    bool IsCompleted() const { return promise_.promise().IsCompleted(); }
+
+    void Forget() noexcept { promise_.promise().Forget(); }
+
+    bool IsForget() const noexcept { return promise_.promise().IsForget(); }
+
+    TOptional<T> GetResult() { return promise_.promise().GetResult(); }
+
+    Task& OnCompleted(TFunction<void(T)>&& func)
     {
-        return promise_->IsCompleted();
+        promise_.promise().OnCompleted(func);
+        return *this;
     }
 
-    void Forget() noexcept
+    Task& OnException(TFunction<void(const std::exception&)>&& func)
     {
-        promise_->Forget();
-    }
-
-    bool IsForget() const noexcept
-    {
-        return promise_->IsForget();
-    }
-
-    TOptional<T> GetResult()
-    {
-        return promise_->GetResult();
+        promise_.promise().OnException(func);
+        return *this;
     }
 
 private:
-    promise_type* promise_;
+    std::coroutine_handle<promise_type> promise_;
 };
 
 template<>
@@ -78,7 +78,7 @@ struct Task<void, EExecutorType::MainThread>
 {
     using promise_type = Promise<void>;
 
-    explicit Task(promise_type* handle) noexcept : promise_(handle) {}
+    explicit Task(std::coroutine_handle<promise_type> handle) noexcept : promise_(handle) {}
 
     explicit Task() noexcept : promise_(nullptr) {}
 
@@ -98,8 +98,12 @@ struct Task<void, EExecutorType::MainThread>
 
     bool IsForget() const noexcept;
 
+    Task& OnCompleted(TFunction<void()>&& func);
+
+    Task& OnException(TFunction<void(const std::exception&)>&& func);
+
 private:
-    promise_type* promise_;
+    std::coroutine_handle<promise_type> promise_;
 };
 
 }   // namespace async::coro

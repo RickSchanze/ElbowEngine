@@ -39,11 +39,26 @@ Awaiter<void> Promise<void>::initial_suspend() noexcept
 void Promise<void>::unhandled_exception() noexcept
 {
     result_ = Result<void>{std::current_exception()};
+    if (Func_OnException)
+    {
+        try
+        {
+            result_->Get();
+        }
+        catch (const std::exception& ex)
+        {
+            Func_OnException(ex);
+        }
+    }
 }
 
 void Promise<void>::return_void() noexcept
 {
     result_ = Result<void>{};
+    if (Func_OnCompleted)
+    {
+        Func_OnCompleted();
+    }
 }
 
 bool Promise<void>::IsCompleted() const

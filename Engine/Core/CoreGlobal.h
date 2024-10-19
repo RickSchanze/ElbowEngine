@@ -118,7 +118,7 @@ public:
 template<typename T, typename... Args>
 T* New(Args&&... args)
 {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
     MemoryTraceAllocator<T> allocator;
     T*                      ptr = allocator.allocate(1);   // 分配 1 个对象的内存
     try
@@ -139,7 +139,7 @@ T* New(Args&&... args)
 template<typename T>
 void Delete(T* ptr)
 {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
     if (ptr)
     {
         ptr->~T();   // 调用析构函数

@@ -9,7 +9,7 @@
 
 #include "CoreMacro.h"
 
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
 #include "tracy/Tracy.hpp"
 
 uint32_t GetColor(int index);

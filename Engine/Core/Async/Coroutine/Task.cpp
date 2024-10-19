@@ -23,23 +23,23 @@ Task<void>& Task<void>::operator=(Task<void>&& other) noexcept
 Task<void>::~Task()
 {
     if (promise_ == nullptr) return;
-    if (!promise_->IsForget())
+    if (!promise_.promise().IsForget())
     {
-        promise_->Destroy();
+        promise_.promise().Destroy();
         promise_ = nullptr;
     }
 }
 
 bool Task<void>::IsCompleted() const
 {
-    return promise_->IsCompleted();
+    return promise_.promise().IsCompleted();
 }
 
 void Task<void, EExecutorType::MainThread>::Forget() noexcept
 {
     if (promise_)
     {
-        promise_->Forget();
+        promise_.promise().Forget();
     }
 }
 
@@ -47,9 +47,21 @@ bool Task<void, EExecutorType::MainThread>::IsForget() const noexcept
 {
     if (promise_)
     {
-        return promise_->IsForget();
+        return promise_.promise().IsForget();
     }
     return false;
+}
+
+Task<void>& Task<void, EExecutorType::MainThread>::OnCompleted(TFunction<void()>&& func)
+{
+    promise_.promise().OnCompleted(func);
+    return *this;
+}
+
+Task<void>& Task<void, EExecutorType::MainThread>::OnException(TFunction<void(const std::exception&)>&& func)
+{
+    promise_.promise().OnException(func);
+    return *this;
 }
 
 }   // namespace async::coro
