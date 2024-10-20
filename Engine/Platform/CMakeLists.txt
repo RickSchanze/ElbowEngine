@@ -64,6 +64,11 @@ add_library(Platform
         RHI/Vulkan/CommandBuffer.cpp
         RHI/Vulkan/CommandBuffer.h
         RHI/GfxContext.cpp
+        RHI/TextureFormat.h
+        RHI/D3D12/TextureFormat.cpp
+        RHI/D3D12/TextureFormat.h
+        RHI/Vulkan/TextureFormat.cpp
+        RHI/Vulkan/TextureFormat.h
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
