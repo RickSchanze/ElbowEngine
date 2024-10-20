@@ -14,7 +14,8 @@
 
 GENERATED_SOURCE()
 
-namespace tool::window {
+namespace tool::window
+{
 
 ViewportWindow::ViewportWindow()
 {
@@ -24,7 +25,7 @@ ViewportWindow::ViewportWindow()
     // 如果改为false 点开多个scene viewport会导致冲突
     // 因此先设为true 等待重构
     singleton_ = true;
-    OnAppWindowResized.Add(&ThisClass::OnWindowResized);
+    OnAppWindowResized.AddBind(&ThisClass::OnWindowResized);
     // OnAppWindowResized.Broadcast(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
 }
 
@@ -36,7 +37,7 @@ void ViewportWindow::OnWindowResized(int w, int h)
     {
         if (window->main)
         {
-            OnBackbufferResize.Broadcast(window->width_, window->height_);
+            OnBackbufferResize.Invoke(window->width_, window->height_);
             return;
         }
     }

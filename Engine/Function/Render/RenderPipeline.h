@@ -115,8 +115,6 @@ protected:
     HashMap<Material*, Array<comp::Mesh*>> draw_meshes_;
 
     Array<rhi::vulkan::RenderPass*> saved_render_passes_;
-
-    String window_resized_event_handle_;
 };
 
 }

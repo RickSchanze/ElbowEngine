@@ -12,9 +12,9 @@
 #include "Component/Transform.h"
 #include "CoreEvents.h"
 #include "Event.h"
-#include "Render/Materials/Material.h"
 #include "Math/Math.h"
 #include "Math/MathTypes.h"
+#include "Render/Materials/Material.h"
 #include "RenderContext.h"
 #include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
@@ -23,12 +23,13 @@
 
 #include "Profiler/ProfileMacro.h"
 
-namespace function {
+namespace function
+{
 
 RenderPipeline::RenderPipeline()
 {
     context_                     = RenderContext::Get();
-    window_resized_event_handle_ = OnBackbufferResize.AddObject(this, &RenderPipeline::Rebuild);
+    OnBackbufferResize.AddBind(this, &RenderPipeline::Rebuild);
 }
 
 RenderPipeline::~RenderPipeline()
@@ -174,7 +175,7 @@ vk::Semaphore RenderPipeline::Submit(const rhi::vulkan::GraphicsQueueSubmitParam
 
 void RenderPipeline::AddImGuiGraphicsPipeline()
 {
-    OnRequireImGuiGraphicsPipeline.Broadcast(&imgui_pipeline_);
+    OnRequireImGuiGraphicsPipeline.InvokeOnce(&imgui_pipeline_);
 }
 
 void RenderPipeline::DrawImGuiPipeline(vk::CommandBuffer cb) const

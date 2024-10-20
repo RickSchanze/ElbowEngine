@@ -8,6 +8,6 @@
 #pragma once
 #include "Event/Event.h"
 
-struct LogEvent : TEvent<const spdlog::details::log_msg&> {};
+DECLARE_MULTICAST_EVENT(LogEvent, const spdlog::details::log_msg&);
 
 inline LogEvent OnLog;

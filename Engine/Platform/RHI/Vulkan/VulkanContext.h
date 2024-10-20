@@ -19,10 +19,7 @@ class CommandPool;
 class GraphicsPipeline;
 class RenderPass;
 
-
-struct PreVulkanDeviceDestroyedSignature : TEvent<>
-{
-};
+DECLARE_MULTICAST_EVENT(PreVulkanDeviceDestroyedEvent);
 
 class IGraphicsPipeline;
 // VulkanContext应该具有全局唯一单例
@@ -45,7 +42,7 @@ public:
 
     static UniquePtr<VulkanContext> CreateUnique(const SharedPtr<Instance>& instance);
 
-    PreVulkanDeviceDestroyedSignature PreVulkanDeviceDestroyed;
+    PreVulkanDeviceDestroyedEvent OnPreVulkanDeviceDestroyed;
 
 protected:
     struct Protected

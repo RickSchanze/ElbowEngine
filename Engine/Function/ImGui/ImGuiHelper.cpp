@@ -102,7 +102,7 @@ void ImGuiHelper::Image(rhi::vulkan::ImageView* view, rhi::vulkan::Sampler* samp
     }
     if (imgui_textuers_.empty())
     {
-        rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ImGuiHelper::RemoveAllImGuiTextures);
+        rhi::vulkan::VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&ImGuiHelper::RemoveAllImGuiTextures);
     }
     VkDescriptorSet set;
     if (imgui_textuers_.contains(view))

@@ -74,6 +74,7 @@ add_library(${PROJECT_NAME}
         Async/Coroutine/TaskAwaiter.h
         Async/Coroutine/Coroutine.h
         Event/Delegate.h
+        Event/Event.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

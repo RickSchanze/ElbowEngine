@@ -234,6 +234,11 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
     return std::static_pointer_cast<T>(InSharedPtr);
 }
 
+// std::tuple -> Tuple
+#include <tuple>
+template<typename... T>
+using Tuple = std::tuple<T...>;
+
 // std::wstring_view -> StringView
 #include <string_view>
 typedef std::wstring_view StringView;
@@ -334,3 +339,5 @@ Type TypeOf()
     {                                                            \
         rttr::registration::class_<type>(#type).constructor<>(); \
 }
+
+#define REGION(region_name) 1

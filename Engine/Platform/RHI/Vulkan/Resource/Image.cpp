@@ -252,7 +252,7 @@ ImageView* Cubemap::GetFaceView(ECubemapFace face)
     }
     if (cubemap_image_face_views_.empty())
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan.Resource, "Create ImageView for cubemap failed");
+        LOG_ERROR_CATEGORY_ANSI(Vulkan.Resource, "Create ImageView for cubemap failed");
         return nullptr;
     }
     return cubemap_image_face_views_[static_cast<int>(face)];
@@ -357,9 +357,8 @@ void Texture::LoadDefaultTextures()
 {
     if (!default_textures_loaded_)
     {
-        platform::OnRequestLoadDefaultLackTexture.Broadcast(&s_default_lack_texture_, &s_default_lack_texture_view_);
+        platform::OnRequestLoadDefaultLackTexture.InvokeOnce(&s_default_lack_texture_, &s_default_lack_texture_view_);
         default_textures_loaded_ = true;
-        platform::OnRequestLoadDefaultLackTexture.Clear();
     }
 }
 

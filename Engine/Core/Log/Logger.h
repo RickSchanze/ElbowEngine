@@ -24,7 +24,7 @@ public:
 
     /** 输出Info级别的信息 */
     template<typename... ArgsT>
-    void Info(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void InfoAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->info(fmt, Forward<ArgsT>(args)...);
     }
@@ -38,7 +38,7 @@ public:
 
     /** 输出Debug级别的信息 */
     template<typename... ArgsT>
-    void Debug(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void DebugAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->debug(fmt, Forward<ArgsT>(args)...);
     }
@@ -53,7 +53,7 @@ public:
 
     /** 输出Error级别的信息 */
     template<typename... ArgsT>
-    void Error(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void ErrorAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->error(fmt, Forward<ArgsT>(args)...);
         __debugbreak();
@@ -68,7 +68,7 @@ public:
 
     /** 输出Error级别的信息 */
     template<typename... ArgsT>
-    void ErrorNoBreak(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void ErrorNoBreakAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->error(fmt, Forward<ArgsT>(args)...);
     }
@@ -84,7 +84,7 @@ public:
 
     /** 输出Warning级别的信息 */
     template<typename... ArgsT>
-    void Warning(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void WarningAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->warn(fmt, Forward<ArgsT>(args)...);
     }
@@ -98,7 +98,7 @@ public:
 
     /** 输出Trace级别的信息 */
     template<typename... ArgsT>
-    void Trace(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void TraceAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         logger_->trace(fmt, Forward<ArgsT>(args)...);
     }
@@ -120,7 +120,7 @@ public:
 
     /** 输出Critical级别的信息 会自动Crash程序 */
     template<typename... ArgsT>
-    void Critical(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
+    void CriticalAnsi(spdlog::format_string_t<ArgsT...> fmt, ArgsT&&... args)
     {
         GENERATE_STACKTRACE()
         logger_->critical(fmt, Forward<ArgsT>(args)...);

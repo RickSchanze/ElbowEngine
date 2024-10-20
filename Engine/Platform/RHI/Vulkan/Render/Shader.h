@@ -173,7 +173,7 @@ public:
     {
         if (shaders_.empty())
         {
-            VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ShaderManager::DestroyAll);
+            VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&ShaderManager::DestroyAll);
         }
         shaders_[p.ToRelativeString()] = shader;
     }

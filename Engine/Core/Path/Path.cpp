@@ -53,8 +53,7 @@ void Path::SetProjectWorkPath(StringView PathStr)
             GetProjectMetaFilePath()->CreateFileA();
         }
     }
-    OnProjectPathSet.Broadcast();
-    OnProjectPathSet.Clear();
+    OnProjectPathSet.InvokeOnce();
 }
 
 bool Path::IsExist() const

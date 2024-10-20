@@ -260,7 +260,7 @@ void Material::OnInspectorGUI()
 
 MaterialManager::MaterialManager()
 {
-    rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&MaterialManager::DestroyMaterials);
+    rhi::vulkan::VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&MaterialManager::DestroyMaterials);
 }
 
 void MaterialManager::DestroyMaterials()

@@ -42,10 +42,6 @@
 #include <imgui.h>
 
 
-namespace Function::Comp
-{
-class StaticMesh;
-}
 namespace tool
 {
 EngineApplication::EngineApplication(const String& project_path, const String& window_title)
@@ -113,7 +109,7 @@ static void OnAppRequiredWindowSizeCallback(int* w, int* h)
 
 static void RegisterEvents()
 {
-    OnGetAppWindowSize.Add(OnAppRequiredWindowSizeCallback);
+    OnGetAppWindowSize.Bind(OnAppRequiredWindowSizeCallback);
 }
 
 void EngineApplication::Initialize()
@@ -162,10 +158,10 @@ void EngineApplication::Initialize()
 
 void EngineApplication::DeInitialize() const
 {
-    OnAppExit.Broadcast();
+    OnAppExit.InvokeOnce();
     if (!IsValid()) return;
     Delete(render_context_);
-    rhi::vulkan::VulkanContext::Get()->PreVulkanDeviceDestroyed.Broadcast();
+    rhi::vulkan::VulkanContext::Get()->OnPreVulkanDeviceDestroyed.InvokeOnce();
 #if USE_IMGUI
     window_->ShutdownImGui();
 #endif
@@ -201,7 +197,7 @@ void EngineApplication::Run()
         }
 
         // Tick渲染
-        ASSERT_CATEGORY(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
+        Assert(Vulkan.Render, render_context_ != nullptr, "RenderContext未初始化");
         if (render_context_->CanRender())
         {
             PROFILE_SCOPE("Tick Render");

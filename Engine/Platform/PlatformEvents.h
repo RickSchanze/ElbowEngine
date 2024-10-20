@@ -17,13 +17,8 @@ class Texture;
 namespace platform
 {
 
-struct RequestLoadEngineDefaultLackTextureEvent
-    : TEvent<
-          rhi::vulkan::Texture** /** OutLackTexture*/,
-          rhi::vulkan::ImageView** /** OutLackTextureView */>
-{
-};
+DECLARE_EVENT(RequestLoadEngineDefaultLackTextureEvent, void, rhi::vulkan::Texture**, rhi::vulkan::ImageView**);
 
 inline RequestLoadEngineDefaultLackTextureEvent OnRequestLoadDefaultLackTexture;
 
-}   // namespace Platform
+}   // namespace platform

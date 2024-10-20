@@ -129,7 +129,7 @@ public:
     {
         context_ = VulkanContext::Get();
         Initialize();
-        OnAppWindowResized.AddObject(this, &RealImGuiGraphicsPipeline::Rebuild);
+        OnAppWindowResized.AddBind(this, &RealImGuiGraphicsPipeline::Rebuild);
     }
 
     void Initialize()
@@ -288,7 +288,7 @@ void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
     imgui_graphics_pipeline_ = New<RealImGuiGraphicsPipeline>();
-    function::OnRequireImGuiGraphicsPipeline.AddObject(this, &ThisClass::RegisterImGuiPipeline);
+    function::OnRequireImGuiGraphicsPipeline.Bind(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
 

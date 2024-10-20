@@ -27,14 +27,14 @@ SceneViewportWindow::SceneViewportWindow()
     window_name_ = L"场景";
     name_        = L"Window_SceneWindow";
 
-    OnVisibilityChanged.Add(OnSceneViewportWindowVisibleChanged);
+    OnVisibilityChanged.AddBind(OnSceneViewportWindowVisibleChanged);
 }
 
 void SceneViewportWindow::Draw(float delta_time)
 {
     if (width_ != old_w_ || height_ != old_h_)
     {
-        OnBackbufferResize.Broadcast(width_, height_);
+        OnBackbufferResize.Invoke(width_, height_);
         old_w_ = width_;
         old_h_ = height_;
         ImGuiHelper::ClearBackbufferDescriptorSets();

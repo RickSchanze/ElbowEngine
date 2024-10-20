@@ -337,7 +337,7 @@ TextureCube::~TextureCube()
     }
 }
 
-}
+}   // namespace res
 
 static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageView** out_texture_view)
 {
@@ -371,7 +371,7 @@ static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageVie
 
 struct RegisterOnEngineDefaultTextureLoad
 {
-    RegisterOnEngineDefaultTextureLoad() { platform::OnRequestLoadDefaultLackTexture.Add(Load_Default_Engine_Texture_Resource);
+    RegisterOnEngineDefaultTextureLoad() { platform::OnRequestLoadDefaultLackTexture.Bind(Load_Default_Engine_Texture_Resource);
     }
 };
 

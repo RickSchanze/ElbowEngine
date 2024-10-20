@@ -14,7 +14,7 @@
 
 ObjectManager::ObjectManager()
 {
-    OnAppExit.Add(&ObjectManager::DestroyAllObjects);
+    OnAppExit.AddBind(&ObjectManager::DestroyAllObjects);
 }
 
 bool ObjectManager::AddObject(Object* new_object)

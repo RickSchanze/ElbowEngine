@@ -22,28 +22,28 @@ extern Logger g_logger;
 
 #define LOG_INFO(Text, ...) g_logger.Info(L##Text, __VA_ARGS__)
 #define LOG_INFO_CATEGORY(Category, Text, ...) g_logger.Info(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_INFO_ANSI(Text, ...) g_logger.Info(##Text, __VA_ARGS__)
-#define LOG_INFO_ANSI_CATEGORY(Category, Text, ...) g_logger.Info("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_INFO_ANSI(Text, ...) g_logger.InfoAnsi(##Text, __VA_ARGS__)
+#define LOG_INFO_ANSI_CATEGORY(Category, Text, ...) g_logger.InfoAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_WARNING(Text, ...) g_logger.Warning(L##Text, __VA_ARGS__)
 #define LOG_WARNING_CATEGORY(Category, Text, ...) g_logger.Warning(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_WARNING_ANSI(Text, ...) g_logger.Warning(##Text, __VA_ARGS__)
-#define LOG_WARNING_ANSI_CATEGORY(Category, Text, ...) g_logger.Warning("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_WARNING_ANSI(Text, ...) g_logger.WarningAnsi(##Text, __VA_ARGS__)
+#define LOG_WARNING_ANSI_CATEGORY(Category, Text, ...) g_logger.WarningAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_ERROR(Text, ...) g_logger.Error(L##Text, __VA_ARGS__)
 #define LOG_ERROR_CATEGORY(Category, Text, ...) g_logger.Error(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_ERROR_ANSI(Text, ...) g_logger.Error(##Text, __VA_ARGS__)
-#define LOG_ERROR_ANSI_CATEGORY(Category, Text, ...) g_logger.Error("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI(Text, ...) g_logger.ErrorAnsi(##Text, __VA_ARGS__)
+#define LOG_ERROR_CATEGORY_ANSI(Category, Text, ...) g_logger.ErrorAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_ERROR_NO_BREAK(Text, ...) g_logger.ErrorNoBreak(L##Text, __VA_ARGS__)
 #define LOG_ERROR_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreak(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_ERROR_ANSI_NO_BREAK(Text, ...) g_logger.ErrorNoBreak(##Text, __VA_ARGS__)
-#define LOG_ERROR_ANSI_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreak("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI_NO_BREAK(Text, ...) g_logger.ErrorNoBreakAnsi(##Text, __VA_ARGS__)
+#define LOG_ERROR_ANSI_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreakAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 #define LOG_CRITIAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
 #define LOG_CRITIAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_CRITIAL_ANSI(Text, ...) g_logger.Critical(##Text, __VA_ARGS__)
-#define LOG_CRITIAL_ANSI_CATEGORY(Category, Text, ...) g_logger.Critical("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_CRITIAL_ANSI(Text, ...) g_logger.CriticalAnsi(##Text, __VA_ARGS__)
+#define LOG_CRITIAL_ANSI_CATEGORY(Category, Text, ...) g_logger.CriticalAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 
 #define LOG_DEBUG(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
@@ -51,15 +51,18 @@ extern Logger g_logger;
 #define LOG_TRACE(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
 #define LOG_TRACE_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
-
-#define ASSERT(Condition, Message) \
-    if (!(Condition)) LOG_CRITIAL(Message)
-
-#define ASSERT_CATEGORY(Category, Condition, Message, ...) \
+#define Assert(Category, Condition, Message, ...) \
     if (!(Condition)) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
 
-#define NEVER_ENTRY_CRITICAL() g_logger.Critical("This function should never be executed {}:{}, {}", __FILE__, __LINE__, __FUNCSIG__);
-#define NEVER_ENTRY_WARNING() g_logger.Warning("This function should never be executed {}:{}, {}", __FILE__, __LINE__, __FUNCSIG__);
+#if ELBOW_DEBUG
+#define DebugAssert(Category, Condition, Message, ...) \
+    if (!(Condition)) LOG_ERROR_CATEGORY_ANSI(Category, Message, __VA_ARGS__)
+#else
+#define DebugAssert(Category, Condition, Message, ...)
+#endif
+
+#define NEVER_ENTRY_CRITICAL() g_logger.CriticalAnsi("This function should never be executed {}:{}, {}", __FILE__, __LINE__, __FUNCSIG__);
+#define NEVER_ENTRY_WARNING() g_logger.WarningAnsi("This function should never be executed {}:{}, {}", __FILE__, __LINE__, __FUNCSIG__);
 
 /** BEGIN IsValid函数族 */
 inline bool IsValid(Object* Obj)

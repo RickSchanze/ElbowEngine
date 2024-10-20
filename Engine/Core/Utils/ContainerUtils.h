@@ -8,13 +8,14 @@
 #pragma once
 
 #include "CoreDef.h"
-
+#include "CoreGlobal.h"
 
 #include <algorithm>
 
 class ContainerUtils
 {
 public:
+#if REGION(容器通用操作)
     template<typename ContainerT>
     static void Remove(ContainerT& Container, const typename ContainerT::value_type& Value);
 
@@ -46,7 +47,21 @@ public:
     template<typename ContainerT>
     static bool Contains(const ContainerT& container, const typename ContainerT::value_type& value)
     {
-        return std::ranges::any_of(container, [value](const typename ContainerT::value_type& v) { return v == value; });
+        for (const auto& item: container)
+        {
+            if (item == value) return true;
+        }
+        return false;
+    }
+
+    template<typename ContainerT, typename FuncT>
+    static bool ContainsIf(const ContainerT& container, FuncT func)
+    {
+        for (const auto& item: container)
+        {
+            if (func(item)) return true;
+        }
+        return false;
     }
 
     template<typename ContainerT>
@@ -63,7 +78,7 @@ public:
 
     template<typename ContainerT>
     static Optional<typename ContainerT::value_type> First(
-        const ContainerT&                                              container,
+        const ContainerT&                                             container,
         const Function<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
     )
     {
@@ -76,6 +91,24 @@ public:
         }
         return {};
     }
+#endif
+
+#if REGION(容器特化操作.Array)
+    /**
+     * 快速删除一个元素,但是只是把它移动到最后
+     * @tparam T 类型
+     * @param array
+     * @param index
+     * @return
+     */
+    template<typename T>
+    static void FastRemoveAt(Array<T>& array, int32_t index)
+    {
+        DebugAssert(Container, index >= 0 && index < array.size(), "Index out of range");
+        std::swap(array[index], array[array.size() - 1]);
+        array.pop_back();
+    }
+#endif
 };
 
 template<typename ContainerT>

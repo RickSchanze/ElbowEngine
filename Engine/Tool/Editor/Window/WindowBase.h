@@ -29,9 +29,7 @@ enum class EWindowVisibility
     DefaultMax
 };
 
-struct WindowVisibilityChangedEvent : TEvent<EWindowVisibility, EWindowVisibility>
-{
-};
+DECLARE_MULTICAST_EVENT(WindowVisibilityChangedEvent, EWindowVisibility, EWindowVisibility);
 
 ECLASS()
 class WindowBase : public Object
@@ -85,8 +83,8 @@ protected:
 
     EWindowVisibility visible_ = EWindowVisibility::DefaultMax;
 
-    int width_  = 0;
-    int height_ = 0;
+    int32_t width_  = 0;
+    int32_t height_ = 0;
 
     // 这个窗口只能存在一个
     bool singleton_ = true;

@@ -79,7 +79,7 @@ public:
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_ANSI_CATEGORY(Shader, "Parse shader cache file failed: {}", e.what());
+                LOG_ERROR_CATEGORY_ANSI(Shader, "Parse shader cache file failed: {}", e.what());
                 return;
             }
         }
@@ -195,7 +195,7 @@ static AnsiString PreprocessHeader(const AnsiString& source_name, EShaderStage s
     shaderc::PreprocessedSourceCompilationResult result = compiler.PreprocessGlsl(source, kind, source.c_str(), options);
     if (result.GetCompilationStatus() != shaderc_compilation_status_success)
     {
-        LOG_ERROR_ANSI_CATEGORY(Shader, "compile shader {} failed: {}", source_name, result.GetErrorMessage());
+        LOG_ERROR_CATEGORY_ANSI(Shader, "compile shader {} failed: {}", source_name, result.GetErrorMessage());
         return "";
     }
     return {result.cbegin(), result.cend()};

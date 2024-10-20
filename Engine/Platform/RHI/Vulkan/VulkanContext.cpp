@@ -184,8 +184,8 @@ void VulkanContext::Initialize()
     // 一般来说这个应该是第一个
     // @TODO: 具有优先级的队列系统
     OnBackBufferResized(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
-    OnAppWindowResized.Add(&VulkanContext::RebuildSwapChain);
-    OnBackbufferResize.Add(&VulkanContext::OnBackBufferResized);
+    OnAppWindowResized.AddBind(&VulkanContext::RebuildSwapChain);
+    OnBackbufferResize.AddBind(&VulkanContext::OnBackBufferResized);
 
 #if ENABLE_PROFILING
     InitProfiling();
@@ -315,7 +315,7 @@ void VulkanContext::PostFrameRender()
     if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR)
     {
         int w, h;
-        OnGetAppWindowSize.Broadcast(&w, &h);
+        OnGetAppWindowSize.Invoke(&w, &h);
         RebuildSwapChain(w, h);
     }
     else if (Result != vk::Result::eSuccess)
@@ -352,7 +352,7 @@ void VulkanContext::RebuildSwapChain(int w, int h)
     Get()->wait_swapchain_rebuild_ = true;
     if (w == 0 || h == 0)
     {
-        OnAppNeedWait.Broadcast();
+        OnAppNeedWait.Invoke();
         return;
     }
     Get()->swap_chain_->DeInitialize(false);

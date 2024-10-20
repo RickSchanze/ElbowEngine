@@ -32,7 +32,7 @@ static void OnProjectPathSetHandler()
 
 struct ResourceConfigEventRegister
 {
-    ResourceConfigEventRegister() { OnProjectPathSet.Add(OnProjectPathSetHandler); }
+    ResourceConfigEventRegister() { OnProjectPathSet.Bind(OnProjectPathSetHandler); }
 };
 
 static inline ResourceConfigEventRegister Z_Register_Resource_Event;

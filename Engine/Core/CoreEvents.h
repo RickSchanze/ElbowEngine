@@ -9,20 +9,17 @@
 
 #include "Event/Event.h"
 
-// clang-format off
+DECLARE_EVENT(ProjectPathSetEvent, void);
+DECLARE_EVENT(GetAppWindowSizeEvent, void, int*, int*);
 
-struct ProjectPathSetEvent : TEvent<> {};
-struct AppExitEvent : TEvent<> {};
-struct AppWindowResizeEvent : TEvent<int32_t, int32_t> {};
-struct AppNeedWaitEvent : TEvent<> {};
-struct GetAppWindowSizeEvent : TEvent<int*, int *> {};
-struct BackbufferResizeEvent : TEvent<int32_t, int32_t> {};
+DECLARE_MULTICAST_EVENT(AppExitEvent);
+DECLARE_MULTICAST_EVENT(AppWindowResizeEvent, int32_t, int32_t);
+DECLARE_MULTICAST_EVENT(AppNeedWaitEvent);
+DECLARE_MULTICAST_EVENT(BackbufferResizeEvent, int32_t, int32_t);
 
-// clang-format on
-
-inline ProjectPathSetEvent          OnProjectPathSet;
-inline AppExitEvent                 OnAppExit;
-inline AppWindowResizeEvent         OnAppWindowResized;
-inline AppNeedWaitEvent             OnAppNeedWait;
-inline GetAppWindowSizeEvent        OnGetAppWindowSize;
-inline BackbufferResizeEvent        OnBackbufferResize;
+inline ProjectPathSetEvent   OnProjectPathSet;
+inline AppExitEvent          OnAppExit;
+inline AppWindowResizeEvent  OnAppWindowResized;
+inline AppNeedWaitEvent      OnAppNeedWait;
+inline GetAppWindowSizeEvent OnGetAppWindowSize;
+inline BackbufferResizeEvent OnBackbufferResize;

@@ -78,7 +78,7 @@ WindowBase& WindowBase::SetVisible(EWindowVisibility InVisible)
             imgui_show_window_ = false;
         }
 
-        OnVisibilityChanged.Broadcast(old_visible, InVisible);
+        OnVisibilityChanged.Invoke(old_visible, InVisible);
     }
     return *this;
 }

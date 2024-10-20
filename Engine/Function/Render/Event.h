@@ -15,12 +15,11 @@ namespace rhi::vulkan
 class ImguiGraphicsPipeline;
 }
 
-namespace function {
-
-struct RequireImGuiGraphicsPipelineEvent : TEvent<rhi::vulkan::ImguiGraphicsPipeline** /** out_pipeline */>
+namespace function
 {
-};
+
+DECLARE_EVENT(RequireImGuiGraphicsPipelineEvent, void, rhi::vulkan::ImguiGraphicsPipeline**);
 
 inline RequireImGuiGraphicsPipelineEvent OnRequireImGuiGraphicsPipeline;
 
-}
+}   // namespace function

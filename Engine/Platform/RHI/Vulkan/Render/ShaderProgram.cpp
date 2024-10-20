@@ -56,7 +56,7 @@ public:
     {
         if (shader_programs_.empty())
         {
-            VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&ShaderProgramManager::DestroyAll);
+            VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&ShaderProgramManager::DestroyAll);
         }
         ShaderPath p;
         p.vert              = prog->GetVertShader()->GetShaderPath();
@@ -193,12 +193,12 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
     }
     if (!view.IsValid())
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetTexture: ImageView {} is invalid in ShaderProgram {}", name, name_);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetTexture: ImageView {} is invalid in ShaderProgram {}", name, name_);
         return false;
     }
     if (!sampler.IsValid())
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetTexture: Sampler {} is invalid in ShaderProgram {}", name, name_);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetTexture: Sampler {} is invalid in ShaderProgram {}", name, name_);
         return false;
     }
     if (uniform_texture_storage_.contains(name))
@@ -233,7 +233,7 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
 {
     if (!uniform_buffers_.contains(name))
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan, "ShaderProgram::SetStaticUniformBuffer: UniformBuffer {} not found", name);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetStaticUniformBuffer: UniformBuffer {} not found", name);
         return;
     }
     auto& buffers = uniform_buffers_[name];
@@ -266,17 +266,17 @@ bool ShaderProgram::SetCubeTexture(const AnsiString& name, const ImageView& imag
 {
     if (!uniforms_.contains(name))
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "Not find cubemap sampler {} in ShaderProgram {}", name, name_);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "Not find cubemap sampler {} in ShaderProgram {}", name, name_);
         return false;
     }
     if (!sampler.IsValid())
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "Sampler {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "Sampler {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
         return false;
     }
     if (!image_view.IsValid())
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan.ShaderProgram, "ImageView {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "ImageView {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
         return false;
     }
     if (uniform_texture_storage_.contains(name))

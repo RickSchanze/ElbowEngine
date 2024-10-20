@@ -91,7 +91,7 @@ protected:
 private:
     static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
     {
-        OnAppWindowResized.Broadcast(width, height);
+        OnAppWindowResized.Invoke(width, height);
     }
 
     UniquePtr<rhi::vulkan::VulkanApplication> render_application_;

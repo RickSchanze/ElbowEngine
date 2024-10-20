@@ -54,7 +54,7 @@ LogRecorder::LogRecorder(size_t max_count)
 {
     max_log_counts_ = max_count;
     size_           = 0;
-    OnLog.Add(&HandleOnLog);
+    OnLog.AddBind(&HandleOnLog);
 }
 
 void LogRecorder::PushLog(const spdlog::details::log_msg& msg)

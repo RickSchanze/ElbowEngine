@@ -149,7 +149,7 @@ Matrix4x4 PointLightShadowPass::GetFaceViewMatrix(comp::Light* light, int index)
 {
     if (index < 0 || index > 5)
     {
-        LOG_ERROR_ANSI_CATEGORY(Vulkan, "Index {} out of range when getting face view matrix for point light shadow pass", index);
+        LOG_ERROR_CATEGORY_ANSI(Vulkan, "Index {} out of range when getting face view matrix for point light shadow pass", index);
         return GetMatrix4x4Identity();
     }
     using namespace rhi::vulkan;

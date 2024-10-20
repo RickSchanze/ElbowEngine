@@ -290,7 +290,7 @@ void RenderPass::CreateRenderPass()
 
 RenderPassManager::RenderPassManager()
 {
-    VulkanContext::Get()->PreVulkanDeviceDestroyed.Add(&RenderPassManager::DestroyRenderPasses);
+    VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&RenderPassManager::DestroyRenderPasses);
 }
 
 void RenderPassManager::DestroyRenderPasses()

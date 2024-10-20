@@ -9,6 +9,7 @@
 
 #include "CoreGlobal.h"
 #include "Utils/ReflUtils.h"
+#include "CoreDef.h"
 
 using namespace rttr;
 
@@ -38,7 +39,7 @@ void YamlSerializer::ToYamlRecursively(const instance& Obj2, YAML::Emitter& Emit
         const auto Name = AnsiString(Prop.get_name().data());
         Emitter << YAML::Key << Name.data();
         if (!WriteVariant(PropValue, Emitter)) {
-            g_logger.Error("序列化字段{}失败", Name);
+            g_logger.ErrorAnsi("序列化字段{}失败", Name);
         }
     }
 
