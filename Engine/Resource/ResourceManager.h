@@ -51,7 +51,6 @@ public:
     void DestroyResource(const Path& path);
 
 private:
-    // TODO: Resource与Vulkan GPU Resource的映射
     // TODO: 寻找更好的自动化资源管理方式
     HashMap<Path, IResource*> resource_map_;
 };

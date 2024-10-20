@@ -89,7 +89,6 @@ enum EImGuiTreeNodeFlags
     EImGuiTNF_SpanFullWidth        = 1 << 12,   // Extend hit box to the left-most and right-most edges (bypass the indented area).
     EImGuiTNF_SpanAllColumns       = 1 << 13,   // Frame will span all columns of its container table (text will still fit in current column)
     EImGuiTNF_NavLeftJumpsBackHere = 1 << 14,   // (WIP) Nav: left direction may move to this TreeNode() from any of its child (items submitted between TreeNode and TreePop)
-    //ImGuiTNF_NoScrollOnOpen      = 1 << 15,  // FIXME: TODO: Disable automatic scroll on TreePop() if node got just open and contents is not visible
     EImGuiTNF_CollapsingHeader     = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog,
 };
 

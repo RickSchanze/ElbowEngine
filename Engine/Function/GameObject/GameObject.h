@@ -25,7 +25,6 @@ public:
 
     ~GameObject() override;
 
-    // TODO: 这里时序有点问题 GameObject不应该Tick 应该是Component Tick
     void BeginPlay();
     void EndPlay();
 

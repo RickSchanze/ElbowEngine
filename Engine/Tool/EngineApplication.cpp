@@ -78,7 +78,6 @@ Size2D EngineApplication::GetWindowSize() const
 
 void EngineApplication::LogBeginInit()
 {
-    // TODO: Log for init
     LOG_INFO_CATEGORY(Engine, L"初始化引擎...");
     LOG_INFO_CATEGORY(Engine.Graphics, L"最大DynamicUniformBuffer数量 = {}", g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count);
     LOG_INFO_CATEGORY(Engine.Graphics, L"交换链图像数量 = {}", g_engine_statistics.graphics.swapchain_image_count);
