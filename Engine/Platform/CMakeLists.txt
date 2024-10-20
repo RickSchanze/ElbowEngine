@@ -65,10 +65,10 @@ add_library(Platform
         RHI/Vulkan/CommandBuffer.h
         RHI/GfxContext.cpp
         RHI/TextureFormat.h
-        RHI/D3D12/TextureFormat.cpp
-        RHI/D3D12/TextureFormat.h
         RHI/Vulkan/TextureFormat.cpp
         RHI/Vulkan/TextureFormat.h
+        RHI/D3D12/TextureFormat.cpp
+        RHI/D3D12/TextureFormat.h
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -81,9 +81,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
 
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
-
-find_package(rttr CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
@@ -106,5 +103,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
-
-
+if (MSVC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "d3d12.lib" "dxgi.lib" "d3dcompiler.lib")
+endif ()

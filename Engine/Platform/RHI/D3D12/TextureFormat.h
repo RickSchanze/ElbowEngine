@@ -6,13 +6,13 @@
  */
 
 #pragma once
-#include "d3d12.h"
-#include "RHI/TextureFormat.h"
 
-namespace rhi::d3d12
-{
-
-// DXGI_FORMAT GetTextureFormat(TextureFormat format);
-
-}
-
+// #include "RHI/TextureFormat.h"
+// #define WIN32_LEAN_AND_MEAN
+// #define NOMINMAX
+// #include <windows.h>
+// #include <d3d12.h>
+// namespace rhi::d3d12
+// {
+// DXGI_FORMAT GetTextureFormat(rhi::TextureFormat format);
+// }

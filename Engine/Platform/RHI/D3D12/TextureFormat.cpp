@@ -6,6 +6,10 @@
  */
 
 #include "TextureFormat.h"
+// #define WIN32_LEAN_AND_MEAN
+// #define NOMINMAX
+// #include <windows.h>
+// #include <d3d12.h>
 
 // DXGI_FORMAT rhi::d3d12::GetTextureFormat(TextureFormat format)
 // {
