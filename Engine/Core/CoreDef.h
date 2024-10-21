@@ -316,9 +316,6 @@ Type TypeOf()
     const auto CurrentStackTrace    = cpptrace::generate_trace(); \
     auto       CurrentStackTraceStr = CurrentStackTrace.to_string();
 
-// 表示一个接口
-#define interface class
-
 // 表示这个参数是一个输出参数
 #define OUT
 

@@ -48,5 +48,8 @@
   }, {
     "name" : "nlohmann-json",
     "version>=" : "3.11.3"
+  }, {
+    "name" : "directx-headers",
+    "version>=" : "1.614.0"
   } ]
 }

@@ -98,6 +98,9 @@ find_package(OpenSSL REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
 
+find_package(directx-headers CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)

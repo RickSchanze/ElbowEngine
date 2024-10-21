@@ -11,7 +11,7 @@
 
 namespace rhi::vulkan
 {
-interface IRHIResource
+class IRHIResource
 {
 protected:
     struct ResourceProtected

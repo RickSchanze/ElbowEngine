@@ -7,7 +7,7 @@
 
 #include <format>
 
-interface ISerializer {
+class ISerializer {
 public:
     virtual ~ISerializer() = default;
 
@@ -45,7 +45,7 @@ public:
     virtual bool Serialize(const rttr::instance& Obj, OUT String& OutStr);
 };
 
-interface IDeserializer {
+class IDeserializer {
 public:
     virtual ~IDeserializer() = default;
 

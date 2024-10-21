@@ -7,7 +7,6 @@
 
 #pragma once
 #include "CommandBuffer.h"
-#include "D3D12/TextureFormat.h"
 
 namespace rhi
 {

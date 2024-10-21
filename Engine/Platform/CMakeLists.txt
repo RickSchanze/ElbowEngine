@@ -3,10 +3,11 @@ project(Platform)
 set(CMAKE_CXX_STANDARD 20)
 
 if (MSVC)
-    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
+#    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
     add_compile_options("/wd4996")
     add_compile_options("/wd4244")
     add_compile_options("/wd4312")
+    add_compile_options("/permissive-")
 endif ()
 
 
@@ -100,9 +101,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::shaderc::shaderc)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
+find_package(rttr CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
-if (MSVC)
-    target_link_libraries(${PROJECT_NAME} PRIVATE "d3d12.lib" "dxgi.lib" "d3dcompiler.lib")
-endif ()
