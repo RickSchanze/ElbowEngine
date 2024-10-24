@@ -248,7 +248,13 @@ constexpr std::size_t STRLEN(const char (&str)[N])
 // 获取枚举字符串的函数
 template<typename EnumType>
     requires std::is_enum_v<EnumType>
-constexpr const char* GetEnumString(EnumType type);
+constexpr const char* GetEnumString(EnumType type)
+{
+    Type              t           = TypeOf<EnumType>();
+    rttr::enumeration enumeration = t.get_enumeration();
+
+    return enumeration.value_to_name(type).data();
+}
 
 template <typename EnumType>
 constexpr int GetEnumValue(EnumType t)

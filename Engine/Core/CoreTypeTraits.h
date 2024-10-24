@@ -28,3 +28,27 @@ struct CanParameterPackConvert<std::tuple<Args1...>, std::tuple<Args2...>>
 {
     constexpr static bool Value = (sizeof...(Args1) == sizeof...(Args2)) && ((std::is_convertible_v<Args1, Args2>)&&...);
 };
+
+template<typename T, typename... Types>
+concept OneOf = (std::is_same_v<T, Types> || ...);
+
+
+template<typename T>
+concept ArrayLikeIterable = requires(T t) {
+    t.begin();
+    t.end();
+    t.cbegin();
+    t.cend();
+    typename T::value_type;
+} && !requires(T t) { typename T::key_type; };
+
+template<typename T>
+concept MapLikeIterable = requires(T t) {
+    t.begin();
+    t.end();
+    t.cbegin();
+    t.cend();
+    T::key_type;
+    T::value_type;
+};
+

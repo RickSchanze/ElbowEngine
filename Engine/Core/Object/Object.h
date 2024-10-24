@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreDef.h"
+#include "Serialization/ISerializer.h"
 
 #include <iostream>
 
@@ -18,7 +19,7 @@ enum EObjectFlag
     EOF_IsWindow,       // 这个是一个窗口对象
 };
 
-class Object
+class Object : public ISerializer
 {
     RTTR_ENABLE()
     RTTR_REGISTRATION_FRIEND
@@ -37,26 +38,26 @@ public:
      * 获取反射类型
      * @return rttr::typr
      */
-    rttr::type GetType() const { return get_type(); }
+    [[nodiscard]] Type GetType() const { return get_type(); }
 
 public:
     /**
      * 获取对象名字
      * @return
      */
-    String GetName() const { return name_; }
+    [[nodiscard]] String GetName() const { return name_; }
 
     /**
      * 获取对象的字符串表示
      * @return
      */
-    virtual String ToString() const;
+    [[nodiscard]] virtual String ToString() const;
 
     /**
      * 获取对象ID
      * @return
      */
-    int32_t GetID() const { return id_; }
+    [[nodiscard]] int32_t GetID() const { return id_; }
 
     /**
      * 设置对象的名字
@@ -68,14 +69,14 @@ public:
      * 对象是否还有效
      * @return
      */
-    virtual bool IsValid() const;
+    [[nodiscard]] virtual bool IsValid() const;
 
-    bool IsComponent() const { return flag_ == EOF_IsComponent; }
+    [[nodiscard]] bool IsComponent() const { return flag_ == EOF_IsComponent; }
 
-    bool IsGameObject() const { return flag_ == EOF_IsGameObject; }
+    [[nodiscard]] bool IsGameObject() const { return flag_ == EOF_IsGameObject; }
 
     // TODO: 位操作
-    EObjectFlag GetObjectFlag() const { return flag_; }
+    [[nodiscard]] EObjectFlag GetObjectFlag() const { return flag_; }
 
     const AnsiString& GetCachedAnsiString();
 
@@ -90,7 +91,7 @@ public:
         return rttr::rttr_cast<T*>(this) != nullptr;
     }
 
-    bool IsImplemented(const Type& other_type) const
+    [[nodiscard]] bool IsImplemented(const Type& other_type) const
     {
         rttr::type this_type = GetType();
         bool       s         = this_type.is_derived_from(other_type);
@@ -107,6 +108,10 @@ public:
         }
         return dynamic_cast<T*>(this);
     }
+
+#if REGION(序列化)
+    void Serialize(Archive& ar) override;
+#endif
 
 protected:
     String  name_;                 // 对象名字

@@ -39,3 +39,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 include_directories(Engine/ThirdParty)
 include_directories(Generated)
 include_directories("C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0\\um")
+
+# 设置第三方库include和链接路径
+# slang
+set(SLANG_INCLUDE "D:\\Library\\slang\\include" CACHE STRING "库Slang的包含路径, 此库用于Shader编译")
+set(SLANG_LIB "D:\\Library\\slang\\lib" CACHE STRING "库Slang的链接路径, 此库用于Shader编译")

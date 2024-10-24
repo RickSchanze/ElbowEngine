@@ -108,3 +108,5 @@ Task<void> SomeCoroFunc() {
     TestWaitFormFrame(); // 与上同理
 }
 ```
+# 4. 依赖
+Slang: https://github.com/shader-slang/slang/tree/v2024.14.2

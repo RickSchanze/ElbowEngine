@@ -76,6 +76,10 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_compile_definitions(Platform PRIVATE "RELWITHDEBINFO")
 endif ()
 
+# SLANG
+target_include_directories(${PROJECT_NAME} PRIVATE ${SLANG_INCLUDE})
+target_link_directories(${PROJECT_NAME} PRIVATE ${SLANG_LIB})
+
 add_library(Engine::Platform ALIAS Platform)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)

@@ -1,6 +1,13 @@
 set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Core)
 
+if (MSVC)
+    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
+    add_compile_options("/wd4996")
+    add_compile_options("/wd4244")
+    add_compile_options("/wd4312")
+endif ()
+
 add_library(${PROJECT_NAME}
         Object/Object.h
         Object/Object.cpp
@@ -29,11 +36,6 @@ add_library(${PROJECT_NAME}
         Exception/Exception.h
         Exception/Exception.cpp
         Singleton/Singleton.h
-        Serialization/Interfaces.h
-        Serialization/YamlSerializer.h
-        Serialization/YamlSerializer.cpp
-        Serialization/YamlDeserializer.h
-        Serialization/YamlDeserializer.cpp
         CoreDef.h
         CoreGlobal.h
         CoreGlobal.cpp
@@ -75,6 +77,11 @@ add_library(${PROJECT_NAME}
         Async/Coroutine/Coroutine.h
         Event/Delegate.h
         Event/Event.h
+        Serialization/Archive.h
+        Serialization/YamlArchive.cpp
+        Serialization/YamlArchive.h
+        Serialization/ISerializer.h
+        Serialization/Archive.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

@@ -10,7 +10,6 @@
 
 int main()
 {
-    DXGI_FORMAT a;
     // // 让std::wcout 顺利运行
     // setlocale(LC_ALL, "zh_CN");
     // // 让spdlog不产生乱码

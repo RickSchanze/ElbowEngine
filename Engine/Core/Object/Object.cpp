@@ -9,6 +9,7 @@
 #include "CoreGlobal.h"
 #include "Log/Logger.h"
 #include "ObjectManager.h"
+#include "Serialization/Archive.h"
 #include "Utils/StringUtils.h"
 
 RTTR_REGISTRATION {
@@ -36,10 +37,31 @@ bool Object::IsValid() const
     return !is_garbage_;
 }
 
-const AnsiString& Object::GetCachedAnsiString(){
+const AnsiString& Object::GetCachedAnsiString()
+{
     if (cached_ansi_string_.empty())
     {
         cached_ansi_string_ = StringUtils::ToAnsiString(name_);
     }
     return cached_ansi_string_;
+}
+
+void Object::Serialize(Archive& ar)
+{
+    Type t = GetType();
+    const auto& properties = t.get_properties();
+    ar << Archive::InputType::MapStart;
+    for (const auto& prop : properties)
+    {
+        if (prop.get_type().is_pointer())
+        {
+            LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "不可序列化原始指针");
+            continue;
+        }
+        ar << Archive::InputType::Key;
+        ar << prop.get_name();
+        ar << Archive::InputType::Value;
+        ar << prop.get_value(*this);
+    }
+    ar << Archive::InputType::MapEnd;
 }
