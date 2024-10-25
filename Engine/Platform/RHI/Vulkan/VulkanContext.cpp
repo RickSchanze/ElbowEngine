@@ -276,7 +276,7 @@ void VulkanContext::PrepareFrameRender()
     }
     if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
     {
-        LOG_CRITIAL_CATEGORY(Vulkan.Render, L"无法获取交换链图像");
+        LOG_CRITICAL_CATEGORY(Vulkan.Render, L"无法获取交换链图像");
         return;
     }
     // 重置当前帧的Fence

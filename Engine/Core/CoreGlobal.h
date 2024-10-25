@@ -40,10 +40,10 @@ extern Logger g_logger;
 #define LOG_ERROR_ANSI_NO_BREAK(Text, ...) g_logger.ErrorNoBreakAnsi(##Text, __VA_ARGS__)
 #define LOG_ERROR_ANSI_CATEGORY_NO_BREAK(Category, Text, ...) g_logger.ErrorNoBreakAnsi("[" #Category "] " Text, __VA_ARGS__)
 
-#define LOG_CRITIAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
-#define LOG_CRITIAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
-#define LOG_CRITIAL_ANSI(Text, ...) g_logger.CriticalAnsi(##Text, __VA_ARGS__)
-#define LOG_CRITIAL_ANSI_CATEGORY(Category, Text, ...) g_logger.CriticalAnsi("[" #Category "] " Text, __VA_ARGS__)
+#define LOG_CRITICAL(Text, ...) g_logger.Critical(L##Text, __VA_ARGS__)
+#define LOG_CRITICAL_CATEGORY(Category, Text, ...) g_logger.Critical(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
+#define LOG_CRITICAL_ANSI(Text, ...) g_logger.CriticalAnsi(##Text, __VA_ARGS__)
+#define LOG_CRITICAL_ANSI_CATEGORY(Category, Text, ...) g_logger.CriticalAnsi("[" #Category "] " Text, __VA_ARGS__)
 
 
 #define LOG_DEBUG(Text, ...) g_logger.Debug(L##Text, __VA_ARGS__)
@@ -52,7 +52,7 @@ extern Logger g_logger;
 #define LOG_TRACE_CATEGORY(Category, Text, ...) g_logger.Debug(L"[" LSTRINGIFY(Category) L"] " Text, __VA_ARGS__)
 
 #define Assert(Category, Condition, Message, ...) \
-    if (!(Condition)) LOG_CRITIAL_CATEGORY(Category, Message, __VA_ARGS__)
+    if (!(Condition)) LOG_CRITICAL_CATEGORY(Category, Message, __VA_ARGS__)
 
 #if ELBOW_DEBUG
 #define DebugAssert(Category, Condition, Message, ...) \

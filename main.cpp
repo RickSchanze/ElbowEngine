@@ -12,16 +12,17 @@
 
 int main()
 {
+    // 让std::wcout 顺利运行
+    setlocale(LC_ALL, "zh_CN");
+    // 让spdlog不产生乱码
+    SetConsoleOutputCP(65001);
     UniquePtr<Object> to = MakeUnique<Object>();
     YamlArchive ar;
     ar.BeginSerialize();
     ar << *to;
     ar.EndSerialize();
     std::cout << ar.ToString();
-    // // 让std::wcout 顺利运行
-    // setlocale(LC_ALL, "zh_CN");
-    // // 让spdlog不产生乱码
-    // SetConsoleOutputCP(65001);
+
     // try
     // {
     //     tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};

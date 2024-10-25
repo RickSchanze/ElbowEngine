@@ -102,7 +102,7 @@ void RenderPipeline::PrepareModelUniformBuffer()
     auto& meshes = context_->GetDrawMeshes();
     if (meshes.size() > g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count)
     {
-        LOG_CRITIAL_CATEGORY(
+        LOG_CRITICAL_CATEGORY(
             Function.Render, L"Mesh超过上限, 上限: {}, 当前: {}", g_engine_statistics.graphics.max_dynamic_model_uniform_buffer_count, meshes.size()
         );
     }

@@ -115,7 +115,7 @@ void GraphicsPipeline::CreatePipeline()
     if (pipeline_info_.render_pass == nullptr)
     {
         // TODO: 加载引擎默认RenderPass
-        LOG_CRITIAL_CATEGORY(Vulkan.RenderPass, L"RenderPass不能为空");
+        LOG_CRITICAL_CATEGORY(Vulkan.RenderPass, L"RenderPass不能为空");
     }
     render_pass_ = pipeline_info_.render_pass;
     render_pass_->Initialize();
@@ -124,7 +124,7 @@ void GraphicsPipeline::CreatePipeline()
     /************************* 配置Shader ************************/
     if (pipeline_info_.shader_program == nullptr)
     {
-        LOG_CRITIAL_CATEGORY(Vulkan, L"创建管线: {} 失败, 传入ShaderProgram为空", StringUtils::FromAnsiString(pipeline_info_.name_));
+        LOG_CRITICAL_CATEGORY(Vulkan, L"创建管线: {} 失败, 传入ShaderProgram为空", StringUtils::FromAnsiString(pipeline_info_.name_));
     }
 
     // TODO: Shader管理器

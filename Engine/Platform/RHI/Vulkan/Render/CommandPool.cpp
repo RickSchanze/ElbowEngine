@@ -140,7 +140,7 @@ void CommandPool::TransitionImageLayout(
     }
     else
     {
-        LOG_CRITIAL_ANSI_CATEGORY(
+        LOG_CRITICAL_ANSI_CATEGORY(
             Vulkan, "Unsupported image layout transition, old_layout: {}, new_layout: {}", vk::to_string(old_layout), vk::to_string(new_layout)
         );
     }

@@ -33,12 +33,8 @@ execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGen/main.py --incl
 
 set(ELBOWENGINE_MAKE_WORK_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (MSVC)
-    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
-    add_compile_options("/wd4996")
-    add_compile_options("/wd4244")
-    add_compile_options("/wd4312")
-endif ()
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 include_directories(${CMAKE_SOURCE_DIR}/Generated)
 
@@ -47,8 +43,6 @@ set(ENABLE_TEST OFF CACHE BOOL "Enable test")
 add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp)
-
-
 
 
 
