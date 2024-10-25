@@ -29,8 +29,6 @@ add_library(${PROJECT_NAME}
         Utils/PathUtils.cpp
         Utils/TimeUtils.h
         Utils/TimeUtils.cpp
-        Exception/Exception.h
-        Exception/Exception.cpp
         Singleton/Singleton.h
         CoreDef.h
         CoreGlobal.h
@@ -45,13 +43,9 @@ add_library(${PROJECT_NAME}
         Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
-        Path/Path.h
-        Path/Path.cpp
-        Path/Exception.h
-        Path/Exception.cpp
+        FileSystem/Paths.cpp
+        FileSystem/Paths.h
         Interface/IStringify.h
-        CachedString.h
-        CachedString.cpp
         Profiler/ProfileMacro.cpp
         Profiler/ProfileMacro.h
         Async/Coroutine/Task.cpp
@@ -78,6 +72,11 @@ add_library(${PROJECT_NAME}
         Serialization/YamlArchive.h
         Serialization/ISerializer.h
         Serialization/Archive.cpp
+        Base/EString.cpp
+        Base/EString.h
+        FileSystem/File.cpp
+        FileSystem/File.h
+        FileSystem/FileSystemEnum.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -107,3 +106,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
+
+find_package(ICU REQUIRED COMPONENTS uc i18n)
+target_link_libraries(${PROJECT_NAME}  PRIVATE ICU::uc ICU::i18n)

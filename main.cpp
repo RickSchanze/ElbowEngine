@@ -16,12 +16,6 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    UniquePtr<Object> to = MakeUnique<Object>();
-    YamlArchive ar;
-    ar.BeginSerialize();
-    ar << *to;
-    ar.EndSerialize();
-    std::cout << ar.ToString();
 
     // try
     // {

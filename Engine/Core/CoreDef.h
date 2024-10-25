@@ -5,7 +5,7 @@
 
 #include <chrono>
 #include <ranges>
-
+#include "EString.h"
 // 一些Typedef
 #include "Profiler/ProfileMacro.h"
 
@@ -61,12 +61,7 @@ using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 template<typename T, typename Allocator = std::allocator<T>>
 using List = std::list<T, Allocator>;
 
-// std::wstring -> String
-// unicode字符串,此项目中全部使用此字符串
-// std::string用于编写生成器
 #include <string>
-typedef std::wstring String;
-typedef std::string  AnsiString;
 
 // std::optional -> Optional
 #include <optional>
@@ -236,11 +231,6 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
 #include <tuple>
 template<typename... T>
 using Tuple = std::tuple<T...>;
-
-// std::wstring_view -> StringView
-#include <string_view>
-typedef std::wstring_view StringView;
-typedef std::string_view  AnsiStringView;
 
 // Stream typedefs
 #include <fstream>

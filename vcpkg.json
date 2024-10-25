@@ -51,5 +51,8 @@
   }, {
     "name" : "directx-headers",
     "version>=" : "1.614.0"
+  }, {
+    "name" : "icu",
+    "version>=" : "74.2#4"
   } ]
 }

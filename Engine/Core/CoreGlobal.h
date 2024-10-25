@@ -256,7 +256,7 @@ constexpr const char* GetEnumString(EnumType type)
     return enumeration.value_to_name(type).data();
 }
 
-template <typename EnumType>
+template<typename EnumType>
 constexpr int GetEnumValue(EnumType t)
 {
     return static_cast<int>(t);
@@ -267,3 +267,6 @@ extern EngineStatistics g_engine_statistics;
 extern String STRING_NONE;
 
 float GetFrameTime();
+
+#define ENUM_OUT_OF_RANGE "OutOfRange"
+#define ENUM_INVALID "Invalid"
