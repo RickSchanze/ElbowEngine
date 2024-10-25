@@ -1,13 +1,6 @@
 set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Core)
 
-if (MSVC)
-    add_compile_options("/source-charset:utf-8" "/execution-charset:utf-8")
-    add_compile_options("/wd4996")
-    add_compile_options("/wd4244")
-    add_compile_options("/wd4312")
-endif ()
-
 add_library(${PROJECT_NAME}
         Object/Object.h
         Object/Object.cpp
@@ -90,7 +83,7 @@ find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 find_package(spdlog CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME}  PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
 
 find_package(yaml-cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)

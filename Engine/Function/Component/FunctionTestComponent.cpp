@@ -7,7 +7,7 @@
 
 #include "FunctionTestComponent.h"
 
-#if ENABLE_TEST
+#ifdef ENABLE_TEST
 #include "Async/Coroutine/Coroutine.h"
 #include "World/AsyncOperation/WaitForFrame.h"
 

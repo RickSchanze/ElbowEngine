@@ -18,6 +18,8 @@ public:
     {
         Serializing,
         Deserializing,
+        Serialized,
+        Deserialized,
         None,
     };
 
@@ -102,11 +104,15 @@ public:
     [[nodiscard]] State GetState() const { return state_; }
     [[nodiscard]] bool  IsSerializing() const { return state_ == State::Serializing; }
     [[nodiscard]] bool  IsDeserializing() const { return state_ == State::Deserializing; }
+    [[nodiscard]] bool  IsSerialized() const { return state_ == State::Serialized; }
+    [[nodiscard]] bool  IsDeserialized() const { return state_ == State::Deserialized; }
+
+    [[nodiscard]] virtual AnsiString ToString() = 0;
 
     virtual void BeginSerialize() { state_ = State::Serializing; }
-    virtual void EndSerialize() { state_ = State::None; }
+    virtual void EndSerialize() { state_ = State::Serialized; }
     virtual void BeginDeserialize() { state_ = State::Deserializing; }
-    virtual void EndDeserialize() { state_ = State::None; }
+    virtual void EndDeserialize() { state_ = State::Deserialized; }
 
 protected:
     State state_ = State::None;

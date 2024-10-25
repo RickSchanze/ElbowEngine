@@ -24,7 +24,7 @@
 
 #include "Profiler/ProfileMacro.h"
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 #endif
@@ -34,7 +34,7 @@ using namespace rhi::vulkan;
 namespace platform::window
 {
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 class ImGuiRenderPass : public RenderPass
 {
 public:
@@ -281,7 +281,7 @@ Size2D GlfwWindow::GetWindowSize()
     return {width_, height_};
 }
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
 {
     ImGui::CreateContext();

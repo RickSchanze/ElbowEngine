@@ -48,7 +48,7 @@ EGraphicsAPI VulkanContext::GetAPI() const
     return EGraphicsAPI::Vulkan;
 }
 
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
 
 static TArray<TracyVkCtx>            ctxs;
 static TUniquePtr<tracy::VkCtxScope> scope;
@@ -65,7 +65,7 @@ struct VulkanProfilerCounter
 
 void VulkanContext::InitProfiling()
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     static constexpr char command_buffer_names[5][22] = {
         "Vulkan_CommandBuffer1", "Vulkan_CommandBuffer2", "Vulkan_CommandBuffer3", "Vulkan_CommandBuffer4", "Vulkan_CommandBuffer5"
     };
@@ -89,7 +89,7 @@ void VulkanContext::InitProfiling()
 
 void VulkanContext::DeInitProfiling()
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     for (int i = 0; i < ctxs.size(); i++)
     {
         TracyVkDestroy(ctxs[i]);
@@ -100,7 +100,7 @@ void VulkanContext::DeInitProfiling()
 
 void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     VulkanProfilerCounter _;
     ;
     static tracy::SourceLocationData location{name, TracyFunction, TracyFile, (uint32_t)TracyLine, GetColor(VulkanProfilerCounter::counter)};
@@ -122,14 +122,14 @@ void VulkanContext::BeginProfile(const char* name, const CommandBuffer& cmd)
 
 void VulkanContext::EndProfile()
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     scope = nullptr;
 #endif
 }
 
 void VulkanContext::CollectProfileData(const CommandBuffer& cmd)
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     const uint32_t index = g_engine_statistics.current_image_index;
     TracyVkCollect(ctxs[index], static_cast<VkCommandBuffer>(cmd.GetNativePtr()));
 #endif
@@ -187,7 +187,7 @@ void VulkanContext::Initialize()
     OnAppWindowResized.AddBind(&VulkanContext::RebuildSwapChain);
     OnBackbufferResize.AddBind(&VulkanContext::OnBackBufferResized);
 
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     InitProfiling();
 #endif
     // TODO: SetGfxContext不应该在这里
@@ -216,7 +216,7 @@ void VulkanContext::Finalize()
         Delete(back_buffer);
     }
 
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     DeInitProfiling();
 #endif
 
@@ -393,7 +393,7 @@ vk::CommandBuffer VulkanContext::BeginRecordCommandBuffer()
 
 void VulkanContext::EndRecordCommandBuffer()
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     CollectProfileData(CommandBufferVulkan(GetCurrentCommandBuffer()));
 #endif
     GetCurrentCommandBuffer().end();

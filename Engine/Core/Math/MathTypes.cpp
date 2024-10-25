@@ -15,6 +15,9 @@
 #include <glm/glm.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include "Serialization/Archive.h"
+
+
 #include <glm/trigonometric.hpp>
 
 RTTR_REGISTRATION
@@ -45,7 +48,7 @@ Vector2::operator glm::vec<2, float>()
     return {x, y};
 }
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 Vector2::operator ImVec2()
 {
     return {x, y};
@@ -192,4 +195,49 @@ bool Color::operator==(const Color& other) const
 bool Color::operator!=(const Color& other) const
 {
     return !(*this == other);
+}
+
+Archive& operator<<(Archive& ar, Vector2& v)
+{
+    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    ar << Archive::InputType::MapStart;
+    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
+    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
+    ar << Archive::InputType::MapEnd;
+    return ar;
+}
+
+Archive& operator<<(Archive& ar, Vector3& v)
+{
+    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    ar << Archive::InputType::MapStart;
+    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
+    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
+    ar << Archive::InputType::Key << "z" << Archive::InputType::Value << v.z;
+    ar << Archive::InputType::MapEnd;
+    return ar;
+}
+
+Archive& operator<<(Archive& ar, Vector4& v)
+{
+    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    ar << Archive::InputType::MapStart;
+    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
+    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
+    ar << Archive::InputType::Key << "z" << Archive::InputType::Value << v.z;
+    ar << Archive::InputType::Key << "w" << Archive::InputType::Value << v.w;
+    ar << Archive::InputType::MapEnd;
+    return ar;
+}
+
+Archive& operator<<(Archive& ar, Color& q)
+{
+    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    ar << Archive::InputType::MapStart;
+    ar << Archive::InputType::Key << "r" << Archive::InputType::Value << q.r;
+    ar << Archive::InputType::Key << "g" << Archive::InputType::Value << q.g;
+    ar << Archive::InputType::Key << "b" << Archive::InputType::Value << q.b;
+    ar << Archive::InputType::Key << "a" << Archive::InputType::Value << q.a;
+    ar << Archive::InputType::MapEnd;
+    return ar;
 }

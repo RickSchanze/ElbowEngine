@@ -39,6 +39,8 @@ public:
     void BeginSerialize() override;
     void EndSerialize() override;
 
+    AnsiString ToString() override;
+
 private:
     union {
         UniquePtr<YAML::Node>    node_ = nullptr;

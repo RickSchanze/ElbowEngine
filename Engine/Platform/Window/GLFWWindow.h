@@ -55,7 +55,7 @@ public:
 
     void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const { glfwSetFramebufferSizeCallback(window_handle_, Callback); }
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
     void InitImGui(Ref<rhi::vulkan::VulkanContext> InContext);
     void SetupImGuiFonts();
     void ShutdownImGui() const;

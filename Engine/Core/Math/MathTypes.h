@@ -13,10 +13,12 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
 #include <imgui.h>
 #endif
 
+
+class Archive;
 struct Size2D : IStringify
 {
     int32_t width;
@@ -34,7 +36,7 @@ struct Vector2
 {
     operator glm::vec2();
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
     operator ImVec2();
 #endif
 
@@ -121,19 +123,19 @@ public:
     /** 讲一个0-1的表示颜色的值转换为0-255的值 */
     static uint8_t FloatToByte(float value);
 
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
     Color operator*(const Color& other) const;
-    Color operator*(const float scalar) const;
+    Color operator*( float scalar) const;
 
     /** 转换Int带alpha通道 */
-    uint32_t ToUInt() const;
+    [[nodiscard]] uint32_t ToUInt() const;
     /** 转换为没有alpha通道的Int */
-    uint32_t ToUIntNoAlpha() const;
+    [[nodiscard]] uint32_t ToUIntNoAlpha() const;
 
-#if USE_IMGUI
+#ifdef USE_IMGUI
     Color() = default;
-    Color(ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
+    Color(const ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
     Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}
     operator ImVec4() const { return {r, g, b, a}; }
     explicit operator ImU32() const { return ImGui::GetColorU32((ImVec4)(*this)); }
@@ -148,3 +150,10 @@ inline Matrix4x4 GetMatrix4x4Identity()
     static auto identity = glm::mat4(1.0f);
     return identity;
 }
+
+#if REGION(数学类型的序列化)
+Archive& operator<<(Archive& ar, Vector2& v);
+Archive& operator<<(Archive& ar, Vector3& v);
+Archive& operator<<(Archive& ar, Vector4& v);
+Archive& operator<<(Archive& ar, Color& q);
+#endif

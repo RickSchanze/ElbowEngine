@@ -87,10 +87,10 @@ void EngineApplication::LogBeginInit()
 
 void EngineApplication::LogEndInit()
 {
-#if ENABLE_TEST
+#ifdef ENABLE_TEST
     LOG_INFO_ANSI_CATEGORY(Engine, "测试:启用");
 #endif
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     LOG_INFO_ANSI_CATEGORY(Engine, "Profiling: 启用");
 #endif
 #if WITH_EDITOR
@@ -128,7 +128,7 @@ void EngineApplication::Initialize()
     render_application_->SetExtensions(window_->GetRequiredExtensions());
 
     render_application_->Initialize();
-#if USE_IMGUI
+#ifdef USE_IMGUI
     window_->InitImGui(render_application_->GetContext());
 #endif
     editor_style_->SetStyle();
@@ -148,7 +148,7 @@ void EngineApplication::Initialize()
         .SetMaterial(&function::MaterialManager::CreateMaterial(L"Shaders/Shader.vert", L"Shaders/Shader.frag", L"AK47Mat")
                           ->SetTexture("texSampler", L"Models/AK47/ak47_default_color_psd_5b66a23b.png"));
 
-#if ENABLE_TEST
+#ifdef ENABLE_TEST
     FunctionalityTest();
 #endif
 
@@ -161,7 +161,7 @@ void EngineApplication::DeInitialize() const
     if (!IsValid()) return;
     Delete(render_context_);
     rhi::vulkan::VulkanContext::Get()->OnPreVulkanDeviceDestroyed.InvokeOnce();
-#if USE_IMGUI
+#ifdef USE_IMGUI
     window_->ShutdownImGui();
 #endif
     // vulkan device失效前释放所有资产
@@ -201,7 +201,7 @@ void EngineApplication::Run()
         {
             PROFILE_SCOPE("Tick Render");
             render_context_->PrepareFrameRender();
-#if USE_IMGUI
+#ifdef USE_IMGUI
             window_->BeginImGuiFrame();
 #endif
             {
@@ -333,10 +333,11 @@ void EngineApplication::OnOpenConsoleWindow()
 {
     OpenWindow<window::ConsoleWindow>();
 }
-
+#ifdef ENABLE_TEST
 void EngineApplication::FunctionalityTest()
 {
     NewObject<function::GameObject>(L"功能测试用GameObject")->AddComponent<function::comp::FunctionTestComponent>();
 }
+#endif
 
 }

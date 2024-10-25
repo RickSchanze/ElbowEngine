@@ -32,7 +32,7 @@ public:
 
     explicit Object(const EObjectFlag flag) : flag_(flag) {}
 
-    virtual ~Object();
+    ~Object() override;
 
     /**
      * 获取反射类型

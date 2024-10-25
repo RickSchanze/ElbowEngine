@@ -11,9 +11,9 @@
 #include "ISerializer.h"
 #include "yaml-cpp/yaml.h"
 
-#define IMPL_BASE_TYPE                                                       \
+#define IMPL_BASE_TYPE                                                               \
     Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数"); \
-    *emitter_ << i;                                                          \
+    *emitter_ << i;                                                                  \
     return *this
 
 YamlArchive::~YamlArchive() {}
@@ -103,4 +103,13 @@ void YamlArchive::EndSerialize()
 {
     Archive::EndSerialize();
     emitter_.Reset();
+}
+
+AnsiString YamlArchive::ToString()
+{
+    if (IsSerialized())
+    {
+        return emitter_->c_str();
+    }
+    return "只有被序列化的数据才能转换为字符串";
 }

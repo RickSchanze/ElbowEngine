@@ -4,12 +4,20 @@
 // #include "Path/Path.h"
 #define GLFW_INCLUDE_VULKAN
 // #include "EngineApplication.h"
+#include "Component/Camera.h"
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "d3d12.h"
+#include "Serialization/YamlArchive.h"
 
 int main()
 {
+    UniquePtr<Object> to = MakeUnique<Object>();
+    YamlArchive ar;
+    ar.BeginSerialize();
+    ar << *to;
+    ar.EndSerialize();
+    std::cout << ar.ToString();
     // // 让std::wcout 顺利运行
     // setlocale(LC_ALL, "zh_CN");
     // // 让spdlog不产生乱码

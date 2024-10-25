@@ -30,7 +30,7 @@ public:
     static inline Array<const char*> s_device_required_extensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
         VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
 #endif
     };

@@ -83,7 +83,7 @@ protected:
     // clang-format on
 
 protected:
-#if ENABLE_TEST
+#ifdef ENABLE_TEST
     void FunctionalityTest();
 #endif
 

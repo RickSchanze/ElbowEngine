@@ -7,9 +7,7 @@
 
 #pragma once
 
-#include "CoreMacro.h"
-
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
 #include "tracy/Tracy.hpp"
 
 uint32_t GetColor(int index);

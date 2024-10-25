@@ -6,8 +6,6 @@
 #include <chrono>
 #include <ranges>
 
-#include "CoreMacro.h"
-
 // 一些Typedef
 #include "Profiler/ProfileMacro.h"
 
@@ -86,7 +84,7 @@ using WeakPtr = std::weak_ptr<T>;
 template<typename T, typename... Args>
 SharedPtr<T> MakeShared(Args&&... args)
 {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
     return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
 #else
     return std::make_shared<T>(std::forward<Args>(args)...);
@@ -101,7 +99,7 @@ public:
     template<typename... Args>
     static UniquePtr<T> Create(Args&&... args)
     {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
         MemoryTraceAllocator<T> allocator;
         T*                      ptr = allocator.allocate(1);
         try
@@ -155,7 +153,7 @@ public:
     {
         if (ptr_)
         {
-#if ENABLE_PROFILING
+#ifdef ENABLE_PROFILING
             MemoryTraceDeleter<T>()(ptr_);
 #else
             delete ptr_;

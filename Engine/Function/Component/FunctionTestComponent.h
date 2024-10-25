@@ -6,9 +6,8 @@
  */
 
 #pragma once
-#include "CoreMacro.h"
 
-#if ENABLE_TEST
+#ifdef ENABLE_TEST
 
 #include "Async/Coroutine/Task.h"
 #include "Component.h"

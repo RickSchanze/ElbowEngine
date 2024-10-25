@@ -37,6 +37,24 @@ static void SerializeSequenceView(Archive& ar, const rttr::variant_sequential_vi
     ar << Archive::InputType::ArrayEnd;
 }
 
+static void SerializeMapView(Archive& ar, const rttr::variant_associative_view& view)
+{
+    ar << Archive::InputType::MapStart;
+    for (const auto& item: view)
+    {
+        if (item.first.is_associative_container() || item.first.is_sequential_container())
+        {
+            LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "键不可为容器");
+            continue;
+        }
+        ar << Archive::InputType::Key;
+        ar << item.first;
+        ar << Archive::InputType::Value;
+        ar << item.second;
+    }
+    ar << Archive::InputType::MapEnd;
+}
+
 Archive& Archive::operator<<(const rttr::variant& value)
 {
     Assert(Archive.Serialization, value.is_valid(), "序列化值无效");
@@ -62,6 +80,14 @@ Archive& Archive::operator<<(const rttr::variant& value)
     {
         const auto& view = value.create_sequential_view();
         SerializeSequenceView(*this, view);
+    } else if (value.is_associative_container())
+    {
+        const auto& view = value.create_associative_view();
+        SerializeMapView(*this, view);
+    }
+    else
+    {
+        LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "不支持序列化的类型");
     }
     return *this;
 }
