@@ -7,12 +7,43 @@
 
 #pragma once
 #include "fmt/format.h"
+#include <ostream>
 #include <string>
 #include <utility>
-#include <ostream>
 
 namespace core
 {
+class String;
+class StringView
+{
+public:
+    StringView(const char* str, const int32_t length) : str_(str), length_(length) {}
+    StringView(const char* str) : str_(str), length_(static_cast<int32_t>(strlen(str))) {}
+    StringView() : str_(nullptr), length_(0) {}
+    StringView(const String& str);
+    StringView(const std::string& str) : str_(str.c_str()), length_(static_cast<int32_t>(str.length())) {}
+
+    [[nodiscard]] char Back() const { return str_[length_ - 1]; }
+
+    /**
+     * 移除倒数前c个字符
+     * @param c
+     */
+    void RemoveSubfix(int c);
+
+    [[nodiscard]] const char* Data() const { return str_; }
+
+    [[nodiscard]] constexpr int32_t Length() const { return length_; }
+
+    [[nodiscard]] bool operator==(const StringView& o) const { return str_ == o.str_ && length_ == o.length_; }
+
+    [[nodiscard]] char operator[](int32_t i) const { return str_[i]; }
+
+private:
+    const char* str_;
+    int32_t     length_;
+};
+
 class String
 {
     friend class StringView;
@@ -52,37 +83,21 @@ public:
         return *this;
     }
 
+    auto operator<=>(const String& o) const { return str_ <=> o.str_; }
+
+    bool operator==(const StringView& o) const;
+
+    [[nodiscard]] bool Contains(StringView str) const;
+
+    char operator[](int32_t i) const { return str_[i]; }
+
 private:
     std::string str_;
 };
 
 std::ostream& operator<<(std::ostream& os, const String& str);
 
-class StringView
-{
-public:
-    StringView(const char* str, const int32_t length) : str_(str), length_(length) {}
-    StringView(const char* str) : str_(str), length_(static_cast<int32_t>(strlen(str))) {}
-    StringView() : str_(nullptr), length_(0) {}
-    StringView(const String& str) : str_(*str), length_(str.Length()) {}
-    StringView(const std::string& str) : str_(str.c_str()), length_(static_cast<int32_t>(str.length())) {}
 
-    [[nodiscard]] char Back() const { return str_[length_ - 1]; }
-
-    /**
-     * 移除倒数前c个字符
-     * @param c
-     */
-    void RemoveSubfix(int c);
-
-    [[nodiscard]] const char* Data() const { return str_; }
-
-    [[nodiscard]] constexpr int32_t Length() const { return length_; }
-
-private:
-    const char* str_;
-    int32_t     length_;
-};
 }   // namespace core
 
 template<>
