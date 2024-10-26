@@ -132,7 +132,7 @@ class FileProcess:
         tu = index.parse(result.src.as_posix(), args)
         parse_error = False
         for diag in tu.diagnostics:
-            if diag.severity == clang.cindex.Diagnostic.Error:
+            if diag.severity == clang.cindex.Diagnostic.Error or diag.severity == clang.cindex.Diagnostic.Fatal:
                 parse_error = True
                 log.error(f"[{os.getpid()}] 解析{result.src}:{diag.location.line}:{diag.location.column}出错: {diag.spelling}")
         if parse_error:

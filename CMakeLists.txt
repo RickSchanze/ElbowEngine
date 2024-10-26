@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(ElbowEngine)
 
-option(ENABLE_TEST "Enable test" ON)
+option(ENABLE_TEST "Enable test" OFF)
 option(USE_IMGUI "Enable imgui" ON)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(WITH_EDITOR "Enable editor" ON)

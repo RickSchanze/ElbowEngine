@@ -16,11 +16,11 @@ class ElbowEngineCodeGenConfig:
     # 这里写ElbowEngine的位置
     working_dir = r"C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine"
     # 相对于ElbowEngine的文件夹位置 开头不要写"/" 同时也会include这几个文件夹
-    process_folder = ["Engine/Core", "Engine/Function", "Engine/Platform", "Engine/Resource", "Engine/Tool"]
+    process_folder = ["Engine/Core"]
     # 需要额外include的文件夹
-    extra_include_folder = ["Engine/ThirdParty/IconFontCppHeaders"]
+    extra_include_folder = ["Engine/ThirdParty/IconFontCppHeaders", "cmake-build-debug/vcpkg_installed/x64-windows/include"]
     # 进程池并行处理最大数量
-    max_process_count = 20
+    max_process_count = 1
     # 解析时使用的参数
     clang_args = [
         "-xc++",

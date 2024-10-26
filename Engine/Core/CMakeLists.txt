@@ -70,6 +70,8 @@ add_library(${PROJECT_NAME}
         Log/LogEvent.h
         Log/LogRecorder.cpp
         Log/LogRecorder.h
+        Object/Setting.cpp
+        Object/Setting.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
