@@ -7,26 +7,14 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_library(${PROJECT_NAME}
         Object/Object.h
         Object/Object.cpp
-        Object/ObjectManager.h
-        Object/ObjectManager.cpp
         Log/Logger.h
         Log/Logger.cpp
-        Log/LogEvent.h
-        Log/LogEvent.cpp
-        Log/LogRecorder.h
-        Log/LogRecorder.cpp
-        Utils/StringUtils.h
-        Utils/StringUtils.cpp
         Utils/ReflUtils.h
         Utils/ReflUtils.cpp
         Utils/ContainerUtils.h
         Utils/ContainerUtils.cpp
         Utils/MemoryUtils.cpp
         Utils/MemoryUtils.h
-        Utils/HashUtils.h
-        Utils/HashUtils.cpp
-        Utils/PathUtils.h
-        Utils/PathUtils.cpp
         Utils/TimeUtils.h
         Utils/TimeUtils.cpp
         Singleton/Singleton.h
@@ -37,15 +25,12 @@ add_library(${PROJECT_NAME}
         CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
-        Misc/Guid.cpp
-        Misc/Guid.h
         Misc/Vertex.h
         Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
         FileSystem/Paths.cpp
         FileSystem/Paths.h
-        Interface/IStringify.h
         Profiler/ProfileMacro.cpp
         Profiler/ProfileMacro.h
         Async/Coroutine/Task.cpp
@@ -77,6 +62,14 @@ add_library(${PROJECT_NAME}
         FileSystem/File.cpp
         FileSystem/File.h
         FileSystem/FileSystemEnum.h
+        Base/UniquePtr.h
+        Log/CoreLogCategory.h
+        Base/CallStackFrame.h
+        Base/CallStackFrame.cpp
+        Base/CoreTypeDef.h
+        Log/LogEvent.h
+        Log/LogRecorder.cpp
+        Log/LogRecorder.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

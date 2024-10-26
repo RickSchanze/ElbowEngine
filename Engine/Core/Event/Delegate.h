@@ -96,7 +96,7 @@ struct Delegate
 
     void Bind(Function<ReturnT(ArgumentTypes...)>&& function)
     {
-        DebugAssert(Event.Delegate, HasBound(), "Delegate is already bound, rebinding...");
+        // DebugAssert(Event.Delegate, HasBound(), L"Delegate is already bound, rebinding...");
         function_ = Move(function);
         id_       = Move(DelegateID(true));
     }

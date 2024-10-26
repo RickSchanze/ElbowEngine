@@ -6,7 +6,10 @@
  */
 
 #pragma once
+#include "Base/CallStackFrame.h"
+#include "Base/CoreTypeDef.h"
 #include "CoreDef.h"
+#include "Logger.h"
 
 #include <chrono>
 
@@ -15,42 +18,20 @@ namespace spdlog::details
 struct log_msg;
 }
 
-enum class ELogLevel
+namespace core
 {
-    Trace,
-    Debug,
-    Info,
-    Warning,
-    Error,
-    Critical,
-    MaxDefault,
-};
-
-struct CallStackFrame
-{
-    uint32_t   line;
-    AnsiString file;
-    AnsiString function;
-};
-
 struct Log
 {
-    Array<CallStackFrame>                             call_stack;
-    AnsiString                                         message;
-    ELogLevel                                          level;
-    AnsiString                                         filename;
-    AnsiString                                         function;
-    int32_t                                            line;
-    size_t                                             thread_id;
-    std::chrono::time_point<std::chrono::system_clock> time;
-    int32_t                                            index;
-
-    /**
-     *
-     * @param msg
-     * @param trace_level 大于这个level则生成调用栈
-     */
-    explicit Log(const spdlog::details::log_msg& msg, ELogLevel trace_level);
+    Array<CallStackFrame> call_stack;
+    StringView            category;
+    String                message;
+    LogLevel              level = LogLevel::Count;
+    String                filename;
+    String                function;
+    int32_t               line      = -1;
+    size_t                thread_id = -1;
+    TimePoint             time;
+    int32_t               index = 0;
 
     Log() = default;
 };
@@ -58,13 +39,15 @@ struct Log
 class LogRecorder
 {
 public:
-    explicit LogRecorder(size_t max_count = 100);
-    void     PushLog(const spdlog::details::log_msg& msg);
+    explicit LogRecorder(int32_t max_count = 100);
+    void     PushLog(Log& log);
 
-    const List<Log>& GetLogs() const;
-    size_t            GetSize() const;
-    size_t            GetMaxSize() const;
-    void              Clear();
+    [[nodiscard]] const List<Log>& GetLogs() const;
+    [[nodiscard]] size_t           GetSize() const;
+    [[nodiscard]] size_t           GetMaxSize() const;
+    [[nodiscard]] LogLevel         GetTraceLevel() const { return trace_level_; }
+
+    void Clear();
 
     /**
      * 为LogRecorder设置一个新的最大size
@@ -72,13 +55,12 @@ public:
      */
     void SetMaxSize(size_t new_size);
 
-    ELogLevel GetTraceLevel() const { return trace_level_; }
-
 private:
-    ELogLevel  trace_level_ = ELogLevel::Warning;
+    LogLevel  trace_level_ = LogLevel::Count;
     List<Log> logs_;
-    size_t     max_log_counts_;
-    size_t     size_;
+    int32_t   max_log_counts_;
+    int32_t   size_;
 };
+}   // namespace core
 
-extern LogRecorder g_log_recorder;
+extern core::LogRecorder g_log_recorder;

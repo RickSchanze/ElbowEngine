@@ -13,7 +13,8 @@ namespace YAML
 class Node;
 class Emitter;
 }   // namespace YAML
-
+namespace core
+{
 class YamlArchive : public Archive
 {
 public:
@@ -32,6 +33,8 @@ public:
     Archive& operator<<(double d) override;
     Archive& operator<<(float f) override;
     Archive& operator<<(const char* str) override;
+    Archive& operator<<(const String& str) override;
+    Archive& operator<<(const StringView& str) override;
 #endif
 
     Archive& operator<<(InputType type) override;
@@ -39,12 +42,12 @@ public:
     void BeginSerialize() override;
     void EndSerialize() override;
 
-    AnsiString ToString() override;
+    core::String ToString() override;
 
 private:
     union {
-        UniquePtr<YAML::Node>    node_ = nullptr;
-        UniquePtr<YAML::Emitter> emitter_;
+        core::UniquePtr<YAML::Node>    node_ = nullptr;
+        core::UniquePtr<YAML::Emitter> emitter_;
     };
-    bool serializing_ = true;
 };
+}

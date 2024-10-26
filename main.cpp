@@ -4,10 +4,11 @@
 // #include "Path/Path.h"
 #define GLFW_INCLUDE_VULKAN
 // #include "EngineApplication.h"
-#include "Component/Camera.h"
+// #include "Component/Camera.h"
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "d3d12.h"
+#include "Log/CoreLogCategory.h"
 #include "Serialization/YamlArchive.h"
 
 int main()
@@ -16,7 +17,17 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-
+    LOGGER.Info(LogCat::Test, "测试一下");
+    core::StringView v = "你好";
+    LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);
+    LOGGER.Error(LogCat::Test, "测试一下Str {}", v);
+    core::YamlArchive ar;
+    auto*             obj = New<core::Object>();
+    ar.BeginSerialize();
+    ar << *obj;
+    ar.EndSerialize();
+    std::cout << ar.ToString();
+    system("pause");
     // try
     // {
     //     tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};

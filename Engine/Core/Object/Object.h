@@ -7,16 +7,22 @@
 
 #pragma once
 
+#include "Base/EString.h"
 #include "CoreDef.h"
 #include "Serialization/ISerializer.h"
 
 #include <iostream>
 
-enum EObjectFlag
+namespace core
 {
-    EOF_IsGameObject,   // 在游戏世界运行
-    EOF_IsComponent,    // 这个Object是一个Component
-    EOF_IsWindow,       // 这个是一个窗口对象
+
+enum ObjectCategory
+{
+    PureObject,   // 纯粹的对象
+    GameObject,   // 在游戏世界运行
+    Component,    // 这个Object是一个Component
+    Window,       // 这个是一个窗口对象
+    Setting,      // 这个是一个设置对象
 };
 
 class Object : public ISerializer
@@ -24,19 +30,33 @@ class Object : public ISerializer
     RTTR_ENABLE()
     RTTR_REGISTRATION_FRIEND
 
-    friend class ObjectCreateHelper;
-
 public:
     typedef Object ThisClass;
-    Object() : Object(EOF_IsGameObject) {}
 
-    explicit Object(const EObjectFlag flag) : flag_(flag) {}
+    Object();
+    Object(const ThisClass&) = delete;
+
+    Object& operator=(const ThisClass&) = delete;
 
     ~Object() override;
 
+
+#if REGION(对象ID)
+    typedef int32_t        ObjectID;
+    static inline ObjectID s_id_counter_ = 0;
+
+public:
+    [[nodiscard]] ObjectID GetID() const { return id_; }
+
+private:
+    void GeneratedID();
+
+    ObjectID id_ = 0;
+#endif
+
     /**
      * 获取反射类型
-     * @return rttr::typr
+     * @return rttr::type
      */
     [[nodiscard]] Type GetType() const { return get_type(); }
 
@@ -54,37 +74,22 @@ public:
     [[nodiscard]] virtual String ToString() const;
 
     /**
-     * 获取对象ID
-     * @return
-     */
-    [[nodiscard]] int32_t GetID() const { return id_; }
-
-    /**
      * 设置对象的名字
      * @param name
      */
     void SetName(const String& name);
 
-    /**
-     * 对象是否还有效
-     * @return
-     */
-    [[nodiscard]] virtual bool IsValid() const;
+    [[nodiscard]] bool IsComponent() const { return flag_ == Component; }
 
-    [[nodiscard]] bool IsComponent() const { return flag_ == EOF_IsComponent; }
-
-    [[nodiscard]] bool IsGameObject() const { return flag_ == EOF_IsGameObject; }
+    [[nodiscard]] bool IsGameObject() const { return flag_ == GameObject; }
 
     // TODO: 位操作
-    [[nodiscard]] EObjectFlag GetObjectFlag() const { return flag_; }
-
-    const AnsiString& GetCachedAnsiString();
+    [[nodiscard]] ObjectCategory GetObjectCategory() const { return flag_; }
 
     template<typename T>
     bool IsImplemented()
     {
-        Type other_type = rttr::type::get<T>();
-        if (other_type)
+        if (Type other_type = rttr::type::get<T>())
         {
             return IsImplemented(other_type);
         }
@@ -114,15 +119,10 @@ public:
 #endif
 
 protected:
-    String  name_;                 // 对象名字
-    int32_t id_         = 0;       // 对象ID
-    bool    is_garbage_ = false;   // 是否是垃圾对象
-
-    const EObjectFlag flag_;
-
-private:
-    AnsiString cached_ansi_string_;   // 缓存的Ansi字符串 用于ImGui绘制
+    String         name_;   // 对象名字
+    ObjectCategory flag_;
 };
 
 template<typename T>
 concept IsObject = std::is_base_of_v<Object, T>;
+}

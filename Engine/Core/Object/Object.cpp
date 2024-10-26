@@ -6,62 +6,78 @@
  */
 
 #include "Object.h"
-#include "CoreGlobal.h"
 #include "Log/Logger.h"
-#include "ObjectManager.h"
 #include "Serialization/Archive.h"
-#include "Utils/StringUtils.h"
 
-RTTR_REGISTRATION {
-    rttr::registration::class_<Object>("Object").constructor<>()(rttr::policy::ctor::as_raw_ptr)
-        .property("Name", &Object::name_)(rttr::metadata("Serialized", "True"))
-        .property("Id", &Object::id_)(rttr::metadata("Serialized", "True"));
+RTTR_REGISTRATION
+{
+    rttr::registration::class_<core::Object>("core::Object")
+        .constructor<>()(rttr::policy::ctor::as_raw_ptr)
+        .property("name_", &core::Object::name_)
+        .property("id_", &core::Object::id_)
+        .property("flag_", &core::Object::flag_);
+
+        // clang-format off
+    rttr::registration::enumeration<core::ObjectCategory>("core::ObjectCategory")(
+        rttr::value("PureObject", core::ObjectCategory::PureObject),
+        rttr::value("GameObject", core::ObjectCategory::GameObject),
+        rttr::value("Window", core::ObjectCategory::Window)
+    );
+    // clang-format on
 }
 
-Object::~Object() {
-    ObjectManager::Get()->RemoveObject(id_);
-    LOG_INFO_CATEGORY(Object, L"删除对象: {}, ID: {}", name_, id_);
+namespace core
+{
+
+Object::Object()
+{
+    flag_ = PureObject;
+    GeneratedID();
+    name_ = fmt::format("{} Object {}", GetEnumString(flag_), id_);
 }
 
-String Object::ToString() const {
-    return std::format(L"[Object] Name: {0}, Id: {1}", name_, id_);
+void Object::GeneratedID()
+{
+    id_ = ++s_id_counter_;
 }
 
-void Object::SetName(const String& name) {
+Object::~Object() = default;
+
+String Object::ToString() const
+{
+    return name_;
+}
+
+void Object::SetName(const String& name)
+{
     name_ = name;
-    cached_ansi_string_ = StringUtils::ToAnsiString(name);
-}
-
-bool Object::IsValid() const
-{
-    return !is_garbage_;
-}
-
-const AnsiString& Object::GetCachedAnsiString()
-{
-    if (cached_ansi_string_.empty())
-    {
-        cached_ansi_string_ = StringUtils::ToAnsiString(name_);
-    }
-    return cached_ansi_string_;
 }
 
 void Object::Serialize(Archive& ar)
 {
     Type t = GetType();
-    const auto& properties = t.get_properties();
     ar << Archive::InputType::MapStart;
-    for (const auto& prop : properties)
+    ar << Archive::InputType::Key;
+    StringView type_name = t.get_name().data();
+    ar << type_name;
+    ar << Archive::InputType::Value;
     {
-        if (prop.get_type().is_pointer())
+        ar << Archive::InputType::MapStart;
+        const auto& properties = t.get_properties();
+        for (const auto& prop: properties)
         {
-            LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "不可序列化原始指针");
-            continue;
+            if (prop.get_type().is_pointer())
+            {
+                continue;
+            }
+            String name = {prop.get_name().data(), static_cast<int32_t>(prop.get_name().length())};
+            ar << Archive::InputType::Key;
+            ar << name;
+            ar << Archive::InputType::Value;
+            ar << prop.get_value(*this);
         }
-        ar << Archive::InputType::Key;
-        ar << prop.get_name();
-        ar << Archive::InputType::Value;
-        ar << prop.get_value(*this);
+        ar << Archive::InputType::MapEnd;
     }
     ar << Archive::InputType::MapEnd;
 }
+}   // namespace core

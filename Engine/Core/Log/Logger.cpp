@@ -7,15 +7,55 @@
 
 #include "Logger.h"
 
-#include "spdlog/sinks/callback_sink.h"
-
+#include "CoreLogCategory.h"
 #include "LogEvent.h"
+#include "LogRecorder.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
+namespace core
+{
 Logger::Logger()
 {
-    auto callback_log = std::make_shared<spdlog::sinks::callback_sink_mt>([](const spdlog::details::log_msg& msg) { OnLog.Invoke(msg); });
-    auto color_logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    auto color_logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
 
-    logger_ = std::make_shared<spdlog::logger>("ElbowEngine", spdlog::sinks_init_list{callback_log, color_logger});
+    logger_ = MakeUnique<spdlog::logger>("ElbowEngine", spdlog::sinks_init_list{color_logger});
     logger_->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
 }
+
+void Logger::LogStackTrace(LogLevel level)
+{
+    auto trace = GetCurrentStackTrace();
+    if (trace.empty())
+    {
+        return;
+    }
+    core::String msg = "Stack Trace: \n";
+    int          i   = 0;
+    for (auto frame: trace)
+    {
+        msg += fmt::format("  #{} {}:{} {}\n", i++, frame.file, frame.line, frame.function);
+    }
+    switch (level)
+    {
+    case LogLevel::Debug: this->Debug(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Info: this->Info(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Warn: this->Warn(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Error: this->Error(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Critical: this->Critical(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Count: break;
+    }
+}
+
+void Logger::SendLog(LogLevel level, const core::StringView category, const core::StringView msg)
+{
+    Log log;
+    log.level      = level;
+    log.category   = category;
+    log.message    = msg;
+    log.thread_id  = core::GetCurrentThreadId();
+    log.time       = std::chrono::system_clock::now();
+    log.call_stack = core::GetCurrentStackTrace();
+    Event_OnLog.Invoke(log);
+}
+Logger g_logger;
+}   // namespace core

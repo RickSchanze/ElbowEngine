@@ -13,13 +13,13 @@ namespace async::coro
 
 bool AwaiterBase::CanAwake()
 {
-    NEVER_ENTRY_WARNING()
+    // NEVER_ENTRY_WARNING()
     return false;
 }
 
 void AwaiterBase::Awake()
 {
-    NEVER_ENTRY_WARNING()
+    // NEVER_ENTRY_WARNING()
 }
 
 AwaiterBase::AwaiterBase()

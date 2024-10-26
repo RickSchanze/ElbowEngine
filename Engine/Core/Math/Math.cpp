@@ -15,6 +15,8 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <random>
 
+namespace core
+{
 bool Math::ApproximatelyEqual(float a, float b, float tolerance)
 {
     return std::fabs(a - b) <= tolerance;
@@ -162,4 +164,5 @@ int32_t Math::RandomInt(int32_t min, int32_t max)
     std::uniform_int_distribution<> distrib(min, max - 1);
 
     return distrib(gen); // 返回生成的随机数
+}
 }

@@ -7,16 +7,18 @@
 
 #pragma once
 
-#include <utility>
-
+#include "Base/EString.h"
 #include "FileSystemEnum.h"
 
 #include <expected>
+#include <fstream>
 
+namespace core
+{
 class File
 {
 public:
-    explicit File(String file_path) : file_path_(std::move(file_path)) {}
+    explicit File(const StringView file_path) : file_path_(file_path) {}
 
     ~File();
 
@@ -36,3 +38,4 @@ private:
     std::fstream stream_;
     FileOpenMode open_mode_ = FileOpenMode::Count;
 };
+}

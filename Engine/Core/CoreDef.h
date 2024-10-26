@@ -5,11 +5,8 @@
 
 #include <chrono>
 #include <ranges>
-#include "EString.h"
 // 一些Typedef
 #include "Profiler/ProfileMacro.h"
-
-
 #include <functional>
 
 // std::reference_wrapper -> Ref
@@ -62,7 +59,6 @@ template<typename T, typename Allocator = std::allocator<T>>
 using List = std::list<T, Allocator>;
 
 #include <string>
-
 // std::optional -> Optional
 #include <optional>
 template<typename T>
@@ -84,107 +80,6 @@ SharedPtr<T> MakeShared(Args&&... args)
 #else
     return std::make_shared<T>(std::forward<Args>(args)...);
 #endif
-}
-
-template<typename T>
-class UniquePtr
-{
-public:
-    // 构造函数
-    template<typename... Args>
-    static UniquePtr<T> Create(Args&&... args)
-    {
-#ifdef ENABLE_PROFILING
-        MemoryTraceAllocator<T> allocator;
-        T*                      ptr = allocator.allocate(1);
-        try
-        {
-            new (ptr) T(std::forward<Args>(args)...);
-        }
-        catch (...)
-        {
-            allocator.deallocate(ptr, 1);
-            throw;
-        }
-#else
-        T* ptr = new T(std::forward<Args>(args)...);
-#endif
-        return UniquePtr<T>(ptr);
-    }
-
-    // 默认构造函数
-    UniquePtr() noexcept = default;
-
-    // 构造函数
-    UniquePtr(T* ptr) noexcept : ptr_(ptr) {}
-
-    // 移动构造函数
-    UniquePtr(UniquePtr&& other) noexcept : ptr_(other.ptr_) { other.ptr_ = nullptr; }
-
-    // 移动赋值运算符
-    UniquePtr& operator=(UniquePtr&& other) noexcept
-    {
-        if (this != &other)
-        {
-            Reset();
-            std::swap(ptr_, other.ptr_);
-        }
-        return *this;
-    }
-
-    // 子类到父类的转换
-    template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
-    UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release()) {}
-
-    // 删除拷贝构造函数和赋值运算符
-                UniquePtr(const UniquePtr&) = delete;
-    UniquePtr& operator=(const UniquePtr&)  = delete;
-
-    // 析构函数
-    ~UniquePtr() { Reset(); }
-
-    // 重置指针
-    void Reset(T* ptr = nullptr) noexcept
-    {
-        if (ptr_)
-        {
-#ifdef ENABLE_PROFILING
-            MemoryTraceDeleter<T>()(ptr_);
-#else
-            delete ptr_;
-#endif
-        }
-        ptr_ = ptr;
-    }
-
-    // 释放指针
-    T* Release() noexcept
-    {
-        T* temp = ptr_;
-        ptr_    = nullptr;
-        return temp;
-    }
-
-    // 获取指针
-    T* Get() const noexcept { return ptr_; }
-
-    // 解引用运算符
-    T& operator*() const { return *ptr_; }
-
-    // 成员访问运算符
-    T* operator->() const noexcept { return ptr_; }
-
-    // 检查指针是否为空
-    explicit operator bool() const noexcept { return ptr_ != nullptr; }
-
-private:
-    T* ptr_ = nullptr;
-};
-
-template<typename T, typename... Args>
-UniquePtr<T> MakeUnique(Args&&... args)
-{
-    return UniquePtr<T>::Create(std::forward<Args>(args)...);
 }
 
 // std::forward -> Forward
@@ -232,18 +127,6 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
 template<typename... T>
 using Tuple = std::tuple<T...>;
 
-// Stream typedefs
-#include <fstream>
-#include <sstream>
-typedef std::wostream      OutputStream;
-typedef std::wistream      InputStream;
-typedef std::wstringstream StringStream;
-
-typedef std::ostream      AnsiOutputStream;
-typedef std::istream      AnsiInputStream;
-typedef std::stringstream AnsiStringStream;
-typedef std::ofstream     FileOutputStream;
-typedef std::ifstream     FileInputStream;
 
 // 反射相关类的定义
 #include "rttr/registration"
@@ -298,12 +181,6 @@ Type TypeOf()
 #define EDITOR_META(...)
 #endif
 
-// 获取当前调用栈的宏
-#include "cpptrace/cpptrace.hpp"
-#define GENERATE_STACKTRACE()                                     \
-    const auto CurrentStackTrace    = cpptrace::generate_trace(); \
-    auto       CurrentStackTraceStr = CurrentStackTrace.to_string();
-
 // 表示这个参数是一个输出参数
 #define OUT
 
@@ -324,5 +201,7 @@ Type TypeOf()
     {                                                            \
         rttr::registration::class_<type>(#type).constructor<>(); \
 }
+
+#define DEBUG_BREAK() __debugbreak()
 
 #define REGION(region_name) 1

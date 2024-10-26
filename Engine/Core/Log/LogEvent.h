@@ -1,13 +1,17 @@
 /**
  * @file LogEvent.h
  * @author Echo 
- * @Date 24-8-28
+ * @Date 24-10-26
  * @brief 
  */
 
 #pragma once
 #include "Event/Event.h"
 
-DECLARE_MULTICAST_EVENT(LogEvent, const spdlog::details::log_msg&);
+namespace core
+{
+struct Log;
+}
 
-inline LogEvent OnLog;
+DECLARE_MULTICAST_EVENT(LogEvent, core::Log&);
+inline LogEvent Event_OnLog;

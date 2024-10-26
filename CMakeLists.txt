@@ -48,9 +48,9 @@ add_executable(ElbowEngine main.cpp)
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function -WHOLEARCHIVE:$<TARGET_FILE:Engine::Function>)
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Tool -WHOLEARCHIVE:$<TARGET_FILE:Engine::Tool>)
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function -WHOLEARCHIVE:$<TARGET_FILE:Engine::Function>)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Tool -WHOLEARCHIVE:$<TARGET_FILE:Engine::Tool>)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)
 
 find_package(rttr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)

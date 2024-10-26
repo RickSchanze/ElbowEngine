@@ -17,7 +17,7 @@ void CoroutineExecutorManager::RegisterExecutor(EExecutorType type, IExecutor* e
     const int value = GetEnumValue(type);
     if (executors_[value] != nullptr)
     {
-        LOG_WARNING_ANSI_CATEGORY(Async.Coro, "CoroutineExecutorManager中已经存在一个Executor: {}, 进行覆盖", GetEnumString(type));
+        // LOG_WARNING_ANSI_CATEGORY(Async.Coro, "CoroutineExecutorManager中已经存在一个Executor: {}, 进行覆盖", GetEnumString(type));
         Delete(executors_[value]);
     }
 

@@ -9,18 +9,20 @@
 
 #include "CoreGlobal.h"
 #include "ISerializer.h"
+#include "Log/CoreLogCategory.h"
 #include "yaml-cpp/yaml.h"
 
-#define IMPL_BASE_TYPE                                                               \
-    Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数"); \
-    *emitter_ << i;                                                                  \
+#define IMPL_BASE_TYPE \
+    *emitter_ << i;    \
     return *this
 
+namespace core
+{
 YamlArchive::~YamlArchive() {}
 
 Archive& YamlArchive::operator<<(ISerializer& serializer)
 {
-    Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+    // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
     serializer.Serialize(*this);
     return *this;
 }
@@ -78,9 +80,21 @@ Archive& YamlArchive::operator<<(const char* i)
     IMPL_BASE_TYPE;
 }
 
+Archive& YamlArchive::operator<<(const String& str)
+{
+    *emitter_ << str.StdString();
+    return *this;
+}
+
+Archive& YamlArchive::operator<<(const StringView& str)
+{
+    *emitter_ << String(str);
+    return *this;
+}
+
 Archive& YamlArchive::operator<<(InputType type)
 {
-    Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+    // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
     switch (type)
     {
     case InputType::ArrayStart: *emitter_ << YAML::BeginSeq; break;
@@ -95,21 +109,29 @@ Archive& YamlArchive::operator<<(InputType type)
 
 void YamlArchive::BeginSerialize()
 {
-    Archive::BeginSerialize();
+    switch (state_)
+    {
+    case State::Serialized: emitter_.Release(); break;
+    case State::Deserialized: node_.Release(); break;
+    case State::Serializing:
+    case State::Deserializing: LOGGER.Error(LogCat::Archive_Serialization, "处于不用的状态: {}", GetEnumString(state_)); break;
+    case State::Idle: break;
+    }
     emitter_ = MakeUnique<YAML::Emitter>();
+    Archive::BeginSerialize();
 }
 
 void YamlArchive::EndSerialize()
 {
     Archive::EndSerialize();
-    emitter_.Reset();
 }
 
-AnsiString YamlArchive::ToString()
+String YamlArchive::ToString()
 {
     if (IsSerialized())
     {
         return emitter_->c_str();
     }
     return "只有被序列化的数据才能转换为字符串";
+}
 }

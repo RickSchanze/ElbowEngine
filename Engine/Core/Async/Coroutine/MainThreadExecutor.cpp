@@ -19,7 +19,7 @@ void async::coro::MainThreadExecutor::Install(const AwaiterBase& awaiter)
     auto* pawaiter = const_cast<AwaiterBase*>(std::addressof(awaiter));
     if (ContainerUtils::Contains(awaiters_, pawaiter))
     {
-        LOG_ERROR_CATEGORY_ANSI(Async.Coro, "同一个协程不允许添加两次！");
+        // LOG_ERROR_CATEGORY_ANSI(Async.Coro, "同一个协程不允许添加两次！");
     }
     else
     {

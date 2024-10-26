@@ -7,7 +7,8 @@
 
 #pragma once
 
-
+namespace core
+{
 class Archive;
 class ISerializer
 {
@@ -16,3 +17,4 @@ public:
 
     virtual void Serialize(Archive& ar) = 0;
 };
+}   // namespace core

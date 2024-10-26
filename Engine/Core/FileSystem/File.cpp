@@ -11,6 +11,8 @@
 
 using namespace std::filesystem;
 
+namespace core
+{
 FileSystemError File::Check() const
 {
     path p = *file_path_;
@@ -92,3 +94,4 @@ bool File::IsOpen() const
 {
     return stream_.is_open();
 }
+}   // namespace core

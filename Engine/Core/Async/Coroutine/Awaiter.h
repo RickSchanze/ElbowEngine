@@ -88,13 +88,16 @@ struct Awaiter : AwaiterBase
     bool IsValid() const { return handle_ != nullptr; }
 
     // 这里默认什么都没做, 请务必实现这个方法
-    virtual void AfterSuspend() { NEVER_ENTRY_WARNING(); }
+    virtual void AfterSuspend()
+    {
+        // NEVER_ENTRY_WARNING();
+    }
 
     virtual bool CanSuspend() const { return false; }
 
     virtual T AfterResume()
     {
-        NEVER_ENTRY_WARNING();
+        // NEVER_ENTRY_WARNING();
         if constexpr (!std::is_same_v<ReturnType, void>)
         {
             return {};
@@ -107,7 +110,7 @@ struct Awaiter : AwaiterBase
 
     bool CanAwake() override
     {
-        NEVER_ENTRY_WARNING();
+        // NEVER_ENTRY_WARNING();
         return true;
     }
 

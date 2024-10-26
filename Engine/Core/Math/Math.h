@@ -8,6 +8,8 @@
 #pragma once
 #include "MathTypes.h"
 
+namespace core
+{
 class Math
 {
 public:
@@ -133,4 +135,5 @@ template<MathType T, typename F>
 auto operator|(T&& value, F&& func)
 {
     return func(value);
+}
 }

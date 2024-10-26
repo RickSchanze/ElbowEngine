@@ -8,8 +8,8 @@
 #pragma once
 
 #include "CoreDef.h"
-#include "Interface/IStringify.h"
 
+#include "Base/EString.h"
 #include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
 
@@ -17,16 +17,18 @@
 #include <imgui.h>
 #endif
 
-
+namespace core
+{
 class Archive;
-struct Size2D : IStringify
+
+struct Size2D
 {
     int32_t width;
     int32_t height;
 
     Size2D(const int32_t w, const int32_t h) : width(w), height(h) {}
 
-    String ToString() const override;
+    [[nodiscard]] core::String ToString() const;
 };
 
 
@@ -34,15 +36,15 @@ typedef glm::vec3 Vector3;
 
 struct Vector2
 {
-    operator glm::vec2();
+    operator glm::vec2() const;
 
 #ifdef USE_IMGUI
-    operator ImVec2();
+    operator ImVec2() const;
 #endif
 
-    Vector2 operator+(const Vector2& other);
+    Vector2 operator+(const Vector2& other) const;
 
-    Vector2 operator*=(const float scalar);
+    Vector2 operator*=(const float scalar) const;
     Vector2 operator*(float x) const;
 
     float x;
@@ -76,10 +78,10 @@ struct Rotator
     Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
     Rotator(const Vector3 v) : yaw(v.x), roll(v.y), pitch(v.z) {}
 
-    Vector3 GetForwardVector() const;
-    Vector3 GetUpVector() const;
-    Vector3 GetRightVector() const;
-    String  ToString() const;
+    [[nodiscard]] Vector3      GetForwardVector() const;
+    [[nodiscard]] Vector3      GetUpVector() const;
+    [[nodiscard]] Vector3      GetRightVector() const;
+    [[nodiscard]] core::String ToString() const;
 
     bool operator==(const Rotator&) const;
     bool operator!=(const Rotator&) const;
@@ -88,7 +90,7 @@ struct Rotator
     Rotator  operator-(const Rotator& other) const;
     Rotator  operator+(const Rotator& other) const;
 
-    Vector3 ToVector3() const { return {pitch, yaw, roll}; }
+    [[nodiscard]] Vector3 ToVector3() const { return {pitch, yaw, roll}; }
 
     Rotator& operator+=(const Rotator& other);
     Rotator& operator-=(const Rotator& other);
@@ -97,7 +99,7 @@ struct Rotator
      * 将角度表示的自己转变为弧度表示
      * @return
      */
-    Rotator ToRotatorRadian() const;
+    [[nodiscard]] Rotator ToRotatorRadian() const;
 };
 
 struct Color
@@ -126,7 +128,7 @@ public:
     [[nodiscard]] bool IsValid() const;
 
     Color operator*(const Color& other) const;
-    Color operator*( float scalar) const;
+    Color operator*(float scalar) const;
 
     /** 转换Int带alpha通道 */
     [[nodiscard]] uint32_t ToUInt() const;
@@ -152,8 +154,9 @@ inline Matrix4x4 GetMatrix4x4Identity()
 }
 
 #if REGION(数学类型的序列化)
-Archive& operator<<(Archive& ar, Vector2& v);
-Archive& operator<<(Archive& ar, Vector3& v);
-Archive& operator<<(Archive& ar, Vector4& v);
-Archive& operator<<(Archive& ar, Color& q);
+Archive& operator<<(Archive& ar, const Vector2& v);
+Archive& operator<<(Archive& ar, const Vector3& v);
+Archive& operator<<(Archive& ar, const Vector4& v);
+Archive& operator<<(Archive& ar, const Color& q);
 #endif
+}

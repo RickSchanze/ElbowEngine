@@ -7,12 +7,15 @@
 
 #include "Archive.h"
 
+#include "Log/CoreLogCategory.h"
+
 #define VALUE_GETTER(type)                \
     else if (value.is_type<type>())       \
     {                                     \
         *this << value.get_value<type>(); \
     }
-
+namespace core
+{
 // TODO: 完成这个
 static void SerializeSequenceView(Archive& ar, const rttr::variant_sequential_view& view)
 {
@@ -28,7 +31,7 @@ static void SerializeSequenceView(Archive& ar, const rttr::variant_sequential_vi
             rttr::variant wrapped_var = item.extract_wrapped_value();
             if (wrapped_var.get_type().is_pointer())
             {
-                LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "可不序列化原始指针");
+                // LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "可不序列化原始指针");
                 continue;
             }
             ar << wrapped_var;
@@ -44,7 +47,7 @@ static void SerializeMapView(Archive& ar, const rttr::variant_associative_view& 
     {
         if (item.first.is_associative_container() || item.first.is_sequential_container())
         {
-            LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "键不可为容器");
+            // LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "键不可为容器");
             continue;
         }
         ar << Archive::InputType::Key;
@@ -57,7 +60,7 @@ static void SerializeMapView(Archive& ar, const rttr::variant_associative_view& 
 
 Archive& Archive::operator<<(const rttr::variant& value)
 {
-    Assert(Archive.Serialization, value.is_valid(), "序列化值无效");
+    // Assert(Archive.Serialization, value.is_valid(), "序列化值无效");
     if (value.is_type<int8_t>())
     {
         *this << value.get_value<int8_t>();
@@ -73,21 +76,34 @@ Archive& Archive::operator<<(const rttr::variant& value)
     VALUE_GETTER(double)
     VALUE_GETTER(bool)
     VALUE_GETTER(const char*)
-    VALUE_GETTER(AnsiString)
-    VALUE_GETTER(String)
     VALUE_GETTER(char*)
+    else if (value.get_type() == TypeOf<core::String>())
+    {
+        const auto& value1 = value.get_value<core::String>();
+        *this << value1;
+    }
+    else if (value.get_type().is_enumeration())
+    {
+        const auto enum_name = value.get_type().get_enumeration().value_to_name(value);
+        StringView view = {enum_name.data(), static_cast<int32_t>(enum_name.length())};
+        *this << view;
+    }
     else if (value.is_sequential_container())
     {
         const auto& view = value.create_sequential_view();
         SerializeSequenceView(*this, view);
-    } else if (value.is_associative_container())
+    }
+    else if (value.is_associative_container())
     {
         const auto& view = value.create_associative_view();
         SerializeMapView(*this, view);
     }
     else
     {
-        LOG_WARNING_ANSI_CATEGORY(Archive.Serialization, "不支持序列化的类型");
+        const auto type_name = value.get_type().get_name();
+        StringView view      = {type_name.data(), static_cast<int32_t>(type_name.length())};
+        LOGGER.Warn(LogCat::Archive_Serialization, "无法序列化的类型: {}", view);
     }
     return *this;
+}
 }

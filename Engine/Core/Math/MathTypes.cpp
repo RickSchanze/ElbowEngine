@@ -8,7 +8,6 @@
 #include "MathTypes.h"
 
 #include "Math.h"
-#include "Utils/StringUtils.h"
 
 #include <format>
 #include <glm/geometric.hpp>
@@ -20,17 +19,23 @@
 
 #include <glm/trigonometric.hpp>
 
+namespace core
+{
 RTTR_REGISTRATION
 {
-    rttr::registration::class_<Rotator>("Rotator")
+    rttr::registration::class_<Rotator>("core::Rotator")
         .constructor<>()
         .property("yaw", &Rotator::yaw)
         .property("roll", &Rotator::roll)
         .property("pitch", &Rotator::pitch);
 
-    rttr::registration::class_<Vector3>("Vector3").constructor<>().property("x", &Vector3::x).property("y", &Vector3::y).property("z", &Vector3::z);
+    rttr::registration::class_<Vector3>("core::Vector3")
+        .constructor<>()
+        .property("x", &Vector3::x)
+        .property("y", &Vector3::y)
+        .property("z", &Vector3::z);
 
-    rttr::registration::class_<Color>("Color")
+    rttr::registration::class_<Color>("core::Color")
         .constructor<>()
         .property("r", &Color::r)
         .property("g", &Color::g)
@@ -38,29 +43,29 @@ RTTR_REGISTRATION
         .property("a", &Color::a);
 }
 
-String Size2D::ToString() const
+core::String Size2D::ToString() const
 {
-    return std::format(L"Width: {}, Height:{}", width, height);
+    return std::format("Width: {}, Height:{}", width, height);
 }
 
-Vector2::operator glm::vec<2, float>()
+Vector2::operator glm::vec<2, float>() const
 {
     return {x, y};
 }
 
 #ifdef USE_IMGUI
-Vector2::operator ImVec2()
+Vector2::operator ImVec2() const
 {
     return {x, y};
 }
 #endif
 
-Vector2 Vector2::operator+(const Vector2& other)
+Vector2 Vector2::operator+(const Vector2& other) const
 {
     return Vector2(x + other.x, y + other.y);
 }
 
-Vector2 Vector2::operator*=(const float scalar)
+Vector2 Vector2::operator*=(const float scalar) const
 {
     return Vector2(x * scalar, y * scalar);
 }
@@ -90,9 +95,9 @@ Vector3 Rotator::GetRightVector() const
     return cross(GetForwardVector(), Constant::UpVector);
 }
 
-String Rotator::ToString() const
+core::String Rotator::ToString() const
 {
-    return std::format(L"Yaw: {}, Pitch: {}, Roll: {}", yaw, pitch, roll);
+    return std::format("Yaw: {}, Pitch: {}, Roll: {}", yaw, pitch, roll);
 }
 
 bool Rotator::operator==(const Rotator& other) const
@@ -197,9 +202,9 @@ bool Color::operator!=(const Color& other) const
     return !(*this == other);
 }
 
-Archive& operator<<(Archive& ar, Vector2& v)
+Archive& operator<<(Archive& ar, const Vector2& v)
 {
-    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
     ar << Archive::InputType::MapStart;
     ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
     ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
@@ -207,9 +212,9 @@ Archive& operator<<(Archive& ar, Vector2& v)
     return ar;
 }
 
-Archive& operator<<(Archive& ar, Vector3& v)
+Archive& operator<<(Archive& ar, const Vector3& v)
 {
-    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
     ar << Archive::InputType::MapStart;
     ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
     ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
@@ -218,9 +223,9 @@ Archive& operator<<(Archive& ar, Vector3& v)
     return ar;
 }
 
-Archive& operator<<(Archive& ar, Vector4& v)
+Archive& operator<<(Archive& ar, const Vector4& v)
 {
-    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
     ar << Archive::InputType::MapStart;
     ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
     ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
@@ -230,9 +235,9 @@ Archive& operator<<(Archive& ar, Vector4& v)
     return ar;
 }
 
-Archive& operator<<(Archive& ar, Color& q)
+Archive& operator<<(Archive& ar, const Color& q)
 {
-    Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
+    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
     ar << Archive::InputType::MapStart;
     ar << Archive::InputType::Key << "r" << Archive::InputType::Value << q.r;
     ar << Archive::InputType::Key << "g" << Archive::InputType::Value << q.g;
@@ -240,4 +245,5 @@ Archive& operator<<(Archive& ar, Color& q)
     ar << Archive::InputType::Key << "a" << Archive::InputType::Value << q.a;
     ar << Archive::InputType::MapEnd;
     return ar;
+}
 }

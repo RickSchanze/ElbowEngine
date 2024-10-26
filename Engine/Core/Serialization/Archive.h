@@ -10,6 +10,8 @@
 #include "CoreGlobal.h"
 #include "CoreTypeTraits.h"
 
+namespace core
+{
 class ISerializer;
 class Archive
 {
@@ -20,7 +22,7 @@ public:
         Deserializing,
         Serialized,
         Deserialized,
-        None,
+        Idle,
     };
 
     enum class InputType
@@ -39,18 +41,20 @@ public:
     virtual Archive& operator<<(ISerializer& serializer) = 0;
 
 #if REGION(基础类型)
-    virtual Archive& operator<<(int8_t i)        = 0;
-    virtual Archive& operator<<(int16_t i)       = 0;
-    virtual Archive& operator<<(int32_t i)       = 0;
-    virtual Archive& operator<<(int64_t i)       = 0;
-    virtual Archive& operator<<(uint8_t i)       = 0;
-    virtual Archive& operator<<(uint16_t i)      = 0;
-    virtual Archive& operator<<(uint32_t i)      = 0;
-    virtual Archive& operator<<(uint64_t i)      = 0;
-    virtual Archive& operator<<(bool b)          = 0;
-    virtual Archive& operator<<(double d)        = 0;
-    virtual Archive& operator<<(float f)         = 0;
-    virtual Archive& operator<<(const char* str) = 0;
+    virtual Archive& operator<<(int8_t i)              = 0;
+    virtual Archive& operator<<(int16_t i)             = 0;
+    virtual Archive& operator<<(int32_t i)             = 0;
+    virtual Archive& operator<<(int64_t i)             = 0;
+    virtual Archive& operator<<(uint8_t i)             = 0;
+    virtual Archive& operator<<(uint16_t i)            = 0;
+    virtual Archive& operator<<(uint32_t i)            = 0;
+    virtual Archive& operator<<(uint64_t i)            = 0;
+    virtual Archive& operator<<(bool b)                = 0;
+    virtual Archive& operator<<(double d)              = 0;
+    virtual Archive& operator<<(float f)               = 0;
+    virtual Archive& operator<<(const char* str)       = 0;
+    virtual Archive& operator<<(const String& str)     = 0;
+    virtual Archive& operator<<(const StringView& str) = 0;
 #endif
     template<typename Enum>
         requires std::is_enum_v<Enum>
@@ -65,7 +69,7 @@ public:
         requires ArrayLikeIterable<Container<Element>>
     {
         std::vector<int> a;
-        Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::ArrayStart;
@@ -82,7 +86,7 @@ public:
     Archive& operator<<(const Map<Key, Value>& container)
         requires MapLikeIterable<Map<Key, Value>>
     {
-        Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::MapStart;
@@ -107,7 +111,7 @@ public:
     [[nodiscard]] bool  IsSerialized() const { return state_ == State::Serialized; }
     [[nodiscard]] bool  IsDeserialized() const { return state_ == State::Deserialized; }
 
-    [[nodiscard]] virtual AnsiString ToString() = 0;
+    [[nodiscard]] virtual core::String ToString() = 0;
 
     virtual void BeginSerialize() { state_ = State::Serializing; }
     virtual void EndSerialize() { state_ = State::Serialized; }
@@ -115,5 +119,6 @@ public:
     virtual void EndDeserialize() { state_ = State::Deserialized; }
 
 protected:
-    State state_ = State::None;
+    State state_ = State::Idle;
 };
+}

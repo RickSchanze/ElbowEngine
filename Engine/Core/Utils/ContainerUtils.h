@@ -104,7 +104,7 @@ public:
     template<typename T>
     static void FastRemoveAt(Array<T>& array, int32_t index)
     {
-        DebugAssert(Container, index >= 0 && index < array.size(), "Index out of range");
+        // DebugAssert(Container, index >= 0 && index < array.size(), "Index out of range");
         std::swap(array[index], array[array.size() - 1]);
         array.pop_back();
     }
