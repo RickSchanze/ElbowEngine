@@ -12,6 +12,9 @@ namespace core
 template<typename T>
 struct Ref
 {
+    static_assert(!std::is_reference_v<T>, "Ref cannot apply on reference type");
+    using value_type = T;
+
     Ref(T& ref) : ptr_(&ref) {}
     Ref(const Ref& other) : ptr_(other.ptr_) {}
     Ref(Ref&& other) : ptr_(other.ptr_) {}
@@ -25,6 +28,12 @@ struct Ref
     T& operator*() const { return *ptr_; }
 
     bool operator==(const Ref& other) const { return ptr_ == other.ptr_; }
+
+    Ref& operator=(const T& other)
+    {
+        *ptr_ = other;
+        return *this;
+    }
 
 private:
     T* ptr_ = nullptr;

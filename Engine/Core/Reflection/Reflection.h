@@ -114,7 +114,6 @@ Optional<T> any_cast(const Any& operand)
     return NullOpt;
 }
 
-
 struct Type;
 
 struct FiledInfo

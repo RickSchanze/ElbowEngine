@@ -19,7 +19,7 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    auto a = core::TypeOf<bool>();
+    auto a = core::TypeOf<float>();
     LOGGER.Info(LogCat::Test, "类型名称{}", a.GetName());
     // LOGGER.Info(LogCat::Test, "测试一下");
     // core::StringView v = "你好";
