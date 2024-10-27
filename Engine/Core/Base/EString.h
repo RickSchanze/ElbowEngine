@@ -31,13 +31,11 @@ public:
      */
     void RemoveSubfix(int c);
 
-    [[nodiscard]] const char* Data() const { return str_; }
-
+    [[nodiscard]] const char*       Data() const { return str_; }
     [[nodiscard]] constexpr int32_t Length() const { return length_; }
-
-    [[nodiscard]] bool operator==(const StringView& o) const { return str_ == o.str_ && length_ == o.length_; }
-
-    [[nodiscard]] char operator[](int32_t i) const { return str_[i]; }
+    [[nodiscard]] constexpr bool    Empty() const { return length_ == 0; }
+    [[nodiscard]] bool              operator==(const StringView& o) const { return str_ == o.str_ && length_ == o.length_; }
+    [[nodiscard]] char              operator[](int32_t i) const { return str_[i]; }
 
 private:
     const char* str_;
@@ -129,3 +127,22 @@ struct fmt::formatter<core::StringView>
         return fmt::format_to(ctx.out(), "{}", string_view(str.Data(), str.Length()));
     }
 };
+
+template<>
+struct ::std::hash<core::StringView>
+{
+    size_t operator()(const core::StringView& str) const noexcept
+    {
+        return ::std::hash<std::string_view>{}(std::string_view{str.Data(), static_cast<size_t>(str.Length())});
+    }
+};
+
+template<>
+struct ::std::hash<core::String>
+{
+    size_t operator()(const core::String& str) const noexcept
+    {
+        return ::std::hash<std::string>{}(str.StdString());
+    }
+};
+

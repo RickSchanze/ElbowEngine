@@ -4,16 +4,6 @@
 #pragma once
 #include "Base/CoreTypeDef.h"
 // 反射相关类的定义
-#include "rttr/registration"
-#include "rttr/argument.h"
-typedef rttr::type     Type;
-typedef rttr::property Property;
-
-template<typename T>
-Type TypeOf()
-{
-    return rttr::type::get<T>();
-}
 
 // 定义反射宏
 #include "rttr/policy.h"

@@ -8,8 +8,6 @@
 #pragma once
 #include "Log/Logger.h"
 #include "Object/Object.h"
-#include "Profiler/ProfileMacro.h"
-#include "Singleton/Singleton.h"
 
 
 template<typename T, typename... Args>
@@ -86,30 +84,9 @@ constexpr std::size_t STRLEN(const char (&str)[N])
 {
     return N - 1;   // 字符串字面量包含结尾的 '\0'，所以减去 1
 }
-
-// 获取枚举字符串的函数
-template<typename EnumType>
-    requires std::is_enum_v<EnumType>
-constexpr const char* GetEnumString(EnumType type)
-{
-    Type              t           = TypeOf<EnumType>();
-    rttr::enumeration enumeration = t.get_enumeration();
-
-    return enumeration.value_to_name(type).data();
-}
-
-template<typename EnumType>
-constexpr int GetEnumValue(EnumType t)
-{
-    return static_cast<int>(t);
-}
-
 extern EngineStatistics g_engine_statistics;
 
 float GetFrameTime();
-
-#define ENUM_OUT_OF_RANGE "OutOfRange"
-#define ENUM_INVALID "Invalid"
 
 namespace core
 {

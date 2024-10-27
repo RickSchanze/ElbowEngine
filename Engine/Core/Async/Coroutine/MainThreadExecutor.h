@@ -24,6 +24,6 @@ public:
 
 private:
     // TODO: TList有可能更好
-    Array<AwaiterBase*> awaiters_;
+    core::Array<AwaiterBase*> awaiters_;
 };
 }

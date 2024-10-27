@@ -17,17 +17,17 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    LOGGER.Info(LogCat::Test, "测试一下");
-    core::StringView v = "你好";
-    LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);
-    LOGGER.Error(LogCat::Test, "测试一下Str {}", v);
-    core::YamlArchive ar;
-    auto*             obj = New<core::Object>();
-    ar.BeginSerialize();
-    ar << *obj;
-    ar.EndSerialize();
-    std::cout << ar.ToString();
-    system("pause");
+    // LOGGER.Info(LogCat::Test, "测试一下");
+    // core::StringView v = "你好";
+    // LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);
+    // LOGGER.Error(LogCat::Test, "测试一下Str {}", v);
+    // core::YamlArchive ar;
+    // auto*             obj = New<core::Object>();
+    // ar.BeginSerialize();
+    // ar << *obj;
+    // ar.EndSerialize();
+    // std::cout << ar.ToString();
+    // system("pause");
     // try
     // {
     //     tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};

@@ -9,6 +9,7 @@
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "CoreTypeTraits.h"
+#include "Base/Base.h"
 
 namespace core
 {
@@ -103,7 +104,7 @@ public:
     }
 #endif
 
-    Archive& operator<<(const rttr::variant& value);
+    // Archive& operator<<(const rttr::variant& value);
 
     [[nodiscard]] State GetState() const { return state_; }
     [[nodiscard]] bool  IsSerializing() const { return state_ == State::Serializing; }
@@ -121,4 +122,18 @@ public:
 protected:
     State state_ = State::Idle;
 };
+}
+
+template<>
+inline core::StringView GetEnumString<core::Archive::State>(core::Archive::State value)
+{
+    switch (value)
+    {
+        case core::Archive::State::Idle: return "Idle";
+        case core::Archive::State::Serializing: return "Serializing";
+        case core::Archive::State::Serialized: return "Serialized";
+        case core::Archive::State::Deserializing: return "Deserializing";
+        case core::Archive::State::Deserialized: return "Deserialized";
+        default: return ENUM_INVALID;
+    }
 }

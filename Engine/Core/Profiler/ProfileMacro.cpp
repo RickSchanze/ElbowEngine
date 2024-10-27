@@ -12,7 +12,7 @@
 
 uint32_t GetColor(int index)
 {
-    StaticArray colors = {
+    core::StaticArray colors = {
         0xff4500,   // OrangeRed
         0xff6347,   // Tomato
         0xff7f50,   // Coral

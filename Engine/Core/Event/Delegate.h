@@ -7,12 +7,12 @@
 
 #pragma once
 
+#include "Base/CoreTypeDef.h"
 #include "CoreDef.h"
-#include "CoreGlobal.h"
+#include "fmt/format.h"
 
-#include <limits>
-#include <numeric>
-
+namespace core
+{
 struct DelegateID
 {
     explicit DelegateID(bool auto_id = false)
@@ -20,9 +20,8 @@ struct DelegateID
         if (auto_id) id_ = s_id_counter++;
     }
 
-    uint16_t GetID() const { return id_; }
-
-    bool IsValid() const { return id_ != 0; }
+    [[nodiscard]] uint16_t GetID() const { return id_; }
+    [[nodiscard]] bool     IsValid() const { return id_ != 0; }
 
     void Reset() { id_ = 0; }
 
@@ -30,7 +29,7 @@ struct DelegateID
 
     bool operator!=(const DelegateID& other) const { return id_ != other.id_; }
 
-    void Swap(DelegateID& other) noexcept { std::swap(id_, other.id_); }
+    void Swap(DelegateID& other) noexcept { ::std::swap(id_, other.id_); }
     void Swap(DelegateID&& other) noexcept { id_ = Move(other.id_); }
 
 private:
@@ -38,25 +37,28 @@ private:
 
     uint16_t id_ = 0;
 };
+}   // namespace core
 
 template<>
-struct std::hash<DelegateID>
+struct std::hash<core::DelegateID>
 {
-    std::size_t operator()(const DelegateID& id) const noexcept { return std::hash<uint16_t>{}(id.GetID()); }
+    std::size_t operator()(const core::DelegateID& id) const noexcept { return std::hash<uint16_t>{}(id.GetID()); }
 };
 
 template<>
-struct fmt::formatter<DelegateID>
+struct fmt::formatter<core::DelegateID>
 {
     constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const DelegateID& input, FormatContext& ctx) -> decltype(ctx.out())
+    auto format(const core::DelegateID& input, FormatContext& ctx) -> decltype(ctx.out())
     {
         return fmt::format_to(ctx.out(), "{}", input.GetID());
     }
 };
 
+namespace core
+{
 // TDelegate是一个带Id的TFunction wrapper
 template<typename ReturnT, typename... ArgumentTypes>
 struct Delegate
@@ -82,7 +84,7 @@ struct Delegate
 
     bool operator==(const Delegate& other) const { return id_ == other.id_; }
 
-    DelegateID GetID() const { return id_; }
+    [[nodiscard]] DelegateID GetID() const { return id_; }
 
     void Unbind()
     {
@@ -90,9 +92,8 @@ struct Delegate
         id_.Reset();
     }
 
-    bool IsValid() const { return id_.IsValid(); }
-
-    bool HasBound() const { return function_ != nullptr; }
+    [[nodiscard]] bool IsValid() const { return id_.IsValid(); }
+    [[nodiscard]] bool HasBound() const { return function_ != nullptr; }
 
     void Bind(Function<ReturnT(ArgumentTypes...)>&& function)
     {
@@ -101,12 +102,10 @@ struct Delegate
         id_       = Move(DelegateID(true));
     }
 
-    ReturnT Invoke(ArgumentTypes&&... args)
-    {
-        return function_(Forward<ArgumentTypes>(args)...);
-    }
+    ReturnT Invoke(ArgumentTypes&&... args) { return function_(Forward<ArgumentTypes>(args)...); }
 
 private:
     Function<ReturnT(ArgumentTypes...)> function_;
     DelegateID                          id_;
 };
+}

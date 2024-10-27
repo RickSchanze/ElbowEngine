@@ -12,12 +12,6 @@
 #include <ostream>
 #include <string_view>
 
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    registration::class_<core::String>("core::String");
-}
-
 namespace core
 {
 

@@ -21,27 +21,6 @@
 
 namespace core
 {
-RTTR_REGISTRATION
-{
-    rttr::registration::class_<Rotator>("core::Rotator")
-        .constructor<>()
-        .property("yaw", &Rotator::yaw)
-        .property("roll", &Rotator::roll)
-        .property("pitch", &Rotator::pitch);
-
-    rttr::registration::class_<Vector3>("core::Vector3")
-        .constructor<>()
-        .property("x", &Vector3::x)
-        .property("y", &Vector3::y)
-        .property("z", &Vector3::z);
-
-    rttr::registration::class_<Color>("core::Color")
-        .constructor<>()
-        .property("r", &Color::r)
-        .property("g", &Color::g)
-        .property("b", &Color::b)
-        .property("a", &Color::a);
-}
 
 core::String Size2D::ToString() const
 {

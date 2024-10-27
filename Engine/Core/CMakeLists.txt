@@ -74,6 +74,10 @@ add_library(${PROJECT_NAME}
         Object/Setting.h
         Reflection/Reflection.cpp
         Reflection/Reflection.h
+        Base/Base.h
+        Reflection/MetaInfoManager.cpp
+        Reflection/MetaInfoManager.h
+        Base/Ref.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

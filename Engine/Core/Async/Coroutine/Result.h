@@ -7,7 +7,6 @@
 
 #pragma once
 #include <exception>
-#include "CoroutineCommon.h"
 
 namespace async::coro
 {

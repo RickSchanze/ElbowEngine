@@ -7,39 +7,20 @@
 
 #pragma once
 #include <chrono>
-#include <chrono>
-#include <ranges>
-// 一些Typedef
-#include "Profiler/ProfileMacro.h"
 #include <functional>
+#include <map>
+#include <ranges>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+
 namespace core
 {
-
-
-// std::reference_wrapper -> Ref
-template<typename T>
-using Ref = std::reference_wrapper<T>;
-
-// std::ref -> MakeRef
-template<typename T>
-Ref<T> MakeRef(T& TValue)
-{
-    return std::ref(TValue);
-}
-
-template<typename T>
-using ConstRef = std::reference_wrapper<const T>;
-
-// std::cref -> MakeConstRef
-template<typename T>
-ConstRef<T> MakeConstRef(const T& TValue)
-{
-    return std::cref(TValue);
-}
-
 // std::function -> Function
 template<typename T>
 using Function = std::function<T>;
+
+using TimePoint = std::chrono::steady_clock::time_point;
 
 // std::vector -> Array
 #include <vector>
@@ -52,24 +33,24 @@ template<typename T, size_t Size>
 using StaticArray = std::array<T, Size>;
 
 // std::set -> Set
-#include <set>
 template<class KeyType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<KeyType>>
 using Set = std::set<KeyType, Comparator, Allocator>;
 
 // std::map -> Map
-#include <map>
-template<class KeyType, class ValueType, class Comparator = std::less<KeyType>, class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
+template<
+    class KeyType, class ValueType, class Comparator = std::less<KeyType>,
+    class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 #include <list>
 template<typename T, typename Allocator = std::allocator<T>>
 using List = std::list<T, Allocator>;
 
-#include <string>
 // std::optional -> Optional
-#include <optional>
 template<typename T>
 using Optional = std::optional<T>;
+
+inline constexpr auto NullOpt = std::nullopt;
 
 // std::shared_ptr -> SharedPtr
 #include <memory>
@@ -104,14 +85,12 @@ constexpr std::remove_reference_t<T>&& Move(T&& Arg) noexcept
 }
 
 // std::unordered_map -> HashMap
-#include <unordered_map>
 template<
     class KeyType, class ValueType, class Hash = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>,
     class Allocator = std::allocator<std::pair<const KeyType, ValueType>>>
 using HashMap = std::unordered_map<KeyType, ValueType, Hash, KeyEqual, Allocator>;
 
 // std::unordered_set -> HashSet
-#include <unordered_set>
 template<class KeyType, class Hasher = std::hash<KeyType>, class KeyEqual = std::equal_to<KeyType>, class Alloc = std::allocator<KeyType>>
 using HashSet = std::unordered_set<KeyType, Hasher, KeyEqual, Alloc>;
 
@@ -133,4 +112,4 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
 #include <tuple>
 template<typename... T>
 using Tuple = std::tuple<T...>;
-}
+}   // namespace core

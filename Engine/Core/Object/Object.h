@@ -27,9 +27,6 @@ enum ObjectCategory
 
 class Object : public ISerializer
 {
-    RTTR_ENABLE()
-    RTTR_REGISTRATION_FRIEND
-
 public:
     typedef Object ThisClass;
 
@@ -58,7 +55,7 @@ private:
      * 获取反射类型
      * @return rttr::type
      */
-    [[nodiscard]] Type GetType() const { return get_type(); }
+    // [[nodiscard]] Type GetType() const { return get_type(); }
 
 public:
     /**
@@ -86,33 +83,6 @@ public:
     // TODO: 位操作
     [[nodiscard]] ObjectCategory GetObjectCategory() const { return flag_; }
 
-    template<typename T>
-    bool IsImplemented()
-    {
-        if (Type other_type = rttr::type::get<T>())
-        {
-            return IsImplemented(other_type);
-        }
-        return rttr::rttr_cast<T*>(this) != nullptr;
-    }
-
-    [[nodiscard]] bool IsImplemented(const Type& other_type) const
-    {
-        rttr::type this_type = GetType();
-        bool       s         = this_type.is_derived_from(other_type);
-        return s;
-    }
-
-    template<typename T>
-    T* As()
-    {
-        T* t = rttr::rttr_cast<T*>(this);
-        if (t != nullptr)
-        {
-            return t;
-        }
-        return dynamic_cast<T*>(this);
-    }
 
 #if REGION(序列化)
     void Serialize(Archive& ar) override;

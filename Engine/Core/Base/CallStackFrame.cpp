@@ -7,7 +7,7 @@
 #include "CallStackFrame.h"
 #include <cpptrace.hpp>
 
-Array<core::CallStackFrame> core::GetCurrentStackTrace()
+core::Array<core::CallStackFrame> core::GetCurrentStackTrace()
 {
     auto                  trace = cpptrace::generate_trace();
     Array<CallStackFrame> frames;

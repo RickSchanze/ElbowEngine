@@ -9,6 +9,7 @@
 #include "CoreDef.h"
 #include "IExecutor.h"
 #include "Singleton/Singleton.h"
+#include "Base/Base.h"
 
 namespace async::coro
 {
@@ -42,7 +43,7 @@ public:
     ~CoroutineExecutorManager() override;
 
 private:
-    StaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};
+    core::StaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};
 };
 
 }

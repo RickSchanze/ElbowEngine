@@ -7,13 +7,13 @@
 
 #pragma once
 
+#include "Base/CoreTypeDef.h"
 #include "CoreDef.h"
 #include "CoroutineCommon.h"
 #include "IExecutor.h"
 
 namespace async::coro
 {
-
 template<typename T>
 struct Task<T, EExecutorType::MainThread>
 {
@@ -49,21 +49,21 @@ struct Task<T, EExecutorType::MainThread>
         }
     }
 
-    bool IsCompleted() const { return promise_.promise().IsCompleted(); }
+    [[nodiscard]] bool IsCompleted() const { return promise_.promise().IsCompleted(); }
 
     void Forget() noexcept { promise_.promise().Forget(); }
 
-    bool IsForget() const noexcept { return promise_.promise().IsForget(); }
+    [[nodiscard]] bool IsForget() const noexcept { return promise_.promise().IsForget(); }
 
-    Optional<T> GetResult() { return promise_.promise().GetResult(); }
+    core::Optional<T> GetResult() { return promise_.promise().GetResult(); }
 
-    Task& OnCompleted(Function<void(T)>&& func)
+    Task& OnCompleted(core::Function<void(T)>&& func)
     {
         promise_.promise().OnCompleted(func);
         return *this;
     }
 
-    Task& OnException(Function<void(const std::exception&)>&& func)
+    Task& OnException(core::Function<void(const std::exception&)>&& func)
     {
         promise_.promise().OnException(func);
         return *this;
@@ -92,15 +92,15 @@ struct Task<void, EExecutorType::MainThread>
 
     ~Task();
 
-    bool IsCompleted() const;
+    [[nodiscard]] bool IsCompleted() const;
 
-    void Forget() noexcept;
+    void Forget() const noexcept;
 
-    bool IsForget() const noexcept;
+    [[nodiscard]] bool IsForget() const noexcept;
 
-    Task& OnCompleted(Function<void()>&& func);
+    Task& OnCompleted(core::Function<void()>&& func);
 
-    Task& OnException(Function<void(const std::exception&)>&& func);
+    Task& OnException(core::Function<void(const std::exception&)>&& func);
 
 private:
     std::coroutine_handle<promise_type> promise_;

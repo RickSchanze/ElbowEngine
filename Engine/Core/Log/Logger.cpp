@@ -53,7 +53,7 @@ void Logger::SendLog(LogLevel level, const core::StringView category, const core
     log.category   = category;
     log.message    = msg;
     log.thread_id  = core::GetCurrentThreadId();
-    log.time       = std::chrono::system_clock::now();
+    log.time       = std::chrono::steady_clock::now();
     log.call_stack = core::GetCurrentStackTrace();
     Event_OnLog.Invoke(log);
 }

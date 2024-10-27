@@ -89,7 +89,7 @@ struct Promise<T, EExecutorType::MainThread>
         }
     }
 
-    Optional<T> GetResult()
+    core::Optional<T> GetResult()
     {
         if (result_.has_value())
         {
@@ -116,15 +116,15 @@ struct Promise<T, EExecutorType::MainThread>
         }
     }
 
-    void OnCompleted(const Function<void(T)>& func) { Func_OnCompleted = func; }
+    void OnCompleted(const core::Function<void(T)>& func) { Func_OnCompleted = func; }
 
-    void OnException(const Function<void(const std::exception&)>& func) { Func_OnException = func; }
+    void OnException(const core::Function<void(const std::exception&)>& func) { Func_OnException = func; }
 
 private:
-    Optional<Result<ReturnType>> result_;
+    core::Optional<Result<ReturnType>> result_;
 
-    Function<void(T)>                     Func_OnCompleted;
-    Function<void(const std::exception&)> Func_OnException;
+    core::Function<void(T)>                     Func_OnCompleted;
+    core::Function<void(const std::exception&)> Func_OnException;
 
     bool destroyed_ = false;
     bool forget_    = false;
@@ -178,16 +178,16 @@ struct Promise<void, EExecutorType::MainThread>
 
     ~Promise();
 
-    void OnCompleted(const Function<void()>& func) { Func_OnCompleted = func; }
+    void OnCompleted(const core::Function<void()>& func) { Func_OnCompleted = func; }
 
-    void OnException(const Function<void(const std::exception&)>& func) { Func_OnException = func; }
+    void OnException(const core::Function<void(const std::exception&)>& func) { Func_OnException = func; }
 
 private:
-    Optional<Result<void>> result_;
-    bool                    forget_    = false;
-    bool                    destroyed_ = false;
+    core::Optional<Result<void>> result_;
+    bool                         forget_    = false;
+    bool                         destroyed_ = false;
 
-    Function<void()>                      Func_OnCompleted;
-    Function<void(const std::exception&)> Func_OnException;
+    core::Function<void()>                      Func_OnCompleted;
+    core::Function<void(const std::exception&)> Func_OnException;
 };
 }   // namespace async::coro

@@ -28,14 +28,14 @@ public:
 
 }   // namespace async::coro
 
-template<>
-inline const char* GetEnumString<async::coro::EExecutorType>(async::coro::EExecutorType type)
-{
-    switch (type)
-    {
-    case async::coro::EExecutorType::MainThread: return "MainThread";
-    }
-    return "OutOfRange";
-}
+// template<>
+// inline const char* GetEnumString<async::coro::EExecutorType>(async::coro::EExecutorType type)
+// {
+//     switch (type)
+//     {
+//     case async::coro::EExecutorType::MainThread: return "MainThread";
+//     }
+//     return "OutOfRange";
+// }
 
 

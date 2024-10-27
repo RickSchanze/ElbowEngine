@@ -32,7 +32,7 @@ public:
     static void AddUnique(ContainerT& container, const typename ContainerT::value_type& value);
 
     template<typename KeyType, typename ValueType>
-    static bool ContainsValue(const HashMap<KeyType, ValueType> map, const ValueType& value)
+    static bool ContainsValue(const core::HashMap<KeyType, ValueType> map, const ValueType& value)
     {
         for (const auto& [key, val]: map)
         {
@@ -77,9 +77,9 @@ public:
     }
 
     template<typename ContainerT>
-    static Optional<typename ContainerT::value_type> First(
+    static core::Optional<typename ContainerT::value_type> First(
         const ContainerT&                                             container,
-        const Function<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
+        const core::Function<bool(const typename ContainerT::value_type&)>& predicate = [](const typename ContainerT::value_type&) { return true; }
     )
     {
         for (auto& item: container)
@@ -102,7 +102,7 @@ public:
      * @return
      */
     template<typename T>
-    static void FastRemoveAt(Array<T>& array, int32_t index)
+    static void FastRemoveAt(core::Array<T>& array, int32_t index)
     {
         // DebugAssert(Container, index >= 0 && index < array.size(), "Index out of range");
         std::swap(array[index], array[array.size() - 1]);

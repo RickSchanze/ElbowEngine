@@ -35,7 +35,7 @@ bool Task<void>::IsCompleted() const
     return promise_.promise().IsCompleted();
 }
 
-void Task<void, EExecutorType::MainThread>::Forget() noexcept
+void Task<void, EExecutorType::MainThread>::Forget() const noexcept
 {
     if (promise_)
     {
@@ -52,13 +52,13 @@ bool Task<void, EExecutorType::MainThread>::IsForget() const noexcept
     return false;
 }
 
-Task<void>& Task<void, EExecutorType::MainThread>::OnCompleted(Function<void()>&& func)
+Task<void>& Task<void, EExecutorType::MainThread>::OnCompleted(core::Function<void()>&& func)
 {
     promise_.promise().OnCompleted(func);
     return *this;
 }
 
-Task<void>& Task<void, EExecutorType::MainThread>::OnException(Function<void(const std::exception&)>&& func)
+Task<void>& Task<void, EExecutorType::MainThread>::OnException(core::Function<void(const std::exception&)>&& func)
 {
     promise_.promise().OnException(func);
     return *this;

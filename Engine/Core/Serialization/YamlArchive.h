@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Archive.h"
+#include "Base/Base.h"
 
 namespace YAML
 {
@@ -51,3 +52,5 @@ private:
     };
 };
 }
+
+
