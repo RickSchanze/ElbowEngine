@@ -6,25 +6,26 @@
  */
 
 #pragma once
+#include <any>
 
 #include "Any.h"
-#include <any>
 
 namespace core
 {
 class ContainerView
 {
 public:
-    virtual void BeginIterator() = 0;
-    virtual bool HasNext()       = 0;
-    virtual void Next();
+    virtual void BeginIterate() = 0;
+    virtual void Next() = 0;
 
-    // 注意:
-    // 这个获得的元素会是Ref<ElementType>
-    // 但是这个Any对应的Type是ElementType的Type而不是Ref<ElementType>的Type
-    Any GetCurrent() { return current_element_; }
+    Any& GetCurrent() { return current_element_; }
+
+    Any& begin() { return current_element_; };
+    Any& end()   { return current_element_; };
 
 private:
+    std::any begin_;
+    std::any end_;
     std::any iterator_;
     Any      current_element_;
 };

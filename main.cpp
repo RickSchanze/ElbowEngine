@@ -13,6 +13,37 @@
 #include "Reflection/Reflection.h"
 #include "Serialization/YamlArchive.h"
 
+class TestA
+{
+public:
+    static core::Type* REFLECTION_Register_TestA_Registerer();
+
+    core::Array<int32_t> array = {1, 2, 3};
+    int32_t intv;
+};
+
+core::Type* TestA::REFLECTION_Register_TestA_Registerer()
+{
+    using namespace core;
+    Type* type = Type::Create<TestA>("TestA");
+    type->RegisterField("array", &TestA::array, offsetof(TestA, array));
+    type->RegisterField("intv", &TestA::intv, offsetof(TestA, intv));
+    return type;
+}
+
+struct TestA_MetaInfo_Register
+{
+    TestA_MetaInfo_Register()
+    {
+        core::MetaDataRegisterer registerer;
+        registerer.name = "TestA";
+        registerer.registerer = &TestA::REFLECTION_Register_TestA_Registerer;
+        core::MetaInfoManager::Get()->RegisterTypeRegisterer(typeid(TestA).hash_code(), registerer);
+    }
+};
+
+static TestA_MetaInfo_Register TestA_REGISTER;
+
 int main()
 {
     // 让std::wcout 顺利运行
@@ -20,7 +51,8 @@ int main()
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
     auto a = core::TypeOf<float>();
-    LOGGER.Info(LogCat::Test, "类型名称{}", a.GetName());
+    LOGGER.Info(LogCat::Test, "类型名称{}", a->GetName());
+    auto t = core::TypeOf<TestA>();
     // LOGGER.Info(LogCat::Test, "测试一下");
     // core::StringView v = "你好";
     // LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);

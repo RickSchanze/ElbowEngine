@@ -6,10 +6,12 @@
  */
 
 #pragma once
+#include "Any.h"
 #include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
 #include "Base/EString.h"
 #include "Base/Ref.h"
+#include "CoreGlobal.h"
 #include "Log/CoreLogCategory.h"
 #include "Log/Logger.h"
 #include "MetaInfoManager.h"
@@ -17,113 +19,18 @@
 
 namespace core
 {
-
-struct Type;
-
-class Any
-{
-public:
-    // 默认构造函数
-    Any() : content_(nullptr) {}
-
-    // 构造函数模板
-    template<typename T>
-    Any(T&& value) : content_(new Holder<std::decay_t<T>>(std::forward<T>(value)))
-    {
-    }
-
-    // 拷贝构造函数
-    Any(const Any& other) : content_(other.content_ ? other.content_->Clone() : nullptr) {}
-
-    // 移动构造函数
-    Any(Any&& other) noexcept : content_(std::move(other.content_)) {}
-
-    // 拷贝赋值运算符
-    Any& operator=(const Any& other)
-    {
-        if (&other != this)
-        {
-            content_ = other.content_ ? other.content_->Clone() : nullptr;
-        }
-        return *this;
-    }
-
-    // 移动赋值运算符
-    Any& operator=(Any&& other) noexcept
-    {
-        content_ = std::move(other.content_);
-        return *this;
-    }
-
-    // 赋值运算符模板
-    template<typename T>
-    Any& operator=(T&& value)
-    {
-        content_.Reset(new Holder<std::decay_t<T>>(std::forward<T>(value)));
-        return *this;
-    }
-
-    // 判断是否为空
-    [[nodiscard]] bool HasValue() const noexcept { return static_cast<bool>(content_); }
-
-    // 清空内容
-    void Reset() noexcept { content_.Reset(); }
-
-    // 类型安全访问
-    template<typename T>
-    friend Optional<T> any_cast(const Any& operand);
-
-    // 获取类型信息
-    [[nodiscard]] Ref<const Type> GetType() const noexcept { return content_ ? content_->GetType() : TypeOf<void>(); }
-
-
-private:
-    // 基类用于类型擦除
-    struct Base
-    {
-        virtual ~Base() = default;
-
-        [[nodiscard]] virtual UniquePtr<Base>   Clone() const            = 0;
-        [[nodiscard]] virtual const core::Type& GetType() const noexcept = 0;
-    };
-
-    // 模板派生类，存储实际的值
-    template<typename T>
-    struct Holder : Base
-    {
-        T value;
-
-        Holder(T&& value) : value(std::forward<T>(value)) {}
-
-        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
-
-        [[nodiscard]] const core::Type& GetType() const noexcept override { return TypeOf<T>(); }
-    };
-
-    UniquePtr<Base> content_;
-};
-
-// 类型安全的提取
-template<typename T>
-Optional<T> any_cast(const Any& operand)
-{
-    if (operand.content_ && operand.content_->GetType() == TypeOf<T>())
-    {
-        return static_cast<Any::Holder<T>*>(operand.content_.Get())->value;
-    }
-    return NullOpt;
-}
-
 struct Type;
 
 struct FiledInfo
 {
+    friend struct Type;
     enum FlagAttribute
     {
-        Transient = 1 << 0,
-
+        Transient            = 1 << 0,
+        SequenceContainer    = 1 << 1,
+        AssociativeContainer = 1 << 2,
         // Editor Only
-        Hidden = 1 << 16,
+        Hidden               = 1 << 16,
     };
 
     enum class ValueAttribute
@@ -137,30 +44,34 @@ struct FiledInfo
 
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
-    [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute & attr) != 0; }
-    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return value_attr[GetEnumValue(attr)].Empty(); }
+    [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
+    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].Empty(); }
     [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
-    [[nodiscard]] int32_t    GetOffset() const { return offset; }
-    [[nodiscard]] StringView GetName() const { return name; }
-    [[nodiscard]] Type*      GetType() const { return type; }
-    [[nodiscard]] int32_t    GetSize() const { return size; }
+    [[nodiscard]] int32_t    GetOffset() const { return offset_; }
+    [[nodiscard]] StringView GetName() const { return name_; }
+    [[nodiscard]] Type*      GetType() const { return type_; }
+    [[nodiscard]] int32_t    GetSize() const { return size_; }
+
+    FiledInfo& SetAttribute(FlagAttribute attr);
+    FiledInfo& SetAttribute(ValueAttribute attr, StringView value);
 
     template<typename T, typename ClassT>
     [[nodiscard]] Optional<T> Get(ClassT* obj)
     {
-        if (&TypeOf<ClassT>() != type)
+        if (TypeOf<ClassT>() != type_)
         {
             return NullOpt;
         }
-        return *static_cast<T*>(static_cast<uint8_t*>(obj) + offset);
+        return *static_cast<T*>(static_cast<uint8_t*>(obj) + offset_);
     }
 
-    int32_t         offset = -1;
-    int32_t         size   = 0;
-    StringView      name;
-    Type*           type      = nullptr;
-    int32_t         attribute = 0;   // bool attribute
-    ValueAttributes value_attr;
+protected:
+    int32_t         offset_ = -1;
+    int32_t         size_   = 0;
+    StringView      name_;
+    Type*           type_      = nullptr;
+    int32_t         attribute_ = 0;   // bool attribute
+    ValueAttributes value_attr_;
 };
 
 struct FunctionParamInfo
@@ -241,7 +152,7 @@ struct FunctionInfo
             LOGGER.Warn(LogCat::Reflection, "此函数({})参数数量超过限制, 此次调用视作无效", name);
             return false;
         }
-        if (&TypeOf<ObjT>() != param_infos[index].type)
+        if (TypeOf<ObjT>() != param_infos[index].type)
         {
             LOGGER.Warn(LogCat::Reflection, "此函数({})参数类型不匹配,此次调用视作无效", name);
             return false;
@@ -308,6 +219,17 @@ struct MemberFunctionImpl : FunctionInfo
 
 struct Type
 {
+    template<typename T>
+    static Type* Create(const StringView name, const Array<Type*>& parents = {})
+    {
+        Type* t       = New<Type>();
+        t->name_      = name;
+        t->parents_   = parents;
+        t->size_      = sizeof(T);
+        t->type_hash_ = typeid(T).hash_code();
+        return t;
+    }
+
     friend class core::MetaInfoManager;
     enum FlagAttribute
     {
@@ -322,15 +244,15 @@ struct Type
 
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
-    [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute & attr) != 0; }
-    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr[GetEnumValue(attr)].Empty(); }
+    [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
+    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].Empty(); }
     [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
-    [[nodiscard]] StringView GetName() const { return name; }
-    [[nodiscard]] int32_t    GetSize() const { return size; }
-    [[nodiscard]] size_t     GetTypeHash() const { return type_hash; }
+    [[nodiscard]] StringView GetName() const { return name_; }
+    [[nodiscard]] int32_t    GetSize() const { return size_; }
+    [[nodiscard]] size_t     GetTypeHash() const { return type_hash_; }
 
     [[nodiscard]] Array<Ref<const FiledInfo>>    GetSelfDefinedFields() const;
-    [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields.size()); }
+    [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields_.size()); }
     [[nodiscard]] Optional<Ref<const FiledInfo>> GetSelfDefinedField(StringView name) const;
     [[nodiscard]] bool                           HasSelfDefinedMember(StringView name) const { return GetSelfDefinedField(name) != NullOpt; }
     [[nodiscard]] Array<const FunctionInfo*>     GetSelfDefinedMemberFunctions() const;
@@ -343,17 +265,44 @@ struct Type
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
-    bool operator==(const Type& o) const { return type_hash == o.type_hash; }
+    template<typename ClassT, typename MemberField>
+    FiledInfo& RegisterField(StringView name, MemberField ClassT::*, int32_t offset)
+    {
+        FiledInfo info;
+        info.name_ = name;
+        info.type_ = this;
+        info.attribute_ |= FiledInfo::SequenceContainer;
+        info.offset_ = offset;
+        info.size_   = sizeof(Array<MemberField>);
+        return fields_.emplace_back(info);
+    }
+
+    template<typename ClassT, typename MemberField>
+    FiledInfo& RegisterField(StringView name, Array<MemberField> ClassT::*, int32_t offset)
+    {
+        FiledInfo info;
+        info.name_ = name;
+        info.type_ = this;
+        info.attribute_ |= FiledInfo::SequenceContainer;
+        info.offset_ = offset;
+        info.size_   = sizeof(Array<MemberField>);
+        return fields_.emplace_back(info);
+    }
+
+    Type& SetAttribute(FlagAttribute attr);
+    Type& SetAttribute(ValueAttribute attr, StringView value);
+
+    bool operator==(const Type& o) const { return type_hash_ == o.type_hash_; }
 
 protected:
-    StringView           name;
-    int32_t              size      = 0;
-    int32_t              attribute = 0;   // bool attribute
-    ValueAttributes      value_attr;
-    Array<Type*>         parents;
-    Array<FiledInfo>     fields;
-    Array<FunctionInfo*> function_infos;
-    size_t               type_hash = 0;
+    StringView           name_;
+    int32_t              size_      = 0;
+    int32_t              attribute_ = 0;   // bool attribute
+    ValueAttributes      value_attr_;
+    Array<Type*>         parents_;
+    Array<FiledInfo>     fields_;
+    Array<FunctionInfo*> function_infos_;
+    size_t               type_hash_ = 0;
 };
 
 }   // namespace core
@@ -374,8 +323,5 @@ inline core::StringView GetEnumString<core::FiledInfo::ValueAttribute>(core::Fil
 template<>
 struct std::hash<core::Type>
 {
-    size_t operator()(const core::Type& type) const noexcept
-    {
-        return type.GetTypeHash();
-    }
+    size_t operator()(const core::Type& type) const noexcept { return type.GetTypeHash(); }
 };

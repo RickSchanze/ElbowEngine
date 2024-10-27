@@ -20,7 +20,23 @@ core::StringView core::FiledInfo::GetAttribute(ValueAttribute attr) const
         LOGGER.Warn(LogCat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
         return "";
     }
-    return value_attr[GetEnumValue(attr)];
+    return value_attr_[GetEnumValue(attr)];
+}
+
+FiledInfo& FiledInfo::SetAttribute(FlagAttribute attr)
+{
+    attribute_ |= attr;
+    return *this;
+}
+
+FiledInfo& FiledInfo::SetAttribute(ValueAttribute attr, StringView value)
+{
+    if (IsDefined(attr))
+    {
+        LOGGER.Warn(LogCat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
+    }
+    value_attr_[GetEnumValue(attr)] = value;
+    return *this;
 }
 
 core::StringView core::Type::GetAttribute(ValueAttribute attr) const
@@ -30,14 +46,14 @@ core::StringView core::Type::GetAttribute(ValueAttribute attr) const
         LOGGER.Warn(LogCat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
         return "";
     }
-    return value_attr[GetEnumValue(attr)];
+    return value_attr_[GetEnumValue(attr)];
 }
 
 Optional<Ref<const FiledInfo>> Type::GetSelfDefinedField(StringView name) const
 {
-    for (const auto& field: this->fields)
+    for (const auto& field: this->fields_)
     {
-        if (field.name == name)
+        if (field.name_ == name)
         {
             return MakeRef(field);
         }
@@ -48,7 +64,7 @@ Optional<Ref<const FiledInfo>> Type::GetSelfDefinedField(StringView name) const
 Array<const FunctionInfo*> Type::GetSelfDefinedMemberFunctions() const
 {
     Array<const FunctionInfo*> functions;
-    for (const auto& func: this->function_infos)
+    for (const auto& func: this->function_infos_)
     {
         functions.push_back(func);
     }
@@ -64,7 +80,7 @@ Array<Ref<const FiledInfo>> Type::GetSelfDefinedFields() const
 {
     Array<Ref<const FiledInfo>> fields;
     fields.reserve(GetSelfDefinedFieldsCount());
-    for (const auto& field: this->fields)
+    for (const auto& field: this->fields_)
     {
         fields.push_back(MakeRef(field));
     }
@@ -74,7 +90,7 @@ Array<Ref<const FiledInfo>> Type::GetSelfDefinedFields() const
 Array<Ref<const FiledInfo>> Type::GetFields() const
 {
     Array<Ref<const FiledInfo>> fields;
-    for (auto parent: parents)
+    for (auto parent: parents_)
     {
         for (const auto& self_defined_field: parent->GetFields())
         {
@@ -104,7 +120,7 @@ Optional<Ref<const FiledInfo>> Type::GetField(StringView name) const
 Array<const FunctionInfo*> Type::GetMemberFunctions() const
 {
     Array<const FunctionInfo*> funcs;
-    for (auto parent: parents)
+    for (auto parent: parents_)
     {
         for (auto& self_defined_func: parent->GetMemberFunctions())
         {
@@ -121,6 +137,22 @@ Array<const FunctionInfo*> Type::GetMemberFunctions() const
 bool Type::HasMemberFunction(StringView name) const
 {
     return std::ranges::any_of(GetMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
+}
+
+Type& Type::SetAttribute(FlagAttribute attr)
+{
+    attribute_ |= attr;
+    return *this;
+}
+
+Type& Type::SetAttribute(ValueAttribute attr, StringView value)
+{
+    if (IsDefined(attr))
+    {
+        LOGGER.Warn(LogCat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
+    }
+    value_attr_[GetEnumValue(attr)] = value;
+    return *this;
 }
 
 }   // namespace core

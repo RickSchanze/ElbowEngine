@@ -16,7 +16,7 @@ struct Type;
 
 struct MetaDataRegisterer
 {
-    Type*      (*Registerer)();
+    Type*      (*registerer)();
     StringView name;
 };
 
@@ -39,9 +39,9 @@ private:
 };
 
 template<typename T>
-const Type& TypeOf()
+const Type* TypeOf()
 {
     size_t hash = typeid(T).hash_code();
-    return *MetaInfoManager::Get()->GetType(hash);
+    return MetaInfoManager::Get()->GetType(hash);
 }
 }   // namespace core

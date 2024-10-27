@@ -14,13 +14,13 @@
 namespace core
 {
 
-#define REGISTER_ATOMIC_TYPE(tname)                                         \
-    Type* tname##_type                         = New<Type>();               \
-    tname##_type->type_hash                    = typeid(tname).hash_code(); \
-    tname##_type->name                         = #tname;                    \
-    tname##_type->attribute                    = Type::Atomic;              \
-    tname##_type->size                         = sizeof(tname);             \
-    types_registered_[tname##_type->type_hash] = tname##_type;
+#define REGISTER_ATOMIC_TYPE(tname)                                          \
+    Type* tname##_type                          = New<Type>();               \
+    tname##_type->type_hash_                    = typeid(tname).hash_code(); \
+    tname##_type->name_                         = #tname;                    \
+    tname##_type->attribute_                    = Type::Atomic;              \
+    tname##_type->size_                         = sizeof(tname);             \
+    types_registered_[tname##_type->type_hash_] = tname##_type;
 
 MetaInfoManager::MetaInfoManager()
 {
@@ -37,7 +37,6 @@ MetaInfoManager::MetaInfoManager()
     REGISTER_ATOMIC_TYPE(double);
     REGISTER_ATOMIC_TYPE(bool);
 }
-
 
 MetaInfoManager::~MetaInfoManager()
 {
@@ -59,13 +58,13 @@ void MetaInfoManager::RegisterType(size_t type_hash)
         LOGGER.Error(LogCat::Reflection, "尝试注册类型{}, 但是此类型没有对应的注册函数", type_hash);
         return;
     }
-    types_registered_[type_hash] = meta_data_registers_[type_hash].Registerer();
+    types_registered_[type_hash] = meta_data_registers_[type_hash].registerer();
     meta_data_registers_.erase(type_hash);
 }
 
 void MetaInfoManager::RegisterTypeRegisterer(size_t type_name, const MetaDataRegisterer& registerer)
 {
-    if (registerer.Registerer == nullptr || registerer.name.Empty()) return;
+    if (registerer.registerer == nullptr || registerer.name.Empty()) return;
     if (meta_data_registers_.contains(type_name))
     {
         LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_name);

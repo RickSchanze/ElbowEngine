@@ -15,6 +15,9 @@ namespace core
 {
 struct Type;
 
+/**
+ * 当Any持有Ref<T>时，调用GetType得到的会是TypeOf<T>()
+ */
 class Any
 {
 public:
@@ -23,7 +26,7 @@ public:
 
     // 构造函数模板
     template<typename T>
-    Any(T&& value) : content_(new Holder<std::decay_t<T>>(std::forward<T>(value)))
+    Any(T&& value) : content_(new Holder<std::decay_t<T>>(static_cast<Holder<Any>>(std::forward<T>(value))))
     {
     }
 
@@ -69,7 +72,7 @@ public:
     friend Optional<T> any_cast(const Any& operand);
 
     // 获取类型信息
-    [[nodiscard]] Ref<const Type> GetType() const noexcept { return content_ ? content_->GetType() : TypeOf<void>(); }
+    [[nodiscard]] const Type* GetType() const noexcept { return content_ ? content_->GetType() : TypeOf<void>(); }
 
 
 private:
@@ -79,7 +82,7 @@ private:
         virtual ~Base() = default;
 
         [[nodiscard]] virtual UniquePtr<Base> Clone() const            = 0;
-        [[nodiscard]] virtual const Type&     GetType() const noexcept = 0;
+        [[nodiscard]] virtual const Type*     GetType() const noexcept = 0;
     };
 
     // 模板派生类，存储实际的值
@@ -92,19 +95,20 @@ private:
 
         [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
 
-        [[nodiscard]] const Type& GetType() const noexcept override { return TypeOf<T>(); }
+        [[nodiscard]] const Type* GetType() const noexcept override { return TypeOf<T>(); }
     };
 
     template<typename T>
     struct Holder<Ref<T>> : Base
     {
-        T value;
+        using value_type = Ref<T>;
+        value_type value;
 
-        Holder(T&& value) : value(std::forward<T>(value)) {}
+        Holder(value_type&& value) : value(std::forward<value_type>(value)) {}
 
         [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
 
-        [[nodiscard]] const Type& GetType() const noexcept override { return TypeOf<T>(); }
+        [[nodiscard]] const Type* GetType() const noexcept override { return TypeOf<T>(); }
     };
 
     UniquePtr<Base> content_;
