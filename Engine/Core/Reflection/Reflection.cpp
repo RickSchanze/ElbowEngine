@@ -45,26 +45,19 @@ Optional<Ref<const FiledInfo>> Type::GetSelfDefinedField(StringView name) const
     return NullOpt;
 }
 
-Array<Ref<const FunctionInfo>> Type::GetSelfDefinedMemberFunctions() const
+Array<const FunctionInfo*> Type::GetSelfDefinedMemberFunctions() const
 {
-    Array<Ref<const FunctionInfo>> functions;
+    Array<const FunctionInfo*> functions;
     for (const auto& func: this->function_infos)
     {
-        functions.push_back(MakeRef(func));
+        functions.push_back(func);
     }
     return functions;
 }
 
 bool Type::HasSelfDefinedMemberFunction(StringView name) const
 {
-    for (auto& func: GetSelfDefinedMemberFunctions())
-    {
-        if (func->GetName() == name)
-        {
-            return true;
-        }
-    }
-    return false;
+    return std::ranges::any_of(GetSelfDefinedMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
 }
 
 Array<Ref<const FiledInfo>> Type::GetSelfDefinedFields() const
@@ -108,9 +101,9 @@ Optional<Ref<const FiledInfo>> Type::GetField(StringView name) const
     return NullOpt;
 }
 
-Array<Ref<const FunctionInfo>> Type::GetMemberFunctions() const
+Array<const FunctionInfo*> Type::GetMemberFunctions() const
 {
-    Array<Ref<const FunctionInfo>> funcs;
+    Array<const FunctionInfo*> funcs;
     for (auto parent: parents)
     {
         for (auto& self_defined_func: parent->GetMemberFunctions())
@@ -127,14 +120,7 @@ Array<Ref<const FunctionInfo>> Type::GetMemberFunctions() const
 
 bool Type::HasMemberFunction(StringView name) const
 {
-    for (auto& func: GetMemberFunctions())
-    {
-        if (func->GetName() == name)
-        {
-            return true;
-        }
-    }
-    return false;
+    return std::ranges::any_of(GetMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
 }
 
 }   // namespace core

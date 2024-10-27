@@ -179,7 +179,10 @@ struct FunctionParamInfo
 
 struct FunctionInfo
 {
+    FunctionInfo() = default;
+
     virtual ~FunctionInfo() = default;
+
     enum FlagAttribute
     {
         Static      = 1 << 0,
@@ -306,6 +309,7 @@ struct MemberFunctionImpl : FunctionInfo
 
 struct Type
 {
+    friend class core::MetaInfoManager;
     enum FlagAttribute
     {
         Interface = 1 << 0,
@@ -324,31 +328,33 @@ struct Type
     [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
     [[nodiscard]] StringView GetName() const { return name; }
     [[nodiscard]] int32_t    GetSize() const { return size; }
+    [[nodiscard]] size_t     GetTypeHash() const { return type_hash; }
 
     [[nodiscard]] Array<Ref<const FiledInfo>>    GetSelfDefinedFields() const;
     [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields.size()); }
     [[nodiscard]] Optional<Ref<const FiledInfo>> GetSelfDefinedField(StringView name) const;
     [[nodiscard]] bool                           HasSelfDefinedMember(StringView name) const { return GetSelfDefinedField(name) != NullOpt; }
-    [[nodiscard]] Array<Ref<const FunctionInfo>> GetSelfDefinedMemberFunctions() const;
+    [[nodiscard]] Array<const FunctionInfo*>     GetSelfDefinedMemberFunctions() const;
     [[nodiscard]] bool                           HasSelfDefinedMemberFunction(StringView name) const;
 
     [[nodiscard]] Array<Ref<const FiledInfo>>    GetFields() const;
     [[nodiscard]] int32_t                        GetFieldsCount() const { return static_cast<int32_t>(GetFields().size()); }
     [[nodiscard]] Optional<Ref<const FiledInfo>> GetField(StringView name) const;
     [[nodiscard]] bool                           HasMember(StringView name) const { return GetField(name) != NullOpt; }
-    [[nodiscard]] Array<Ref<const FunctionInfo>> GetMemberFunctions() const;
+    [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
     bool operator==(const Type& o) const { return type_hash == o.type_hash; }
 
-    StringView          name;
-    int32_t             size      = 0;
-    int32_t             attribute = 0;   // bool attribute
-    ValueAttributes     value_attr;
-    Array<Type*>        parents;
-    Array<FiledInfo>    fields;
-    Array<FunctionInfo> function_infos;
-    size_t              type_hash;
+protected:
+    StringView           name;
+    int32_t              size      = 0;
+    int32_t              attribute = 0;   // bool attribute
+    ValueAttributes      value_attr;
+    Array<Type*>         parents;
+    Array<FiledInfo>     fields;
+    Array<FunctionInfo*> function_infos;
+    size_t               type_hash = 0;
 };
 
 }   // namespace core
@@ -371,6 +377,6 @@ struct std::hash<core::Type>
 {
     size_t operator()(const core::Type& type) const noexcept
     {
-        return type.type_hash;
+        return type.GetTypeHash();
     }
 };

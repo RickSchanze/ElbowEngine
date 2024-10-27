@@ -9,6 +9,8 @@
 #include "CoreGlobal.h"
 #include "d3d12.h"
 #include "Log/CoreLogCategory.h"
+#include "Reflection/MetaInfoManager.h"
+#include "Reflection/Reflection.h"
 #include "Serialization/YamlArchive.h"
 
 int main()
@@ -17,6 +19,8 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
+    auto a = core::TypeOf<bool>();
+    LOGGER.Info(LogCat::Test, "类型名称{}", a.GetName());
     // LOGGER.Info(LogCat::Test, "测试一下");
     // core::StringView v = "你好";
     // LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);

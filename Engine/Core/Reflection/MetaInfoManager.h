@@ -7,12 +7,18 @@
 
 #pragma once
 
-#include "Singleton/Singleton.h"
 #include "Base/CoreTypeDef.h"
+#include "Base/EString.h"
+#include "Singleton/Singleton.h"
 namespace core
 {
 struct Type;
-typedef Type* (*MetaDataRegisterer)();
+
+struct MetaDataRegisterer
+{
+    Type*      (*Registerer)();
+    StringView name;
+};
 
 class MetaInfoManager : public Singleton<MetaInfoManager>
 {
@@ -22,9 +28,10 @@ public:
     ~MetaInfoManager() override;
 
     void RegisterType(size_t type_hash);
-    void RegisterTypeRegisterer(size_t type_hash, MetaDataRegisterer registerer);
+    void RegisterTypeRegisterer(size_t type_hash, const MetaDataRegisterer& registerer);
 
     Type* GetType(size_t type_hash);
+    Type* GetType(StringView type_name);
 
 private:
     HashMap<size_t, Type*>              types_registered_;
