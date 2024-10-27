@@ -14,10 +14,106 @@
 #include "Log/Logger.h"
 #include "MetaInfoManager.h"
 #include <utility>
-#include <any>
 
 namespace core
 {
+
+struct Type;
+
+class Any
+{
+public:
+    // 默认构造函数
+    Any() : content_(nullptr) {}
+
+    // 构造函数模板
+    template<typename T>
+    Any(T&& value) : content_(new Holder<std::decay_t<T>>(std::forward<T>(value)))
+    {
+    }
+
+    // 拷贝构造函数
+    Any(const Any& other) : content_(other.content_ ? other.content_->Clone() : nullptr) {}
+
+    // 移动构造函数
+    Any(Any&& other) noexcept : content_(std::move(other.content_)) {}
+
+    // 拷贝赋值运算符
+    Any& operator=(const Any& other)
+    {
+        if (&other != this)
+        {
+            content_ = other.content_ ? other.content_->Clone() : nullptr;
+        }
+        return *this;
+    }
+
+    // 移动赋值运算符
+    Any& operator=(Any&& other) noexcept
+    {
+        content_ = std::move(other.content_);
+        return *this;
+    }
+
+    // 赋值运算符模板
+    template<typename T>
+    Any& operator=(T&& value)
+    {
+        content_.Reset(new Holder<std::decay_t<T>>(std::forward<T>(value)));
+        return *this;
+    }
+
+    // 判断是否为空
+    [[nodiscard]] bool HasValue() const noexcept { return static_cast<bool>(content_); }
+
+    // 清空内容
+    void Reset() noexcept { content_.Reset(); }
+
+    // 类型安全访问
+    template<typename T>
+    friend Optional<T> any_cast(const Any& operand);
+
+    // 获取类型信息
+    [[nodiscard]] Ref<const Type> GetType() const noexcept { return content_ ? content_->GetType() : TypeOf<void>(); }
+
+
+private:
+    // 基类用于类型擦除
+    struct Base
+    {
+        virtual ~Base() = default;
+
+        [[nodiscard]] virtual UniquePtr<Base>   Clone() const            = 0;
+        [[nodiscard]] virtual const core::Type& GetType() const noexcept = 0;
+    };
+
+    // 模板派生类，存储实际的值
+    template<typename T>
+    struct Holder : Base
+    {
+        T value;
+
+        Holder(T&& value) : value(std::forward<T>(value)) {}
+
+        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
+
+        [[nodiscard]] const core::Type& GetType() const noexcept override { return TypeOf<T>(); }
+    };
+
+    UniquePtr<Base> content_;
+};
+
+// 类型安全的提取
+template<typename T>
+Optional<T> any_cast(const Any& operand)
+{
+    if (operand.content_ && operand.content_->GetType() == TypeOf<T>())
+    {
+        return static_cast<Any::Holder<T>*>(operand.content_.Get())->value;
+    }
+    return NullOpt;
+}
+
 
 struct Type;
 
@@ -116,21 +212,14 @@ struct FunctionInfo
             return NullOpt;
         }
         ReturnT t;
-        try
+
+        if (!IsDefined(Member))
         {
-            if (!IsDefined(Member))
-            {
-                t = std::any_cast<ReturnT>(InvokeImpl(nullptr));
-            }
-            else
-            {
-                t = std::any_cast<ReturnT>(InvokeImpl(obj));
-            }
+            t = any_cast<ReturnT>(InvokeImpl(nullptr));
         }
-        catch (const std::bad_any_cast&)
+        else
         {
-            params.clear();
-            return NullOpt;
+            t = any_cast<ReturnT>(InvokeImpl(obj));
         }
         params.clear();
         return t;
@@ -162,26 +251,26 @@ struct FunctionInfo
     [[nodiscard]] StringView GetName() const { return name; }
     [[nodiscard]] int32_t    GetParamsCount() const { return static_cast<int32_t>(param_infos.size()); }
 
-    virtual std::any InvokeImpl(void*) = 0;
+    virtual Any InvokeImpl(void*) = 0;
 
     int32_t                  attribute = 0;
     StringView               name;
     Array<FunctionParamInfo> param_infos;
-    Array<std::any>               params;
+    Array<Any>               params;
 };
 
 template<typename ReturnT, typename... Args>
 struct FunctionInfoImpl : FunctionInfo
 {
-    std::any InvokeImpl(void*) override { return InvokeHelper(::std::index_sequence_for<Args...>{}); }
+    Any InvokeImpl(void*) override { return InvokeHelper(::std::index_sequence_for<Args...>{}); }
 
     template<size_t... Is>
-    std::any InvokeHelper(::std::index_sequence<Is...>)
+    Any InvokeHelper(::std::index_sequence<Is...>)
     {
         try
         {
             if (params.size() != param_infos.size()) return {};
-            return func(std::any_cast<Args>(params[Is])...);
+            return func(Any_cast<Args>(params[Is])...);
         }
         catch (const ::std::exception& e)
         {
@@ -196,15 +285,15 @@ struct FunctionInfoImpl : FunctionInfo
 template<typename ReturnT, typename ClassT, typename... Args>
 struct MemberFunctionImpl : FunctionInfo
 {
-    std::any InvokeImpl(void* input) override { return InvokeHelper(static_cast<ClassT*>(input), ::std::index_sequence_for<Args...>{}); }
+    Any InvokeImpl(void* input) override { return InvokeHelper(static_cast<ClassT*>(input), ::std::index_sequence_for<Args...>{}); }
 
     template<size_t... Is>
-    std::any InvokeHelper(ClassT* obj, ::std::index_sequence<Is...>)
+    Any InvokeHelper(ClassT* obj, ::std::index_sequence<Is...>)
     {
         try
         {
             if (params.size() != param_infos.size()) return {};
-            return obj->func(std::any_cast<Args>(params[Is])...);
+            return obj->func(Any_cast<Args>(params[Is])...);
         }
         catch (const ::std::exception& e)
         {
@@ -250,6 +339,8 @@ struct Type
     [[nodiscard]] Array<Ref<const FunctionInfo>> GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
+    bool operator==(const Type& o) const { return type_hash == o.type_hash; }
+
     StringView          name;
     int32_t             size      = 0;
     int32_t             attribute = 0;   // bool attribute
@@ -274,3 +365,12 @@ inline core::StringView GetEnumString<core::FiledInfo::ValueAttribute>(core::Fil
     default: return ENUM_INVALID;
     }
 }
+
+template<>
+struct std::hash<core::Type>
+{
+    size_t operator()(const core::Type& type) const noexcept
+    {
+        return type.type_hash;
+    }
+};

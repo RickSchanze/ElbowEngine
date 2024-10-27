@@ -32,7 +32,7 @@ private:
 };
 
 template<typename T>
-const Type& TypeOf()
+const core::Type& TypeOf()
 {
     size_t hash = typeid(T).hash_code();
     return *MetaInfoManager::Get()->GetType(hash);
