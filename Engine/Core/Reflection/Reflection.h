@@ -11,6 +11,7 @@
 #include "Base/CoreTypeDef.h"
 #include "Base/EString.h"
 #include "Base/Ref.h"
+#include "ContainerView.h"
 #include "CoreGlobal.h"
 #include "Log/CoreLogCategory.h"
 #include "Log/Logger.h"
@@ -286,6 +287,8 @@ struct Type
         info.attribute_ |= FiledInfo::SequenceContainer;
         info.offset_ = offset;
         info.size_   = sizeof(Array<MemberField>);
+        SequenceContainerView<ClassT, MemberField> f;
+        f.BeginIterate();
         return fields_.emplace_back(info);
     }
 

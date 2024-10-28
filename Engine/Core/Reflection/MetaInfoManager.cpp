@@ -62,14 +62,14 @@ void MetaInfoManager::RegisterType(size_t type_hash)
     meta_data_registers_.erase(type_hash);
 }
 
-void MetaInfoManager::RegisterTypeRegisterer(size_t type_name, const MetaDataRegisterer& registerer)
+void MetaInfoManager::RegisterTypeRegisterer(size_t type_hash, const MetaDataRegisterer& registerer)
 {
     if (registerer.registerer == nullptr || registerer.name.Empty()) return;
-    if (meta_data_registers_.contains(type_name))
+    if (meta_data_registers_.contains(type_hash))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_name);
+        LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_hash);
     }
-    meta_data_registers_[type_name] = registerer;
+    meta_data_registers_[type_hash] = registerer;
 }
 
 Type* MetaInfoManager::GetType(size_t type_name)

@@ -26,7 +26,7 @@ public:
 
     // 构造函数模板
     template<typename T>
-    Any(T&& value) : content_(new Holder<std::decay_t<T>>(static_cast<Holder<Any>>(std::forward<T>(value))))
+    Any(T&& value) : content_(new Holder<std::decay_t<T>>(std::forward<T>(value)))
     {
     }
 
@@ -106,7 +106,7 @@ private:
 
         Holder(value_type&& value) : value(std::forward<value_type>(value)) {}
 
-        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
+        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<value_type>>(value); }
 
         [[nodiscard]] const Type* GetType() const noexcept override { return TypeOf<T>(); }
     };
