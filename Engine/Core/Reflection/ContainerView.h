@@ -33,19 +33,14 @@ public:
     virtual bool HasNext()          = 0;
     virtual void SetInstance(void*) = 0;
 
+#if REGION(顺序容器)
+    virtual const Type* GetElementType()
+    {
+        NEVER_ENTRY_WARN(LogCat::Reflection);
+        return {};
+    }
+
     virtual Any GetCurrentElement()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    virtual Any GetCurrentKey()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    virtual Any GetCurrentValue()
     {
         NEVER_ENTRY_WARN(LogCat::Reflection);
         return {};
@@ -58,13 +53,28 @@ public:
     }
 
     void ForEach(const Function<void(Any)>& Func);
+#endif
+
+#if REGION(关联容器)
+    virtual Any GetCurrentKey()
+    {
+        NEVER_ENTRY_WARN(LogCat::Reflection);
+        return {};
+    }
+
+    virtual Any GetCurrentValue()
+    {
+        NEVER_ENTRY_WARN(LogCat::Reflection);
+        return {};
+    }
+#endif
 
     void ForEach(const Function<void(Any, Any)>& Func);
 
     virtual ContainerType GetContainerType() = 0;
-    virtual const Type*   GetElementType()   = 0;
-    virtual const Type*   GetOuterType()     = 0;
-    virtual int32_t       Size()             = 0;
+
+    virtual const Type* GetOuterType() = 0;
+    virtual int32_t     Size()         = 0;
 };
 
 template<typename ClassT, typename T>
