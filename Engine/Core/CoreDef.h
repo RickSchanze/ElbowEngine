@@ -65,8 +65,29 @@
     RTTR_REGISTRATION                                            \
     {                                                            \
         rttr::registration::class_<type>(#type).constructor<>(); \
-}
+    }
 
 #define DEBUG_BREAK() __debugbreak()
 
+#define NEVER_ENTRY_WARN(cat) LOGGER.Warn(cat, "此方法未实现: {}", __FUNCSIG__)
+
 #define REGION(region_name) 1
+
+#define Assert(log_cat, expr, msg, ...)             \
+    if (!(expr))                                    \
+    {                                               \
+        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
+        DEBUG_BREAK();                              \
+        std::terminate();                           \
+    }
+#ifdef ELBOW_DEBUG
+#define DebugAssert(log_cat, expr, msg, ...)        \
+    if (!(expr))                                    \
+    {                                               \
+        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
+        DEBUG_BREAK();                              \
+    }
+#else
+#define DebugAssert(log_cat, expr, msg, ...)
+#endif
+

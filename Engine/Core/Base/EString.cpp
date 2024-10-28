@@ -57,4 +57,14 @@ void StringView::RemoveSubfix(int c)
     // DebugAssert
     length_ -= c;
 }
+
+bool StringView::operator==(const StringView& o) const
+{
+    if (o.Length() != Length()) return false;
+    for (int32_t i = 0; i < Length(); ++i)
+    {
+        if (str_[i] != o[i]) return false;
+    }
+    return true;
+}
 }   // namespace core

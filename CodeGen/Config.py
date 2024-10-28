@@ -20,7 +20,7 @@ class ElbowEngineCodeGenConfig:
     # 需要额外include的文件夹
     extra_include_folder = ["Engine/ThirdParty/IconFontCppHeaders", "cmake-build-debug/vcpkg_installed/x64-windows/include"]
     # 进程池并行处理最大数量
-    max_process_count = 1
+    max_process_count = 20
     # 解析时使用的参数
     clang_args = [
         "-xc++",

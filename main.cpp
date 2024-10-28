@@ -9,17 +9,19 @@
 #include "CoreGlobal.h"
 #include "d3d12.h"
 #include "Log/CoreLogCategory.h"
+#include "Reflection/ITypeGetter.h"
 #include "Reflection/MetaInfoManager.h"
 #include "Reflection/Reflection.h"
 #include "Serialization/YamlArchive.h"
 
-class TestA
+class TestA : public core::ITypeGetter
 {
 public:
-    static core::Type* REFLECTION_Register_TestA_Registerer();
+    static core::Type*              REFLECTION_Register_TestA_Registerer();
+    [[nodiscard]] const core::Type* GetType() const override { return core::TypeOf<TestA>(); }
 
     core::Array<int32_t> array = {1, 2, 3};
-    int32_t intv;
+    int32_t              intv;
 };
 
 core::Type* TestA::REFLECTION_Register_TestA_Registerer()
@@ -36,7 +38,7 @@ struct TestA_MetaInfo_Register
     TestA_MetaInfo_Register()
     {
         core::MetaDataRegisterer registerer;
-        registerer.name = "TestA";
+        registerer.name       = "TestA";
         registerer.registerer = &TestA::REFLECTION_Register_TestA_Registerer;
         core::MetaInfoManager::Get()->RegisterTypeRegisterer(typeid(TestA).hash_code(), registerer);
     }
@@ -52,18 +54,57 @@ int main()
     SetConsoleOutputCP(65001);
     auto a = core::TypeOf<float>();
     LOGGER.Info(LogCat::Test, "类型名称{}", a->GetName());
-    auto t = core::TypeOf<TestA>();
-    // LOGGER.Info(LogCat::Test, "测试一下");
-    // core::StringView v = "你好";
-    // LOGGER.Warn(LogCat::Test, "测试一下Str {}", v);
-    // LOGGER.Error(LogCat::Test, "测试一下Str {}", v);
-    // core::YamlArchive ar;
-    // auto*             obj = New<core::Object>();
-    // ar.BeginSerialize();
-    // ar << *obj;
-    // ar.EndSerialize();
-    // std::cout << ar.ToString();
-    // system("pause");
+    auto  t = core::TypeOf<TestA>();
+    TestA b{};
+    b.array.push_back(30);
+    auto field = t->GetField("array");
+    if (field)
+    {
+        auto& field_value = field.value();
+        if (field_value->IsSequentialContainer())
+        {
+            auto view_op = field_value->CreateSequentialContainerView(&b);
+            if (view_op)
+            {
+                auto view = view_op.value();
+                view->ForEach([](const core::Any& item) {
+                    const auto v = core::any_cast<core::Ref<int>>(item);
+                    if (!v.has_value())
+                    {
+                        LOGGER.Error(LogCat::Test, "Error: {}", GetEnumString(v.error()));
+                    }
+                    else
+                    {
+                        LOGGER.Info(LogCat::Test, "Value: {}", v.value());
+                    }
+                });
+                core::Any v  = view->GetElementAt(0);
+                auto      vv = core::any_cast<core::Ref<int>>(v);
+                if (vv.has_value())
+                {
+                    vv.value() = 100;
+                }
+                v = view->GetElementAt(1);
+                auto vv2 = core::any_cast<core::Ref<int>>(v);
+                if (vv2.has_value())
+                {
+                    vv2.value() = 200;
+                }
+                view->ForEach([](const core::Any& item) {
+                    const auto v = core::any_cast<core::Ref<int>>(item);
+                    if (!v.has_value())
+                    {
+                        LOGGER.Error(LogCat::Test, "Error: {}", GetEnumString(v.error()));
+                    }
+                    else
+                    {
+                        LOGGER.Info(LogCat::Test, "Value: {}", v.value());
+                    }
+                });
+            }
+        }
+    }
+    system("pause");
     // try
     // {
     //     tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};

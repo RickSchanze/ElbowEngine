@@ -7,12 +7,19 @@
 
 #include "Reflection.h"
 
+#include "ITypeGetter.h"
 #include "Log/CoreLogCategory.h"
 #include "Log/Logger.h"
 #include "Utils/ContainerUtils.h"
 
 namespace core
 {
+FiledInfo::FiledInfo(FiledInfo&& info) noexcept :
+    offset_(info.offset_), size_(info.size_), name_(info.name_), type_(info.type_), attribute_(info.attribute_), value_attr_(info.value_attr_),
+    container_view_(Move(info.container_view_))
+{
+}
+
 core::StringView core::FiledInfo::GetAttribute(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
@@ -38,6 +45,22 @@ FiledInfo& FiledInfo::SetAttribute(ValueAttribute attr, StringView value)
     value_attr_[GetEnumValue(attr)] = value;
     return *this;
 }
+
+Optional<Ref<ContainerView>> FiledInfo::CreateSequentialContainerView(ITypeGetter* obj) const
+{
+    auto ele_type        = obj->GetType();
+    auto view_outer_type = container_view_->GetOuterType();
+    if (ele_type != view_outer_type)
+    {
+        LOGGER.Error(
+            LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
+        );
+        return NullOpt;
+    }
+    container_view_->SetInstance(obj);
+    return MakeRef(*container_view_);
+}
+
 
 core::StringView core::Type::GetAttribute(ValueAttribute attr) const
 {

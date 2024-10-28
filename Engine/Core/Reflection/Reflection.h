@@ -20,15 +20,22 @@
 
 namespace core
 {
+class ITypeGetter;
+}
+namespace core
+{
 struct Type;
 
 struct FiledInfo
 {
+    FiledInfo() = default;
+    FiledInfo(FiledInfo&& info) noexcept;
+
     friend struct Type;
     enum FlagAttribute
     {
         Transient            = 1 << 0,
-        SequenceContainer    = 1 << 1,
+        SequentialContainer  = 1 << 1,
         AssociativeContainer = 1 << 2,
         // Editor Only
         Hidden               = 1 << 16,
@@ -52,6 +59,8 @@ struct FiledInfo
     [[nodiscard]] StringView GetName() const { return name_; }
     [[nodiscard]] Type*      GetType() const { return type_; }
     [[nodiscard]] int32_t    GetSize() const { return size_; }
+    [[nodiscard]] bool       IsSequentialContainer() const { return IsDefined(SequentialContainer); }
+    [[nodiscard]] bool       IsAssociativeContainer() const { return IsDefined(AssociativeContainer); }
 
     FiledInfo& SetAttribute(FlagAttribute attr);
     FiledInfo& SetAttribute(ValueAttribute attr, StringView value);
@@ -66,13 +75,16 @@ struct FiledInfo
         return *static_cast<T*>(static_cast<uint8_t*>(obj) + offset_);
     }
 
+    Optional<Ref<ContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
+
 protected:
-    int32_t         offset_ = -1;
-    int32_t         size_   = 0;
-    StringView      name_;
-    Type*           type_      = nullptr;
-    int32_t         attribute_ = 0;   // bool attribute
-    ValueAttributes value_attr_;
+    int32_t                  offset_ = -1;
+    int32_t                  size_   = 0;
+    StringView               name_;
+    Type*                    type_      = nullptr;
+    int32_t                  attribute_ = 0;   // bool attribute
+    ValueAttributes          value_attr_;
+    UniquePtr<ContainerView> container_view_ = nullptr;
 };
 
 struct FunctionParamInfo
@@ -272,24 +284,23 @@ struct Type
         FiledInfo info;
         info.name_ = name;
         info.type_ = this;
-        info.attribute_ |= FiledInfo::SequenceContainer;
+        info.attribute_ |= FiledInfo::SequentialContainer;
         info.offset_ = offset;
         info.size_   = sizeof(Array<MemberField>);
-        return fields_.emplace_back(info);
+        return fields_.emplace_back(Move(info));
     }
 
     template<typename ClassT, typename MemberField>
-    FiledInfo& RegisterField(StringView name, Array<MemberField> ClassT::*, int32_t offset)
+    FiledInfo& RegisterField(StringView name, Array<MemberField> ClassT::*field, int32_t offset)
     {
         FiledInfo info;
         info.name_ = name;
         info.type_ = this;
-        info.attribute_ |= FiledInfo::SequenceContainer;
-        info.offset_ = offset;
-        info.size_   = sizeof(Array<MemberField>);
-        SequenceContainerView<ClassT, MemberField> f;
-        f.BeginIterate();
-        return fields_.emplace_back(info);
+        info.attribute_ |= FiledInfo::SequentialContainer;
+        info.offset_         = offset;
+        info.size_           = sizeof(Array<MemberField>);
+        info.container_view_ = New<SequentialContainerView<ClassT, MemberField>>(field, this);
+        return fields_.emplace_back(Move(info));
     }
 
     Type& SetAttribute(FlagAttribute attr);
@@ -319,6 +330,15 @@ inline core::StringView GetEnumString<core::FiledInfo::ValueAttribute>(core::Fil
     case core::FiledInfo::ValueAttribute::Setter: return "Setter";
     case core::FiledInfo::ValueAttribute::Label: return "Label";
     case core::FiledInfo::ValueAttribute::Name: return "Name";
+    default: return ENUM_INVALID;
+    }
+}
+
+template<>
+inline core::StringView GetEnumString<core::Type::ValueAttribute>(core::Type::ValueAttribute value)
+{
+    switch (value)
+    {
     default: return ENUM_INVALID;
     }
 }

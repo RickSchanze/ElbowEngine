@@ -57,12 +57,15 @@ public:
     }
 
     // 子类到父类的转换
-    template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
-    UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release()) {}
+    template<typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
+    UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release())
+    {
+    }
 
     // 删除拷贝构造函数和赋值运算符
     UniquePtr(const UniquePtr&) = delete;
-    UniquePtr& operator=(const UniquePtr&)  = delete;
+
+    UniquePtr& operator=(const UniquePtr&) = delete;
 
     // 析构函数
     ~UniquePtr() { Reset(); }
@@ -99,7 +102,9 @@ public:
     T* operator->() const noexcept { return ptr_; }
 
     // 检查指针是否为空
-    explicit operator bool() const noexcept { return ptr_ != nullptr; }
+    explicit operator bool() const noexcept { return IsSet(); }
+
+    [[nodiscard]] bool IsSet() const { return ptr_ != nullptr; }
 
 private:
     T* ptr_ = nullptr;

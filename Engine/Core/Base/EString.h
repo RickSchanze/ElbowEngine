@@ -34,7 +34,7 @@ public:
     [[nodiscard]] const char*       Data() const { return str_; }
     [[nodiscard]] constexpr int32_t Length() const { return length_; }
     [[nodiscard]] constexpr bool    Empty() const { return length_ == 0; }
-    [[nodiscard]] bool              operator==(const StringView& o) const { return str_ == o.str_ && length_ == o.length_; }
+    [[nodiscard]] bool              operator==(const StringView& o) const;
     [[nodiscard]] char              operator[](int32_t i) const { return str_[i]; }
 
 private:

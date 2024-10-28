@@ -6,122 +6,148 @@
  */
 
 #pragma once
+#include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
 #include "Base/Ref.h"
 #include "Base/UniquePtr.h"
+#include "CoreGlobal.h"
 #include "MetaInfoManager.h"
+
+#include <expected>
 
 namespace core
 {
 struct Type;
 
+enum class AnyCastError
+{
+    ValueIsNullptr,
+    ValueIsRef,
+    TypeNotSame,
+    Count
+};
+
 /**
  * 当Any持有Ref<T>时，调用GetType得到的会是TypeOf<T>()
  */
-class Any
+struct Any
 {
-public:
-    // 默认构造函数
-    Any() : content_(nullptr) {}
-
-    // 构造函数模板
     template<typename T>
-    Any(T&& value) : content_(new Holder<std::decay_t<T>>(std::forward<T>(value)))
+    friend std::expected<T, AnyCastError> any_cast(const Any& operand);
+
+    Any() : ptr_{nullptr} {}
+
+    template<typename T>
+    Any(const T& t) : ptr_{new Data<T>(t)} {};
+
+    Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
+
+    Any& operator=(const Any& rhs)
     {
-    }
-
-    // 拷贝构造函数
-    Any(const Any& other) : content_(other.content_ ? other.content_->Clone() : nullptr) {}
-
-    // 移动构造函数
-    Any(Any&& other) noexcept : content_(std::move(other.content_)) {}
-
-    // 拷贝赋值运算符
-    Any& operator=(const Any& other)
-    {
-        if (&other != this)
-        {
-            content_ = other.content_ ? other.content_->Clone() : nullptr;
-        }
+        if (this == &rhs) return *this;
+        Delete(ptr_);
+        ptr_ = rhs.ptr_->Clone();
         return *this;
     }
 
-    // 移动赋值运算符
-    Any& operator=(Any&& other) noexcept
+    Any(Any&& rhs) noexcept
     {
-        content_ = std::move(other.content_);
+        ptr_     = rhs.ptr_;
+        rhs.ptr_ = nullptr;
+    }
+
+    Any& operator=(Any&& rhs) noexcept
+    {
+        Delete(ptr_);
+        ptr_     = rhs.ptr_;
+        rhs.ptr_ = nullptr;
         return *this;
     }
 
-    // 赋值运算符模板
-    template<typename T>
-    Any& operator=(T&& value)
-    {
-        content_.Reset(new Holder<std::decay_t<T>>(std::forward<T>(value)));
-        return *this;
-    }
+    [[nodiscard]] const Type* GetType() const { return ptr_ ? ptr_->GetType() : nullptr; }
 
-    // 判断是否为空
-    [[nodiscard]] bool HasValue() const noexcept { return static_cast<bool>(content_); }
+    [[nodiscard]] bool IsRef() const { return ptr_ ? ptr_->IsRef() : false; }
 
-    // 清空内容
-    void Reset() noexcept { content_.Reset(); }
-
-    // 类型安全访问
-    template<typename T>
-    friend Optional<T> any_cast(const Any& operand);
-
-    // 获取类型信息
-    [[nodiscard]] const Type* GetType() const noexcept { return content_ ? content_->GetType() : TypeOf<void>(); }
-
-
-private:
-    // 基类用于类型擦除
     struct Base
     {
         virtual ~Base() = default;
 
-        [[nodiscard]] virtual UniquePtr<Base> Clone() const            = 0;
-        [[nodiscard]] virtual const Type*     GetType() const noexcept = 0;
-    };
-
-    // 模板派生类，存储实际的值
-    template<typename T>
-    struct Holder : Base
-    {
-        T value;
-
-        Holder(T&& value) : value(std::forward<T>(value)) {}
-
-        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<T>>(value); }
-
-        [[nodiscard]] const Type* GetType() const noexcept override { return TypeOf<T>(); }
+        virtual Base*                     Clone()         = 0;
+        [[nodiscard]] virtual const Type* GetType() const = 0;
+        [[nodiscard]] virtual bool        IsRef() const   = 0;
     };
 
     template<typename T>
-    struct Holder<Ref<T>> : Base
+    struct Data : Base
     {
-        using value_type = Ref<T>;
-        value_type value;
+        T           data;
+        const Type* type;
 
-        Holder(value_type&& value) : value(std::forward<value_type>(value)) {}
+        Data(const T& t) : data(t), type(TypeOf<T>()) {}
 
-        [[nodiscard]] UniquePtr<Base> Clone() const override { return MakeUnique<Holder<value_type>>(value); }
-
-        [[nodiscard]] const Type* GetType() const noexcept override { return TypeOf<T>(); }
+        Base*                      Clone() override { return New<Data>(data); }
+        [[nodiscard]] const Type*  GetType() const override { return type; }
+        [[nodiscard]] virtual bool IsRef() const { return false; }
     };
 
-    UniquePtr<Base> content_;
+    template<typename T>
+    struct Data<Ref<T>> : Base
+    {
+        Ref<T>      data;
+        const Type* type;
+
+        Data(const Ref<T>& t) : data(t), type(TypeOf<T>()) {}
+
+        Base*                     Clone() override { return New<Data>(data); }
+        [[nodiscard]] const Type* GetType() const override { return type; }
+        [[nodiscard]] bool        IsRef() const override { return true; }
+    };
+
+    ~Any() { Delete(ptr_); }
+
+private:
+    Base* ptr_;
 };
 
 // 类型安全的提取
 template<typename T>
-Optional<T> any_cast(const Any& operand)
+std::expected<T, AnyCastError> any_cast(const Any& operand)
 {
-    if (operand.content_ && operand.content_->GetType() == TypeOf<T>())
+    if (!operand.ptr_)
     {
-        return static_cast<Any::Holder<T>*>(operand.content_.Get())->value;
+        return std::unexpected(AnyCastError::ValueIsNullptr);
     }
-    return NullOpt;
+    if constexpr (IsRef_V<T>)
+    {
+        if (operand.GetType() != TypeOf<typename T::value_type>())
+        {
+            return std::unexpected(AnyCastError::TypeNotSame);
+        }
+    }
+    else
+    {
+        if (operand.GetType() != TypeOf<T>())
+        {
+            return std::unexpected(AnyCastError::TypeNotSame);
+        }
+    }
+
+    if (!(IsRef_V<T> && operand.IsRef()))
+    {
+        return std::unexpected(AnyCastError::ValueIsRef);
+    }
+    return static_cast<const Any::Data<T>&>(*operand.ptr_).data;
 }
+}   // namespace core
+
+template<>
+inline core::StringView GetEnumString<core::AnyCastError>(core::AnyCastError value)
+{
+    switch (value)
+    {
+    case core::AnyCastError::ValueIsNullptr: return "ValueIsNullptr";
+    case core::AnyCastError::ValueIsRef: return "ValueIsRef";
+    case core::AnyCastError::TypeNotSame: return "TypeNotSame";
+    default: return ENUM_INVALID;
+    }
 }
