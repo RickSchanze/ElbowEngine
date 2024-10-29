@@ -9,7 +9,7 @@
 
 namespace core
 {
-void ContainerView::ForEach(const Function<void(Any)>& Func)
+void SequentialContainerView::ForEach(const Function<void(Any)>& Func)
 {
     DebugAssert(LogCat::Reflection, GetContainerType() == ContainerType::Sequential, "一个参数的ForEach只有持有顺序容器时才可以使用");
     if (BeginIterate())
@@ -24,7 +24,7 @@ void ContainerView::ForEach(const Function<void(Any)>& Func)
     }
 }
 
-void ContainerView::ForEach(const Function<void(Any, Any)>& Func)
+void AssociativeContainerView::ForEach(const Function<void(Any, Any)>& Func)
 {
     DebugAssert(LogCat::Reflection, GetContainerType() == ContainerType::Associative, "两个参数的ForEach只有持有关联容器时才可以使用");
     if (BeginIterate())

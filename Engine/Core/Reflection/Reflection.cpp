@@ -46,7 +46,7 @@ FiledInfo& FiledInfo::SetAttribute(ValueAttribute attr, StringView value)
     return *this;
 }
 
-Optional<Ref<ContainerView>> FiledInfo::CreateSequentialContainerView(ITypeGetter* obj) const
+Optional<Ref<SequentialContainerView>> FiledInfo::CreateSequentialContainerView(ITypeGetter* obj) const
 {
     auto ele_type        = obj->GetType();
     auto view_outer_type = container_view_->GetOuterType();
@@ -58,7 +58,7 @@ Optional<Ref<ContainerView>> FiledInfo::CreateSequentialContainerView(ITypeGette
         return NullOpt;
     }
     container_view_->SetInstance(obj);
-    return MakeRef(*container_view_);
+    return MakeRef(static_cast<SequentialContainerView&>(*container_view_));
 }
 
 

@@ -75,7 +75,7 @@ struct FiledInfo
         return *static_cast<T*>(static_cast<uint8_t*>(obj) + offset_);
     }
 
-    Optional<Ref<ContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
+    Optional<Ref<SequentialContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
 
 protected:
     int32_t                  offset_ = -1;
@@ -290,7 +290,7 @@ struct Type
         return fields_.emplace_back(Move(info));
     }
 
-    template<typename ClassT, typename MemberField, template<typename ...> typename Container>
+    template<typename ClassT, typename MemberField, template<typename...> typename Container>
     FiledInfo& RegisterField(StringView name, Container<MemberField> ClassT::*field, int32_t offset)
     {
         FiledInfo info;
@@ -299,7 +299,7 @@ struct Type
         info.attribute_ |= FiledInfo::SequentialContainer;
         info.offset_         = offset;
         info.size_           = sizeof(Array<MemberField>);
-        info.container_view_ = New<SequentialContainerView<ClassT, MemberField, Container>>(field, this);
+        info.container_view_ = New<DynamicArrayView<ClassT, MemberField, Container>>(field, this);
         return fields_.emplace_back(Move(info));
     }
 

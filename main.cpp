@@ -22,7 +22,7 @@ public:
 
     core::Array<int32_t>          array       = {1, 2, 3};
     core::HashSet<int32_t>        list        = {12, 13, 45};
-    core::StaticArray<int32_t, 4> static_aray = {12, 13, 45, 26};
+    core::StaticArray<int32_t, 4> static_aray = {17, 13, 99, 26};
     int32_t                       intv;
 };
 

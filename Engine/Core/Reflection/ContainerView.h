@@ -33,58 +33,39 @@ class ContainerView
 public:
     virtual ~ContainerView() = default;
 
-    virtual bool BeginIterate()     = 0;
-    virtual void Next()             = 0;
-    virtual void EndIterate()       = 0;
-    virtual bool HasNext()          = 0;
-    virtual void SetInstance(void*) = 0;
-
-#if REGION(顺序容器)
-    virtual const Type* GetElementType()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    virtual Any GetCurrentElement()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    virtual Any GetElementAt(int32_t index)
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    void ForEach(const Function<void(Any)>& Func);
-#endif
-
-#if REGION(关联容器)
-    virtual Any GetCurrentKey()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-
-    virtual Any GetCurrentValue()
-    {
-        NEVER_ENTRY_WARN(LogCat::Reflection);
-        return {};
-    }
-#endif
-
-    void ForEach(const Function<void(Any, Any)>& Func);
-
+    virtual bool          BeginIterate()     = 0;
+    virtual void          Next()             = 0;
+    virtual void          EndIterate()       = 0;
+    virtual bool          HasNext()          = 0;
+    virtual void          SetInstance(void*) = 0;
     virtual ContainerType GetContainerType() = 0;
-
-    virtual const Type* GetOuterType() = 0;
-    virtual int32_t     Size()         = 0;
+    virtual const Type*   GetOuterType()     = 0;
+    virtual int32_t       Size()             = 0;
 };
+
+class SequentialContainerView : public ContainerView
+{
+public:
+    virtual const Type* GetElementType()            = 0;
+    virtual Any         GetCurrentElement()         = 0;
+    virtual Any         GetElementAt(int32_t index) = 0;
+    void                ForEach(const Function<void(Any)>& Func);
+};
+
+class AssociativeContainerView : public ContainerView
+{
+public:
+    virtual const Type* GetKeyType()                 = 0;
+    virtual const Type* GetValueType()               = 0;
+    virtual Any         GetCurrentKey()              = 0;
+    virtual Any         GetCurrentValue()            = 0;
+    virtual Any         GetElementAt(const Any& key) = 0;
+    void                ForEach(const Function<void(Any, Any)>& Func);
+};
+
 #if REGION(非关联容器: StaticArray)
 template<typename ClassT, typename T, size_t N>
-class StaticArrayView : public ContainerView
+class StaticArrayView : public SequentialContainerView
 {
 public:
     static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
@@ -181,14 +162,13 @@ private:
 
 #if REGION(非关联容器: Array List Set HashSet)
 template<typename ClassT, typename T, template<typename...> typename Container>
-class SequentialContainerView : public ContainerView
+class DynamicArrayView : public SequentialContainerView
 {
 public:
     static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
     using Iterator = typename Container<T>::iterator;
 
-    explicit SequentialContainerView(Container<T> ClassT::*container, const Type* outer) :
-        container_(container), element_type_(TypeOf<T>()), outer_(outer)
+    explicit DynamicArrayView(Container<T> ClassT::*container, const Type* outer) : container_(container), element_type_(TypeOf<T>()), outer_(outer)
     {
     }
 
