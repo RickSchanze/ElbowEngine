@@ -290,8 +290,8 @@ struct Type
         return fields_.emplace_back(Move(info));
     }
 
-    template<typename ClassT, typename MemberField>
-    FiledInfo& RegisterField(StringView name, Array<MemberField> ClassT::*field, int32_t offset)
+    template<typename ClassT, typename MemberField, template<typename ...> typename Container>
+    FiledInfo& RegisterField(StringView name, Container<MemberField> ClassT::*field, int32_t offset)
     {
         FiledInfo info;
         info.name_ = name;
@@ -299,7 +299,20 @@ struct Type
         info.attribute_ |= FiledInfo::SequentialContainer;
         info.offset_         = offset;
         info.size_           = sizeof(Array<MemberField>);
-        info.container_view_ = New<SequentialContainerView<ClassT, MemberField>>(field, this);
+        info.container_view_ = New<SequentialContainerView<ClassT, MemberField, Container>>(field, this);
+        return fields_.emplace_back(Move(info));
+    }
+
+    template<typename ClassT, typename MemberField, size_t N>
+    FiledInfo& RegisterField(StringView name, StaticArray<MemberField, N> ClassT::*field, int32_t offset)
+    {
+        FiledInfo info;
+        info.name_ = name;
+        info.type_ = this;
+        info.attribute_ |= FiledInfo::SequentialContainer;
+        info.offset_         = offset;
+        info.size_           = sizeof(Array<MemberField>);
+        info.container_view_ = New<StaticArrayView<ClassT, MemberField, N>>(field, this);
         return fields_.emplace_back(Move(info));
     }
 

@@ -20,8 +20,10 @@ public:
     static core::Type*              REFLECTION_Register_TestA_Registerer();
     [[nodiscard]] const core::Type* GetType() const override { return core::TypeOf<TestA>(); }
 
-    core::Array<int32_t> array = {1, 2, 3};
-    int32_t              intv;
+    core::Array<int32_t>          array       = {1, 2, 3};
+    core::HashSet<int32_t>        list        = {12, 13, 45};
+    core::StaticArray<int32_t, 4> static_aray = {12, 13, 45, 26};
+    int32_t                       intv;
 };
 
 core::Type* TestA::REFLECTION_Register_TestA_Registerer()
@@ -29,6 +31,8 @@ core::Type* TestA::REFLECTION_Register_TestA_Registerer()
     using namespace core;
     Type* type = Type::Create<TestA>("TestA");
     type->RegisterField("array", &TestA::array, offsetof(TestA, array));
+    type->RegisterField("list", &TestA::list, offsetof(TestA, list));
+    type->RegisterField("static_aray", &TestA::static_aray, offsetof(TestA, list));
     type->RegisterField("intv", &TestA::intv, offsetof(TestA, intv));
     return type;
 }
@@ -57,7 +61,7 @@ int main()
     auto  t = core::TypeOf<TestA>();
     TestA b{};
     b.array.push_back(30);
-    auto field = t->GetField("array");
+    auto field = t->GetField("static_aray");
     if (field)
     {
         auto& field_value = field.value();
@@ -84,7 +88,7 @@ int main()
                 {
                     vv.value() = 100;
                 }
-                v = view->GetElementAt(1);
+                v        = view->GetElementAt(1);
                 auto vv2 = core::any_cast<core::Ref<int>>(v);
                 if (vv2.has_value())
                 {
