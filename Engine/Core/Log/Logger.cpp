@@ -14,12 +14,27 @@
 
 namespace core
 {
+
+static void LogErrorStack(core::Log& log)
+{
+    if (log.level == LogLevel::Error)
+    {
+        String outStack = "Call Stack: \n";
+        for (auto element: log.call_stack)
+        {
+            outStack += fmt::format("  {}:{} {}\n", element.file, element.line, element.function);
+        }
+        LOGGER.ErrorFast(log.category, "{}", outStack);
+    }
+}
+
 Logger::Logger()
 {
     auto color_logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
 
     logger_ = MakeUnique<spdlog::logger>("ElbowEngine", spdlog::sinks_init_list{color_logger});
     logger_->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
+    Event_OnLog.AddBind(&LogErrorStack);
 }
 
 void Logger::LogStackTrace(LogLevel level)
