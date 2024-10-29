@@ -72,7 +72,7 @@ add_library(Platform
         RHI/D3D12/TextureFormat.h
 )
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
     target_compile_definitions(Platform PRIVATE "RELWITHDEBINFO")
 endif ()
 

@@ -50,6 +50,7 @@ public:
     virtual Any         GetCurrentElement()         = 0;
     virtual Any         GetElementAt(int32_t index) = 0;
     void                ForEach(const Function<void(Any)>& Func);
+    void                ForEach(const Function<void(int, Any)>& Func);
 };
 
 class AssociativeContainerView : public ContainerView
@@ -256,6 +257,106 @@ private:
 };
 #endif
 
+#if REGION(关联容器: Map HashMap)
+template<typename ClassT, typename K, typename V, template<typename...> typename Container>
+class MapView : public AssociativeContainerView
+{
+    using key_type      = typename Container<K, V>::key_type;
+    using mapped_type   = typename Container<K, V>::mapped_type;
+    using value_type    = typename Container<K, V>::value_type;
+    using iterator_type = typename Container<K, V>::iterator;
 
+public:
+    MapView(Container<K, V> ClassT::*container, const Type* outer) :
+        container_(container), key_type_(TypeOf<K>()), value_type_(TypeOf<V>()), outer_(outer)
+    {
+    }
+
+    bool BeginIterate() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            return false;
+        }
+        size_     = Size();
+        iter_     = (instance_->*container_).begin();
+        iter_cnt_ = 1;
+        return true;
+    }
+
+    void Next() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+        }
+        ++iter_;
+    }
+
+    void EndIterate() override
+    {
+        iter_cnt_ = 0;
+        size_     = 0;
+        iter_     = {};
+    }
+
+    bool HasNext() override { return iter_cnt_ < size_; }
+
+    void SetInstance(void* instance) override { instance_ = static_cast<ClassT*>(instance); }
+
+    int32_t Size() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            return 0;
+        }
+        return (instance_->*container_).size();
+    }
+    ContainerType GetContainerType() override { return ContainerType::Associative; }
+    const Type*   GetOuterType() override { return outer_; }
+    const Type*   GetKeyType() override { return key_type_; }
+    const Type*   GetValueType() override { return value_type_; }
+
+    Any GetCurrentKey() override
+    {
+        // key使用const ref
+        return MakeRef(iter_->first);
+    }
+
+    Any GetCurrentValue() override { return MakeRef(iter_->second); }
+
+    Any GetElementAt(const Any& key) override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            return {};
+        }
+        std::expected<const K, AnyCastError> cast_op = any_cast<const K>(key);
+        if (cast_op.has_value())
+        {
+            auto& key_value = cast_op.value();
+            if ((instance_->*container_).find(key_value) != (instance_->*container_).end())
+            {
+                return MakeRef((instance_->*container_)[key_value]);
+            }
+        }
+        return {};
+    }
+
+private:
+    Container<K, V> ClassT::*container_ = nullptr;
+
+    ClassT*       instance_ = nullptr;
+    iterator_type iter_{};
+    size_t        iter_cnt_ = 0;
+    size_t        size_     = 0;
+    const Type*   key_type_{};
+    const Type*   value_type_{};
+    const Type*   outer_{};
+};
+#endif
 
 }   // namespace core

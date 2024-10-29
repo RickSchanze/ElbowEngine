@@ -13,6 +13,8 @@
 #include "Base/Ref.h"
 #include "ContainerView.h"
 #include "CoreGlobal.h"
+#include "CoreTypeTraits.h"
+#include "ITypeGetter.h"
 #include "Log/CoreLogCategory.h"
 #include "Log/Logger.h"
 #include "MetaInfoManager.h"
@@ -34,11 +36,9 @@ struct FiledInfo
     friend struct Type;
     enum FlagAttribute
     {
-        Transient            = 1 << 0,
-        SequentialContainer  = 1 << 1,
-        AssociativeContainer = 1 << 2,
+        Transient = 1 << 0,
         // Editor Only
-        Hidden               = 1 << 16,
+        Hidden    = 1 << 16,
     };
 
     enum class ValueAttribute
@@ -50,41 +50,54 @@ struct FiledInfo
         Count,
     };
 
+    enum class ContainerType
+    {
+        Array,
+        StaticArray,
+        Set,
+        HashSet,
+        List,
+        Map,
+        HashMap,
+        Count,
+    };
+
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
-    [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].Empty(); }
-    [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
-    [[nodiscard]] int32_t    GetOffset() const { return offset_; }
-    [[nodiscard]] StringView GetName() const { return name_; }
-    [[nodiscard]] Type*      GetType() const { return type_; }
-    [[nodiscard]] int32_t    GetSize() const { return size_; }
-    [[nodiscard]] bool       IsSequentialContainer() const { return IsDefined(SequentialContainer); }
-    [[nodiscard]] bool       IsAssociativeContainer() const { return IsDefined(AssociativeContainer); }
+    [[nodiscard]] bool        IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
+    [[nodiscard]] bool        IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].Empty(); }
+    [[nodiscard]] StringView  GetAttribute(ValueAttribute attr) const;
+    [[nodiscard]] int32_t     GetOffset() const { return offset_; }
+    [[nodiscard]] StringView  GetName() const { return name_; }
+    // 这个函数有可能返回null, 因为当包装关联容器时,
+    // 不知道应该是KeyType还是ValueType就返回了null
+    [[nodiscard]] const Type* GetType() const { return type_; }
+    [[nodiscard]] const Type* GetOuter() const { return outer_; }
+    [[nodiscard]] int32_t     GetSize() const { return size_; }
+    [[nodiscard]] bool IsAssociativeContainer() const { return container_type_ == ContainerType::Map || container_type_ == ContainerType::HashMap; }
+    [[nodiscard]] bool IsSequentialContainer() const { return !IsAssociativeContainer(); }
 
     FiledInfo& SetAttribute(FlagAttribute attr);
     FiledInfo& SetAttribute(ValueAttribute attr, StringView value);
 
-    template<typename T, typename ClassT>
-    [[nodiscard]] Optional<T> Get(ClassT* obj)
-    {
-        if (TypeOf<ClassT>() != type_)
-        {
-            return NullOpt;
-        }
-        return *static_cast<T*>(static_cast<uint8_t*>(obj) + offset_);
-    }
+    template<typename T>
+    [[nodiscard]] Optional<T> Get(ITypeGetter* obj) const;
 
-    Optional<Ref<SequentialContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
+
+    Optional<Ref<SequentialContainerView>>  CreateSequentialContainerView(ITypeGetter* obj) const;
+    Optional<Ref<AssociativeContainerView>> CreateAssociativeContainerView(ITypeGetter* obj) const;
 
 protected:
     int32_t                  offset_ = -1;
     int32_t                  size_   = 0;
     StringView               name_;
-    Type*                    type_      = nullptr;
     int32_t                  attribute_ = 0;   // bool attribute
     ValueAttributes          value_attr_;
     UniquePtr<ContainerView> container_view_ = nullptr;
+
+    const Type*   type_           = nullptr;
+    const Type*   outer_          = nullptr;
+    ContainerType container_type_ = ContainerType::Count;
 };
 
 struct FunctionParamInfo
@@ -278,25 +291,30 @@ struct Type
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
-    template<typename ClassT, typename MemberField>
-    FiledInfo& RegisterField(StringView name, MemberField ClassT::*, int32_t offset)
-    {
-        FiledInfo info;
-        info.name_ = name;
-        info.type_ = this;
-        info.attribute_ |= FiledInfo::SequentialContainer;
-        info.offset_ = offset;
-        info.size_   = sizeof(Array<MemberField>);
-        return fields_.emplace_back(Move(info));
-    }
-
     template<typename ClassT, typename MemberField, template<typename...> typename Container>
+        requires ArrayLikeIterable<Container<MemberField>>
     FiledInfo& RegisterField(StringView name, Container<MemberField> ClassT::*field, int32_t offset)
     {
         FiledInfo info;
-        info.name_ = name;
-        info.type_ = this;
-        info.attribute_ |= FiledInfo::SequentialContainer;
+        info.name_  = name;
+        info.type_  = TypeOf<MemberField>();
+        info.outer_ = this;
+        if constexpr (std::is_same_v<Array<MemberField>, Container<MemberField>>)
+        {
+            info.container_type_ = FiledInfo::ContainerType::Array;
+        }
+        else if constexpr (std::is_same_v<Set<MemberField>, Container<MemberField>>)
+        {
+            info.container_type_ = FiledInfo::ContainerType::Set;
+        }
+        else if constexpr (std::is_same_v<HashSet<MemberField>, Container<MemberField>>)
+        {
+            info.container_type_ = FiledInfo::ContainerType::HashSet;
+        }
+        else if constexpr (std::is_same_v<List<MemberField>, Container<MemberField>>)
+        {
+            info.container_type_ = FiledInfo::ContainerType::List;
+        }
         info.offset_         = offset;
         info.size_           = sizeof(Array<MemberField>);
         info.container_view_ = New<DynamicArrayView<ClassT, MemberField, Container>>(field, this);
@@ -307,12 +325,30 @@ struct Type
     FiledInfo& RegisterField(StringView name, StaticArray<MemberField, N> ClassT::*field, int32_t offset)
     {
         FiledInfo info;
-        info.name_ = name;
-        info.type_ = this;
-        info.attribute_ |= FiledInfo::SequentialContainer;
+        info.name_           = name;
+        info.type_           = TypeOf<MemberField>();
+        info.outer_          = this;
+        info.container_type_ = FiledInfo::ContainerType::StaticArray;
         info.offset_         = offset;
-        info.size_           = sizeof(Array<MemberField>);
+        info.size_           = sizeof(StaticArray<MemberField, N>);
         info.container_view_ = New<StaticArrayView<ClassT, MemberField, N>>(field, this);
+        return fields_.emplace_back(Move(info));
+    }
+
+    template<typename ClassT, typename K, typename V, template<typename...> typename Container>
+        requires MapLikeIterable<Container<K, V>>
+    FiledInfo& RegisterField(StringView name, Container<K, V> ClassT::*field, int32_t offset)
+    {
+        FiledInfo info;
+        info.name_  = name;
+        info.outer_ = this;
+        if constexpr (std::is_same_v<Map<K, V>, Container<K, V>>)
+            info.container_type_ = FiledInfo::ContainerType::Map;
+        else if constexpr (std::is_same_v<HashMap<K, V>, Container<K, V>>)
+            info.container_type_ = FiledInfo::ContainerType::HashMap;
+        info.offset_         = offset;
+        info.size_           = sizeof(Container<K, V>);
+        info.container_view_ = New<MapView<ClassT, K, V, Container>>(field, this);
         return fields_.emplace_back(Move(info));
     }
 
@@ -331,6 +367,98 @@ protected:
     Array<FunctionInfo*> function_infos_;
     size_t               type_hash_ = 0;
 };
+
+#define CONTAINER_GET_IMPL(name)                                              \
+    if (container_type_ == ContainerType::name)                               \
+    {                                                                         \
+        if (TypeOf<typename T::value_type>() != type_)                        \
+        {                                                                     \
+            LOGGER.Error(                                                     \
+                LogCat::Reflection,                                           \
+                "{:p}: 类型不匹配, 只能转换为" #name "<{}>而不是" #name "<{}>", \
+                (void*)obj,                                                   \
+                type_->GetName(),                                             \
+                TypeOf<typename T::value_type>()->GetName()                   \
+            );                                                                \
+            return NullOpt;                                                   \
+        }                                                                     \
+    }
+
+#define CONTAINER_GET_IMPL_MAP(name)                                                                                                              \
+    if (container_type_ == ContainerType::name)                                                                                                   \
+    {                                                                                                                                             \
+        auto view = CreateAssociativeContainerView(obj);                                                                                          \
+        if (!view)                                                                                                                                \
+        {                                                                                                                                         \
+            return NullOpt;                                                                                                                       \
+        }                                                                                                                                         \
+        if (auto v = view.value(); !(TypeOf<typename T::key_type>() == v->GetKeyType() && TypeOf<typename T::value_type>() == v->GetValueType())) \
+        {                                                                                                                                         \
+            LOGGER.Error(                                                                                                                         \
+                LogCat::Reflection,                                                                                                               \
+                "类型不匹配, 要求" #name "<{}, {}>, 给出了" #name "Map<{}, {}>",                                                                  \
+                v->GetKeyType()->GetName(),                                                                                                       \
+                v->GetValueType()->GetName(),                                                                                                     \
+                TypeOf<typename T::key_type>()->GetName(),                                                                                        \
+                TypeOf<typename T::value_type>()->GetName()                                                                                       \
+            );                                                                                                                                    \
+            return NullOpt;                                                                                                                       \
+        }                                                                                                                                         \
+    }
+
+template<typename T>
+Optional<T> FiledInfo::Get(ITypeGetter* obj) const
+{
+    if (obj->GetType() != outer_)
+    {
+        LOGGER.Error(LogCat::Reflection, "要求obj类型为{}而不是{}", outer_->GetName(), obj->GetType()->GetName());
+        return NullOpt;
+    }
+
+    if constexpr (ArrayLikeIterable<T>)
+    {
+        CONTAINER_GET_IMPL(Array);
+        CONTAINER_GET_IMPL(Set);
+        CONTAINER_GET_IMPL(HashSet);
+        CONTAINER_GET_IMPL(List);
+    }
+    if constexpr (MapLikeIterable<T>)
+    {
+        CONTAINER_GET_IMPL_MAP(Map);
+        CONTAINER_GET_IMPL_MAP(HashMap);
+    }
+    if constexpr (ArrayLikeIterable<T>)
+    {
+        if (IsSequentialContainer())
+        {
+            if (TypeOf<typename T::value_type>() == type_)
+            {
+                return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+            }
+        }
+    }
+    if constexpr (MapLikeIterable<T>)
+    {
+        if (IsAssociativeContainer())
+        {
+            auto view = CreateAssociativeContainerView(obj);
+            if (!view)
+            {
+                return NullOpt;
+            }
+            auto v = view.value();
+            if (TypeOf<typename T::key_type>() == v->GetKeyType() && TypeOf<typename T::value_type>() == v->GetValueType())
+            {
+                return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+            }
+        }
+    }
+    if (TypeOf<T>() == type_)
+    {
+        return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+    }
+    return NullOpt;
+}
 
 }   // namespace core
 

@@ -13,17 +13,19 @@
 #include "Reflection/MetaInfoManager.h"
 #include "Reflection/Reflection.h"
 #include "Serialization/YamlArchive.h"
-
 class TestA : public core::ITypeGetter
 {
 public:
     static core::Type*              REFLECTION_Register_TestA_Registerer();
     [[nodiscard]] const core::Type* GetType() const override { return core::TypeOf<TestA>(); }
 
-    core::Array<int32_t>          array       = {1, 2, 3};
-    core::HashSet<int32_t>        list        = {12, 13, 45};
-    core::StaticArray<int32_t, 4> static_aray = {17, 13, 99, 26};
-    int32_t                       intv;
+    core::Array<int32_t>            array       = {1, 2, 3};
+    core::HashSet<int32_t>          hash_set    = {4, 5, 6};
+    core::StaticArray<int32_t, 4>   static_aray = {7, 8, 9, 10};
+    core::List<int32_t>             list        = {11, 12, 13};
+    core::Set<int32_t>              set         = {14, 15, 16};
+    core::Map<int32_t, int32_t>     map         = {{17, 18}, {19, 20}, {21, 22}};
+    core::HashMap<int32_t, int32_t> hash_map    = {{23, 24}, {25, 26}, {27, 28}};
 };
 
 core::Type* TestA::REFLECTION_Register_TestA_Registerer()
@@ -32,8 +34,9 @@ core::Type* TestA::REFLECTION_Register_TestA_Registerer()
     Type* type = Type::Create<TestA>("TestA");
     type->RegisterField("array", &TestA::array, offsetof(TestA, array));
     type->RegisterField("list", &TestA::list, offsetof(TestA, list));
-    type->RegisterField("static_aray", &TestA::static_aray, offsetof(TestA, list));
-    type->RegisterField("intv", &TestA::intv, offsetof(TestA, intv));
+    type->RegisterField("static_aray", &TestA::static_aray, offsetof(TestA, static_aray));
+    type->RegisterField("map", &TestA::map, offsetof(TestA, map));
+    type->RegisterField("hash_map", &TestA::hash_map, offsetof(TestA, hash_map));
     return type;
 }
 
@@ -48,66 +51,13 @@ struct TestA_MetaInfo_Register
     }
 };
 
-static TestA_MetaInfo_Register TestA_REGISTER;
-
 int main()
 {
     // 让std::wcout 顺利运行
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    auto a = core::TypeOf<float>();
-    LOGGER.Info(LogCat::Test, "类型名称{}", a->GetName());
-    auto  t = core::TypeOf<TestA>();
-    TestA b{};
-    b.array.push_back(30);
-    auto field = t->GetField("static_aray");
-    if (field)
-    {
-        auto& field_value = field.value();
-        if (field_value->IsSequentialContainer())
-        {
-            auto view_op = field_value->CreateSequentialContainerView(&b);
-            if (view_op)
-            {
-                auto view = view_op.value();
-                view->ForEach([](const core::Any& item) {
-                    const auto v = core::any_cast<core::Ref<int>>(item);
-                    if (!v.has_value())
-                    {
-                        LOGGER.Error(LogCat::Test, "Error: {}", GetEnumString(v.error()));
-                    }
-                    else
-                    {
-                        LOGGER.Info(LogCat::Test, "Value: {}", v.value());
-                    }
-                });
-                core::Any v  = view->GetElementAt(0);
-                auto      vv = core::any_cast<core::Ref<int>>(v);
-                if (vv.has_value())
-                {
-                    vv.value() = 100;
-                }
-                v        = view->GetElementAt(1);
-                auto vv2 = core::any_cast<core::Ref<int>>(v);
-                if (vv2.has_value())
-                {
-                    vv2.value() = 200;
-                }
-                view->ForEach([](const core::Any& item) {
-                    const auto v = core::any_cast<core::Ref<int>>(item);
-                    if (!v.has_value())
-                    {
-                        LOGGER.Error(LogCat::Test, "Error: {}", GetEnumString(v.error()));
-                    }
-                    else
-                    {
-                        LOGGER.Info(LogCat::Test, "Value: {}", v.value());
-                    }
-                });
-            }
-        }
-    }
+    LOGGER.Info(LogCat::Test, "this");
     system("pause");
     // try
     // {

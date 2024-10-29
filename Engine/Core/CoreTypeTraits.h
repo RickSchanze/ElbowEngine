@@ -48,7 +48,8 @@ concept MapLikeIterable = requires(T t) {
     t.end();
     t.cbegin();
     t.cend();
-    T::key_type;
-    T::value_type;
+    typename T::key_type;
+    typename T::value_type;
+    typename T::mapped_type;
 };
 

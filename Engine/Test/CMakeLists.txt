@@ -1,3 +1,11 @@
 project(Test)
+enable_testing()
+add_executable(${PROJECT_NAME} Core/Reflection/TestContainerIteration.cpp)
+find_package(GTest CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 
-add_executable(Test main.cpp)
+# 自动发现测试
+include(GoogleTest)
+gtest_add_tests(TARGET ${PROJECT_NAME} SOURCES Core/Reflection/TestContainerIteration.cpp)
+

@@ -15,8 +15,8 @@
 namespace core
 {
 FiledInfo::FiledInfo(FiledInfo&& info) noexcept :
-    offset_(info.offset_), size_(info.size_), name_(info.name_), type_(info.type_), attribute_(info.attribute_), value_attr_(info.value_attr_),
-    container_view_(Move(info.container_view_))
+    offset_(info.offset_), size_(info.size_), name_(info.name_), attribute_(info.attribute_), value_attr_(info.value_attr_),
+    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_type_(info.container_type_)
 {
 }
 
@@ -59,6 +59,21 @@ Optional<Ref<SequentialContainerView>> FiledInfo::CreateSequentialContainerView(
     }
     container_view_->SetInstance(obj);
     return MakeRef(static_cast<SequentialContainerView&>(*container_view_));
+}
+
+Optional<Ref<AssociativeContainerView>> FiledInfo::CreateAssociativeContainerView(ITypeGetter* obj) const
+{
+    auto ele_type        = obj->GetType();
+    auto view_outer_type = container_view_->GetOuterType();
+    if (ele_type != view_outer_type)
+    {
+        LOGGER.Error(
+            LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
+        );
+        return NullOpt;
+    }
+    container_view_->SetInstance(obj);
+    return MakeRef(static_cast<AssociativeContainerView&>(*container_view_));
 }
 
 
