@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(ElbowEngine)
 
-option(ENABLE_TEST "Enable test" OFF)
+option(ENABLE_TEST "Enable test" ON)
 option(USE_IMGUI "Enable imgui" ON)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(WITH_EDITOR "Enable editor" ON)
@@ -44,16 +44,11 @@ add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp)
 
-
-
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 #target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Function -WHOLEARCHIVE:$<TARGET_FILE:Engine::Function>)
 #target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Tool -WHOLEARCHIVE:$<TARGET_FILE:Engine::Tool>)
 #target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)
-
-find_package(rttr CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)

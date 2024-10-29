@@ -85,9 +85,6 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Resource Engine::Platform)
 
-find_package(rttr CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ELBOWENGINE_MAKE_WORK_DIR}/Generated/Engine/Function)

@@ -46,9 +46,6 @@ add_library(${PROJECT_NAME}
 
 add_library(Engine::Tool ALIAS ${PROJECT_NAME})
 
-find_package(rttr CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
-
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 

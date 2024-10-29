@@ -86,9 +86,6 @@ add_library(${PROJECT_NAME}
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
 
-find_package(rttr CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE RTTR::Core)
-
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
 

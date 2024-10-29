@@ -8,5 +8,6 @@ add_subdirectory(Resource)
 add_subdirectory(ThirdParty)
 
 if (ENABLE_TEST)
-#    add_subdirectory(Test)
+    enable_testing()
+    add_subdirectory(Test)
 endif ()

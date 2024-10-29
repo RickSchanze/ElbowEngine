@@ -3,9 +3,6 @@
   "version-string" : "1.0.0",
   "builtin-baseline" : "37c3e63a1306562f7f59c4c3c8892ddd50fdf992",
   "dependencies" : [ {
-    "name" : "rttr",
-    "version>=" : "0.9.6+20210811"
-  }, {
     "name" : "spdlog",
     "version>=" : "1.13.0"
   }, {
@@ -43,9 +40,6 @@
     "name" : "tinyexr",
     "version>=" : "1.0.8"
   }, {
-    "name" : "shaderc",
-    "version>=" : "2023.8"
-  }, {
     "name" : "nlohmann-json",
     "version>=" : "3.11.3"
   }, {
@@ -54,5 +48,8 @@
   }, {
     "name" : "icu",
     "version>=" : "74.2#4"
+  }, {
+    "name" : "gtest",
+    "version>=" : "1.15.2"
   } ]
 }

@@ -6,8 +6,6 @@
 // 反射相关类的定义
 
 // 定义反射宏
-#include "rttr/policy.h"
-#include "rttr/registration_friend"
 #define CONCAT_IMPL(x, y) x##y
 #define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
 #define CONCAT_IMPL3(x, y, z) x##y##z
