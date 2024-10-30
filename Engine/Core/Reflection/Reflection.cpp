@@ -16,7 +16,7 @@ namespace core
 {
 FiledInfo::FiledInfo(FiledInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), attribute_(info.attribute_), value_attr_(info.value_attr_),
-    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_type_(info.container_type_)
+    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_identifier_(info.container_identifier_)
 {
 }
 

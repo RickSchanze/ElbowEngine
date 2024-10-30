@@ -44,7 +44,7 @@ struct ContainerTypeTrait
 template<typename T>
 struct ContainerTypeTrait<Array<T>>
 {
-    using ValueType                            = T;
+    using ValueType = T;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Array;
 };
@@ -61,7 +61,7 @@ struct ContainerTypeTrait<StaticArray<T, N>>
 template<typename T>
 struct ContainerTypeTrait<Set<T>>
 {
-    using ValueType                            = T;
+    using ValueType = T;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Set;
 };
@@ -69,7 +69,7 @@ struct ContainerTypeTrait<Set<T>>
 template<typename T>
 struct ContainerTypeTrait<HashSet<T>>
 {
-    using ValueType                            = T;
+    using ValueType = T;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::HashSet;
 };
@@ -77,7 +77,7 @@ struct ContainerTypeTrait<HashSet<T>>
 template<typename T>
 struct ContainerTypeTrait<List<T>>
 {
-    using ValueType                            = T;
+    using ValueType = T;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::List;
 };
@@ -85,8 +85,8 @@ struct ContainerTypeTrait<List<T>>
 template<typename K, typename V>
 struct ContainerTypeTrait<HashMap<K, V>>
 {
-    using KeyType                              = K;
-    using ValueType                            = V;
+    using KeyType   = K;
+    using ValueType = V;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::HashMap;
 };
@@ -94,8 +94,8 @@ struct ContainerTypeTrait<HashMap<K, V>>
 template<typename K, typename V>
 struct ContainerTypeTrait<Map<K, V>>
 {
-    using KeyType                              = K;
-    using ValueType                            = V;
+    using KeyType   = K;
+    using ValueType = V;
 
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Map;
 };
@@ -137,7 +137,7 @@ struct FiledInfo
     [[nodiscard]] int32_t     GetSize() const { return size_; }
     [[nodiscard]] bool        IsAssociativeContainer() const
     {
-        return container_type_ == ContainerIdentifier::Map || container_type_ == ContainerIdentifier::HashMap;
+        return container_identifier_ == ContainerIdentifier::Map || container_identifier_ == ContainerIdentifier::HashMap;
     }
     [[nodiscard]] bool IsSequentialContainer() const { return !IsAssociativeContainer(); }
 
@@ -159,9 +159,9 @@ protected:
     ValueAttributes          value_attr_;
     UniquePtr<ContainerView> container_view_ = nullptr;
 
-    const Type*         type_           = nullptr;
-    const Type*         outer_          = nullptr;
-    ContainerIdentifier container_type_ = ContainerIdentifier::Count;
+    const Type*         type_                 = nullptr;
+    const Type*         outer_                = nullptr;
+    ContainerIdentifier container_identifier_ = ContainerIdentifier::Count;
 };
 
 struct FunctionParamInfo
@@ -363,18 +363,18 @@ struct Type
         info.outer_  = this;
         info.offset_ = offset;
         info.size_   = sizeof(T);
-#define REGISTER_FIELD_IMPL(name)                                                                                           \
-    else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                           \
-    {                                                                                                                       \
-        info.type_           = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
-        info.container_type_ = ContainerIdentifier::name;                                                                   \
-        info.container_view_ = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
+#define REGISTER_FIELD_IMPL(name)                                                                                                 \
+    else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                                 \
+    {                                                                                                                             \
+        info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
+        info.container_identifier_ = ContainerIdentifier::name;                                                                   \
+        info.container_view_       = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
     }
         if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Count)
         {
             // 不是容器
-            info.type_           = TypeOf<T>();
-            info.container_type_ = ContainerIdentifier::Count;
+            info.type_                 = TypeOf<T>();
+            info.container_identifier_ = ContainerIdentifier::Count;
         }
         REGISTER_FIELD_IMPL(Array)
         REGISTER_FIELD_IMPL(Set)
@@ -382,22 +382,22 @@ struct Type
         REGISTER_FIELD_IMPL(HashSet)
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
         {
-            info.type_           = TypeOf<typename ContainerTypeTrait<T>::ValueType>();
-            info.container_type_ = ContainerIdentifier::StaticArray;
+            info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();
+            info.container_identifier_ = ContainerIdentifier::StaticArray;
             info.container_view_ =
                 New<StaticArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, ContainerTypeTrait<T>::ConstantSize>>(field, this);
         }
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Map)
         {
-            info.type_           = nullptr;
-            info.container_type_ = ContainerIdentifier::Map;
+            info.type_                 = nullptr;
+            info.container_identifier_ = ContainerIdentifier::Map;
             info.container_view_ =
                 New<MapView<ClassT, typename ContainerTypeTrait<T>::KeyType, typename ContainerTypeTrait<T>::ValueType, Map>>(field, this);
         }
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::HashMap)
         {
-            info.type_           = nullptr;
-            info.container_type_ = ContainerIdentifier::HashMap;
+            info.type_                 = nullptr;
+            info.container_identifier_ = ContainerIdentifier::HashMap;
             info.container_view_ =
                 New<MapView<ClassT, typename ContainerTypeTrait<T>::KeyType, typename ContainerTypeTrait<T>::ValueType, HashMap>>(field, this);
         }
@@ -443,7 +443,7 @@ Optional<std::conditional_t<ByRef, Ref<T>, T>> FiledInfo::Get(ITypeGetter* obj) 
     }
 
 #define GET_CONTAINER_IMPL(name)                                                 \
-    if (container_type_ == ContainerIdentifier::name)                            \
+    if (container_identifier_ == ContainerIdentifier::name)                      \
     {                                                                            \
         if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name) \
         {                                                                        \
@@ -459,7 +459,7 @@ Optional<std::conditional_t<ByRef, Ref<T>, T>> FiledInfo::Get(ITypeGetter* obj) 
     GET_CONTAINER_IMPL(List);
     GET_CONTAINER_IMPL(Set);
     GET_CONTAINER_IMPL(HashSet);
-    if (container_type_ == ContainerIdentifier::StaticArray)
+    if (container_identifier_ == ContainerIdentifier::StaticArray)
     {
         if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
         {
@@ -474,7 +474,7 @@ Optional<std::conditional_t<ByRef, Ref<T>, T>> FiledInfo::Get(ITypeGetter* obj) 
         }
         return NullOpt;
     }
-    if (container_type_ == ContainerIdentifier::Map || container_type_ == ContainerIdentifier::HashMap)
+    if (container_identifier_ == ContainerIdentifier::Map || container_identifier_ == ContainerIdentifier::HashMap)
     {
         if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Map || ContainerTypeTrait<T>::Value == ContainerIdentifier::HashMap)
         {
