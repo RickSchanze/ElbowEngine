@@ -408,25 +408,6 @@ struct Type
         return fields_.emplace_back(Move(info));
     }
 
-    template<typename ClassT, typename K, typename V, template<typename...> typename Container>
-        requires MapLikeIterable<Container<K, V>>
-    FiledInfo& RegisterField(StringView name, Container<K, V> ClassT::*field, int32_t offset)
-    {
-        FiledInfo info;
-        info.name_  = name;
-        info.outer_ = this;
-        if constexpr (std::is_same_v<Map<K, V>, Container<K, V>>)
-            info.container_type_ = ContainerIdentifier::Map;
-        else if constexpr (std::is_same_v<HashMap<K, V>, Container<K, V>>)
-            info.container_type_ = ContainerIdentifier::HashMap;
-        else
-            static_assert(false, "Unsupported container type");
-        info.offset_         = offset;
-        info.size_           = sizeof(Container<K, V>);
-        info.container_view_ = New<MapView<ClassT, K, V, Container>>(field, this);
-        return fields_.emplace_back(Move(info));
-    }
-
     Type& SetAttribute(FlagAttribute attr);
     Type& SetAttribute(ValueAttribute attr, StringView value);
 
