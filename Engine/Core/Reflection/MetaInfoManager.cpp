@@ -13,18 +13,19 @@
 
 namespace core
 {
-
-#define REGISTER_ATOMIC_TYPE(tname)                                          \
-    Type* tname##_type                          = New<Type>();               \
-    tname##_type->type_hash_                    = typeid(tname).hash_code(); \
-    tname##_type->name_                         = #tname;                    \
-    tname##_type->attribute_                    = Type::Atomic;              \
-    tname##_type->size_                         = sizeof(tname);             \
-    types_registered_[tname##_type->type_hash_] = tname##_type;
+#define REGISTER_ATOMIC_TYPE(tname)                               \
+    {                                                             \
+        Type* tname##_type       = New<Type>();                   \
+        tname##_type->type_hash_ = typeid(tname).hash_code();     \
+        tname##_type->name_      = #tname;                        \
+        tname##_type->attribute_ = Type::Atomic;                  \
+        tname##_type->size_      = sizeof(tname);                 \
+        RTTITypeInfo info        = RTTITypeInfo::Create<tname>(); \
+        types_registered_[info]  = tname##_type;                  \
+    }   // namespace core
 
 MetaInfoManager::MetaInfoManager()
 {
-    // 注册基础类型
     REGISTER_ATOMIC_TYPE(int8_t);
     REGISTER_ATOMIC_TYPE(int16_t);
     REGISTER_ATOMIC_TYPE(int32_t);
@@ -40,77 +41,55 @@ MetaInfoManager::MetaInfoManager()
 
 MetaInfoManager::~MetaInfoManager()
 {
-    for (auto& type: types_registered_)
+    for (auto& val: types_registered_ | std::views::values)
     {
-        Delete(type.second);
+        Delete(val);
     }
     types_registered_.clear();
 }
 
-void MetaInfoManager::RegisterType(size_t type_hash)
+void MetaInfoManager::RegisterType(RTTITypeInfo type_info)
 {
-    if (types_registered_.contains(type_hash))
+    if (types_registered_.contains(type_info))
     {
         return;
     }
-    if (!meta_data_registers_.contains(type_hash))
+    if (!meta_data_registers_.contains(type_info))
     {
-        LOGGER.Error(LogCat::Reflection, "尝试注册类型{}, 但是此类型没有对应的注册函数", type_hash);
+        LOGGER.Error(LogCat::Reflection, "尝试注册类型{}, 但是此类型没有对应的注册函数", type_info.name);
         return;
     }
-    types_registered_[type_hash] = meta_data_registers_[type_hash].registerer();
-    meta_data_registers_.erase(type_hash);
+    types_registered_[type_info] = meta_data_registers_[type_info]();
+    meta_data_registers_.erase(type_info);
 }
 
-void MetaInfoManager::RegisterTypeRegisterer(size_t type_hash, const MetaDataRegisterer& registerer)
+void MetaInfoManager::RegisterTypeRegisterer(RTTITypeInfo type_info, const MetaDataRegisterer registerer)
 {
-    if (registerer.registerer == nullptr || registerer.name.Empty()) return;
-    if (meta_data_registers_.contains(type_hash))
+    if (registerer == nullptr) return;
+    if (meta_data_registers_.contains(type_info))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_hash);
+        LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_info.name);
     }
-    meta_data_registers_[type_hash] = registerer;
+    meta_data_registers_[type_info] = registerer;
 }
 
-Type* MetaInfoManager::GetType(size_t type_name)
+Type* MetaInfoManager::GetType(const RTTITypeInfo& type_info)
 {
-    if (types_registered_.contains(type_name))
+    if (types_registered_.contains(type_info))
     {
-        return types_registered_[type_name];
+        return types_registered_[type_info];
     }
-    RegisterType(type_name);
-    if (types_registered_.contains(type_name))
+    RegisterType(type_info);
+    if (types_registered_.contains(type_info))
     {
-        return types_registered_[type_name];
-    }
-    return nullptr;
-}
-
-Type* MetaInfoManager::GetType(StringView type_name)
-{
-    for (auto types_registered: types_registered_)
-    {
-        if (types_registered.second->GetName() == type_name)
-        {
-            return types_registered.second;
-        }
-    }
-    for (auto meta_data_registers: meta_data_registers_)
-    {
-        if (meta_data_registers.second.name == type_name)
-        {
-            RegisterType(meta_data_registers.first);
-            break;
-        }
-    }
-    for (auto types_registered: types_registered_)
-    {
-        if (types_registered.second->GetName() == type_name)
-        {
-            return types_registered.second;
-        }
+        return types_registered_[type_info];
     }
     return nullptr;
 }
 
 }   // namespace core
+
+size_t std::hash<core::RTTITypeInfo>::operator()(const core::RTTITypeInfo& type) const noexcept
+{
+    return type.hash_code;
+}

@@ -53,3 +53,18 @@ concept MapLikeIterable = requires(T t) {
     typename T::mapped_type;
 };
 
+template<typename T>
+concept IsStaticArray = !requires(T a, typename T::const_iterator it, const typename T::value_type& v) {
+    {
+        a.insert(it, v)
+    };   // 检查是否存在名称为insert的方法
+} && ArrayLikeIterable<T>;
+
+template<typename T>
+struct IsTypeHasTemplate : std::false_type
+{
+};
+
+template<template<typename...> typename Template, typename... Args>
+struct IsTypeHasTemplate<Template<Args...>> : std::true_type {};
+

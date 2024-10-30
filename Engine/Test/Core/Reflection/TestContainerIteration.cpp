@@ -34,7 +34,7 @@ core::Type* TestA::REFLECTION_Register_TestA_Registerer()
     Type* type = Type::Create<TestA>("TestA");
     type->RegisterField("array", &TestA::array, offsetof(TestA, array));
     type->RegisterField("list", &TestA::list, offsetof(TestA, list));
-    type->RegisterField("static_aray", &TestA::static_aray, offsetof(TestA, static_aray));
+    type->RegisterField("static_array", &TestA::static_aray, offsetof(TestA, static_aray));
     type->RegisterField("map", &TestA::map, offsetof(TestA, map));
     type->RegisterField("hash_map", &TestA::hash_map, offsetof(TestA, hash_map));
     return type;
@@ -44,10 +44,7 @@ struct TestA_MetaInfo_Register
 {
     TestA_MetaInfo_Register()
     {
-        core::MetaDataRegisterer registerer;
-        registerer.name       = "TestA";
-        registerer.registerer = &TestA::REFLECTION_Register_TestA_Registerer;
-        core::MetaInfoManager::Get()->RegisterTypeRegisterer(typeid(TestA).hash_code(), registerer);
+        core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<TestA>(), &TestA::REFLECTION_Register_TestA_Registerer);
     }
 };
 
@@ -101,22 +98,6 @@ void TestSequenceIteration(core::StringView name)
     }
 }
 
-void ContainerCast()
-{
-    TestA a;
-    auto  type  = core::TypeOf<TestA>();
-    auto  field = type->GetField("array");
-    if (field)
-    {
-        auto op_array = field.value()->Get<core::Array<int32_t>>(&a);
-        EXPECT_EQ(op_array.has_value(), true);
-        auto op_array1 = field.value()->Get<core::Array<bool>>(&a);
-        EXPECT_EQ(op_array1.has_value(), false);
-        auto op_array2 = field.value()->Get<int64_t>(&a);
-        EXPECT_EQ(op_array2.has_value(), false);
-    }
-}
-
 TEST(Core_Reflection, TestContainerCast)
 {
     TestA a;
@@ -130,5 +111,35 @@ TEST(Core_Reflection, TestContainerCast)
         EXPECT_EQ(op_array1.has_value(), false);
         auto op_array2 = field.value()->Get<int64_t>(&a);
         EXPECT_EQ(op_array2.has_value(), false);
+        auto op_array3 = field.value()->Get<core::Map<int32_t, int32_t>>(&a);
+        EXPECT_EQ(op_array3.has_value(), false);
+        auto op_array4 = field.value()->Get<core::StaticArray<int32_t, 1>>(&a);
+        EXPECT_EQ(op_array4.has_value(), false);
+    }
+    if (auto field1 = type->GetField("static_array"))
+    {
+        auto op_array = field1.value()->Get<core::Array<int32_t>>(&a);
+        EXPECT_EQ(op_array.has_value(), false);
+        auto op_array1 = field1.value()->Get<core::Array<bool>>(&a);
+        EXPECT_EQ(op_array1.has_value(), false);
+        auto op_array2 = field1.value()->Get<int64_t>(&a);
+        EXPECT_EQ(op_array2.has_value(), false);
+        auto op_array3 = field1.value()->Get<core::Map<int32_t, int32_t>>(&a);
+        EXPECT_EQ(op_array3.has_value(), false);
+        auto op_array4 = field1.value()->Get<core::StaticArray<int32_t, 4>>(&a);
+        EXPECT_EQ(op_array4.has_value(), true);
+    }
+    if (auto field1 = type->GetField("map"))
+    {
+        auto op_array = field1.value()->Get<core::Array<int32_t>>(&a);
+        EXPECT_EQ(op_array.has_value(), false);
+        auto op_array1 = field1.value()->Get<core::Array<bool>>(&a);
+        EXPECT_EQ(op_array1.has_value(), false);
+        auto op_array2 = field1.value()->Get<int64_t>(&a);
+        EXPECT_EQ(op_array2.has_value(), false);
+        auto op_array3 = field1.value()->Get<core::Map<int32_t, int32_t>>(&a);
+        EXPECT_EQ(op_array3.has_value(), true);
+        auto op_array4 = field1.value()->Get<core::StaticArray<int32_t, 4>>(&a);
+        EXPECT_EQ(op_array4.has_value(), false);
     }
 }

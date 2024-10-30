@@ -1,8 +1,8 @@
 /**
  * @file MetaInfoManager.h
- * @author Echo 
+ * @author Echo
  * @Date 24-10-27
- * @brief 
+ * @brief
  */
 
 #pragma once
@@ -10,14 +10,35 @@
 #include "Base/CoreTypeDef.h"
 #include "Base/EString.h"
 #include "Singleton/Singleton.h"
+
+namespace core
+{
+struct RTTITypeInfo;
+}
+template<>
+struct ::std::hash<core::RTTITypeInfo>
+{
+    size_t operator()(const core::RTTITypeInfo& type) const noexcept;
+};
+
 namespace core
 {
 struct Type;
 
-struct MetaDataRegisterer
+typedef Type* (*MetaDataRegisterer)();
+
+struct RTTITypeInfo
 {
-    Type*      (*registerer)();
     StringView name;
+    size_t     hash_code{};
+
+    template<typename T>
+    static RTTITypeInfo Create()
+    {
+        return {typeid(T).name(), typeid(T).hash_code()};
+    }
+
+    bool operator==(const RTTITypeInfo& o) const { return hash_code == o.hash_code; }
 };
 
 class MetaInfoManager : public Singleton<MetaInfoManager>
@@ -27,21 +48,22 @@ public:
 
     ~MetaInfoManager() override;
 
-    void RegisterType(size_t type_hash);
-    void RegisterTypeRegisterer(size_t type_hash, const MetaDataRegisterer& registerer);
+    void RegisterType(RTTITypeInfo type_info);
+    void RegisterTypeRegisterer(RTTITypeInfo type_info, MetaDataRegisterer registerer);
 
-    Type* GetType(size_t type_hash);
-    Type* GetType(StringView type_name);
+    Type* GetType(const RTTITypeInfo& type_info);
 
 private:
-    HashMap<size_t, Type*>              types_registered_;
-    HashMap<size_t, MetaDataRegisterer> meta_data_registers_;
+    HashMap<RTTITypeInfo, Type*>              types_registered_;
+    HashMap<RTTITypeInfo, MetaDataRegisterer> meta_data_registers_;
 };
 
 template<typename T>
 const Type* TypeOf()
 {
-    size_t hash = typeid(T).hash_code();
-    return MetaInfoManager::Get()->GetType(hash);
+    RTTITypeInfo info = {typeid(T).name(), typeid(T).hash_code()};
+    return MetaInfoManager::Get()->GetType(info);
 }
 }   // namespace core
+
+

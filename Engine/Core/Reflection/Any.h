@@ -9,7 +9,6 @@
 #include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
 #include "Base/Ref.h"
-#include "Base/UniquePtr.h"
 #include "CoreGlobal.h"
 #include "MetaInfoManager.h"
 

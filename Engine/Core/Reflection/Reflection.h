@@ -62,6 +62,71 @@ struct FiledInfo
         Count,
     };
 
+    template<typename T>
+    struct ContainerTypeTrait
+    {
+        constexpr static ContainerType Value = ContainerType::Count;
+    };
+
+    template<typename T>
+    struct ContainerTypeTrait<Array<T>>
+    {
+        using ValueType = T;
+
+        constexpr static ContainerType Value = ContainerType::Array;
+    };
+
+    template<typename T, size_t N>
+    struct ContainerTypeTrait<StaticArray<T, N>>
+    {
+        using ValueType = T;
+
+        constexpr static int32_t       ConstantSize = N;
+        constexpr static ContainerType Value        = ContainerType::StaticArray;
+    };
+
+    template<typename T>
+    struct ContainerTypeTrait<Set<T>>
+    {
+        using ValueType = T;
+
+        constexpr static ContainerType Value = ContainerType::Set;
+    };
+
+    template<typename T>
+    struct ContainerTypeTrait<HashSet<T>>
+    {
+        using ValueType = T;
+
+        constexpr static ContainerType Value = ContainerType::HashSet;
+    };
+
+    template<typename T>
+    struct ContainerTypeTrait<List<T>>
+    {
+        using ValueType = T;
+
+        constexpr static ContainerType Value = ContainerType::List;
+    };
+
+    template<typename K, typename V>
+    struct ContainerTypeTrait<HashMap<K, V>>
+    {
+        using KeyType   = K;
+        using ValueType = V;
+
+        constexpr static ContainerType Value = ContainerType::HashMap;
+    };
+
+    template<typename K, typename V>
+    struct ContainerTypeTrait<Map<K, V>>
+    {
+        using KeyType   = K;
+        using ValueType = V;
+
+        constexpr static ContainerType Value = ContainerType::Map;
+    };
+
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool        IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
@@ -315,6 +380,10 @@ struct Type
         {
             info.container_type_ = FiledInfo::ContainerType::List;
         }
+        else
+        {
+            static_assert(false, "Unsupported container type");
+        }
         info.offset_         = offset;
         info.size_           = sizeof(Array<MemberField>);
         info.container_view_ = New<DynamicArrayView<ClassT, MemberField, Container>>(field, this);
@@ -346,6 +415,8 @@ struct Type
             info.container_type_ = FiledInfo::ContainerType::Map;
         else if constexpr (std::is_same_v<HashMap<K, V>, Container<K, V>>)
             info.container_type_ = FiledInfo::ContainerType::HashMap;
+        else
+            static_assert(false, "Unsupported container type");
         info.offset_         = offset;
         info.size_           = sizeof(Container<K, V>);
         info.container_view_ = New<MapView<ClassT, K, V, Container>>(field, this);
@@ -368,97 +439,67 @@ protected:
     size_t               type_hash_ = 0;
 };
 
-#define CONTAINER_GET_IMPL(name)                                              \
-    if (container_type_ == ContainerType::name)                               \
-    {                                                                         \
-        if (TypeOf<typename T::value_type>() != type_)                        \
-        {                                                                     \
-            LOGGER.Error(                                                     \
-                LogCat::Reflection,                                           \
-                "{:p}: 类型不匹配, 只能转换为" #name "<{}>而不是" #name "<{}>", \
-                (void*)obj,                                                   \
-                type_->GetName(),                                             \
-                TypeOf<typename T::value_type>()->GetName()                   \
-            );                                                                \
-            return NullOpt;                                                   \
-        }                                                                     \
-    }
-
-#define CONTAINER_GET_IMPL_MAP(name)                                                                                                              \
-    if (container_type_ == ContainerType::name)                                                                                                   \
-    {                                                                                                                                             \
-        auto view = CreateAssociativeContainerView(obj);                                                                                          \
-        if (!view)                                                                                                                                \
-        {                                                                                                                                         \
-            return NullOpt;                                                                                                                       \
-        }                                                                                                                                         \
-        if (auto v = view.value(); !(TypeOf<typename T::key_type>() == v->GetKeyType() && TypeOf<typename T::value_type>() == v->GetValueType())) \
-        {                                                                                                                                         \
-            LOGGER.Error(                                                                                                                         \
-                LogCat::Reflection,                                                                                                               \
-                "类型不匹配, 要求" #name "<{}, {}>, 给出了" #name "Map<{}, {}>",                                                                  \
-                v->GetKeyType()->GetName(),                                                                                                       \
-                v->GetValueType()->GetName(),                                                                                                     \
-                TypeOf<typename T::key_type>()->GetName(),                                                                                        \
-                TypeOf<typename T::value_type>()->GetName()                                                                                       \
-            );                                                                                                                                    \
-            return NullOpt;                                                                                                                       \
-        }                                                                                                                                         \
-    }
-
 template<typename T>
 Optional<T> FiledInfo::Get(ITypeGetter* obj) const
 {
     if (obj->GetType() != outer_)
     {
-        LOGGER.Error(LogCat::Reflection, "要求obj类型为{}而不是{}", outer_->GetName(), obj->GetType()->GetName());
+        LOGGER.Error(LogCat::Reflection, "类型不兼容, 要求{}, 给出{}", type_->GetName(), obj->GetType()->GetName());
         return NullOpt;
     }
-
-    if constexpr (ArrayLikeIterable<T>)
-    {
-        CONTAINER_GET_IMPL(Array);
-        CONTAINER_GET_IMPL(Set);
-        CONTAINER_GET_IMPL(HashSet);
-        CONTAINER_GET_IMPL(List);
+#define GET_CONTAINER_IMPL(name)                                                         \
+    if (container_type_ == ContainerType::name)                                          \
+    {                                                                                    \
+        if constexpr (ContainerTypeTrait<T>::Value == ContainerType::name)               \
+        {                                                                                \
+            if (TypeOf<typename ContainerTypeTrait<T>::ValueType>() == type_)            \
+            {                                                                            \
+                return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_); \
+            }                                                                            \
+        }                                                                                \
+        return NullOpt;                                                                  \
     }
-    if constexpr (MapLikeIterable<T>)
+    GET_CONTAINER_IMPL(Array);
+    GET_CONTAINER_IMPL(List);
+    GET_CONTAINER_IMPL(Set);
+    GET_CONTAINER_IMPL(HashSet);
+    if (container_type_ == ContainerType::StaticArray)
     {
-        CONTAINER_GET_IMPL_MAP(Map);
-        CONTAINER_GET_IMPL_MAP(HashMap);
-    }
-    if constexpr (ArrayLikeIterable<T>)
-    {
-        if (IsSequentialContainer())
+        if constexpr (ContainerTypeTrait<T>::Value == ContainerType::StaticArray)
         {
-            if (TypeOf<typename T::value_type>() == type_)
+            if (auto view = CreateSequentialContainerView(obj))
             {
-                return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+                auto size = view.value()->Size();
+                if (size == ContainerTypeTrait<T>::ConstantSize && type_ == TypeOf<typename ContainerTypeTrait<T>::ValueType>())
+                {
+                    return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+                }
             }
         }
+        return NullOpt;
     }
-    if constexpr (MapLikeIterable<T>)
+    if (container_type_ == ContainerType::Map || container_type_ == ContainerType::HashMap)
     {
-        if (IsAssociativeContainer())
+        if constexpr (ContainerTypeTrait<T>::Value == ContainerType::Map || ContainerTypeTrait<T>::Value == ContainerType::HashMap)
         {
-            auto view = CreateAssociativeContainerView(obj);
-            if (!view)
+            if (auto view = CreateAssociativeContainerView(obj))
             {
-                return NullOpt;
-            }
-            auto v = view.value();
-            if (TypeOf<typename T::key_type>() == v->GetKeyType() && TypeOf<typename T::value_type>() == v->GetValueType())
-            {
-                return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+                if (view.value()->GetKeyType() == TypeOf<typename ContainerTypeTrait<T>::KeyType>() &&
+                    view.value()->GetValueType() == TypeOf<typename ContainerTypeTrait<T>::ValueType>())
+                {
+                    return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
+                }
             }
         }
+        return NullOpt;
     }
+    static_assert(!(ContainerTypeTrait<T>::Value == ContainerType::Count && IsTypeHasTemplate<T>::value), "custom template type not supported");
     if (TypeOf<T>() == type_)
     {
         return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);
     }
     return NullOpt;
-}
+}   // namespace core
 
 }   // namespace core
 
