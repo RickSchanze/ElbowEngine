@@ -35,6 +35,7 @@ core::Type* TestA::REFLECTION_Register_TestA_Registerer()
     type->RegisterField("array", &TestA::array, offsetof(TestA, array));
     type->RegisterField("list", &TestA::list, offsetof(TestA, list));
     type->RegisterField("static_array", &TestA::static_aray, offsetof(TestA, static_aray));
+    type->RegisterField("set", &TestA::set, offsetof(TestA, set));
     type->RegisterField("map", &TestA::map, offsetof(TestA, map));
     type->RegisterField("hash_map", &TestA::hash_map, offsetof(TestA, hash_map));
     return type;
@@ -50,60 +51,11 @@ struct TestA_MetaInfo_Register
 
 static TestA_MetaInfo_Register TestA_REGISTER;
 
-void TestSequenceIteration(core::StringView name)
-{
-    auto  t = core::TypeOf<TestA>();
-    TestA b{};
-    b.array.push_back(30);
-    auto field = t->GetField(name);
-    if (field)
-    {
-        auto& field_value = field.value();
-        if (field_value->IsSequentialContainer())
-        {
-            auto view_op = field_value->CreateSequentialContainerView(&b);
-            if (view_op)
-            {
-                auto view = view_op.value();
-                view->ForEach([](int i, const core::Any& item) {
-                    const auto v = core::any_cast<core::Ref<int>>(item);
-                    EXPECT_EQ(v.has_value(), true);
-                    // EXPECT_EQ(v.value(), b.s)
-                });
-                core::Any v  = view->GetElementAt(0);
-                auto      vv = core::any_cast<core::Ref<int>>(v);
-                if (vv.has_value())
-                {
-                    vv.value() = 100;
-                }
-                v        = view->GetElementAt(1);
-                auto vv2 = core::any_cast<core::Ref<int>>(v);
-                if (vv2.has_value())
-                {
-                    vv2.value() = 200;
-                }
-                view->ForEach([](const core::Any& item) {
-                    const auto v = core::any_cast<core::Ref<int>>(item);
-                    if (!v.has_value())
-                    {
-                        LOGGER.Error(LogCat::Test, "Error: {}", GetEnumString(v.error()));
-                    }
-                    else
-                    {
-                        LOGGER.Info(LogCat::Test, "Value: {}", v.value());
-                    }
-                });
-            }
-        }
-    }
-}
-
 TEST(Core_Reflection, TestContainerCast)
 {
     TestA a;
-    auto  type  = core::TypeOf<TestA>();
-    auto  field = type->GetField("array");
-    if (field)
+    auto  type = core::TypeOf<TestA>();
+    if (auto field = type->GetField("array"))
     {
         auto op_array = field.value()->Get<core::Array<int32_t>>(&a);
         EXPECT_EQ(op_array.has_value(), true);
@@ -141,5 +93,32 @@ TEST(Core_Reflection, TestContainerCast)
         EXPECT_EQ(op_array3.has_value(), true);
         auto op_array4 = field1.value()->Get<core::StaticArray<int32_t, 4>>(&a);
         EXPECT_EQ(op_array4.has_value(), false);
+    }
+}
+
+TEST(Core_Reflection, TestSeqContainerIter)
+{
+    TestA t;
+    auto  type     = core::TypeOf<TestA>();
+    auto  op_field = type->GetField("set");
+    EXPECT_EQ(op_field.has_value(), true);
+    const auto& field = op_field.value();
+    EXPECT_EQ(field->IsSequentialContainer(), true);
+    auto op_set = field->Get<core::Set<int32_t>>(&t);
+    EXPECT_EQ(op_set.has_value(), true);
+    auto set     = op_set.value();
+    auto op_view = field->CreateSequentialContainerView(&t);
+    EXPECT_EQ(op_view.has_value(), true);
+    auto view = op_view.value();
+    int  i    = 0;
+    for (auto it = set.begin(); it != set.end(); ++it)
+    {
+        auto op_any = view->GetElementAt(i);
+        EXPECT_EQ(op_any.HasValue(), true);
+        auto op_rtn_int = core::any_cast<core::Ref<int32_t>>(op_any);
+        EXPECT_EQ(op_rtn_int.has_value(), true);
+        const core::Ref<int32_t>& rtn_int = op_rtn_int.value();
+        EXPECT_EQ(*rtn_int, *it);
+        ++i;
     }
 }

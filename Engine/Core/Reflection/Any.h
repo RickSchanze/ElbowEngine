@@ -67,6 +67,8 @@ struct Any
 
     [[nodiscard]] bool IsRef() const { return ptr_ ? ptr_->IsRef() : false; }
 
+    [[nodiscard]] bool HasValue() const { return ptr_ != nullptr; }
+
     struct Base
     {
         virtual ~Base() = default;

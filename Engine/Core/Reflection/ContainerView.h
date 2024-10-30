@@ -16,7 +16,7 @@
 namespace core
 {
 
-enum class ContainerType
+enum class ContainerViewType
 {
     Sequential,
     Associative,
@@ -38,7 +38,7 @@ public:
     virtual void          EndIterate()       = 0;
     virtual bool          HasNext()          = 0;
     virtual void          SetInstance(void*) = 0;
-    virtual ContainerType GetContainerType() = 0;
+    virtual ContainerViewType GetContainerType() = 0;
     virtual const Type*   GetOuterType()     = 0;
     virtual int32_t       Size()             = 0;
 };
@@ -122,7 +122,7 @@ public:
         return MakeRef(*iter_);
     }
 
-    ContainerType GetContainerType() override { return ContainerType::Sequential; }
+    ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
 
     const Type* GetElementType() override { return element_type_; }
     const Type* GetOuterType() override { return outer_; }
@@ -218,7 +218,7 @@ public:
         return MakeRef(*iter_);
     }
 
-    ContainerType GetContainerType() override { return ContainerType::Sequential; }
+    ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
 
     const Type* GetElementType() override { return element_type_; }
     const Type* GetOuterType() override { return outer_; }
@@ -314,7 +314,7 @@ public:
         }
         return (instance_->*container_).size();
     }
-    ContainerType GetContainerType() override { return ContainerType::Associative; }
+    ContainerViewType GetContainerType() override { return ContainerViewType::Associative; }
     const Type*   GetOuterType() override { return outer_; }
     const Type*   GetKeyType() override { return key_type_; }
     const Type*   GetValueType() override { return value_type_; }
