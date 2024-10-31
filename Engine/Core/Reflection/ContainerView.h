@@ -6,12 +6,12 @@
  */
 
 #pragma once
-#include <any>
 
 #include "Any.h"
 #include "Base/CoreTypeDef.h"
-#include "Log/CoreLogCategory.h"
 #include "Log/Logger.h"
+#include "Log/CoreLogCategory.h"
+#include "CoreDef.h"
 
 namespace core
 {

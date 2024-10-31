@@ -1,15 +1,14 @@
 /**
  * @file Reflection.h
- * @author Echo 
+ * @author Echo
  * @Date 24-10-26
- * @brief 
+ * @brief
  */
 
 #pragma once
 #include "Any.h"
 #include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
 #include "Base/Ref.h"
 #include "ContainerView.h"
 #include "CoreGlobal.h"
@@ -35,13 +34,13 @@ enum class ContainerIdentifier
     Count,
 };
 
-template<typename T>
+template <typename T>
 struct ContainerTypeTrait
 {
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Count;
 };
 
-template<typename T>
+template <typename T>
 struct ContainerTypeTrait<Array<T>>
 {
     using ValueType = T;
@@ -49,7 +48,7 @@ struct ContainerTypeTrait<Array<T>>
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Array;
 };
 
-template<typename T, size_t N>
+template <typename T, size_t N>
 struct ContainerTypeTrait<StaticArray<T, N>>
 {
     using ValueType = T;
@@ -58,7 +57,7 @@ struct ContainerTypeTrait<StaticArray<T, N>>
     constexpr static ContainerIdentifier Value        = ContainerIdentifier::StaticArray;
 };
 
-template<typename T>
+template <typename T>
 struct ContainerTypeTrait<Set<T>>
 {
     using ValueType = T;
@@ -66,7 +65,7 @@ struct ContainerTypeTrait<Set<T>>
     constexpr static ContainerIdentifier Value = ContainerIdentifier::Set;
 };
 
-template<typename T>
+template <typename T>
 struct ContainerTypeTrait<HashSet<T>>
 {
     using ValueType = T;
@@ -74,7 +73,7 @@ struct ContainerTypeTrait<HashSet<T>>
     constexpr static ContainerIdentifier Value = ContainerIdentifier::HashSet;
 };
 
-template<typename T>
+template <typename T>
 struct ContainerTypeTrait<List<T>>
 {
     using ValueType = T;
@@ -82,7 +81,7 @@ struct ContainerTypeTrait<List<T>>
     constexpr static ContainerIdentifier Value = ContainerIdentifier::List;
 };
 
-template<typename K, typename V>
+template <typename K, typename V>
 struct ContainerTypeTrait<HashMap<K, V>>
 {
     using KeyType   = K;
@@ -91,7 +90,7 @@ struct ContainerTypeTrait<HashMap<K, V>>
     constexpr static ContainerIdentifier Value = ContainerIdentifier::HashMap;
 };
 
-template<typename K, typename V>
+template <typename K, typename V>
 struct ContainerTypeTrait<Map<K, V>>
 {
     using KeyType   = K;
@@ -101,15 +100,16 @@ struct ContainerTypeTrait<Map<K, V>>
 };
 struct Type;
 
-struct FiledInfo
+struct FieldInfo
 {
-    FiledInfo() = default;
-    FiledInfo(FiledInfo&& info) noexcept;
+    FieldInfo() = default;
+    FieldInfo(FieldInfo&& info) noexcept;
 
     friend struct Type;
     enum FlagAttribute
     {
         Transient = 1 << 0,
+        EnumValue = 1 << 1,
         // Editor Only
         Hidden    = 1 << 16,
     };
@@ -119,7 +119,6 @@ struct FiledInfo
         Getter,
         Setter,
         Label,
-        Name,
         Count,
     };
 
@@ -141,21 +140,22 @@ struct FiledInfo
     }
     [[nodiscard]] bool IsSequentialContainer() const { return !IsAssociativeContainer(); }
 
-    FiledInfo& SetAttribute(FlagAttribute attr);
-    FiledInfo& SetAttribute(ValueAttribute attr, StringView value);
+    FieldInfo& SetAttribute(FlagAttribute attr);
+    FieldInfo& SetAttribute(ValueAttribute attr, StringView value);
 
-    template<typename T, bool ByRef = false>
+    template <typename T, bool ByRef = false>
     [[nodiscard]] Optional<std::conditional_t<ByRef, Ref<T>, T>> Get(ITypeGetter* obj) const;
 
+    Optional<Ref<SequentialContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
 
-    Optional<Ref<SequentialContainerView>>  CreateSequentialContainerView(ITypeGetter* obj) const;
     Optional<Ref<AssociativeContainerView>> CreateAssociativeContainerView(ITypeGetter* obj) const;
 
 protected:
     int32_t                  offset_ = -1;
     int32_t                  size_   = 0;
     StringView               name_;
-    int32_t                  attribute_ = 0;   // bool attribute
+    int32_t                  enum_value_ = -1;
+    int32_t                  attribute_  = 0;   // bool attribute
     ValueAttributes          value_attr_;
     UniquePtr<ContainerView> container_view_ = nullptr;
 
@@ -199,14 +199,14 @@ struct FunctionInfo
 
     [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (attribute & attr) != 0; }
 
-    template<typename ReturnT, typename ObjectT, typename... Args>
+    template <typename ReturnT, typename ObjectT, typename... Args>
     [[nodiscard]] Optional<ReturnT> Invoke(ObjectT* obj, Args&&... args)
     {
         (AddParam(Forward(args)), ...);
         return Invoke(obj);
     }
 
-    template<typename ReturnT, typename ObjectT>
+    template <typename ReturnT, typename ObjectT>
     [[nodiscard]] Optional<ReturnT> Invoke(ObjectT* obj)
     {
         if (params.size() != param_infos.size())
@@ -228,7 +228,7 @@ struct FunctionInfo
         return t;
     }
 
-    template<typename ObjT>
+    template <typename ObjT>
     bool AddParam(ObjT param)
     {
         if (param_infos.empty())
@@ -262,12 +262,12 @@ struct FunctionInfo
     Array<Any>               params;
 };
 
-template<typename ReturnT, typename... Args>
+template <typename ReturnT, typename... Args>
 struct FunctionInfoImpl : FunctionInfo
 {
     Any InvokeImpl(void*) override { return InvokeHelper(::std::index_sequence_for<Args...>{}); }
 
-    template<size_t... Is>
+    template <size_t... Is>
     Any InvokeHelper(::std::index_sequence<Is...>)
     {
         try
@@ -285,12 +285,12 @@ struct FunctionInfoImpl : FunctionInfo
     ReturnT (*func)(Args...);
 };
 
-template<typename ReturnT, typename ClassT, typename... Args>
+template <typename ReturnT, typename ClassT, typename... Args>
 struct MemberFunctionImpl : FunctionInfo
 {
     Any InvokeImpl(void* input) override { return InvokeHelper(static_cast<ClassT*>(input), ::std::index_sequence_for<Args...>{}); }
 
-    template<size_t... Is>
+    template <size_t... Is>
     Any InvokeHelper(ClassT* obj, ::std::index_sequence<Is...>)
     {
         try
@@ -309,8 +309,8 @@ struct MemberFunctionImpl : FunctionInfo
 
 struct Type
 {
-    template<typename T>
-    static Type* Create(const StringView name, const Array<Type*>& parents = {})
+    template <typename T>
+    static Type* Create(const StringView name, const Array<const Type*>& parents = {})
     {
         Type* t       = New<Type>();
         t->name_      = name;
@@ -325,6 +325,7 @@ struct Type
     {
         Interface = 1 << 0,
         Atomic    = 1 << 1,
+        Enum      = 1 << 2,   // 枚举类型
     };
 
     enum class ValueAttribute
@@ -336,29 +337,31 @@ struct Type
 
     [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
     [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].Empty(); }
-    [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
+    [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
+    [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
     [[nodiscard]] StringView GetName() const { return name_; }
     [[nodiscard]] int32_t    GetSize() const { return size_; }
     [[nodiscard]] size_t     GetTypeHash() const { return type_hash_; }
 
-    [[nodiscard]] Array<Ref<const FiledInfo>>    GetSelfDefinedFields() const;
+    [[nodiscard]] Array<Ref<const FieldInfo>>    GetSelfDefinedFields() const;
     [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields_.size()); }
-    [[nodiscard]] Optional<Ref<const FiledInfo>> GetSelfDefinedField(StringView name) const;
+    [[nodiscard]] Optional<Ref<const FieldInfo>> GetSelfDefinedField(StringView name) const;
     [[nodiscard]] bool                           HasSelfDefinedMember(StringView name) const { return GetSelfDefinedField(name) != NullOpt; }
     [[nodiscard]] Array<const FunctionInfo*>     GetSelfDefinedMemberFunctions() const;
     [[nodiscard]] bool                           HasSelfDefinedMemberFunction(StringView name) const;
 
-    [[nodiscard]] Array<Ref<const FiledInfo>>    GetFields() const;
+    [[nodiscard]] Array<Ref<const FieldInfo>>    GetFields() const;
     [[nodiscard]] int32_t                        GetFieldsCount() const { return static_cast<int32_t>(GetFields().size()); }
-    [[nodiscard]] Optional<Ref<const FiledInfo>> GetField(StringView name) const;
+    [[nodiscard]] Optional<Ref<const FieldInfo>> GetField(StringView name) const;
     [[nodiscard]] bool                           HasMember(StringView name) const { return GetField(name) != NullOpt; }
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
-    template<typename ClassT, typename T>
-    FiledInfo& RegisterField(StringView name, T ClassT::*field, int32_t offset)
+    // clang-format off
+    template <typename ClassT, typename T> requires (std::is_enum_v<ClassT>)
+    FieldInfo &RegisterField(StringView name, T ClassT::*field, int32_t offset)
     {
-        FiledInfo info;
+        FieldInfo info;
         info.name_   = name;
         info.outer_  = this;
         info.offset_ = offset;
@@ -408,6 +411,21 @@ struct Type
         return fields_.emplace_back(Move(info));
     }
 
+    template <typename T> requires std::is_enum_v<T>
+    FieldInfo& RegisterEnumValue(T value, StringView name)
+    {
+        Assert(LogCat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
+        FieldInfo filed_info;
+        filed_info.attribute_ |= FieldInfo::EnumValue;
+        filed_info.name_ = name;
+        filed_info.outer_ = this;
+        filed_info.enum_value_ = GetEnumValue(value);
+        return fields_.emplace_back(Move(filed_info));
+    }
+
+    void Internal_AddParent(const Type* parent);
+
+    // clang-format on
     Type& SetAttribute(FlagAttribute attr);
     Type& SetAttribute(ValueAttribute attr, StringView value);
 
@@ -418,14 +436,14 @@ protected:
     int32_t              size_      = 0;
     int32_t              attribute_ = 0;   // bool attribute
     ValueAttributes      value_attr_;
-    Array<Type*>         parents_;
-    Array<FiledInfo>     fields_;
+    Array<const Type*>   parents_;
+    Array<FieldInfo>     fields_;
     Array<FunctionInfo*> function_infos_;
     size_t               type_hash_ = 0;
 };
 
-template<typename T, bool ByRef>
-Optional<std::conditional_t<ByRef, Ref<T>, T>> FiledInfo::Get(ITypeGetter* obj) const
+template <typename T, bool ByRef>
+Optional<std::conditional_t<ByRef, Ref<T>, T>> FieldInfo::Get(ITypeGetter* obj) const
 {
     if (obj->GetType() != outer_)
     {
@@ -499,20 +517,19 @@ Optional<std::conditional_t<ByRef, Ref<T>, T>> FiledInfo::Get(ITypeGetter* obj) 
 
 }   // namespace core
 
-template<>
-inline core::StringView GetEnumString<core::FiledInfo::ValueAttribute>(core::FiledInfo::ValueAttribute value)
+template <>
+inline core::StringView GetEnumString<core::FieldInfo::ValueAttribute>(core::FieldInfo::ValueAttribute value)
 {
     switch (value)
     {
-    case core::FiledInfo::ValueAttribute::Getter: return "Getter";
-    case core::FiledInfo::ValueAttribute::Setter: return "Setter";
-    case core::FiledInfo::ValueAttribute::Label: return "Label";
-    case core::FiledInfo::ValueAttribute::Name: return "Name";
+    case core::FieldInfo::ValueAttribute::Getter: return "Getter";
+    case core::FieldInfo::ValueAttribute::Setter: return "Setter";
+    case core::FieldInfo::ValueAttribute::Label: return "Label";
     default: return ENUM_INVALID;
     }
 }
 
-template<>
+template <>
 inline core::StringView GetEnumString<core::Type::ValueAttribute>(core::Type::ValueAttribute value)
 {
     switch (value)
@@ -521,7 +538,7 @@ inline core::StringView GetEnumString<core::Type::ValueAttribute>(core::Type::Va
     }
 }
 
-template<>
+template <>
 struct std::hash<core::Type>
 {
     size_t operator()(const core::Type& type) const noexcept { return type.GetTypeHash(); }

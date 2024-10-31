@@ -82,6 +82,10 @@ add_library(${PROJECT_NAME}
         Reflection/ContainerView.h
         Reflection/Any.h
         Reflection/ITypeGetter.h
+        Reflection/MetaInfoMacro.h
+        Test/TestMetaInfoGenerate.cpp
+        Test/TestMetaInfoGenerate.h
+        Core.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

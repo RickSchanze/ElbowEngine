@@ -43,7 +43,8 @@ set(ENABLE_TEST OFF CACHE BOOL "Enable test")
 
 add_subdirectory(Engine)
 
-add_executable(ElbowEngine main.cpp)
+add_executable(ElbowEngine main.cpp
+)
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)

@@ -14,13 +14,13 @@
 
 namespace core
 {
-FiledInfo::FiledInfo(FiledInfo&& info) noexcept :
+FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), attribute_(info.attribute_), value_attr_(info.value_attr_),
     container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_identifier_(info.container_identifier_)
 {
 }
 
-core::StringView core::FiledInfo::GetAttribute(ValueAttribute attr) const
+core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
@@ -30,14 +30,20 @@ core::StringView core::FiledInfo::GetAttribute(ValueAttribute attr) const
     return value_attr_[GetEnumValue(attr)];
 }
 
-FiledInfo& FiledInfo::SetAttribute(FlagAttribute attr)
+FieldInfo& FieldInfo::SetAttribute(FlagAttribute attr)
 {
     attribute_ |= attr;
     return *this;
 }
 
-FiledInfo& FiledInfo::SetAttribute(ValueAttribute attr, StringView value)
+FieldInfo& FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
 {
+#ifndef WITH_EDITOR
+    if (attr == ValueAttribute::Label)
+    {
+        return *this;
+    }
+#endif
     if (IsDefined(attr))
     {
         LOGGER.Warn(LogCat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
@@ -46,7 +52,7 @@ FiledInfo& FiledInfo::SetAttribute(ValueAttribute attr, StringView value)
     return *this;
 }
 
-Optional<Ref<SequentialContainerView>> FiledInfo::CreateSequentialContainerView(ITypeGetter* obj) const
+Optional<Ref<SequentialContainerView>> FieldInfo::CreateSequentialContainerView(ITypeGetter* obj) const
 {
     auto ele_type        = obj->GetType();
     auto view_outer_type = container_view_->GetOuterType();
@@ -61,7 +67,7 @@ Optional<Ref<SequentialContainerView>> FiledInfo::CreateSequentialContainerView(
     return MakeRef(static_cast<SequentialContainerView&>(*container_view_));
 }
 
-Optional<Ref<AssociativeContainerView>> FiledInfo::CreateAssociativeContainerView(ITypeGetter* obj) const
+Optional<Ref<AssociativeContainerView>> FieldInfo::CreateAssociativeContainerView(ITypeGetter* obj) const
 {
     auto ele_type        = obj->GetType();
     auto view_outer_type = container_view_->GetOuterType();
@@ -77,7 +83,7 @@ Optional<Ref<AssociativeContainerView>> FiledInfo::CreateAssociativeContainerVie
 }
 
 
-core::StringView core::Type::GetAttribute(ValueAttribute attr) const
+core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
@@ -87,7 +93,7 @@ core::StringView core::Type::GetAttribute(ValueAttribute attr) const
     return value_attr_[GetEnumValue(attr)];
 }
 
-Optional<Ref<const FiledInfo>> Type::GetSelfDefinedField(StringView name) const
+Optional<Ref<const FieldInfo>> Type::GetSelfDefinedField(StringView name) const
 {
     for (const auto& field: this->fields_)
     {
@@ -114,9 +120,9 @@ bool Type::HasSelfDefinedMemberFunction(StringView name) const
     return std::ranges::any_of(GetSelfDefinedMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
 }
 
-Array<Ref<const FiledInfo>> Type::GetSelfDefinedFields() const
+Array<Ref<const FieldInfo>> Type::GetSelfDefinedFields() const
 {
-    Array<Ref<const FiledInfo>> fields;
+    Array<Ref<const FieldInfo>> fields;
     fields.reserve(GetSelfDefinedFieldsCount());
     for (const auto& field: this->fields_)
     {
@@ -125,9 +131,9 @@ Array<Ref<const FiledInfo>> Type::GetSelfDefinedFields() const
     return fields;
 }
 
-Array<Ref<const FiledInfo>> Type::GetFields() const
+Array<Ref<const FieldInfo>> Type::GetFields() const
 {
-    Array<Ref<const FiledInfo>> fields;
+    Array<Ref<const FieldInfo>> fields;
     for (auto parent: parents_)
     {
         for (const auto& self_defined_field: parent->GetFields())
@@ -142,7 +148,7 @@ Array<Ref<const FiledInfo>> Type::GetFields() const
     return fields;
 }
 
-Optional<Ref<const FiledInfo>> Type::GetField(StringView name) const
+Optional<Ref<const FieldInfo>> Type::GetField(StringView name) const
 {
     auto fields = GetFields();
     for (auto& field: fields)
@@ -175,6 +181,14 @@ Array<const FunctionInfo*> Type::GetMemberFunctions() const
 bool Type::HasMemberFunction(StringView name) const
 {
     return std::ranges::any_of(GetMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
+}
+
+void Type::Internal_AddParent(const Type* parent)
+{
+    if (auto exist_parent = std::ranges::find(parents_, parent); exist_parent == parents_.end())
+    {
+        parents_.push_back(parent);
+    }
 }
 
 Type& Type::SetAttribute(FlagAttribute attr)

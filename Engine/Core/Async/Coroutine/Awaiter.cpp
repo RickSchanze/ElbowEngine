@@ -7,7 +7,6 @@
 
 #include "Awaiter.h"
 
-
 namespace async::coro
 {
 

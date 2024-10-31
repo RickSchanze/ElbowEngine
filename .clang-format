@@ -169,7 +169,7 @@ SpaceAfterCStyleCast: false
 # 在逻辑非操作符(!)之后插入一个空格
 SpaceAfterLogicalNot: false
 # 在 template 关键字后插入一个空格
-SpaceAfterTemplateKeyword: false
+SpaceAfterTemplateKeyword: true
 # 定义在什么情况下在指针限定符之前或之后放置空格
 # SpaceAroundPointerQualifiers: Before
 # 在赋值运算符之前添加空格
