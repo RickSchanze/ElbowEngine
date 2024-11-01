@@ -10,7 +10,8 @@ public class CodeGenConfig
     [
         @"Engine\Core",
         @"Engine\ThirdParty\IconFontCppHeaders",
-        @"cmake-build-debug\vcpkg_installed\x64-windows\include"
+        @"cmake-build-debug\vcpkg_installed\x64-windows\include",
+        @"Generated"
     ];
 
     public List<string> Macros { get; set; } = ["REFLECTION"];

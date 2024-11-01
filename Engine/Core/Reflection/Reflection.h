@@ -358,7 +358,7 @@ struct Type
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
     // clang-format off
-    template <typename ClassT, typename T> requires (std::is_enum_v<ClassT>)
+    template <typename ClassT, typename T> requires (!std::is_enum_v<ClassT>)
     FieldInfo &RegisterField(StringView name, T ClassT::*field, int32_t offset)
     {
         FieldInfo info;
@@ -426,8 +426,8 @@ struct Type
     void Internal_AddParent(const Type* parent);
 
     // clang-format on
-    Type& SetAttribute(FlagAttribute attr);
-    Type& SetAttribute(ValueAttribute attr, StringView value);
+    Type* SetAttribute(FlagAttribute attr);
+    Type* SetAttribute(ValueAttribute attr, StringView value);
 
     bool operator==(const Type& o) const { return type_hash_ == o.type_hash_; }
 

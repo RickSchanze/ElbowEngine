@@ -191,20 +191,20 @@ void Type::Internal_AddParent(const Type* parent)
     }
 }
 
-Type& Type::SetAttribute(FlagAttribute attr)
+Type* Type::SetAttribute(FlagAttribute attr)
 {
     attribute_ |= attr;
-    return *this;
+    return this;
 }
 
-Type& Type::SetAttribute(ValueAttribute attr, StringView value)
+Type* Type::SetAttribute(ValueAttribute attr, StringView value)
 {
     if (IsDefined(attr))
     {
         LOGGER.Warn(LogCat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
     }
     value_attr_[GetEnumValue(attr)] = value;
-    return *this;
+    return this;
 }
 
 }   // namespace core

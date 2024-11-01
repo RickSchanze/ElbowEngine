@@ -29,12 +29,12 @@
 #define COUNT(...) COUNT_IMPL(__VA_ARGS__, 5, 4, 3, 2, 1)
 #define COUNT_IMPL(_1, _2, _3, _4, _5, N, ...) N
 
-#define CLASS(...) APPLY(__cppast, __VA_ARGS__)
-#define STRUCT(...) APPLY(__cppast, __VA_ARGS__)
-#define PROPERTY(...) APPLY(__cppast, __VA_ARGS__)
-#define FUNCTION(...) APPLY(__cppast, __VA_ARGS__)
-#define ENUM(...) APPLY(__cppast, __VA_ARGS__)
-#define VALUE(...) APPLY(__cppast, __VA_ARGS__)
+#define CLASS(...) APPLY(__cppast, Reflection, __VA_ARGS__)
+#define STRUCT(...) APPLY(__cppast, Reflection, __VA_ARGS__)
+#define PROPERTY(...) APPLY(__cppast, Reflection, __VA_ARGS__)
+#define FUNCTION(...) APPLY(__cppast, Reflection, __VA_ARGS__)
+#define ENUM(...) APPLY(__cppast, Reflection, __VA_ARGS__)
+#define VALUE(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #else
 #define CLASS(...)
 #define STRUCT(...)
@@ -47,31 +47,33 @@
 #define CONCAT2(a, b) a##b
 #define CONCAT3(a, b, c) a##b##c
 
-#define GENERATED_BODY(class_)                                              \
-public:                                                                     \
-    static core::Type* CONCAT3(REFECTION_Register_, class_, _Registerer)(); \
-    typedef ThisClass  Super;                                               \
-    typedef class_     ThisClass;                                           \
-                                                                            \
-    [[nodiscard]] const core::Type* GetType() const override                \
-    {                                                                       \
-        return core::TypeOf<class_>();                                      \
-    }                                                                       \
-                                                                            \
+#define GENERATED_BODY(class_)                                               \
+public:                                                                      \
+    static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
+    typedef ThisClass  Super;                                                \
+    typedef class_     ThisClass;                                            \
+                                                                             \
+    [[nodiscard]] const core::Type* GetType() const override                 \
+    {                                                                        \
+        return core::TypeOf<class_>();                                       \
+    }                                                                        \
+                                                                             \
 private:
 
-#define METAINFO_REGISTRATION()                 \
-    static void Z_MetaInfo_Registration_Func(); \
-    struct Z_MetaInfo_Registration              \
-    {                                           \
-        Z_MetaInfo_Registration()               \
-        {                                       \
-            Z_MetaInfo_Registration_Func();     \
-        }                                       \
-    };                                          \
-    void Z_MetaInfo_Registration_Func()         \
-    {                                           \
-        GENERATED_ALL_CLASS_BODY                \
-    }                                           \
-    static Z_MetaInfo_Registration Z_meta_info_registration;
+
+#define GENERATED_SOURCE()                                   \
+    static void Z_MetaInfo_Registration_Func();              \
+    struct Z_MetaInfo_Registration                           \
+    {                                                        \
+        Z_MetaInfo_Registration()                            \
+        {                                                    \
+            Z_MetaInfo_Registration_Func();                  \
+        }                                                    \
+    };                                                       \
+    void Z_MetaInfo_Registration_Func()                      \
+    {                                                        \
+        GENERATED_ALL_CLASS_BODY                             \
+    }                                                        \
+    static Z_MetaInfo_Registration Z_meta_info_registration; \
+    GENERATED_IMPLEMENTATION
 

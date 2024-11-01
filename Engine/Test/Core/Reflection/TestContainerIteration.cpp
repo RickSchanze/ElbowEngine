@@ -10,7 +10,7 @@
 #include "Reflection/ITypeGetter.h"
 #include "Reflection/MetaInfoManager.h"
 #include "Reflection/Reflection.h"
-
+#include "Reflection/MetaInfoMacro.h"
 #include "gtest/gtest.h"
 
 class TestA : public core::ITypeGetter
@@ -31,7 +31,7 @@ public:
 core::Type* TestA::REFLECTION_Register_TestA_Registerer()
 {
     using namespace core;
-    Type* type = Type::Create<TestA>("TestA");
+    Type* type = Type::Create<TestA>("TestA")->SetAttribute(Type::Interface);
     type->RegisterField("array", &TestA::array, offsetof(TestA, array));
     type->RegisterField("list", &TestA::list, offsetof(TestA, list));
     type->RegisterField("static_array", &TestA::static_aray, offsetof(TestA, static_aray));

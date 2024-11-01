@@ -6,3 +6,7 @@
  */
 
 #include "TestMetaInfoGenerate.h"
+
+#include "TestMetaInfoGenerate.generated.h"
+
+GENERATED_SOURCE()
