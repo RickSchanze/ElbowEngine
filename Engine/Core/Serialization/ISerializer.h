@@ -6,14 +6,22 @@
  */
 
 #pragma once
+#include "Reflection/MetaInfoMacro.h"
+#include "Reflection/MetaInfoManager.h"
+#include "Base/Interface.h"
+
+#include "Core.ISerializer.generated.h"
 
 namespace core
 {
 class Archive;
-class ISerializer
+
+class CLASS(Interface) ISerializer : public Interface
 {
+    GENERATED_BODY(ISerializer)
+
 public:
-    virtual ~ISerializer() = default;
+    ~ISerializer() override = default;
 
     virtual void Serialize(Archive& ar) = 0;
 };

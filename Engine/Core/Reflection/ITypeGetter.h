@@ -10,6 +10,7 @@
 namespace core
 {
 struct Type;
+
 class ITypeGetter
 {
 public:

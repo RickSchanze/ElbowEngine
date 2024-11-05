@@ -84,6 +84,8 @@ add_library(${PROJECT_NAME}
         Reflection/ITypeGetter.h
         Reflection/MetaInfoMacro.h
         Core.h
+        Serialization/ISerializer.cpp
+        Base/Interface.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

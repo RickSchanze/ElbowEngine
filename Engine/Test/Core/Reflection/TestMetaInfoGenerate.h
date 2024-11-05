@@ -19,7 +19,7 @@
 #include "Core.h"
 #include "TestMetaInfoGenerate.h"
 
-#include "TestMetaInfoGenerate.generated.h"
+// #include "TestMetaInfoGenerate.generated.h"
 
 /**
  * 测试TestMetaInfoGenerate

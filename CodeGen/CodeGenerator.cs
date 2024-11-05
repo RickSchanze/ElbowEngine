@@ -1,6 +1,10 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Nodes;
 using CodeGen.AttributeParser;
 using CppAst;
+using Newtonsoft.Json;
 
 namespace CodeGen;
 
@@ -14,6 +18,9 @@ public class CodeGenerator
     private List<string> AbsoluteSourceDirs =>
         _config.SourceDirs.Select(dir => Path.Combine(_config.WorkDir, dir)).ToList();
 
+    private List<string> ExcludedFiles =>
+        _config.ExcludedFiles.Select(file => Path.Combine(_config.WorkDir, file)).ToList();
+
     private void EnsureOutputExist()
     {
         var outputAbsPath = Path.Combine(_config.WorkDir, _config.OutputDir);
@@ -22,6 +29,7 @@ public class CodeGenerator
             Directory.CreateDirectory(outputAbsPath);
         }
     }
+
 
     private void GenerateFile(string path)
     {
@@ -46,14 +54,29 @@ public class CodeGenerator
 
         var outputAbsPath = Path.Combine(_config.WorkDir, _config.OutputDir);
 
-        oldFileName = oldFileName[..oldFileName.IndexOf(".h", StringComparison.Ordinal)];
-        var outputCopyFilePath = Path.Combine(outputAbsPath, Path.GetFileName(oldFileName + ".copy.generated.h"));
-        var outputFilePath = Path.Combine(outputAbsPath, Path.GetFileName(oldFileName + ".generated.h"));
-        using (var fs = new FileStream(outputCopyFilePath, FileMode.Create))
+        string layer = "";
+        foreach (var layerName in _config.LayerDir)
+        {
+            if (path.Contains(layerName.Key))
+            {
+                layer = layerName.Value;
+                break;
+            }
+        }
+
+        var info = new FileCppInfo(compilation, path);
+        if (!info.HasAnyReflectedEntity) return;
+        string fileName = Path.GetFileNameWithoutExtension(path);
+        string generatedCopyFileName = string.IsNullOrEmpty(layer)
+            ? $"{fileName}.generated.copy.h"
+            : $"{layer}.{fileName}.generated.copy.h";
+        string generatedFileName =
+            string.IsNullOrEmpty(layer) ? $"{fileName}.generated.h" : $"{layer}.{fileName}.generated.h";
+        generatedCopyFileName = Path.Combine(outputAbsPath, generatedCopyFileName);
+        generatedFileName = Path.Combine(outputAbsPath, generatedFileName);
+        using (var fs = new FileStream(generatedCopyFileName, FileMode.Create))
         {
             using var sw = new StreamWriter(fs, Encoding.UTF8);
-            var info = new FileCppInfo(compilation, path);
-
             // 生成文件头
             GenerateHeader(sw, info);
             sw.WriteLine();
@@ -62,8 +85,8 @@ public class CodeGenerator
             GenerateClasses(sw, info);
         }
 
-        File.Copy(outputCopyFilePath, outputFilePath, true);
-        File.Delete(outputCopyFilePath);
+        File.Copy(generatedCopyFileName, generatedFileName, true);
+        File.Delete(generatedCopyFileName);
     }
 
     private void GenerateEnums(StreamWriter sw, FileCppInfo info)
@@ -81,6 +104,7 @@ public class CodeGenerator
     private void GenerateEnum(StreamWriter sw, CppEnum validEnum)
     {
         var enumName = validEnum.FullName;
+        enumName = enumName.Replace("::", ".");
         var attributes = ParseAttribute(validEnum.Attributes);
         if (attributes.ContainsKey("Name"))
         {
@@ -192,6 +216,7 @@ public class CodeGenerator
     {
         var attributes = ParseAttribute(class_.Attributes);
         var className = class_.FullName;
+        className = className.Replace("::", ".");
         if (attributes.ContainsKey("Name"))
         {
             className = attributes["Name"];
@@ -290,17 +315,60 @@ public class CodeGenerator
             sw.WriteLine(
                 $"core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<{classFullName}>(), &{classFullName}::REFLECTION_Register_{className}_Registerer); \\");
         }
+    }
 
-        // 枚举
-        GenerateEnums(sw, info);
+    private static string ComputSHA256(string filePath)
+    {
+        using FileStream stream = File.OpenRead(filePath);
+        using SHA256 sha = SHA256.Create();
+        byte[] hash = sha.ComputeHash(stream);
+        return BitConverter.ToString(hash).Replace("-", "").ToLower();
     }
 
     public void Generate()
     {
         EnsureOutputExist();
+        string fileCache = Path.Combine(_config.WorkDir, _config.FileCachePath);
+        ConcurrentDictionary<string, string> cache;
+        try
+        {
+            cache = JsonConvert.DeserializeObject<ConcurrentDictionary<string, string>>(File.ReadAllText(fileCache)) ??
+                    new();
+        }
+        catch
+        {
+            cache = new();
+        }
+
         // 获取文件夹及其子文件夹中所有 .h 文件
-        Task.WaitAll((from sourceDir in AbsoluteSourceDirs
-            from file in Directory.GetFiles(sourceDir, "*.h", SearchOption.AllDirectories)
-            select Task.Run(() => { GenerateFile(file); })).ToArray());
+        List<Task> tasks = new();
+        foreach (var sourceDir in AbsoluteSourceDirs)
+        {
+            var hFiles = Directory.GetFiles(sourceDir, "*.h", SearchOption.AllDirectories);
+            foreach (var hFile in hFiles)
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    var dirty = true;
+                    var newHash = ComputSHA256(hFile);
+                    if (cache.TryGetValue(hFile, out var oldHash))
+                    {
+                        if (oldHash == newHash)
+                        {
+                            dirty = false;
+                        }
+                    }
+
+                    if (!dirty) return;
+                    if (ExcludedFiles.Contains(hFile)) return;
+                    GenerateFile(hFile);
+                    cache[hFile] = newHash;
+                }));
+            }
+        }
+
+        Task.WaitAll(tasks.ToArray());
+        string newCache = JsonConvert.SerializeObject(cache, Formatting.Indented);
+        File.WriteAllText(fileCache, newCache);
     }
 }

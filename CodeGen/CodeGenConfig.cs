@@ -13,18 +13,32 @@ public class CodeGenConfig
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
         @"Generated"
     ];
-    
-    public List<string> SourceDirs { get; set; } =
+
+    public List<string> SourceDirs { get; } =
     [
-        @"Engine\Test"
+        @"Engine\Test",
+        @"Engine\Core"
     ];
 
-    public List<string> Macros { get; set; } = ["REFLECTION"];
+    public List<string> ExcludedFiles { get; } =
+    [
+        @"Engine\Core\Math\Math.h",
+    ];
 
-    public List<string> Arguments { get; set; } =
+    public Dictionary<string, string> LayerDir { get; } = new()
+    {
+        { @"Engine\Core", "Core" },
+        { @"Engine\Test", "Test" },
+    };
+
+    public List<string> Macros { get; } = ["REFLECTION"];
+
+    public List<string> Arguments { get; } =
     [
         "-std=c++23"
     ];
-    
-    public string OutputDir { get; set; } = "Generated";
+
+    public string OutputDir { get; } = "Generated";
+
+    public string FileCachePath { get; } = @"Generated\FileCache.json";
 }

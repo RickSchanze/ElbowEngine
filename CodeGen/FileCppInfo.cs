@@ -32,6 +32,16 @@ public class FileCppInfo
         }
     }
 
+    public bool HasAnyReflectedEntity
+    {
+        get
+        {
+            return Classes.Any(x => x.Attributes.Any(attr => attr.Arguments.Trim() == "Reflection")) || Enums.Any(
+                x => x.Attributes.Any(attr => attr.Arguments.Trim() == "Reflection")
+            );
+        }
+    }
+
     public FileCppInfo(CppCompilation compilation, string filePath)
     {
         FilePath = filePath;
