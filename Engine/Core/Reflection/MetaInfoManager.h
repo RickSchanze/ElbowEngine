@@ -15,7 +15,7 @@ namespace core
 {
 struct RTTITypeInfo;
 }
-template<>
+template <>
 struct ::std::hash<core::RTTITypeInfo>
 {
     size_t operator()(const core::RTTITypeInfo& type) const noexcept;
@@ -32,7 +32,7 @@ struct RTTITypeInfo
     StringView name;
     size_t     hash_code{};
 
-    template<typename T>
+    template <typename T>
     static RTTITypeInfo Create()
     {
         return {typeid(T).name(), typeid(T).hash_code()};
@@ -59,12 +59,10 @@ private:
     HashMap<RTTITypeInfo, MetaDataRegisterer> meta_data_registers_;
 };
 
-template<typename T>
+template <typename T>
 const Type* TypeOf()
 {
     RTTITypeInfo info = {typeid(T).name(), typeid(T).hash_code()};
     return MetaInfoManager::Get()->GetType(info);
 }
 }   // namespace core
-
-

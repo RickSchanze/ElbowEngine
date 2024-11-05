@@ -8,8 +8,11 @@
 #pragma once
 #include "Reflection/ITypeGetter.h"
 
-class Interface : public core::ITypeGetter
+namespace core
+{
+class Interface : public ITypeGetter
 {
 public:
     typedef Interface ThisClass;
 };
+}

@@ -8,6 +8,7 @@
 #include "MetaInfoManager.h"
 
 #include "Base/CoreTypeDef.h"
+#include "Base/Interface.h"
 #include "CoreGlobal.h"
 #include "Reflection.h"
 
@@ -24,6 +25,27 @@ namespace core
         types_registered_[info]  = tname##_type;                  \
     }   // namespace core
 
+static void RegisterOtherType(MetaInfoManager& manager)
+{
+    {
+        // String
+        Type* type = Type::Create<String>("core.String");
+        manager.RegisterType(RTTITypeInfo::Create<String>(), type);
+    }
+    {
+        // ITypeGetter
+        Type* type = Type::Create<ITypeGetter>("core.ITypeGetter");
+        type->SetAttribute(Type::Interface);
+        manager.RegisterType(RTTITypeInfo::Create<ITypeGetter>(), type);
+    }
+    {
+        // Interface
+        Type* type = Type::Create<Interface>("core.IInterface");
+        type->SetAttribute(Type::Interface);
+        manager.RegisterType(RTTITypeInfo::Create<Interface>(), type);
+    }
+}
+
 MetaInfoManager::MetaInfoManager()
 {
     REGISTER_ATOMIC_TYPE(int8_t);
@@ -37,6 +59,8 @@ MetaInfoManager::MetaInfoManager()
     REGISTER_ATOMIC_TYPE(float);
     REGISTER_ATOMIC_TYPE(double);
     REGISTER_ATOMIC_TYPE(bool);
+
+    RegisterOtherType(*this);
 }
 
 MetaInfoManager::~MetaInfoManager()
