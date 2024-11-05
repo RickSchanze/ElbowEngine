@@ -73,6 +73,16 @@ void MetaInfoManager::RegisterTypeRegisterer(RTTITypeInfo type_info, const MetaD
     meta_data_registers_[type_info] = registerer;
 }
 
+void MetaInfoManager::RegisterType(RTTITypeInfo type_info, Type* type)
+{
+    if (types_registered_.contains(type_info))
+    {
+        LOGGER.Warn(LogCat::Reflection, "重复注册类型{}", type_info.name);
+        return;
+    }
+    types_registered_[type_info] = type;
+}
+
 Type* MetaInfoManager::GetType(const RTTITypeInfo& type_info)
 {
     if (types_registered_.contains(type_info))

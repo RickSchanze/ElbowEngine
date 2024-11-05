@@ -4,7 +4,10 @@ public enum ParserTarget
 {
     Class,
     Struct,
-    Enum
+    Enum,
+    Field,
+    Function,
+    EnumItem
 }
 
 public class ParserAttribute(string name, ParserTarget target) : Attribute

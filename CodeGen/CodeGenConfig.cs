@@ -13,6 +13,11 @@ public class CodeGenConfig
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
         @"Generated"
     ];
+    
+    public List<string> SourceDirs { get; set; } =
+    [
+        @"Engine\Test"
+    ];
 
     public List<string> Macros { get; set; } = ["REFLECTION"];
 

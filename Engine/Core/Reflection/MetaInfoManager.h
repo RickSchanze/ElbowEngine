@@ -50,6 +50,7 @@ public:
 
     void RegisterType(RTTITypeInfo type_info);
     void RegisterTypeRegisterer(RTTITypeInfo type_info, MetaDataRegisterer registerer);
+    void RegisterType(RTTITypeInfo type_info, Type* type);
 
     Type* GetType(const RTTITypeInfo& type_info);
 

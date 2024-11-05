@@ -4,9 +4,12 @@ namespace CodeGen.AttributeParser;
 
 public static class AttributeParserManager
 {
-    public static readonly Dictionary<string, IClassParser> ClassParsers = new();
-    public static readonly Dictionary<string, IEnumParser> EnumParsers = new();
-    public static readonly Dictionary<string, IStructParser> StructParsers = new();
+    private static readonly Dictionary<string, IClassParser> ClassParsers = new();
+    private static readonly Dictionary<string, IEnumParser> EnumParsers = new();
+    private static readonly Dictionary<string, IStructParser> StructParsers = new();
+    private static readonly Dictionary<string, IFieldParser> FieldParsers = new();
+    private static readonly Dictionary<string, IFunctionParser> FunctionParsers = new();
+    private static readonly Dictionary<string, IEnumItemParser> EnumItemParsers = new();
 
     public static IClassParser? GetClassParser(string name)
     {
@@ -21,6 +24,21 @@ public static class AttributeParserManager
     public static IStructParser? GetStructParser(string name)
     {
         return StructParsers.GetValueOrDefault(name);
+    }
+
+    public static IFieldParser? GetFieldParser(string attrKey)
+    {
+        return FieldParsers.GetValueOrDefault(attrKey);
+    }
+
+    public static IFunctionParser? GetFunctionParser(string attrKey)
+    {
+        return FunctionParsers.GetValueOrDefault(attrKey);
+    }
+
+    public static IEnumItemParser? GetEnumItemParser(string attrKey)
+    {
+        return EnumItemParsers.GetValueOrDefault(attrKey);
     }
 
     static AttributeParserManager()
@@ -75,6 +93,42 @@ public static class AttributeParserManager
                     else
                     {
                         Console.WriteLine($"Class parser {parserType.Type.Name} does not implement IStructParser");
+                    }
+
+                    break;
+                case ParserTarget.Field:
+                    if (typeof(IFieldParser).IsAssignableFrom(parserType.Type))
+                    {
+                        var instance = Activator.CreateInstance(parserType.Type);
+                        FieldParsers.Add(parserType.Attribute.Name, (instance as IFieldParser)!);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Class parser {parserType.Type.Name} does not implement IFieldParser");
+                    }
+
+                    break;
+                case ParserTarget.Function:
+                    if (typeof(IFunctionParser).IsAssignableFrom(parserType.Type))
+                    {
+                        var instance = Activator.CreateInstance(parserType.Type);
+                        FunctionParsers.Add(parserType.Attribute.Name, (instance as IFunctionParser)!);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Class parser {parserType.Type.Name} does not implement IFunctionParser");
+                    }
+
+                    break;
+                case ParserTarget.EnumItem:
+                    if (typeof(IEnumItemParser).IsAssignableFrom(parserType.Type))
+                    {
+                        var instance = Activator.CreateInstance(parserType.Type);
+                        EnumItemParsers.Add(parserType.Attribute.Name, (instance as IEnumItemParser)!);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Class parser {parserType.Type.Name} does not implement IEnumItemParser");
                     }
 
                     break;

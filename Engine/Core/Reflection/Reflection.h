@@ -140,8 +140,9 @@ struct FieldInfo
     }
     [[nodiscard]] bool IsSequentialContainer() const { return !IsAssociativeContainer(); }
 
-    FieldInfo& SetAttribute(FlagAttribute attr);
-    FieldInfo& SetAttribute(ValueAttribute attr, StringView value);
+    FieldInfo* SetAttribute(FlagAttribute attr);
+    FieldInfo* SetAttribute(ValueAttribute attr, StringView value);
+    FieldInfo* SetComment(StringView comment);
 
     template <typename T, bool ByRef = false>
     [[nodiscard]] Optional<std::conditional_t<ByRef, Ref<T>, T>> Get(ITypeGetter* obj) const;
@@ -162,6 +163,10 @@ protected:
     const Type*         type_                 = nullptr;
     const Type*         outer_                = nullptr;
     ContainerIdentifier container_identifier_ = ContainerIdentifier::Count;
+
+#if WITH_EDITOR
+    StringView comment_;   // 注释 或者imgui显示的label
+#endif
 };
 
 struct FunctionParamInfo
@@ -310,13 +315,25 @@ struct MemberFunctionImpl : FunctionInfo
 struct Type
 {
     template <typename T>
-    static Type* Create(const StringView name, const Array<const Type*>& parents = {})
+        requires(!std::is_enum_v<T>)
+    static Type* Create(const StringView name)
     {
         Type* t       = New<Type>();
         t->name_      = name;
-        t->parents_   = parents;
         t->size_      = sizeof(T);
         t->type_hash_ = typeid(T).hash_code();
+        return t;
+    }
+
+    template <typename T>
+        requires(std::is_enum_v<T>)
+    static Type* Create(const StringView name)
+    {
+        Type* t       = New<Type>();
+        t->name_      = name;
+        t->size_      = sizeof(T);
+        t->type_hash_ = typeid(T).hash_code();
+        t->SetAttribute(Enum);
         return t;
     }
 
@@ -358,8 +375,12 @@ struct Type
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
     // clang-format off
+    /**
+     * 注册一个字段信息, 但是不应该人为调用只应由代码生成器生成代码调用
+     * @return
+     */
     template <typename ClassT, typename T> requires (!std::is_enum_v<ClassT>)
-    FieldInfo &RegisterField(StringView name, T ClassT::*field, int32_t offset)
+    FieldInfo *Internal_RegisterField(StringView name, T ClassT::*field, int32_t offset)
     {
         FieldInfo info;
         info.name_   = name;
@@ -408,19 +429,23 @@ struct Type
         {
             static_assert(false, "please pass valid type");
         }
-        return fields_.emplace_back(Move(info));
+        return &fields_.emplace_back(Move(info));
     }
 
+    /**
+     * 注册一个枚举值信息, 但是不应该人为调用只应由代码生成器生成代码调用
+     * @return
+     */
     template <typename T> requires std::is_enum_v<T>
-    FieldInfo& RegisterEnumValue(T value, StringView name)
+    FieldInfo* Internal_RegisterEnumValue(T value, StringView name)
     {
         Assert(LogCat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
         FieldInfo filed_info;
         filed_info.attribute_ |= FieldInfo::EnumValue;
         filed_info.name_ = name;
         filed_info.outer_ = this;
-        filed_info.enum_value_ = GetEnumValue(value);
-        return fields_.emplace_back(Move(filed_info));
+        filed_info.enum_value_ = static_cast<int>(value);
+        return &fields_.emplace_back(Move(filed_info));
     }
 
     void Internal_AddParent(const Type* parent);
@@ -428,6 +453,7 @@ struct Type
     // clang-format on
     Type* SetAttribute(FlagAttribute attr);
     Type* SetAttribute(ValueAttribute attr, StringView value);
+    Type* SetComment(StringView str);
 
     bool operator==(const Type& o) const { return type_hash_ == o.type_hash_; }
 
@@ -440,6 +466,10 @@ protected:
     Array<FieldInfo>     fields_;
     Array<FunctionInfo*> function_infos_;
     size_t               type_hash_ = 0;
+
+#if WITH_EDITOR
+    StringView comment_;   // 注释
+#endif
 };
 
 template <typename T, bool ByRef>

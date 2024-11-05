@@ -1,14 +1,22 @@
 /**
  * @file TestMetaInfoGenerate.h
  * @author Echo 
- * @Date 24-10-31
+ * @Date 24-11-5
  * @brief 
  */
 
 #pragma once
 
-#include "Core.h"
+/**
+ * @file TestMetaInfoGenerate.h
+ * @author Echo
+ * @Date 24-10-31
+ * @brief
+ */
 
+#pragma once
+
+#include "Core.h"
 #include "TestMetaInfoGenerate.h"
 
 #include "TestMetaInfoGenerate.generated.h"
@@ -22,6 +30,7 @@ public:
     GENERATED_BODY(TestMetaInfoGenerate);
 
 private:
+    /// 测试属性注释
     PROPERTY()
     int32_t value1_ = 0;
 
@@ -39,12 +48,12 @@ namespace core
 {
 namespace inner
 {
-class CLASS(Interface) TestMetaInfoGenerate2: public core::ITypeGetter
+class CLASS(Interface, Name = "NewName") TestMetaInfoGenerate2 : public core::ITypeGetter
 {
-    public:
+public:
     GENERATED_BODY(TestMetaInfoGenerate2);
 
-    private:
+private:
     PROPERTY()
     int32_t value1_ = 0;
 
@@ -57,13 +66,13 @@ class CLASS(Interface) TestMetaInfoGenerate2: public core::ITypeGetter
     PROPERTY()
     core::HashMap<int32_t, int32_t> value4_ = {{1, 2}, {3, 4}};
 };
-}
-class CLASS() TestMetaInfoGenerate1: public core::ITypeGetter
+}   // namespace inner
+class CLASS() TestMetaInfoGenerate1 : public core::ITypeGetter
 {
-    public:
+public:
     GENERATED_BODY(TestMetaInfoGenerate1);
 
-    private:
+private:
     PROPERTY()
     int32_t value1_ = 0;
 
@@ -76,4 +85,14 @@ class CLASS() TestMetaInfoGenerate1: public core::ITypeGetter
     PROPERTY()
     core::HashMap<int32_t, int32_t> value4_ = {{1, 2}, {3, 4}};
 };
+
+
+enum class ENUM() TestEnum
+{
+    A,
+    B,
+    C,
+    D
+};
 }
+

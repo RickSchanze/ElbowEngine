@@ -8,7 +8,7 @@ public class FileCppInfo
     public List<CppEnum> Enums { get; } = new();
     public string FilePath { get; }
 
-    private void ParseCompilation(CppNamespace ns)
+    private void ParseNamespace(CppNamespace ns)
     {
         foreach (var cppClass in ns.Classes)
         {
@@ -28,7 +28,7 @@ public class FileCppInfo
 
         foreach (var nss in ns.Namespaces)
         {
-            ParseCompilation(nss);
+            ParseNamespace(nss);
         }
     }
 
@@ -53,7 +53,7 @@ public class FileCppInfo
 
         foreach (var ns in compilation.Namespaces)
         {
-            ParseCompilation(ns);
+            ParseNamespace(ns);
         }
     }
 }

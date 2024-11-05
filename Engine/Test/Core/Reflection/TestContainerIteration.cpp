@@ -32,12 +32,12 @@ core::Type* TestA::REFLECTION_Register_TestA_Registerer()
 {
     using namespace core;
     Type* type = Type::Create<TestA>("TestA")->SetAttribute(Type::Interface);
-    type->RegisterField("array", &TestA::array, offsetof(TestA, array));
-    type->RegisterField("list", &TestA::list, offsetof(TestA, list));
-    type->RegisterField("static_array", &TestA::static_aray, offsetof(TestA, static_aray));
-    type->RegisterField("set", &TestA::set, offsetof(TestA, set));
-    type->RegisterField("map", &TestA::map, offsetof(TestA, map));
-    type->RegisterField("hash_map", &TestA::hash_map, offsetof(TestA, hash_map));
+    type->Internal_RegisterField("array", &TestA::array, offsetof(TestA, array));
+    type->Internal_RegisterField("list", &TestA::list, offsetof(TestA, list));
+    type->Internal_RegisterField("static_array", &TestA::static_aray, offsetof(TestA, static_aray));
+    type->Internal_RegisterField("set", &TestA::set, offsetof(TestA, set));
+    type->Internal_RegisterField("map", &TestA::map, offsetof(TestA, map));
+    type->Internal_RegisterField("hash_map", &TestA::hash_map, offsetof(TestA, hash_map));
     return type;
 }
 

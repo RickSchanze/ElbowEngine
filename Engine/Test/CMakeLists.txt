@@ -1,6 +1,8 @@
 project(Test)
 enable_testing()
-add_executable(${PROJECT_NAME} Core/Reflection/TestContainerIteration.cpp)
+add_executable(${PROJECT_NAME} Core/Reflection/TestContainerIteration.cpp
+        Core/Reflection/TestMetaInfoGenerate.h
+        Core/Reflection/TestMetaInfoGenerate.cpp)
 find_package(GTest CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)

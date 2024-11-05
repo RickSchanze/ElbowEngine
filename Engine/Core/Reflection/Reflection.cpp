@@ -16,7 +16,8 @@ namespace core
 {
 FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), attribute_(info.attribute_), value_attr_(info.value_attr_),
-    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_identifier_(info.container_identifier_)
+    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_identifier_(info.container_identifier_),
+    enum_value_(info.enum_value_)
 {
 }
 
@@ -30,13 +31,13 @@ core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
     return value_attr_[GetEnumValue(attr)];
 }
 
-FieldInfo& FieldInfo::SetAttribute(FlagAttribute attr)
+FieldInfo* FieldInfo::SetAttribute(FlagAttribute attr)
 {
     attribute_ |= attr;
-    return *this;
+    return this;
 }
 
-FieldInfo& FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
+FieldInfo* FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
 {
 #ifndef WITH_EDITOR
     if (attr == ValueAttribute::Label)
@@ -49,7 +50,15 @@ FieldInfo& FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
         LOGGER.Warn(LogCat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
     }
     value_attr_[GetEnumValue(attr)] = value;
-    return *this;
+    return this;
+}
+
+FieldInfo* FieldInfo::SetComment(StringView comment)
+{
+#if WITH_EDITOR
+    comment_ = comment;
+#endif
+    return this;
 }
 
 Optional<Ref<SequentialContainerView>> FieldInfo::CreateSequentialContainerView(ITypeGetter* obj) const
@@ -204,6 +213,14 @@ Type* Type::SetAttribute(ValueAttribute attr, StringView value)
         LOGGER.Warn(LogCat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
     }
     value_attr_[GetEnumValue(attr)] = value;
+    return this;
+}
+
+Type* Type::SetComment(const StringView str)
+{
+#if WITH_EDITOR
+    comment_ = str;
+#endif
     return this;
 }
 

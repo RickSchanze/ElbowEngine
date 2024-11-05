@@ -83,8 +83,6 @@ add_library(${PROJECT_NAME}
         Reflection/Any.h
         Reflection/ITypeGetter.h
         Reflection/MetaInfoMacro.h
-        Test/TestMetaInfoGenerate.cpp
-        Test/TestMetaInfoGenerate.h
         Core.h
 )
 
