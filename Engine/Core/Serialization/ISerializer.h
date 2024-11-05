@@ -10,8 +10,6 @@
 #include "Reflection/MetaInfoManager.h"
 #include "Base/Interface.h"
 
-#include "Core.ISerializer.generated.h"
-
 namespace core
 {
 class Archive;
