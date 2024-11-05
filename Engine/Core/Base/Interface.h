@@ -13,6 +13,7 @@ namespace core
 class Interface : public ITypeGetter
 {
 public:
+    typedef ThisClass Super;
     typedef Interface ThisClass;
 };
-}
+}   // namespace core
