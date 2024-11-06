@@ -37,13 +37,7 @@
 
 #define REGION(region_name) 1
 
-#define Assert(log_cat, expr, msg, ...)             \
-    if (!(expr))                                    \
-    {                                               \
-        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
-        DEBUG_BREAK();                              \
-        std::terminate();                           \
-    }
+
 #ifdef ELBOW_DEBUG
 #define DebugAssert(log_cat, expr, msg, ...)        \
     if (!(expr))                                    \
@@ -51,7 +45,21 @@
         LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
         DEBUG_BREAK();                              \
     }
+
+#define Assert(log_cat, expr, msg, ...)             \
+    if (!(expr))                                    \
+    {                                               \
+        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
+        DEBUG_BREAK();                              \
+        std::terminate();                           \
+    }
 #else
 #define DebugAssert(log_cat, expr, msg, ...)
+#define Assert(log_cat, expr, msg, ...)             \
+    if (!(expr))                                    \
+    {                                               \
+        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
+        std::terminate();                           \
+}
 #endif
 

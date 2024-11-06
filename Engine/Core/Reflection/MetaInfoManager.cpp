@@ -33,6 +33,11 @@ static void RegisterOtherType(MetaInfoManager& manager)
         manager.RegisterType(RTTITypeInfo::Create<String>(), type);
     }
     {
+        // StringView
+        Type* type = Type::Create<StringView>("core.StringView");
+        manager.RegisterType(RTTITypeInfo::Create<StringView>(), type);
+    }
+    {
         // ITypeGetter
         Type* type = Type::Create<ITypeGetter>("core.ITypeGetter");
         type->SetAttribute(Type::Interface);

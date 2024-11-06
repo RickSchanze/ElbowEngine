@@ -6,11 +6,16 @@
  */
 
 #pragma once
+#include "Base/Base.h"
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "CoreTypeTraits.h"
-#include "Base/Base.h"
+#include "Log/CoreLogCategory.h"
 
+namespace core
+{
+struct Any;
+}
 namespace core
 {
 class ISerializer;
@@ -53,11 +58,13 @@ public:
     virtual Archive& operator<<(bool b)                = 0;
     virtual Archive& operator<<(double d)              = 0;
     virtual Archive& operator<<(float f)               = 0;
-    virtual Archive& operator<<(const char* str)       = 0;
     virtual Archive& operator<<(const String& str)     = 0;
     virtual Archive& operator<<(const StringView& str) = 0;
 #endif
-    template<typename Enum>
+
+    Archive& operator<<(const Any& value);
+
+    template <typename Enum>
         requires std::is_enum_v<Enum>
     Archive& operator<<(Enum e)
     {
@@ -65,12 +72,11 @@ public:
     }
 
 #if REGION(容器类型)
-    template<template<typename, typename...> class Container, typename Element>
+    template <template <typename, typename...> class Container, typename Element>
     Archive& operator<<(const Container<Element>& container)
         requires ArrayLikeIterable<Container<Element>>
     {
-        std::vector<int> a;
-        // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        DebugAssert(LogCat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::ArrayStart;
@@ -83,11 +89,11 @@ public:
         return *this;
     }
 
-    template<template<typename...> typename Map, typename Key, typename Value>
+    template <template <typename...> typename Map, typename Key, typename Value>
     Archive& operator<<(const Map<Key, Value>& container)
         requires MapLikeIterable<Map<Key, Value>>
     {
-        // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        Assert(LogCat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::MapStart;
@@ -103,8 +109,6 @@ public:
         return *this;
     }
 #endif
-
-    // Archive& operator<<(const rttr::variant& value);
 
     [[nodiscard]] State GetState() const { return state_; }
     [[nodiscard]] bool  IsSerializing() const { return state_ == State::Serializing; }
@@ -122,18 +126,18 @@ public:
 protected:
     State state_ = State::Idle;
 };
-}
+}   // namespace core
 
-template<>
+template <>
 inline core::StringView GetEnumString<core::Archive::State>(core::Archive::State value)
 {
     switch (value)
     {
-        case core::Archive::State::Idle: return "Idle";
-        case core::Archive::State::Serializing: return "Serializing";
-        case core::Archive::State::Serialized: return "Serialized";
-        case core::Archive::State::Deserializing: return "Deserializing";
-        case core::Archive::State::Deserialized: return "Deserialized";
-        default: return ENUM_INVALID;
+    case core::Archive::State::Idle: return "Idle";
+    case core::Archive::State::Serializing: return "Serializing";
+    case core::Archive::State::Serialized: return "Serialized";
+    case core::Archive::State::Deserializing: return "Deserializing";
+    case core::Archive::State::Deserialized: return "Deserialized";
+    default: return ENUM_INVALID;
     }
 }

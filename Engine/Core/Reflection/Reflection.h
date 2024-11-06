@@ -374,6 +374,9 @@ struct Type
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
+    // 用于判断是不是存储一个int8_t,...,int64_t,uint8_t,...,uint64_t,bool,float,double,String,StringView
+    bool IsPrimitive() const;
+
     // clang-format off
     /**
      * 注册一个字段信息, 但是不应该人为调用只应由代码生成器生成代码调用

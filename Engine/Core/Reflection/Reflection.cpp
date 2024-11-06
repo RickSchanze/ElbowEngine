@@ -192,6 +192,24 @@ bool Type::HasMemberFunction(StringView name) const
     return std::ranges::any_of(GetMemberFunctions(), [name](const FunctionInfo* func) { return func->GetName() == name; });
 }
 
+bool Type::IsPrimitive() const
+{
+    if (this == TypeOf<int8_t>()) return true;
+    if (this == TypeOf<uint8_t>()) return true;
+    if (this == TypeOf<int16_t>()) return true;
+    if (this == TypeOf<uint16_t>()) return true;
+    if (this == TypeOf<int32_t>()) return true;
+    if (this == TypeOf<uint32_t>()) return true;
+    if (this == TypeOf<int64_t>()) return true;
+    if (this == TypeOf<uint64_t>()) return true;
+    if (this == TypeOf<float>()) return true;
+    if (this == TypeOf<double>()) return true;
+    if (this == TypeOf<bool>()) return true;
+    if (this == TypeOf<String>()) return true;
+    if (this == TypeOf<StringView>()) return true;
+    return false;
+}
+
 void Type::Internal_AddParent(const Type* parent)
 {
     if (auto exist_parent = std::ranges::find(parents_, parent); exist_parent == parents_.end())
