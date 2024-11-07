@@ -19,6 +19,7 @@ struct Any;
 namespace core
 {
 class ISerializer;
+
 class Archive
 {
 public:
@@ -117,14 +118,15 @@ public:
     [[nodiscard]] bool  IsSerialized() const { return state_ == State::Serialized; }
     [[nodiscard]] bool  IsDeserialized() const { return state_ == State::Deserialized; }
 
-    [[nodiscard]] virtual core::String ToString() = 0;
+    [[nodiscard]] virtual String ToString() = 0;
 
     virtual void BeginSerialize() { state_ = State::Serializing; }
     virtual void EndSerialize() { state_ = State::Serialized; }
     virtual void BeginDeserialize() { state_ = State::Deserializing; }
     virtual void EndDeserialize() { state_ = State::Deserialized; }
 
-    void               SetError() { state_ = State::Error; }
+    void SetError() { state_ = State::Error; }
+
     [[nodiscard]] bool HasError() const { return state_ == State::Error; }
 
 protected:

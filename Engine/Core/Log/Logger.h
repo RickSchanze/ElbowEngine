@@ -102,7 +102,7 @@ private:
     UniquePtr<spdlog::logger> logger_;
 };
 
-extern Logger g_logger;
+Logger& GetLogger();
 }   // namespace core
 
-#define LOGGER core::g_logger
+#define LOGGER core::GetLogger()

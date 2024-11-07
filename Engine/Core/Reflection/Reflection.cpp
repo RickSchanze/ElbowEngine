@@ -15,9 +15,9 @@
 namespace core
 {
 FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
-    offset_(info.offset_), size_(info.size_), name_(info.name_), attribute_(info.attribute_), value_attr_(info.value_attr_),
-    container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_), container_identifier_(info.container_identifier_),
-    enum_value_(info.enum_value_)
+    offset_(info.offset_), size_(info.size_), name_(info.name_), enum_value_(info.enum_value_), attribute_(info.attribute_),
+    value_attr_(info.value_attr_), container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_),
+    container_identifier_(info.container_identifier_)
 {
 }
 
@@ -61,23 +61,30 @@ FieldInfo* FieldInfo::SetComment(StringView comment)
     return this;
 }
 
-Optional<Any> FieldInfo::GetAny(ITypeGetter* obj) const
+Any FieldInfo::GetValue(const ITypeGetter* obj) const
 {
     if (obj == nullptr)
     {
         LOGGER.Error(LogCat::Reflection, "obj is null");
         return NullOpt;
     }
-    if (obj->GetType() != type_)
+    if (obj->GetType() != outer_)
     {
-        LOGGER.Error(LogCat::Archive_Serialization, "类型不匹配, 要求{}, 传入{}", type_->GetName(), obj->GetType()->GetName());
+        LOGGER.Error(
+            LogCat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj->GetType()->GetName(), outer_->GetName()
+        );
         return NullOpt;
     }
-    return Any(GetFieldPtr(obj), type_);
+    return {GetFieldPtr(obj), type_};
 }
 
-Optional<Ref<SequentialContainerView>> FieldInfo::CreateSequentialContainerView(ITypeGetter* obj) const
+SequentialContainerView* FieldInfo::CreateSequentialContainerView(const ITypeGetter* obj) const
 {
+    if (!container_view_)
+    {
+        LOGGER.Error(LogCat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        return nullptr;
+    }
     auto ele_type        = obj->GetType();
     auto view_outer_type = container_view_->GetOuterType();
     if (ele_type != view_outer_type)
@@ -85,14 +92,19 @@ Optional<Ref<SequentialContainerView>> FieldInfo::CreateSequentialContainerView(
         LOGGER.Error(
             LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
         );
-        return NullOpt;
+        return nullptr;
     }
-    container_view_->SetInstance(obj);
-    return MakeRef(static_cast<SequentialContainerView&>(*container_view_));
+    container_view_->SetInstance(const_cast<ITypeGetter*>(obj));
+    return static_cast<SequentialContainerView*>(container_view_.Get());
 }
 
-Optional<Ref<AssociativeContainerView>> FieldInfo::CreateAssociativeContainerView(ITypeGetter* obj) const
+AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(const ITypeGetter* obj) const
 {
+    if (!container_view_)
+    {
+        LOGGER.Error(LogCat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        return nullptr;
+    }
     auto ele_type        = obj->GetType();
     auto view_outer_type = container_view_->GetOuterType();
     if (ele_type != view_outer_type)
@@ -100,12 +112,11 @@ Optional<Ref<AssociativeContainerView>> FieldInfo::CreateAssociativeContainerVie
         LOGGER.Error(
             LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
         );
-        return NullOpt;
+        return nullptr;
     }
-    container_view_->SetInstance(obj);
-    return MakeRef(static_cast<AssociativeContainerView&>(*container_view_));
+    container_view_->SetInstance(const_cast<ITypeGetter*>(obj));
+    return static_cast<AssociativeContainerView*>(container_view_.Get());
 }
-
 
 core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 {
@@ -243,12 +254,13 @@ bool Type::IsDerivedFrom(const Type* type) const
     return false;
 }
 
-void Type::Internal_AddParent(const Type* parent)
+Type* Type::Internal_AddParent(const Type* parent)
 {
     if (auto exist_parent = std::ranges::find(parents_, parent); exist_parent == parents_.end())
     {
         parents_.push_back(parent);
     }
+    return this;
 }
 
 Type* Type::SetAttribute(FlagAttribute attr)

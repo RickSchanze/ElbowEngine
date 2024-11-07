@@ -75,10 +75,6 @@ Archive& YamlArchive::operator<<(float i)
 {
     IMPL_BASE_TYPE;
 }
-Archive& YamlArchive::operator<<(const char* i)
-{
-    IMPL_BASE_TYPE;
-}
 
 Archive& YamlArchive::operator<<(const String& str)
 {
@@ -128,6 +124,10 @@ void YamlArchive::EndSerialize()
 
 String YamlArchive::ToString()
 {
+    if (HasError())
+    {
+        return "Some error occured during serialization";
+    }
     if (IsSerialized())
     {
         return emitter_->c_str();

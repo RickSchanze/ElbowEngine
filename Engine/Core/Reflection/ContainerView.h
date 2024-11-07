@@ -9,9 +9,9 @@
 
 #include "Any.h"
 #include "Base/CoreTypeDef.h"
-#include "Log/Logger.h"
-#include "Log/CoreLogCategory.h"
 #include "CoreDef.h"
+#include "Log/CoreLogCategory.h"
+#include "Log/Logger.h"
 
 namespace core
 {
@@ -33,14 +33,14 @@ class ContainerView
 public:
     virtual ~ContainerView() = default;
 
-    virtual bool          BeginIterate()     = 0;
-    virtual void          Next()             = 0;
-    virtual void          EndIterate()       = 0;
-    virtual bool          HasNext()          = 0;
-    virtual void          SetInstance(void*) = 0;
+    virtual bool              BeginIterate()     = 0;
+    virtual void              Next()             = 0;
+    virtual void              EndIterate()       = 0;
+    virtual bool              HasNext()          = 0;
+    virtual void              SetInstance(void*) = 0;
     virtual ContainerViewType GetContainerType() = 0;
-    virtual const Type*   GetOuterType()     = 0;
-    virtual int32_t       Size()             = 0;
+    virtual const Type*       GetOuterType()     = 0;
+    virtual int32_t           Size()             = 0;
 };
 
 class SequentialContainerView : public ContainerView
@@ -65,7 +65,7 @@ public:
 };
 
 #if REGION(非关联容器: StaticArray)
-template<typename ClassT, typename T, size_t N>
+template <typename ClassT, typename T, size_t N>
 class StaticArrayView : public SequentialContainerView
 {
 public:
@@ -162,7 +162,7 @@ private:
 #endif
 
 #if REGION(非关联容器: Array List Set HashSet)
-template<typename ClassT, typename T, template<typename...> typename Container>
+template <typename ClassT, typename T, template <typename...> typename Container>
 class DynamicArrayView : public SequentialContainerView
 {
 public:
@@ -215,7 +215,7 @@ public:
             LOGGER.Error(LogCat::Reflection, "未设置Instance");
             return false;
         }
-        return MakeRef(*iter_);
+        return {std::addressof(*iter_), element_type_};
     }
 
     ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
@@ -231,7 +231,7 @@ public:
         {
             ++it;
         }
-        return MakeRef(*it);
+        return {std::addressof(*it), element_type_};
     }
 
     int32_t Size() override
@@ -258,7 +258,7 @@ private:
 #endif
 
 #if REGION(关联容器: Map HashMap)
-template<typename ClassT, typename K, typename V, template<typename...> typename Container>
+template <typename ClassT, typename K, typename V, template <typename...> typename Container>
 class MapView : public AssociativeContainerView
 {
     using key_type      = typename Container<K, V>::key_type;
@@ -292,6 +292,7 @@ public:
             LOGGER.Error(LogCat::Reflection, "未设置Instance");
         }
         ++iter_;
+        ++iter_cnt_;
     }
 
     void EndIterate() override
@@ -315,17 +316,17 @@ public:
         return (instance_->*container_).size();
     }
     ContainerViewType GetContainerType() override { return ContainerViewType::Associative; }
-    const Type*   GetOuterType() override { return outer_; }
-    const Type*   GetKeyType() override { return key_type_; }
-    const Type*   GetValueType() override { return value_type_; }
+    const Type*       GetOuterType() override { return outer_; }
+    const Type*       GetKeyType() override { return key_type_; }
+    const Type*       GetValueType() override { return value_type_; }
 
     Any GetCurrentKey() override
     {
         // key使用const ref
-        return MakeRef(iter_->first);
+        return {std::addressof(iter_->first), key_type_};
     }
 
-    Any GetCurrentValue() override { return MakeRef(iter_->second); }
+    Any GetCurrentValue() override { return {std::addressof(iter_->second), value_type_}; }
 
     Any GetElementAt(const Any& key) override
     {
@@ -334,13 +335,14 @@ public:
             LOGGER.Error(LogCat::Reflection, "未设置Instance");
             return {};
         }
-        std::expected<const K, AnyCastError> cast_op = any_cast<const K>(key);
+        auto cast_op = key.AsCopy<K>();
         if (cast_op.has_value())
         {
             auto& key_value = cast_op.value();
             if ((instance_->*container_).find(key_value) != (instance_->*container_).end())
             {
-                return MakeRef((instance_->*container_)[key_value]);
+                auto& it = (instance_->*container_)[key_value];
+                return {std::addressof(it), value_type_};
             }
         }
         return {};

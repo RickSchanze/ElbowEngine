@@ -72,5 +72,11 @@ void Logger::SendLog(LogLevel level, const core::StringView category, const core
     log.call_stack = core::GetCurrentStackTrace();
     Event_OnLog.Invoke(log);
 }
-Logger g_logger;
+
+Logger& GetLogger()
+{
+    static Logger logger;
+    return logger;
+}
+
 }   // namespace core

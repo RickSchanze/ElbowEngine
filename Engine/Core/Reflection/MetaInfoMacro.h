@@ -61,19 +61,18 @@ public:                                                                      \
 private:
 
 
-#define GENERATED_SOURCE()                                   \
-    static void Z_MetaInfo_Registration_Func();              \
-    struct Z_MetaInfo_Registration                           \
-    {                                                        \
-        Z_MetaInfo_Registration()                            \
-        {                                                    \
-            Z_MetaInfo_Registration_Func();                  \
-        }                                                    \
-    };                                                       \
-    void Z_MetaInfo_Registration_Func()                      \
-    {                                                        \
-        GENERATED_ALL_CLASS_BODY                             \
-    }                                                        \
-    static Z_MetaInfo_Registration Z_meta_info_registration; \
-    GENERATED_IMPLEMENTATION
+#define GENERATED_SOURCE()                                         \
+    static void Z_MetaInfo_Registration_Func();                    \
+    namespace                                                      \
+    {                                                              \
+    struct Z_MetaInfo_Registration                                 \
+    {                                                              \
+        Z_MetaInfo_Registration()                                  \
+        {                                                          \
+            Z_MetaInfo_Registration_Func();                        \
+        }                                                          \
+    };                                                             \
+    static const Z_MetaInfo_Registration Z_meta_info_registration; \
+    }                                                              \
+    void Z_MetaInfo_Registration_Func(){GENERATED_ALL_CLASS_BODY} GENERATED_IMPLEMENTATION
 

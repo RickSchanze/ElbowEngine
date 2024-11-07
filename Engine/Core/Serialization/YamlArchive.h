@@ -33,7 +33,6 @@ public:
     Archive& operator<<(bool b) override;
     Archive& operator<<(double d) override;
     Archive& operator<<(float f) override;
-    Archive& operator<<(const char* str) override;
     Archive& operator<<(const String& str) override;
     Archive& operator<<(const StringView& str) override;
 #endif

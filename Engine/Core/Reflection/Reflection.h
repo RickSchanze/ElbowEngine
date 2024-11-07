@@ -139,23 +139,25 @@ struct FieldInfo
     {
         return container_identifier_ == ContainerIdentifier::Map || container_identifier_ == ContainerIdentifier::HashMap;
     }
-    [[nodiscard]] bool IsSequentialContainer() const { return !IsAssociativeContainer(); }
+    [[nodiscard]] bool IsSequentialContainer() const
+    {
+        return container_identifier_ == ContainerIdentifier::Array || container_identifier_ == ContainerIdentifier::StaticArray ||
+               container_identifier_ == ContainerIdentifier::Set || container_identifier_ == ContainerIdentifier::HashSet ||
+               container_identifier_ == ContainerIdentifier::List;
+    }
 
     FieldInfo* SetAttribute(FlagAttribute attr);
     FieldInfo* SetAttribute(ValueAttribute attr, StringView value);
     FieldInfo* SetComment(StringView comment);
 
-    template <typename T, bool ByRef = false>
-    [[nodiscard]] Optional<std::conditional_t<ByRef, Ref<T>, T>> Get(ITypeGetter* obj) const;
+    [[nodiscard]] Any GetValue(const ITypeGetter* obj) const;
 
-    [[nodiscard]] Optional<Any> GetAny(ITypeGetter* obj) const;
+    SequentialContainerView* CreateSequentialContainerView(const ITypeGetter* obj) const;
 
-    Optional<Ref<SequentialContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
-
-    Optional<Ref<AssociativeContainerView>> CreateAssociativeContainerView(ITypeGetter* obj) const;
+    AssociativeContainerView* CreateAssociativeContainerView(const ITypeGetter* obj) const;
 
 private:
-    [[nodiscard]] void* GetFieldPtr(ITypeGetter* obj) const { return reinterpret_cast<uint8_t*>(obj) + offset_; }
+    [[nodiscard]] void* GetFieldPtr(const ITypeGetter* obj) const { return (uint8_t*)(obj) + offset_; }
 
 protected:
     int32_t                  offset_ = -1;
@@ -171,7 +173,7 @@ protected:
     ContainerIdentifier container_identifier_ = ContainerIdentifier::Count;
 
 #if WITH_EDITOR
-    StringView comment_;   // 注释 或者imgui显示的label
+    StringView comment_ = "";   // 注释 或者imgui显示的label
 #endif
 };
 
@@ -461,7 +463,7 @@ struct Type
         return &fields_.emplace_back(Move(filed_info));
     }
 
-    void Internal_AddParent(const Type* parent);
+    Type* Internal_AddParent(const Type* parent);
 
     // clang-format on
     Type* SetAttribute(FlagAttribute attr);
@@ -484,79 +486,6 @@ protected:
     StringView comment_;   // 注释
 #endif
 };
-
-template <typename T, bool ByRef>
-Optional<std::conditional_t<ByRef, Ref<T>, T>> FieldInfo::Get(ITypeGetter* obj) const
-{
-    if (obj->GetType() != outer_)
-    {
-        LOGGER.Error(LogCat::Reflection, "类型不兼容, 要求{}, 给出{}", type_->GetName(), obj->GetType()->GetName());
-        return NullOpt;
-    }
-#define SELECT_RETURN_REF                                                                 \
-    if constexpr (ByRef)                                                                  \
-    {                                                                                     \
-        return MakeRef(*reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_)); \
-    }                                                                                     \
-    else                                                                                  \
-    {                                                                                     \
-        return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(obj) + offset_);          \
-    }
-
-#define GET_CONTAINER_IMPL(name)                                                 \
-    if (container_identifier_ == ContainerIdentifier::name)                      \
-    {                                                                            \
-        if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name) \
-        {                                                                        \
-            if (TypeOf<typename ContainerTypeTrait<T>::ValueType>() == type_)    \
-            {                                                                    \
-                SELECT_RETURN_REF                                                \
-            }                                                                    \
-        }                                                                        \
-        return NullOpt;                                                          \
-    }
-
-    GET_CONTAINER_IMPL(Array);
-    GET_CONTAINER_IMPL(List);
-    GET_CONTAINER_IMPL(Set);
-    GET_CONTAINER_IMPL(HashSet);
-    if (container_identifier_ == ContainerIdentifier::StaticArray)
-    {
-        if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
-        {
-            if (auto view = CreateSequentialContainerView(obj))
-            {
-                auto size = view.value()->Size();
-                if (size == ContainerTypeTrait<T>::ConstantSize && type_ == TypeOf<typename ContainerTypeTrait<T>::ValueType>())
-                {
-                    SELECT_RETURN_REF
-                }
-            }
-        }
-        return NullOpt;
-    }
-    if (container_identifier_ == ContainerIdentifier::Map || container_identifier_ == ContainerIdentifier::HashMap)
-    {
-        if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Map || ContainerTypeTrait<T>::Value == ContainerIdentifier::HashMap)
-        {
-            if (auto view = CreateAssociativeContainerView(obj))
-            {
-                if (view.value()->GetKeyType() == TypeOf<typename ContainerTypeTrait<T>::KeyType>() &&
-                    view.value()->GetValueType() == TypeOf<typename ContainerTypeTrait<T>::ValueType>())
-                {
-                    SELECT_RETURN_REF
-                }
-            }
-        }
-        return NullOpt;
-    }
-    static_assert(!(ContainerTypeTrait<T>::Value == ContainerIdentifier::Count && IsTypeHasTemplate<T>::value), "custom template type not supported");
-    if (TypeOf<T>() == type_)
-    {
-        SELECT_RETURN_REF
-    }
-    return NullOpt;
-}   // namespace core
 
 }   // namespace core
 

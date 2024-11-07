@@ -6,10 +6,13 @@
  */
 
 #pragma once
+
+// 此头文件不能包含Reflection.h
 #include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
 #include "Base/Ref.h"
 #include "CoreGlobal.h"
+#include "Log/CoreLogCategory.h"
 #include "MetaInfoManager.h"
 
 #include <expected>
@@ -18,29 +21,18 @@ namespace core
 {
 struct Type;
 
-enum class AnyCastError
-{
-    ValueIsNullptr,
-    ValueIsRef,
-    TypeNotSame,
-    CannotConvert,
-    Count
-};
-
 /**
- * 当Any持有Ref<T>时，调用GetType得到的会是TypeOf<T>()
+ * 只读Any 注意不要试图利用Any修改原始数据
  */
 struct Any
 {
-    template <typename T>
-    friend std::expected<T, AnyCastError> any_cast(const Any& operand);
-
     Any() : ptr_{nullptr} {}
 
     Any(void* data, const Type* data_type);
+    Any(const void* data, const Type* data_type);
 
     template <typename T>
-    Any(const T& t) : ptr_{new Data<T>(t)} {};
+    Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), TypeOf<T>())} {};
 
     Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
 
@@ -66,22 +58,28 @@ struct Any
         return *this;
     }
 
+    ~Any() { Delete(ptr_); }
+
     [[nodiscard]] const Type* GetType() const { return ptr_ ? ptr_->GetType() : nullptr; }
+    [[nodiscard]] bool        HasValue() const { return ptr_ != nullptr; }
+    [[nodiscard]] bool        IsDerivedFrom(const Type* t) const;
+    [[nodiscard]] bool        IsParentOf(const Type* t) const;
 
-    [[nodiscard]] bool IsRef() const { return ptr_ ? ptr_->IsRef() : false; }
+    // 将void*的内容复制到T中
+    template <typename T>
+    [[nodiscard]] Optional<T> AsCopy() const;
 
-    [[nodiscard]] bool HasValue() const { return ptr_ != nullptr; }
+    template <typename T>
+    [[nodiscard]] const T* As() const;
 
-    [[nodiscard]] bool IsDerivedFrom(const Type* t) const;
-    [[nodiscard]] bool IsParentOf(const Type* t) const;
-
+private:
     struct Base
     {
         virtual ~Base() = default;
 
         virtual Base*                     Clone()         = 0;
         [[nodiscard]] virtual const Type* GetType() const = 0;
-        [[nodiscard]] virtual bool        IsRef() const   = 0;
+        [[nodiscard]] virtual void*       GetData() const = 0;
     };
 
     struct TypeLessData : Base
@@ -89,91 +87,52 @@ struct Any
         void*       data;
         const Type* type;
 
+        TypeLessData(const void* data, const Type* type) : data{const_cast<void*>(data)}, type{type} {}
+        TypeLessData(void* data, const Type* type) : data{data}, type{type} {}
+
         Base*                     Clone() override { return New<TypeLessData>(data, type); }
         [[nodiscard]] const Type* GetType() const override { return type; }
-        [[nodiscard]] bool        IsRef() const override { return false; }
+        [[nodiscard]] void*       GetData() const override { return data; }
     };
-
-    template <typename T>
-    struct Data : Base
-    {
-        T           data;
-        const Type* type;
-
-        Data(const T& t) : data(t), type(TypeOf<T>()) {}
-
-        Base*                     Clone() override { return New<Data>(data); }
-        [[nodiscard]] const Type* GetType() const override { return type; }
-        [[nodiscard]] bool        IsRef() const override { return false; }
-    };
-
-    template <typename T>
-    struct Data<Ref<T>> : Base
-    {
-        Ref<T>      data;
-        const Type* type;
-
-        Data(const Ref<T>& t) : data(t), type(TypeOf<T>()) {}
-
-        Base*                     Clone() override { return New<Data>(data); }
-        [[nodiscard]] const Type* GetType() const override { return type; }
-        [[nodiscard]] bool        IsRef() const override { return true; }
-    };
-
-    ~Any() { Delete(ptr_); }
 
 private:
     Base* ptr_;
 };
 
-// 类型安全的提取
+void LogTypeNotSameError(const Type* t1, const Type* t2);
+
 template <typename T>
-std::expected<T, AnyCastError> any_cast(const Any& operand)
+Optional<T> Any::AsCopy() const
 {
-    if (!operand.ptr_)
+    if (ptr_ == nullptr)
     {
-        return std::unexpected(AnyCastError::ValueIsNullptr);
+        LOGGER.Error(LogCat::Reflection, "Any has no value");
+        return NullOpt;
     }
-
-    if (!operand.IsDerivedFrom(TypeOf<T>()))
+    const Type* t = TypeOf<T>();
+    if (t != GetType())
     {
-        return std::unexpected(AnyCastError::CannotConvert);
+        LogTypeNotSameError(t, GetType());
+        return NullOpt;
     }
-
-    if constexpr (IsRef_V<T>)
-    {
-        if (operand.GetType() != TypeOf<typename T::value_type>())
-        {
-            return std::unexpected(AnyCastError::TypeNotSame);
-        }
-    }
-    else
-    {
-        if (operand.GetType() != TypeOf<T>())
-        {
-            return std::unexpected(AnyCastError::TypeNotSame);
-        }
-    }
-
-    if ((operand.IsRef() && !IsRef_V<T>) || (!operand.IsRef() && IsRef_V<T>))
-    {
-        return std::unexpected(AnyCastError::ValueIsRef);
-    }
-
-
-    return static_cast<const Any::Data<T>&>(*operand.ptr_).data;
+    const T& tmp = *static_cast<T*>(ptr_->GetData());
+    T        result{tmp};
+    return result;
 }
-}   // namespace core
 
-template <>
-inline core::StringView GetEnumString<core::AnyCastError>(core::AnyCastError value)
+template <typename T>
+const T* Any::As() const
 {
-    switch (value)
+    if (ptr_ == nullptr)
     {
-    case core::AnyCastError::ValueIsNullptr: return "ValueIsNullptr";
-    case core::AnyCastError::ValueIsRef: return "ValueIsRef";
-    case core::AnyCastError::TypeNotSame: return "TypeNotSame";
-    case core::AnyCastError::CannotConvert: return "CannotConvert";
-    default: return ENUM_INVALID;
+        LOGGER.Error(LogCat::Reflection, "Any has no value");
+        return nullptr;
     }
+    if (!IsDerivedFrom(TypeOf<T>()))
+    {
+        LOGGER.Error(LogCat::Reflection, "Type {} is not derived from {}", GetType()->GetName(), TypeOf<T>()->GetName());
+        return nullptr;
+    }
+    return static_cast<const T*>(ptr_->GetData());
+}
 }

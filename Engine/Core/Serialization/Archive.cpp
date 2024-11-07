@@ -1,158 +1,90 @@
 /**
  * @file Archive.cpp
- * @author Echo 
+ * @author Echo
  * @Date 24-10-24
- * @brief 
+ * @brief
  */
 
 #include "Archive.h"
 
 #include "Log/CoreLogCategory.h"
 #include "Reflection/Any.h"
+#include "Reflection/ContainerView.h"
 #include "Reflection/Reflection.h"
 
-// 序列化基本类型, 不能是引用, 对于字符串
-// const char* 和 char* 是不支持的
-// 请使用String或者StringView
-static void SerializeBasicType(core::Archive& ar, const core::Any& value)
+core::Archive& core::Archive::operator<<(const Any& value)
 {
-    DebugAssert(LogCat::Archive_Serialization, value.HasValue(), "序列化值无效");
-    auto value_type = value.GetType();
-#define VALUE_GETTER(type)                                                                              \
-    if (value_type == core::TypeOf<type>())                                                             \
-    {                                                                                                   \
-        auto v_op = any_cast<type>(value);                                                              \
-        if (v_op.has_value())                                                                           \
-        {                                                                                               \
-            ar << v_op.value();                                                                         \
-        }                                                                                               \
-        else                                                                                            \
-        {                                                                                               \
-            LOGGER.Error(LogCat::Archive_Serialization, "序列化出错: {}", GetEnumString(v_op.error())); \
-        }                                                                                               \
-        return;                                                                                         \
-    }
-    VALUE_GETTER(int8_t)
-    VALUE_GETTER(int16_t)
-    VALUE_GETTER(int32_t)
-    VALUE_GETTER(int64_t)
-    VALUE_GETTER(uint8_t)
-    VALUE_GETTER(uint16_t)
-    VALUE_GETTER(uint32_t)
-    VALUE_GETTER(uint64_t)
-    VALUE_GETTER(float)
-    VALUE_GETTER(double)
-    VALUE_GETTER(bool)
-    VALUE_GETTER(core::String)
-    VALUE_GETTER(core::StringView)
-#undef VALUE_GETTER
-    LOGGER.Error(LogCat::Archive_Serialization, "序列化出错: 不支持的数据类型: {}", value_type->GetName());
-}
-
-static void SerializeBasicRefType(core::Archive& ar, const core::Any& value)
-{
-    DebugAssert(LogCat::Archive_Serialization, value.HasValue(), "序列化值无效");
-    auto value_type = value.GetType();
-#define VALUE_GETTER(type)                                                                              \
-    if (value_type == core::TypeOf<type>())                                                             \
-    {                                                                                                   \
-        auto v_op = any_cast<core::Ref<type>>(value);                                                   \
-        if (v_op.has_value())                                                                           \
-        {                                                                                               \
-            ar << *v_op.value();                                                                        \
-        }                                                                                               \
-        else                                                                                            \
-        {                                                                                               \
-            LOGGER.Error(LogCat::Archive_Serialization, "序列化出错: {}", GetEnumString(v_op.error())); \
-        }                                                                                               \
-        return;                                                                                         \
-    }
-    VALUE_GETTER(int8_t)
-    VALUE_GETTER(int16_t)
-    VALUE_GETTER(int32_t)
-    VALUE_GETTER(int64_t)
-    VALUE_GETTER(uint8_t)
-    VALUE_GETTER(uint16_t)
-    VALUE_GETTER(uint32_t)
-    VALUE_GETTER(uint64_t)
-    VALUE_GETTER(float)
-    VALUE_GETTER(double)
-    VALUE_GETTER(bool)
-    VALUE_GETTER(core::String)
-    VALUE_GETTER(core::StringView)
-#undef VALUE_GETTER
-    LOGGER.Error(LogCat::Archive_Serialization, "序列化出错: 不支持的引用数据类型: {}", value_type->GetName());
-}
-
-core::Archive& core::Archive::operator<<(const core::Any& value)
-{
-    DebugAssert(LogCat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
     if (!value.HasValue())
     {
-        LOGGER.Error(LogCat::Archive_Serialization, "序列化值无效");
         SetError();
+        LOGGER.Error(LogCat::Reflection, "Input does not hold a value");
         return *this;
     }
-    auto value_type = value.GetType();
-    if (value_type->IsPrimitive())
+    auto* type = value.GetType();
+    if (type->IsPrimitive())
     {
-        if (value.IsRef())
-        {
-            SerializeBasicRefType(*this, value);
-        }
-        else
-        {
-            SerializeBasicType(*this, value);
-        }
+        // clang-format off
+        if (type == TypeOf<int8_t>()) *this << value.AsCopy<int8_t>();
+        else if (type == TypeOf<uint8_t>()) *this << value.AsCopy<uint8_t>().value();
+        else if (type == TypeOf<int16_t>()) *this << value.AsCopy<int16_t>().value();
+        else if (type == TypeOf<uint16_t>()) *this << value.AsCopy<uint16_t>().value();
+        else if (type == TypeOf<int32_t>()) *this << value.AsCopy<int32_t>().value();
+        else if (type == TypeOf<uint32_t>()) *this << value.AsCopy<uint32_t>().value();
+        else if (type == TypeOf<int64_t>()) *this << value.AsCopy<int64_t>().value();
+        else if (type == TypeOf<uint64_t>()) *this << value.AsCopy<uint64_t>().value();
+        else if (type == TypeOf<float>()) *this << value.AsCopy<float>().value();
+        else if (type == TypeOf<double>()) *this << value.AsCopy<double>().value();
+        else if (type == TypeOf<bool>()) *this << value.AsCopy<bool>().value();
+        else if (type == TypeOf<String>()) *this << value.AsCopy<String>().value();
+        else if (type == TypeOf<StringView>()) *this << value.AsCopy<StringView>().value();
+        // clang-format on
     }
     else
     {
-        if (value.IsRef())
+        auto* type_getter = value.As<ITypeGetter>();
+        if (type_getter == nullptr)
         {
-            LOGGER.Error(LogCat::Archive_Serialization, "反序列化自定义类型的Ref是不支持的: Ref<{}>", value_type->GetName());
             SetError();
-            return *this;
+            LOGGER.Error(LogCat::Reflection, "The input is neither a primitive type nor an ITypeGetter.");
         }
-        else
+        auto fields = type->GetFields();
+        *this << InputType::MapStart;
+        for (auto field: fields)
         {
-            auto obj_op = any_cast<ITypeGetter*>(value);
-            if (!obj_op.has_value())
+            *this << InputType::Key;
+            *this << field->GetName();
+            *this << InputType::Value;
+            if (field->IsAssociativeContainer())
             {
-                LOGGER.Error(LogCat::Archive_Serialization, "基础类型外, 可序列化的类型必须是一个ITypeGetter");
-                SetError();
-                return *this;
-            }
-            const auto fields = value_type->GetFields();
-            auto       obj    = obj_op.value();
-            *this << InputType::MapStart;
-            for (auto& field: fields)
-            {
-                *this << InputType::Key;
-                *this << field->GetName();
-                *this << InputType::Value;
-                if (field->IsAssociativeContainer())
+                auto* container = field->CreateAssociativeContainerView(type_getter);
+                if (container)
                 {
-                }
-                else if (field->IsSequentialContainer())
-                {
-                }
-                else
-                {
-                    auto any_op = field->GetAny(obj);
-                    if (any_op.has_value())
-                    {
-                        *this << any_op.value();
-                    }
-                    else
-                    {
-                        LOGGER.Error(LogCat::Archive_Serialization, "序列化出错");
-                        SetError();
-                        return *this;
-                    }
+                    *this << InputType::MapStart;
+                    container->ForEach([this](const Any& key, const Any& value) {
+                        *this << InputType::Key;
+                        *this << key;
+                        *this << InputType::Value;
+                        *this << value;
+                    });
+                    *this << InputType::MapEnd;
                 }
             }
-            *this << InputType::MapEnd;
+            else if (field->IsSequentialContainer())
+            {
+                auto* container = field->CreateSequentialContainerView(type_getter);
+                if (container)
+                {
+                    *this << InputType::ArrayStart;
+                    container->ForEach([this](const Any& element) { *this << element; });
+                    *this << InputType::ArrayEnd;
+                }
+            }
+            else
+            {
+                *this << field->GetValue(type_getter);
+            }
         }
+        *this << InputType::MapEnd;
     }
     return *this;
 }

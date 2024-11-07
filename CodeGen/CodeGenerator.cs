@@ -228,6 +228,11 @@ public class CodeGenerator
 
         sw.WriteLine("using namespace core; \\");
         sw.Write($"Type* type = Type::Create<{class_.FullName}>(\"{className}\")");
+        foreach (var baseType in class_.BaseTypes)
+        {
+            sw.Write($"->Internal_AddParent(TypeOf<{baseType.Type.FullName}>())");
+        }
+
         if (!string.IsNullOrEmpty(comment))
         {
             sw.Write($"->SetComment(\"{comment}\")");
@@ -315,6 +320,7 @@ public class CodeGenerator
             sw.WriteLine(
                 $"core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<{classFullName}>(), &{classFullName}::REFLECTION_Register_{className}_Registerer); \\");
         }
+        GenerateEnums(sw, info);
     }
 
     private static string ComputSHA256(string filePath)

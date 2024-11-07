@@ -94,5 +94,7 @@ enum class ENUM() TestEnum
     C,
     D
 };
+
+
 }
 
