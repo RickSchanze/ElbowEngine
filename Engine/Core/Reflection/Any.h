@@ -155,7 +155,7 @@ std::expected<T, AnyCastError> any_cast(const Any& operand)
         }
     }
 
-    if (!(IsRef_V<T> && operand.IsRef()))
+    if ((operand.IsRef() && !IsRef_V<T>) || (!operand.IsRef() && IsRef_V<T>))
     {
         return std::unexpected(AnyCastError::ValueIsRef);
     }
