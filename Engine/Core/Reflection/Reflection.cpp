@@ -61,6 +61,21 @@ FieldInfo* FieldInfo::SetComment(StringView comment)
     return this;
 }
 
+Optional<Any> FieldInfo::GetAny(ITypeGetter* obj) const
+{
+    if (obj == nullptr)
+    {
+        LOGGER.Error(LogCat::Reflection, "obj is null");
+        return NullOpt;
+    }
+    if (obj->GetType() != type_)
+    {
+        LOGGER.Error(LogCat::Archive_Serialization, "类型不匹配, 要求{}, 传入{}", type_->GetName(), obj->GetType()->GetName());
+        return NullOpt;
+    }
+    return Any(GetFieldPtr(obj), type_);
+}
+
 Optional<Ref<SequentialContainerView>> FieldInfo::CreateSequentialContainerView(ITypeGetter* obj) const
 {
     auto ele_type        = obj->GetType();
@@ -207,6 +222,24 @@ bool Type::IsPrimitive() const
     if (this == TypeOf<bool>()) return true;
     if (this == TypeOf<String>()) return true;
     if (this == TypeOf<StringView>()) return true;
+    return false;
+}
+
+bool Type::IsDerivedFrom(const Type* type) const
+{
+    if (type == nullptr) return false;
+    if (type == this) return true;
+    if (std::ranges::contains(parents_, type))
+    {
+        return true;
+    }
+    for (auto parent: parents_)
+    {
+        if (parent->IsDerivedFrom(type))
+        {
+            return true;
+        }
+    }
     return false;
 }
 

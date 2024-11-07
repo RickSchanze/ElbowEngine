@@ -134,7 +134,8 @@ struct FieldInfo
     [[nodiscard]] const Type* GetType() const { return type_; }
     [[nodiscard]] const Type* GetOuter() const { return outer_; }
     [[nodiscard]] int32_t     GetSize() const { return size_; }
-    [[nodiscard]] bool        IsAssociativeContainer() const
+
+    [[nodiscard]] bool IsAssociativeContainer() const
     {
         return container_identifier_ == ContainerIdentifier::Map || container_identifier_ == ContainerIdentifier::HashMap;
     }
@@ -147,9 +148,14 @@ struct FieldInfo
     template <typename T, bool ByRef = false>
     [[nodiscard]] Optional<std::conditional_t<ByRef, Ref<T>, T>> Get(ITypeGetter* obj) const;
 
+    [[nodiscard]] Optional<Any> GetAny(ITypeGetter* obj) const;
+
     Optional<Ref<SequentialContainerView>> CreateSequentialContainerView(ITypeGetter* obj) const;
 
     Optional<Ref<AssociativeContainerView>> CreateAssociativeContainerView(ITypeGetter* obj) const;
+
+private:
+    [[nodiscard]] void* GetFieldPtr(ITypeGetter* obj) const { return reinterpret_cast<uint8_t*>(obj) + offset_; }
 
 protected:
     int32_t                  offset_ = -1;
@@ -375,7 +381,11 @@ struct Type
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
     // 用于判断是不是存储一个int8_t,...,int64_t,uint8_t,...,uint64_t,bool,float,double,String,StringView
-    bool IsPrimitive() const;
+    [[nodiscard]] bool IsPrimitive() const;
+
+    // 判断一个类型是否继承自另一类型
+    // 如果type == this 返回true
+    [[nodiscard]] bool IsDerivedFrom(const Type* type) const;
 
     // clang-format off
     /**

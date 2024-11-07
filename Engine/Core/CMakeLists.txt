@@ -86,6 +86,7 @@ add_library(${PROJECT_NAME}
         Core.h
         Serialization/ISerializer.cpp
         Base/Interface.h
+        Reflection/Any.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

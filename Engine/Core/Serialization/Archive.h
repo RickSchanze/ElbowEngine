@@ -29,6 +29,7 @@ public:
         Serialized,
         Deserialized,
         Idle,
+        Error,
     };
 
     enum class InputType
@@ -122,6 +123,9 @@ public:
     virtual void EndSerialize() { state_ = State::Serialized; }
     virtual void BeginDeserialize() { state_ = State::Deserializing; }
     virtual void EndDeserialize() { state_ = State::Deserialized; }
+
+    void               SetError() { state_ = State::Error; }
+    [[nodiscard]] bool HasError() const { return state_ == State::Error; }
 
 protected:
     State state_ = State::Idle;

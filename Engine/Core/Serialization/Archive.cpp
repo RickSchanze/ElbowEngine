@@ -90,6 +90,7 @@ core::Archive& core::Archive::operator<<(const core::Any& value)
     if (!value.HasValue())
     {
         LOGGER.Error(LogCat::Archive_Serialization, "序列化值无效");
+        SetError();
         return *this;
     }
     auto value_type = value.GetType();
@@ -109,15 +110,46 @@ core::Archive& core::Archive::operator<<(const core::Any& value)
         if (value.IsRef())
         {
             LOGGER.Error(LogCat::Archive_Serialization, "反序列化自定义类型的Ref是不支持的: Ref<{}>", value_type->GetName());
+            SetError();
             return *this;
         }
         else
         {
-            auto fields = value_type->GetFields();
-            *this << InputType::MapStart;
-            for (auto& field : fields)
+            auto obj_op = any_cast<ITypeGetter*>(value);
+            if (!obj_op.has_value())
             {
-
+                LOGGER.Error(LogCat::Archive_Serialization, "基础类型外, 可序列化的类型必须是一个ITypeGetter");
+                SetError();
+                return *this;
+            }
+            const auto fields = value_type->GetFields();
+            auto       obj    = obj_op.value();
+            *this << InputType::MapStart;
+            for (auto& field: fields)
+            {
+                *this << InputType::Key;
+                *this << field->GetName();
+                *this << InputType::Value;
+                if (field->IsAssociativeContainer())
+                {
+                }
+                else if (field->IsSequentialContainer())
+                {
+                }
+                else
+                {
+                    auto any_op = field->GetAny(obj);
+                    if (any_op.has_value())
+                    {
+                        *this << any_op.value();
+                    }
+                    else
+                    {
+                        LOGGER.Error(LogCat::Archive_Serialization, "序列化出错");
+                        SetError();
+                        return *this;
+                    }
+                }
             }
             *this << InputType::MapEnd;
         }

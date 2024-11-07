@@ -23,6 +23,7 @@ enum class AnyCastError
     ValueIsNullptr,
     ValueIsRef,
     TypeNotSame,
+    CannotConvert,
     Count
 };
 
@@ -31,12 +32,14 @@ enum class AnyCastError
  */
 struct Any
 {
-    template<typename T>
+    template <typename T>
     friend std::expected<T, AnyCastError> any_cast(const Any& operand);
 
     Any() : ptr_{nullptr} {}
 
-    template<typename T>
+    Any(void* data, const Type* data_type);
+
+    template <typename T>
     Any(const T& t) : ptr_{new Data<T>(t)} {};
 
     Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
@@ -69,6 +72,9 @@ struct Any
 
     [[nodiscard]] bool HasValue() const { return ptr_ != nullptr; }
 
+    [[nodiscard]] bool IsDerivedFrom(const Type* t) const;
+    [[nodiscard]] bool IsParentOf(const Type* t) const;
+
     struct Base
     {
         virtual ~Base() = default;
@@ -78,7 +84,17 @@ struct Any
         [[nodiscard]] virtual bool        IsRef() const   = 0;
     };
 
-    template<typename T>
+    struct TypeLessData : Base
+    {
+        void*       data;
+        const Type* type;
+
+        Base*                     Clone() override { return New<TypeLessData>(data, type); }
+        [[nodiscard]] const Type* GetType() const override { return type; }
+        [[nodiscard]] bool        IsRef() const override { return false; }
+    };
+
+    template <typename T>
     struct Data : Base
     {
         T           data;
@@ -86,12 +102,12 @@ struct Any
 
         Data(const T& t) : data(t), type(TypeOf<T>()) {}
 
-        Base*                      Clone() override { return New<Data>(data); }
-        [[nodiscard]] const Type*  GetType() const override { return type; }
-        [[nodiscard]] virtual bool IsRef() const { return false; }
+        Base*                     Clone() override { return New<Data>(data); }
+        [[nodiscard]] const Type* GetType() const override { return type; }
+        [[nodiscard]] bool        IsRef() const override { return false; }
     };
 
-    template<typename T>
+    template <typename T>
     struct Data<Ref<T>> : Base
     {
         Ref<T>      data;
@@ -111,13 +127,19 @@ private:
 };
 
 // 类型安全的提取
-template<typename T>
+template <typename T>
 std::expected<T, AnyCastError> any_cast(const Any& operand)
 {
     if (!operand.ptr_)
     {
         return std::unexpected(AnyCastError::ValueIsNullptr);
     }
+
+    if (!operand.IsDerivedFrom(TypeOf<T>()))
+    {
+        return std::unexpected(AnyCastError::CannotConvert);
+    }
+
     if constexpr (IsRef_V<T>)
     {
         if (operand.GetType() != TypeOf<typename T::value_type>())
@@ -137,11 +159,13 @@ std::expected<T, AnyCastError> any_cast(const Any& operand)
     {
         return std::unexpected(AnyCastError::ValueIsRef);
     }
+
+
     return static_cast<const Any::Data<T>&>(*operand.ptr_).data;
 }
 }   // namespace core
 
-template<>
+template <>
 inline core::StringView GetEnumString<core::AnyCastError>(core::AnyCastError value)
 {
     switch (value)
@@ -149,6 +173,7 @@ inline core::StringView GetEnumString<core::AnyCastError>(core::AnyCastError val
     case core::AnyCastError::ValueIsNullptr: return "ValueIsNullptr";
     case core::AnyCastError::ValueIsRef: return "ValueIsRef";
     case core::AnyCastError::TypeNotSame: return "TypeNotSame";
+    case core::AnyCastError::CannotConvert: return "CannotConvert";
     default: return ENUM_INVALID;
     }
 }

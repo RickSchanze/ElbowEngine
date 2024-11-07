@@ -62,7 +62,8 @@ private:
 template <typename T>
 const Type* TypeOf()
 {
-    RTTITypeInfo info = {typeid(T).name(), typeid(T).hash_code()};
+    using OriginalT   = std::remove_cvref_t<T>;
+    RTTITypeInfo info = {typeid(OriginalT).name(), typeid(OriginalT).hash_code()};
     return MetaInfoManager::Get()->GetType(info);
 }
 }   // namespace core
