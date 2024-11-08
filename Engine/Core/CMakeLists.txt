@@ -87,6 +87,8 @@ add_library(${PROJECT_NAME}
         Serialization/ISerializer.cpp
         Base/Interface.h
         Reflection/Any.cpp
+        Reflection/CtorManager.cpp
+        Reflection/CtorManager.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

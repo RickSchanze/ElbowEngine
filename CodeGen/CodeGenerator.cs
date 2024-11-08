@@ -1,8 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Nodes;
-using CodeGen.AttributeParser;
 using CppAst;
 using Newtonsoft.Json;
 
@@ -120,17 +118,6 @@ public class CodeGenerator
             sw.Write($"->SetComment(\"{comment}\")");
         }
 
-        foreach (var attr in attributes)
-        {
-            IEnumParser? parser = AttributeParserManager.GetEnumParser(attr.Key);
-            if (parser == null)
-            {
-                throw new Exception($"No parser found for attribute: {attr.Key}");
-            }
-
-            sw.Write(parser.Parse(validEnum, attr));
-        }
-
         sw.WriteLine("; \\");
         sw.WriteLine($"using enum {validEnum.FullName}; \\");
         GenerateEnumFields(sw, validEnum.Items);
@@ -156,17 +143,6 @@ public class CodeGenerator
             if (!string.IsNullOrEmpty(comment))
             {
                 sw.Write($"->SetComment(\"{comment}\")");
-            }
-
-            foreach (var attr in attributes)
-            {
-                IEnumItemParser? parser = AttributeParserManager.GetEnumItemParser(attr.Key);
-                if (parser == null)
-                {
-                    throw new Exception($"No parser found for attribute: {attr.Key}");
-                }
-
-                sw.Write(parser.Parse(validEnumItem, attr));
             }
 
             sw.WriteLine("; \\");
@@ -240,13 +216,10 @@ public class CodeGenerator
 
         foreach (var attr in attributes)
         {
-            IClassParser? parser = AttributeParserManager.GetClassParser(attr.Key);
-            if (parser == null)
+            if (attr.Key == "Interface")
             {
-                throw new Exception($"No parser found for attribute: {attr.Key}");
+                sw.Write("->SetAttribute(Type::Interface)");
             }
-
-            sw.Write(parser.Parse(class_, attr));
         }
 
         sw.WriteLine("; \\");
@@ -282,17 +255,6 @@ public class CodeGenerator
             sw.Write($"->SetComment(\"{comment}\")");
         }
 
-        foreach (var attr in attributes)
-        {
-            IFieldParser? parser = AttributeParserManager.GetFieldParser(attr.Key);
-            if (parser == null)
-            {
-                throw new Exception($"No parser found for attribute: {attr.Key}");
-            }
-
-            sw.Write(parser.Parse(field, attr));
-        }
-
         sw.WriteLine("; \\");
     }
 
@@ -307,7 +269,8 @@ public class CodeGenerator
             return x.Attributes.Any(attribute => attribute.Arguments.Trim() == "Reflection");
         });
         List<string> processedName = new();
-        foreach (var class_ in reflectedClasses)
+        var cppClasses = reflectedClasses as CppClass[] ?? reflectedClasses.ToArray();
+        foreach (var class_ in cppClasses)
         {
             string classFullName = class_.FullName;
             string className = class_.Name;
@@ -319,8 +282,38 @@ public class CodeGenerator
             processedName.Add(className);
             sw.WriteLine(
                 $"core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<{classFullName}>(), &{classFullName}::REFLECTION_Register_{className}_Registerer); \\");
+            GenerateSourceBodyForClass(sw, class_);
         }
+
         GenerateEnums(sw, info);
+        sw.WriteLine();
+
+        foreach (var cppClass in cppClasses)
+        {
+            GenerateHeaderBodyForClass(sw, cppClass);
+        }
+    }
+
+    private void GenerateSourceBodyForClass(StreamWriter sw, CppClass cppClass)
+    {
+        var attributes = ParseAttribute(cppClass.Attributes);
+        if (!attributes.ContainsKey("Interface"))
+        {
+            sw.WriteLine($"core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<{cppClass.FullName}>(), &{cppClass.FullName}::ConstructAt); \\");
+        }
+    }
+
+    private void GenerateHeaderBodyForClass(StreamWriter sw, CppClass cppClass)
+    {
+        sw.WriteLine($"#undef GENERATED_BODY_IMPL_{cppClass.Name}");
+        sw.WriteLine($"#define GENERATED_BODY_IMPL_{cppClass.Name} \\");
+        var arttribues = ParseAttribute(cppClass.Attributes);
+        if (!arttribues.ContainsKey("Interface"))
+        {
+            sw.WriteLine(
+                $"static void ConstructAt(void* ptr) {{ new (ptr) {cppClass.FullName}(); }} \\");
+        }
+        sw.WriteLine();
     }
 
     private static string ComputSHA256(string filePath)

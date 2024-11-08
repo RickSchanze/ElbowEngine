@@ -47,6 +47,8 @@
 #define CONCAT2(a, b) a##b
 #define CONCAT3(a, b, c) a##b##c
 
+#define TO_POINTER(type) type*
+
 #define GENERATED_BODY(class_)                                               \
 public:                                                                      \
     static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
@@ -57,6 +59,7 @@ public:                                                                      \
     {                                                                        \
         return core::TypeOf<class_>();                                       \
     }                                                                        \
+    CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
                                                                              \
 private:
 

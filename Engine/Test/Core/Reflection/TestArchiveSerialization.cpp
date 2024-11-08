@@ -6,6 +6,7 @@
  */
 
 #include "TestArchiveSerialization.h"
+#include "Core.h"
 #include "Serialization/YamlArchive.h"
 #include <gtest/gtest.h>
 
@@ -19,8 +20,8 @@ TEST(Core_Archive_Serialization, TestArchiveSerialization)
 {
     core::UniquePtr<core::Archive> ar = New<core::YamlArchive>();
     ar->BeginSerialize();
-    TestArchiveSerialization       test;
-    core::Any                      a = test;
+    TestArchiveSerialization test;
+    core::Any                a = test;
     *ar << a;
     ar->EndSerialize();
     std::ofstream out("test.yaml");

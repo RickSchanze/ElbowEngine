@@ -7,5 +7,9 @@
 
 #pragma once
 #include "CoreDef.h"
+
 #include "Reflection/Reflection.h"
+
 #include "Reflection/MetaInfoMacro.h"
+
+#include "Reflection/CtorManager.h"

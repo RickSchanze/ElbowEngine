@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "Reflection/MetaInfoMacro.h"
-#include "Reflection/Reflection.h"
+#include "Core.h"
+
+#include "Test.TestArchiveSerialization.generated.h"
 
 class CLASS() TestArchiveSerialization : public core::ITypeGetter
 {
     GENERATED_BODY(TestArchiveSerialization)
-
+private:
     PROPERTY()
     int32_t a_ = 12;
 

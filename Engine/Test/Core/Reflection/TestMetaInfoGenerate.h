@@ -17,9 +17,8 @@
 #pragma once
 
 #include "Core.h"
-#include "TestMetaInfoGenerate.h"
 
-// #include "TestMetaInfoGenerate.generated.h"
+#include "Test.TestMetaInfoGenerate.generated.h"
 
 /**
  * 测试TestMetaInfoGenerate
