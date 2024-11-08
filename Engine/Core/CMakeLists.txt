@@ -70,8 +70,6 @@ add_library(${PROJECT_NAME}
         Log/LogEvent.h
         Log/LogRecorder.cpp
         Log/LogRecorder.h
-        Object/Setting.cpp
-        Object/Setting.h
         Reflection/Reflection.cpp
         Reflection/Reflection.h
         Base/Base.h
@@ -89,6 +87,10 @@ add_library(${PROJECT_NAME}
         Reflection/Any.cpp
         Reflection/CtorManager.cpp
         Reflection/CtorManager.h
+        Config/IConfig.cpp
+        Config/IConfig.h
+        Config/EngineInfoConfig.cpp
+        Config/EngineInfoConfig.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
