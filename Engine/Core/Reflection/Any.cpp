@@ -31,7 +31,7 @@ bool core::Any::IsParentOf(const Type* t) const
 void core::LogTypeNotSameError(const Type* t1, const Type* t2)
 {
     LOGGER.Error(
-        LogCat::Reflection,
+        logcat::Reflection,
         "If T is a copyable type, then TypeOf<T> == GetType() must be true, but TypeOf<T>() = {}, GetType() = {}",
         t1->GetName(),
         t2->GetName()

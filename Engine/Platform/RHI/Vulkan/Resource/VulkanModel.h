@@ -6,10 +6,10 @@
  */
 
 #pragma once
+#include "Base/UniquePtr.h"
 #include "Misc/Vertex.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/VulkanCommon.h"
-#include "VulkanModel.h"
+#include "vulkan/vulkan.hpp"
 
 namespace Resource
 {
@@ -24,10 +24,10 @@ class VulkanContext;
 class Mesh : public IRHIResource
 {
 public:
-    Mesh(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index);
+    Mesh(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index);
 
-    static SharedPtr<Mesh> CreateShared(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index = false);
-    static UniquePtr<Mesh> CreateUnique(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index = false);
+    static core::SharedPtr<Mesh> CreateShared(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index = false);
+    static core::UniquePtr<Mesh> CreateUnique(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index = false);
 
     ~Mesh() override;
 

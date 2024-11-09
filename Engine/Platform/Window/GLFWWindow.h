@@ -39,7 +39,9 @@ class GlfwWindow
 {
 public:
     typedef GlfwWindow ThisClass;
-    explicit GlfwWindow(String window_title, const int width, const int height) : window_title_(Move(window_title)), width_(width), height_(height)
+
+    explicit GlfwWindow(core::String window_title, const int width, const int height) :
+        window_title_(Move(window_title)), width_(width), height_(height)
     {
         g_engine_statistics.window_size.height = height;
         g_engine_statistics.window_size.width  = width;
@@ -47,16 +49,16 @@ public:
 
     [[nodiscard]] bool IsValid() const { return window_handle_ != nullptr; }
 
-    UniquePtr<GLFWWindowSurface> GetWindowSurface();
-    Array<const char*>           GetRequiredExtensions() const;
-    GLFWwindow*                   GetGLFWWindowHandle() const { return window_handle_; }
+    core::UniquePtr<GLFWWindowSurface> GetWindowSurface();
+    core::Array<const char*>           GetRequiredExtensions() const;
+    GLFWwindow*                        GetGLFWWindowHandle() const { return window_handle_; }
 
-    Size2D GetWindowSize();
+    core::Size2D GetWindowSize();
 
     void SetFrameBufferResizedCallback(const GLFWframebuffersizefun Callback) const { glfwSetFramebufferSizeCallback(window_handle_, Callback); }
 
 #ifdef USE_IMGUI
-    void InitImGui(Ref<rhi::vulkan::VulkanContext> InContext);
+    void InitImGui(rhi::vulkan::VulkanContext* context);
     void SetupImGuiFonts();
     void ShutdownImGui() const;
     void BeginImGuiFrame();
@@ -84,4 +86,4 @@ private:
     int height_;
 };
 
-}   // namespace platform
+}   // namespace platform::window

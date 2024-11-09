@@ -9,23 +9,24 @@
 
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "RHI/Vulkan/VulkanStringify.h"
 
 namespace rhi::vulkan
 {
-UniquePtr<SwapChain> SwapChain::CreateUnique(
+core::UniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return MakeUnique<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
+    return core::MakeUnique<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
-SharedPtr<SwapChain> SwapChain::CreateShared(
+core::SharedPtr<SwapChain> SwapChain::CreateShared(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return MakeShared<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
+    return core::MakeShared<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
 SwapChain::SwapChain(
@@ -46,7 +47,7 @@ SwapChain::~SwapChain()
     }
 }
 
-vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceFormatKHR>& available_formats)
+vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const core::Array<vk::SurfaceFormatKHR>& available_formats)
 {
     // 看看设定的格式在不在列表
     for (const auto& AvailableFormat: available_formats)
@@ -60,7 +61,7 @@ vk::SurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const Array<vk::SurfaceF
     return available_formats[0];
 }
 
-vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const Array<vk::PresentModeKHR>& available_present_modes)
+vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const core::Array<vk::PresentModeKHR>& available_present_modes)
 {
     // FIFO: 垂直同步
     auto BestMode = vk::PresentModeKHR::eFifo;
@@ -119,7 +120,7 @@ void SwapChain::Initialize()
     swap_chain_images_.resize(swapchain_images.size());
     for (int i = 0; i < swapchain_images.size(); i++)
     {
-        swap_chain_images_[i] = MakeShared<SwapChainImage>(swapchain_images[i]);
+        swap_chain_images_[i] = core::MakeShared<SwapChainImage>(swapchain_images[i]);
         VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(swapchain_images[i], s_swap_chain_image_debug_name[i]);
     }
 
@@ -145,7 +146,7 @@ void SwapChain::DeInitialize(bool log)
     swap_chain_images_.clear();
     if (log)
     {
-        LOG_INFO_CATEGORY(VULKAN, L"交换链清理完成");
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Swapchain destroyed");
     }
 }
 

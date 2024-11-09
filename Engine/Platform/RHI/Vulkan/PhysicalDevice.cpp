@@ -9,13 +9,14 @@
 
 #include "CoreGlobal.h"
 #include "Instance.h"
+#include "PlatformLogcat.h"
 
 namespace rhi::vulkan
 {
-UniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance, const Function<bool(const PhysicalDevice&)>& pick_func)
+core::UniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance, const core::Function<bool(const PhysicalDevice&)>& pick_func)
 {
-    auto         Rtn     = MakeUnique<PhysicalDevice>(instance);
-    const Array Devices = instance->EnumeratePhysicalDevices();
+    auto              Rtn     = core::MakeUnique<PhysicalDevice>(instance);
+    const core::Array Devices = instance->EnumeratePhysicalDevices();
     for (const auto& Device: Devices)
     {
         PhysicalDevice TempDevice(instance);
@@ -26,7 +27,7 @@ UniquePtr<PhysicalDevice> PhysicalDevice::PickPhysicalDevice(Instance* instance,
             break;
         }
     }
-    if (!Rtn->IsValid()) throw VulkanException(L"PhysicalDevice::PickPhysicalDevice: 未找到合适的物理设备");
+    Assert(logcat::Platform_RHI_Vulkan, Rtn->IsValid(), "Failed to find a suitable GPU!");
 
     return Rtn;
 }
@@ -57,8 +58,8 @@ PhysicalDevice& PhysicalDevice::SetVulkanPhysicalDevice(const vk::PhysicalDevice
 
 QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const
 {
-    THROW_IF_NOT(VULKAN_CHECK_PTR(instance_), L"Physical::FindQueueFamilyIndices: 查找队列族索引时mAttachedInstance无效");
-    const Array       QueueFamilies = handle_.getQueueFamilyProperties();
+    Assert(logcat::Platform_RHI_Vulkan, instance_ != nullptr, "When FindQueueFamilyIndices, instance is not valid");
+    const core::Array  QueueFamilies = handle_.getQueueFamilyProperties();
     // 查找需要的队列族索引
     QueueFamilyIndices Rtn{};
     for (int i = 0; i < QueueFamilies.size(); i++)
@@ -82,10 +83,10 @@ QueueFamilyIndices PhysicalDevice::FindQueueFamilyIndices() const
     return {};
 }
 
-bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocator<const char*>>& required_extensions) const
+bool PhysicalDevice::CheckExtensionSupport(const core::Array<const char*, std::allocator<const char*>>& required_extensions) const
 {
-    const Array      extensions             = handle_.enumerateDeviceExtensionProperties();
-    Set<const char*> my_required_extensions = {required_extensions.begin(), required_extensions.end()};
+    const core::Array      extensions             = handle_.enumerateDeviceExtensionProperties();
+    core::Set<const char*> my_required_extensions = {required_extensions.begin(), required_extensions.end()};
     for (const auto& extension: extensions)
     {
         my_required_extensions.erase(extension.extensionName);
@@ -95,7 +96,7 @@ bool PhysicalDevice::CheckExtensionSupport(const Array<const char*, std::allocat
 
 PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() const
 {
-    THROW_IF_NOT(VULKAN_CHECK_PTR(instance_), L"Physical::FindQueueFamilyIndices: 查询交换链支持情况mAttachedInstance无效");
+    Assert(logcat::Platform_RHI_Vulkan, instance_ != nullptr, "When QuerySwapChainSupport, instance is not valid");
     SwapChainSupportDetails RtnDetails;
     RtnDetails.capabilities  = handle_.getSurfaceCapabilitiesKHR(instance_->GetSurfaceHandle());
     RtnDetails.formats       = handle_.getSurfaceFormatsKHR(instance_->GetSurfaceHandle());
@@ -103,8 +104,9 @@ PhysicalDevice::SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport() 
     return RtnDetails;
 }
 
-vk::Format
-PhysicalDevice::FindSupportFormat(const Array<vk::Format>& candidates, const vk::ImageTiling tiling, const vk::FormatFeatureFlagBits features) const
+vk::Format PhysicalDevice::FindSupportFormat(
+    const core::Array<vk::Format>& candidates, const vk::ImageTiling tiling, const vk::FormatFeatureFlagBits features
+) const
 {
     for (const vk::Format& Format: candidates)
     {
@@ -119,7 +121,7 @@ PhysicalDevice::FindSupportFormat(const Array<vk::Format>& candidates, const vk:
         //     return Format;
         // }
     }
-    throw VulkanException(L"PhysicalDevice::FindSupportFormat: 未找到支持的格式");
+    Assert(logcat::Platform_RHI_Vulkan, false, "Failed to find support format");
 }
 
 uint32_t PhysicalDevice::FindMemoryType(const uint32_t type_filter, const vk::MemoryPropertyFlags properties) const
@@ -132,10 +134,10 @@ uint32_t PhysicalDevice::FindMemoryType(const uint32_t type_filter, const vk::Me
             return i;
         }
     }
-    throw VulkanException(L"PhysicalDevice::FindMemoryType: 未找到合适的内存类型");
+    Assert(logcat::Platform_RHI_Vulkan, false, "Failed to find suitable memory type");
 }
 
-UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
+core::UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
 {
     const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
     return LogicalDevice::CreateUnique(LogicalDeviceHandle, *this);
@@ -143,10 +145,10 @@ UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
 
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const
 {
-    QueueFamilyIndices                indices = FindQueueFamilyIndices();
-    Array<vk::DeviceQueueCreateInfo> queue_create_infos;
-    Set<uint32_t>                    unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
-    float                             queue_priority        = 1.0f;
+    QueueFamilyIndices                     indices = FindQueueFamilyIndices();
+    core::Array<vk::DeviceQueueCreateInfo> queue_create_infos;
+    core::Set<uint32_t>                    unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
+    float                                  queue_priority        = 1.0f;
     for (uint32_t QueueFamily: unique_queue_families)
     {
         vk::DeviceQueueCreateInfo queue_create_info{};

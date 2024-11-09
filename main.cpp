@@ -23,7 +23,7 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    LOGGER.Info(LogCat::Test, "this");
+    LOGGER.Info(logcat::Test, "this");
     core::UniquePtr<core::Archive> ar = New<core::YamlArchive>();
     ar->BeginSerialize();
     TestArchiveSerialization       test;

@@ -6,11 +6,11 @@
  */
 
 #pragma once
+#include "Event/Event.h"
 #include "Render/LogicalDevice.h"
 #include "Render/SwapChain.h"
 #include "RHI/GfxContext.h"
 #include "Utils/ContainerUtils.h"
-#include "VulkanCommon.h"
 
 
 namespace rhi::vulkan
@@ -25,10 +25,10 @@ class IGraphicsPipeline;
 // VulkanContext应该具有全局唯一单例
 struct GraphicsQueueSubmitParams
 {
-    Array<vk::Semaphore>          semaphores_to_wait;
-    Array<vk::Semaphore>          semaphores_to_signal;
-    Array<vk::PipelineStageFlags> wait_stages;
-    bool                           has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
+    core::Array<vk::Semaphore>          semaphores_to_wait;
+    core::Array<vk::Semaphore>          semaphores_to_signal;
+    core::Array<vk::PipelineStageFlags> wait_stages;
+    bool                                has_self_semaphore = true;   // 本次图形管线提交需要生成一个由这次提交触发的信号量
 };
 
 class VulkanContext : public GfxContext
@@ -38,9 +38,9 @@ public:
 
     ~VulkanContext() override;
 
-    bool CanRenderBackbuffer() const;
+    [[nodiscard]] bool CanRenderBackbuffer() const;
 
-    static UniquePtr<VulkanContext> CreateUnique(const SharedPtr<Instance>& instance);
+    static core::UniquePtr<VulkanContext> CreateUnique(const core::SharedPtr<Instance>& instance);
 
     PreVulkanDeviceDestroyedEvent OnPreVulkanDeviceDestroyed;
 
@@ -52,7 +52,7 @@ protected:
 public:
     /** Begin GfxContext */
 
-    EGraphicsAPI GetAPI() const override;
+    [[nodiscard]] EGraphicsAPI GetAPI() const override;
 
 
     void InitProfiling() override;
@@ -65,7 +65,7 @@ public:
     /** End GfxContext */
 
     // 请不要直接调用此函数，请使用VulkanRenderer::Create
-    explicit VulkanContext(Protected, const SharedPtr<Instance>& instance);
+    explicit VulkanContext(Protected, const core::SharedPtr<Instance>& instance);
 
     // 获取全局单例
     static VulkanContext* Get();
@@ -82,55 +82,55 @@ public:
     virtual void PrepareFrameRender();
     virtual void PostFrameRender();
 
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
     static void RebuildSwapChain(int w, int h);
 
     // 获取交换链图像支持的格式
-    vk::Format GetSwapChainImageFormat() const { return swap_chain_->GetImageFormat(); }
+    [[nodiscard]] vk::Format GetSwapChainImageFormat() const { return swap_chain_->GetImageFormat(); }
 
     // 获取深度图像支持的格式
-    vk::Format GetDepthImageFormat() const;
+    [[nodiscard]] vk::Format GetDepthImageFormat() const;
 
-    vk::Extent2D GetSwapChainExtent() const { return swap_chain_->GetExtent(); }
+    [[nodiscard]] vk::Extent2D GetSwapChainExtent() const { return swap_chain_->GetExtent(); }
 
-    int32_t GetSwapChainImageCount() const { return g_engine_statistics.graphics.swapchain_image_count; }
+    [[nodiscard]] int32_t GetSwapChainImageCount() const { return g_engine_statistics.graphics.swapchain_image_count; }
 
-    Array<SharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
+    [[nodiscard]] core::Array<core::SharedPtr<ImageView>>& GetSwapChainImageViews() const { return swap_chain_->GetImageViews(); }
 
-    ImageView* GetBackbufferView(int index) const { return back_buffer_views_[index]; }
+    [[nodiscard]] ImageView* GetBackbufferView(int index) const { return back_buffer_views_[index]; }
 
-    const UniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
+    [[nodiscard]] const core::UniquePtr<CommandPool>& GetCommandPool() const { return command_pool_; }
 
-    UniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
+    core::UniquePtr<SwapChain>& GetSwapChain() { return swap_chain_; }
 
-    UniquePtr<CommandPool>& GetCommandPool() { return command_pool_; }
+    core::UniquePtr<CommandPool>& GetCommandPool() { return command_pool_; }
 
-    UniquePtr<LogicalDevice>& GetLogicalDevice() { return logical_device_; }
+    core::UniquePtr<LogicalDevice>& GetLogicalDevice() { return logical_device_; }
 
-    UniquePtr<PhysicalDevice>& GetPhysicalDevice() { return physical_device_; }
+    core::UniquePtr<PhysicalDevice>& GetPhysicalDevice() { return physical_device_; }
 
-    SharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
+    core::SharedPtr<Instance> GetVulkanInstance() { return vulkan_instance_; }
 
-    vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
+    [[nodiscard]] vk::Semaphore GetRenderBeginWaitSemphore() const { return image_available_semaphores_[g_engine_statistics.current_frame_index]; }
 
-    uint32_t GetMinUniformBufferOffsetAlignment() const;
+    [[nodiscard]] uint32_t GetMinUniformBufferOffsetAlignment() const;
 
-    vk::CommandBuffer GetCurrentCommandBuffer() const;
+    auto GetCurrentCommandBuffer() const-> vk::CommandBuffer;
 
     vk::CommandBuffer BeginRecordCommandBuffer();
     void              EndRecordCommandBuffer();
 
-    int32_t GetActualBackbufferWidth() const { return back_buffers_[0]->GetWidth(); }
-    int32_t GetActualBackbufferHeight() const { return back_buffers_[0]->GetHeight(); }
+    [[nodiscard]] int32_t GetActualBackbufferWidth() const { return back_buffers_[0]->GetWidth(); }
+    [[nodiscard]] int32_t GetActualBackbufferHeight() const { return back_buffers_[0]->GetHeight(); }
 
     /**
      * 现在能不能进行渲染
      * @return
      */
-    bool CanRender() const;
+    [[nodiscard]] bool CanRender() const;
 
-    bool IsBackBufferValid() const;
+    [[nodiscard]] bool IsBackBufferValid() const;
 
 protected:
     void CreateSyncObjects();
@@ -149,23 +149,23 @@ private:
     static inline int32_t s_renderer_id_count_ = 0;
 
     // 交换链
-    UniquePtr<SwapChain>      swap_chain_;
+    core::UniquePtr<SwapChain>      swap_chain_;
     // 游戏主线程的CommandPool
-    UniquePtr<CommandPool>    command_pool_;
-    UniquePtr<LogicalDevice>  logical_device_;
-    UniquePtr<PhysicalDevice> physical_device_;
-    SharedPtr<Instance>       vulkan_instance_;
+    core::UniquePtr<CommandPool>    command_pool_;
+    core::UniquePtr<LogicalDevice>  logical_device_;
+    core::UniquePtr<PhysicalDevice> physical_device_;
+    core::SharedPtr<Instance>       vulkan_instance_;
 
-    Array<vk::Semaphore> image_available_semaphores_;
+    core::Array<vk::Semaphore> image_available_semaphores_;
 
     // 一次QueuePresent提交时需要等待的所有 Semaphore
-    Array<vk::Semaphore> all_wait_semaphores_;
+    core::Array<vk::Semaphore> all_wait_semaphores_;
 
-    Array<vk::CommandBuffer> command_buffers_;
-    Array<AnsiString>        command_buffers_names_;
+    core::Array<vk::CommandBuffer> command_buffers_;
+    core::Array<core::String>      command_buffers_names_;
 
-    Array<Image*>     back_buffers_;
-    Array<ImageView*> back_buffer_views_;
+    core::Array<Image*>     back_buffers_;
+    core::Array<ImageView*> back_buffer_views_;
 
     bool wait_swapchain_rebuild_ = false;
 };

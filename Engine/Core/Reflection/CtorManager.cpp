@@ -11,7 +11,7 @@ void core::CtorManager::RegisterCtor(RTTITypeInfo info, InplaceCtor ctor)
 {
     if (ctors_.contains(info))
     {
-        LOGGER.Warn(LogCat::Reflection, "Duplicated ctor registration for type: {}", info.name);
+        LOGGER.Warn(logcat::Reflection, "Duplicated ctor registration for type: {}", info.name);
     }
     ctors_[info] = ctor;
 }
@@ -20,12 +20,12 @@ void core::CtorManager::ConstructAt(const Type* info, void* ptr) const
 {
     if (info == nullptr)
     {
-        LOGGER.Error(LogCat::Reflection, "type is nullptr");
+        LOGGER.Error(logcat::Reflection, "type is nullptr");
         return;
     }
     if (ptr == nullptr)
     {
-        LOGGER.Error(LogCat::Reflection, "ptr is nullptr");
+        LOGGER.Error(logcat::Reflection, "ptr is nullptr");
         return;
     }
     for (auto& [key, value]: ctors_)
@@ -36,5 +36,5 @@ void core::CtorManager::ConstructAt(const Type* info, void* ptr) const
             return;
         }
     }
-    LOGGER.Error(LogCat::Reflection, "No ctor registered for type: {}", info->GetName());
+    LOGGER.Error(logcat::Reflection, "No ctor registered for type: {}", info->GetName());
 }

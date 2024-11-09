@@ -7,7 +7,6 @@
 
 #pragma once
 #include "CoreDef.h"
-#include "RHI/Vulkan/VulkanCommon.h"
 
 namespace rhi::vulkan
 {

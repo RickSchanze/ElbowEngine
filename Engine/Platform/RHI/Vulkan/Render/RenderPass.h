@@ -6,8 +6,11 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
+#include "PlatformLogcat.h"
+#include "Reflection/Reflection.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "Utils/StringUtils.h"
+#include "Singleton/Singleton.h"
 #include "vulkan/vulkan.hpp"
 
 
@@ -17,6 +20,10 @@
         rttr::registration::class_<full_qualified_class_name>(#full_qualified_class_name); \
     }
 
+namespace core
+{
+struct Color;
+}
 namespace rhi::vulkan
 {
 class RenderPass;
@@ -73,9 +80,9 @@ public:
         ~RenderTarget();
     };
 
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
-    explicit RenderPass(uint32_t width, uint32_t height, const AnsiString& debug_name = "");
+    explicit RenderPass(uint32_t width, uint32_t height, core::StringView debug_name = "");
 
     ~RenderPass() override;
 
@@ -94,7 +101,7 @@ public:
     virtual void ResizeFramebuffer(int w, int h);
 
     virtual void SetupSubpassDescription();
-    virtual void Begin(vk::CommandBuffer cb, const Color& clear_color);
+    virtual void Begin(vk::CommandBuffer cb, const core::Color& clear_color);
     virtual void End(vk::CommandBuffer cb);
     void         Destroy() override;
 
@@ -102,7 +109,7 @@ protected:
     void InternalDestroy();
 
 public:
-    vk::RenderPass GetHandle() const { return handle_; }
+    [[nodiscard]] vk::RenderPass GetHandle() const { return handle_; }
 
     // Config
     vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1;
@@ -125,24 +132,23 @@ protected:
 
     vk::RenderPass handle_ = VK_NULL_HANDLE;
 
-    Array<vk::AttachmentDescription> attachment_descs_;
-    Array<vk::AttachmentReference>   attahcment_refs_;
-    Array<vk::AttachmentReference>   subpass_color_attachment_refs_;
+    core::Array<vk::AttachmentDescription> attachment_descs_{};
+    core::Array<vk::AttachmentReference>   attachment_refs_{};
+    core::Array<vk::AttachmentReference>   subpass_color_attachment_refs_{};
 
-    // 深度附着一个RenderPass最多只允许一个
     int32_t depth_attachment_index_ = -1;
     int32_t sample_resolve_index_   = -1;
     // 附着到交换链的图像Index
     int32_t swapchain_view_index_   = -1;
 
-    Array<vk::SubpassDependency> dependencies_;
+    core::Array<vk::SubpassDependency> dependencies_;
 
     vk::SubpassDescription subpass_;
 
     uint32_t width_;
     uint32_t height_;
 
-    AnsiString render_pass_name_;
+    core::StringView render_pass_name_;
 };
 
 class RenderPassManager final : public Singleton<RenderPassManager>
@@ -150,46 +156,46 @@ class RenderPassManager final : public Singleton<RenderPassManager>
 public:
     RenderPassManager();
 
-    template<typename T>
+    template <typename T>
     static T* GetRenderPass();
 
-    template<typename T>
-    static T* CreateRenderPass(uint32_t width = 0, uint32_t height = 0, const AnsiString& name = "");
+    template <typename T>
+    static T* CreateRenderPass(uint32_t width = 0, uint32_t height = 0, core::StringView name = "");
 
-    template<typename T>
-    static T* GetOrCreateRenderPass(uint32_t width = 0, uint32_t height = 0, const AnsiString& name = "");
+    template <typename T>
+    static T* GetOrCreateRenderPass(uint32_t width = 0, uint32_t height = 0, core::StringView name = "");
 
-    RenderPass* GetRenderPass(const Type &t) { return render_passes_.contains(t) ? render_passes_[t] : nullptr; }
+    RenderPass* GetRenderPass(const core::Type& t) { return render_passes_.contains(t) ? render_passes_[t] : nullptr; }
 
     static void DestroyRenderPasses();
 
 private:
-    HashMap<Type, RenderPass*> render_passes_;
+    core::HashMap<core::Type, RenderPass*> render_passes_;
 };
 
-template<typename T>
+template <typename T>
 T* RenderPassManager::GetRenderPass()
 {
     static_assert(std::derived_from<T, RenderPass>, "T must derived from RenderPass");
-    Type  t             = TypeOf<T>();
-    auto& render_passes = Get()->render_passes_;
+    core::Type t             = core::TypeOf<T>();
+    auto&      render_passes = Get()->render_passes_;
     if (render_passes.contains(t))
     {
-        return (T*)render_passes[t];
+        return static_cast<T*>(render_passes[t]);
     }
     return nullptr;
 }
 
-template<typename T>
-T* RenderPassManager::CreateRenderPass(uint32_t width, uint32_t height, const AnsiString& name)
+template <typename T>
+T* RenderPassManager::CreateRenderPass(uint32_t width, uint32_t height, core::StringView name)
 {
     static_assert(std::derived_from<T, RenderPass>, "T must derived from RenderPass");
-    Type  t             = TypeOf<T>();
+    auto  t             = core::TypeOf<T>();
     auto& render_passes = Get()->render_passes_;
     if (render_passes.contains(t))
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"没有新建名为{}的RenderPass,因为此RenderPass已经存在了", StringUtils::FromAnsiString(name));
-        return (T*)render_passes[t];
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, L"Duplicated creation of RenderPass {}, type: {}", name, t->GetName());
+        return static_cast<T*>(render_passes[t]);
     }
     T* new_render_pass =
         New<T>(width == 0 ? g_engine_statistics.window_size.width : width, height == 0 ? g_engine_statistics.window_size.height : height, name);
@@ -197,10 +203,9 @@ T* RenderPassManager::CreateRenderPass(uint32_t width, uint32_t height, const An
     return new_render_pass;
 }
 
-template<typename T>
-T* RenderPassManager::GetOrCreateRenderPass(uint32_t width, uint32_t height, const AnsiString& name){
-    auto* rp = GetRenderPass<T>();
-    if (rp) return rp;
+template <typename T>
+T* RenderPassManager::GetOrCreateRenderPass(uint32_t width, uint32_t height, core::StringView name){
+    if (auto* rp = GetRenderPass<T>()) return rp;
     return CreateRenderPass<T>(width, height, name);
 }
 }

@@ -11,7 +11,7 @@
 #include "GameObject/GameObject.h"
 #include "IconsMaterialDesign.h"
 #include "Input/Input.h"
-#include "Path/Path.h"
+#include "FileSystem/Path.h"
 #include "Render/Event.h"
 #include "RHI/Vulkan/CommandBuffer.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
@@ -19,7 +19,6 @@
 #include "RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/VulkanContext.h"
-#include "Utils/StringUtils.h"
 #include "vulkan/vulkan_to_string.hpp"
 
 #include "Profiler/ProfileMacro.h"
@@ -38,7 +37,7 @@ namespace platform::window
 class ImGuiRenderPass : public RenderPass
 {
 public:
-    explicit ImGuiRenderPass(const AnsiString& debug_name) :
+    explicit ImGuiRenderPass(const core::StringView& debug_name) :
         RenderPass(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height, debug_name)
     {
     }

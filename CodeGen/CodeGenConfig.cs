@@ -31,7 +31,7 @@ public class CodeGenConfig
         { @"Engine\Test", "Test" },
     };
 
-    public List<string> Macros { get; } = ["REFLECTION"];
+    public List<string> Macros { get; } = ["REFLECTION", "REFL_GEN"];
 
     public List<string> Arguments { get; } =
     [

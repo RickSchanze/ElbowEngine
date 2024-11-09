@@ -9,18 +9,23 @@
 
 #include "CoreGlobal.h"
 #include "Instance.h"
-#include "Utils/StringUtils.h"
+#include "PlatformLogcat.h"
 
 namespace rhi::vulkan
 {
-void ValidationLayer::Initialize() {
-    if constexpr (!sEnableValidationLayer) {
-        LOG_INFO_CATEGORY(Vulkan, L"启用验证层: false");
+void ValidationLayer::Initialize()
+{
+    if constexpr (!sEnableValidationLayer)
+    {
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Validation layer disabled.");
         return;
-    } else {
-        LOG_INFO_CATEGORY(Vulkan, L"启用验证层: true");
-        if (!vulkan_instance_) {
-            LOG_ERROR_CATEGORY(Vulkan, L"初始化验证层时，Vulkan实例为空");
+    }
+    else
+    {
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Validation layer enabled.");
+        if (!vulkan_instance_)
+        {
+            LOGGER.Error(logcat::Platform_RHI_Vulkan, "Initialize validation layer failed because vulkan instance is null");
             return;
         }
         vk::DebugUtilsMessengerCreateInfoEXT CreateInfo{};
@@ -28,43 +33,46 @@ void ValidationLayer::Initialize() {
             .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
             .setPfnUserCallback(&ThisClass::DebugCallBack)
             .setPUserData(nullptr);
-        const auto& Dispatcher  = vulkan_instance_->GetDynamicDispatcher();
+        const auto& Dispatcher    = vulkan_instance_->GetDynamicDispatcher();
         debug_messenger_callback_ = vulkan_instance_->GetHandle().createDebugUtilsMessengerEXT(CreateInfo, nullptr, Dispatcher);
-        LOG_INFO_CATEGORY(Vulkan, L"验证层初始化完成");
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Validation layer initialized.");
     }
 }
 
-void ValidationLayer::DeInitialize() {
+void ValidationLayer::DeInitialize() const
+{
     if (!sEnableValidationLayer) return;
-    if (vulkan_instance_ && vulkan_instance_->IsValid() && debug_messenger_callback_) {
+    if (vulkan_instance_ && vulkan_instance_->IsValid() && debug_messenger_callback_)
+    {
         const auto& Dispatcher = vulkan_instance_->GetDynamicDispatcher();
         vulkan_instance_->GetHandle().destroyDebugUtilsMessengerEXT(debug_messenger_callback_, nullptr, Dispatcher);
-        LOG_INFO_CATEGORY(Vulkan, L"验证层清理完成");
-    } else {
-        LOG_WARNING_CATEGORY(Vulkan, L"销毁验证层时，验证层本身或其AttachedVulkanInstance失效");
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Validation layer destroyed.");
+    }
+    else
+    {
+        LOGGER.Warn(logcat::Platform_RHI_Vulkan, "when destroy validation layer, validation layer itself or its attached vulkan instance is invalid");
     }
 }
 
-void ValidationLayer::Destroy() {
+void ValidationLayer::Destroy()
+{
     DeInitialize();
 }
 
 VkBool32 ValidationLayer::DebugCallBack(
-    VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity, VkDebugUtilsMessageTypeFlagsEXT InMessageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
-) {
-    switch (InMessageSeverity) {
+    VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
+    const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data
+)
+{
+    switch (severity)
+    {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARNING_CATEGORY(
-            Vulkan, L"Validation Layer: {} [Message Type: {}]", StringUtils::FromAnsiString(pCallbackData->pMessage), InMessageType
-        );
+        LOGGER.Warn(logcat::Platform_RHI_Vulkan, "Validation Layer: {} [Message Type: {}]", callback_data->pMessage, type);
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        LOG_ERROR_CATEGORY(
-            Vulkan, L"Validation Layer: {} [Message Type: {}]", StringUtils::FromAnsiString(pCallbackData->pMessage), InMessageType
-        );
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Validation Layer: {} [Message Type: {}]", callback_data->pMessage, type);
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT: break;
     }
@@ -72,7 +80,8 @@ VkBool32 ValidationLayer::DebugCallBack(
     return VK_FALSE;
 }
 
-ValidationLayer& ValidationLayer::SetAttachedVulkanInstance(Instance* InInstance) noexcept {
+ValidationLayer& ValidationLayer::SetAttachedVulkanInstance(Instance* InInstance) noexcept
+{
     vulkan_instance_ = InInstance;
     return *this;
 }

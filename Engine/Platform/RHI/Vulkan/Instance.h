@@ -6,10 +6,10 @@
  */
 
 #pragma once
+#include "Base/UniquePtr.h"
 #include "Interface/IRHIResource.h"
 #include "PhysicalDevice.h"
 #include "ValidationLayer.h"
-#include "VulkanCommon.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -30,7 +30,7 @@ public:
 
     /** 此函数必修初始化mSurface */
     virtual void Initialize() = 0;
-    void         Finialize();
+    void         DeInitialize();
     void         Destroy() override;
 
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(mSurfaceHandle); }
@@ -49,10 +49,10 @@ public:
     void DeInitialize();
     void Destroy() override;
 
-    Instance& SetSurface(UniquePtr<SurfaceBase> InSurface);
+    Instance& SetSurface(core::UniquePtr<SurfaceBase> InSurface);
 
     // clang-format off
-    [[nodiscard]] Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
+    [[nodiscard]] core::Array<vk::PhysicalDevice> EnumeratePhysicalDevices() const;
     [[nodiscard]] bool IsValid() const { return static_cast<bool>(vulkan_instance_handle_); }
     [[nodiscard]] vk::Instance GetHandle() const { return vulkan_instance_handle_; }
     [[nodiscard]] const vk::DispatchLoaderDynamic& GetDynamicDispatcher() const;
@@ -65,7 +65,7 @@ public:
      * 选择一个合适的PhysicalDevice返回
      * @return
      */
-    UniquePtr<PhysicalDevice> PickPhysicalDevice();
+    core::UniquePtr<PhysicalDevice> PickPhysicalDevice();
 
 protected:
     void InitializeSurface();
@@ -73,9 +73,9 @@ protected:
 private:
     vk::Instance                vulkan_instance_handle_;
     // 验证层
-    UniquePtr<ValidationLayer> validation_layer_;
+    core::UniquePtr<ValidationLayer> validation_layer_;
     // 窗口表面
-    UniquePtr<SurfaceBase>     surface_;
+    core::UniquePtr<SurfaceBase>     surface_;
     // 动态加载各种函数用
     vk::DispatchLoaderDynamic   dynamic_dispatcher_;
     // 实例创建信息

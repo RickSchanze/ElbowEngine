@@ -11,6 +11,7 @@
 
 #include "CoreGlobal.h"
 #include "PlatformEvents.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/LogicalDevice.h"
@@ -45,7 +46,7 @@ ImageView* SwapChainImage::CreateImageView(const ImageViewInfo& view_info) const
 }
 
 ImageInfo ImageInfo::CubemapInfo(
-    vk::Format format, const AnsiString& name, vk::ImageCreateFlags create_flags, vk::ImageUsageFlags usage, int32_t width, int32_t height,
+    vk::Format format, core::StringView name, vk::ImageCreateFlags create_flags, vk::ImageUsageFlags usage, int32_t width, int32_t height,
     int32_t mip_level, vk::SampleCountFlagBits sample_count, vk::ImageLayout initial_layout, vk::SharingMode sharing_mode,
     vk::MemoryPropertyFlags memory_property
 )
@@ -95,12 +96,12 @@ Image* Image::Create(const ImageInfo& info)
 
 void Image::Destroy()
 {
-    Finialize();
+    DeInitialize();
 }
 
 Image::~Image()
 {
-    Finialize();
+    DeInitialize();
 }
 
 bool Image::IsValid() const
@@ -108,7 +109,7 @@ bool Image::IsValid() const
     return Super::IsValid() && image_memory_ != nullptr;
 }
 
-void Image::Finialize()
+void Image::DeInitialize()
 {
     const auto& device_handle = VulkanContext::Get()->GetLogicalDevice()->GetHandle();
     if (image_handle_ != nullptr)
@@ -147,10 +148,10 @@ void Image::Initialize()
     image_create_info.setFlags(image_info_.create_flags);
 
     image_handle_ = device_handle.createImage(image_create_info);
-    if (!image_info_.name.empty())
+    if (!image_info_.name.IsEmpty())
     {
         image_info_.debug_image_name = image_info_.name + "_Image";
-        context.GetLogicalDevice()->SetImageDebugName(image_handle_, image_info_.debug_image_name.c_str());
+        context.GetLogicalDevice()->SetImageDebugName(image_handle_, image_info_.debug_image_name.Data());
     }
 
     // 为图像分配内存
@@ -162,10 +163,10 @@ void Image::Initialize()
     );
     image_memory_ = device_handle.allocateMemory(memory_allocate_info);
 
-    if (!image_info_.name.empty())
+    if (!image_info_.name.IsEmpty())
     {
         image_info_.debug_image_memory_name = image_info_.name + "_ImageMemory";
-        context.GetLogicalDevice()->SetDeviceMemoryDebugName(image_memory_, image_info_.debug_image_memory_name.c_str());
+        context.GetLogicalDevice()->SetDeviceMemoryDebugName(image_memory_, image_info_.debug_image_memory_name.Data());
     }
 
     device_handle.bindImageMemory(image_handle_, image_memory_, 0);
@@ -208,7 +209,7 @@ void Cubemap::Initialize()
     view_create_info.subresourceRange.layerCount = 6;
     cubemap_image_view_name_                     = image_info_.name + "_CubemapView";
     cubemap_image_view_ =
-        New<ImageView>(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.c_str());
+        New<ImageView>(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_image_view_name_.Data());
 }
 
 Cubemap::~Cubemap()
@@ -223,7 +224,7 @@ Cubemap::~Cubemap()
     cubemap_image_view_ = nullptr;
 }
 
-void Cubemap::CreateCubemapImageViews(const AnsiString& name)
+void Cubemap::CreateCubemapImageViews(core::StringView name)
 {
     VulkanContext&          context          = *VulkanContext::Get();
     vk::ImageViewCreateInfo view_create_info = {};
@@ -239,7 +240,7 @@ void Cubemap::CreateCubemapImageViews(const AnsiString& name)
         // clang-format off
         view_create_info.subresourceRange.baseArrayLayer = i;
         cubemap_face_view_names_[i] = name + "_" + std::to_string(i);
-        cubemap_image_face_views_[i] = New<ImageView>(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_face_view_names_[i].c_str());
+        cubemap_image_face_views_[i] = New<ImageView>(context.GetLogicalDevice()->GetHandle().createImageView(view_create_info), cubemap_face_view_names_[i].Data());
         // clang-format on
     }
 }
@@ -252,7 +253,7 @@ ImageView* Cubemap::GetFaceView(ECubemapFace face)
     }
     if (cubemap_image_face_views_.empty())
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan.Resource, "Create ImageView for cubemap failed");
+        LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "Create ImageView for cubemap failed");
         return nullptr;
     }
     return cubemap_image_face_views_[static_cast<int>(face)];
@@ -263,12 +264,12 @@ Texture::Texture(const ImageInfo& image_info, const uint8_t* data)
     image_info_ = image_info;
     if (data == nullptr)
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: Data为空");
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to create Texture on GPU: Data is null");
         return;
     }
     if (image_info_.width <= 0 || image_info_.height <= 0)
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"GPU创建Texture失败: 宽或高不合法");
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to create Texture on GPU: Invalid image size");
         return;
     }
     this->data_ = data;
@@ -309,7 +310,7 @@ void Texture::Initialize()
         const auto result = device_handle.mapMemory(staging_buffer_memory, 0, image_size, vk::MemoryMapFlags(), &map_data);
         if (result != vk::Result::eSuccess)
         {
-            LOG_ERROR_CATEGORY(Vulkan, L"映射内存失败");
+            LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to map staging buffer memory");
             return;
         }
         std::memcpy(map_data, data_, image_size);
@@ -333,7 +334,7 @@ void Texture::Initialize()
     if (data_ != nullptr)
     {
         // 赋值暂存缓冲区数据到纹理图像
-        // 1. 变换图像纹理到VK_IAMGE_LAYOUT_DST_OPTIMAL
+        // 1. 变换图像纹理到VK_IMAGE_LAYOUT_DST_OPTIMAL
         command_pool->TransitionImageLayout(
             image_handle_, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, image_info_.mip_levels
         );

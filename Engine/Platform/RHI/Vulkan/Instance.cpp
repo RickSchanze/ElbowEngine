@@ -8,7 +8,7 @@
 #include "Instance.h"
 
 #include "CoreGlobal.h"
-#include "Utils/StringUtils.h"
+#include "PlatformLogcat.h"
 
 namespace rhi::vulkan
 {
@@ -22,16 +22,16 @@ SurfaceBase& SurfaceBase::SetSurfaceHandle(vk::SurfaceKHR InSurfaceHandle) {
     return *this;
 }
 
-void SurfaceBase::Finialize() {
+void SurfaceBase::DeInitialize() {
     if (mAttachedInstanceHandle->IsValid()) {
         mAttachedInstanceHandle->GetHandle().destroySurfaceKHR(mSurfaceHandle);
         mSurfaceHandle = VK_NULL_HANDLE;
-        LOG_INFO_CATEGORY(Vulkan, L"Surface清理完成");
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Surface Destroyed");
     }
 }
 
 void SurfaceBase::Destroy() {
-    Finialize();
+    DeInitialize();
 }
 
 Instance::Instance() {
@@ -43,7 +43,7 @@ void Instance::Initialize() {
     vulkan_instance_handle_ = createInstance(mInstanceCreateInfo);
     dynamic_dispatcher_    = {vulkan_instance_handle_, vkGetInstanceProcAddr};
     // 初始化验证层
-    validation_layer_      = MakeUnique<ValidationLayer>(this);
+    validation_layer_      = core::MakeUnique<ValidationLayer>(this);
     validation_layer_->Initialize();
     // 初始化窗口表面
     InitializeSurface();
@@ -51,7 +51,7 @@ void Instance::Initialize() {
 
 void Instance::DeInitialize() {
     if (!IsValid()) return;
-    surface_->Finialize();
+    surface_->DeInitialize();
     validation_layer_->DeInitialize();
     vulkan_instance_handle_.destroy();
     vulkan_instance_handle_ = VK_NULL_HANDLE;
@@ -65,23 +65,23 @@ const vk::DispatchLoaderDynamic& Instance::GetDynamicDispatcher() const {
     return dynamic_dispatcher_;
 }
 
-Instance& Instance::SetSurface(UniquePtr<SurfaceBase> InSurface) {
+Instance& Instance::SetSurface(core::UniquePtr<SurfaceBase> InSurface) {
     surface_ = Move(InSurface);
     surface_->SetInstanceHandle(this);
     return *this;
 }
 
-Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
+core::Array<vk::PhysicalDevice> Instance::EnumeratePhysicalDevices() const {
     return vulkan_instance_handle_.enumeratePhysicalDevices();
 }
 
 void Instance::InitializeSurface() {
     surface_->SetInstanceHandle(this);
     surface_->Initialize();
-    LOG_INFO_CATEGORY(Vulkan, L"Surface初始化完成");
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Surface initialized");
 }
 
-UniquePtr<PhysicalDevice> Instance::PickPhysicalDevice() {
+core::UniquePtr<PhysicalDevice> Instance::PickPhysicalDevice() {
     auto PhysicalDevice = PhysicalDevice::PickPhysicalDevice(this);
     return PhysicalDevice;
 }

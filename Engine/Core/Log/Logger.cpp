@@ -52,11 +52,11 @@ void Logger::LogStackTrace(LogLevel level)
     }
     switch (level)
     {
-    case LogLevel::Debug: this->Debug(LogCat::StackTrace, "{}", msg); break;
-    case LogLevel::Info: this->Info(LogCat::StackTrace, "{}", msg); break;
-    case LogLevel::Warn: this->Warn(LogCat::StackTrace, "{}", msg); break;
-    case LogLevel::Error: this->Error(LogCat::StackTrace, "{}", msg); break;
-    case LogLevel::Critical: this->Critical(LogCat::StackTrace, "{}", msg); break;
+    case LogLevel::Debug: this->Debug(logcat::StackTrace, "{}", msg); break;
+    case LogLevel::Info: this->Info(logcat::StackTrace, "{}", msg); break;
+    case LogLevel::Warn: this->Warn(logcat::StackTrace, "{}", msg); break;
+    case LogLevel::Error: this->Error(logcat::StackTrace, "{}", msg); break;
+    case LogLevel::Critical: this->Critical(logcat::StackTrace, "{}", msg); break;
     case LogLevel::Count: break;
     }
 }

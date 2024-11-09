@@ -29,8 +29,6 @@ add_library(${PROJECT_NAME}
         Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
-        FileSystem/Paths.cpp
-        FileSystem/Paths.h
         Profiler/ProfileMacro.cpp
         Profiler/ProfileMacro.h
         Async/Coroutine/Task.cpp
@@ -59,9 +57,6 @@ add_library(${PROJECT_NAME}
         Serialization/Archive.cpp
         Base/EString.cpp
         Base/EString.h
-        FileSystem/File.cpp
-        FileSystem/File.h
-        FileSystem/FileSystemEnum.h
         Base/UniquePtr.h
         Log/CoreLogCategory.h
         Base/CallStackFrame.h
@@ -87,10 +82,6 @@ add_library(${PROJECT_NAME}
         Reflection/Any.cpp
         Reflection/CtorManager.cpp
         Reflection/CtorManager.h
-        Config/IConfig.cpp
-        Config/IConfig.h
-        Config/EngineInfoConfig.cpp
-        Config/EngineInfoConfig.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

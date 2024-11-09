@@ -18,7 +18,7 @@ ImageView::ImageView(const vk::ImageView& handle, const char* debug_name)
     if (debug_name)
     {
         debug_name_ = debug_name;
-        VulkanContext::Get()->GetLogicalDevice()->SetImageViewDebugName(handle, debug_name_.data());
+        VulkanContext::Get()->GetLogicalDevice()->SetImageViewDebugName(handle, debug_name_.Data());
     }
 }
 

@@ -7,7 +7,6 @@
 
 #pragma once
 #include "Interface/IRHIResource.h"
-#include "VulkanCommon.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -23,7 +22,7 @@ public:
     explicit ValidationLayer(Instance* InParentInstance) noexcept : vulkan_instance_(InParentInstance) {}
 
     void Initialize();
-    void DeInitialize();
+    void DeInitialize() const;
 
     void Destroy() override;
 
@@ -34,16 +33,16 @@ public:
 #else
     static constexpr bool sEnableValidationLayer = false;
 #endif
-    static inline Array<const char*> gValidationLayers = {
+    static inline core::Array<const char*> gValidationLayers = {
         "VK_LAYER_KHRONOS_validation",
     };
 
-    static constexpr bool                IsEnable() noexcept { return sEnableValidationLayer; }
-    static constexpr Array<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
+    static constexpr bool                     IsEnable() noexcept { return sEnableValidationLayer; }
+    static constexpr core::Array<const char*> GetValidationLayerNames() noexcept { return gValidationLayers; }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
-        VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity, VkDebugUtilsMessageTypeFlagsEXT InMessageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
+        VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
+        const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data
     );
 
     [[nodiscard]] vk::DebugUtilsMessengerEXT GetDebugMessenger() const { return debug_messenger_callback_; }

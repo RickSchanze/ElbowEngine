@@ -8,22 +8,23 @@
 #include "VulkanModel.h"
 
 #include "CoreGlobal.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
 namespace rhi::vulkan
 {
-Mesh::Mesh(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
+Mesh::Mesh(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index)
 {
     ignore_index_ = ignore_index;
     if (vertices.empty())
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"传入顶点数据不合法");
+        LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "Invalid vertex data");
         return;
     }
     if (!ignore_index && indices.empty())
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"传入索引数据不合法");
+        LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "Invalid index data");
         return;
     }
     VulkanContext& context              = *VulkanContext::Get();
@@ -85,14 +86,14 @@ Mesh::Mesh(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool i
     }
 }
 
-SharedPtr<Mesh> Mesh::CreateShared(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
+core::SharedPtr<Mesh> Mesh::CreateShared(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index)
 {
-    return MakeShared<Mesh>(vertices, indices, ignore_index);
+    return core::MakeShared<Mesh>(vertices, indices, ignore_index);
 }
 
-UniquePtr<Mesh> Mesh::CreateUnique(const Array<Vertex>& vertices, const Array<uint32_t>& indices, bool ignore_index)
+core::UniquePtr<Mesh> Mesh::CreateUnique(const core::Array<Vertex>& vertices, const core::Array<uint32_t>& indices, bool ignore_index)
 {
-    return MakeUnique<Mesh>(vertices, indices, ignore_index);
+    return core::MakeUnique<Mesh>(vertices, indices, ignore_index);
 }
 
 Mesh::~Mesh()

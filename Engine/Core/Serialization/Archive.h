@@ -78,7 +78,7 @@ public:
     Archive& operator<<(const Container<Element>& container)
         requires ArrayLikeIterable<Container<Element>>
     {
-        DebugAssert(LogCat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        DebugAssert(logcat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::ArrayStart;
@@ -95,7 +95,7 @@ public:
     Archive& operator<<(const Map<Key, Value>& container)
         requires MapLikeIterable<Map<Key, Value>>
     {
-        Assert(LogCat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
+        Assert(logcat::Archive_Serialization, IsSerializing(), "请在Serializing模式使用此函数");
         if (container.size() != 0)
         {
             *this << InputType::MapStart;

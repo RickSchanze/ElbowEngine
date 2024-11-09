@@ -81,7 +81,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
         iter_     = (instance_->*container_).begin();
@@ -101,7 +101,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return;
         }
         ++iter_;
@@ -116,7 +116,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
         return MakeRef(*iter_);
@@ -129,7 +129,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        Assert(LogCat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Assert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {
@@ -142,7 +142,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return 0;
         }
         return N;
@@ -177,7 +177,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
         iter_     = (instance_->*container_).begin();
@@ -197,7 +197,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return;
         }
         ++iter_;
@@ -212,7 +212,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
         return {std::addressof(*iter_), element_type_};
@@ -225,7 +225,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        DebugAssert(LogCat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        DebugAssert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {
@@ -238,7 +238,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return 0;
         }
         return (instance_->*container_).size();
@@ -276,7 +276,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
         size_     = Size();
@@ -289,7 +289,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
         }
         ++iter_;
         ++iter_cnt_;
@@ -310,7 +310,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return 0;
         }
         return (instance_->*container_).size();
@@ -332,7 +332,7 @@ public:
     {
         if (!instance_)
         {
-            LOGGER.Error(LogCat::Reflection, "未设置Instance");
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
             return {};
         }
         auto cast_op = key.AsCopy<K>();

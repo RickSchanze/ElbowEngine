@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Path/Path.h"
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "FileSystem/File.h"
+#include "PlatformEvents.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "Shader.h"
 #include "vulkan/vulkan.hpp"
@@ -17,7 +17,7 @@ namespace rhi::vulkan
 {
 class LogicalDevice;
 class GraphicsPipeline;
-}
+}   // namespace rhi::vulkan
 
 #define REGISTER_SHADER_VAR(shader_name, shader_stage, shader_binding, shader_size, shader_offset, shader_type, shader_range, update_manually_) \
     {                                                                                                                                           \
@@ -78,7 +78,7 @@ class GraphicsPipeline;
 
 #define DECLARE_VERT_SHADER(type)                                                                                         \
 public:                                                                                                                   \
-    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) :     \
+    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const core::String& shader_name) :   \
         Shader(Protected{}, device, shader_path, ::rhi::vulkan::EShaderStage::Vertex, shader_name)                        \
     {                                                                                                                     \
         static_assert(std::is_base_of_v<::rhi::vulkan::Shader, type>, "type must be derived from ::rhi::vulkan::Shader"); \
@@ -86,13 +86,13 @@ public:                                                                         
                                                                                                                           \
 private:
 
-#define DECLARE_FRAG_SHADER(type)                                                                                     \
-public:                                                                                                               \
-    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const AnsiString& shader_name) : \
-        Shader(Protected{}, device, shader_path, ::rhi::vulkan::EShaderStage::Fragment, shader_name)                  \
-    {                                                                                                                 \
-    }                                                                                                                 \
-                                                                                                                      \
+#define DECLARE_FRAG_SHADER(type)                                                                                       \
+public:                                                                                                                 \
+    type(Protected, Ref<rhi::vulkan::LogicalDevice> device, const Path& shader_path, const core::String& shader_name) : \
+        Shader(Protected{}, device, shader_path, ::rhi::vulkan::EShaderStage::Fragment, shader_name)                    \
+    {                                                                                                                   \
+    }                                                                                                                   \
+                                                                                                                        \
 private:
 
 #define REGISTER_PUSH_CONSTANT(name_, offset_, stage_, size_) \
@@ -125,11 +125,11 @@ enum class EUniformDescriptorType : uint8_t
 
 vk::DescriptorType      GetVkDescriptorType(EUniformDescriptorType type);
 vk::ShaderStageFlagBits GetVkShaderStage(EShaderStage stage);
-String                  ShaderStageToString(EShaderStage stage);
+core::String            ShaderStageToString(EShaderStage stage);
 
 struct UniformDescriptor
 {
-    AnsiString             name;
+    core::String           name;
     uint8_t                binding;
     EUniformDescriptorType type;
     EShaderStage           stage;
@@ -144,44 +144,44 @@ struct PushConstantDescriptor
     EShaderStage stage;
     uint32_t     offset;
     uint32_t     size;
-    AnsiString   name;
+    core::String name;
 };
 
 // 假如声明layout(location = 0) in vec3 inPos;
 struct VertexInAttribute
 {
-    AnsiString name;       // = inPos
-    uint8_t    location;   // = 0
-    uint8_t    size;       // = 4 * 3 4字节 * 3
-    uint8_t    width;      // = 4 浮点数4字节
-    uint8_t    offset;     // = 0
+    core::String name;       // = inPos
+    uint8_t      location;   // = 0
+    uint8_t      size;       // = 4 * 3 4字节 * 3
+    uint8_t      width;      // = 4 浮点数4字节
+    uint8_t      offset;     // = 0
 };
 
 class ShaderManager
 {
 public:
-    static class Shader* Request(const Path& shader)
+    static class Shader* Request(const platform::File& shader)
     {
-        if (shaders_.contains(shader.ToRelativeString()))
+        if (shaders_.contains(shader.GetRelativePath()))
         {
-            return shaders_[shader.ToRelativeString()];
+            return shaders_[shader.GetRelativePath()];
         }
         return nullptr;
     }
 
-    static void RegisterShader(const Path& p, Shader* shader)
+    static void RegisterShader(const platform::File& p, Shader* shader)
     {
         if (shaders_.empty())
         {
             VulkanContext::Get()->OnPreVulkanDeviceDestroyed.AddBind(&ShaderManager::DestroyAll);
         }
-        shaders_[p.ToRelativeString()] = shader;
+        shaders_[p.GetRelativePath()] = shader;
     }
 
     static void DestroyAll();
 
 protected:
-    static inline HashMap<String, Shader*> shaders_;
+    static inline core::HashMap<core::String, Shader*> shaders_;
 };
 
 // 输入Spirv文件路径，通过反射获取所有uniform变量
@@ -200,20 +200,20 @@ public:
      * @param shader_name
      * @param device Shader所属的管线
      */
-    Shader(Protected, Ref<LogicalDevice> device, const Path& shader_path, EShaderStage shader_stage, const AnsiString& shader_name);
+    Shader(Protected, LogicalDevice* device, const platform::File& shader_path, EShaderStage shader_stage, const core::String& shader_name);
 
-    template<typename T>
+    template <typename T>
         requires std::is_base_of_v<Shader, T>
-    static Shader* Create(const Path& path, const AnsiString& name = "")
+    static Shader* Create(const platform::File& path, const core::String& name = "")
     {
         static_assert(!std::is_same_v<T, Shader>, "Shader::Create<T> T must be its subclass");
-        const Ref device = *VulkanContext::Get()->GetLogicalDevice();
-        Shader*   s      = ShaderManager::Request(path);
+        auto&   device = VulkanContext::Get()->GetLogicalDevice();
+        Shader* s      = ShaderManager::Request(path);
         if (s != nullptr)
         {
             return s;
         }
-        T* shader = New<T>(Protected{}, device, path, name);
+        T* shader = New<T>(Protected{}, device.Get(), path, name);
         shader->RegisterShaderVariables();
         ShaderManager::RegisterShader(path, shader);
         return shader;
@@ -221,37 +221,37 @@ public:
 
     virtual ~Shader();
 
-    const Path&                      GetShaderPath() const { return shader_path_; }
-    const vk::ShaderModule&          GetHandle() const { return shader_module_; }
-    const EShaderStage&              GetShaderType() const { return shader_stage_; }
-    const Array<UniformDescriptor>& GetUniformObjects() const { return uniform_descriptors_; }
-    const Array<VertexInAttribute>& GetInAttributes() const { return in_attributes_; }
+    const platform::File&                      GetShaderPath() const { return shader_path_; }
+    const vk::ShaderModule&                    GetHandle() const { return shader_module_; }
+    const EShaderStage&                        GetShaderType() const { return shader_stage_; }
+    const core::Array<UniformDescriptor>&      GetUniformObjects() const { return uniform_descriptors_; }
+    const core::Array<VertexInAttribute>&      GetInAttributes() const { return in_attributes_; }
+    const core::Array<PushConstantDescriptor>& GetPushConstantDescriptors() const { return push_constant_descriptors_; }
+    virtual void                               RegisterShaderVariables() = 0;
 
-    const Array<PushConstantDescriptor>& GetPushConstantDescriptors() const { return push_constant_descriptors_; }
-    virtual void                          RegisterShaderVariables() = 0;
-
-    static bool
-    CompileShaderCode2Spirv(const String& shader_name, const AnsiString& shader_source, EShaderStage shader_stage, Array<uint32_t>& output);
+    static bool CompileShaderCode2Spirv(
+        const core::String& shader_name, const core::String& shader_source, EShaderStage shader_stage, core::Array<uint32_t>& output
+    );
 
 protected:
     // 解析传入的Shader代码
     void ParseShaderCode(const uint32_t* shader_code, size_t shader_code_size, EShaderStage shader_stage);
 
 protected:
-    Array<UniformDescriptor>      uniform_descriptors_;
-    Array<PushConstantDescriptor> push_constant_descriptors_;
-    EShaderStage                   shader_stage_ = EShaderStage::None;
-    Path                           shader_path_;
-    vk::ShaderModule               shader_module_;
+    core::Array<UniformDescriptor>      uniform_descriptors_;
+    core::Array<PushConstantDescriptor> push_constant_descriptors_;
+    EShaderStage                        shader_stage_ = EShaderStage::None;
+    platform::File                      shader_path_;
+    vk::ShaderModule                    shader_module_;
     // 顶点着色器的输入属性
-    Array<VertexInAttribute>      in_attributes_;
-    Ref<LogicalDevice>             device_;   // 使用此Shader的管线
-    AnsiString                     shader_name_;
+    core::Array<VertexInAttribute>      in_attributes_;
+    LogicalDevice*                      device_;   // 使用此Shader的管线
+    core::String                        shader_name_;
 
     // Shader的Cache
-    static inline SharedPtr<class ShaderCache> cache_;
+    static inline core::UniquePtr<class ShaderCache> cache_;
 };
-}
+}   // namespace rhi::vulkan
 
 inline vk::ShaderStageFlags ShaderStage2VKShaderStage(rhi::vulkan::EShaderStage stage)
 {

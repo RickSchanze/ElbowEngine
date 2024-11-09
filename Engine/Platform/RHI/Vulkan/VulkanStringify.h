@@ -6,11 +6,11 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+#include "Base/EString.h"
 #include "vulkan/vulkan.hpp"
 
 class VulkanStringify {
 public:
     // TODO: 基于反射Type的ToString
-    static String ToString(const vk::Extent2D& InExtent);
+    static core::String ToString(const vk::Extent2D& InExtent);
 };

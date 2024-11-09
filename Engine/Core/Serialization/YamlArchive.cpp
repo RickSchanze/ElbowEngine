@@ -110,7 +110,7 @@ void YamlArchive::BeginSerialize()
     case State::Serialized: emitter_.Release(); break;
     case State::Deserialized: node_.Release(); break;
     case State::Serializing:
-    case State::Deserializing: LOGGER.Error(LogCat::Archive_Serialization, "处于不用的状态: {}", GetEnumString(state_)); break;
+    case State::Deserializing: LOGGER.Error(logcat::Archive_Serialization, "处于不用的状态: {}", GetEnumString(state_)); break;
     case State::Idle: break;
     }
     emitter_ = MakeUnique<YAML::Emitter>();

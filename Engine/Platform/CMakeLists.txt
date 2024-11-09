@@ -12,13 +12,10 @@ endif ()
 
 
 add_library(Platform
-        RHI/Vulkan/Exception.h
-        RHI/Vulkan/Exception.cpp
         RHI/Vulkan/Instance.cpp
         RHI/Vulkan/Instance.h
         RHI/Vulkan/ValidationLayer.h
         RHI/Vulkan/ValidationLayer.cpp
-        RHI/Vulkan/VulkanCommon.h
         RHI/Vulkan/Interface/IRHIResource.h
         RHI/Vulkan/Application.h
         RHI/Vulkan/Application.cpp
@@ -70,6 +67,13 @@ add_library(Platform
         RHI/Vulkan/TextureFormat.h
         RHI/D3D12/TextureFormat.cpp
         RHI/D3D12/TextureFormat.h
+        FileSystem/Path.cpp
+        FileSystem/Path.h
+        FileSystem/Folder.cpp
+        FileSystem/Folder.h
+        FileSystem/File.cpp
+        FileSystem/File.h
+        PlatformLogcat.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

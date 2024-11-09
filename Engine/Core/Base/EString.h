@@ -33,9 +33,17 @@ public:
 
     [[nodiscard]] const char*       Data() const { return str_; }
     [[nodiscard]] constexpr int32_t Length() const { return length_; }
-    [[nodiscard]] constexpr bool    Empty() const { return length_ == 0; }
+    [[nodiscard]] constexpr bool    IsEmpty() const { return length_ == 0; }
+    [[nodiscard]] bool              IsPureSpace() const;
     [[nodiscard]] bool              operator==(const StringView& o) const;
     [[nodiscard]] char              operator[](int32_t i) const { return str_[i]; }
+
+    // 此字符串是否包含任意一个o中的字符
+    [[nodiscard]] bool ContainsAny(const StringView& o, bool use_utf8 = false) const;
+
+    [[nodiscard]] std::string_view ToStdStringView() const { return {str_, (size_t)length_}; }
+
+    core::String operator+(const StringView& o) const;
 
 private:
     const char* str_;
@@ -74,12 +82,9 @@ public:
     [[nodiscard]] const std::string& StdString() const { return str_; }
 
     String operator+(const String& str) const { return {str_ + str.str_}; }
+    String operator+(const char* str) const { return {str_ + str}; }
 
-    String& operator+=(const String& str)
-    {
-        str_ += str.str_;
-        return *this;
-    }
+    String& operator+=(const String& str);
 
     auto operator<=>(const String& o) const { return str_ <=> o.str_; }
 
@@ -88,6 +93,9 @@ public:
     [[nodiscard]] bool Contains(StringView str) const;
 
     char operator[](int32_t i) const { return str_[i]; }
+
+    [[nodiscard]] bool IsEmpty() const { return str_.empty(); }
+    [[nodiscard]] bool IsPureSpace() const;
 
 private:
     std::string str_;
@@ -98,7 +106,7 @@ std::ostream& operator<<(std::ostream& os, const String& str);
 
 }   // namespace core
 
-template<>
+template <>
 struct fmt::formatter<core::String>
 {
     // 用于解析格式字符串（如果需要）
@@ -109,7 +117,7 @@ struct fmt::formatter<core::String>
     }
 
     // 用于格式化输出
-    template<typename FormatContext>
+    template <typename FormatContext>
     auto format(const core::String& str, FormatContext& ctx) -> decltype(ctx.out())
     {
         // 将 MyType 格式化为期望的字符串形式
@@ -117,18 +125,18 @@ struct fmt::formatter<core::String>
     }
 };
 
-template<>
+template <>
 struct fmt::formatter<core::StringView>
 {
     constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) { return ctx.begin(); }
-    template<typename FormatContext>
+    template <typename FormatContext>
     auto format(const core::StringView& str, FormatContext& ctx) -> decltype(ctx.out())
     {
         return fmt::format_to(ctx.out(), "{}", string_view(str.Data(), str.Length()));
     }
 };
 
-template<>
+template <>
 struct ::std::hash<core::StringView>
 {
     size_t operator()(const core::StringView& str) const noexcept
@@ -137,7 +145,7 @@ struct ::std::hash<core::StringView>
     }
 };
 
-template<>
+template <>
 struct ::std::hash<core::String>
 {
     size_t operator()(const core::String& str) const noexcept

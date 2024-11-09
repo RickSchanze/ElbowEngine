@@ -9,12 +9,15 @@
 
 #include "CoreEvents.h"
 #include "CoreGlobal.h"
+#include "FileSystem/File.h"
 #include "Misc/Vertex.h"
-#include "Utils/StringUtils.h"
+#include "PlatformEvents.h"
+#include "PlatformLogcat.h"
 
 #include <ranges>
 
 #include "RHI/Vulkan/Resource/Buffer.h"
+using namespace platform;
 
 namespace rhi::vulkan
 {
@@ -22,15 +25,15 @@ class ShaderProgramManager
 {
     struct ShaderPath
     {
-        Path vert;
-        Path frag;
+        platform::File vert;
+        platform::File frag;
     };
 
     struct ShaderPathHash
     {
         size_t operator()(const ShaderPath& p) const
         {
-            return std::hash<String>()(p.vert.ToRelativeString()) ^ std::hash<String>()(p.frag.ToRelativeString());
+            return std::hash<core::String>()(p.vert.GetAbsolutePath()) ^ std::hash<core::String>()(p.frag.GetAbsolutePath());
         }
     };
 
@@ -40,7 +43,7 @@ class ShaderProgramManager
     };
 
 public:
-    static ShaderProgram* Request(const Path& v, const Path& f)
+    static ShaderProgram* Request(const File& v, const File& f)
     {
         ShaderPath p;
         p.vert = v;
@@ -74,11 +77,11 @@ public:
     }
 
 protected:
-    inline static HashMap<ShaderPath, ShaderProgram*, ShaderPathHash, ShaderPathEqual> shader_programs_;
+    inline static core::HashMap<ShaderPath, ShaderProgram*, ShaderPathHash, ShaderPathEqual> shader_programs_;
 };
 
 ShaderProgram::ShaderProgram(
-    const Ref<LogicalDevice> device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const AnsiString& debug_name
+    LogicalDevice* device, Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const core::String& debug_name
 ) : vert_shader_(vert), frag_shader_(frag), destroy_time_(destroy_time), device_(device)
 {
     vertex_input_attributes_ = vert->GetInAttributes();
@@ -106,15 +109,15 @@ ShaderProgram::~ShaderProgram()
     DestroyUniformBuffers();
 }
 
-ShaderProgram* ShaderProgram::Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const AnsiString& debug_name)
+ShaderProgram* ShaderProgram::Create(Shader* vert, Shader* frag, const EShaderDestroyTime destroy_time, const core::String& debug_name)
 {
-    Ref   device = *VulkanContext::Get()->GetLogicalDevice();
+    auto& device = VulkanContext::Get()->GetLogicalDevice();
     auto* prog   = ShaderProgramManager::Request(vert->GetShaderPath(), frag->GetShaderPath());
     if (prog != nullptr)
     {
         return prog;
     }
-    prog = New<ShaderProgram>(device, vert, frag, destroy_time, debug_name);
+    prog = New<ShaderProgram>(device.Get(), vert, frag, destroy_time, debug_name);
     ShaderProgramManager::Register(prog);
     return prog;
 }
@@ -127,7 +130,7 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
         {
             if (uniform.binding != uniforms_[uniform.name].binding)
             {
-                LOG_ERROR_CATEGORY(Vulkan, L"Uniform变量Binding不一致: Name: {}", StringUtils::FromAnsiString(uniform.name));
+                LOGGER.Error(logcat::Platform_RHI_Vulkan, "Different uniform binding: Name: {}", uniform.name);
                 return false;
             }
         }
@@ -139,9 +142,9 @@ bool ShaderProgram::CheckAndUpdateUniforms(const Shader* shader)
     return true;
 }
 
-Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
+core::Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttributeDescriptions() const
 {
-    Array<vk::VertexInputAttributeDescription> AttributeDesc;
+    core::Array<vk::VertexInputAttributeDescription> AttributeDesc;
     for (const auto& Attribute: vertex_input_attributes_)
     {
         vk::VertexInputAttributeDescription Desc;
@@ -165,10 +168,10 @@ Array<vk::VertexInputAttributeDescription> ShaderProgram::GetVertexInputAttribut
     return AttributeDesc;
 }
 
-Array<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
+core::Array<vk::VertexInputBindingDescription> ShaderProgram::GetVertexInputBindingDescription() const
 {
-    Array<vk::VertexInputBindingDescription> binding_descriptions;
-    vk::VertexInputBindingDescription         desc{};
+    core::Array<vk::VertexInputBindingDescription> binding_descriptions;
+    vk::VertexInputBindingDescription              desc{};
     // clang-format off
     desc
         .setBinding(0)
@@ -185,7 +188,7 @@ uint32_t ShaderProgram::GetStride() const
     return sizeof(Vertex);
 }
 
-bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, const Sampler& sampler)
+bool ShaderProgram::SetTexture(const core::String& name, const ImageView& view, const Sampler& sampler)
 {
     if (!uniforms_.contains(name))
     {
@@ -193,12 +196,12 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
     }
     if (!view.IsValid())
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetTexture: ImageView {} is invalid in ShaderProgram {}", name, name_);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "ShaderProgram::SetTexture: ImageView {} is invalid in ShaderProgram {}", name, name_);
         return false;
     }
     if (!sampler.IsValid())
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetTexture: Sampler {} is invalid in ShaderProgram {}", name, name_);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "ShaderProgram::SetTexture: Sampler {} is invalid in ShaderProgram {}", name, name_);
         return false;
     }
     if (uniform_texture_storage_.contains(name))
@@ -229,11 +232,11 @@ bool ShaderProgram::SetTexture(const AnsiString& name, const ImageView& view, co
     return true;
 }
 
-void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, size_t size)
+void ShaderProgram::SetUniformBuffer(const core::String& name, const void* data, size_t size)
 {
     if (!uniform_buffers_.contains(name))
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan, "ShaderProgram::SetStaticUniformBuffer: UniformBuffer {} not found", name);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "ShaderProgram::SetUniformBuffer: UniformBuffer {} not found", name);
         return;
     }
     auto& buffers = uniform_buffers_[name];
@@ -247,36 +250,36 @@ void ShaderProgram::SetUniformBuffer(const AnsiString& name, const void* data, s
     }
 }
 
-bool ShaderProgram::HasShaderUniform(const AnsiString& name) const
+bool ShaderProgram::HasShaderUniform(const core::String& name) const
 {
     return uniforms_.contains(name);
 }
 
-const Array<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
+const core::Array<PushConstantDescriptor>& ShaderProgram::GetVertexPushConstants() const
 {
     return vert_shader_->GetPushConstantDescriptors();
 }
 
-const Array<PushConstantDescriptor>& ShaderProgram::GetFragmentPushConstants() const
+const core::Array<PushConstantDescriptor>& ShaderProgram::GetFragmentPushConstants() const
 {
     return frag_shader_->GetPushConstantDescriptors();
 }
 
-bool ShaderProgram::SetCubeTexture(const AnsiString& name, const ImageView& image_view, const Sampler& sampler)
+bool ShaderProgram::SetCubeTexture(const core::String& name, const ImageView& image_view, const Sampler& sampler)
 {
     if (!uniforms_.contains(name))
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "Not find cubemap sampler {} in ShaderProgram {}", name, name_);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Not find cubemap sampler {} in ShaderProgram {}", name, name_);
         return false;
     }
     if (!sampler.IsValid())
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "Sampler {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Sampler {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
         return false;
     }
     if (!image_view.IsValid())
     {
-        LOG_ERROR_CATEGORY_ANSI(Vulkan.ShaderProgram, "ImageView {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "ImageView {} is invalid when update cubemap sampler in ShaderProgram {}", name, name_);
         return false;
     }
     if (uniform_texture_storage_.contains(name))
@@ -288,7 +291,7 @@ bool ShaderProgram::SetCubeTexture(const AnsiString& name, const ImageView& imag
     image_info.sampler     = sampler.GetHandle();
     image_info.imageView   = image_view.GetHandle();
     image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-    Array<vk::WriteDescriptorSet> write_descriptor_sets;
+    core::Array<vk::WriteDescriptorSet> write_descriptor_sets;
     for (const auto& descriptor_set: descriptor_sets_)
     {
         vk::WriteDescriptorSet write_descriptor_set;
@@ -318,7 +321,7 @@ void ShaderProgram::CreateUniformBuffers()
     {
         if (value.type == EUniformDescriptorType::UniformBuffer || value.type == EUniformDescriptorType::DynamicUniformBuffer)
         {
-            Array<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
+            core::Array<Buffer*> new_buffer(g_engine_statistics.graphics.parallel_render_frame_count);
             for (size_t i = 0; i < g_engine_statistics.graphics.parallel_render_frame_count; i++)
             {
                 new_buffer[i] = New<Buffer>(
@@ -352,18 +355,18 @@ void ShaderProgram::CreateDescriptorSets()
         CreateDescriptorSetLayout();
     }
     VulkanContext&                context = *VulkanContext::Get();
-    Array                        layouts(g_engine_statistics.graphics.parallel_render_frame_count, descriptor_set_layout_);
+    core::Array                   layouts(g_engine_statistics.graphics.parallel_render_frame_count, descriptor_set_layout_);
     vk::DescriptorSetAllocateInfo alloc_info = {};
     alloc_info.setDescriptorPool(descriptor_pool_).setSetLayouts(layouts);
     // 描述符池对象销毁时会自动清除描述符集
     descriptor_sets_ = context.GetLogicalDevice()->AllocateDescriptorSets(alloc_info);
 
-    if (!name_.empty())
+    if (!name_.IsEmpty())
     {
         for (size_t i = 0; i < descriptor_sets_.size(); i++)
         {
             descriptor_set_names_.emplace_back(name_ + "_DescriptorSet_" + std::to_string(i));
-            context.GetLogicalDevice()->SetDescriptorSetDebugName(descriptor_sets_[i], descriptor_set_names_.back().data());
+            context.GetLogicalDevice()->SetDescriptorSetDebugName(descriptor_sets_[i], descriptor_set_names_.back().Data());
         }
     }
 
@@ -372,9 +375,9 @@ void ShaderProgram::CreateDescriptorSets()
     const auto& sampler                   = Sampler::GetDefaultSampler();
     for (size_t i = 0; i < descriptor_sets_.size(); i++)
     {
-        Array<vk::WriteDescriptorSet>   descriptor_writes = {};
-        Array<vk::DescriptorBufferInfo> buffer_infos;
-        Array<vk::DescriptorImageInfo>  image_infos;
+        core::Array<vk::WriteDescriptorSet>   descriptor_writes = {};
+        core::Array<vk::DescriptorBufferInfo> buffer_infos;
+        core::Array<vk::DescriptorImageInfo>  image_infos;
 
         buffer_infos.reserve(uniforms_.size());
         image_infos.reserve(uniforms_.size());
@@ -430,9 +433,9 @@ void ShaderProgram::DestroyDescriptorSets()
 
 void ShaderProgram::CreateDescriptorPool()
 {
-    const auto&                             device                = VulkanContext::Get()->GetLogicalDevice();
-    StaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
-    const auto                              swapchain_image_count = g_engine_statistics.graphics.swapchain_image_count;
+    const auto&                                  device                = VulkanContext::Get()->GetLogicalDevice();
+    core::StaticArray<vk::DescriptorPoolSize, 2> pool_sizes            = {};
+    const auto                                   swapchain_image_count = g_engine_statistics.graphics.swapchain_image_count;
 
     // Uniform Object
     pool_sizes[0].type            = vk::DescriptorType::eUniformBuffer;
@@ -446,7 +449,7 @@ void ShaderProgram::CreateDescriptorPool()
     pool_info.setPoolSizes(pool_sizes).setMaxSets(swapchain_image_count);
     descriptor_pool_      = device->CreateDescriptorPool(pool_info);
     descriptor_pool_name_ = name_ + "_DescriptorPool";
-    device->SetDescriptorPoolDebugName(descriptor_pool_, descriptor_pool_name_.data());
+    device->SetDescriptorPoolDebugName(descriptor_pool_, descriptor_pool_name_.Data());
 }
 
 void ShaderProgram::DestroyDescriptorPool()
@@ -460,7 +463,7 @@ void ShaderProgram::CreateDescriptorSetLayout()
 {
     const auto& device = VulkanContext::Get()->GetLogicalDevice();
 
-    Array<vk::DescriptorSetLayoutBinding> uniform_bindings;
+    core::Array<vk::DescriptorSetLayoutBinding> uniform_bindings;
     for (const auto& uniform_binding: GetUniforms() | std::views::values)
     {
         vk::DescriptorSetLayoutBinding binding;
@@ -473,10 +476,10 @@ void ShaderProgram::CreateDescriptorSetLayout()
     vk::DescriptorSetLayoutCreateInfo layout_info{};
     layout_info.setBindings(uniform_bindings);
     descriptor_set_layout_ = device->CreateDescriptorSetLayout(layout_info);
-    if (!name_.empty())
+    if (!name_.IsEmpty())
     {
         descriptor_set_layout_name_ = name_ + "_DescriptorSetLayout";
-        device->SetDescriptionSetLayoutDebugName(descriptor_set_layout_, descriptor_set_layout_name_.data());
+        device->SetDescriptionSetLayoutDebugName(descriptor_set_layout_, descriptor_set_layout_name_.Data());
     }
 }
 

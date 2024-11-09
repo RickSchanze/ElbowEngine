@@ -106,7 +106,7 @@ Optional<T> Any::AsCopy() const
 {
     if (ptr_ == nullptr)
     {
-        LOGGER.Error(LogCat::Reflection, "Any has no value");
+        LOGGER.Error(logcat::Reflection, "Any has no value");
         return NullOpt;
     }
     const Type* t = TypeOf<T>();
@@ -125,12 +125,12 @@ const T* Any::As() const
 {
     if (ptr_ == nullptr)
     {
-        LOGGER.Error(LogCat::Reflection, "Any has no value");
+        LOGGER.Error(logcat::Reflection, "Any has no value");
         return nullptr;
     }
     if (!IsDerivedFrom(TypeOf<T>()))
     {
-        LOGGER.Error(LogCat::Reflection, "Type {} is not derived from {}", GetType()->GetName(), TypeOf<T>()->GetName());
+        LOGGER.Error(logcat::Reflection, "Type {} is not derived from {}", GetType()->GetName(), TypeOf<T>()->GetName());
         return nullptr;
     }
     return static_cast<const T*>(ptr_->GetData());

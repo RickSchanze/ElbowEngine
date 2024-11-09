@@ -7,7 +7,7 @@
 
 #include "VulkanStringify.h"
 #include "vulkan/vulkan_to_string.hpp"
-String VulkanStringify::ToString(const vk::Extent2D& InExtent) {
-    return std::format(L"(Width={}, Height={})", InExtent.width, InExtent.height);
+core::String VulkanStringify::ToString(const vk::Extent2D& InExtent) {
+    return std::format("(Width={}, Height={})", InExtent.width, InExtent.height);
 }
 

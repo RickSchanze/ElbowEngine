@@ -6,8 +6,9 @@
  */
 
 #pragma once
+#include "Base/EString.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {
@@ -33,6 +34,6 @@ public:
 private:
     vk::ImageView handle_ = VK_NULL_HANDLE;
 
-    AnsiString debug_name_;
+    core::String debug_name_;
 };
 }   // namespace rhi::vulkan

@@ -13,12 +13,12 @@
 #include "Render/CommandPool.h"
 #include "Render/GraphicsPipeline.h"
 #include "Utils/ContainerUtils.h"
-#include "Utils/StringUtils.h"
 
 #include "Profiler/ProfileMacro.h"
 
 // for profiling GPU
 #include "CommandBuffer.h"
+#include "PlatformLogcat.h"
 #include "RHI/CommandBuffer.h"
 #include "tracy/TracyVulkan.hpp"
 
@@ -37,9 +37,9 @@ bool VulkanContext::CanRenderBackbuffer() const
     return IsBackBufferValid();
 }
 
-UniquePtr<VulkanContext> VulkanContext::CreateUnique(const SharedPtr<Instance>& instance)
+core::UniquePtr<VulkanContext> VulkanContext::CreateUnique(const core::SharedPtr<Instance>& instance)
 {
-    auto Rtn = MakeUnique<VulkanContext>(Protected{}, instance);
+    auto Rtn = core::MakeUnique<VulkanContext>(Protected{}, instance);
     return Rtn;
 }
 
@@ -137,7 +137,7 @@ void VulkanContext::CollectProfileData(const CommandBuffer& cmd)
 
 
 
-VulkanContext::VulkanContext(Protected, const SharedPtr<Instance>& instance)
+VulkanContext::VulkanContext(Protected, const core::SharedPtr<Instance>& instance)
 {
     if (s_context_ == nullptr)
     {
@@ -145,20 +145,21 @@ VulkanContext::VulkanContext(Protected, const SharedPtr<Instance>& instance)
     }
     else
     {
-        LOG_INFO_CATEGORY(Vulkan, L"多次初始化VulkanContext,忽略本次初始化调用");
+        LOGGER.Warn(logcat::Platform_RHI_Vulkan, "Multi initalization of VulkanContext, ignore this call");
         return;
     }
     renderer_id_ = s_renderer_id_count_++;
-    LOG_INFO_CATEGORY(Vulkan, L"创建Vulkan渲染器[id = {}]中", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Creating vulkan renderer {}...", renderer_id_);
     vulkan_instance_ = instance;
     physical_device_ = vulkan_instance_->PickPhysicalDevice();
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Enabled extension: ");
     for (auto extension: physical_device_->s_device_required_extensions)
     {
-        LOG_INFO_ANSI_CATEGORY(Vulkan, "启用的扩展: {}", extension);
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "  {}", extension);
     }
     const auto properties = physical_device_->GetProperties();
-    auto       name       = StringUtils::FromAnsiString(properties.deviceName);
-    LOG_INFO_CATEGORY(Vulkan, L"物理设备选择完成. 选用: {}", name);
+    auto       name       = properties.deviceName;
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Use GPU {}", name);
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
     swap_chain_     = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, 1920, 1080);
     // 初始化命令生产者
@@ -171,16 +172,13 @@ VulkanContext::VulkanContext(Protected, const SharedPtr<Instance>& instance)
 VulkanContext* VulkanContext::Get()
 {
     // TODO: 单例不在这里写，使用GfxContext
-    if (s_context_ == nullptr)
-    {
-        throw VulkanException(L"VulkanContext未初始化");
-    }
+    Assert(logcat::Platform_RHI_Vulkan, s_context_ != nullptr, "VulkanContext not initialized!");
     return s_context_;
 }
 
 void VulkanContext::Initialize()
 {
-    LOG_INFO_CATEGORY(Vulkan, L"Vulkan渲染器[id = {}]创建完成", renderer_id_, g_engine_statistics.graphics.swapchain_image_count);
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Vulkan renderer {} initialized.", renderer_id_);
     // 一般来说这个应该是第一个
     // @TODO: 具有优先级的队列系统
     OnBackBufferResized(g_engine_statistics.window_size.width, g_engine_statistics.window_size.height);
@@ -221,7 +219,7 @@ void VulkanContext::Finalize()
 #endif
 
     logical_device_->DeInitialize();
-    LOG_INFO_CATEGORY(Vulkan, L"Vukan渲染器[id = {}]清理完成", renderer_id_);
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Vulkan renderer {} finalized.", renderer_id_);
 }
 
 vk::Semaphore VulkanContext::SubmitGraphicsQueue(GraphicsQueueSubmitParams submit_params, vk::Fence fence_to_trigger)
@@ -276,7 +274,7 @@ void VulkanContext::PrepareFrameRender()
     }
     if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
     {
-        LOG_CRITICAL_CATEGORY(Vulkan.Render, L"无法获取交换链图像");
+        LOGGER.Critical(logcat::Platform_RHI_Vulkan_Render, "Failed to acquire swap chain image!");
         return;
     }
     // 重置当前帧的Fence
@@ -296,7 +294,7 @@ void VulkanContext::PostFrameRender()
     PROFILE_SCOPE_AUTO;
     // 呈现
     vk::PresentInfoKHR PresentInfo = {};
-    StaticArray       SwapChains  = {swap_chain_->GetHandle()};
+    core::StaticArray  SwapChains  = {swap_chain_->GetHandle()};
     // TODO: 这里需要等待的信号量需要再看看
     PresentInfo
         .setSwapchains(SwapChains)                                  //
@@ -320,7 +318,7 @@ void VulkanContext::PostFrameRender()
     }
     else if (Result != vk::Result::eSuccess)
     {
-        throw VulkanException(std::format(L"呈现交换链图像失败: {}", StringUtils::FromAnsiString(to_string(Result))));
+        Assert(logcat::Platform_RHI_Vulkan_Render, false, "Failed to present swap chain image!");
     }
     {
         PROFILE_SCOPE("Wait For Present");
@@ -435,11 +433,11 @@ void VulkanContext::CleanSyncObjects() const
 void VulkanContext::CreateCommandBuffers()
 {
     vk::CommandBufferAllocateInfo alloc_info;
-    alloc_info.level               = vk::CommandBufferLevel::ePrimary;
-    alloc_info.commandPool         = command_pool_->GetHandle();
-    alloc_info.commandBufferCount  = g_engine_statistics.graphics.swapchain_image_count;
-    AnsiString command_buffer_name = "GlobalCommandBuffer";
-    command_buffers_               = command_pool_->CreateCommandBuffers(alloc_info, command_buffer_name.c_str(), &command_buffers_names_);
+    alloc_info.level                 = vk::CommandBufferLevel::ePrimary;
+    alloc_info.commandPool           = command_pool_->GetHandle();
+    alloc_info.commandBufferCount    = g_engine_statistics.graphics.swapchain_image_count;
+    core::String command_buffer_name = "GlobalCommandBuffer";
+    command_buffers_                 = command_pool_->CreateCommandBuffers(alloc_info, command_buffer_name.Data(), &command_buffers_names_);
 }
 
 void VulkanContext::DestroyCommandBuffers()
@@ -474,7 +472,7 @@ void VulkanContext::OnBackBufferResized(int w, int h)
             info.height = h;
             info.tiling = vk::ImageTiling::eOptimal;
             info.usage  = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-            info.name   = AnsiString("Backbuffer") + std::to_string(i);
+            info.name   = core::String("Backbuffer") + std::to_string(i);
             back_buffer = New<Image>(info);
             back_buffer->Initialize();
             auto& view = context->back_buffer_views_[i];

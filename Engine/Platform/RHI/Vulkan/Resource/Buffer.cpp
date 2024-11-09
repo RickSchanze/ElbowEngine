@@ -7,22 +7,22 @@
 
 #include "Buffer.h"
 
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
 #include "Profiler/ProfileMacro.h"
 
 namespace rhi::vulkan
 {
-Buffer::Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const AnsiString& name)
+Buffer::Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const core::String& name)
 {
     size_         = size;
     auto* context = VulkanContext::Get();
     context->GetLogicalDevice()->CreateBuffer(size, usage, properties, handle_, memory_);
-    buffer_name_ = CachedString(name);
-    memory_name_ = CachedString(name + "_Memory");
-    context->GetLogicalDevice()->SetBufferDebugName(handle_, buffer_name_.ToCStyleString());
-    context->GetLogicalDevice()->SetBufferMemoryDebugName(memory_, memory_name_.ToCStyleString());
+    buffer_name_ = name;
+    memory_name_ = name + "_Memory";
+    context->GetLogicalDevice()->SetBufferDebugName(handle_, buffer_name_.Data());
+    context->GetLogicalDevice()->SetBufferMemoryDebugName(memory_, memory_name_.Data());
 }
 
 Buffer::~Buffer()
@@ -39,7 +39,8 @@ void* Buffer::GetMappedCpuMemory()
 {
     if (mapped_ == nullptr)
     {
-        LOG_ERROR_CATEGORY(Vulkan, L"试图获取未Map到CPU的GPU内存. buffer: {}, memory: {}", buffer_name_.ToString(), memory_name_.ToString());
+        LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "Try to get unmapped GPU memory. buffer: {}, memory: {}", buffer_name_, memory_name_);
+        return nullptr;
     }
     return mapped_;
 }
@@ -78,7 +79,7 @@ void Buffer::FlushMemory() const
 void Buffer::Memcpy(const void* data, size_t size) const
 {
     PROFILE_SCOPE_AUTO;
-    auto c = memcpy(mapped_, data, size);
+    memcpy(mapped_, data, size);
 }
 
 bool Buffer::IsMemoryMapped() const

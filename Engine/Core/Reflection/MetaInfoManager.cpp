@@ -85,7 +85,7 @@ void MetaInfoManager::RegisterType(RTTITypeInfo type_info)
     }
     if (!meta_data_registers_.contains(type_info))
     {
-        LOGGER.Error(LogCat::Reflection, "尝试注册类型{}, 但是此类型没有对应的注册函数", type_info.name);
+        LOGGER.Error(logcat::Reflection, "尝试注册类型{}, 但是此类型没有对应的注册函数", type_info.name);
         return;
     }
     types_registered_[type_info] = meta_data_registers_[type_info]();
@@ -97,7 +97,7 @@ void MetaInfoManager::RegisterTypeRegisterer(RTTITypeInfo type_info, const MetaD
     if (registerer == nullptr) return;
     if (meta_data_registers_.contains(type_info))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复注册类型注册函数{}", type_info.name);
+        LOGGER.Warn(logcat::Reflection, "重复注册类型注册函数{}", type_info.name);
     }
     meta_data_registers_[type_info] = registerer;
 }
@@ -106,7 +106,7 @@ void MetaInfoManager::RegisterType(RTTITypeInfo type_info, Type* type)
 {
     if (types_registered_.contains(type_info))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复注册类型{}", type_info.name);
+        LOGGER.Warn(logcat::Reflection, "重复注册类型{}", type_info.name);
         return;
     }
     types_registered_[type_info] = type;

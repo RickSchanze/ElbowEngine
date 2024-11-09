@@ -49,6 +49,7 @@
 
 #define TO_POINTER(type) type*
 
+#ifndef REFL_GEN
 #define GENERATED_BODY(class_)                                               \
 public:                                                                      \
     static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
@@ -62,7 +63,9 @@ public:                                                                      \
     CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
                                                                              \
 private:
-
+#else
+#define GENERATED_BODY(class_)
+#endif
 
 #define GENERATED_SOURCE()                                         \
     static void Z_MetaInfo_Registration_Func();                    \

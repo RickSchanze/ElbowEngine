@@ -25,7 +25,7 @@ core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
-        LOGGER.Warn(LogCat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
         return "";
     }
     return value_attr_[GetEnumValue(attr)];
@@ -47,7 +47,7 @@ FieldInfo* FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
 #endif
     if (IsDefined(attr))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
     }
     value_attr_[GetEnumValue(attr)] = value;
     return this;
@@ -65,13 +65,13 @@ Any FieldInfo::GetValue(const ITypeGetter* obj) const
 {
     if (obj == nullptr)
     {
-        LOGGER.Error(LogCat::Reflection, "obj is null");
+        LOGGER.Error(logcat::Reflection, "obj is null");
         return NullOpt;
     }
     if (obj->GetType() != outer_)
     {
         LOGGER.Error(
-            LogCat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj->GetType()->GetName(), outer_->GetName()
+            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj->GetType()->GetName(), outer_->GetName()
         );
         return NullOpt;
     }
@@ -82,7 +82,7 @@ SequentialContainerView* FieldInfo::CreateSequentialContainerView(const ITypeGet
 {
     if (!container_view_)
     {
-        LOGGER.Error(LogCat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
         return nullptr;
     }
     auto ele_type        = obj->GetType();
@@ -90,7 +90,7 @@ SequentialContainerView* FieldInfo::CreateSequentialContainerView(const ITypeGet
     if (ele_type != view_outer_type)
     {
         LOGGER.Error(
-            LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
+            logcat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
         );
         return nullptr;
     }
@@ -102,7 +102,7 @@ AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(const ITypeG
 {
     if (!container_view_)
     {
-        LOGGER.Error(LogCat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
         return nullptr;
     }
     auto ele_type        = obj->GetType();
@@ -110,7 +110,7 @@ AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(const ITypeG
     if (ele_type != view_outer_type)
     {
         LOGGER.Error(
-            LogCat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
+            logcat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
         );
         return nullptr;
     }
@@ -122,7 +122,7 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
-        LOGGER.Warn(LogCat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
         return "";
     }
     return value_attr_[GetEnumValue(attr)];
@@ -273,7 +273,7 @@ Type* Type::SetAttribute(ValueAttribute attr, StringView value)
 {
     if (IsDefined(attr))
     {
-        LOGGER.Warn(LogCat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
     }
     value_attr_[GetEnumValue(attr)] = value;
     return this;

@@ -7,13 +7,12 @@
 
 #include "RenderPass.h"
 
-#include <ranges>
-#include <utility>
-#include "Framebuffer.h"
 #include "CommandPool.h"
 #include "CoreGlobal.h"
-#include "LogicalDevice.h"
+#include "Math/MathTypes.h"
 #include "RHI/Vulkan/VulkanContext.h"
+#include <ranges>
+#include <utility>
 
 namespace rhi::vulkan
 {
@@ -55,7 +54,7 @@ bool RenderPass::IsValid() const
     return handle_ != nullptr;
 }
 
-RenderPass::RenderPass(uint32_t width, uint32_t height, const AnsiString& debug_name)
+RenderPass::RenderPass(uint32_t width, uint32_t height, core::StringView debug_name)
 {
     render_pass_name_ = debug_name;
     width_            = width;
@@ -162,7 +161,7 @@ void RenderPass::NewAttachment(RenderPassAttachmentParam& param, bool attach_to_
     new_attachment_ref.layout     = param.reference_layout;
 
     attachment_descs_.emplace_back(new_attachment_desc);
-    attahcment_refs_.emplace_back(new_attachment_ref);
+    attachment_refs_.emplace_back(new_attachment_ref);
 }
 
 void RenderPass::NewDepthAttachment(RenderPassAttachmentParam& param)
@@ -202,37 +201,38 @@ void RenderPass::SetupSubpassDescription()
     int32_t SpecialIndexMin = std::min(depth_attachment_index_, sample_resolve_index_);
     int32_t SpecialIndexMax = std::max(depth_attachment_index_, sample_resolve_index_);
 
-    Array<vk::AttachmentReference> ColorAttachmentA, ColorAttachmentB, ColorAttachmentC;
-
     if (SpecialIndexMax == -1)
     {
-        subpass_color_attachment_refs_ = attahcment_refs_;
+        subpass_color_attachment_refs_ = attachment_refs_;
     }
     else
     {
+        core::Array<vk::AttachmentReference> ColorAttachmentC;
+        core::Array<vk::AttachmentReference> ColorAttachmentB;
+        core::Array<vk::AttachmentReference> ColorAttachmentA;
         if (SpecialIndexMin != -1)
         {
-            if (SpecialIndexMin == 0)
+            if (SpecialIndexMin != 0)
             {
-                ColorAttachmentB = ContainerUtils::Slice(attahcment_refs_, 1, SpecialIndexMax);
+                ColorAttachmentA = ContainerUtils::Slice(attachment_refs_, 0, SpecialIndexMin);
+                ColorAttachmentB = ContainerUtils::Slice(attachment_refs_, SpecialIndexMin + 1, SpecialIndexMax);
             }
             else
             {
-                ColorAttachmentA = ContainerUtils::Slice(attahcment_refs_, 0, SpecialIndexMin);
-                ColorAttachmentB = ContainerUtils::Slice(attahcment_refs_, SpecialIndexMin + 1, SpecialIndexMax);
+                ColorAttachmentB = ContainerUtils::Slice(attachment_refs_, 1, SpecialIndexMax);
             }
-            ColorAttachmentC = ContainerUtils::Slice(attahcment_refs_, SpecialIndexMax + 1, attahcment_refs_.size());
+            ColorAttachmentC = ContainerUtils::Slice(attachment_refs_, SpecialIndexMax + 1, attachment_refs_.size());
         }
         else
         {
             if (SpecialIndexMax == 0)
             {
-                ColorAttachmentA = ContainerUtils::Slice(attahcment_refs_, 0, attahcment_refs_.size());
+                ColorAttachmentA = ContainerUtils::Slice(attachment_refs_, 0, attachment_refs_.size());
             }
             else
             {
-                ColorAttachmentA = ContainerUtils::Slice(attahcment_refs_, 0, SpecialIndexMax);
-                ColorAttachmentB = ContainerUtils::Slice(attahcment_refs_, SpecialIndexMax + 1, attahcment_refs_.size());
+                ColorAttachmentA = ContainerUtils::Slice(attachment_refs_, 0, SpecialIndexMax);
+                ColorAttachmentB = ContainerUtils::Slice(attachment_refs_, SpecialIndexMax + 1, attachment_refs_.size());
             }
         }
         subpass_color_attachment_refs_ = ContainerUtils::Concat(ContainerUtils::Concat(ColorAttachmentA, ColorAttachmentB), ColorAttachmentC);
@@ -245,23 +245,23 @@ void RenderPass::SetupSubpassDescription()
         .setColorAttachments(subpass_color_attachment_refs_);
     if (depth_attachment_index_ != -1)
     {
-        subpass_.setPDepthStencilAttachment(&attahcment_refs_[depth_attachment_index_]);
+        subpass_.setPDepthStencilAttachment(&attachment_refs_[depth_attachment_index_]);
     }
     if (sample_resolve_index_ != -1)
     {
-        subpass_.setPResolveAttachments(&attahcment_refs_[sample_resolve_index_]);
+        subpass_.setPResolveAttachments(&attachment_refs_[sample_resolve_index_]);
     }
 
     if (sample_count != vk::SampleCountFlagBits::e1)
     {
-        subpass_.pResolveAttachments = &attahcment_refs_[2];
+        subpass_.pResolveAttachments = &attachment_refs_[2];
     }
 }
 
-void RenderPass::Begin(vk::CommandBuffer cb, const Color& clear_color)
+void RenderPass::Begin(vk::CommandBuffer cb, const core::Color& clear_color)
 {
-    StaticArray<vk::ClearValue, 2> clear_values;
-    clear_values[0].color        = vk::ClearColorValue{StaticArray<float, 4>{clear_color.r, clear_color.g, clear_color.b, clear_color.a}};
+    core::StaticArray<vk::ClearValue, 2> clear_values;
+    clear_values[0].color        = vk::ClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
     clear_values[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
     vk::RenderPassBeginInfo render_pass_info;
@@ -277,14 +277,14 @@ void RenderPass::CreateRenderPass()
 {
     VulkanContext& context = *VulkanContext::Get();
 
-    StaticArray<vk::SubpassDescription, 1> subpasses = {subpass_};
+    core::StaticArray<vk::SubpassDescription, 1> subpasses = {subpass_};
 
     vk::RenderPassCreateInfo Info{};
     Info.setAttachments(attachment_descs_).setSubpasses(subpasses).setDependencies(dependencies_);
     handle_ = context.GetLogicalDevice()->CreateRenderPass(Info);
-    if (!render_pass_name_.empty())
+    if (!render_pass_name_.IsEmpty())
     {
-        context.GetLogicalDevice()->SetRenderPassDebugName(handle_, render_pass_name_.data());
+        context.GetLogicalDevice()->SetRenderPassDebugName(handle_, render_pass_name_.Data());
     }
 }
 

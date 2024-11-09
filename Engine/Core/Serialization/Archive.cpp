@@ -17,7 +17,7 @@ core::Archive& core::Archive::operator<<(const Any& value)
     if (!value.HasValue())
     {
         SetError();
-        LOGGER.Error(LogCat::Reflection, "Input does not hold a value");
+        LOGGER.Error(logcat::Reflection, "Input does not hold a value");
         return *this;
     }
     auto* type = value.GetType();
@@ -45,7 +45,7 @@ core::Archive& core::Archive::operator<<(const Any& value)
         if (type_getter == nullptr)
         {
             SetError();
-            LOGGER.Error(LogCat::Reflection, "The input is neither a primitive type nor an ITypeGetter.");
+            LOGGER.Error(logcat::Reflection, "The input is neither a primitive type nor an ITypeGetter.");
         }
         auto fields = type->GetFields();
         *this << InputType::MapStart;

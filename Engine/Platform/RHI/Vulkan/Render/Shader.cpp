@@ -10,13 +10,7 @@
 
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
-#include "Utils/StringUtils.h"
-
-#include "shaderc/shaderc.hpp"
-#include "Utils/HashUtils.h"
-
 #include "nlohmann/json.hpp"
-
 
 #include <utility>
 
@@ -44,15 +38,15 @@ vk::ShaderStageFlagBits GetVkShaderStage(const EShaderStage stage)
     }
 }
 
-String ShaderStageToString(const EShaderStage stage)
+core::String ShaderStageToString(const EShaderStage stage)
 {
     switch (stage)
     {
-    case EShaderStage::Vertex: return L"顶点shader";
-    case EShaderStage::Fragment: return L"片元shader";
-    case EShaderStage::None: return L"";
+    case EShaderStage::Vertex: return "Vertex";
+    case EShaderStage::Fragment: return "Fragment";
+    case EShaderStage::None: return "";
     }
-    return L"";
+    return "";
 }
 
 class ShaderCache
@@ -64,12 +58,12 @@ public:
         {
             return;
         }
-        Path cache_path = L"Cache/Shaders";
+        platform::File cache_path = "Cache/Shaders";
         if (!cache_path.IsExist())
         {
             cache_path.CreateDir();
         }
-        Path cache_json_path = L"Cache/Shaders/shader_cache.json";
+        platform::File cache_json_path = "Cache/Shaders/shader_cache.json";
         if (cache_json_path.IsExist())
         {
             auto json = cache_json_path.ReadAllText();

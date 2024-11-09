@@ -125,7 +125,7 @@ struct FieldInfo
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool        IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool        IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].Empty(); }
+    [[nodiscard]] bool        IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
     [[nodiscard]] StringView  GetAttribute(ValueAttribute attr) const;
     [[nodiscard]] int32_t     GetOffset() const { return offset_; }
     [[nodiscard]] StringView  GetName() const { return name_; }
@@ -224,7 +224,7 @@ struct FunctionInfo
     {
         if (params.size() != param_infos.size())
         {
-            LOGGER.Error(LogCat::Reflection, "参数不匹配, 需要{}个参数, 实际{}个参数", param_infos.size(), params.size());
+            LOGGER.Error(logcat::Reflection, "参数不匹配, 需要{}个参数, 实际{}个参数", param_infos.size(), params.size());
             return NullOpt;
         }
         ReturnT t;
@@ -246,18 +246,18 @@ struct FunctionInfo
     {
         if (param_infos.empty())
         {
-            LOGGER.Warn(LogCat::Reflection, "此函数({})参数为空", name);
+            LOGGER.Warn(logcat::Reflection, "此函数({})参数为空", name);
             return false;
         }
         auto index = static_cast<int32_t>(params.size());
         if (index >= param_infos.size())
         {
-            LOGGER.Warn(LogCat::Reflection, "此函数({})参数数量超过限制, 此次调用视作无效", name);
+            LOGGER.Warn(logcat::Reflection, "此函数({})参数数量超过限制, 此次调用视作无效", name);
             return false;
         }
         if (TypeOf<ObjT>() != param_infos[index].type)
         {
-            LOGGER.Warn(LogCat::Reflection, "此函数({})参数类型不匹配,此次调用视作无效", name);
+            LOGGER.Warn(logcat::Reflection, "此函数({})参数类型不匹配,此次调用视作无效", name);
             return false;
         }
         params.push_back(param);
@@ -290,7 +290,7 @@ struct FunctionInfoImpl : FunctionInfo
         }
         catch (const ::std::exception& e)
         {
-            LOGGER.Error(LogCat::Reflection, "反射调用函数({})失败: {}", name, e.what());
+            LOGGER.Error(logcat::Reflection, "反射调用函数({})失败: {}", name, e.what());
             return {};
         }
     }
@@ -313,7 +313,7 @@ struct MemberFunctionImpl : FunctionInfo
         }
         catch (const ::std::exception& e)
         {
-            LOGGER.Error(LogCat::Reflection, "反射调用函数({})失败: {}", name, e.what());
+            LOGGER.Error(logcat::Reflection, "反射调用函数({})失败: {}", name, e.what());
             return {};
         }
     }
@@ -361,7 +361,7 @@ struct Type
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].Empty(); }
+    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].IsEmpty(); }
     [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
     [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
     [[nodiscard]] StringView GetName() const { return name_; }
@@ -454,7 +454,7 @@ struct Type
     template <typename T> requires std::is_enum_v<T>
     FieldInfo* Internal_RegisterEnumValue(T value, StringView name)
     {
-        Assert(LogCat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
+        Assert(logcat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
         FieldInfo filed_info;
         filed_info.attribute_ |= FieldInfo::EnumValue;
         filed_info.name_ = name;

@@ -11,7 +11,7 @@ namespace core
 {
 void SequentialContainerView::ForEach(const Function<void(Any)>& Func)
 {
-    DebugAssert(LogCat::Reflection, GetContainerType() == ContainerViewType::Sequential, "一个参数的ForEach只有持有顺序容器时才可以使用");
+    DebugAssert(logcat::Reflection, GetContainerType() == ContainerViewType::Sequential, "一个参数的ForEach只有持有顺序容器时才可以使用");
     if (BeginIterate())
     {
         Func(GetCurrentElement());
@@ -26,7 +26,7 @@ void SequentialContainerView::ForEach(const Function<void(Any)>& Func)
 
 void SequentialContainerView::ForEach(const Function<void(int, Any)>& Func)
 {
-    DebugAssert(LogCat::Reflection, GetContainerType() == ContainerViewType::Sequential, "一个参数的ForEach只有持有顺序容器时才可以使用");
+    DebugAssert(logcat::Reflection, GetContainerType() == ContainerViewType::Sequential, "一个参数的ForEach只有持有顺序容器时才可以使用");
     if (BeginIterate())
     {
         int index = 0;
@@ -42,7 +42,7 @@ void SequentialContainerView::ForEach(const Function<void(int, Any)>& Func)
 
 void AssociativeContainerView::ForEach(const Function<void(Any, Any)>& Func)
 {
-    DebugAssert(LogCat::Reflection, GetContainerType() == ContainerViewType::Associative, "两个参数的ForEach只有持有关联容器时才可以使用");
+    DebugAssert(logcat::Reflection, GetContainerType() == ContainerViewType::Associative, "两个参数的ForEach只有持有关联容器时才可以使用");
     if (BeginIterate())
     {
         Func(GetCurrentKey(), GetCurrentValue());

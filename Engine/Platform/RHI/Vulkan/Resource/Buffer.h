@@ -6,15 +6,15 @@
  */
 
 #pragma once
-#include "CachedString.h"
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "Base/EString.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {
 class Buffer
 {
 public:
-    Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const AnsiString& name = "NamelessBuffer");
+    Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, const core::String& name = "NamelessBuffer");
 
     ~Buffer();
 
@@ -40,7 +40,7 @@ private:
 
     size_t size_;
 
-    CachedString buffer_name_;
-    CachedString memory_name_;
+    core::String buffer_name_;
+    core::String memory_name_;
 };
 }

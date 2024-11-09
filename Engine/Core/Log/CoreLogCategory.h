@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace LogCat
+namespace logcat
 {
 constexpr auto Unknown               = "Unknown";
 constexpr auto Engine                = "Engine";
@@ -18,4 +18,4 @@ constexpr auto Test                  = "Test";
 constexpr auto Archive               = "Archive";
 constexpr auto Archive_Serialization = "Archive.Serialization";
 constexpr auto Reflection            = "Reflection";
-}   // namespace LogCat
+}   // namespace logcat

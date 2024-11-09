@@ -6,11 +6,9 @@
  */
 
 #pragma once
-#include <utility>
-
+#include "Base/EString.h"
 #include "ImageView.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
@@ -53,7 +51,10 @@ public:
 
     ImageView* CreateImageView(const ImageViewInfo& view_info) const;
 
-    SharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const { return SharedPtr<ImageView>{CreateImageView(view_info)}; }
+    core::SharedPtr<ImageView> CreateImageViewShared(const ImageViewInfo& view_info) const
+    {
+        return core::SharedPtr<ImageView>{CreateImageView(view_info)};
+    }
 };
 
 struct ImageInfo
@@ -74,12 +75,12 @@ struct ImageInfo
     vk::ImageLayout         initial_layout  = vk::ImageLayout::eShaderReadOnlyOptimal;
     vk::SharingMode         sharing_mode    = vk::SharingMode::eExclusive;
 
-    AnsiString name;
-    AnsiString debug_image_name;
-    AnsiString debug_image_memory_name;
+    core::String name{};
+    core::String debug_image_name{};
+    core::String debug_image_memory_name{};
 
     static ImageInfo CubemapInfo(
-        vk::Format format, const AnsiString& name = "", vk::ImageCreateFlags create_flags = vk::ImageCreateFlagBits::eCubeCompatible,
+        vk::Format format, core::StringView name = "", vk::ImageCreateFlags create_flags = vk::ImageCreateFlagBits::eCubeCompatible,
         vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, int32_t width = 0,
         int32_t height = 0, int32_t mip_level = 1, vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1,
         vk::ImageLayout initial_layout = vk::ImageLayout::eUndefined, vk::SharingMode sharing_mode = vk::SharingMode::eExclusive,
@@ -103,14 +104,14 @@ public:
 
     explicit Image(ImageInfo create_info);
 
-    static Image* Create(const ImageInfo &info);
+    static Image* Create(const ImageInfo& info);
 
     void Destroy() override;
 
     ~Image() override;
 
     bool IsValid() const override;
-    void Finialize();
+    void DeInitialize();
 
     int32_t    GetWidth() const { return image_info_.width; }
     int32_t    GetHeight() const { return image_info_.height; }
@@ -156,17 +157,17 @@ public:
 
     ~Cubemap() override;
 
-    void CreateCubemapImageViews(const AnsiString& name = "");
+    void CreateCubemapImageViews(core::StringView name = "");
 
     ImageView* GetFaceView(ECubemapFace face);
 
     ImageView* GetView() const { return cubemap_image_view_; }
 
 protected:
-    Array<ImageView*> cubemap_image_face_views_ = {};
-    Array<AnsiString> cubemap_face_view_names_;
-    ImageView*         cubemap_image_view_ = nullptr;
-    AnsiString         cubemap_image_view_name_;
+    core::Array<ImageView*>   cubemap_image_face_views_ = {};
+    core::Array<core::String> cubemap_face_view_names_;
+    ImageView*                cubemap_image_view_ = nullptr;
+    core::String              cubemap_image_view_name_;
 };
 
 struct SamplerInfo
@@ -237,6 +238,6 @@ protected:
     vk::Sampler handle_;
     size_t      id_;
 
-    static inline HashMap<size_t, Sampler*> samplers_;
+    static inline core::HashMap<size_t, Sampler*> samplers_;
 };
 }
