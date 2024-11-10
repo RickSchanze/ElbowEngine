@@ -33,12 +33,12 @@ void LightSettingWindow::Draw(float delta_time)
         auto* sky_mat = static_cast<function::SkyboxMaterial*>(material);
         if (sky_mat->IsUsingSkyBox())
         {
-            res::TextureCube* cube = static_cast<res::TextureCube*>(sky_mat->GetTextureValue("sky"));
+            resource::TextureCube* cube = static_cast<resource::TextureCube*>(sky_mat->GetTextureValue("sky"));
             ImGuiHelper::Image(cube);
         }
         else
         {
-            res::Texture* tex = sky_mat->GetTextureValue("sky");
+            resource::Texture* tex = sky_mat->GetTextureValue("sky");
             ImGuiHelper::Image(tex);
         }
     }

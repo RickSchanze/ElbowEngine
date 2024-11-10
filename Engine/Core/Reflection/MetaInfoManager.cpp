@@ -10,6 +10,7 @@
 #include "Base/CoreTypeDef.h"
 #include "Base/Interface.h"
 #include "CoreGlobal.h"
+#include "Object/Object.h"
 #include "Reflection.h"
 
 #include <ranges>

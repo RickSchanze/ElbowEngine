@@ -20,14 +20,14 @@ namespace rhi::vulkan
 {
 struct SamplerInfo;
 }
-namespace res
+namespace resource
 {
 class Mesh;
 class Texture;
 }   // namespace res
 class IResource;
 
-namespace res
+namespace resource
 {
 class ResourceManager : public Singleton<ResourceManager>
 {

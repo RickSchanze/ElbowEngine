@@ -29,13 +29,13 @@ SkyboxMaterial::SkyboxMaterial(
     }
 }
 
-void SkyboxMaterial::SetSkySphereTexture(res::Texture* texture)
+void SkyboxMaterial::SetSkySphereTexture(resource::Texture* texture)
 {
     if (texture == nullptr)
     {
         return;
     }
-    if (texture->GetUsage() != res::ETextureUsage::Skybox2D)
+    if (texture->GetUsage() != resource::ETextureUsage::Skybox2D)
     {
         LOG_ERROR_CATEGORY(Material.Skybox, L"天空球材质的纹理类型必须为Skybox2D");
         return;
@@ -69,7 +69,7 @@ void SkyboxMaterial::SetSkyBoxTexture(const Path& path)
         LOG_INFO_CATEGORY(Material.Skybox, L"切换天空盒绘制方式至立方体贴图");
     }
 
-    res::TextureCube* texture = res::TextureCube::Create(path);
+    resource::TextureCube* texture = resource::TextureCube::Create(path);
     SetTexture("sky", texture);
     use_skybox_ = -1;
 }
@@ -106,7 +106,7 @@ void SkyboxMaterial::DrawSkybox(vk::CommandBuffer cb)
 {
     if (!skybox_mesh_)
     {
-        skybox_mesh_ = res::Mesh::Create(L"Models/Cube.fbx");
+        skybox_mesh_ = resource::Mesh::Create(L"Models/Cube.fbx");
     }
     pipeline_->BindMesh(cb, *skybox_mesh_->GetSubMeshes()[0].GetRHIResource());
     pipeline_->BindDescriptorSets(cb, {pipeline_->GetCurrentFrameDescriptorSet()}, vk::PipelineBindPoint::eGraphics, 0);

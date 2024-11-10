@@ -9,7 +9,7 @@
 
 #include "Core.h"
 
-#include "Test.TestArchiveSerialization.generated.h"
+#include GEN_HEADER("Test.TestArchiveSerialization.generated.h")
 
 class CLASS() TestArchiveSerialization : public core::ITypeGetter
 {

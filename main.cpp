@@ -12,7 +12,9 @@
 #include "Reflection/ITypeGetter.h"
 #include "Reflection/MetaInfoManager.h"
 #include "Reflection/Reflection.h"
+#include "ResourceManager.h"
 #include "Serialization/YamlArchive.h"
+#include "Shader.h"
 
 #include <fstream>
 
@@ -22,8 +24,14 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
-    LOGGER.Info(logcat::Test, "this");
-    core::UniquePtr<core::Archive> ar = New<core::YamlArchive>();
+    LOGGER.Info(logcat::Test, "TestInfo");
+    if (!platform::Path::SetProjectPath("C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content"))
+    {
+        LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
+        return -1;
+    }
+    resource::Shader s{"Shaders/Shader.slang"};
+    s.Load();
     system("pause");
     // try
     // {

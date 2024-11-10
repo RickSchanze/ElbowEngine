@@ -41,7 +41,7 @@ void ImGuiHelper::Separator()
 #endif
 }
 
-void ImGuiHelper::Image(res::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height)
+void ImGuiHelper::Image(resource::Texture* texture, int32_t width, int32_t height, int32_t max_width, int32_t max_height)
 {
 #ifdef USE_IMGUI
     if (texture == nullptr)
@@ -59,7 +59,7 @@ void ImGuiHelper::Image(res::Texture* texture, int32_t width, int32_t height, in
 #endif
 }
 
-void ImGuiHelper::Image(res::TextureCube* texture_cube, int max_wdith, int max_height)
+void ImGuiHelper::Image(resource::TextureCube* texture_cube, int max_wdith, int max_height)
 {
 #ifdef USE_IMGUI
     if (texture_cube == nullptr)
@@ -126,7 +126,7 @@ void ImGuiHelper::Image(rhi::vulkan::ImageView* view, rhi::vulkan::Sampler* samp
 #endif
 }
 
-void ImGuiHelper::Image(res::Texture* texture, int max_width, int max_height)
+void ImGuiHelper::Image(resource::Texture* texture, int max_width, int max_height)
 {
 #ifdef USE_IMGUI
     float ratio = (float)texture->GetWidth() / (float)texture->GetHeight();

@@ -5,9 +5,15 @@
  * @brief 
  */
 
+#include "Core.h"
 #include "Object.h"
 #include "Log/Logger.h"
+#include "Reflection/Reflection.h"
 #include "Serialization/Archive.h"
+
+#include "Core.Object.generated.h"
+
+GENERATED_SOURCE()
 
 namespace core
 {
@@ -34,33 +40,5 @@ String Object::ToString() const
 void Object::SetName(const String& name)
 {
     name_ = name;
-}
-
-void Object::Serialize(Archive& ar)
-{
-    // Type t = GetType();
-    // ar << Archive::InputType::MapStart;
-    // ar << Archive::InputType::Key;
-    // StringView type_name = t.get_name().data();
-    // ar << type_name;
-    // ar << Archive::InputType::Value;
-    // {
-    //     ar << Archive::InputType::MapStart;
-    //     const auto& properties = t.get_properties();
-    //     for (const auto& prop: properties)
-    //     {
-    //         if (prop.get_type().is_pointer())
-    //         {
-    //             continue;
-    //         }
-    //         String name = {prop.get_name().data(), static_cast<int32_t>(prop.get_name().length())};
-    //         ar << Archive::InputType::Key;
-    //         ar << name;
-    //         ar << Archive::InputType::Value;
-    //         ar << prop.get_value(*this);
-    //     }
-    //     ar << Archive::InputType::MapEnd;
-    // }
-    // ar << Archive::InputType::MapEnd;
 }
 }   // namespace core

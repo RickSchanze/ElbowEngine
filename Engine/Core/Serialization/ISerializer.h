@@ -10,7 +10,7 @@
 #include "Reflection/MetaInfoMacro.h"
 #include "Reflection/MetaInfoManager.h"
 
-#include "Core.ISerializer.generated.h"
+#include GEN_HEADER("Core.ISerializer.generated.h")
 
 namespace core
 {

@@ -24,7 +24,7 @@ Mesh::Mesh()
     NEVER_ENTRY_WARNING()
 }
 
-void Mesh::SetMesh(res::Mesh* new_mesh)
+void Mesh::SetMesh(resource::Mesh* new_mesh)
 {
     if (new_mesh != nullptr && new_mesh != mesh_)
     {
@@ -46,7 +46,7 @@ void Mesh::OnDisable()
     RenderContext::Get()->UnregisterDrawMesh(this);
 }
 
-Array<res::SubMesh>& Mesh::GetSubMeshes() const
+Array<resource::SubMesh>& Mesh::GetSubMeshes() const
 {
     return mesh_->GetSubMeshes();
 }

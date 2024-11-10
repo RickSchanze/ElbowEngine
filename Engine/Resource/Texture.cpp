@@ -22,7 +22,7 @@
 
 using namespace rhi::vulkan;
 
-namespace res
+namespace resource
 {
 
 Texture::Texture(const platform::File& path, const ETextureUsage usage, const SamplerInfo& sampler_info, const vk::ImageLayout t) :

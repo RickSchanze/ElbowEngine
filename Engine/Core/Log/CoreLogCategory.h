@@ -18,4 +18,5 @@ constexpr auto Test                  = "Test";
 constexpr auto Archive               = "Archive";
 constexpr auto Archive_Serialization = "Archive.Serialization";
 constexpr auto Reflection            = "Reflection";
+constexpr auto Core                  = "Core";
 }   // namespace logcat

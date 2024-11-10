@@ -9,6 +9,10 @@ public class CodeGenConfig
     public List<string> IncludeDirs { get; set; } =
     [
         @"Engine\Core",
+        @"Engine\Test",
+        @"Engine\Core",
+        @"Engine\Platform",
+        @"Engine\Resource",
         @"Engine\ThirdParty\IconFontCppHeaders",
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
         @"Generated"
@@ -17,7 +21,9 @@ public class CodeGenConfig
     public List<string> SourceDirs { get; } =
     [
         @"Engine\Test",
-        @"Engine\Core"
+        @"Engine\Core",
+        @"Engine\Platform",
+        @"Engine\Resource",
     ];
 
     public List<string> ExcludedFiles { get; } =
@@ -29,6 +35,8 @@ public class CodeGenConfig
     {
         { @"Engine\Core", "Core" },
         { @"Engine\Test", "Test" },
+        { @"Engine\Platform", "Platform" },
+        { @"Engine\Resource", "Resource" },
     };
 
     public List<string> Macros { get; } = ["REFLECTION", "REFL_GEN"];

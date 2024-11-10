@@ -10,6 +10,9 @@ add_library(${PROJECT_NAME}
         Interface/IResource.h
         Interface/IRHIResourceContainer.h
         Logcat.h
+        Shader.cpp
+        Shader.h
+        Interface/IResource.cpp
 )
 
 add_library(Engine::Resource ALIAS ${PROJECT_NAME})
@@ -33,3 +36,8 @@ target_link_libraries(${PROJECT_NAME}
         Engine::Core
         Engine::Platform
 )
+
+# SLANG
+target_include_directories(${PROJECT_NAME} PRIVATE ${SLANG_INCLUDE})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${SLANG_LIB}/slang.lib)
+message(STATUS "SLANG_LIB: ${SLANG_LIB}")

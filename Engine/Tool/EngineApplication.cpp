@@ -165,7 +165,7 @@ void EngineApplication::DeInitialize() const
     window_->ShutdownImGui();
 #endif
     // vulkan device失效前释放所有资产
-    res::ResourceManager::Get()->DestroyAllResources();
+    resource::ResourceManager::Get()->DestroyAllResources();
     if (render_application_->IsValid()) render_application_->Finalize();
     if (window_->IsValid()) window_->Finalize();
 }

@@ -23,7 +23,7 @@ struct aiNode;
 struct aiMaterial;
 struct aiScene;
 struct aiMesh;
-namespace res
+namespace resource
 {
 class Texture;
 
@@ -58,10 +58,10 @@ class Mesh : public IResource
 public:
     Mesh(const platform::File& mesh_path);
 
-    [[nodiscard]] core::StringView GetRelativePath() const override;
-    [[nodiscard]] core::StringView GetAbsolutePath() const override;
-    [[nodiscard]] bool             IsValid() const override { return !sub_meshes_.empty(); }
-    void                           Load() final;
+    [[nodiscard]] core::String GetRelativePath() const override;
+    [[nodiscard]] core::String GetAbsolutePath() const override;
+    [[nodiscard]] bool         IsValid() const override { return !sub_meshes_.empty(); }
+    void                       Load() final;
 
     core::Array<SubMesh>& GetSubMeshes() { return sub_meshes_; }
 

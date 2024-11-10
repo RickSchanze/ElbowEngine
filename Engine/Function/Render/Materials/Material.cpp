@@ -99,7 +99,7 @@ Material::~Material()
     pipeline_ = nullptr;
 }
 
-void Material::SetTexture(const AnsiString& name, res::Texture* texture)
+void Material::SetTexture(const AnsiString& name, resource::Texture* texture)
 {
     if (!textures_maps_.contains(name))
     {
@@ -116,7 +116,7 @@ void Material::SetTexture(const AnsiString& name, res::Texture* texture)
 
 Material& Material::SetTexture(const AnsiString& name, const Path& path)
 {
-    auto* new_tex = res::Texture::Create(path);
+    auto* new_tex = resource::Texture::Create(path);
     SetTexture(name, new_tex);
     return *this;
 }
@@ -218,7 +218,7 @@ bool Material::HasTextureSet(const AnsiString& name)
     return false;
 }
 
-res::Texture* Material::GetTextureValue(const AnsiString& name)
+resource::Texture* Material::GetTextureValue(const AnsiString& name)
 {
     if (HasTextureSet(name))
     {
@@ -240,7 +240,7 @@ void Material::ParseShaderParameters()
         {
             if (!textures_maps_.contains(uniform.name))
             {
-                textures_maps_[uniform.name] = res::Texture::GetDefaultLackTexture();
+                textures_maps_[uniform.name] = resource::Texture::GetDefaultLackTexture();
             }
         }
         // TODO: 其他参数类型

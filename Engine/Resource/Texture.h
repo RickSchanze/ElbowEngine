@@ -22,7 +22,7 @@ class Sampler;
 class ImageView;
 }   // namespace rhi::vulkan
 
-namespace res
+namespace resource
 {
 enum class ETextureUsage
 {
@@ -89,8 +89,8 @@ public:
         const platform::File& path, ETextureUsage usage, const rhi::vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition_to_layout = vk::ImageLayout::eShaderReadOnlyOptimal
     );
-    [[nodiscard]] core::StringView GetRelativePath() const override { return path_.GetRelativePath(); }
-    [[nodiscard]] core::StringView GetAbsolutePath() const override { return path_.GetAbsolutePath(); }
+    [[nodiscard]] core::String GetRelativePath() const override { return path_.GetRelativePath(); }
+    [[nodiscard]] core::String GetAbsolutePath() const override { return path_.GetAbsolutePath(); }
 
 protected:
     platform::File path_;

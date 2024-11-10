@@ -11,6 +11,8 @@
 #include "CoreDef.h"
 #include "Serialization/ISerializer.h"
 
+#include GEN_HEADER("Core.Object.generated.h")
+
 namespace core
 {
 
@@ -23,8 +25,9 @@ enum ObjectCategory
     Setting,      // 这个是一个设置对象
 };
 
-class Object : public ISerializer
+class CLASS() Object : public ITypeGetter
 {
+    GENERATED_BODY(Object)
 public:
     typedef Object ThisClass;
 
@@ -34,7 +37,6 @@ public:
     Object& operator=(const ThisClass&) = delete;
 
     ~Object() override;
-
 
 #if REGION(对象ID)
     typedef int32_t        ObjectID;
@@ -46,6 +48,7 @@ public:
 private:
     void GeneratedID();
 
+    PROPERTY()
     ObjectID id_ = 0;
 #endif
 
@@ -82,12 +85,11 @@ public:
     [[nodiscard]] ObjectCategory GetObjectCategory() const { return flag_; }
 
 
-#if REGION(序列化)
-    void Serialize(Archive& ar) override;
-#endif
-
 protected:
+    PROPERTY()
     String         name_;   // 对象名字
+
+    PROPERTY()
     ObjectCategory flag_;
 };
 

@@ -63,8 +63,10 @@ public:                                                                      \
     CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
                                                                              \
 private:
+#define GEN_HEADER(a) a
 #else
 #define GENERATED_BODY(class_)
+#define GEN_HEADER(a) <string>
 #endif
 
 #define GENERATED_SOURCE()                                         \

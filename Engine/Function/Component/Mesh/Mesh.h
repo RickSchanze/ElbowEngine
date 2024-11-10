@@ -19,7 +19,7 @@ namespace function
 {
 class Material;
 }
-namespace res
+namespace resource
 {
 class SubMesh;
 class Mesh;
@@ -34,15 +34,15 @@ class Mesh : public Component, public IDetailGUIDrawer
 public:
     explicit Mesh();
 
-    void SetMesh(res::Mesh* new_mesh);
+    void SetMesh(resource::Mesh* new_mesh);
 
     virtual void OnMeshSet() {}
 
     void OnEnable() override;
     void OnDisable() override;
 
-    res::Mesh*            GetMeshResource() const { return mesh_; }
-    Array<res::SubMesh>& GetSubMeshes() const;
+    resource::Mesh*            GetMeshResource() const { return mesh_; }
+    Array<resource::SubMesh>& GetSubMeshes() const;
 
     void OnInspectorGUI() override;
 
@@ -51,7 +51,7 @@ public:
     Material* GetMaterial() const;
 
 protected:
-    res::Mesh* mesh_     = nullptr;
+    resource::Mesh* mesh_     = nullptr;
     Material*       material_ = nullptr;
 };
 

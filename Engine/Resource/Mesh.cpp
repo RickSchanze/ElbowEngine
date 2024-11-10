@@ -15,7 +15,7 @@
 #include "Logcat.h"
 #include "ResourceManager.h"
 
-namespace res
+namespace resource
 {
 SubMesh::~SubMesh()
 {
@@ -37,12 +37,12 @@ Mesh::Mesh(const platform::File& mesh_path) : path_(mesh_path)
     ResourceManager::Get()->RegisterResource(path_, this);
 }
 
-core::StringView Mesh::GetRelativePath() const
+core::String Mesh::GetRelativePath() const
 {
     return path_.GetRelativePath();
 }
 
-core::StringView Mesh::GetAbsolutePath() const
+core::String Mesh::GetAbsolutePath() const
 {
     return path_.GetAbsolutePath();
 }

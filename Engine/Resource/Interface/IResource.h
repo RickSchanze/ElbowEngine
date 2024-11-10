@@ -6,15 +6,19 @@
  */
 
 #pragma once
-#include "Base/EString.h"
+#include "Base/Interface.h"
+#include "Core.h"
 
-class IResource
+#include GEN_HEADER("Resource.IResource.generated.h")
+
+class CLASS(Interface) IResource : public core::Interface
 {
+    GENERATED_BODY(IResource)
 public:
-    virtual ~IResource() = default;
+    ~IResource() override = default;
 
-    [[nodiscard]] virtual core::StringView GetRelativePath() const = 0;
-    [[nodiscard]] virtual core::StringView GetAbsolutePath() const = 0;
-    [[nodiscard]] virtual bool             IsValid() const         = 0;
-    virtual void                           Load()                  = 0;
+    [[nodiscard]] virtual core::String GetRelativePath() const = 0;
+    [[nodiscard]] virtual core::String GetAbsolutePath() const = 0;
+    [[nodiscard]] virtual bool         IsValid() const         = 0;
+    virtual void                       Load()                  = 0;
 };

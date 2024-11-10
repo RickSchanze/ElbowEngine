@@ -28,6 +28,7 @@ public class CodeGenerator
         }
     }
 
+    private bool HasError = false;
 
     private void GenerateFile(string path)
     {
@@ -48,6 +49,10 @@ public class CodeGenerator
             {
                 Console.WriteLine(diagnostic);
             }
+            
+            HasError = true;
+
+            return;
         }
 
         var outputAbsPath = Path.Combine(_config.WorkDir, _config.OutputDir);
@@ -299,7 +304,8 @@ public class CodeGenerator
         var attributes = ParseAttribute(cppClass.Attributes);
         if (!attributes.ContainsKey("Interface"))
         {
-            sw.WriteLine($"core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<{cppClass.FullName}>(), &{cppClass.FullName}::ConstructAt); \\");
+            sw.WriteLine(
+                $"core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<{cppClass.FullName}>(), &{cppClass.FullName}::ConstructAt); \\");
         }
     }
 
@@ -313,6 +319,7 @@ public class CodeGenerator
             sw.WriteLine(
                 $"static void ConstructAt(void* ptr) {{ new (ptr) {cppClass.FullName}(); }} \\");
         }
+
         sw.WriteLine();
     }
 
@@ -366,8 +373,11 @@ public class CodeGenerator
             }
         }
 
-        Task.WaitAll(tasks.ToArray());
-        string newCache = JsonConvert.SerializeObject(cache, Formatting.Indented);
-        File.WriteAllText(fileCache, newCache);
+        if (!HasError)
+        {
+            Task.WaitAll(tasks.ToArray());
+            string newCache = JsonConvert.SerializeObject(cache, Formatting.Indented);
+            File.WriteAllText(fileCache, newCache);
+        }
     }
 }

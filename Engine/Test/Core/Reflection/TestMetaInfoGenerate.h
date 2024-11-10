@@ -18,7 +18,7 @@
 
 #include "Core.h"
 
-#include "Test.TestMetaInfoGenerate.generated.h"
+#include GEN_HEADER("Test.TestMetaInfoGenerate.generated.h")
 
 /**
  * 测试TestMetaInfoGenerate

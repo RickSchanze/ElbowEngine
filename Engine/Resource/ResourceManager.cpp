@@ -15,7 +15,7 @@
 
 #include <ranges>
 
-namespace res
+namespace resource
 {
 ResourceManager::~ResourceManager() = default;
 
