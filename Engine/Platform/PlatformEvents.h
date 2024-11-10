@@ -11,6 +11,7 @@
 
 namespace rhi::vulkan
 {
+class ImageView;
 class Texture;
 }
 

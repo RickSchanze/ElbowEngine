@@ -24,7 +24,7 @@ bool platform::Folder::IsFolderEmpty(core::StringView path)
     {
         return false;
     }
-    const auto path_view = path.ToStdStringView();
+    const auto path_view = path.GetStdStringView();
     const auto path1     = std::filesystem::path(path_view);
     const auto it        = std::filesystem::directory_iterator(path1);
     return it == std::filesystem::directory_iterator();
@@ -40,10 +40,21 @@ core::Array<core::String> platform::Folder::ListFiles(core::StringView path, boo
     return {};
 }
 
-core::Array<core::String> platform::Folder::ListFiles(core::StringView path, core::StringView regex, bool recursive)
+core::Array<core::String> platform::Folder::ListFilesRegex(core::StringView path, core::StringView regex, bool recursive)
 {
     core::Array<core::String> files;
-    if (TryListFiles(path, files, regex, recursive))
+    if (TryListFilesRegex(path, files, regex, recursive))
+    {
+        return files;
+    }
+    return {};
+}
+
+core::Array<core::String>
+platform::Folder::ListFilesLambda(core::StringView path, const core::Function<bool(core::StringView)>& Func_Filter, bool recursive)
+{
+    core::Array<core::String> files;
+    if (TryListFiles(path, files, recursive))
     {
         return files;
     }
@@ -60,7 +71,7 @@ static void ListFilesImpl(const std::filesystem::path& path, core::Array<core::S
         }
         else
         {
-            files.push_back(entry.path().filename().string());
+            files.emplace_back(entry.path().filename().string());
         }
     }
 }
@@ -71,39 +82,71 @@ bool platform::Folder::TryListFiles(core::StringView path, core::Array<core::Str
     {
         return false;
     }
-    ListFilesImpl(path.ToStdStringView(), files, recursive);
+    ListFilesImpl(path.GetStdStringView(), files, recursive);
     return true;
 }
 
-static void ListFilesImpl(const std::filesystem::path& path, core::Array<core::String>& files, core::StringView regex, bool recursive)
+static void ListFilesImplRegex(const std::filesystem::path& path, core::Array<core::String>& files, core::StringView regex, bool recursive)
 {
     for (const auto& entry: std::filesystem::directory_iterator(path))
     {
         if (entry.is_directory())
         {
-            if (recursive) ListFilesImpl(entry.path(), files, regex, recursive);
+            if (recursive) ListFilesImplRegex(entry.path(), files, regex, recursive);
         }
         else
         {
-            if (std::regex_match(entry.path().filename().string(), std::regex(regex.ToStdStringView())))
+            if (std::regex_match(entry.path().filename().string(), std::regex(regex.Data())))
             {
-                files.push_back(entry.path().filename().string());
+                files.emplace_back(entry.path().filename().string());
             }
         }
     }
 }
 
-bool platform::Folder::TryListFiles(core::StringView path, core::Array<core::String>& files, core::StringView regex, bool recursive)
+bool platform::Folder::TryListFilesRegex(core::StringView path, core::Array<core::String>& files, core::StringView regex, bool recursive)
 {
     if (!Path::IsFolder(path))
     {
         return false;
     }
-    ListFilesImpl(path.ToStdStringView(), files, regex, recursive);
+    ListFilesImplRegex(path.GetStdStringView(), files, regex, recursive);
     return true;
 }
 
-static void FindFileImpl(const std::filesystem::path& path, core::StringView name, bool recursive, core::String& found)
+static void ListFilesImplLambda(
+    const std::filesystem::path& path, core::Array<core::String>& files, const core::Function<bool(core::StringView)>& Func_Filter, bool recursive
+)
+{
+    for (const auto& entry: std::filesystem::directory_iterator(path))
+    {
+        if (entry.is_directory())
+        {
+            if (recursive) ListFilesImplLambda(entry.path(), files, Func_Filter, recursive);
+        }
+        else
+        {
+            if (Func_Filter(entry.path().filename().string()))
+            {
+                files.emplace_back(entry.path().filename().string());
+            }
+        }
+    }
+}
+
+bool platform::Folder::TryListFilesLambda(
+    core::StringView path, core::Array<core::String>& files, const core::Function<bool(core::StringView)>& Func_Filter, bool recursive
+)
+{
+    if (!Path::IsFolder(path))
+    {
+        return false;
+    }
+    ListFilesImplLambda(path.GetStdStringView(), files, Func_Filter, recursive);
+    return true;
+}
+
+static bool FindFileImpl(const std::filesystem::path& path, core::StringView name, bool recursive, core::String& found)
 {
     for (const auto& entry: std::filesystem::directory_iterator(path))
     {
@@ -113,22 +156,49 @@ static void FindFileImpl(const std::filesystem::path& path, core::StringView nam
         }
         else
         {
-            if (entry.path().filename().string() == name.ToStdStringView())
+            if (entry.path().filename().string() == name.GetStdStringView())
             {
                 found = entry.path().string();
-                return;
+                return true;
             }
         }
     }
+    return false;
 }
 
 bool platform::Folder::ContainsFile(core::StringView path, core::StringView name, bool recursive)
 {
     core::String found;
-    return FindFileImpl(path.ToStdStringView(), name, recursive, found);
+    return FindFileImpl(path.GetStdStringView(), name, recursive, found);
 }
 
-void platform::Folder::CreateFolder() const
+bool platform::Folder::CreateFolder(core::StringView path, bool combine_project_path)
 {
-    if
+    if (combine_project_path)
+    {
+        path = Path::Combine(Path::GetProjectPath(), path);
+    }
+    if (Path::HasInvalidCharacter(path)) return false;
+    auto v = path.GetStdStringView();
+    return std::filesystem::create_directory(v);
+}
+
+bool platform::Folder::Create(bool combine) const
+{
+    return CreateFolder(path_, combine);
+}
+
+bool platform::Folder::IsExist() const
+{
+    return Path::IsExist(GetAbsolutePath());
+}
+
+core::String platform::Folder::GetAbsolutePath() const
+{
+    return Path::Combine(Path::GetProjectPath(), path_);
+}
+
+core::String platform::Folder::GetRelativePath() const
+{
+    return path_;
 }

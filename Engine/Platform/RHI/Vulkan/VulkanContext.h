@@ -11,6 +11,7 @@
 #include "Render/SwapChain.h"
 #include "RHI/GfxContext.h"
 #include "Utils/ContainerUtils.h"
+#include "vulkan/vulkan.hpp"
 
 
 namespace rhi::vulkan

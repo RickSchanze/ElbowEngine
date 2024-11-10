@@ -14,4 +14,6 @@ constexpr const char* Platform_FileSystem          = "Platform.FileSystem";
 constexpr const char* Platform_RHI_Vulkan          = "Platform.RHI.Vulkan";
 constexpr const char* Platform_RHI_Vulkan_Render   = "Platform.RHI.Vulkan.Render";
 constexpr const char* Platform_RHI_Vulkan_Resource = "Platform.RHI.Vulkan.Resource";
+constexpr const char* Platform_RHI                 = "Platform.RHI";
+constexpr const char* Platform_Window              = "Platform.Window";
 }   // namespace logcat

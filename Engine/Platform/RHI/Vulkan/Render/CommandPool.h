@@ -6,7 +6,10 @@
  */
 
 #pragma once
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "Base/CoreTypeDef.h"
+#include "Base/EString.h"
+#include "Base/UniquePtr.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {
@@ -21,10 +24,10 @@ protected:
     };
 
 public:
-    CommandPool(Private, Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name = nullptr);
+    CommandPool(Private, LogicalDevice* device, vk::CommandPoolCreateFlags pool_flags, const core::String& debug_name = nullptr);
 
-    static UniquePtr<CommandPool>
-    CreateUnique(Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags = {}, const AnsiString& debug_name = nullptr);
+    static core::UniquePtr<CommandPool>
+    CreateUnique(LogicalDevice* device, vk::CommandPoolCreateFlags pool_flags = {}, const core::String& debug_name = nullptr);
 
     void CreateCommandPool(vk::CommandPoolCreateFlags pool_flags);
     void CleanCommandPool();
@@ -44,22 +47,21 @@ public:
         vk::ImageLayout final_layout = vk::ImageLayout::eShaderReadOnlyOptimal
     );
 
-    void Finialize();
+    void DeInitialize();
 
     void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer, uint64_t size);
 
-    void CopyImage(vk::Image src, vk::Image dst, const Array<vk::ImageCopy>& copies);
+    void CopyImage(vk::Image src, vk::Image dst, const core::Array<vk::ImageCopy>& copies);
 
     void ResetCommandPool() const;
 
-    Array<vk::CommandBuffer> CreateCommandBuffers(
-        const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name = nullptr, Array<AnsiString>* out_debug_names = nullptr
+    core::Array<vk::CommandBuffer> CreateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name = nullptr, core::Array<core::String>* out_debug_names = nullptr
     ) const;
 
-    void DestroyCommandBuffers(const Array<vk::CommandBuffer>& command_buffers) const;
+    void DestroyCommandBuffers(const core::Array<vk::CommandBuffer>& command_buffers) const;
 
 protected:
-
     /**
      * 与EndSingleTimeCommands配合使用
      * @return
@@ -75,9 +77,9 @@ protected:
 private:
     vk::CommandPool pool_ = nullptr;
 
-    Ref<UniquePtr<LogicalDevice>> device_;
+    LogicalDevice* device_ = nullptr;
 
-    AnsiString debug_name_;
+    core::String debug_name_;
 
     vk::CommandBuffer single_cmd_;
 };

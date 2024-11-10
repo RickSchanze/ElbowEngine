@@ -11,7 +11,6 @@
 #include "Base/EString.h"
 #include "Base/UniquePtr.h"
 #include "spdlog/spdlog.h"
-#include <stacktrace>
 
 namespace core
 {

@@ -6,9 +6,13 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
+#include "Base/EString.h"
+#include "Base/UniquePtr.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/VulkanCommon.h"
 #include "vulkan/vulkan.hpp"
+#include "CoreDef.h"
+
 namespace rhi::vulkan
 {
 class SwapChain;
@@ -21,13 +25,13 @@ class LogicalDevice final : public IRHIResource
 public:
     ~LogicalDevice() override;
 
-    Array<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const;
+    [[nodiscard]] core::Array<vk::DescriptorSet> AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const;
 
-    void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
+    void FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const core::Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array) const;
 
-    static UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
+    static core::UniquePtr<LogicalDevice> CreateUnique(vk::Device InDevice, PhysicalDevice* associated_physical_device);
 
-    explicit LogicalDevice(ResourceProtected, vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device);
+    explicit LogicalDevice(vk::Device InDevice, PhysicalDevice* associated_physical_device);
 
     void DeInitialize();
 
@@ -41,7 +45,7 @@ public:
      * @param log 是否打log
      * @return
      */
-    UniquePtr<SwapChain> CreateSwapChain(uint32_t swap_chain_image_count = 0, int32_t width = 0, int32_t height = 0, bool log = true);
+    core::UniquePtr<SwapChain> CreateSwapChain(uint32_t swap_chain_image_count = 0, int32_t width = 0, int32_t height = 0, bool log = true);
 
     /**
      * 创建缓冲区 典型应用是辅助CPU加载数据和GPU读取数据
@@ -70,7 +74,7 @@ public:
 
     void DestroyShaderModule(vk::ShaderModule module) const;
 
-    vk::PipelineLayout CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const AnsiString& debug_name = nullptr) const;
+    vk::PipelineLayout CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const core::String& debug_name = {}) const;
 
     vk::Queue GetGraphicsQueue() const { return graphics_queue_; }
     vk::Queue GetPresentQueue() const { return present_queue_; }
@@ -84,14 +88,14 @@ public:
 
     void UnmapMemory(vk::DeviceMemory InMemory) const;
 
-    void FlushMappedMemory(const Array<vk::MappedMemoryRange>& ranges) const;
+    void FlushMappedMemory(const core::Array<vk::MappedMemoryRange>& ranges) const;
 
     vk::Result WaitForFences(vk::ArrayProxy<vk::Fence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX) const;
 
     void ResetFences(vk::ArrayProxy<vk::Fence> fences) const;
 
-    Array<vk::CommandBuffer> AllocateCommandBuffers(
-        const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name = nullptr, Array<AnsiString>* out_debug_names = {}
+    core::Array<vk::CommandBuffer> AllocateCommandBuffers(
+        const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name = nullptr, core::Array<core::String>* out_debug_names = {}
     ) const;
 
     void DestroySampler(vk::Sampler sampler) const;
@@ -113,7 +117,7 @@ public:
     void            DestroyCommandPool(vk::CommandPool command_pool) const;
 
     vk::Pipeline
-    CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name = "") const;
+    CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const core::String& debug_name = "") const;
 
     void SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& name_info) const;
     void SetCommandBufferDebugName(vk::CommandBuffer handle, const char* name) const;
@@ -134,13 +138,13 @@ public:
 
     bool            IsValid() const { return static_cast<bool>(handle_); }
     vk::Device      GetHandle() const { return handle_; }
-    PhysicalDevice& GetAssociatedPhysicalDevice() const { return associated_physical_device_; }
+    PhysicalDevice& GetAssociatedPhysicalDevice() const { return *associated_physical_device_; }
 
     void InitializePFNs();
 
 private:
-    vk::Device          handle_ = VK_NULL_HANDLE;
-    Ref<PhysicalDevice> associated_physical_device_;
+    vk::Device      handle_ = VK_NULL_HANDLE;
+    PhysicalDevice* associated_physical_device_;
 
     vk::Queue graphics_queue_;
     vk::Queue present_queue_;

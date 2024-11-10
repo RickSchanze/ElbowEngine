@@ -159,11 +159,11 @@ VulkanContext::VulkanContext(Protected, const core::SharedPtr<Instance>& instanc
     }
     const auto properties = physical_device_->GetProperties();
     auto       name       = properties.deviceName;
-    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Use GPU {}", name);
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Use GPU {}", name.data());
     logical_device_ = physical_device_->CreateLogicalDeviceUnique();
     swap_chain_     = logical_device_->CreateSwapChain(g_engine_statistics.graphics.swapchain_image_count, 1920, 1080);
     // 初始化命令生产者
-    command_pool_   = CommandPool::CreateUnique(logical_device_, vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
+    command_pool_   = CommandPool::CreateUnique(logical_device_.Get(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ApplicationCommandPool");
     CreateSyncObjects();
     CreateCommandBuffers();
     Initialize();
@@ -199,7 +199,7 @@ void VulkanContext::Finalize()
     // 清理所有的Sampler
     Sampler::DestroyAllSamplers();
     CleanSyncObjects();
-    command_pool_->Finialize();
+    command_pool_->DeInitialize();
     // 当前GraphicsPipeline创建时自己加载文件因此有可能抛出异常，此时mGraphicsPipeline为nullptr
     // 在调用就成了未定义行为，因此加一个if判断
     // TODO: 将Shader文件读取操作放在GraphicsPipeline之外

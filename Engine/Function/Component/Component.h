@@ -10,7 +10,6 @@
 #include "Object/Object.h"
 #include "Math/MathTypes.h"
 
-#include "Component.generated.h"
 #include "World/ITickable.h"
 
 class Transform;

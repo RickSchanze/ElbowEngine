@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
 #include "Base/EString.h"
 #include "ImageView.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"
@@ -218,7 +219,7 @@ protected:
 class Sampler : public IRHIResource
 {
 public:
-    explicit Sampler(ResourceProtected, const SamplerInfo& info = {});
+    explicit Sampler(const SamplerInfo& info = {});
 
     static Sampler* Create(const SamplerInfo& info = {});
 
@@ -230,7 +231,7 @@ public:
 
     void Destroy() override { InternalDestroy(); }
 
-    vk::Sampler GetHandle() const { return handle_; }
+    [[nodiscard]] vk::Sampler GetHandle() const { return handle_; }
 
     bool IsValid() const { return handle_ != nullptr; }
 

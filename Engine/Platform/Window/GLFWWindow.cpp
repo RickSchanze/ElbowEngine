@@ -8,11 +8,8 @@
 #include "GLFWWindow.h"
 
 #include "CoreEvents.h"
-#include "GameObject/GameObject.h"
-#include "IconsMaterialDesign.h"
-#include "Input/Input.h"
 #include "FileSystem/Path.h"
-#include "Render/Event.h"
+#include "IconsMaterialDesign.h"
 #include "RHI/Vulkan/CommandBuffer.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
 #include "RHI/Vulkan/Render/Framebuffer.h"
@@ -20,6 +17,7 @@
 #include "RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "vulkan/vulkan_to_string.hpp"
+#include "WindowCommon.h"
 
 #include "Profiler/ProfileMacro.h"
 
@@ -29,6 +27,7 @@
 #endif
 
 using namespace rhi::vulkan;
+using namespace core;
 
 namespace platform::window
 {
@@ -78,14 +77,14 @@ public:
         for (int i = 0; i < g_engine_statistics.graphics.swapchain_image_count; ++i)
         {
             vk::FramebufferCreateInfo info{};
-            info.renderPass    = handle_;
+            info.renderPass   = handle_;
             Array attachments = {VulkanContext::Get()->GetSwapChainImageViews()[i]->GetHandle()};
             info.setAttachments(attachments);
             info.width            = width_;
             info.height           = height_;
             info.layers           = 1;
             framebuffer_names_[i] = std::string("ImGuiFrameBuffer_") + std::to_string(i);
-            framebuffers_[i]      = New<Framebuffer>(info, framebuffer_names_[i].c_str());
+            framebuffers_[i]      = New<Framebuffer>(info, framebuffer_names_[i].Data());
         }
     }
 
@@ -109,16 +108,16 @@ public:
         }
     }
 
-    Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
+    [[nodiscard]] Framebuffer* GetFramebuffer(int index) const { return framebuffers_[index]; }
 
     vk::Framebuffer GetCurrentFramebufferHandle() override
     {
-        NEVER_ENTRY_WARNING()
+        NEVER_ENTRY_WARN(logcat::Platform_Window);
         return nullptr;
     }
 
     Array<Framebuffer*> framebuffers_;
-    Array<AnsiString>   framebuffer_names_;
+    Array<String>       framebuffer_names_;
 };
 
 class RealImGuiGraphicsPipeline : public ImguiGraphicsPipeline
@@ -150,7 +149,8 @@ public:
         CreateDescriptorPool();
         Info.DescriptorPool = descriptor_pool_;
 
-        command_pool_ = CommandPool::CreateUnique(context_->GetLogicalDevice(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
+        command_pool_ =
+            CommandPool::CreateUnique(context_->GetLogicalDevice().Get(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer, "ImGuiCommandPool");
 
         render_pass_ = New<ImGuiRenderPass>("ImGuiRenderPass");
         render_pass_->Initialize();
@@ -166,7 +166,7 @@ public:
     void Finialize()
     {
         if (descriptor_pool_ == nullptr) return;
-        command_pool_->Finialize();
+        command_pool_->DeInitialize();
         render_pass_->CleanFrameBuffer();
         Delete(render_pass_);
         render_pass_ = nullptr;
@@ -175,10 +175,7 @@ public:
         descriptor_pool_ = nullptr;
     }
 
-    ~RealImGuiGraphicsPipeline() override
-    {
-        Finialize();
-    }
+    ~RealImGuiGraphicsPipeline() override { Finialize(); }
 
 protected:
     void CreateDescriptorPool()
@@ -234,9 +231,9 @@ public:
 private:
     VulkanContext* context_;
 
-    vk::DescriptorPool      descriptor_pool_ = nullptr;
+    vk::DescriptorPool     descriptor_pool_ = nullptr;
     UniquePtr<CommandPool> command_pool_;
-    ImGuiRenderPass*        render_pass_ = nullptr;
+    ImGuiRenderPass*       render_pass_ = nullptr;
 };
 
 #endif
@@ -247,11 +244,7 @@ void GLFWWindowSurface::Initialize()
     {
         VkSurfaceKHR   surface{};
         const VkResult result = glfwCreateWindowSurface(mAttachedInstanceHandle->GetHandle(), mWindow, nullptr, &surface);
-        if (result != VK_SUCCESS)
-        {
-            String error_str = StringUtils::FromAnsiString(to_string(static_cast<vk::Result>(result)));
-            throw VulkanException(std::format(L"创建窗口表面失败: {}", error_str));
-        }
+        Assert(logcat::Platform_Window, result == VK_SUCCESS, "Failed to create window surface.");
         mSurfaceHandle = vk::SurfaceKHR(surface);
     }
 }
@@ -265,8 +258,8 @@ UniquePtr<GLFWWindowSurface> GlfwWindow::GetWindowSurface()
 Array<const char*> GlfwWindow::GetRequiredExtensions() const
 {
     Array<const char*> Extensions;
-    uint32_t            Count = 0;
-    const char**        Names = glfwGetRequiredInstanceExtensions(&Count);
+    uint32_t           Count = 0;
+    const char**       Names = glfwGetRequiredInstanceExtensions(&Count);
     for (uint32_t i = 0; i < Count; ++i)
     {
         Extensions.emplace_back(Names[i]);
@@ -281,27 +274,27 @@ Size2D GlfwWindow::GetWindowSize()
 }
 
 #ifdef USE_IMGUI
-void GlfwWindow::InitImGui(Ref<VulkanContext> InContext)
+void GlfwWindow::InitImGui(VulkanContext* InContext)
 {
     ImGui::CreateContext();
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForVulkan(window_handle_, true);
     imgui_graphics_pipeline_ = New<RealImGuiGraphicsPipeline>();
-    function::OnRequireImGuiGraphicsPipeline.Bind(this, &ThisClass::RegisterImGuiPipeline);
+    // function::OnRequireImGuiGraphicsPipeline.Bind(this, &ThisClass::RegisterImGuiPipeline);
     SetupImGuiFonts();
 }
 
 void GlfwWindow::SetupImGuiFonts()
 {
-    ImGuiIO&                 io                    = ImGui::GetIO();
-    Path                     default_font_path     = EDITOR_UI_FONT_PATH;
-    AnsiString               default_font_path_str = default_font_path.ToAbsoluteAnsiString();
+    ImGuiIO&                 io = ImGui::GetIO();
+    File                     default_font_path{EDITOR_UI_FONT_PATH};
+    String                   default_font_path_str = default_font_path.GetAbsolutePath();
     ImVector<ImWchar>        ranges;
     ImFontGlyphRangesBuilder builder;
     builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     builder.AddText(IMGUI_FONT_STR);
     builder.BuildRanges(&ranges);
-    io.Fonts->AddFontFromFileTTF(default_font_path_str.c_str(), WINDOW_SCALE(DEFAULT_FONT_SIZE), nullptr, ranges.Data);
+    io.Fonts->AddFontFromFileTTF(default_font_path_str.Data(), WINDOW_SCALE(DEFAULT_FONT_SIZE), nullptr, ranges.Data);
 
     // 字体图标
     static constexpr ImWchar icon_font_ranges[] = {ICON_MIN_MD, ICON_MAX_16_MD, 0};
@@ -310,9 +303,9 @@ void GlfwWindow::SetupImGuiFonts()
     icon_font_config.GlyphOffset      = {WINDOW_SCALE(0.f), WINDOW_SCALE(4.f)};
     icon_font_config.GlyphMinAdvanceX = WINDOW_SCALE(20.f);
 
-    Path       icon_font      = GOOGLE_MATERIAL_ICON_FONT_PATH;
-    AnsiString icon_font_ansi = icon_font.ToAbsoluteAnsiString();
-    io.Fonts->AddFontFromFileTTF(icon_font_ansi.c_str(), WINDOW_SCALE(DEFAULT_FONT_SIZE), &icon_font_config, icon_font_ranges);
+    File   icon_font{GOOGLE_MATERIAL_ICON_FONT_PATH};
+    String icon_font_ansi = icon_font.GetAbsolutePath();
+    io.Fonts->AddFontFromFileTTF(icon_font_ansi.Data(), WINDOW_SCALE(DEFAULT_FONT_SIZE), &icon_font_config, icon_font_ranges);
 
     ImGui_ImplVulkan_CreateFontsTexture();
 }
@@ -350,8 +343,7 @@ void GlfwWindow::Initialize()
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    const AnsiString Title = StringUtils::ToAnsiString(window_title_);
-    window_handle_         = glfwCreateWindow(width_, height_, Title.c_str(), nullptr, nullptr);
+    window_handle_ = glfwCreateWindow(width_, height_, window_title_.Data(), nullptr, nullptr);
 }
 
 void GlfwWindow::Finalize()

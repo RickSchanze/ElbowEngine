@@ -6,31 +6,30 @@
  */
 
 #include "CommandPool.h"
-
-#include "CoreGlobal.h"
+#include "CoreDef.h"
+#include "Log/Logger.h"
 #include "LogicalDevice.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
-#include "Utils/StringUtils.h"
 
+using namespace core;
 namespace rhi::vulkan
 {
-CommandPool::CommandPool(
-    Private, const Ref<UniquePtr<LogicalDevice>> device, const vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name
-) : device_(device)
+CommandPool::CommandPool(Private, LogicalDevice* device, const vk::CommandPoolCreateFlags pool_flags, const String& debug_name) : device_(device)
 {
     debug_name_ = debug_name;
     CreateCommandPool(pool_flags);
 }
 
-UniquePtr<CommandPool>
-CommandPool::CreateUnique(Ref<UniquePtr<LogicalDevice>> device, vk::CommandPoolCreateFlags pool_flags, const AnsiString& debug_name)
+UniquePtr<CommandPool> CommandPool::CreateUnique(LogicalDevice* device, vk::CommandPoolCreateFlags pool_flags, const String& debug_name)
 {
     return MakeUnique<CommandPool>(Private{}, device, pool_flags, debug_name);
 }
 
 void CommandPool::CreateCommandPool(const vk::CommandPoolCreateFlags pool_flags)
 {
-    const auto& device = device_.get();
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    const auto& device = device_;
 
     // 获取队列族索引
     const auto queue_family_indices = device->GetAssociatedPhysicalDevice().FindQueueFamilyIndices();
@@ -39,13 +38,14 @@ void CommandPool::CreateCommandPool(const vk::CommandPoolCreateFlags pool_flags)
     vk::CommandPoolCreateInfo command_pool_create_info{};
     command_pool_create_info.setFlags(pool_flags);
     command_pool_create_info.setQueueFamilyIndex(queue_family_indices.graphics_family.value());
-    pool_ = device->CreateCommandPool(command_pool_create_info, debug_name_.c_str());
+    pool_ = device->CreateCommandPool(command_pool_create_info, debug_name_.Data());
 }
 
 void CommandPool::CleanCommandPool()
 {
     if (!pool_) return;
-    const auto& Device = device_.get();
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    const auto& Device = device_;
     Device->GetHandle().destroyCommandPool(pool_);
     pool_ = nullptr;
 }
@@ -140,8 +140,11 @@ void CommandPool::TransitionImageLayout(
     }
     else
     {
-        LOG_CRITICAL_ANSI_CATEGORY(
-            Vulkan, "Unsupported image layout transition, old_layout: {}, new_layout: {}", vk::to_string(old_layout), vk::to_string(new_layout)
+        LOGGER.Error(
+            logcat::Platform_RHI_Vulkan,
+            "Unsupported image layout transition, old_layout: {}, new_layout: {}",
+            to_string(old_layout),
+            to_string(new_layout)
         );
     }
     single_cmd_.pipelineBarrier(source_stage, destination_stage, {}, {}, {}, {barrier});
@@ -238,7 +241,7 @@ bool CommandPool::GenerateMipmaps(
     return true;
 }
 
-void CommandPool::Finialize()
+void CommandPool::DeInitialize()
 {
     CleanCommandPool();
 }
@@ -261,18 +264,21 @@ void CommandPool::CopyImage(vk::Image src, vk::Image dst, const Array<vk::ImageC
 
 void CommandPool::ResetCommandPool() const
 {
-    device_.get()->GetHandle().resetCommandPool(pool_);
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    device_->GetHandle().resetCommandPool(pool_);
 }
 
 Array<vk::CommandBuffer>
-CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name, Array<AnsiString>* out_debug_names) const
+CommandPool::CreateCommandBuffers(const vk::CommandBufferAllocateInfo& alloc_info, const char* debug_name, Array<String>* out_debug_names) const
 {
-    return device_.get()->AllocateCommandBuffers(alloc_info, debug_name, out_debug_names);
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    return device_->AllocateCommandBuffers(alloc_info, debug_name, out_debug_names);
 }
 
 void CommandPool::DestroyCommandBuffers(const Array<vk::CommandBuffer>& command_buffers) const
 {
-    device_.get()->GetHandle().freeCommandBuffers(pool_, command_buffers);
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    device_->GetHandle().freeCommandBuffers(pool_, command_buffers);
 }
 
 void CommandPool::BeginSingleTimeCommands()
@@ -281,7 +287,8 @@ void CommandPool::BeginSingleTimeCommands()
     allocate_info.setCommandPool(pool_);
     allocate_info.setLevel(vk::CommandBufferLevel::ePrimary);
     allocate_info.setCommandBufferCount(1);
-    const auto                 device         = device_.get()->GetHandle();
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    const auto                 device         = device_->GetHandle();
     const vk::CommandBuffer    command_buffer = device.allocateCommandBuffers(allocate_info)[0];
     vk::CommandBufferBeginInfo begin_info{};
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -292,7 +299,8 @@ void CommandPool::BeginSingleTimeCommands()
 void CommandPool::EndSingleTimeCommands()
 {
     single_cmd_.end();
-    const auto&    Device       = device_.get();
+    Assert(logcat::Platform_RHI_Vulkan, device_ != nullptr, "Device is nullptr");
+    const auto&    Device       = device_;
     const auto     DeviceHandle = Device->GetHandle();
     vk::SubmitInfo SubmitInfo{};
     SubmitInfo.setCommandBuffers({single_cmd_});

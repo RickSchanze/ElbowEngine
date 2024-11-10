@@ -8,12 +8,17 @@
 #pragma once
 #include <chrono>
 #include <functional>
-#include <map>
-#include <ranges>
-#include <set>
-#include <unordered_map>
 #include <unordered_set>
-#include <utility>
+#include <unordered_map>
+#include <optional>
+#include <memory>
+#include <set>
+#include <map>
+#include <list>
+#include <vector>
+#include <array>
+#include <string_view>
+#include <tuple>
 
 namespace core
 {
@@ -109,8 +114,6 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
     return std::static_pointer_cast<T>(InSharedPtr);
 }
 
-// std::tuple -> Tuple
-#include <tuple>
 template<typename... T>
 using Tuple = std::tuple<T...>;
 }   // namespace core

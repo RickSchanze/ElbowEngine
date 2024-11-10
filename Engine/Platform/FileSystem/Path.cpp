@@ -30,6 +30,15 @@ static bool IsProjectPathValid(core::StringView path)
     return false;
 }
 
+core::String platform::Path::Combine(core::StringView left, core::StringView right)
+{
+    if (left.EndsWith("/"))
+    {
+        return left + right;
+    }
+    return left + "/" + right;
+}
+
 core::StringView platform::Path::GetProjectPath()
 {
     Assert(logcat::Platform_FileSystem, IsProjectPathValid(s_proj_path_), "Project path is not valid!");
@@ -81,11 +90,11 @@ bool platform::Path::HasInvalidCharacter(core::StringView path)
 
 bool platform::Path::IsExist(core::StringView path)
 {
-    return std::filesystem::exists(path.ToStdStringView());
+    return std::filesystem::exists(path.GetStdStringView());
 }
 
 bool platform::Path::IsFolder(core::StringView path)
 {
     if (!IsExist(path)) return false;
-    return std::filesystem::is_directory(path.ToStdStringView());
+    return std::filesystem::is_directory(path.GetStdStringView());
 }

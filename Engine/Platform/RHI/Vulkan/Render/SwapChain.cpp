@@ -19,18 +19,18 @@ core::UniquePtr<SwapChain> SwapChain::CreateUnique(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return core::MakeUnique<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
+    return core::MakeUnique<SwapChain>(swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
 core::SharedPtr<SwapChain> SwapChain::CreateShared(
     vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
 )
 {
-    return core::MakeShared<SwapChain>(ResourceProtected{}, swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
+    return core::MakeShared<SwapChain>(swapchain_handle, associated_logical_device, swapchain_format, swapchain_extent);
 }
 
 SwapChain::SwapChain(
-    ResourceProtected, const vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, const vk::Format swapchain_format,
+    const vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, const vk::Format swapchain_format,
     const vk::Extent2D swapchain_extent
 ) :
     swapchain_handle_(swapchain_handle), swapchain_image_format_(swapchain_format), swapchain_extent_(swapchain_extent),

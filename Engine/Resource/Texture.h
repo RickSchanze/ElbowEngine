@@ -7,11 +7,12 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+#include "FileSystem/File.h"
+#include "FileSystem/Path.h"
 #include "Interface/IResource.h"
 #include "Interface/IRHIResourceContainer.h"
-#include "Path/Path.h"
 #include "RHI/Vulkan/Resource/Image.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {
@@ -45,25 +46,24 @@ public:
     Texture() = default;
 
     static Texture* Create(
-        const Path& path, ETextureUsage usage = ETextureUsage::Diffuse, const rhi::vulkan::SamplerInfo& sampler_info = {},
+        const platform::File& path, ETextureUsage usage = ETextureUsage::Diffuse, const rhi::vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition = vk::ImageLayout::eShaderReadOnlyOptimal
     );
 
-    bool IsValid() const override { return rhi_texture_ != nullptr; }
+    [[nodiscard]] bool IsValid() const override { return rhi_texture_ != nullptr; }
 
     ~Texture() override;
 
-    int32_t       GetWidth() const { return width_; }
-    int32_t       GetHeight() const { return height_; }
-    int32_t       GetChannels() const { return channels_; }
-    uint8_t*      GetData() const { return data_; }
-    Path          GetPath() const override { return path_; }
-    ETextureUsage GetUsage() const { return usage_; }
+    [[nodiscard]] int32_t       GetWidth() const { return width_; }
+    [[nodiscard]] int32_t       GetHeight() const { return height_; }
+    [[nodiscard]] int32_t       GetChannels() const { return channels_; }
+    [[nodiscard]] uint8_t*      GetData() const { return data_; }
+    [[nodiscard]] ETextureUsage GetUsage() const { return usage_; }
 
-    bool IsDefaultLackTexture() const { return this == GetDefaultLackTexture(); }
+    [[nodiscard]] bool IsDefaultLackTexture() const { return this == GetDefaultLackTexture(); }
 
-    rhi::vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
-    rhi::vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
+    [[nodiscard]] rhi::vulkan::Sampler*   GetSampler() const { return rhi_sampler_; }
+    [[nodiscard]] rhi::vulkan::ImageView* GetTextureView() const { return rhi_texture_view_; }
 
     void Load() override;
 
@@ -82,21 +82,23 @@ public:
 
     static Texture* GetDefaultLackTexture();
 
-    vk::Image  GetLowLevelImage() const;
-    vk::Format GetLowLevelFormat() const;
+    [[nodiscard]] vk::Image  GetLowLevelImage() const;
+    [[nodiscard]] vk::Format GetLowLevelFormat() const;
 
     Texture(
-        const Path& path, ETextureUsage usage, const rhi::vulkan::SamplerInfo& sampler_info = {},
+        const platform::File& path, ETextureUsage usage, const rhi::vulkan::SamplerInfo& sampler_info = {},
         vk::ImageLayout init_transition_to_layout = vk::ImageLayout::eShaderReadOnlyOptimal
     );
+    [[nodiscard]] core::StringView GetRelativePath() const override { return path_.GetRelativePath(); }
+    [[nodiscard]] core::StringView GetAbsolutePath() const override { return path_.GetAbsolutePath(); }
 
 protected:
-    Path          path_;
-    int32_t       width_    = 0;
-    int32_t       height_   = 0;
-    int32_t       channels_ = 0;
-    uint8_t*      data_     = nullptr;
-    ETextureUsage usage_    = ETextureUsage::None;
+    platform::File path_;
+    int32_t        width_    = 0;
+    int32_t        height_   = 0;
+    int32_t        channels_ = 0;
+    uint8_t*       data_     = nullptr;
+    ETextureUsage  usage_    = ETextureUsage::None;
 
     rhi::vulkan::Texture*   rhi_texture_      = nullptr;
     rhi::vulkan::ImageView* rhi_texture_view_ = nullptr;
@@ -118,19 +120,19 @@ public:
      * @param sampler_info
      * @return
      */
-    static TextureCube* Create(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
+    static TextureCube* Create(const platform::File& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
 
-    explicit TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
+    explicit TextureCube(const platform::File& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info = {});
 
     void Load() override;
 
     // 创建的Texture*由ResourceManager管理
     ~TextureCube() override;
 
-    rhi::vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
+    [[nodiscard]] rhi::vulkan::ImageView* GetFaceView(int face) const { return views_[face]; }
 
 protected:
-    StaticArray<rhi::vulkan::ImageView*, 6> views_{};
-    StaticArray<AnsiString, 6> view_names_{};
+    core::StaticArray<rhi::vulkan::ImageView*, 6> views_{};
+    core::StaticArray<core::String, 6> view_names_{};
 };
 }

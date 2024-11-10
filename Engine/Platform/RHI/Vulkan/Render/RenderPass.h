@@ -13,13 +13,6 @@
 #include "Singleton/Singleton.h"
 #include "vulkan/vulkan.hpp"
 
-
-#define REGISTER_RENDER_PASS_REFL(full_qualified_class_name)                               \
-    RTTR_REGISTRATION                                                                      \
-    {                                                                                      \
-        rttr::registration::class_<full_qualified_class_name>(#full_qualified_class_name); \
-    }
-
 namespace core
 {
 struct Color;
@@ -165,20 +158,20 @@ public:
     template <typename T>
     static T* GetOrCreateRenderPass(uint32_t width = 0, uint32_t height = 0, core::StringView name = "");
 
-    RenderPass* GetRenderPass(const core::Type& t) { return render_passes_.contains(t) ? render_passes_[t] : nullptr; }
+    RenderPass* GetRenderPass(const core::Type* t) { return render_passes_.contains(t) ? render_passes_[t] : nullptr; }
 
     static void DestroyRenderPasses();
 
 private:
-    core::HashMap<core::Type, RenderPass*> render_passes_;
+    core::HashMap<const core::Type*, RenderPass*> render_passes_;
 };
 
 template <typename T>
 T* RenderPassManager::GetRenderPass()
 {
     static_assert(std::derived_from<T, RenderPass>, "T must derived from RenderPass");
-    core::Type t             = core::TypeOf<T>();
-    auto&      render_passes = Get()->render_passes_;
+    const core::Type* t             = core::TypeOf<T>();
+    auto&             render_passes = Get()->render_passes_;
     if (render_passes.contains(t))
     {
         return static_cast<T*>(render_passes[t]);

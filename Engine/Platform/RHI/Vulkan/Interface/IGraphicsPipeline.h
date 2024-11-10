@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "RHI/Vulkan/VulkanCommon.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {

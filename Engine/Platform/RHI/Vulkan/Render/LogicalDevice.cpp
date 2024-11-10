@@ -6,14 +6,12 @@
  */
 
 #include "LogicalDevice.h"
-
-#include "CoreGlobal.h"
+#include "PlatformLogcat.h"
 #include "RHI/Vulkan/Instance.h"
 #include "RHI/Vulkan/PhysicalDevice.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "RHI/Vulkan/VulkanStringify.h"
 #include "SwapChain.h"
-#include "Utils/StringUtils.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
@@ -23,23 +21,24 @@ LogicalDevice::~LogicalDevice()
     DeInitialize();
 }
 
-Array<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
+core::Array<vk::DescriptorSet> LogicalDevice::AllocateDescriptorSets(const vk::DescriptorSetAllocateInfo& alloc_info) const
 {
     return handle_.allocateDescriptorSets(alloc_info);
 }
 
-void LogicalDevice::FreeDescriptorSets(vk::DescriptorPool descriptor_pool, const Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array)
-    const
+void LogicalDevice::FreeDescriptorSets(
+    vk::DescriptorPool descriptor_pool, const core::Array<vk::DescriptorSet, std::allocator<vk::DescriptorSet>>& array
+) const
 {
     handle_.freeDescriptorSets(descriptor_pool, array);
 }
 
-UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device)
+core::UniquePtr<LogicalDevice> LogicalDevice::CreateUnique(vk::Device InDevice, PhysicalDevice* associated_physical_device)
 {
-    return MakeUnique<LogicalDevice>(ResourceProtected{}, InDevice, associated_physical_device);
+    return core::MakeUnique<LogicalDevice>(InDevice, associated_physical_device);
 }
 
-LogicalDevice::LogicalDevice(ResourceProtected, const vk::Device InDevice, const Ref<PhysicalDevice>& associated_physical_device) :
+LogicalDevice::LogicalDevice(const vk::Device InDevice, PhysicalDevice* associated_physical_device) :
     handle_(InDevice), associated_physical_device_(associated_physical_device)
 {
     InitializePFNs();
@@ -57,9 +56,12 @@ void LogicalDevice::Destroy()
     DeInitialize();
 }
 
-UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
+core::UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_image_count, int32_t width, int32_t height, bool log)
 {
-    const auto physical_device    = associated_physical_device_.get();
+    Assert(
+        logcat::Platform_RHI_Vulkan, associated_physical_device_ != nullptr, "LogicalDevice::CreateSwapChain: associated_physical_device_ is nullptr"
+    );
+    const auto physical_device    = *associated_physical_device_;
     const auto swap_chain_support = physical_device.QuerySwapChainSupport();
     const auto surface            = physical_device.GetAttachedInstance()->GetSurfaceHandle();
 
@@ -94,8 +96,8 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_im
     // clang-format on
 
     // 指定在多个队列族中使用交换链图像的方式
-    const auto                      indicies             = physical_device.FindQueueFamilyIndices();
-    const StaticArray<uint32_t, 2> queue_family_indices = {
+    const auto                           indicies             = physical_device.FindQueueFamilyIndices();
+    const core::StaticArray<uint32_t, 2> queue_family_indices = {
         indicies.graphics_family.value(),
         indicies.present_family.value(),
     };
@@ -115,8 +117,11 @@ UniquePtr<SwapChain> LogicalDevice::CreateSwapChain(const uint32_t swap_chain_im
     auto rtn = SwapChain::CreateUnique(handle_.createSwapchainKHR(swap_chain_info), this, surface_format.format, extent);
     if (log)
     {
-        LOG_INFO_CATEGORY(
-            VULKAN, L"交换链创建完成, 交换链图像数: {}, 范围: {}", swap_chain_image_count, VulkanStringify::ToString(vk::Extent2D(extent))
+        LOGGER.Info(
+            logcat::Platform_RHI_Vulkan,
+            "Swapchain created with image count = {}, extent = {}",
+            swap_chain_image_count,
+            VulkanStringify::ToString(vk::Extent2D(extent))
         );
     }
     return Move(rtn);
@@ -173,13 +178,13 @@ void LogicalDevice::DestroyShaderModule(const vk::ShaderModule module) const
     handle_.destroyShaderModule(module);
 }
 
-vk::PipelineLayout LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const AnsiString& debug_name) const
+vk::PipelineLayout LogicalDevice::CreatePipelineLayout(const vk::PipelineLayoutCreateInfo& create_info, const core::String& debug_name) const
 {
     auto rtn = handle_.createPipelineLayout(create_info);
 
-    if (!debug_name.empty())
+    if (!debug_name.IsEmpty())
     {
-        SetPipelineLayoutDebugName(rtn, debug_name.c_str());
+        SetPipelineLayoutDebugName(rtn, debug_name.Data());
     }
 
     return rtn;
@@ -202,7 +207,7 @@ void LogicalDevice::UnmapMemory(const vk::DeviceMemory InMemory) const
     handle_.unmapMemory(InMemory);
 }
 
-void LogicalDevice::FlushMappedMemory(const Array<vk::MappedMemoryRange>& ranges) const
+void LogicalDevice::FlushMappedMemory(const core::Array<vk::MappedMemoryRange>& ranges) const
 {
     handle_.flushMappedMemoryRanges(ranges);
 }
@@ -217,8 +222,8 @@ void LogicalDevice::ResetFences(const vk::ArrayProxy<vk::Fence> fences) const
     handle_.resetFences(fences);
 }
 
-Array<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
-    const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name, Array<AnsiString>* out_debug_names
+core::Array<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
+    const vk::CommandBufferAllocateInfo& allocate_info, const char* debug_name, core::Array<core::String>* out_debug_names
 ) const
 {
     auto rtn = handle_.allocateCommandBuffers(allocate_info);
@@ -226,11 +231,11 @@ Array<vk::CommandBuffer> LogicalDevice::AllocateCommandBuffers(
     if (debug_name != nullptr && out_debug_names != nullptr)
     {
         out_debug_names->resize(rtn.size());
-        AnsiString debug_str = debug_name;
+        core::String debug_str = debug_name;
         for (int i = 0; i < rtn.size(); i++)
         {
             (*out_debug_names)[i] = debug_str + "_" + std::to_string(i);
-            SetCommandBufferDebugName(rtn[i], out_debug_names->back().c_str());
+            SetCommandBufferDebugName(rtn[i], out_debug_names->back().Data());
         }
     }
 
@@ -294,22 +299,16 @@ void LogicalDevice::DestroyCommandPool(vk::CommandPool command_pool) const
     handle_.destroyCommandPool(command_pool);
 }
 
-vk::Pipeline
-LogicalDevice::CreateGraphicsPipeline(const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const AnsiString& debug_name) const
+vk::Pipeline LogicalDevice::CreateGraphicsPipeline(
+    const vk::PipelineCache& cache, const vk::GraphicsPipelineCreateInfo& info, const core::String& debug_name
+) const
 {
     auto res = handle_.createGraphicsPipeline(cache, info);
-    if (res.result != vk::Result::eSuccess)
-    {
-#if ELBOW_DEBUG
-        throw VulkanException(std::format(L"管线 {} 创建失败", StringUtils::FromAnsiString(debug_name)));
-#else
-        throw VulkanException(L"管线创建失败");
-#endif
-    }
+    Assert(logcat::Platform_RHI_Vulkan, res.result == vk::Result::eSuccess, "Failed to create graphics pipeline {}", debug_name);
 
-    if (!debug_name.empty())
+    if (!debug_name.IsEmpty())
     {
-        SetPipelineDebugName(res.value, debug_name.c_str());
+        SetPipelineDebugName(res.value, debug_name.Data());
     }
 
     return res.value;
@@ -324,14 +323,14 @@ void LogicalDevice::SetObjectDebugName(const vk::DebugUtilsObjectNameInfoEXT& na
 }
 
 #define SET_DEBUG_NAME_BODY(obj_type_enum, obj_type)                                        \
-if (ValidationLayer::sEnableValidationLayer)                                            \
-{                                                                                       \
-vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
-name_info.pObjectName  = name;                                                      \
-name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
-name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
-SetObjectDebugName(name_info);                                                      \
-}
+    if (ValidationLayer::sEnableValidationLayer)                                            \
+    {                                                                                       \
+        vk::DebugUtilsObjectNameInfoEXT name_info;                                          \
+        name_info.pObjectName  = name;                                                      \
+        name_info.objectType   = vk::ObjectType::obj_type_enum;                             \
+        name_info.objectHandle = reinterpret_cast<uint64_t>(static_cast<obj_type>(handle)); \
+        SetObjectDebugName(name_info);                                                      \
+    }
 
 void LogicalDevice::SetCommandBufferDebugName(const vk::CommandBuffer handle, const char* name) const
 {

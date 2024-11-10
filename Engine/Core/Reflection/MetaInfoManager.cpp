@@ -12,6 +12,8 @@
 #include "CoreGlobal.h"
 #include "Reflection.h"
 
+#include <ranges>
+
 namespace core
 {
 #define REGISTER_ATOMIC_TYPE(tname)                               \

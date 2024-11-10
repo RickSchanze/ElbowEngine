@@ -8,6 +8,7 @@
 #pragma once
 #include "fmt/format.h"
 #include <ostream>
+#include <regex>
 #include <string>
 #include <utility>
 
@@ -40,10 +41,11 @@ public:
 
     // 此字符串是否包含任意一个o中的字符
     [[nodiscard]] bool ContainsAny(const StringView& o, bool use_utf8 = false) const;
+    [[nodiscard]] bool EndsWith(const StringView& o) const;
 
-    [[nodiscard]] std::string_view ToStdStringView() const { return {str_, (size_t)length_}; }
+    [[nodiscard]] std::string_view GetStdStringView() const { return {str_, (size_t)length_}; }
 
-    core::String operator+(const StringView& o) const;
+    String operator+(const StringView& o) const;
 
 private:
     const char* str_;
@@ -64,6 +66,8 @@ public:
 
     operator std::string() const { return str_; }
     constexpr const char* operator*() const { return str_.c_str(); }
+
+    static String FromInt(const int32_t i) { return std::to_string(i); }
 
     /**
      * 返回Unicode字符串长度
@@ -86,16 +90,24 @@ public:
 
     String& operator+=(const String& str);
 
-    auto operator<=>(const String& o) const { return str_ <=> o.str_; }
+    bool operator==(const String&) const;
 
-    bool operator==(const StringView& o) const;
+    bool EqualsStringView(const StringView& str) const;
 
     [[nodiscard]] bool Contains(StringView str) const;
 
-    char operator[](int32_t i) const { return str_[i]; }
+    char& operator[](int32_t i) { return str_[i]; }
+    char  operator[](int32_t i) const { return str_[i]; }
 
     [[nodiscard]] bool IsEmpty() const { return str_.empty(); }
     [[nodiscard]] bool IsPureSpace() const;
+
+    void Clear() { str_.clear(); }
+    void Reserve(int32_t size) { str_.reserve(size); }
+
+    [[nodiscard]] uint8_t  At(int32_t i) const { return str_.at(i); }
+    [[nodiscard]] uint32_t AtUnicode(int32_t i) const;
+
 
 private:
     std::string str_;

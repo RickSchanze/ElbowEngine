@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "CoreGlobal.h"
+#include "Base/Base.h"
 
 namespace rhi
 {
@@ -33,7 +33,7 @@ enum class TextureFormat
     case rhi::TextureFormat::format: return #format
 
 template<>
-inline const char* GetEnumString<rhi::TextureFormat>(rhi::TextureFormat format)
+inline core::StringView GetEnumString<rhi::TextureFormat>(rhi::TextureFormat format)
 {
     switch (format)
     {

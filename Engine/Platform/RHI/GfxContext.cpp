@@ -5,8 +5,10 @@
  * @brief 
  */
 
-#include "CoreGlobal.h"
 #include "GfxContext.h"
+#include "CoreGlobal.h"
+#include "CoreDef.h"
+#include "PlatformLogcat.h"
 
 static rhi::GfxContext* g_context;
 
@@ -14,7 +16,7 @@ namespace rhi
 {
 GfxContext& GetGfxContext()
 {
-    Assert(RHI, g_context != nullptr, L"GfxContext为空");
+    Assert(logcat::Platform_RHI, g_context != nullptr, "GfxContext is null");
     return *g_context;
 }
 

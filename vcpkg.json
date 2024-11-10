@@ -34,9 +34,6 @@
     "name" : "vulkan",
     "version>=" : "2023-12-17"
   }, {
-    "name" : "openssl",
-    "version>=" : "3.3.0#1"
-  }, {
     "name" : "tinyexr",
     "version>=" : "1.0.8"
   }, {
@@ -51,5 +48,8 @@
   }, {
     "name" : "gtest",
     "version>=" : "1.15.2"
-  } ]
+  }, {
+    "name" : "xxhash",
+    "version>=" : "0.8.2"
+  }]
 }

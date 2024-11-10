@@ -6,7 +6,6 @@
  */
 
 #include "ValidationLayer.h"
-
 #include "CoreGlobal.h"
 #include "Instance.h"
 #include "PlatformLogcat.h"

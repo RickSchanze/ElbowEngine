@@ -11,27 +11,26 @@
 #include "stb_image.h"
 
 #include "CoreGlobal.h"
+#include "Logcat.h"
 #include "PlatformEvents.h"
-#include "ResourceConfig.h"
 #include "ResourceManager.h"
 #include "RHI/Vulkan/VulkanContext.h"
 
+#include "FileSystem/Folder.h"
 #include "RHI/Vulkan/Render/CommandPool.h"
-#include "RHI/Vulkan/Resource/Buffer.h"
 #include "tinyexr.h"
-#include "Utils/PathUtils.h"
 
 using namespace rhi::vulkan;
 
 namespace res
 {
 
-Texture::Texture(const Path& path, const ETextureUsage usage, const SamplerInfo& sampler_info, const vk::ImageLayout t) :
+Texture::Texture(const platform::File& path, const ETextureUsage usage, const SamplerInfo& sampler_info, const vk::ImageLayout t) :
     path_(path), usage_(usage), sampler_info_(sampler_info), init_transition_to_layout_(t)
 {
 }
 
-Texture* Texture::Create(const Path& path, ETextureUsage usage, const SamplerInfo& sampler_info, vk::ImageLayout init_transition)
+Texture* Texture::Create(const platform::File& path, ETextureUsage usage, const SamplerInfo& sampler_info, vk::ImageLayout init_transition)
 {
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
@@ -61,15 +60,15 @@ void Texture::Load()
 {
     if (!path_.IsExist())
     {
-        LOG_ERROR_CATEGORY(Resource, L"{}不存在", path_.ToAbsoluteString());
+        LOGGER.Error(logcat::Resource, "Resource {} does not exist", path_.GetRelativePath());
         return;
     }
-    const AnsiString PathStr = path_.ToAbsoluteAnsiString();
+    const core::String PathStr = path_.GetAbsolutePath();
 
-    data_ = stbi_load(PathStr.c_str(), &width_, &height_, &channels_, STBI_rgb_alpha);
+    data_ = stbi_load(PathStr.Data(), &width_, &height_, &channels_, STBI_rgb_alpha);
     if (!data_)
     {
-        LOG_ERROR_CATEGORY(Resource, L"加载纹理{}失败", path_.ToAbsoluteString());
+        LOGGER.Error(logcat::Resource, "Failed to load texture {}", PathStr);
         return;
     }
 
@@ -79,7 +78,7 @@ void Texture::Load()
     texture_info.width          = width_;
     texture_info.image_type     = vk::ImageType::e2D;
     texture_info.usage          = vk::ImageUsageFlagBits::eSampled;
-    texture_info.name           = path_.ToRelativeAnsiString();
+    texture_info.name           = path_.GetRelativePath();
     texture_info.initial_layout = init_transition_to_layout_;
     rhi_texture_                = New<rhi::vulkan::Texture>(texture_info, data_);
     rhi_texture_->Initialize();
@@ -111,7 +110,8 @@ rhi::vulkan::Texture* Texture::GetRHIResource()
 
 Texture* Texture::GetDefaultLackTexture()
 {
-    return Create(gResourceConfig.default_lack_texture_path);
+    // TODO: ResourceConfig
+    return nullptr;
 }
 
 vk::Image Texture::GetLowLevelImage() const
@@ -124,7 +124,7 @@ vk::Format Texture::GetLowLevelFormat() const
     return rhi_texture_->GetFormat();
 }
 
-TextureCube* TextureCube::Create(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
+TextureCube* TextureCube::Create(const platform::File& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
 {
     // 所有的Load操作都发生在没有注册的情况下
     // 因为只能走Create创建 这就保证了已经加载的资源不会走这个函数重新加载
@@ -140,7 +140,7 @@ TextureCube* TextureCube::Create(const Path& cube_folder, const rhi::vulkan::Sam
     return cached_texture;
 }
 
-TextureCube::TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
+TextureCube::TextureCube(const platform::File& cube_folder, const rhi::vulkan::SamplerInfo& sampler_info)
 {
     path_         = cube_folder;
     sampler_info_ = sampler_info;
@@ -150,36 +150,30 @@ TextureCube::TextureCube(const Path& cube_folder, const rhi::vulkan::SamplerInfo
 void TextureCube::Load()
 {
     // 找到所有需要加载的资产
-    StaticArray<Texture*, 6> textures;
-    Array<Path>              skybox_textures = PathUtils::FilterPath(
-        path_,
-        [](const Path& p) {
-            const String name = p.GetFileName();
-            if (name.contains(L"_Left") || name.contains(L"_Right") || name.contains(L"_Top") || name.contains(L"_Bottom") ||
-                name.contains(L"_Front") || name.contains(L"_Back"))
-            {
-                return true;
-            }
-            return false;
-        },
-        EPathFilterType::FilterFile,
-        false
-    );
+    core::StaticArray<Texture*, 6> textures;
+    core::Array<core::String>      skybox_textures = platform::Folder::ListFilesLambda(path_.GetAbsolutePath(), [](core::StringView p) {
+        const core::String name = p;
+        if (name.Contains("_Left") || name.Contains("_Right") || name.Contains("_Top") || name.Contains("_Bottom") || name.Contains("_Front") ||
+            name.Contains("_Back"))
+        {
+            return true;
+        }
+        return false;
+    });
     if (skybox_textures.size() != 6)
     {
-        LOG_WARNING_CATEGORY(TextureCube, L"加载立方体贴图 {} 时找到了数量不符合要求的贴图", path_.ToRelativeString());
+        LOGGER.Warn(logcat::Resource, "Cubemap texture {} count mismatch, requires 6, gets {}", path_.GetRelativePath(), skybox_textures.size());
     }
 
 
-    auto LoadCubeFace = [&skybox_textures, this, &textures](const String& subfix, int index) -> bool {
-        auto path = ContainerUtils::First(skybox_textures, [&subfix, &textures](const auto& p) { return p.GetFileName().contains(subfix); });
-        if (path)
+    auto LoadCubeFace = [&skybox_textures, this, &textures](const core::String& subfix, int index) -> bool {
+        if (auto path = ContainerUtils::First(skybox_textures, [&subfix, &textures](const core::String& p) { return p.Contains(subfix); }))
         {
             textures[index] = Texture::Create(*path, ETextureUsage::SkyboxFace, sampler_info_, vk::ImageLayout::eTransferSrcOptimal);
         }
         else
         {
-            LOG_ERROR_CATEGORY(TextureCube, L"加载立方体贴图 {} 时未找到 {} 贴图", path_.ToRelativeString(), subfix);
+            LOGGER.Error(logcat::Resource, "Cubemap texture {} not found {}", path_.GetRelativePath(), subfix);
             return false;
         }
         if (width_ == 0 || height_ == 0)
@@ -188,7 +182,13 @@ void TextureCube::Load()
             height_ = textures[index]->GetHeight();
             if (width_ != height_)
             {
-                LOG_ERROR_CATEGORY(TextureCube, L"{}: 立方体贴图的六个面的宽高必须相等", path_.ToRelativeString());
+                LOGGER.Error(
+                    logcat::Resource,
+                    "Cubemap texture {} width and height must be equal, now width = {}, height = {}",
+                    path_.GetRelativePath(),
+                    width_,
+                    height_
+                );
                 return false;
             }
         }
@@ -196,14 +196,22 @@ void TextureCube::Load()
         {
             if (textures[index]->GetWidth() != width_ || textures[index]->GetHeight() != height_)
             {
-                LOG_ERROR_CATEGORY(TextureCube, L"{}: 立方体贴图的六个面的宽高必须一致", path_.ToRelativeString());
+                LOGGER.Error(
+                    logcat::Resource,
+                    "Cubemap texture {} width and height must be equal, now width = {}, height = {}, required width = {}, height = {}",
+                    path_.GetRelativePath(),
+                    textures[index]->GetWidth(),
+                    textures[index]->GetHeight(),
+                    width_,
+                    height_
+                );
                 return false;
             }
         }
         return true;
     };
     // +x
-    if (!LoadCubeFace(L"_Right", 0))
+    if (!LoadCubeFace("_Right", 0))
     {
         if (textures[0])
         {
@@ -213,7 +221,7 @@ void TextureCube::Load()
         return;
     }
     // -x
-    if (!LoadCubeFace(L"_Left", 1))
+    if (!LoadCubeFace("_Left", 1))
     {
         if (textures[1])
         {
@@ -223,7 +231,7 @@ void TextureCube::Load()
         return;
     }
     // +y
-    if (!LoadCubeFace(L"_Top", 2))
+    if (!LoadCubeFace("_Top", 2))
     {
         if (textures[2])
         {
@@ -233,7 +241,7 @@ void TextureCube::Load()
         return;
     }
     // -y
-    if (!LoadCubeFace(L"_Bottom", 3))
+    if (!LoadCubeFace("_Bottom", 3))
     {
         if (textures[3])
         {
@@ -243,7 +251,7 @@ void TextureCube::Load()
         return;
     }
     // +z
-    if (!LoadCubeFace(L"_Front", 4))
+    if (!LoadCubeFace("_Front", 4))
     {
         if (textures[4])
         {
@@ -253,7 +261,7 @@ void TextureCube::Load()
         return;
     }
     // -z
-    if (!LoadCubeFace(L"_Back", 5))
+    if (!LoadCubeFace("_Back", 5))
     {
         if (textures[5])
         {
@@ -276,7 +284,7 @@ void TextureCube::Load()
     image_info.height       = height_;
     image_info.depth        = 1;
     image_info.create_flags = vk::ImageCreateFlagBits::eCubeCompatible;
-    image_info.name         = GetPath().ToRelativeAnsiString();
+    image_info.name         = path_.GetRelativePath();
 
     rhi_texture_ = New<rhi::vulkan::Texture>(image_info);
     rhi_texture_->Initialize();
@@ -297,7 +305,7 @@ void TextureCube::Load()
         copy.dstSubresource.baseArrayLayer = i;
         copy.dstSubresource.layerCount     = 1;
         copy.dstOffset                     = {{0, 0, 0}};
-        copy.extent                        = {{(uint32_t)width_, (uint32_t)height_, 1}};
+        copy.extent                        = {{static_cast<uint32_t>(width_), static_cast<uint32_t>(height_), 1}};
         pool->CopyImage(textures[i]->GetLowLevelImage(), GetLowLevelImage(), {copy});
         pool->TransitionImageLayout(
             GetLowLevelImage(), GetLowLevelFormat(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 1, i
@@ -319,13 +327,13 @@ void TextureCube::Load()
     for (int i = 0; i < 6; i++)
     {
         view_create_info.subresourceRange.baseArrayLayer = i;
-        view_names_[i]                                   = image_info.name + std::to_string(i);
-        views_[i] = New<ImageView>(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_names_[i].c_str());
+        view_names_[i]                                   = image_info.name + core::String::FromInt(i);
+        views_[i] = New<ImageView>(VulkanContext::Get()->GetLogicalDevice()->GetHandle().createImageView(view_create_info), view_names_[i].Data());
     }
     // 释放ResourceManager持有的Texture资源, 因为它们现在的Layout是TransferSrc
     for (int i = 0; i < 6; i++)
     {
-        ResourceManager::Get()->DestroyResource(textures[i]->GetPath());
+        ResourceManager::Get()->DestroyResource(platform::File(textures[i]->GetRelativePath()));
     }
 }
 
@@ -341,32 +349,7 @@ TextureCube::~TextureCube()
 
 static void Load_Default_Engine_Texture_Resource(Texture** out_texture, ImageView** out_texture_view)
 {
-    // 引擎默认纹理资产的生命周期包含整个程序运行期间
-    if (gResourceConfig.bInitialized)
-    {
-        auto* DefaultLackTexture = res::Texture::Create(gResourceConfig.default_lack_texture_path);
-        if (DefaultLackTexture)
-        {
-            *out_texture                                          = DefaultLackTexture->GetRHIResource();
-            *out_texture_view                                     = DefaultLackTexture->GetTextureView();
-            static const char* default_lack_image_debug_name      = "DefaultLackImage";
-            static const char* default_lack_image_debug_view_name = "DefaultLackImageView";
-            VulkanContext::Get()->GetLogicalDevice()->SetImageDebugName(
-                DefaultLackTexture->GetRHIResource()->GetHandle(), default_lack_image_debug_name
-            );
-            VulkanContext::Get()->GetLogicalDevice()->SetImageViewDebugName(
-                DefaultLackTexture->GetTextureView()->GetHandle(), default_lack_image_debug_view_name
-            );
-        }
-        else
-        {
-            throw Exception(std::format(L"加载默认资产{}失败", gResourceConfig.default_lack_texture_path.ToAbsoluteString()));
-        }
-    }
-    else
-    {
-        throw Exception(L"加载引擎默认资产失败，请确保引擎配置文件已正确设置");
-    }
+    // TODO: DO load
 }
 
 struct RegisterOnEngineDefaultTextureLoad

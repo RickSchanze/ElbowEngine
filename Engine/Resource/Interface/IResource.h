@@ -6,13 +6,15 @@
  */
 
 #pragma once
-#include "Path/Path.h"
+#include "Base/EString.h"
 
-class IResource {
+class IResource
+{
 public:
     virtual ~IResource() = default;
 
-    virtual Path GetPath() const = 0;
-    virtual bool IsValid() const = 0;
-    virtual void Load() = 0;
+    [[nodiscard]] virtual core::StringView GetRelativePath() const = 0;
+    [[nodiscard]] virtual core::StringView GetAbsolutePath() const = 0;
+    [[nodiscard]] virtual bool             IsValid() const         = 0;
+    virtual void                           Load()                  = 0;
 };

@@ -8,14 +8,11 @@
 #pragma once
 
 // 此头文件不能包含Reflection.h
-#include "Base/Base.h"
 #include "Base/CoreTypeDef.h"
 #include "Base/Ref.h"
 #include "CoreGlobal.h"
 #include "Log/CoreLogCategory.h"
 #include "MetaInfoManager.h"
-
-#include <expected>
 
 namespace core
 {

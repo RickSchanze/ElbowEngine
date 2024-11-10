@@ -5,7 +5,6 @@
 #define GLFW_INCLUDE_VULKAN
 // #include "EngineApplication.h"
 // #include "Component/Camera.h"
-#include "A.h"
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "d3d12.h"
@@ -25,13 +24,6 @@ int main()
     SetConsoleOutputCP(65001);
     LOGGER.Info(logcat::Test, "this");
     core::UniquePtr<core::Archive> ar = New<core::YamlArchive>();
-    ar->BeginSerialize();
-    TestArchiveSerialization       test;
-    core::Any                      a = test;
-    *ar << a;
-    ar->EndSerialize();
-    std::ofstream out("test.yaml");
-    out << ar->ToString();
     system("pause");
     // try
     // {

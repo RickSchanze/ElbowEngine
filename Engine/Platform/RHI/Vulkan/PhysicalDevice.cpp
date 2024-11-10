@@ -140,7 +140,7 @@ uint32_t PhysicalDevice::FindMemoryType(const uint32_t type_filter, const vk::Me
 core::UniquePtr<LogicalDevice> PhysicalDevice::CreateLogicalDeviceUnique()
 {
     const auto LogicalDeviceHandle = CreateLogicalDeviceHandle();
-    return LogicalDevice::CreateUnique(LogicalDeviceHandle, *this);
+    return LogicalDevice::CreateUnique(LogicalDeviceHandle, this);
 }
 
 vk::Device PhysicalDevice::CreateLogicalDeviceHandle() const

@@ -74,6 +74,9 @@ add_library(Platform
         FileSystem/File.cpp
         FileSystem/File.h
         PlatformLogcat.h
+        RHI/Shader.cpp
+        RHI/Shader.h
+        RHI/IRHIResource.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
@@ -86,7 +89,7 @@ target_link_directories(${PROJECT_NAME} PRIVATE ${SLANG_LIB})
 
 add_library(Engine::Platform ALIAS Platform)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core Engine::Function)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)

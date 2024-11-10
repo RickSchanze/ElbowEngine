@@ -9,7 +9,7 @@ add_library(${PROJECT_NAME}
         ResourceManager.cpp
         Interface/IResource.h
         Interface/IRHIResourceContainer.h
-        ResourceConfig.h
+        Logcat.h
 )
 
 add_library(Engine::Resource ALIAS ${PROJECT_NAME})

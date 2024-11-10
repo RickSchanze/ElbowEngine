@@ -6,8 +6,8 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
 #include "Interface/IRHIResource.h"
-
 #include <vulkan/vulkan.hpp>
 
 namespace rhi::vulkan

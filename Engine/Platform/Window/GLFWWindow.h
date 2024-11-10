@@ -6,10 +6,8 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "WindowCommon.h"
-
 #define GLFW_INCLUDE_VULKAN
+#include "CoreGlobal.h"
 #include "GLFW/glfw3.h"
 #include "Math/MathTypes.h"
 #include "RHI/Vulkan/Instance.h"
@@ -49,9 +47,9 @@ public:
 
     [[nodiscard]] bool IsValid() const { return window_handle_ != nullptr; }
 
-    core::UniquePtr<GLFWWindowSurface> GetWindowSurface();
-    core::Array<const char*>           GetRequiredExtensions() const;
-    GLFWwindow*                        GetGLFWWindowHandle() const { return window_handle_; }
+    core::UniquePtr<GLFWWindowSurface>     GetWindowSurface();
+    [[nodiscard]] core::Array<const char*> GetRequiredExtensions() const;
+    [[nodiscard]] GLFWwindow*              GetGLFWWindowHandle() const { return window_handle_; }
 
     core::Size2D GetWindowSize();
 
@@ -77,8 +75,8 @@ public:
 
 
 private:
-    GLFWwindow* window_handle_ = nullptr;
-    String      window_title_;
+    GLFWwindow*  window_handle_ = nullptr;
+    core::String window_title_;
 
     RealImGuiGraphicsPipeline* imgui_graphics_pipeline_ = nullptr;
 

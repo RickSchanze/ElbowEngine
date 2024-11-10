@@ -25,8 +25,7 @@ public:
     );
 
     explicit SwapChain(
-        ResourceProtected, vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format,
-        vk::Extent2D swapchain_extent
+        vk::SwapchainKHR swapchain_handle, LogicalDevice* associated_logical_device, vk::Format swapchain_format, vk::Extent2D swapchain_extent
     );
 
     ~SwapChain() override;
@@ -58,11 +57,11 @@ public:
     void Destroy() override;
 
 private:
-    vk::SwapchainKHR                   swapchain_handle_;
+    vk::SwapchainKHR                             swapchain_handle_;
     core::Array<core::SharedPtr<SwapChainImage>> swap_chain_images_;
     core::Array<core::SharedPtr<ImageView>>      swapchain_image_views_;
-    vk::Format                         swapchain_image_format_;
-    vk::Extent2D                       swapchain_extent_;
+    vk::Format                                   swapchain_image_format_;
+    vk::Extent2D                                 swapchain_extent_;
 
     LogicalDevice* associated_logical_device_ = nullptr;
 };

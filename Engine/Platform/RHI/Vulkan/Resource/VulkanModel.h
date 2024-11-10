@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
 #include "Base/UniquePtr.h"
 #include "Misc/Vertex.h"
 #include "RHI/Vulkan/Interface/IRHIResource.h"

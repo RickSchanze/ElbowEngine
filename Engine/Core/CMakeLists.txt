@@ -9,8 +9,6 @@ add_library(${PROJECT_NAME}
         Object/Object.cpp
         Log/Logger.h
         Log/Logger.cpp
-        Utils/ReflUtils.h
-        Utils/ReflUtils.cpp
         Utils/ContainerUtils.h
         Utils/ContainerUtils.cpp
         Utils/MemoryUtils.cpp
@@ -82,6 +80,8 @@ add_library(${PROJECT_NAME}
         Reflection/Any.cpp
         Reflection/CtorManager.cpp
         Reflection/CtorManager.h
+        Utils/HashUtils.cpp
+        Utils/HashUtils.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -98,10 +98,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 find_package(cpptrace CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
 
-find_package(OpenSSL REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
-
 find_package(directx-headers CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
 
@@ -111,3 +107,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
 
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 target_link_libraries(${PROJECT_NAME}  PRIVATE ICU::uc ICU::i18n)
+
+find_package(xxHash CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME}  PRIVATE xxHash::xxhash)

@@ -28,7 +28,7 @@ int32_t String::Length() const
     return static_cast<int32_t>(str_.size());
 }
 
-bool String::operator==(const StringView& o) const
+bool String::EqualsStringView(const StringView& o) const
 {
     if (Length() != o.Length()) return false;
     int32_t length = ::std::min(Length(), o.Length());
@@ -53,6 +53,19 @@ String& String::operator+=(const String& str)
 {
     str_ += str.str_;
     return *this;
+}
+
+bool String::operator==(const String& o) const
+{
+    return str_ == o.str_;
+}
+
+uint32_t String::AtUnicode(int32_t i) const
+{
+    const icu::UnicodeString str(this->str_.c_str());
+    if (i >= str.length()) return 0;
+    if (i < 0) return 0;
+    return str.char32At(i);
 }
 
 ::std::ostream& operator<<(::std::ostream& os, const String& str)
@@ -110,6 +123,11 @@ bool StringView::ContainsAny(const StringView& o, bool use_utf8) const
         }
         return false;
     }
+}
+
+bool StringView::EndsWith(const StringView& o) const
+{
+    return Length() >= o.Length() && ::std::string_view(str_ + Length() - o.Length(), o.Length()) == ::std::string_view(o.Data(), o.Length());
 }
 
 String StringView::operator+(const StringView& o) const

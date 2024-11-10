@@ -6,17 +6,14 @@
  */
 
 #include "GraphicsPipeline.h"
-
-#include "Component/Camera.h"
 #include "CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RenderPass.h"
 #include "RHI/Vulkan/Resource/VulkanModel.h"
 #include "RHI/Vulkan/VulkanContext.h"
 #include "ShaderProgram.h"
-#include "Utils/StringUtils.h"
 
-#include <ranges>
+using namespace core;
 
 namespace rhi::vulkan
 {
@@ -112,20 +109,18 @@ void GraphicsPipeline::CreatePipeline()
 {
     VulkanContext& context = *VulkanContext::Get();
     /************************* 配置RenderPass ************************/
-    if (pipeline_info_.render_pass == nullptr)
-    {
-        // TODO: 加载引擎默认RenderPass
-        LOG_CRITICAL_CATEGORY(Vulkan.RenderPass, L"RenderPass不能为空");
-    }
+    Assert(logcat::Platform_RHI_Vulkan, pipeline_info_.render_pass != nullptr, "Render pass is nullptr");
     render_pass_ = pipeline_info_.render_pass;
     render_pass_->Initialize();
     /************************* 配置RenderPass结束 ************************/
 
     /************************* 配置Shader ************************/
-    if (pipeline_info_.shader_program == nullptr)
-    {
-        LOG_CRITICAL_CATEGORY(Vulkan, L"创建管线: {} 失败, 传入ShaderProgram为空", StringUtils::FromAnsiString(pipeline_info_.name_));
-    }
+    Assert(
+        logcat::Platform_RHI_Vulkan,
+        pipeline_info_.shader_program != nullptr,
+        "ShaderProgram is nullptr when create pipeline {}",
+        pipeline_info_.name_
+    );
 
     // TODO: Shader管理器
     shader_program_ = pipeline_info_.shader_program;
@@ -244,7 +239,7 @@ void GraphicsPipeline::CreatePipeline()
 
     // 指定管线布局(uniform)
     vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
-    StaticArray                 layout               = {shader_program_->GetDescriptorSetLayout()};
+    StaticArray                  layout               = {shader_program_->GetDescriptorSetLayout()};
     pipeline_layout_info.setSetLayouts(layout);
 
     Array<vk::PushConstantRange> push_constant_ranges;
@@ -269,7 +264,7 @@ void GraphicsPipeline::CreatePipeline()
 
     pipeline_layout_info.setPushConstantRanges(push_constant_ranges);
 
-    if (!pipeline_info_.name_.empty())
+    if (!pipeline_info_.name_.IsEmpty())
     {
         pipeline_info_.pipeline_layout_name_ = pipeline_info_.name_ + "_PipelineLayout";
     }
@@ -279,7 +274,7 @@ void GraphicsPipeline::CreatePipeline()
 
     // DynamicState
     vk::PipelineDynamicStateCreateInfo dynamic_state_info;
-    Array<vk::DynamicState>           dynamic_states;
+    Array<vk::DynamicState>            dynamic_states;
     if (!(pipeline_info_.dynamic_state_enabled & EPDSE_None))
     {
         if (pipeline_info_.dynamic_state_enabled & EPDSE_Scissor)
@@ -308,7 +303,7 @@ void GraphicsPipeline::CreatePipeline()
         .setSubpass(0)                                // 子Pass
         .setPDynamicState(&dynamic_state_info);
 
-    if (!pipeline_info_.name_.empty())
+    if (!pipeline_info_.name_.IsEmpty())
     {
         pipeline_info_.pipeline_name_ = pipeline_info_.name_ + "_Pipeline";
     }
@@ -318,8 +313,7 @@ void GraphicsPipeline::CreatePipeline()
 
 void GraphicsPipeline::DestroyPipeline()
 {
-    const auto& device = VulkanContext::Get()->GetLogicalDevice();
-    if (device)
+    if (const auto& device = VulkanContext::Get()->GetLogicalDevice())
     {
         device->GetHandle().destroyPipeline(pipeline_);
         device->GetHandle().destroyPipelineLayout(pipeline_layout_);

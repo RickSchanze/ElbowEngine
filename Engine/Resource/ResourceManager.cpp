@@ -8,7 +8,9 @@
 #include "ResourceManager.h"
 
 #include "CoreGlobal.h"
+#include "FileSystem/File.h"
 #include "Interface/IResource.h"
+#include "Logcat.h"
 #include "Mesh.h"
 
 #include <ranges>
@@ -17,21 +19,21 @@ namespace res
 {
 ResourceManager::~ResourceManager() = default;
 
-void ResourceManager::RegisterResource(const Path& InResourcePath, IResource* InResource)
+void ResourceManager::RegisterResource(const platform::File& InResourcePath, IResource* InResource)
 {
     if (InResource == nullptr || !InResource->IsValid())
     {
-        LOG_ERROR_CATEGORY(Resource, L"注册资产失败, {}对应的资产无效.", InResourcePath.ToRelativeString());
+        LOGGER.Error(logcat::Resource, "Fail to register resource, {} is invalid.", InResourcePath.GetRelativePath());
         return;
     }
     if (resource_map_.contains(InResourcePath))
     {
-        LOG_ERROR_CATEGORY(Resource, L"{}对应资产已存在,执行替换.", InResourcePath.ToRelativeString());
+        LOGGER.Warn(logcat::Resource, "Duplicate resource registration: {}", InResourcePath.GetRelativePath());
     }
     resource_map_[InResourcePath] = InResource;
 }
 
-IResource* ResourceManager::GetResource(const Path& InResourcePath)
+IResource* ResourceManager::GetResource(const platform::File& InResourcePath)
 {
     return resource_map_.contains(InResourcePath) ? resource_map_[InResourcePath] : nullptr;
 }
@@ -45,11 +47,11 @@ void ResourceManager::DestroyAllResources()
     resource_map_.clear();
 }
 
-void ResourceManager::DestroyResource(const Path& path)
+void ResourceManager::DestroyResource(const platform::File& path)
 {
     if (!resource_map_.contains(path))
     {
-        LOG_ERROR_CATEGORY(Resource.Manager, L"试图释放不存在的资源: {}", path.ToRelativeString());
+        LOGGER.Error(logcat::Resource, "Try to destroy non-exist resource: {}", path.GetRelativePath());
         return;
     }
     Delete(resource_map_[path]);

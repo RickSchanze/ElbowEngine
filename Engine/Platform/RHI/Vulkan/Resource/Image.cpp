@@ -398,7 +398,7 @@ size_t SamplerInfo::GetHashCode() const
     return seed;
 }
 
-Sampler::Sampler(ResourceProtected, const SamplerInfo& info)
+Sampler::Sampler(const SamplerInfo& info)
 {
     vk::SamplerCreateInfo CreateInfo{};
     CreateInfo.anisotropyEnable        = info.enable_anisotropy;
@@ -429,7 +429,7 @@ Sampler* Sampler::Create(const SamplerInfo& info)
     {
         return samplers_[Id];
     }
-    return New<Sampler>(ResourceProtected{}, info);
+    return New<Sampler>(info);
 }
 
 Sampler& Sampler::GetDefaultSampler()

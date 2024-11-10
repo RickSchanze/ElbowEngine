@@ -6,17 +6,11 @@
  */
 
 #pragma once
-#include "CoreDef.h"
 
 namespace rhi::vulkan
 {
 class IRHIResource
 {
-protected:
-    struct ResourceProtected
-    {
-    };
-
 public:
     virtual ~IRHIResource() = default;
     virtual void Destroy()  = 0;

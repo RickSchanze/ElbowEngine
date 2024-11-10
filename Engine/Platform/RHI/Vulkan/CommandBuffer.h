@@ -7,6 +7,7 @@
 
 #pragma once
 #include "RHI/CommandBuffer.h"
+#include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan
 {

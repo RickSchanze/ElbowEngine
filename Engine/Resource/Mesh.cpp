@@ -12,8 +12,8 @@
 #include "assimp/scene.h"
 
 #include "CoreGlobal.h"
+#include "Logcat.h"
 #include "ResourceManager.h"
-#include "Utils/StringUtils.h"
 
 namespace res
 {
@@ -32,31 +32,30 @@ void SubMesh::LoadRHI()
     mesh_rhi_resource_ = New<rhi::vulkan::Mesh>(vertices_, indices_, false);
 }
 
-Mesh::Mesh(Protected, const Path& mesh_path) : path_(mesh_path)
+Mesh::Mesh(const platform::File& mesh_path) : path_(mesh_path)
 {
-    Load();
     ResourceManager::Get()->RegisterResource(path_, this);
 }
 
-Mesh* Mesh::Create(const Path& model_path)
+core::StringView Mesh::GetRelativePath() const
 {
-    auto* cached_model = ResourceManager::Get()->GetResource<Mesh>(model_path);
-    if (cached_model == nullptr)
-    {
-        cached_model = New<Mesh>(Protected{}, model_path);
-    }
-    return cached_model;
+    return path_.GetRelativePath();
+}
+
+core::StringView Mesh::GetAbsolutePath() const
+{
+    return path_.GetAbsolutePath();
 }
 
 void Mesh::Load()
 {
     Assimp::Importer Importer;
     const aiScene*   Scene = Importer.ReadFile(
-        path_.ToAbsoluteAnsiString(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
+        GetAbsolutePath().Data(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
     );
     if (Scene == nullptr || Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode == nullptr)
     {
-        LOG_ERROR_CATEGORY(Resource, L"Model::Load(): 加载模型{}失败", path_.ToAbsoluteString());
+        LOGGER.Error(logcat::Resource, "Failed to load model {}: {}", path_.GetRelativePath(), Importer.GetErrorString());
         return;
     }
     ProcessNode(Scene->mRootNode, Scene);
