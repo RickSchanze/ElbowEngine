@@ -36,7 +36,6 @@ void resource::Shader::Load()
     target_desc.format       = SLANG_HLSL;
     session_desc.targets     = &target_desc;
     session_desc.targetCount = 1;
-    slangCreate
     Slang::ComPtr<IBlob> diagnostics;
     core::String p = path_.GetAbsolutePath();
     IModule*             module = session->loadModule(p.Data(), diagnostics.writeRef());
