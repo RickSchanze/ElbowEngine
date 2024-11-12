@@ -70,7 +70,7 @@ uint32_t String::AtUnicode(int32_t i) const
 
 ::std::ostream& operator<<(::std::ostream& os, const String& str)
 {
-    os << str.StdString();
+    os << str.GetStdString();
     return os;
 }
 

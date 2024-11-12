@@ -36,17 +36,17 @@ bool platform::File::Create_File(StringView path, FileCreateMode mode, bool comb
 
 core::String platform::File::GetFolder() const
 {
-    return std::filesystem::path(path_.StdString()).parent_path().string();
+    return std::filesystem::path(path_.GetStdString()).parent_path().string();
 }
 
 core::String platform::File::GetFileName() const
 {
-    return std::filesystem::path(path_.StdString()).filename().string();
+    return std::filesystem::path(path_.GetStdString()).filename().string();
 }
 
 core::String platform::File::GetFileNameWithoutExtension() const
 {
-    return std::filesystem::path(path_.StdString()).stem().string();
+    return std::filesystem::path(path_.GetStdString()).stem().string();
 }
 
 core::String platform::File::GetAbsolutePath() const
@@ -80,10 +80,7 @@ platform::FileSystemError platform::File::TryReadAllText(core::String& out, bool
         return FileSystemError::FailedToOpenFile;
     }
     out.Clear();
-    file.seekg(0, std::ios::end);
-    out.Reserve(file.tellg());
-    file.seekg(0, std::ios::beg);
-    file.read(&out[0], file.tellg());
+    out = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return FileSystemError::Success;
 }
 

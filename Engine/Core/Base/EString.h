@@ -81,9 +81,9 @@ public:
      */
     [[nodiscard]] int32_t Length() const;
 
-    [[nodiscard]] const char* Data() const { return str_.c_str(); }
-
-    [[nodiscard]] const std::string& StdString() const { return str_; }
+    [[nodiscard]] const char*        Data() const { return str_.c_str(); }
+    [[nodiscard]] char*              Data() { return str_.data(); }
+    [[nodiscard]] const std::string& GetStdString() const { return str_; }
 
     String operator+(const String& str) const { return {str_ + str.str_}; }
     String operator+(const char* str) const { return {str_ + str}; }
@@ -162,7 +162,7 @@ struct ::std::hash<core::String>
 {
     size_t operator()(const core::String& str) const noexcept
     {
-        return ::std::hash<std::string>{}(str.StdString());
+        return ::std::hash<std::string>{}(str.GetStdString());
     }
 };
 

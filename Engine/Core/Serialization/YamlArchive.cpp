@@ -78,7 +78,7 @@ Archive& YamlArchive::operator<<(float i)
 
 Archive& YamlArchive::operator<<(const String& str)
 {
-    *emitter_ << str.StdString();
+    *emitter_ << str.GetStdString();
     return *this;
 }
 

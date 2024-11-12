@@ -41,3 +41,4 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE ${SLANG_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${SLANG_LIB}/slang.lib)
 message(STATUS "SLANG_LIB: ${SLANG_LIB}")
+
