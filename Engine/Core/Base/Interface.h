@@ -10,10 +10,7 @@
 
 namespace core
 {
-class Interface : public ITypeGetter
+class Interface : implements ITypeGetter
 {
-public:
-    typedef ThisClass Super;
-    typedef Interface ThisClass;
 };
 }   // namespace core

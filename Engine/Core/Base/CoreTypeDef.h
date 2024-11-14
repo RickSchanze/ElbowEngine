@@ -20,6 +20,9 @@
 #include <string_view>
 #include <tuple>
 
+#include "tl/expected.hpp"
+#include "matchit.h"
+
 namespace core
 {
 // std::function -> Function
@@ -116,4 +119,10 @@ SharedPtr<T> StaticPointerCast(const SharedPtr<U>& InSharedPtr)
 
 template<typename... T>
 using Tuple = std::tuple<T...>;
+
+template<typename T, typename E>
+using Expected = tl::expected<T, E>;
+
+// 模式匹配
+using namespace matchit;
 }   // namespace core

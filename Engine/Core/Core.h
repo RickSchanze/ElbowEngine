@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include "Base/CoreTypeDef.h"
+
 #include "CoreDef.h"
 
 #include "Reflection/Reflection.h"

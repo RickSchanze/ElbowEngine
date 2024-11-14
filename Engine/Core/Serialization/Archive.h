@@ -7,11 +7,16 @@
 
 #pragma once
 #include "Base/Base.h"
+#include "Base/Ref.h"
 #include "CoreDef.h"
 #include "CoreGlobal.h"
 #include "CoreTypeTraits.h"
 #include "Log/CoreLogCategory.h"
 
+namespace core
+{
+struct Type;
+}
 namespace core
 {
 struct Any;
@@ -31,6 +36,17 @@ public:
         Deserialized,
         Idle,
         Error,
+    };
+
+    enum class ArchiveError
+    {
+        Success,
+        InputNoValue,
+        InputNoMetadata,   // 也就是说没继承自ITypeGetter, 没有反射信息
+        StateError,
+        CanNotBeInstanced,    // 无法实例化
+        TypeIsNull,           // 输入Type是空
+        InstantiationError,   // 实例化失败
     };
 
     enum class InputType
@@ -112,25 +128,34 @@ public:
     }
 #endif
 
+#if REGION(反序列化)
+    void DeSerialize(StringView str, Ref<void*> target, const core::Type* type);
+
+    virtual Any  GetValue(StringView key)    = 0;
+    virtual void ParseString(StringView str) = 0;
+#endif
+
     [[nodiscard]] State GetState() const { return state_; }
     [[nodiscard]] bool  IsSerializing() const { return state_ == State::Serializing; }
     [[nodiscard]] bool  IsDeserializing() const { return state_ == State::Deserializing; }
     [[nodiscard]] bool  IsSerialized() const { return state_ == State::Serialized; }
     [[nodiscard]] bool  IsDeserialized() const { return state_ == State::Deserialized; }
 
-    [[nodiscard]] virtual String ToString() = 0;
+    [[nodiscard]] virtual Expected<String, ArchiveError> ToString() = 0;
 
     virtual void BeginSerialize() { state_ = State::Serializing; }
     virtual void EndSerialize() { state_ = State::Serialized; }
     virtual void BeginDeserialize() { state_ = State::Deserializing; }
     virtual void EndDeserialize() { state_ = State::Deserialized; }
 
-    void SetError() { state_ = State::Error; }
+    void SetError(ArchiveError error);
 
-    [[nodiscard]] bool HasError() const { return state_ == State::Error; }
+    [[nodiscard]] bool         HasError() const { return state_ == State::Error; }
+    [[nodiscard]] ArchiveError GetError() const { return error_; }
 
 protected:
-    State state_ = State::Idle;
+    State        state_ = State::Idle;
+    ArchiveError error_ = ArchiveError::Success;
 };
 }   // namespace core
 

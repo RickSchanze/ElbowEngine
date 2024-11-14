@@ -11,7 +11,7 @@
 
 #include GEN_HEADER("Resource.IResource.generated.h")
 
-class CLASS(Interface) IResource : public core::Interface
+class CLASS(Interface) IResource : implements core::Interface
 {
     GENERATED_BODY(IResource)
 public:

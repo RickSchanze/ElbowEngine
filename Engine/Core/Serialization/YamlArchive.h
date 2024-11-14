@@ -42,7 +42,7 @@ public:
     void BeginSerialize() override;
     void EndSerialize() override;
 
-    core::String ToString() override;
+    Expected<String, ArchiveError> ToString() override;
 
 private:
     union {

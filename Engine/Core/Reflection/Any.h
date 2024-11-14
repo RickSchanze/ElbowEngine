@@ -16,6 +16,10 @@
 
 namespace core
 {
+class ITypeGetter;
+}
+namespace core
+{
 struct Type;
 
 /**
@@ -29,6 +33,7 @@ struct Any
     Any(const void* data, const Type* data_type);
 
     template <typename T>
+        requires std::is_base_of_v<ITypeGetter, T>
     Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), TypeOf<T>())} {};
 
     Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
@@ -97,6 +102,7 @@ private:
 };
 
 void LogTypeNotSameError(const Type* t1, const Type* t2);
+void LogTypeDerivedError(const Type* t1, const Type* t2);
 
 template <typename T>
 Optional<T> Any::AsCopy() const
@@ -127,7 +133,7 @@ const T* Any::As() const
     }
     if (!IsDerivedFrom(TypeOf<T>()))
     {
-        LOGGER.Error(logcat::Reflection, "Type {} is not derived from {}", GetType()->GetName(), TypeOf<T>()->GetName());
+        LogTypeDerivedError(GetType(), TypeOf<T>());
         return nullptr;
     }
     return static_cast<const T*>(ptr_->GetData());

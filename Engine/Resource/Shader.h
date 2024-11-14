@@ -11,11 +11,12 @@
 #include "Interface/IResource.h"
 #include "PlatformEvents.h"
 
+#include "Object/Object.h"
 #include GEN_HEADER("Resource.Shader.generated.h")
 
 namespace resource
 {
-class CLASS() Shader : public IResource
+class CLASS() Shader : extends core::Object, implements IResource
 {
     GENERATED_BODY(Shader)
 public:

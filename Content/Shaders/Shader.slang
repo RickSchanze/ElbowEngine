@@ -1,3 +1,5 @@
+import "Common/TestModule";
+
 struct VertexInput {
     float4 position : POSITION;
     float3 normal : NORMAL;
@@ -21,10 +23,6 @@ struct MVP {
 };
 
 uniform MVP mvp;
-
-interface IColor {
-    float4 GetColor();
-}
 
 struct Color : IColor {
     float4 color;

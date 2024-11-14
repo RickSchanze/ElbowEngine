@@ -126,6 +126,7 @@ struct FieldInfo
 
     [[nodiscard]] bool        IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
     [[nodiscard]] bool        IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool        IsPrimitive() const;
     [[nodiscard]] StringView  GetAttribute(ValueAttribute attr) const;
     [[nodiscard]] int32_t     GetOffset() const { return offset_; }
     [[nodiscard]] StringView  GetName() const { return name_; }
@@ -151,6 +152,8 @@ struct FieldInfo
     FieldInfo* SetComment(StringView comment);
 
     [[nodiscard]] Any GetValue(const ITypeGetter* obj) const;
+
+    bool SetValue(const ITypeGetter* obj, const Any &value) const;
 
     SequentialContainerView* CreateSequentialContainerView(const ITypeGetter* obj) const;
 

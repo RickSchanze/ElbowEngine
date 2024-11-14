@@ -17,7 +17,7 @@ class CtorManager : public Singleton<CtorManager>
 {
 public:
     void RegisterCtor(RTTITypeInfo info, InplaceCtor ctor);
-    void ConstructAt(const Type* info, void* ptr) const;
+    bool ConstructAt(const Type* info, void* ptr) const;
 
 private:
     HashMap<RTTITypeInfo, InplaceCtor> ctors_;

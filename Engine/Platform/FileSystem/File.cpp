@@ -84,15 +84,16 @@ platform::FileSystemError platform::File::TryReadAllText(core::String& out, bool
     return FileSystemError::Success;
 }
 
-String platform::File::ReadAllText(bool combine) const
+Expected<String, platform::FileSystemError> platform::File::ReadAllText(bool combine) const
 {
     String text;
     auto   err = TryReadAllText(text, combine);
-    if (err != FileSystemError::Success)
-    {
-        return "Error";
-    }
-    return text;
+    // clang-format off
+    return match(err) (
+        pattern | FileSystemError::Success = text,
+        pattern | _ = err
+    );
+    // clang-format on
 }
 
 bool platform::File::Create(FileCreateMode mode, bool combine_proj_path) const

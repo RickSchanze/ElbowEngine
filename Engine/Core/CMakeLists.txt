@@ -110,3 +110,9 @@ target_link_libraries(${PROJECT_NAME}  PRIVATE ICU::uc ICU::i18n)
 
 find_package(xxHash CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}  PRIVATE xxHash::xxhash)
+
+find_package(tl-expected CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE tl::expected)
+
+find_package(matchit CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE matchit::matchit)

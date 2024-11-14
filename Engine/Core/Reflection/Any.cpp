@@ -37,3 +37,7 @@ void core::LogTypeNotSameError(const Type* t1, const Type* t2)
         t2->GetName()
     );
 }
+void core::LogTypeDerivedError(const Type* t1, const Type* t2)
+{
+    LOGGER.Error(logcat::Reflection, "Type {} is not derived from {}", t1->GetName(), t2->GetName());
+}

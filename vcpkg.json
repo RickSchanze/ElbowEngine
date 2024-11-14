@@ -54,5 +54,11 @@
   }, {
     "name" : "shader-slang",
     "version>=" : "2024.1.33"
+  }, {
+    "name" : "tl-expected",
+    "version>=" : "1.1.0"
+  }, {
+    "name" : "matchit",
+    "version>=" : "1.0.1"
   } ]
 }

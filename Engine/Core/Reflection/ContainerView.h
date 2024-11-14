@@ -49,6 +49,7 @@ public:
     virtual const Type* GetElementType()            = 0;
     virtual Any         GetCurrentElement()         = 0;
     virtual Any         GetElementAt(int32_t index) = 0;
+    virtual bool        Add(Any element)            = 0;
     void                ForEach(const Function<void(Any)>& Func);
     void                ForEach(const Function<void(int, Any)>& Func);
 };
@@ -61,6 +62,7 @@ public:
     virtual Any         GetCurrentKey()              = 0;
     virtual Any         GetCurrentValue()            = 0;
     virtual Any         GetElementAt(const Any& key) = 0;
+    virtual bool        Add(Any key, Any value)      = 0;
     void                ForEach(const Function<void(Any, Any)>& Func);
 };
 
@@ -76,6 +78,8 @@ public:
         container_(container), element_type_(TypeOf<T>()), outer_(outer)
     {
     }
+
+    bool Add(Any element) override { return false; }
 
     bool BeginIterate() override
     {
@@ -117,9 +121,9 @@ public:
         if (!instance_)
         {
             LOGGER.Error(logcat::Reflection, "未设置Instance");
-            return false;
+            return {};
         }
-        return MakeRef(*iter_);
+        return {std::addressof(*iter_), element_type_};
     }
 
     ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
@@ -159,6 +163,96 @@ private:
     const Type* element_type_{};
     const Type* outer_{};
 };
+template <typename T, size_t N>
+class StaticArrayView<void, T, N> : public SequentialContainerView
+{
+public:
+    static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
+    using Iterator = typename StaticArray<T, N>::iterator;
+
+    explicit StaticArrayView() = default;
+
+    bool Add(Any element) override { return false; }
+
+    bool BeginIterate() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return false;
+        }
+        iter_     = instance_->begin();
+        size_     = N;
+        iter_cnt_ = 1;
+        return true;
+    }
+
+    void EndIterate() override
+    {
+        iter_     = {};
+        size_     = 0;
+        iter_cnt_ = 0;
+    }
+
+    void Next() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return;
+        }
+        ++iter_;
+        ++iter_cnt_;
+    }
+
+    bool HasNext() override { return iter_cnt_ < size_; }
+
+    void SetInstance(void* instance) override { instance_ = static_cast<StaticArray<T, N>*>(instance); }
+
+    Any GetCurrentElement() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return {};
+        }
+        return {std::addressof(*iter_), element_type_};
+    }
+
+    ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
+
+    const Type* GetElementType() override { return element_type_; }
+    const Type* GetOuterType() override { return nullptr; }
+
+    Any GetElementAt(int32_t index) override
+    {
+        Assert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Iterator it = instance_->begin();
+        for (int32_t i = 0; i < index; ++i)
+        {
+            ++it;
+        }
+        return {std::addressof(*it), element_type_};
+    }
+
+    int32_t Size() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return 0;
+        }
+        return N;
+    }
+
+private:
+    StaticArray<T, N>* instance_ = nullptr;
+
+    Iterator    iter_;
+    size_t      iter_cnt_ = 0;
+    size_t      size_     = 0;
+    const Type* element_type_{};
+};
 #endif
 
 #if REGION(非关联容器: Array List Set HashSet)
@@ -184,6 +278,23 @@ public:
         size_     = (instance_->*container_).size();
         iter_cnt_ = 1;
         return true;
+    }
+
+    bool Add(Any element) override
+    {
+        if (element.GetType() != element_type_)
+        {
+            return false;
+        }
+        if constexpr (std::is_same_v<Container<T>, Array<T>> || std::is_same_v<Container<T>, List<T>>)
+        {
+            (instance_->*container_).push_back(*element.As<T>());
+            return true;
+        }
+        else
+        {
+            return (instance_->*container_).insert(*element.As<T>());
+        }
     }
 
     void EndIterate() override
@@ -213,7 +324,7 @@ public:
         if (!instance_)
         {
             LOGGER.Error(logcat::Reflection, "未设置Instance");
-            return false;
+            return {};
         }
         return {std::addressof(*iter_), element_type_};
     }
@@ -255,9 +366,116 @@ private:
     const Type* element_type_{};
     const Type* outer_{};
 };
+
+template <typename T, template <typename...> typename Container>
+class DynamicArrayView<void, T, Container> : public SequentialContainerView
+{
+public:
+    static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
+    using Iterator = typename Container<T>::iterator;
+
+    explicit DynamicArrayView() : element_type_(TypeOf<T>()) {}
+
+    bool BeginIterate() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return false;
+        }
+        iter_     = instance_->begin();
+        size_     = instance_->size();
+        iter_cnt_ = 1;
+        return true;
+    }
+
+    bool Add(Any element) override
+    {
+        if (element.GetType() != element_type_)
+        {
+            return false;
+        }
+        if constexpr (std::is_same_v<Container<T>, Array<T>> || std::is_same_v<Container<T>, List<T>>)
+        {
+            instance_->push_back(*element.As<T>());
+            return true;
+        }
+        else
+        {
+            return instance_->insert(*element.As<T>());
+        }
+    }
+
+    void EndIterate() override
+    {
+        iter_     = {};
+        size_     = 0;
+        iter_cnt_ = 0;
+    }
+
+    void Next() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return;
+        }
+        ++iter_;
+        ++iter_cnt_;
+    }
+
+    bool HasNext() override { return iter_cnt_ < size_; }
+
+    void SetInstance(void* instance) override { instance_ = static_cast<Container<T>*>(instance); }
+
+    Any GetCurrentElement() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return {};
+        }
+        return {std::addressof(*iter_), element_type_};
+    }
+
+    ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
+
+    const Type* GetElementType() override { return element_type_; }
+    const Type* GetOuterType() override { return nullptr; }
+
+    Any GetElementAt(int32_t index) override
+    {
+        DebugAssert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Iterator it = instance_->begin();
+        for (int32_t i = 0; i < index; ++i)
+        {
+            ++it;
+        }
+        return {std::addressof(*it), element_type_};
+    }
+
+    int32_t Size() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return 0;
+        }
+        return instance_->size();
+    }
+
+private:
+    Container<T>* instance_ = nullptr;
+
+    Iterator    iter_;
+    size_t      iter_cnt_ = 0;
+    size_t      size_     = 0;
+    const Type* element_type_{};
+};
 #endif
 
 #if REGION(关联容器: Map HashMap)
+
 template <typename ClassT, typename K, typename V, template <typename...> typename Container>
 class MapView : public AssociativeContainerView
 {
@@ -359,6 +577,104 @@ private:
     const Type*   value_type_{};
     const Type*   outer_{};
 };
+
+template <typename K, typename V, template <typename...> typename Container>
+class MapView<void, K, V, Container> : public AssociativeContainerView
+{
+    using key_type      = typename Container<K, V>::key_type;
+    using mapped_type   = typename Container<K, V>::mapped_type;
+    using value_type    = typename Container<K, V>::value_type;
+    using iterator_type = typename Container<K, V>::iterator;
+
+public:
+    MapView() = default;
+
+    const Type* GetOuterType() override { return nullptr; }
+
+    bool BeginIterate() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return false;
+        }
+        size_     = Size();
+        iter_     = instance_->begin();
+        iter_cnt_ = 1;
+        return true;
+    }
+
+    void Next() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+        }
+        ++iter_;
+        ++iter_cnt_;
+    }
+
+    void EndIterate() override
+    {
+        iter_cnt_ = 0;
+        size_     = 0;
+        iter_     = {};
+    }
+
+    bool HasNext() override { return iter_cnt_ < size_; }
+
+    void SetInstance(void* instance) override { instance_ = static_cast<Container<K, V>*>(instance); }
+
+    int32_t Size() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return 0;
+        }
+        return instance_->size();
+    }
+    ContainerViewType GetContainerType() override { return ContainerViewType::Associative; }
+    const Type*       GetKeyType() override { return key_type_; }
+    const Type*       GetValueType() override { return value_type_; }
+
+    Any GetCurrentKey() override
+    {
+        // key使用const ref
+        return {std::addressof(iter_->first), key_type_};
+    }
+
+    Any GetCurrentValue() override { return {std::addressof(iter_->second), value_type_}; }
+
+    Any GetElementAt(const Any& key) override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return {};
+        }
+        auto cast_op = key.AsCopy<K>();
+        if (cast_op.has_value())
+        {
+            auto& key_value = cast_op.value();
+            if (instance_->find(key_value) != instance_->end())
+            {
+                auto& it = (*instance_)[key_value];
+                return {std::addressof(it), value_type_};
+            }
+        }
+        return {};
+    }
+
+private:
+    Container<K, V>* instance_ = nullptr;
+    iterator_type    iter_{};
+    size_t           iter_cnt_ = 0;
+    size_t           size_     = 0;
+    const Type*   key_type_{};
+    const Type*   value_type_{};
+};
+
 #endif
 
 }   // namespace core

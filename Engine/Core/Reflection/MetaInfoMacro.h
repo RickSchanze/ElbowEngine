@@ -53,8 +53,6 @@
 #define GENERATED_BODY(class_)                                               \
 public:                                                                      \
     static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
-    typedef ThisClass  Super;                                                \
-    typedef class_     ThisClass;                                            \
                                                                              \
     [[nodiscard]] const core::Type* GetType() const override                 \
     {                                                                        \
@@ -84,3 +82,5 @@ private:
     }                                                              \
     void Z_MetaInfo_Registration_Func(){GENERATED_ALL_CLASS_BODY} GENERATED_IMPLEMENTATION
 
+#define implements virtual public
+#define extends public

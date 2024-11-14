@@ -21,6 +21,11 @@ FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
 {
 }
 
+bool FieldInfo::IsPrimitive() const
+{
+    return type_ && type_->IsPrimitive();
+}
+
 core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
@@ -66,16 +71,22 @@ Any FieldInfo::GetValue(const ITypeGetter* obj) const
     if (obj == nullptr)
     {
         LOGGER.Error(logcat::Reflection, "obj is null");
-        return NullOpt;
+        return {};
     }
     if (obj->GetType() != outer_)
     {
         LOGGER.Error(
             logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj->GetType()->GetName(), outer_->GetName()
         );
-        return NullOpt;
+        return {};
     }
     return {GetFieldPtr(obj), type_};
+}
+
+bool FieldInfo::SetValue(const ITypeGetter* obj, const Any& value) const
+{
+    if (obj == nullptr || !value.HasValue()) return false;
+    return true;
 }
 
 SequentialContainerView* FieldInfo::CreateSequentialContainerView(const ITypeGetter* obj) const

@@ -25,7 +25,7 @@ enum ObjectCategory
     Setting,      // 这个是一个设置对象
 };
 
-class CLASS() Object : public ITypeGetter
+class CLASS() Object : implements ITypeGetter
 {
     GENERATED_BODY(Object)
 public:

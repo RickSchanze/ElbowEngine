@@ -24,13 +24,6 @@ bool resource::Shader::IsValid() const
     return loaded_;
 }
 
-#define OUTPUT_DIAGNOSTICS(diagnostics)                                             \
-    if (diagnostics)                                                                \
-    {                                                                               \
-        const char* diagnostics_str = (const char*)diagnostics->getBufferPointer(); \
-        LOGGER.Error(logcat::Resource, "{}", diagnostics_str);                      \
-    }
-
 void resource::Shader::Load()
 {
     if (loaded_) return;
@@ -44,8 +37,8 @@ void resource::Shader::Load()
     SessionDesc      sessionDesc{};
     sessionDesc.targetCount = 1;
     TargetDesc targetDesc{};
-    targetDesc.format   = SLANG_GLSL;
-    targetDesc.profile  = slangSession->findProfile("glsl_460");
+    targetDesc.format   = SLANG_HLSL;
+    targetDesc.profile  = slangSession->findProfile("sm_6_7");
     sessionDesc.targets = &targetDesc;
     slangSession->createSession(sessionDesc, session.writeRef());
     ComPtr<IBlob> diagnostics;
@@ -71,7 +64,7 @@ void resource::Shader::Load()
     composited2->link(linked_prog.writeRef(), diagnostics.writeRef());
     OUTPUT_DIAGNOSTICS(diagnostics);
     ComPtr<IBlob> code;
-    linked_prog->getEntryPointCode(0, 0, code.writeRef(), diagnostics.writeRef());
+    linked_prog->getEntryPointCode(1, 0, code.writeRef(), diagnostics.writeRef());
     OUTPUT_DIAGNOSTICS(diagnostics);
     std::ofstream out("out.glsl");
     if (code)

@@ -6,8 +6,6 @@
  */
 
 #include "YamlArchive.h"
-
-#include "CoreGlobal.h"
 #include "ISerializer.h"
 #include "Log/CoreLogCategory.h"
 #include "yaml-cpp/yaml.h"
@@ -112,6 +110,7 @@ void YamlArchive::BeginSerialize()
     case State::Serializing:
     case State::Deserializing: LOGGER.Error(logcat::Archive_Serialization, "处于不用的状态: {}", GetEnumString(state_)); break;
     case State::Idle: break;
+    default:;
     }
     emitter_ = MakeUnique<YAML::Emitter>();
     Archive::BeginSerialize();
@@ -122,16 +121,16 @@ void YamlArchive::EndSerialize()
     Archive::EndSerialize();
 }
 
-String YamlArchive::ToString()
+Expected<String, Archive::ArchiveError> YamlArchive::ToString()
 {
     if (HasError())
     {
-        return "Some error occured during serialization";
+        return GetError();
     }
     if (IsSerialized())
     {
         return emitter_->c_str();
     }
-    return "只有被序列化的数据才能转换为字符串";
+    return ArchiveError::StateError;
 }
 }
