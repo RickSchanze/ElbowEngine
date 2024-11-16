@@ -151,5 +151,9 @@ void YamlArchive::Serialize(const Any& obj, String& out)
     out = emitter.c_str();
 }
 
-void YamlArchive::Deserialize(core::StringView source, Ref<void*> out) {}
+void YamlArchive::Deserialize(core::StringView source, Ref<void*> out, const Type& type)
+{
+
+}
+
 }   // namespace core

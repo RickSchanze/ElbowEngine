@@ -1,24 +1,30 @@
 # 注意事项
 ## 1. 反射标注
-由于编写时使用RTTR作为反射库并且通过libTooling自己编写CodeGenerator工具  
-因此所有具有需要反射类的文件的最后一个包含文件都必须是"xxx.generated.h"   
+由于编写时自己写了个反射库并且通过C#的CppAst自己编写了CodeGenerator工具  
+因此所有具有需要反射类的文件的最后一个包含文件都必须是GEN_HEADER("模块.xxx.generated.h")  
+相关的宏定义在 "Core/Reflection/MetaInfoMacro"  
 例如：
 A.h:
 ```C++
+// 在Core下
 #include "C.h"
 #include <iostream>
 
-#include "A.generated.h" // 必要且必须是最后一个包含文件
+#include GEN_HEADER("Core.A.generated.h") // 必要且必须是最后一个包含文件
 
-class REFL A {
-    GENERATED_BODY(A)  // 必要
+class CLASS() A {
+    GENERATED_CLASS(A)  // 必要
+};
+
+struct STRUCT() A {
+    GENERATED_STRUCT(A)  // 必要
 };
 ```
 A.cpp:
 ```C++
 #include "A.h"
 
-#include "A.generated/h"  // 必要且必须是最后一个包含文件
+#include GEN_HEADER("Core.A.generated.h")  // 必要且必须是最后一个包含文件
 
 GENRATED_SOURCE() // 必要，位置随意
 ```
@@ -64,6 +70,25 @@ int mHello;
 ```
 
 ### 1.2 当前有意义的函数标志（FUNCTION）
+### 1.3 当前有意义的CLASS标志
+1. Trivial
+标识此类是平凡的, 因此不能继承含有虚函数的类
+这种类型在二进制序列化时会直接使用memcpy
+STRUCT默认平凡, 即
+```C++
+#define STRUCT(...) CLASS(Trivial, __VA_ARGS__)
+```
+用例:
+```C+++
+class CLASS(Trivial) A : public B { // B没有虚函数
+    GENERATED_CLASS(A)
+};
+
+struct STRUCT() A {
+    GENERATED_STRUCT(A)
+};
+```
+
 # 2. Profiler
 + 开启ENABLE_PROFILE时, 如果不连接Server, 就会导致内存泄露, 连接Server一次后就不再泄露
 + 这是tracy本身的问题

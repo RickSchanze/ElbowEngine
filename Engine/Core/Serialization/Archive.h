@@ -12,6 +12,10 @@
 
 namespace core
 {
+struct Type;
+}
+namespace core
+{
 struct Any;
 class ITypeGetter;
 }
@@ -25,6 +29,6 @@ public:
     virtual ~Archive() = default;
 
     virtual void Serialize(const Any& obj, String& out)             = 0;
-    virtual void Deserialize(core::StringView source, Ref<void*> out) = 0;
+    virtual void Deserialize(core::StringView source, Ref<void*> out, const Type* type) = 0;
 };
 }   // namespace core
