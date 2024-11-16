@@ -7,7 +7,7 @@
 
 #include "SkySphereShader.h"
 
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 
 namespace function {
 

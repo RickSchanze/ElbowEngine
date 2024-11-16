@@ -6,9 +6,9 @@
  */
 
 #include "GfxContext.h"
-#include "CoreGlobal.h"
-#include "CoreDef.h"
-#include "PlatformLogcat.h"
+#include "Core/CoreGlobal.h"
+#include "Core/CoreDef.h"
+#include "Platform/PlatformLogcat.h"
 
 static rhi::GfxContext* g_context;
 

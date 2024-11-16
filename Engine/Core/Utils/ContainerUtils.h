@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "CoreDef.h"
-#include "CoreGlobal.h"
+#include "Core/CoreDef.h"
+#include "Core/CoreGlobal.h"
 
 #include <algorithm>
 

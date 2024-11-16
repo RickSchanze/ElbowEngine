@@ -7,7 +7,7 @@
 
 #pragma once
 #include "Component/Component.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 
 #include "SpaceCircle.generated.h"
 
@@ -16,7 +16,7 @@ namespace function::comp {
 ECLASS()
 class SpaceCircle : public TickableComponent
 {
-    GENERATED_BODY(SpaceCircle)
+    GENERATED_CLASS(SpaceCircle)
 
 public:
     SpaceCircle();

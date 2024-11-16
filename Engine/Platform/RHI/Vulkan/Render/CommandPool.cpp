@@ -6,11 +6,11 @@
  */
 
 #include "CommandPool.h"
-#include "CoreDef.h"
-#include "Log/Logger.h"
+#include "Core/CoreDef.h"
+#include "Core/Log/Logger.h"
 #include "LogicalDevice.h"
-#include "PlatformLogcat.h"
-#include "RHI/Vulkan/PhysicalDevice.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Vulkan/PhysicalDevice.h"
 
 using namespace core;
 namespace rhi::vulkan

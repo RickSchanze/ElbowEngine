@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CoreDef.h"
-#include "Math/MathTypes.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Core/CoreDef.h"
+#include "Core/Math/MathTypes.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
 #include <vulkan/vulkan_core.h>
 

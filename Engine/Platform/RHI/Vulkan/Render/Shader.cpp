@@ -8,8 +8,8 @@
 
 #include "spirv_cross.hpp"
 
-#include "CoreGlobal.h"
-#include "FileSystem/Folder.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/FileSystem/Folder.h"
 #include "LogicalDevice.h"
 #include "nlohmann/json.hpp"
 

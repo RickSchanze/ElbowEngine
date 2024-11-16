@@ -7,16 +7,15 @@
 
 #include "ShaderProgram.h"
 
-#include "CoreEvents.h"
-#include "CoreGlobal.h"
-#include "FileSystem/File.h"
-#include "Misc/Vertex.h"
-#include "PlatformEvents.h"
-#include "PlatformLogcat.h"
+#include "Core/CoreEvents.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/FileSystem/File.h"
+#include "Core/Misc/Vertex.h"
+#include "Platform/PlatformLogcat.h"
 
 #include <ranges>
 
-#include "RHI/Vulkan/Resource/Buffer.h"
+#include "Platform/RHI/Vulkan/Resource/Buffer.h"
 using namespace platform;
 
 namespace rhi::vulkan

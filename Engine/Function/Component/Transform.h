@@ -7,7 +7,7 @@
 
 #pragma once
 #include "Camera.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 
 class Transform
 {

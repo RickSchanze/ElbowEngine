@@ -15,7 +15,7 @@ namespace function::comp {
 
 ECLASS()
 class StaticMesh : public Mesh {
-    GENERATED_BODY(StaticMesh)
+    GENERATED_CLASS(StaticMesh)
 
 public:
     StaticMesh();

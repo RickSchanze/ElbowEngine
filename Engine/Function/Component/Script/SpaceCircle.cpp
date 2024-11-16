@@ -8,7 +8,7 @@
 #include "SpaceCircle.h"
 
 #include "GameObject/GameObject.h"
-#include "Math/Math.h"
+#include "Core/Math/Math.h"
 
 #include "SpaceCircle.generated.h"
 

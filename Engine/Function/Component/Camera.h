@@ -7,8 +7,8 @@
 
 #pragma once
 #include "Component.h"
-#include "CoreDef.h"
-#include "Math/MathTypes.h"
+#include "Core/CoreDef.h"
+#include "Core/Math/MathTypes.h"
 
 #include "Camera.generated.h"
 
@@ -21,7 +21,7 @@ namespace function::comp
 ECLASS()
 class Camera : public TickableComponent
 {
-    GENERATED_BODY(Camera)
+    GENERATED_CLASS(Camera)
 public:
     explicit Camera();
 

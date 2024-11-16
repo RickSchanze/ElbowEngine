@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "RHI/TextureFormat.h"
+#include "Platform/RHI/TextureFormat.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

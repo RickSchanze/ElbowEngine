@@ -6,11 +6,11 @@
  */
 
 #pragma once
-#include "Event/Event.h"
+#include "Core/Event/Event.h"
 #include "Render/LogicalDevice.h"
 #include "Render/SwapChain.h"
-#include "RHI/GfxContext.h"
-#include "Utils/ContainerUtils.h"
+#include "Platform/RHI/GfxContext.h"
+#include "Core/Utils/ContainerUtils.h"
 #include "vulkan/vulkan.hpp"
 
 

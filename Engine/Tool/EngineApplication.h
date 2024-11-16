@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "CoreEvents.h"
+#include "Core/CoreDef.h"
+#include "Core/CoreEvents.h"
 #include "Editor/Window/WindowBase.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 #include "RHI/Vulkan/Application.h"
 #include "ToolCommon.h"
 #include "Window/GLFWWindow.h"

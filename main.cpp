@@ -1,20 +1,13 @@
-// #include "CoreGlobal.h"
-// #include "Exception/Exception.h"
-// #include "Log/Logger.h"
-// #include "Path/Path.h"
 #define GLFW_INCLUDE_VULKAN
-// #include "EngineApplication.h"
-// #include "Component/Camera.h"
-#include "CoreDef.h"
-#include "CoreGlobal.h"
+#include "Core/Config/CoreConfig.h"
+#include "Core/CoreDef.h"
+#include "Core/Log/CoreLogCategory.h"
+#include "Core/Reflection/Reflection.h"
+#include "Core/Serialization/YamlArchive.h"
 #include "d3d12.h"
-#include "Log/CoreLogCategory.h"
-#include "Reflection/ITypeGetter.h"
-#include "Reflection/MetaInfoManager.h"
-#include "Reflection/Reflection.h"
-#include "ResourceManager.h"
-#include "Serialization/YamlArchive.h"
-#include "Shader.h"
+#include "Platform/FileSystem/Path.h"
+#include "Resource/ResourceManager.h"
+#include "Resource/Shader.h"
 
 #include <fstream>
 
@@ -30,30 +23,13 @@ int main()
         LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
         return -1;
     }
-    resource::Shader s{"Shaders/Shader.slang"};
-    s.Load();
+    // resource::Shader s{"Shaders/Shader.slang"};
+    // s.Load();
+    core::CoreConfig config;
+    core::YamlArchive archive;
+    core::String out;
+    archive.Serialize(config, out);
+    std::ofstream file("config.yaml");
+    file << out;
     system("pause");
-    // try
-    // {
-    //     tool::EngineApplication App{LR"(C:\Users\Echo\SyncWork\Work\Projects\ElbowEngine\Content)", L"肘击引擎"};
-    //     App.Initialize();
-    //     App.Run();
-    //     App.DeInitialize();
-    // }
-    // catch (const Exception& e)
-    // {
-    //     g_logger.Exception(e);
-    //     return -1;
-    // }
-    // catch (const std::exception& e)
-    // {
-    //     g_logger.StdException(e);
-    //     return -1;
-    // }
-    // catch (...)
-    // {
-    //     g_logger.Error(L"捕获到了未处理的未知异常");
-    //     return -1;
-    // }
-    // return 0;
 }

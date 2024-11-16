@@ -6,11 +6,11 @@
  */
 
 #include "GraphicsPipeline.h"
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "LogicalDevice.h"
 #include "RenderPass.h"
-#include "RHI/Vulkan/Resource/VulkanModel.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/Resource/VulkanModel.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include "ShaderProgram.h"
 
 using namespace core;

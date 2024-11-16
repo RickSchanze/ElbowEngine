@@ -6,131 +6,150 @@
  */
 
 #include "YamlArchive.h"
-#include "ISerializer.h"
-#include "Log/CoreLogCategory.h"
+#include "Core/Log/CoreLogCategory.h"
+#include "Core/Reflection/ITypeGetter.h"
 #include "yaml-cpp/yaml.h"
 
-#define IMPL_BASE_TYPE \
-    *emitter_ << i;    \
-    return *this
 
 namespace core
 {
-YamlArchive::~YamlArchive() {}
-
-Archive& YamlArchive::operator<<(ISerializer& serializer)
+static void SerializeEmitter(YAML::Emitter& emitter, const Any& obj);
+static void SerializePrimitive(YAML::Emitter& emitter, const Any& value)
 {
-    // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
-    serializer.Serialize(*this);
-    return *this;
-}
-
-Archive& YamlArchive::operator<<(int8_t i)
-{
-    IMPL_BASE_TYPE;
-}
-
-Archive& YamlArchive::operator<<(int16_t i)
-{
-    IMPL_BASE_TYPE;
-}
-
-Archive& YamlArchive::operator<<(int32_t i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(int64_t i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(uint8_t i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(uint16_t i)
-{
-    IMPL_BASE_TYPE;
-}
-
-Archive& YamlArchive::operator<<(uint32_t i)
-{
-    IMPL_BASE_TYPE;
-}
-
-Archive& YamlArchive::operator<<(uint64_t i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(bool i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(double i)
-{
-    IMPL_BASE_TYPE;
-}
-Archive& YamlArchive::operator<<(float i)
-{
-    IMPL_BASE_TYPE;
-}
-
-Archive& YamlArchive::operator<<(const String& str)
-{
-    *emitter_ << str.GetStdString();
-    return *this;
-}
-
-Archive& YamlArchive::operator<<(const StringView& str)
-{
-    *emitter_ << String(str);
-    return *this;
-}
-
-Archive& YamlArchive::operator<<(InputType type)
-{
-    // Assert(Archive.Serialization, IsSerializing(), "请在Serializing模式使用此函数");
-    switch (type)
+    if (auto op_int8 = value.AsCopy<int8_t>())
+        emitter << *op_int8;
+    else if (auto op_int16 = value.AsCopy<int16_t>())
+        emitter << *op_int16;
+    else if (auto op_int32 = value.AsCopy<int32_t>())
+        emitter << *op_int32;
+    else if (auto op_int64 = value.AsCopy<int64_t>())
+        emitter << *op_int64;
+    else if (auto op_uint8 = value.AsCopy<uint8_t>())
+        emitter << *op_uint8;
+    else if (auto op_uint16 = value.AsCopy<uint16_t>())
+        emitter << *op_uint16;
+    else if (auto op_uint32 = value.AsCopy<uint32_t>())
+        emitter << *op_uint32;
+    else if (auto op_uint64 = value.AsCopy<uint64_t>())
+        emitter << *op_uint64;
+    else if (auto op_float = value.AsCopy<float>())
+        emitter << *op_float;
+    else if (auto op_double = value.AsCopy<double>())
+        emitter << *op_double;
+    else if (auto op_bool = value.AsCopy<bool>())
+        emitter << *op_bool;
+    else if (auto op_string = value.AsCopy<String>())
+        emitter << op_string->Data();
+    else if (auto op_sv = value.AsCopy<StringView>())
     {
-    case InputType::ArrayStart: *emitter_ << YAML::BeginSeq; break;
-    case InputType::ArrayEnd: *emitter_ << YAML::EndSeq; break;
-    case InputType::MapStart: *emitter_ << YAML::BeginMap; break;
-    case InputType::MapEnd: *emitter_ << YAML::EndMap; break;
-    case InputType::Key: *emitter_ << YAML::Key; break;
-    case InputType::Value: *emitter_ << YAML::Value; break;
+        core::String sv = *op_sv;
+        emitter << sv.Data();
     }
-    return *this;
 }
 
-void YamlArchive::BeginSerialize()
+static void SerializeEmitterSequentialContainerView(YAML::Emitter& emitter, SequentialContainerView* view)
 {
-    switch (state_)
-    {
-    case State::Serialized: emitter_.Release(); break;
-    case State::Deserialized: node_.Release(); break;
-    case State::Serializing:
-    case State::Deserializing: LOGGER.Error(logcat::Archive_Serialization, "处于不用的状态: {}", GetEnumString(state_)); break;
-    case State::Idle: break;
-    default:;
-    }
-    emitter_ = MakeUnique<YAML::Emitter>();
-    Archive::BeginSerialize();
+    if (view == nullptr) return;
+    view->ForEach([&emitter](const Any& value) {
+        if (value.IsPrimitive())
+        {
+            SerializePrimitive(emitter, value);
+        }
+        else
+        {
+            SerializeEmitter(emitter, value);
+        }
+    });
 }
 
-void YamlArchive::EndSerialize()
+static void SerializeEmitterAssociativeContainerView(YAML::Emitter& emitter, AssociativeContainerView* view)
 {
-    Archive::EndSerialize();
+    if (view == nullptr) return;
+    view->ForEach([&emitter](const Any& key, const Any& value) {
+        emitter << YAML::Key;
+        if (key.IsPrimitive())
+        {
+            SerializePrimitive(emitter, key);
+        }
+        else
+        {
+            SerializeEmitter(emitter, key);
+        }
+        emitter << YAML::Value;
+        if (value.IsPrimitive())
+        {
+            SerializePrimitive(emitter, value);
+        }
+        else
+        {
+            SerializeEmitter(emitter, value);
+        }
+    });
 }
 
-Expected<String, Archive::ArchiveError> YamlArchive::ToString()
+static void SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
 {
-    if (HasError())
+    auto fields = obj.GetType()->GetFields();
+    emitter << YAML::BeginMap;
+    for (auto field: fields)
     {
-        return GetError();
+        if (field->IsAssociativeContainer())
+        {
+            emitter << YAML::Key;
+            emitter << field->GetName().Data();
+            emitter << YAML::Value;
+            emitter << YAML::BeginMap;
+            SerializeEmitterAssociativeContainerView(emitter, field->CreateAssociativeContainerView(obj.GetRawPtr()));
+            emitter << YAML::EndMap;
+        }
+        else if (field->IsSequentialContainer())
+        {
+            emitter << YAML::Key;
+            emitter << field->GetName().Data();
+            emitter << YAML::Value;
+            emitter << YAML::BeginSeq;
+            SerializeEmitterSequentialContainerView(emitter, field->CreateSequentialContainerView(obj.GetRawPtr()));
+            emitter << YAML::EndSeq;
+        }
+        else if (field->IsPrimitive())
+        {
+            auto value = field->GetValue(obj);
+            if (!value.HasValue())
+            {
+                LOGGER.Error(logcat::Archive_Serialization, "Serialize filed {} failed", field->GetName());
+                continue;
+            }
+            emitter << YAML::Key << field->GetName().Data() << YAML::Value;
+            SerializePrimitive(emitter, value);
+        }
+        else if (field->IsEnum())
+        {
+            // clang-format off
+            field->GetObjEnumValue(obj)
+                .and_then([field](const int32_t value) { return field->GetType()->GetEnumValueString(value); })
+                .transform([&emitter, field](const StringView& value) { emitter << YAML::Key << field->GetName().Data() << YAML::Value << value.Data(); return 0; });
+            // clang-format on
+        }
+        else
+        {
+            emitter << YAML::Key << field->GetName().Data() << YAML::Value;
+            SerializeEmitter(emitter, field->GetValue(obj));
+        }
     }
-    if (IsSerialized())
+    emitter << YAML::EndMap;
+}
+
+void YamlArchive::Serialize(const Any& obj, String& out)
+{
+    if (!obj.HasValue() || obj.GetType()->IsDefined(Type::Interface))
     {
-        return emitter_->c_str();
+        out = "";
+        return;
     }
-    return ArchiveError::StateError;
+    YAML::Emitter emitter;
+    SerializeEmitter(emitter, obj);
+    out = emitter.c_str();
 }
-}
+
+void YamlArchive::Deserialize(core::StringView source, Ref<void*> out) {}
+}   // namespace core

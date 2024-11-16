@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Object/Object.h"
-#include "Math/MathTypes.h"
+#include "Core/Object/Object.h"
+#include "Core/Math/MathTypes.h"
 
 #include "World/ITickable.h"
 
@@ -24,7 +24,7 @@ namespace function::comp {
 ECLASS()
 class Component : public Object
 {
-    GENERATED_BODY(Component)
+    GENERATED_CLASS(Component)
 public:
     friend class GameObject;
 

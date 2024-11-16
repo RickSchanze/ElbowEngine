@@ -9,11 +9,11 @@
 
 #include "Component/Camera.h"
 #include "ImGui/ImGuiHelper.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 #include "Mesh.h"
 #include "Render/Shaders/SkyboxShader.h"
 #include "Render/Shaders/SkySphereShader.h"
-#include "RHI/Vulkan/Render/GraphicsPipeline.h"
+#include "Platform/RHI/Vulkan/Render/GraphicsPipeline.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
 
 namespace function

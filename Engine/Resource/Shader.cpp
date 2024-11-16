@@ -6,11 +6,7 @@
  */
 
 #include "Shader.h"
-
-#include "Logcat.h"
-#include "slang-com-helper.h"
 #include "slang-com-ptr.h"
-#include "slang-gfx.h"
 #include "slang.h"
 
 #include "Resource.Shader.generated.h"
@@ -43,7 +39,6 @@ void resource::Shader::Load()
     slangSession->createSession(sessionDesc, session.writeRef());
     ComPtr<IBlob> diagnostics;
     IModule*      module = session->loadModule(path_.GetAbsolutePath().Data(), diagnostics.writeRef());
-    OUTPUT_DIAGNOSTICS(diagnostics);
     ComPtr<IEntryPoint> vert_entry;
     module->findEntryPointByName("vertex", vert_entry.writeRef());
     ComPtr<IEntryPoint> frag_entry;
@@ -56,16 +51,13 @@ void resource::Shader::Load()
     session->createTypeConformanceComponentType(
         layout->findTypeByName("Color"), layout->findTypeByName("IColor"), conformance.writeRef(), -1, diagnostics.writeRef()
     );
-    OUTPUT_DIAGNOSTICS(diagnostics);
     ComPtr<IComponentType> composited2;
     IComponentType* component2[] = {composited, conformance};
     session->createCompositeComponentType(component2, 2, composited2.writeRef());
     ComPtr<IComponentType> linked_prog;
     composited2->link(linked_prog.writeRef(), diagnostics.writeRef());
-    OUTPUT_DIAGNOSTICS(diagnostics);
     ComPtr<IBlob> code;
     linked_prog->getEntryPointCode(1, 0, code.writeRef(), diagnostics.writeRef());
-    OUTPUT_DIAGNOSTICS(diagnostics);
     std::ofstream out("out.glsl");
     if (code)
     {

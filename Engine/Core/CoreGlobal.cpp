@@ -5,7 +5,7 @@
  * @brief 
  */
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 
 void EngineStatistics::IncreaseFrameIndex()
 {

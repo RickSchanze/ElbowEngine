@@ -7,11 +7,11 @@
 
 #include "Path.h"
 
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "File.h"
 #include "Folder.h"
-#include "Log/Logger.h"
-#include "PlatformLogcat.h"
+#include "Core/Log/Logger.h"
+#include "Platform/PlatformLogcat.h"
 
 #include <filesystem>
 static bool IsProjectPathValid(core::StringView path)

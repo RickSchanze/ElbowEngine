@@ -9,7 +9,7 @@
 
 #include "Path.h"
 
-#include "Base/EString.h"
+#include "Core/Base/EString.h"
 
 #include <filesystem>
 #include <regex>

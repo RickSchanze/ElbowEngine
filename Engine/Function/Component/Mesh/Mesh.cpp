@@ -7,9 +7,9 @@
 
 #include "Mesh.h"
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "ImGui/ImGuiHelper.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 #include "Render/Materials/Material.h"
 #include "Render/RenderContext.h"
 

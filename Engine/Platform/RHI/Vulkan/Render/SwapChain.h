@@ -6,9 +6,9 @@
  */
 
 #pragma once
-#include "Base/UniquePtr.h"
-#include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "RHI/Vulkan/Resource/Image.h"
+#include "Core/Base/UniquePtr.h"
+#include "Platform/RHI/Vulkan/Interface/IRHIResource.h"
+#include "Platform/RHI/Vulkan/Resource/Image.h"
 #include "vulkan/vulkan.hpp"
 namespace rhi::vulkan
 {

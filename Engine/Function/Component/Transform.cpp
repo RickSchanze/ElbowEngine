@@ -6,9 +6,9 @@
  */
 
 #include "Transform.h"
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "GameObject/GameObject.h"
-#include "Math/Math.h"
+#include "Core/Math/Math.h"
 #include "Utils/StringUtils.h"
 
 RTTR_REGISTRATION

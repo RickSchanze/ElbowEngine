@@ -7,9 +7,9 @@
 
 #include "PhysicalDevice.h"
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "Instance.h"
-#include "PlatformLogcat.h"
+#include "Platform/PlatformLogcat.h"
 
 namespace rhi::vulkan
 {

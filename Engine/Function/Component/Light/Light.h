@@ -7,8 +7,8 @@
 
 #pragma once
 #include "Component/Component.h"
-#include "Math/MathTypes.h"
-#include "Singleton/Singleton.h"
+#include "Core/Math/MathTypes.h"
+#include "Core/Singleton/Singleton.h"
 
 #include "Light.generated.h"
 
@@ -27,7 +27,7 @@ enum class ELightType
 ECLASS()
 class Light : public Component
 {
-    GENERATED_BODY(Light)
+    GENERATED_CLASS(Light)
 
 public:
     Light();

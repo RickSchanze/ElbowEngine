@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "Base/UniquePtr.h"
-#include "CoreDef.h"
+#include "Core/Base/UniquePtr.h"
+#include "Core/CoreDef.h"
 #include "Render/LogicalDevice.h"
 
 #include "vulkan/vulkan.hpp"

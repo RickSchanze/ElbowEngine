@@ -6,11 +6,11 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
-#include "PlatformLogcat.h"
-#include "Reflection/Reflection.h"
-#include "RHI/Vulkan/Interface/IRHIResource.h"
-#include "Singleton/Singleton.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Platform/PlatformLogcat.h"
+#include "Core/Reflection/Reflection.h"
+#include "Platform/RHI/Vulkan/Interface/IRHIResource.h"
+#include "Core/Singleton/Singleton.h"
 #include "vulkan/vulkan.hpp"
 
 namespace core

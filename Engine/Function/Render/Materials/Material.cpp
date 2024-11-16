@@ -17,8 +17,8 @@
 #include <ranges>
 
 #include "Render/Shaders/StandardForwardShader.h"
-#include "RHI/Vulkan/Render/GraphicsPipeline.h"
-#include "RHI/Vulkan/Render/RenderPass.h"
+#include "Platform/RHI/Vulkan/Render/GraphicsPipeline.h"
+#include "Platform/RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/ShaderProgram.h"
 #include "Utils/StringUtils.h"
 

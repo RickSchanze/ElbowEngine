@@ -12,7 +12,7 @@
 #include "ConsoleWindow.generated.h"
 #include "Editor/Widgets/Button.h"
 #include "Log/LogRecorder.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 
 namespace tool::widget
 {
@@ -24,7 +24,7 @@ namespace tool::window {
 ECLASS()
 class ConsoleWindow : public WindowBase
 {
-    GENERATED_BODY(ConsoleWindow)
+    GENERATED_CLASS(ConsoleWindow)
 public:
     ConsoleWindow();
 

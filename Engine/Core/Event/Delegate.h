@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Base/CoreTypeDef.h"
-#include "CoreDef.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/CoreDef.h"
 #include "fmt/format.h"
 
 namespace core

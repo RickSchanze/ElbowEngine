@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "Logcat.h"
+#include "Core/CoreDef.h"
+#include "Core/Log/CoreLogCategory.h"
 #include "Reflection.h"
 
 namespace core

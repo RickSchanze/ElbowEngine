@@ -5,7 +5,7 @@
  * @brief 
  */
 #include "LiteForwardRenderPipeline.h"
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 #include "Component/Camera.h"
 #include "Component/Light/Light.h"
@@ -16,9 +16,9 @@
 #include "RenderPasses/PostImageLayoutTransitionPass.h"
 #include "RenderPasses/SimpleObjectShadingPass.h"
 #include "RenderPasses/SkyboxPass.h"
-#include "RHI/Vulkan/CommandBuffer.h"
-#include "RHI/Vulkan/Render/GraphicsPipeline.h"
-#include "RHI/Vulkan/Render/RenderPass.h"
+#include "Platform/RHI/Vulkan/CommandBuffer.h"
+#include "Platform/RHI/Vulkan/Render/GraphicsPipeline.h"
+#include "Platform/RHI/Vulkan/Render/RenderPass.h"
 #include "RHI/Vulkan/Render/Shader.h"
 #include "Shaders/InfiniteGridShader.h"
 #include "Shaders/PointLightShadowPassShader.h"

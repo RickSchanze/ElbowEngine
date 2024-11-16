@@ -6,9 +6,9 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
-#include "Base/UniquePtr.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
+#include "Core/Base/UniquePtr.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

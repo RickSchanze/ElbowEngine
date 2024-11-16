@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CoreTypeTraits.h"
+#include "Core/CoreTypeTraits.h"
 #include "Delegate.h"
-#include "Utils/ContainerUtils.h"
+#include "Core/Utils/ContainerUtils.h"
 
 // TODO: AsyncEvent AsyncMultiCastEvent
 

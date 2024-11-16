@@ -6,7 +6,7 @@
  */
 
 #include "CoroutineExecutorManager.h"
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 
 namespace async::coro
 {

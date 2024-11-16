@@ -6,14 +6,14 @@
  */
 
 #pragma once
-#include "Base/Interface.h"
-#include "Core.h"
+#include "Core/Base/Interface.h"
+#include "Core/Core.h"
 
 #include GEN_HEADER("Resource.IResource.generated.h")
 
 class CLASS(Interface) IResource : implements core::Interface
 {
-    GENERATED_BODY(IResource)
+    GENERATED_CLASS(IResource)
 public:
     ~IResource() override = default;
 

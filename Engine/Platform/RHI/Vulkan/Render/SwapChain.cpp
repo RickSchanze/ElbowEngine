@@ -7,11 +7,11 @@
 
 #include "SwapChain.h"
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "LogicalDevice.h"
-#include "PlatformLogcat.h"
-#include "RHI/Vulkan/VulkanContext.h"
-#include "RHI/Vulkan/VulkanStringify.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/VulkanStringify.h"
 
 namespace rhi::vulkan
 {

@@ -7,10 +7,9 @@
 
 #include "Reflection.h"
 
-#include "ITypeGetter.h"
-#include "Log/CoreLogCategory.h"
-#include "Log/Logger.h"
-#include "Utils/ContainerUtils.h"
+#include "Core/Log/CoreLogCategory.h"
+#include "Core/Log/Logger.h"
+#include "Core/Utils/ContainerUtils.h"
 
 namespace core
 {
@@ -24,6 +23,17 @@ FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
 bool FieldInfo::IsPrimitive() const
 {
     return type_ && type_->IsPrimitive();
+}
+
+bool FieldInfo::IsEnum() const
+{
+    return type_ && type_->IsEnum();
+}
+
+Optional<int32_t> FieldInfo::GetObjEnumValue(const Any& obj) const
+{
+    const auto value = GetValue(obj);
+    return value.AsCopy<int32_t>();
 }
 
 core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
@@ -66,66 +76,60 @@ FieldInfo* FieldInfo::SetComment(StringView comment)
     return this;
 }
 
-Any FieldInfo::GetValue(const ITypeGetter* obj) const
+Any FieldInfo::GetValue(const Any& obj) const
 {
-    if (obj == nullptr)
+    if (!obj.HasValue())
     {
         LOGGER.Error(logcat::Reflection, "obj is null");
         return {};
     }
-    if (obj->GetType() != outer_)
+    if (obj.GetType() != outer_)
     {
         LOGGER.Error(
-            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj->GetType()->GetName(), outer_->GetName()
+            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj.GetType()->GetName(), outer_->GetName()
         );
         return {};
     }
-    return {GetFieldPtr(obj), type_};
+    return {GetFieldPtr(obj.GetRawPtr()), type_};
 }
 
-bool FieldInfo::SetValue(const ITypeGetter* obj, const Any& value) const
+Expected<void, FieldInfo::Error> FieldInfo::SetValue(const Any& obj, const Any& value) const
 {
-    if (obj == nullptr || !value.HasValue()) return false;
-    return true;
+    if (!obj.HasValue() || !value.HasValue())
+    {
+        return Unexpected(Error::InputInvalid);
+    }
+    if (obj.GetType() != outer_ || value.GetType() != type_)
+    {
+        return Unexpected(Error::TypeMismatch);
+    }
+    if (IsSequentialContainer() || IsAssociativeContainer())
+    {
+        return Unexpected(Error::UnsupportedContainer);
+    }
+    memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
+    return {};
 }
 
-SequentialContainerView* FieldInfo::CreateSequentialContainerView(const ITypeGetter* obj) const
+SequentialContainerView* FieldInfo::CreateSequentialContainerView(void* obj) const
 {
     if (!container_view_)
     {
         LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
         return nullptr;
     }
-    auto ele_type        = obj->GetType();
-    auto view_outer_type = container_view_->GetOuterType();
-    if (ele_type != view_outer_type)
-    {
-        LOGGER.Error(
-            logcat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
-        );
-        return nullptr;
-    }
-    container_view_->SetInstance(const_cast<ITypeGetter*>(obj));
+    container_view_->SetInstance(obj);
     return static_cast<SequentialContainerView*>(container_view_.Get());
 }
 
-AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(const ITypeGetter* obj) const
+AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(void* obj) const
 {
     if (!container_view_)
     {
         LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
         return nullptr;
     }
-    auto ele_type        = obj->GetType();
-    auto view_outer_type = container_view_->GetOuterType();
-    if (ele_type != view_outer_type)
-    {
-        LOGGER.Error(
-            logcat::Reflection, "obj类型与容器outer类型不匹配, 传入元素类型为{}, 容器outer类型为{}", ele_type->GetName(), view_outer_type->GetName()
-        );
-        return nullptr;
-    }
-    container_view_->SetInstance(const_cast<ITypeGetter*>(obj));
+    container_view_->SetInstance(obj);
     return static_cast<AssociativeContainerView*>(container_view_.Get());
 }
 
@@ -296,6 +300,19 @@ Type* Type::SetComment(const StringView str)
     comment_ = str;
 #endif
     return this;
+}
+
+Optional<core::StringView> Type::GetEnumValueString(int32_t value) const
+{
+    if (!IsEnum()) return NullOpt;
+    for (auto enum_value: GetSelfDefinedFields())
+    {
+        if (enum_value->GetEnumFieldValue() == value)
+        {
+            return enum_value->GetName();
+        }
+    }
+    return NullOpt;
 }
 
 }   // namespace core

@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "Singleton/Singleton.h"
+#include "Core/CoreDef.h"
+#include "Core/Singleton/Singleton.h"
 #include "Texture.h"
-#include "FileSystem/File.h"
+#include "Platform/FileSystem/File.h"
 
 
 namespace platform

@@ -11,6 +11,8 @@
 #include "LogEvent.h"
 #include "LogRecorder.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "Core/Base/CallStackFrame.h"
+#include "Core/Core.h"
 
 namespace core
 {

@@ -7,10 +7,10 @@
 
 #include "Buffer.h"
 
-#include "PlatformLogcat.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 namespace rhi::vulkan
 {

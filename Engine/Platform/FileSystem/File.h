@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
-#include "Reflection/ITypeGetter.h"
-#include "Reflection/MetaInfoMacro.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
+#include "Core/Reflection/ITypeGetter.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 #include <utility>
 
 
@@ -45,8 +45,8 @@ public:
 
     [[nodiscard]] bool IsExist() const;
 
-    FileSystemError                                             TryReadAllText(core::String& out, bool combine_proj_path = true) const;
-    [[nodiscard]] core::Expected<core::String, FileSystemError> ReadAllText(bool combine_proj_path = true) const;
+    bool                                                        TryReadAllText(core::String& out, bool combine_proj_path = true) const;
+    [[nodiscard]] std::optional<core::String>                   ReadAllText(bool combine_proj_path = true) const;
 
     [[nodiscard]] bool Create(FileCreateMode mode = FileCreateMode::Text, bool combine_proj_path = true) const;
 

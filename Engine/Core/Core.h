@@ -6,12 +6,12 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
+#include "Core/Base/CoreTypeDef.h"
 
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 
-#include "Reflection/Reflection.h"
+#include "Core/Reflection/Reflection.h"
 
-#include "Reflection/MetaInfoMacro.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 
 #include "Reflection/CtorManager.h"

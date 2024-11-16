@@ -15,7 +15,7 @@ namespace function::comp {
 ECLASS()
 class Autoroatation : public TickableComponent
 {
-    GENERATED_BODY(Autoroatation)
+    GENERATED_CLASS(Autoroatation)
 public:
     Autoroatation();
 

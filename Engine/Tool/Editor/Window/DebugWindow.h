@@ -15,7 +15,7 @@ namespace tool::window {
 
 ECLASS()
 class StatisticsWindow : public WindowBase {
-    GENERATED_BODY(StatisticsWindow)
+    GENERATED_CLASS(StatisticsWindow)
 
 public:
     StatisticsWindow();

@@ -7,19 +7,19 @@
 
 #include "VulkanContext.h"
 
-#include "CoreEvents.h"
-#include "CoreGlobal.h"
+#include "Core/CoreEvents.h"
+#include "Core/CoreGlobal.h"
 #include "Instance.h"
 #include "Render/CommandPool.h"
 #include "Render/GraphicsPipeline.h"
-#include "Utils/ContainerUtils.h"
+#include "Core/Utils/ContainerUtils.h"
 
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 // for profiling GPU
 #include "CommandBuffer.h"
-#include "PlatformLogcat.h"
-#include "RHI/CommandBuffer.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/CommandBuffer.h"
 #include "tracy/TracyVulkan.hpp"
 
 namespace rhi::vulkan

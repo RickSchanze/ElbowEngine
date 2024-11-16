@@ -46,11 +46,10 @@ void AssociativeContainerView::ForEach(const Function<void(Any, Any)>& Func)
     if (BeginIterate())
     {
         Func(GetCurrentKey(), GetCurrentValue());
-
         while (HasNext())
         {
-            Func(GetCurrentKey(), GetCurrentValue());
             Next();
+            Func(GetCurrentKey(), GetCurrentValue());
         }
         EndIterate();
     }

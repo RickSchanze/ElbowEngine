@@ -7,8 +7,8 @@
 
 #pragma once
 #include "Component/Interface/IDetailGUIDrawer.h"
-#include "CoreDef.h"
-#include "Object/Object.h"
+#include "Core/CoreDef.h"
+#include "Core/Object/Object.h"
 #include "ResourceManager.h"
 #include "RHI/Vulkan/Render/Shader.h"
 

@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CoreDef.h"
-
-#include "Base/EString.h"
+#include "Core/Base/EString.h"
+#include "Core/CoreDef.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 #include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
 
@@ -17,26 +17,41 @@
 #include <imgui.h>
 #endif
 
+#include GEN_HEADER("Core.MathTypes.generated.h")
+#include "Core/Reflection/MetaInfoManager.h"
+
 namespace core
 {
 class Archive;
 
-struct Size2D
+struct STRUCT() Size2D
 {
+    GENERATED_STRUCT(Size2D)
+
+    PROPERTY()
     int32_t width;
+
+    PROPERTY()
     int32_t height;
 
     Size2D(const int32_t w, const int32_t h) : width(w), height(h) {}
+
+    Size2D() = default;
 
     [[nodiscard]] core::String ToString() const;
 };
 
 
-typedef glm::vec3 Vector3;
-
-struct Vector2
+struct STRUCT() Vector2
 {
+    GENERATED_STRUCT(Vector2)
+
+    Vector2() = default;
+    Vector2(float x, float y) : x(x), y(y) {}
+
     operator glm::vec2() const;
+    operator glm::vec3() const { return {x, y, 0}; }
+    operator glm::vec4() const { return {x, y, 0, 0}; }
 
 #ifdef USE_IMGUI
     operator ImVec2() const;
@@ -44,13 +59,17 @@ struct Vector2
 
     Vector2 operator+(const Vector2& other) const;
 
-    Vector2 operator*=(const float scalar) const;
+    Vector2 operator*=(float scalar) const;
     Vector2 operator*(float x) const;
 
+    PROPERTY()
     float x;
+
+    PROPERTY()
     float y;
 };
 
+typedef glm::vec3 Vector3;
 typedef glm::vec4 Vector4;
 typedef glm::mat4 Matrix4x4;
 typedef glm::quat Quaternion;
@@ -69,10 +88,17 @@ constexpr Vector3 DownVector    = {0, -1, 0};
 constexpr float PI = 3.14159265358979323846f;
 }   // namespace Constant
 
-struct Rotator
+struct STRUCT() Rotator
 {
-    float yaw   = 0;
-    float roll  = 0;
+    GENERATED_STRUCT(Rotator)
+public:
+    PROPERTY()
+    float yaw = 0;
+
+    PROPERTY()
+    float roll = 0;
+
+    PROPERTY()
     float pitch = 0;
 
     Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
@@ -102,14 +128,22 @@ struct Rotator
     [[nodiscard]] Rotator ToRotatorRadian() const;
 };
 
-struct Color
+struct STRUCT() Color
 {
+    GENERATED_STRUCT(Color)
+public:
+    PROPERTY()
     float r = 0;
+
+    PROPERTY()
     float g = 0;
+
+    PROPERTY()
     float b = 0;
+
+    PROPERTY()
     float a = 1.f;
 
-public:
     static Color Black() { return {0, 0, 0, 1}; }
     static Color White() { return {1, 1, 1, 1}; }
     static Color Red() { return {1, 0, 0, 1}; }
@@ -152,11 +186,4 @@ inline Matrix4x4 GetMatrix4x4Identity()
     static auto identity = glm::mat4(1.0f);
     return identity;
 }
-
-#if REGION(数学类型的序列化)
-Archive& operator<<(Archive& ar, const Vector2& v);
-Archive& operator<<(Archive& ar, const Vector3& v);
-Archive& operator<<(Archive& ar, const Vector4& v);
-Archive& operator<<(Archive& ar, const Color& q);
-#endif
 }

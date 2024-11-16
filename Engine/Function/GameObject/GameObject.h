@@ -7,8 +7,8 @@
 
 #pragma once
 #include "Component/Transform.h"
-#include "CoreGlobal.h"
-#include "Object/Object.h"
+#include "Core/CoreGlobal.h"
+#include "Core/Object/Object.h"
 #include "World/ITickable.h"
 
 namespace function::comp

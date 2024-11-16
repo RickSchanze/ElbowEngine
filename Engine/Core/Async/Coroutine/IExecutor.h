@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 
 namespace async::coro
 {

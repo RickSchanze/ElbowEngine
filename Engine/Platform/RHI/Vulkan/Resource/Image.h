@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
 #include "ImageView.h"
-#include "RHI/Vulkan/Interface/IRHIResource.h"
+#include "Platform/RHI/Vulkan/Interface/IRHIResource.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

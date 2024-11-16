@@ -2,7 +2,7 @@
 * 一些重要的定义
 */
 #pragma once
-#include "Base/CoreTypeDef.h"
+#include "Core/Base/CoreTypeDef.h"
 
 #if WITH_EDITOR
 #define EDITOR_META(...) (__VA_ARGS__)
@@ -60,6 +60,6 @@
     {                                               \
         LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
         std::terminate();                           \
-}
+    }
 #endif
 

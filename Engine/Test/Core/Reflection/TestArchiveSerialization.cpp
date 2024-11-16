@@ -6,7 +6,7 @@
  */
 
 #include "TestArchiveSerialization.h"
-#include "Core.h"
+#include "Core/Core.h"
 #include "Serialization/YamlArchive.h"
 #include <gtest/gtest.h>
 

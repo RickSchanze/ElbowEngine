@@ -7,7 +7,7 @@
 
 #include "SceneViewportWindow.h"
 
-#include "CoreEvents.h"
+#include "Core/CoreEvents.h"
 #include "ImGui/ImGuiHelper.h"
 
 #include "Render/RenderContext.h"

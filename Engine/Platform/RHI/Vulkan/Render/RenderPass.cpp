@@ -8,9 +8,9 @@
 #include "RenderPass.h"
 
 #include "CommandPool.h"
-#include "CoreGlobal.h"
-#include "Math/MathTypes.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Core/CoreGlobal.h"
+#include "Core/Math/MathTypes.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include <ranges>
 #include <utility>
 

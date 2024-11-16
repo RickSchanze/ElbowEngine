@@ -7,9 +7,9 @@
 
 #include "WindowManager.h"
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "Object/ObjectManager.h"
-#include "Utils/ContainerUtils.h"
+#include "Core/Utils/ContainerUtils.h"
 #include "Utils/StringUtils.h"
 #include "WindowBase.h"
 

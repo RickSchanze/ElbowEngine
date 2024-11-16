@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "Core.h"
+#include "Core/Core.h"
 
+#include "Core/Reflection/ITypeGetter.h"
 #include GEN_HEADER("Test.TestArchiveSerialization.generated.h")
 
 class CLASS() TestArchiveSerialization : public core::ITypeGetter
 {
-    GENERATED_BODY(TestArchiveSerialization)
+    GENERATED_CLASS(TestArchiveSerialization)
 private:
     PROPERTY()
     int32_t a_ = 12;

@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
 #include "File.h"
 
 namespace platform

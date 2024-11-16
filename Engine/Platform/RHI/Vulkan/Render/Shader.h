@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include "FileSystem/File.h"
-#include "PlatformEvents.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/FileSystem/File.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include "Shader.h"
 #include "vulkan/vulkan.hpp"
 

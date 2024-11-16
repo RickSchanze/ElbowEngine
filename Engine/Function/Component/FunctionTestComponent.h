@@ -11,7 +11,7 @@
 
 #include "Async/Coroutine/Task.h"
 #include "Component.h"
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 
 namespace function::comp
 {

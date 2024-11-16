@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "Reflection/ITypeGetter.h"
+#include "Core/Reflection/ITypeGetter.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 
 namespace core
 {

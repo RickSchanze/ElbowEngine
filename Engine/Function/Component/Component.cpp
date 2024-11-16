@@ -7,7 +7,7 @@
 
 #include "Component.h"
 
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "GameObject/GameObject.h"
 #include "Utils/StringUtils.h"
 

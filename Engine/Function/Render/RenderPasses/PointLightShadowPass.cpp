@@ -8,11 +8,11 @@
 #include "PointLightShadowPass.h"
 
 #include "Component/Light/Light.h"
-#include "Math/Math.h"
+#include "Core/Math/Math.h"
 #include "Render/Materials/Material.h"
-#include "RHI/Vulkan/Render/CommandPool.h"
-#include "RHI/Vulkan/Render/Framebuffer.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/Render/CommandPool.h"
+#include "Platform/RHI/Vulkan/Render/Framebuffer.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
 REGISTER_RENDER_PASS_REFL(function::PointLightShadowPass)
 

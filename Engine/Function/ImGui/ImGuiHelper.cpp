@@ -10,9 +10,9 @@
 #ifdef USE_IMGUI
 #include "CachedString.h"
 #include "IconsMaterialDesign.h"
-#include "Math/Math.h"
-#include "Math/MathTypes.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Core/Math/Math.h"
+#include "Core/Math/MathTypes.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include "Texture.h"
 #include <imgui_impl_vulkan.h>
 #include <ranges>

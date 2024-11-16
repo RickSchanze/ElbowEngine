@@ -7,10 +7,10 @@
 
 #include "MetaInfoManager.h"
 
-#include "Base/CoreTypeDef.h"
-#include "Base/Interface.h"
-#include "CoreGlobal.h"
-#include "Object/Object.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Interface.h"
+#include "Core/CoreGlobal.h"
+#include "Core/Object/Object.h"
 #include "Reflection.h"
 
 #include <ranges>
@@ -22,7 +22,7 @@ namespace core
         Type* tname##_type       = New<Type>();                   \
         tname##_type->type_hash_ = typeid(tname).hash_code();     \
         tname##_type->name_      = #tname;                        \
-        tname##_type->attribute_ = Type::Atomic;                  \
+        tname##_type->attribute_ = Type::Atomic | Type::Trivial;  \
         tname##_type->size_      = sizeof(tname);                 \
         RTTITypeInfo info        = RTTITypeInfo::Create<tname>(); \
         types_registered_[info]  = tname##_type;                  \

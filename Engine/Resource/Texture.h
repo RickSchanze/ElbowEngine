@@ -7,11 +7,11 @@
  */
 
 #pragma once
-#include "FileSystem/File.h"
-#include "FileSystem/Path.h"
+#include "Platform/FileSystem/File.h"
+#include "Platform/FileSystem/Path.h"
 #include "Interface/IResource.h"
 #include "Interface/IRHIResourceContainer.h"
-#include "RHI/Vulkan/Resource/Image.h"
+#include "Platform/RHI/Vulkan/Resource/Image.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

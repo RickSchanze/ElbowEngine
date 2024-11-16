@@ -7,8 +7,8 @@
 
 #include "ProfileMacro.h"
 
-#include "CoreDef.h"
-#include "Math/Math.h"
+#include "Core/CoreDef.h"
+#include "Core/Math/Math.h"
 
 uint32_t GetColor(int index)
 {

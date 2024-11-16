@@ -10,18 +10,18 @@
 #include "Component/Light/Light.h"
 #include "Component/Mesh/Mesh.h"
 #include "Component/Transform.h"
-#include "CoreEvents.h"
+#include "Core/CoreEvents.h"
 #include "Event.h"
-#include "Math/Math.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/Math.h"
+#include "Core/Math/MathTypes.h"
 #include "Render/Materials/Material.h"
 #include "RenderContext.h"
-#include "RHI/Vulkan/Interface/IGraphicsPipeline.h"
-#include "RHI/Vulkan/Render/RenderPass.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/Interface/IGraphicsPipeline.h"
+#include "Platform/RHI/Vulkan/Render/RenderPass.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include "Utils/MemoryUtils.h"
 
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 namespace function
 {

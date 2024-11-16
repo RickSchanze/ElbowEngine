@@ -7,8 +7,8 @@
 
 #include "Application.h"
 
-#include "CoreGlobal.h"
-#include "PlatformLogcat.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/PlatformLogcat.h"
 
 #include "ValidationLayer.h"
 

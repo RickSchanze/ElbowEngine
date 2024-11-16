@@ -6,7 +6,7 @@
  */
 
 #include "WindowBase.h"
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "EngineApplication.h"
 #include "ImGui/ImGuiHelper.h"
 #include "Utils/StringUtils.h"

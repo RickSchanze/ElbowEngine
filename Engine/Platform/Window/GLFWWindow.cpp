@@ -7,19 +7,19 @@
 
 #include "GLFWWindow.h"
 
-#include "CoreEvents.h"
-#include "FileSystem/Path.h"
+#include "Core/CoreEvents.h"
+#include "Platform/FileSystem/Path.h"
 #include "IconsMaterialDesign.h"
-#include "RHI/Vulkan/CommandBuffer.h"
-#include "RHI/Vulkan/Render/CommandPool.h"
-#include "RHI/Vulkan/Render/Framebuffer.h"
-#include "RHI/Vulkan/Render/GraphicsPipeline.h"
-#include "RHI/Vulkan/Render/RenderPass.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/CommandBuffer.h"
+#include "Platform/RHI/Vulkan/Render/CommandPool.h"
+#include "Platform/RHI/Vulkan/Render/Framebuffer.h"
+#include "Platform/RHI/Vulkan/Render/GraphicsPipeline.h"
+#include "Platform/RHI/Vulkan/Render/RenderPass.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 #include "vulkan/vulkan_to_string.hpp"
 #include "WindowCommon.h"
 
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 #ifdef USE_IMGUI
 #include "imgui_impl_glfw.h"

@@ -6,9 +6,9 @@
  */
 
 #include "File.h"
-#include "Log/Logger.h"
+#include "Core/Log/Logger.h"
 #include "Path.h"
-#include "PlatformLogcat.h"
+#include "Platform/PlatformLogcat.h"
 #include <filesystem>
 #include <fstream>
 
@@ -65,35 +65,30 @@ bool platform::File::IsExist() const
     return Path::IsExist(s);
 }
 
-platform::FileSystemError platform::File::TryReadAllText(core::String& out, bool combine_proj_path) const
+bool platform::File::TryReadAllText(core::String& out, bool combine_proj_path) const
 {
     core::String path = combine_proj_path ? GetAbsolutePath() : path_;
     if (!IsExist())
     {
         LOGGER.Error(logcat::Platform_FileSystem, "File not exist: {}", path);
-        return FileSystemError::FileNotFound;
+        return false;
     }
     std::ifstream file(path, std::ios::in);
     if (!file.is_open())
     {
         LOGGER.Error(logcat::Platform_FileSystem, "Failed to open file: {}", path);
-        return FileSystemError::FailedToOpenFile;
+        return false;
     }
     out.Clear();
     out = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    return FileSystemError::Success;
+    return true;
 }
 
-Expected<String, platform::FileSystemError> platform::File::ReadAllText(bool combine) const
+Optional<String> platform::File::ReadAllText(bool combine) const
 {
-    String text;
-    auto   err = TryReadAllText(text, combine);
-    // clang-format off
-    return match(err) (
-        pattern | FileSystemError::Success = text,
-        pattern | _ = err
-    );
-    // clang-format on
+    String     text;
+    const auto err = TryReadAllText(text, combine);
+    return err ? std::make_optional(text) : NullOpt;
 }
 
 bool platform::File::Create(FileCreateMode mode, bool combine_proj_path) const

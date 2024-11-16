@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 
 #include <vulkan/vulkan.hpp>
 

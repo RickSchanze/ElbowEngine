@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "RHI/CommandBuffer.h"
+#include "Platform/RHI/CommandBuffer.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

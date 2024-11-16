@@ -8,7 +8,7 @@
 #include "PropertyDrawer.h"
 
 #include "Component/Transform.h"
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "ImGui/ImGuiHelper.h"
 #include "Utils/ReflUtils.h"
 #include "Utils/StringUtils.h"

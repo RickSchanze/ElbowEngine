@@ -7,10 +7,10 @@
 
 #include "VulkanModel.h"
 
-#include "CoreGlobal.h"
-#include "PlatformLogcat.h"
-#include "RHI/Vulkan/Render/CommandPool.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Vulkan/Render/CommandPool.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
 namespace rhi::vulkan
 {

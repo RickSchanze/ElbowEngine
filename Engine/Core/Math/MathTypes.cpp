@@ -14,10 +14,81 @@
 #include <glm/glm.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "Serialization/Archive.h"
-
-
+#include "Core/Reflection/CtorManager.h"
+#include "Core/Reflection/Reflection.h"
 #include <glm/trigonometric.hpp>
+
+#include GEN_HEADER("Core.MathTypes.generated.h")
+
+GENERATED_SOURCE()
+
+// 注册glm::vec3 glm::vec4 glm::quat
+static core::Type* REFL_Register_Vec3()
+{
+    using namespace core;
+    Type* type = Type::Create<glm::vec3>("core.Vector3")->SetAttribute(Type::Trivial);
+    type->Internal_RegisterField("x", &glm::vec3::x, offsetof(glm::vec3, x));
+    type->Internal_RegisterField("y", &glm::vec3::y, offsetof(glm::vec3, y));
+    type->Internal_RegisterField("z", &glm::vec3::z, offsetof(glm::vec3, z));
+    return type;
+}
+
+static core::Type* REFL_Register_Vec4()
+{
+    using namespace core;
+    Type* type = Type::Create<glm::vec4>("core.Vector4")->SetAttribute(Type::Trivial);
+    type->Internal_RegisterField("x", &glm::vec4::x, offsetof(glm::vec4, x));
+    type->Internal_RegisterField("y", &glm::vec4::y, offsetof(glm::vec4, y));
+    type->Internal_RegisterField("z", &glm::vec4::z, offsetof(glm::vec4, z));
+    type->Internal_RegisterField("w", &glm::vec4::w, offsetof(glm::vec4, w));
+    return type;
+}
+
+static core::Type* REFL_Register_Quat()
+{
+    using namespace core;
+    Type* type = Type::Create<glm::quat>("core.Quaternion")->SetAttribute(Type::Trivial);
+    type->Internal_RegisterField("x", &glm::quat::x, offsetof(glm::quat, x));
+    type->Internal_RegisterField("y", &glm::quat::y, offsetof(glm::quat, y));
+    type->Internal_RegisterField("z", &glm::quat::z, offsetof(glm::quat, z));
+    type->Internal_RegisterField("w", &glm::quat::w, offsetof(glm::quat, w));
+    return type;
+}
+
+static void REFL_ConstructVec3(void* ptr)
+{
+    new (ptr) glm::vec3();
+}
+
+static void REFL_ConstructVec4(void* ptr)
+{
+    new (ptr) glm::vec4();
+}
+
+static void REFL_ConstructQuat(void* ptr)
+{
+    new (ptr) glm::quat();
+}
+
+void Z_MetaInfo_Registration_Func1()
+{
+    using namespace core;
+    core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec3>(), &REFL_Register_Vec3);
+    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::vec3>(), &REFL_ConstructVec3);
+    core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec4>(), &REFL_Register_Vec4);
+    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::vec4>(), &REFL_ConstructVec4);
+    core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::quat>(), &REFL_Register_Quat);
+    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::quat>(), &REFL_ConstructQuat);
+}
+
+namespace
+{
+struct Z_MetaInfo_Registration1
+{
+    Z_MetaInfo_Registration1() { Z_MetaInfo_Registration_Func1(); }
+};
+static const Z_MetaInfo_Registration1 Z_meta_info_registration1;
+}   // namespace
 
 namespace core
 {
@@ -41,7 +112,7 @@ Vector2::operator ImVec2() const
 
 Vector2 Vector2::operator+(const Vector2& other) const
 {
-    return Vector2(x + other.x, y + other.y);
+    return {x + other.x, y + other.y};
 }
 
 Vector2 Vector2::operator*=(const float scalar) const
@@ -179,50 +250,5 @@ bool Color::operator==(const Color& other) const
 bool Color::operator!=(const Color& other) const
 {
     return !(*this == other);
-}
-
-Archive& operator<<(Archive& ar, const Vector2& v)
-{
-    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
-    ar << Archive::InputType::MapStart;
-    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
-    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
-    ar << Archive::InputType::MapEnd;
-    return ar;
-}
-
-Archive& operator<<(Archive& ar, const Vector3& v)
-{
-    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
-    ar << Archive::InputType::MapStart;
-    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
-    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
-    ar << Archive::InputType::Key << "z" << Archive::InputType::Value << v.z;
-    ar << Archive::InputType::MapEnd;
-    return ar;
-}
-
-Archive& operator<<(Archive& ar, const Vector4& v)
-{
-    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
-    ar << Archive::InputType::MapStart;
-    ar << Archive::InputType::Key << "x" << Archive::InputType::Value << v.x;
-    ar << Archive::InputType::Key << "y" << Archive::InputType::Value << v.y;
-    ar << Archive::InputType::Key << "z" << Archive::InputType::Value << v.z;
-    ar << Archive::InputType::Key << "w" << Archive::InputType::Value << v.w;
-    ar << Archive::InputType::MapEnd;
-    return ar;
-}
-
-Archive& operator<<(Archive& ar, const Color& q)
-{
-    // Assert(Archive.Serialization, ar.IsSerializing(), "请在序列化模式使用此函数");
-    ar << Archive::InputType::MapStart;
-    ar << Archive::InputType::Key << "r" << Archive::InputType::Value << q.r;
-    ar << Archive::InputType::Key << "g" << Archive::InputType::Value << q.g;
-    ar << Archive::InputType::Key << "b" << Archive::InputType::Value << q.b;
-    ar << Archive::InputType::Key << "a" << Archive::InputType::Value << q.a;
-    ar << Archive::InputType::MapEnd;
-    return ar;
 }
 }

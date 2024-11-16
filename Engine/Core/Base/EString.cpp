@@ -6,7 +6,7 @@
  */
 
 #include "EString.h"
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "unicode/unistr.h"
 
 #include <ostream>

@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "Math/MathTypes.h"
+#include "Core/CoreDef.h"
+#include "Core/Math/MathTypes.h"
 
 class Transform;
 

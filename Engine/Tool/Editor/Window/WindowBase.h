@@ -6,9 +6,9 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "Event/Event.h"
-#include "Object/Object.h"
+#include "Core/CoreDef.h"
+#include "Core/Event/Event.h"
+#include "Core/Object/Object.h"
 #include "ToolCommon.h"
 
 #include "WindowBase.generated.h"
@@ -34,7 +34,7 @@ DECLARE_MULTICAST_EVENT(WindowVisibilityChangedEvent, EWindowVisibility, EWindow
 ECLASS()
 class WindowBase : public Object
 {
-    GENERATED_BODY(WindowBase)
+    GENERATED_CLASS(WindowBase)
 
 public:
     WindowBase() : Super(EOF_IsWindow) {}

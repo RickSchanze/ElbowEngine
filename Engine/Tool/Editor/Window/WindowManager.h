@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "CoreDef.h"
-#include "Singleton/Singleton.h"
+#include "Core/CoreDef.h"
+#include "Core/Singleton/Singleton.h"
 #include "ToolCommon.h"
 
 namespace tool::window

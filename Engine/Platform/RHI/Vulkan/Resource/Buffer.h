@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Base/EString.h"
+#include "Core/Base/EString.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

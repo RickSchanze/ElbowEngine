@@ -7,8 +7,8 @@
 
 #include "SimpleObjectShadingPass.h"
 
-#include "RHI/Vulkan/Render/Framebuffer.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/Render/Framebuffer.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
 REGISTER_RENDER_PASS_REFL(function::SimpleObjectShadingPass);
 

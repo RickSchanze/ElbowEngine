@@ -8,10 +8,10 @@
 #pragma once
 
 // 此头文件不能包含Reflection.h
-#include "Base/CoreTypeDef.h"
-#include "Base/Ref.h"
-#include "CoreGlobal.h"
-#include "Log/CoreLogCategory.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Ref.h"
+#include "Core/CoreGlobal.h"
+#include "Core/Log/CoreLogCategory.h"
 #include "MetaInfoManager.h"
 
 namespace core
@@ -66,6 +66,9 @@ struct Any
     [[nodiscard]] bool        HasValue() const { return ptr_ != nullptr; }
     [[nodiscard]] bool        IsDerivedFrom(const Type* t) const;
     [[nodiscard]] bool        IsParentOf(const Type* t) const;
+    [[nodiscard]] void*       GetRawPtr() const { return ptr_ ? ptr_->GetData() : nullptr; }
+    [[nodiscard]] bool        IsPrimitive() const;
+    [[nodiscard]] bool        IsEnum() const;
 
     // 将void*的内容复制到T中
     template <typename T>
@@ -101,21 +104,16 @@ private:
     Base* ptr_;
 };
 
-void LogTypeNotSameError(const Type* t1, const Type* t2);
-void LogTypeDerivedError(const Type* t1, const Type* t2);
-
 template <typename T>
 Optional<T> Any::AsCopy() const
 {
     if (ptr_ == nullptr)
     {
-        LOGGER.Error(logcat::Reflection, "Any has no value");
         return NullOpt;
     }
     const Type* t = TypeOf<T>();
     if (t != GetType())
     {
-        LogTypeNotSameError(t, GetType());
         return NullOpt;
     }
     const T& tmp = *static_cast<T*>(ptr_->GetData());
@@ -128,12 +126,10 @@ const T* Any::As() const
 {
     if (ptr_ == nullptr)
     {
-        LOGGER.Error(logcat::Reflection, "Any has no value");
         return nullptr;
     }
     if (!IsDerivedFrom(TypeOf<T>()))
     {
-        LogTypeDerivedError(GetType(), TypeOf<T>());
         return nullptr;
     }
     return static_cast<const T*>(ptr_->GetData());

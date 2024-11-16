@@ -6,11 +6,11 @@
  */
 
 #include "Camera.h"
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "GameObject/GameObject.h"
 #include "Input/Input.h"
-#include "Math/Math.h"
-#include "Math/MathTypes.h"
+#include "Core/Math/Math.h"
+#include "Core/Math/MathTypes.h"
 
 #include "Camera.generated.h"
 

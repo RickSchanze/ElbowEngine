@@ -16,7 +16,7 @@ namespace tool::window {
 ECLASS()
 class LightSettingWindow : public WindowBase
 {
-    GENERATED_BODY(LightSettingWindow)
+    GENERATED_CLASS(LightSettingWindow)
 public:
     LightSettingWindow();
     void Draw(float delta_time) override;

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "EString.h"
 namespace core
 {

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Math/MathTypes.h"
+#include "Core/Math/MathTypes.h"
 
 // clang-format off
 enum class KeyCode {

@@ -6,11 +6,11 @@
  */
 
 #include "LogicalDevice.h"
-#include "PlatformLogcat.h"
-#include "RHI/Vulkan/Instance.h"
-#include "RHI/Vulkan/PhysicalDevice.h"
-#include "RHI/Vulkan/VulkanContext.h"
-#include "RHI/Vulkan/VulkanStringify.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Vulkan/Instance.h"
+#include "Platform/RHI/Vulkan/PhysicalDevice.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/VulkanStringify.h"
 #include "SwapChain.h"
 #include "vulkan/vulkan.hpp"
 

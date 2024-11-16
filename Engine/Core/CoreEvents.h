@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Event/Event.h"
+#include "Core/Event/Event.h"
 
 DECLARE_EVENT(ProjectPathSetEvent, void);
 DECLARE_EVENT(GetAppWindowSizeEvent, void, int*, int*);

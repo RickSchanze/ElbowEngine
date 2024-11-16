@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Base/UniquePtr.h"
+#include "Core/Base/UniquePtr.h"
 #include "Interface/IRHIResource.h"
 #include "PhysicalDevice.h"
 #include "ValidationLayer.h"

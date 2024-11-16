@@ -27,11 +27,6 @@ if (WITH_EDITOR)
 endif ()
 
 set(CMAKE_CXX_STANDARD 23)
-set(REFLECTION_EXE ${CMAKE_SOURCE_DIR}/CodeGenerator/bin/CodeGenerator.exe)
-set(PYTHON_EXE "C:/Users/Echo/AppData/Local/Programs/Python/Python312/python.exe")
-
-execute_process(COMMAND ${PYTHON_EXE} ${CMAKE_SOURCE_DIR}/CodeGen/main.py --includes ${CMAKE_BINARY_DIR}/vcpkg_installed/x86-windows/include)
-
 set(ELBOWENGINE_MAKE_WORK_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")

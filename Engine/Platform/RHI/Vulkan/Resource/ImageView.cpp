@@ -7,8 +7,8 @@
 
 #include "ImageView.h"
 
-#include "RHI/Vulkan/Render/LogicalDevice.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Platform/RHI/Vulkan/Render/LogicalDevice.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 
 namespace rhi::vulkan
 {

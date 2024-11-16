@@ -30,7 +30,7 @@ namespace function::comp {
 ECLASS()
 class Mesh : public Component, public IDetailGUIDrawer
 {
-    GENERATED_BODY(Mesh)
+    GENERATED_CLASS(Mesh)
 public:
     explicit Mesh();
 

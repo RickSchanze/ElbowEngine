@@ -14,7 +14,7 @@ namespace tool::window {
 
 ECLASS()
 class ViewportWindow : public WindowBase {
-    GENERATED_BODY(ViewportWindow)
+    GENERATED_CLASS(ViewportWindow)
 public:
     ViewportWindow();
     // 是不是主要渲染的对象(交换链)

@@ -221,9 +221,14 @@ public class CodeGenerator
 
         foreach (var attr in attributes)
         {
-            if (attr.Key == "Interface")
+            if (attr.Key is "Interface" or "Trivial")
             {
-                sw.Write("->SetAttribute(Type::Interface)");
+                sw.Write($"->SetAttribute(Type::{attr.Key})");
+            }
+
+            if (attr.Key is "Config")
+            {
+                sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, \"{attr.Value}\")");
             }
         }
 

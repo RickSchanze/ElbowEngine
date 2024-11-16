@@ -7,15 +7,14 @@
 
 #pragma once
 #include "Any.h"
-#include "Base/Base.h"
-#include "Base/CoreTypeDef.h"
-#include "Base/Ref.h"
 #include "ContainerView.h"
-#include "CoreGlobal.h"
-#include "CoreTypeTraits.h"
-#include "ITypeGetter.h"
-#include "Log/CoreLogCategory.h"
-#include "Log/Logger.h"
+#include "Core/Base/Base.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Ref.h"
+#include "Core/CoreGlobal.h"
+#include "Core/CoreTypeTraits.h"
+#include "Core/Log/CoreLogCategory.h"
+#include "Core/Log/Logger.h"
 #include "MetaInfoManager.h"
 #include <utility>
 
@@ -122,11 +121,37 @@ struct FieldInfo
         Count,
     };
 
+    enum class Error
+    {
+        InputInvalid,
+        TypeMismatch,
+        UnsupportedContainer,
+    };
+
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
-    [[nodiscard]] bool        IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool        IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
-    [[nodiscard]] bool        IsPrimitive() const;
+    [[nodiscard]] bool    IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
+    [[nodiscard]] bool    IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool    IsPrimitive() const;
+    /// 这个Field是不是被声明为某一个枚举?
+    /// class A {
+    ///   MyEnum enum_; -> IsEnum() == true, IsAEnumField() == false
+    /// }
+    [[nodiscard]] bool    IsEnum() const;
+
+    /// 这个Field代表一个类的一个filed, 其类型是一个枚举
+    /// 获取这个枚举值, 以int表示
+    [[nodiscard]] Optional<int32_t> GetObjEnumValue(const Any&obj) const;
+
+    /// 这个Field表示一个枚举里的一个值
+    /// 获取这个枚举值, 以int表示
+    [[nodiscard]] int32_t GetEnumFieldValue() const { return enum_value_; }
+
+    /// 这个Field是不是一个枚举值?
+    /// enum class Enum {
+    ///   A, -> IsEnum() == false, IsAEnumField() == true
+    /// }
+    [[nodiscard]] bool        IsAEnumField() const { return enum_value_ != -1; }
     [[nodiscard]] StringView  GetAttribute(ValueAttribute attr) const;
     [[nodiscard]] int32_t     GetOffset() const { return offset_; }
     [[nodiscard]] StringView  GetName() const { return name_; }
@@ -151,16 +176,16 @@ struct FieldInfo
     FieldInfo* SetAttribute(ValueAttribute attr, StringView value);
     FieldInfo* SetComment(StringView comment);
 
-    [[nodiscard]] Any GetValue(const ITypeGetter* obj) const;
+    [[nodiscard]] Any GetValue(const Any&obj) const;
 
-    bool SetValue(const ITypeGetter* obj, const Any &value) const;
+    Expected<void, Error> SetValue(const Any&obj, const Any& value) const;
 
-    SequentialContainerView* CreateSequentialContainerView(const ITypeGetter* obj) const;
+    SequentialContainerView* CreateSequentialContainerView(void*obj) const;
 
-    AssociativeContainerView* CreateAssociativeContainerView(const ITypeGetter* obj) const;
+    AssociativeContainerView* CreateAssociativeContainerView(void*obj) const;
 
 private:
-    [[nodiscard]] void* GetFieldPtr(const ITypeGetter* obj) const { return (uint8_t*)(obj) + offset_; }
+    [[nodiscard]] void* GetFieldPtr(void* obj) const { return (uint8_t*)(obj) + offset_; }
 
 protected:
     int32_t                  offset_ = -1;
@@ -168,7 +193,7 @@ protected:
     StringView               name_;
     int32_t                  enum_value_ = -1;
     int32_t                  attribute_  = 0;   // bool attribute
-    ValueAttributes          value_attr_;
+    ValueAttributes          value_attr_{};
     UniquePtr<ContainerView> container_view_ = nullptr;
 
     const Type*         type_                 = nullptr;
@@ -234,7 +259,7 @@ struct FunctionInfo
 
         if (!IsDefined(Member))
         {
-            t = any_cast<ReturnT>(InvokeImpl(nullptr));
+            t = InvokeImpl(obj).AsCopy<ReturnT>();
         }
         else
         {
@@ -274,8 +299,8 @@ struct FunctionInfo
 
     int32_t                  attribute = 0;
     StringView               name;
-    Array<FunctionParamInfo> param_infos;
-    Array<Any>               params;
+    Array<FunctionParamInfo> param_infos{};
+    Array<Any>               params{};
 };
 
 template <typename ReturnT, typename... Args>
@@ -354,10 +379,12 @@ struct Type
         Interface = 1 << 0,
         Atomic    = 1 << 1,
         Enum      = 1 << 2,   // 枚举类型
+        Trivial   = 1 << 3,   // 简单类型
     };
 
     enum class ValueAttribute
     {
+        Config,
         Count,
     };
 
@@ -473,16 +500,18 @@ struct Type
     Type* SetAttribute(ValueAttribute attr, StringView value);
     Type* SetComment(StringView str);
 
+    Optional<core::StringView> GetEnumValueString(int32_t value)const;
+
     bool operator==(const Type& o) const { return type_hash_ == o.type_hash_; }
 
 protected:
     StringView           name_;
     int32_t              size_      = 0;
     int32_t              attribute_ = 0;   // bool attribute
-    ValueAttributes      value_attr_;
-    Array<const Type*>   parents_;
-    Array<FieldInfo>     fields_;
-    Array<FunctionInfo*> function_infos_;
+    ValueAttributes      value_attr_{};
+    Array<const Type*>   parents_{};
+    Array<FieldInfo>     fields_{};
+    Array<FunctionInfo*> function_infos_{};
     size_t               type_hash_ = 0;
 
 #if WITH_EDITOR

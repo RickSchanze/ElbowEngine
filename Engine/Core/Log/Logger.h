@@ -8,8 +8,8 @@
 
 #define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 
-#include "Base/EString.h"
-#include "Base/UniquePtr.h"
+#include "Core/Base/EString.h"
+#include "Core/Base/UniquePtr.h"
 #include "spdlog/spdlog.h"
 
 namespace core

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Log/Logger.h"
+#include "Core/Log/Logger.h"
 
 template<typename T, typename... Args>
 T* New(Args&&... args)

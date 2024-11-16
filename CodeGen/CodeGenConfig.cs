@@ -8,11 +8,7 @@ public class CodeGenConfig
 
     public List<string> IncludeDirs { get; set; } =
     [
-        @"Engine\Core",
-        @"Engine\Test",
-        @"Engine\Core",
-        @"Engine\Platform",
-        @"Engine\Resource",
+        @"Engine",
         @"Engine\ThirdParty\IconFontCppHeaders",
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
         @"Generated"

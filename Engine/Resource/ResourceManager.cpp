@@ -7,8 +7,8 @@
 
 #include "ResourceManager.h"
 
-#include "CoreGlobal.h"
-#include "FileSystem/File.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/FileSystem/File.h"
 #include "Interface/IResource.h"
 #include "Logcat.h"
 #include "Mesh.h"

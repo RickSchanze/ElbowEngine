@@ -16,7 +16,7 @@ namespace tool::window {
 // 世界大纲窗口
 ECLASS()
 class OutlineWindow : public WindowBase  {
-    GENERATED_BODY(OutlineWindow)
+    GENERATED_CLASS(OutlineWindow)
 
 public:
     OutlineWindow();

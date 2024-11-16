@@ -30,14 +30,12 @@
 #define COUNT_IMPL(_1, _2, _3, _4, _5, N, ...) N
 
 #define CLASS(...) APPLY(__cppast, Reflection, __VA_ARGS__)
-#define STRUCT(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #define PROPERTY(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #define FUNCTION(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #define ENUM(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #define VALUE(...) APPLY(__cppast, Reflection, __VA_ARGS__)
 #else
 #define CLASS(...)
-#define STRUCT(...)
 #define PROPERTY(...)
 #define FUNCTION(...)
 #define ENUM(...)
@@ -50,20 +48,33 @@
 #define TO_POINTER(type) type*
 
 #ifndef REFL_GEN
-#define GENERATED_BODY(class_)                                               \
+#define GENERATED_CLASS(class_)                                              \
 public:                                                                      \
     static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
                                                                              \
-    [[nodiscard]] const core::Type* GetType() const override                 \
+    [[nodiscard]] const core::Type* GetType() const                          \
     {                                                                        \
         return core::TypeOf<class_>();                                       \
     }                                                                        \
     CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
-                                                                             \
 private:
+
+#define GENERATED_STRUCT(class_)                                             \
+public:                                                                      \
+    static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
+                                                                             \
+    [[nodiscard]] const core::Type* GetType() const                          \
+    {                                                                        \
+        return core::TypeOf<class_>();                                       \
+    }                                                                        \
+    CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
+public:
+
+
 #define GEN_HEADER(a) a
 #else
-#define GENERATED_BODY(class_)
+#define GENERATED_CLASS(class_)
+#define GENERATED_STRUCT(class_)
 #define GEN_HEADER(a) <string>
 #endif
 
@@ -84,3 +95,5 @@ private:
 
 #define implements virtual public
 #define extends public
+
+#define STRUCT(...) CLASS(Trivial, __VA_ARGS__)

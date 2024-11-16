@@ -7,8 +7,8 @@
 
 #include "Instance.h"
 
-#include "CoreGlobal.h"
-#include "PlatformLogcat.h"
+#include "Core/CoreGlobal.h"
+#include "Platform/PlatformLogcat.h"
 
 namespace rhi::vulkan
 {

@@ -7,7 +7,7 @@
 
 #include "Autorotation.h"
 #include "Component/Transform.h"
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 
 #include "Autorotation.generated.h"
 

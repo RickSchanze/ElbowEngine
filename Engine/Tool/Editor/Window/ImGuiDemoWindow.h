@@ -14,7 +14,7 @@ namespace tool::window {
 
 ECLASS()
 class ImGuiDemoWindow : public WindowBase {
-    GENERATED_BODY(ImGuiDemoWindow)
+    GENERATED_CLASS(ImGuiDemoWindow)
 public:
     ImGuiDemoWindow();
     void Draw(float InDeltaTime) override;

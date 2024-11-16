@@ -16,8 +16,9 @@
 
 #pragma once
 
-#include "Core.h"
+#include "Core/Core.h"
 
+#include "Core/Reflection/ITypeGetter.h"
 #include GEN_HEADER("Test.TestMetaInfoGenerate.generated.h")
 
 /**
@@ -26,7 +27,7 @@
 class CLASS() TestMetaInfoGenerate : public core::ITypeGetter
 {
 public:
-    GENERATED_BODY(TestMetaInfoGenerate);
+    GENERATED_CLASS(TestMetaInfoGenerate);
 
 private:
     /// 测试属性注释
@@ -50,7 +51,7 @@ namespace inner
 class CLASS(Interface, Name = "NewName") TestMetaInfoGenerate2 : public core::ITypeGetter
 {
 public:
-    GENERATED_BODY(TestMetaInfoGenerate2);
+    GENERATED_CLASS(TestMetaInfoGenerate2);
 
 private:
     PROPERTY()
@@ -69,7 +70,7 @@ private:
 class CLASS() TestMetaInfoGenerate1 : public core::ITypeGetter
 {
 public:
-    GENERATED_BODY(TestMetaInfoGenerate1);
+    GENERATED_CLASS(TestMetaInfoGenerate1);
 
 private:
     PROPERTY()

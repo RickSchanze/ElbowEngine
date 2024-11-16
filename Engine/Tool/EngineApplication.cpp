@@ -6,16 +6,16 @@
  */
 
 #include "EngineApplication.h"
-#include "Profiler/ProfileMacro.h"
+#include "Core/Profiler/ProfileMacro.h"
 
-#include "CoreEvents.h"
+#include "Core/CoreEvents.h"
 #include "GameObject/GameObject.h"
 #include "GLFW/glfw3.h"
 #include "Path/Path.h"
 #include "Render/RenderContext.h"
 #include "RHI/Vulkan/Application.h"
 
-#include "Utils/ContainerUtils.h"
+#include "Core/Utils/ContainerUtils.h"
 
 #include "Async/Coroutine/CoroutineExecutorManager.h"
 #include "Async/Coroutine/MainThreadExecutor.h"

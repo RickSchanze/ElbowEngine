@@ -5,11 +5,11 @@
  * @brief 
  */
 
-#include "Core.h"
+#include "Core/Core.h"
 #include "Object.h"
-#include "Log/Logger.h"
-#include "Reflection/Reflection.h"
-#include "Serialization/Archive.h"
+#include "Core/Log/Logger.h"
+#include "Core/Reflection/Reflection.h"
+#include "Core/Serialization/Archive.h"
 
 #include "Core.Object.generated.h"
 

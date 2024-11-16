@@ -51,7 +51,6 @@ add_library(${PROJECT_NAME}
         Serialization/Archive.h
         Serialization/YamlArchive.cpp
         Serialization/YamlArchive.h
-        Serialization/ISerializer.h
         Serialization/Archive.cpp
         Base/EString.cpp
         Base/EString.h
@@ -75,13 +74,16 @@ add_library(${PROJECT_NAME}
         Reflection/ITypeGetter.h
         Reflection/MetaInfoMacro.h
         Core.h
-        Serialization/ISerializer.cpp
         Base/Interface.h
         Reflection/Any.cpp
         Reflection/CtorManager.cpp
         Reflection/CtorManager.h
         Utils/HashUtils.cpp
         Utils/HashUtils.h
+        Config/IConfig.cpp
+        Config/IConfig.h
+        Config/CoreConfig.cpp
+        Config/CoreConfig.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -101,7 +103,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
 find_package(directx-headers CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/..)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
 

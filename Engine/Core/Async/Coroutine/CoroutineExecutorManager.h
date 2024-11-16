@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "CoreDef.h"
+#include "Core/CoreDef.h"
 #include "IExecutor.h"
-#include "Singleton/Singleton.h"
-#include "Base/Base.h"
+#include "Core/Singleton/Singleton.h"
+#include "Core/Base/Base.h"
 
 namespace async::coro
 {

@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "Base/CoreTypeDef.h"
-#include "Base/EString.h"
-#include "Singleton/Singleton.h"
+#include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
+#include "Core/Singleton/Singleton.h"
 
 namespace core
 {

@@ -7,10 +7,10 @@
 
 #pragma once
 #define GLFW_INCLUDE_VULKAN
-#include "CoreGlobal.h"
+#include "Core/CoreGlobal.h"
 #include "GLFW/glfw3.h"
-#include "Math/MathTypes.h"
-#include "RHI/Vulkan/Instance.h"
+#include "Core/Math/MathTypes.h"
+#include "Platform/RHI/Vulkan/Instance.h"
 
 namespace rhi::vulkan
 {

@@ -8,9 +8,9 @@
 #include "SkyboxPass.h"
 
 #include "Mesh.h"
-#include "Misc/Vertex.h"
-#include "RHI/Vulkan/Render/Framebuffer.h"
-#include "RHI/Vulkan/VulkanContext.h"
+#include "Core/Misc/Vertex.h
+#include "Platform/RHI/Vulkan/Render/Framebuffer.h"
+#include "Platform/RHI/Vulkan/VulkanContext.h"
 namespace function {
 
 REGISTER_RENDER_PASS_REFL(function::SkyboxPass)

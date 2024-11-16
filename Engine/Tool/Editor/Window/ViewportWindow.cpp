@@ -7,7 +7,7 @@
 
 #include "ViewportWindow.h"
 
-#include "CoreEvents.h"
+#include "Core/CoreEvents.h"
 #include "WindowManager.h"
 
 #include "ViewportWindow.generated.h"

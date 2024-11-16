@@ -6,19 +6,19 @@
  */
 
 #pragma once
-#include "Core.h"
-#include "FileSystem/File.h"
+#include "Core/Core.h"
+#include "Platform/FileSystem/File.h"
 #include "Interface/IResource.h"
-#include "PlatformEvents.h"
+#include "Platform/PlatformEvents.h"
 
-#include "Object/Object.h"
+#include "Core/Object/Object.h"
 #include GEN_HEADER("Resource.Shader.generated.h")
 
 namespace resource
 {
 class CLASS() Shader : extends core::Object, implements IResource
 {
-    GENERATED_BODY(Shader)
+    GENERATED_CLASS(Shader)
 public:
     Shader() = default;
 

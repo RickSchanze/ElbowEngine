@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "Base/CallStackFrame.h"
-#include "Base/CoreTypeDef.h"
+#include "Core/Base/CallStackFrame.h"
+#include "Core/Base/CoreTypeDef.h"
 #include "Logger.h"
 
 #include <chrono>

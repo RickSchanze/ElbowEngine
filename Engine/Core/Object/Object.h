@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include "Base/EString.h"
-#include "CoreDef.h"
-#include "Serialization/ISerializer.h"
+#include "Core/Base/EString.h"
+#include "Core/CoreDef.h"
+#include "Core/Reflection/ITypeGetter.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 
-#include GEN_HEADER("Core.Object.generated.h")
+#include "Core.Object.generated.h"
 
 namespace core
 {
@@ -27,7 +28,7 @@ enum ObjectCategory
 
 class CLASS() Object : implements ITypeGetter
 {
-    GENERATED_BODY(Object)
+    GENERATED_CLASS(Object)
 public:
     typedef Object ThisClass;
 
@@ -87,7 +88,7 @@ public:
 
 protected:
     PROPERTY()
-    String         name_;   // 对象名字
+    String name_;   // 对象名字
 
     PROPERTY()
     ObjectCategory flag_;

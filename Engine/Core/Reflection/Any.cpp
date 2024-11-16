@@ -28,16 +28,13 @@ bool core::Any::IsParentOf(const Type* t) const
     if (t == nullptr) return false;
     return t->IsDerivedFrom(GetType());
 }
-void core::LogTypeNotSameError(const Type* t1, const Type* t2)
+
+bool core::Any::IsPrimitive() const
 {
-    LOGGER.Error(
-        logcat::Reflection,
-        "If T is a copyable type, then TypeOf<T> == GetType() must be true, but TypeOf<T>() = {}, GetType() = {}",
-        t1->GetName(),
-        t2->GetName()
-    );
+    return GetType()->IsPrimitive();
 }
-void core::LogTypeDerivedError(const Type* t1, const Type* t2)
+
+bool core::Any::IsEnum() const
 {
-    LOGGER.Error(logcat::Reflection, "Type {} is not derived from {}", t1->GetName(), t2->GetName());
+    return GetType()->IsEnum();
 }

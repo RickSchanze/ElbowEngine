@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "Base/EString.h"
-#include "RHI/Vulkan/Interface/IRHIResource.h"
+#include "Core/Base/EString.h"
+#include "Platform/RHI/Vulkan/Interface/IRHIResource.h"
 #include "vulkan/vulkan.hpp"
 
 namespace rhi::vulkan

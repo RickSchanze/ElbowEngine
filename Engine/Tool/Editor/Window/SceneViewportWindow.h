@@ -16,7 +16,7 @@ namespace tool::window {
 ECLASS()
 class SceneViewportWindow : public ViewportWindow
 {
-    GENERATED_BODY(SceneViewportWindow)
+    GENERATED_CLASS(SceneViewportWindow)
 public:
     SceneViewportWindow();
 

@@ -27,7 +27,7 @@ class OutlineWindow;
 ECLASS()
 class DetailWindow : public WindowBase
 {
-    GENERATED_BODY(DetailWindow)
+    GENERATED_CLASS(DetailWindow)
 
 public:
     DetailWindow();
