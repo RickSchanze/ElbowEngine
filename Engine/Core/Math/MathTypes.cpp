@@ -70,15 +70,19 @@ static void REFL_ConstructQuat(void* ptr)
     new (ptr) glm::quat();
 }
 
+static void REFL_DestroyDummy(void* ptr)
+{
+}
+
 void Z_MetaInfo_Registration_Func1()
 {
     using namespace core;
     core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec3>(), &REFL_Register_Vec3);
-    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::vec3>(), &REFL_ConstructVec3);
+    core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec3>(), &REFL_ConstructVec3, &REFL_DestroyDummy);
     core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec4>(), &REFL_Register_Vec4);
-    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::vec4>(), &REFL_ConstructVec4);
+    core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec4>(), &REFL_ConstructVec4, &REFL_DestroyDummy);
     core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::quat>(), &REFL_Register_Quat);
-    core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<glm::quat>(), &REFL_ConstructQuat);
+    core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::quat>(), &REFL_ConstructQuat, &REFL_DestroyDummy);
 }
 
 namespace

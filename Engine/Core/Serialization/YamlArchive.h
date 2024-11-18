@@ -19,7 +19,7 @@ namespace core
 class YamlArchive : public Archive
 {
 public:
-    void Serialize(const Any& obj, String& out) override;
-    void Deserialize(core::StringView source, Ref<void*> out, const Type& type) override;
+    bool Serialize(const Any& obj, String& out) override;
+    bool Deserialize(core::StringView source, void* out, const Type* type) override;
 };
 }   // namespace core

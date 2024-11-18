@@ -9,7 +9,7 @@
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
 #include "Core/Reflection/ITypeGetter.h"
-#include "Core/Reflection/MetaInfoMacro.h"
+
 #include <utility>
 
 
@@ -33,9 +33,9 @@ class File
 {
 public:
     File() = default;
-    File(core::String path) : path_(std::move(path)) {}
+    File(const core::String& path) : path_(std::move(path)) {}
 
-    static bool Create_File(core::StringView path, FileCreateMode mode = FileCreateMode::Text, bool combine_proj_path = true);
+    static bool Create_File(core::StringView path, FileCreateMode mode = FileCreateMode::Text, bool create_folder = true, bool overwrite = true);
 
     [[nodiscard]] core::String GetFolder() const;
     [[nodiscard]] core::String GetFileName() const;
@@ -45,10 +45,11 @@ public:
 
     [[nodiscard]] bool IsExist() const;
 
-    bool                                                        TryReadAllText(core::String& out, bool combine_proj_path = true) const;
-    [[nodiscard]] std::optional<core::String>                   ReadAllText(bool combine_proj_path = true) const;
+    bool                                      TryReadAllText(core::String& out) const;
+    [[nodiscard]] std::optional<core::String> ReadAllText() const;
+    [[nodiscard]] bool                        WriteText(core::StringView text) const;
 
-    [[nodiscard]] bool Create(FileCreateMode mode = FileCreateMode::Text, bool combine_proj_path = true) const;
+    [[nodiscard]] bool Create(FileCreateMode mode = FileCreateMode::Text, bool create_folder = true, bool overwrite = true) const;
 
     bool operator==(const File& f) const { return path_ == f.path_; }
 

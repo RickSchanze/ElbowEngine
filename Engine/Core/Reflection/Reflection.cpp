@@ -83,10 +83,10 @@ Any FieldInfo::GetValue(const Any& obj) const
         LOGGER.Error(logcat::Reflection, "obj is null");
         return {};
     }
-    if (obj.GetType() != outer_)
+    if (!obj.IsDerivedFrom(outer_))
     {
         LOGGER.Error(
-            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj.GetType()->GetName(), outer_->GetName()
+            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj.GetType()->GetFullName(), outer_->GetFullName()
         );
         return {};
     }
@@ -115,7 +115,7 @@ SequentialContainerView* FieldInfo::CreateSequentialContainerView(void* obj) con
 {
     if (!container_view_)
     {
-        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetFullName(), name_);
         return nullptr;
     }
     container_view_->SetInstance(obj);
@@ -126,7 +126,7 @@ AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(void* obj) c
 {
     if (!container_view_)
     {
-        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetName(), name_);
+        LOGGER.Error(logcat::Reflection, "类{}字段{}不是一个容器", outer_->GetFullName(), name_);
         return nullptr;
     }
     container_view_->SetInstance(obj);
@@ -141,6 +141,11 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
         return "";
     }
     return value_attr_[GetEnumValue(attr)];
+}
+
+StringView Type::GetName() const
+{
+    return name_.SubString(name_.LastIndexOf(".") + 1, name_.Length());
 }
 
 Optional<Ref<const FieldInfo>> Type::GetSelfDefinedField(StringView name) const
@@ -310,6 +315,19 @@ Optional<core::StringView> Type::GetEnumValueString(int32_t value) const
         if (enum_value->GetEnumFieldValue() == value)
         {
             return enum_value->GetName();
+        }
+    }
+    return NullOpt;
+}
+
+Optional<int32_t> Type::GetEnumValueFromString(StringView str) const
+{
+    if (!IsEnum()) return NullOpt;
+    for (auto element: GetSelfDefinedFields())
+    {
+        if (element->GetName() == str)
+        {
+            return std::make_optional(element->GetEnumFieldValue());
         }
     }
     return NullOpt;

@@ -13,6 +13,10 @@
 
 namespace core
 {
+class ITypeGetter;
+}
+namespace core
+{
 struct RTTITypeInfo;
 }
 template <>

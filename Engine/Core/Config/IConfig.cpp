@@ -10,3 +10,7 @@
 #include GEN_HEADER("Core.IConfig.generated.h")
 
 GENERATED_SOURCE()
+void core::IConfig::SetDirty(bool dirty)
+{
+    dirty_ = dirty;
+}

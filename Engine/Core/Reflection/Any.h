@@ -33,8 +33,7 @@ struct Any
     Any(const void* data, const Type* data_type);
 
     template <typename T>
-        requires std::is_base_of_v<ITypeGetter, T>
-    Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), TypeOf<T>())} {};
+    Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), t.GetType())} {};
 
     Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
 

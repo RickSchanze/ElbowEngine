@@ -6,3 +6,5 @@
  */
 
 #include "Archive.h"
+
+#include "Core/Reflection/CtorManager.h"

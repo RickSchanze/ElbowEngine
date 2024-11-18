@@ -12,14 +12,25 @@
 namespace core
 {
 typedef void (*InplaceCtor)(void*);
+typedef void (*InplaceDtor)(void*);
+
+struct CtorDtor
+{
+    InplaceCtor ctor;
+    InplaceDtor dtor;
+};
 
 class CtorManager : public Singleton<CtorManager>
 {
 public:
-    void RegisterCtor(RTTITypeInfo info, InplaceCtor ctor);
+    CtorManager();
+
+    void RegisterCtorDtor(RTTITypeInfo info, InplaceCtor ctor, InplaceDtor dtor);
     bool ConstructAt(const Type* info, void* ptr) const;
+    bool DestroyAt(const Type* info, void* ptr) const;
 
 private:
-    HashMap<RTTITypeInfo, InplaceCtor> ctors_;
+    HashMap<RTTITypeInfo, CtorDtor> ctors_;
+
 };
 }   // namespace core

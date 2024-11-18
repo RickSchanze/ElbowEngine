@@ -172,20 +172,15 @@ bool platform::Folder::ContainsFile(core::StringView path, core::StringView name
     return FindFileImpl(path.GetStdStringView(), name, recursive, found);
 }
 
-bool platform::Folder::CreateFolder(core::StringView path, bool combine_project_path)
+bool platform::Folder::CreateFolder(core::StringView path)
 {
-    if (combine_project_path)
-    {
-        path = Path::Combine(Path::GetProjectPath(), path);
-    }
-    if (Path::HasInvalidCharacter(path)) return false;
     auto v = path.GetStdStringView();
     return std::filesystem::create_directory(v);
 }
 
-bool platform::Folder::Create(bool combine) const
+bool platform::Folder::Create() const
 {
-    return CreateFolder(path_, combine);
+    return CreateFolder(path_);
 }
 
 bool platform::Folder::IsExist() const

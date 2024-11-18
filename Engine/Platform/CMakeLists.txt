@@ -12,61 +12,7 @@ endif ()
 
 
 add_library(Platform
-        RHI/Vulkan/Instance.cpp
-        RHI/Vulkan/Instance.h
-        RHI/Vulkan/ValidationLayer.h
-        RHI/Vulkan/ValidationLayer.cpp
-        RHI/Vulkan/Interface/IRHIResource.h
-        RHI/Vulkan/Application.h
-        RHI/Vulkan/Application.cpp
-        RHI/Vulkan/PhysicalDevice.cpp
-        RHI/Vulkan/PhysicalDevice.h
-        Window/GLFWWindow.h
-        Window/GLFWWindow.cpp
-        Window/WindowCommon.h
-        RHI/Vulkan/Render/LogicalDevice.cpp
-        RHI/Vulkan/Render/LogicalDevice.h
-        RHI/Vulkan/Render/SwapChain.cpp
-        RHI/Vulkan/Render/SwapChain.h
-        RHI/Vulkan/VulkanContext.h
-        RHI/Vulkan/VulkanContext.cpp
-        RHI/Vulkan/Resource/Image.cpp
-        RHI/Vulkan/Resource/Image.h
-        RHI/Vulkan/Resource/Buffer.h
-        RHI/Vulkan/Resource/Buffer.cpp
-        RHI/Vulkan/Render/RenderPass.cpp
-        RHI/Vulkan/Render/RenderPass.h
-        RHI/Vulkan/VulkanStringify.cpp
-        RHI/Vulkan/VulkanStringify.h
-        RHI/Vulkan/Resource/ImageView.cpp
-        RHI/Vulkan/Resource/ImageView.h
-        RHI/Vulkan/Render/Shader.cpp
-        RHI/Vulkan/Render/Shader.h
-        RHI/Vulkan/Render/GraphicsPipeline.cpp
-        RHI/Vulkan/Render/GraphicsPipeline.h
-        RHI/Vulkan/Render/ShaderProgram.cpp
-        RHI/Vulkan/Render/ShaderProgram.h
-        RHI/Vulkan/Render/CommandPool.cpp
-        RHI/Vulkan/Render/CommandPool.h
-        RHI/Vulkan/Render/Framebuffer.h
-        RHI/Vulkan/Render/Framebuffer.cpp
-        RHI/Vulkan/Resource/VulkanModel.h
-        RHI/Vulkan/Resource/VulkanModel.cpp
-        RHI/Vulkan/Interface/IGraphicsPipeline.h
-        RHI/Vulkan/Interface/IGraphicsPipeline.cpp
-        RHI/Vulkan/VulkanUtils.h
-        RHI/Vulkan/VulkanUtils.cpp
         PlatformEvents.h
-        RHI/GfxContext.h
-        RHI/CommandBuffer.h
-        RHI/Vulkan/CommandBuffer.cpp
-        RHI/Vulkan/CommandBuffer.h
-        RHI/GfxContext.cpp
-        RHI/TextureFormat.h
-        RHI/Vulkan/TextureFormat.cpp
-        RHI/Vulkan/TextureFormat.h
-        RHI/D3D12/TextureFormat.cpp
-        RHI/D3D12/TextureFormat.h
         FileSystem/Path.cpp
         FileSystem/Path.h
         FileSystem/Folder.cpp
@@ -74,9 +20,6 @@ add_library(Platform
         FileSystem/File.cpp
         FileSystem/File.h
         PlatformLogcat.h
-        RHI/Shader.cpp
-        RHI/Shader.h
-        RHI/IRHIResource.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

@@ -41,6 +41,7 @@ public:
     virtual ContainerViewType GetContainerType() = 0;
     virtual const Type*       GetOuterType()     = 0;
     virtual int32_t           Size()             = 0;
+    virtual void              Clear()            = 0;
 };
 
 class SequentialContainerView : public ContainerView
@@ -150,6 +151,11 @@ public:
             return 0;
         }
         return N;
+    }
+
+    void Clear() override
+    {
+
     }
 
 private:
@@ -265,6 +271,16 @@ public:
         return (instance_->*container_).size();
     }
 
+    void Clear() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return;
+        }
+        (instance_->*container_).clear();
+    }
+
 private:
     ClassT* instance_ = nullptr;
 
@@ -325,10 +341,7 @@ public:
         iter_     = {};
     }
 
-    bool HasNext() override
-    {
-        return iter_cnt_ < size_;
-    }
+    bool HasNext() override { return iter_cnt_ < size_; }
 
     void SetInstance(void* instance) override { instance_ = static_cast<ClassT*>(instance); }
 
@@ -381,7 +394,7 @@ public:
             LOGGER.Error(logcat::Reflection, "未设置Instance");
             return {};
         }
-        auto key_op = key.AsCopy<K>();
+        auto key_op   = key.AsCopy<K>();
         auto value_op = value.AsCopy<V>();
         if (key_op.has_value() && value_op.has_value())
         {
@@ -392,6 +405,16 @@ public:
             }
         }
         return false;
+    }
+
+    void Clear() override
+    {
+        if (!instance_)
+        {
+            LOGGER.Error(logcat::Reflection, "未设置Instance");
+            return;
+        }
+        (instance_->*container_).clear();
     }
 
 private:

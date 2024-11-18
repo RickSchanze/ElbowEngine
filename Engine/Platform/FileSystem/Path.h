@@ -18,9 +18,9 @@ public:
     static core::String     Combine(core::StringView left, core::StringView right);
     static core::StringView GetProjectPath();
     static bool             SetProjectPath(core::StringView path);
-    static bool             HasInvalidCharacter(core::StringView path);
     static bool             IsExist(core::StringView path);
     static bool             IsFolder(core::StringView path);
+    static core::String     GetParent(core::StringView path);
 
 private:
     static inline core::String s_proj_path_;

@@ -91,6 +91,21 @@ bool StringView::IsPureSpace() const
     return true;
 }
 
+StringView StringView::SubString(int32_t begin, int32_t end) const
+{
+    return StringView(str_ + begin, end - begin);
+}
+
+int32_t StringView::IndexOf(const StringView& o) const
+{
+    return GetStdStringView().find(o.GetStdStringView());
+}
+
+int32_t StringView::LastIndexOf(const StringView& o) const
+{
+    return GetStdStringView().rfind(o.GetStdStringView());
+}
+
 bool StringView::operator==(const StringView& o) const
 {
     if (o.Length() != Length()) return false;
@@ -99,6 +114,11 @@ bool StringView::operator==(const StringView& o) const
         if (str_[i] != o[i]) return false;
     }
     return true;
+}
+
+bool StringView::operator==(const char* str) const
+{
+    return ::std::string_view(str_) == ::std::string_view(str);
 }
 
 bool StringView::ContainsAny(const StringView& o, bool use_utf8) const

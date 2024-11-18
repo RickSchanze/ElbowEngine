@@ -28,9 +28,9 @@ public:
     static bool TryListFilesLambda(core::StringView path, core::Array<core::String>& files, const core::Function<bool(core::StringView)> &Func_Filter, bool recursive = false);
     // clang-format on
     static bool ContainsFile(core::StringView path, core::StringView name, bool recursive = false);
-    static bool CreateFolder(core::StringView path, bool combine_project_path = true);
+    static bool CreateFolder(core::StringView path);
 
-    [[nodiscard]] bool Create(bool combine_project_path = true) const;
+    [[nodiscard]] bool Create() const;
     [[nodiscard]] bool IsExist() const;
 
     [[nodiscard]] core::String GetAbsolutePath() const;

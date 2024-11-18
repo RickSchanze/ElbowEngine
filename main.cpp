@@ -1,4 +1,5 @@
 #define GLFW_INCLUDE_VULKAN
+#include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
@@ -6,8 +7,6 @@
 #include "Core/Serialization/YamlArchive.h"
 #include "d3d12.h"
 #include "Platform/FileSystem/Path.h"
-#include "Resource/ResourceManager.h"
-#include "Resource/Shader.h"
 
 #include <fstream>
 
@@ -23,13 +22,5 @@ int main()
         LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
         return -1;
     }
-    // resource::Shader s{"Shaders/Shader.slang"};
-    // s.Load();
-    core::CoreConfig config;
-    core::YamlArchive archive;
-    core::String out;
-    archive.Serialize(config, out);
-    std::ofstream file("config.yaml");
-    file << out;
-    system("pause");
+    auto cfg = core::GetConfig<core::CoreConfig>();
 }

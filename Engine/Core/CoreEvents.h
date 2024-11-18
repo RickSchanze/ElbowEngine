@@ -9,17 +9,12 @@
 
 #include "Core/Event/Event.h"
 
-DECLARE_EVENT(ProjectPathSetEvent, void);
-DECLARE_EVENT(GetAppWindowSizeEvent, void, int*, int*);
 
-DECLARE_MULTICAST_EVENT(AppExitEvent);
-DECLARE_MULTICAST_EVENT(AppWindowResizeEvent, int32_t, int32_t);
-DECLARE_MULTICAST_EVENT(AppNeedWaitEvent);
-DECLARE_MULTICAST_EVENT(BackbufferResizeEvent, int32_t, int32_t);
+DECLARE_EVENT(RequireLoadFileTextEvent, core::Optional<core::String>, const core::String&);
+DECLARE_EVENT(RequireWriteFileTextEvent, bool, const core::String&, const core::String&)
 
-inline ProjectPathSetEvent   OnProjectPathSet;
-inline AppExitEvent          OnAppExit;
-inline AppWindowResizeEvent  OnAppWindowResized;
-inline AppNeedWaitEvent      OnAppNeedWait;
-inline GetAppWindowSizeEvent OnGetAppWindowSize;
-inline BackbufferResizeEvent OnBackbufferResize;
+DECLARE_MULTICAST_EVENT(ProjectPathSetEvent, core::StringView)
+
+inline RequireLoadFileTextEvent  Event_OnRequireReadFileText;
+inline RequireWriteFileTextEvent Event_OnWriteFileText;
+inline ProjectPathSetEvent       Event_OnProjectPathSet;

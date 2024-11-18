@@ -84,6 +84,8 @@ add_library(${PROJECT_NAME}
         Config/IConfig.h
         Config/CoreConfig.cpp
         Config/CoreConfig.h
+        Config/ConfigManager.cpp
+        Config/ConfigManager.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

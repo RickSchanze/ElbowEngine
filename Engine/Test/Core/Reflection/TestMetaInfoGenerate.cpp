@@ -17,5 +17,5 @@ GENERATED_SOURCE()
 TEST(Core_MetaInfoGenerate, Enum)
 {
     auto t = core::TypeOf<core::TestEnum>();
-    EXPECT_EQ(t->GetName(), "core::TestEnum");
+    EXPECT_EQ(t->GetFullName(), "core::TestEnum");
 }

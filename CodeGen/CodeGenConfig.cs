@@ -19,7 +19,6 @@ public class CodeGenConfig
         @"Engine\Test",
         @"Engine\Core",
         @"Engine\Platform",
-        @"Engine\Resource",
     ];
 
     public List<string> ExcludedFiles { get; } =

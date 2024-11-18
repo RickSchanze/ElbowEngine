@@ -39,6 +39,8 @@ struct STRUCT() Size2D
     Size2D() = default;
 
     [[nodiscard]] core::String ToString() const;
+
+    bool operator==(const Size2D& other) const { return width == other.width && height == other.height; }
 };
 
 

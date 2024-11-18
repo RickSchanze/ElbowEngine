@@ -6,7 +6,10 @@
  */
 
 #include "File.h"
+
+#include "Core/CoreEvents.h"
 #include "Core/Log/Logger.h"
+#include "Folder.h"
 #include "Path.h"
 #include "Platform/PlatformLogcat.h"
 #include <filesystem>
@@ -14,19 +17,40 @@
 
 using namespace core;
 
-bool platform::File::Create_File(StringView path, FileCreateMode mode, bool combine_proj_path)
+bool platform::File::Create_File(StringView path, FileCreateMode mode, bool create_folder, bool overwrite)
 {
-    String full_path = combine_proj_path ? String(Path::GetProjectPath() + "/" + path) : String(path);
+    if (Path::IsExist(path))
+    {
+        if (!overwrite)
+        {
+            LOGGER.Error(logcat::Platform_FileSystem, "File already exist: {}", path);
+            return false;
+        }
+    }
+    auto parent_path = Path::GetParent(path);
+    if (!Path::IsExist(parent_path))
+    {
+        if (!create_folder)
+        {
+            LOGGER.Error(logcat::Platform_FileSystem, "Parent folder not exist: {}", parent_path);
+            return false;
+        }
+        if (!Folder::CreateFolder(parent_path))
+        {
+            LOGGER.Error(logcat::Platform_FileSystem, "Failed to create parent folder: {}", parent_path);
+            return false;
+        }
+    }
     if (mode == FileCreateMode::Text)
     {
-        if (const std::ofstream file(full_path, std::ios::binary); !file)
+        if (const std::ofstream file(path.Data(), std::ios::binary); !file)
         {
             return false;
         }
     }
     else if (mode == FileCreateMode::Binary)
     {
-        if (const std::ofstream file(full_path, std::ios::binary); !file)
+        if (const std::ofstream file(path.Data(), std::ios::binary); !file)
         {
             return false;
         }
@@ -65,18 +89,17 @@ bool platform::File::IsExist() const
     return Path::IsExist(s);
 }
 
-bool platform::File::TryReadAllText(core::String& out, bool combine_proj_path) const
+bool platform::File::TryReadAllText(core::String& out) const
 {
-    core::String path = combine_proj_path ? GetAbsolutePath() : path_;
     if (!IsExist())
     {
-        LOGGER.Error(logcat::Platform_FileSystem, "File not exist: {}", path);
+        LOGGER.Error(logcat::Platform_FileSystem, "File not exist: {}", path_);
         return false;
     }
-    std::ifstream file(path, std::ios::in);
+    std::ifstream file(path_.Data(), std::ios::in);
     if (!file.is_open())
     {
-        LOGGER.Error(logcat::Platform_FileSystem, "Failed to open file: {}", path);
+        LOGGER.Error(logcat::Platform_FileSystem, "Failed to open file: {}", path_);
         return false;
     }
     out.Clear();
@@ -84,14 +107,61 @@ bool platform::File::TryReadAllText(core::String& out, bool combine_proj_path) c
     return true;
 }
 
-Optional<String> platform::File::ReadAllText(bool combine) const
+Optional<String> platform::File::ReadAllText() const
 {
     String     text;
-    const auto err = TryReadAllText(text, combine);
+    const auto err = TryReadAllText(text);
     return err ? std::make_optional(text) : NullOpt;
 }
 
-bool platform::File::Create(FileCreateMode mode, bool combine_proj_path) const
+bool platform::File::WriteText(core::StringView text) const
 {
-    return Create_File(path_, mode, combine_proj_path);
+    if (Create())
+    {
+        std::ofstream file(path_.Data(), std::ios::out);
+        if (!file.is_open())
+        {
+            LOGGER.Error(logcat::Platform_FileSystem, "Failed to open file: {}", path_);
+            return false;
+        }
+        file << text;
+        return true;
+    }
+    else
+    {
+        LOGGER.Error(logcat::Platform_FileSystem, "Failed to write file: {}", path_);
+        return false;
+    }
 }
+
+bool platform::File::Create(FileCreateMode mode, bool create_folder, bool overwrite) const
+{
+    return Create_File(path_, mode, create_folder, overwrite);
+}
+
+namespace
+{
+struct StaticInit
+{
+    static Optional<String> ReadText(const String& path)
+    {
+        const platform::File file(path);
+        return file.ReadAllText();
+    }
+
+    static bool WriteText(const String& path, const String& text)
+    {
+        const platform::File f = path;
+        return f.WriteText(text);
+    }
+
+    static void BindOther(StringView path)
+    {
+        Event_OnRequireReadFileText.Bind(&StaticInit::ReadText);
+        Event_OnWriteFileText.Bind(&StaticInit::WriteText);
+    }
+
+    StaticInit() { Event_OnProjectPathSet.AddBind(&StaticInit::BindOther); }
+};
+[[maybe_unused]] static const StaticInit static_init;
+}   // namespace

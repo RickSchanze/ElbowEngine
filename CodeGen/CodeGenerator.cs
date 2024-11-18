@@ -49,7 +49,7 @@ public class CodeGenerator
             {
                 Console.WriteLine(diagnostic);
             }
-            
+
             HasError = true;
 
             return;
@@ -228,7 +228,8 @@ public class CodeGenerator
 
             if (attr.Key is "Config")
             {
-                sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, \"{attr.Value}\")");
+                var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
+                sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, \"{attrValue}\")");
             }
         }
 
@@ -310,7 +311,7 @@ public class CodeGenerator
         if (!attributes.ContainsKey("Interface"))
         {
             sw.WriteLine(
-                $"core::CtorManager::Get()->RegisterCtor(RTTITypeInfo::Create<{cppClass.FullName}>(), &{cppClass.FullName}::ConstructAt); \\");
+                $"core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<{cppClass.FullName}>(), &{cppClass.FullName}::ConstructAt, &{cppClass.FullName}::DestroyAt); \\");
         }
     }
 
@@ -323,6 +324,8 @@ public class CodeGenerator
         {
             sw.WriteLine(
                 $"static void ConstructAt(void* ptr) {{ new (ptr) {cppClass.FullName}(); }} \\");
+            sw.WriteLine(
+                $"static void DestroyAt(void* ptr) {{ static_cast<{cppClass.FullName}*>(ptr)->~{cppClass.Name}(); }} \\");
         }
 
         sw.WriteLine();

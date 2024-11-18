@@ -130,18 +130,18 @@ struct FieldInfo
 
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
-    [[nodiscard]] bool    IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool    IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
-    [[nodiscard]] bool    IsPrimitive() const;
+    [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
+    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool IsPrimitive() const;
     /// 这个Field是不是被声明为某一个枚举?
     /// class A {
     ///   MyEnum enum_; -> IsEnum() == true, IsAEnumField() == false
     /// }
-    [[nodiscard]] bool    IsEnum() const;
+    [[nodiscard]] bool IsEnum() const;
 
     /// 这个Field代表一个类的一个filed, 其类型是一个枚举
     /// 获取这个枚举值, 以int表示
-    [[nodiscard]] Optional<int32_t> GetObjEnumValue(const Any&obj) const;
+    [[nodiscard]] Optional<int32_t> GetObjEnumValue(const Any& obj) const;
 
     /// 这个Field表示一个枚举里的一个值
     /// 获取这个枚举值, 以int表示
@@ -176,16 +176,14 @@ struct FieldInfo
     FieldInfo* SetAttribute(ValueAttribute attr, StringView value);
     FieldInfo* SetComment(StringView comment);
 
-    [[nodiscard]] Any GetValue(const Any&obj) const;
+    [[nodiscard]] Any GetValue(const Any& obj) const;
 
-    Expected<void, Error> SetValue(const Any&obj, const Any& value) const;
+    Expected<void, Error> SetValue(const Any& obj, const Any& value) const;
 
-    SequentialContainerView* CreateSequentialContainerView(void*obj) const;
+    SequentialContainerView* CreateSequentialContainerView(void* obj) const;
 
-    AssociativeContainerView* CreateAssociativeContainerView(void*obj) const;
-
-private:
-    [[nodiscard]] void* GetFieldPtr(void* obj) const { return (uint8_t*)(obj) + offset_; }
+    AssociativeContainerView* CreateAssociativeContainerView(void* obj) const;
+    [[nodiscard]] void*       GetFieldPtr(void* obj) const { return (uint8_t*)(obj) + offset_; }
 
 protected:
     int32_t                  offset_ = -1;
@@ -394,7 +392,8 @@ struct Type
     [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].IsEmpty(); }
     [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
     [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
-    [[nodiscard]] StringView GetName() const { return name_; }
+    [[nodiscard]] StringView GetFullName() const { return name_; }
+    [[nodiscard]] StringView GetName() const;
     [[nodiscard]] int32_t    GetSize() const { return size_; }
     [[nodiscard]] size_t     GetTypeHash() const { return type_hash_; }
 
@@ -412,7 +411,7 @@ struct Type
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 
-    // 用于判断是不是存储一个int8_t,...,int64_t,uint8_t,...,uint64_t,bool,float,double,String,StringView
+    // 用于判断是不是存储一个int8_t,...,int64_t,uint8_t,...,uint64_t,bool,float,double,String
     [[nodiscard]] bool IsPrimitive() const;
 
     // 判断一个类型是否继承自另一类型
@@ -500,7 +499,8 @@ struct Type
     Type* SetAttribute(ValueAttribute attr, StringView value);
     Type* SetComment(StringView str);
 
-    Optional<core::StringView> GetEnumValueString(int32_t value)const;
+    [[nodiscard]] Optional<core::StringView> GetEnumValueString(int32_t value) const;
+    [[nodiscard]] Optional<int32_t>          GetEnumValueFromString(StringView str) const;
 
     bool operator==(const Type& o) const { return type_hash_ == o.type_hash_; }
 

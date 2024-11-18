@@ -17,7 +17,7 @@
 namespace core
 {
 
-enum ObjectCategory
+enum ENUM() ObjectCategory
 {
     PureObject,   // 纯粹的对象
     GameObject,   // 在游戏世界运行

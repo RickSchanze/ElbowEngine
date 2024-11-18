@@ -36,7 +36,11 @@ public:
     [[nodiscard]] constexpr int32_t Length() const { return length_; }
     [[nodiscard]] constexpr bool    IsEmpty() const { return length_ == 0; }
     [[nodiscard]] bool              IsPureSpace() const;
+    [[nodiscard]] StringView        SubString(int32_t begin, int32_t end) const;
+    [[nodiscard]] int32_t           IndexOf(const StringView& o) const;
+    [[nodiscard]] int32_t           LastIndexOf(const StringView& o) const;
     [[nodiscard]] bool              operator==(const StringView& o) const;
+    [[nodiscard]] bool              operator==(const char* str) const;
     [[nodiscard]] char              operator[](int32_t i) const { return str_[i]; }
 
     // 此字符串是否包含任意一个o中的字符
@@ -63,6 +67,7 @@ public:
     String(const char* str, int32_t length) : str_(str, length) {}
     String(const char* str_begin, const char* str_end) : str_(str_begin, str_end) {}
     String(const StringView& view);
+    String(const String& str) : str_(str.str_) {}
 
     operator std::string() const { return str_; }
     constexpr const char* operator*() const { return str_.c_str(); }
@@ -107,6 +112,12 @@ public:
 
     [[nodiscard]] uint8_t  At(int32_t i) const { return str_.at(i); }
     [[nodiscard]] uint32_t AtUnicode(int32_t i) const;
+
+    template <typename T, typename... Args>
+    static String Format(T&& format, Args&&... args)
+    {
+        return fmt::format(std::forward<T>(format), std::forward<Args>(args)...);
+    }
 
 
 private:
