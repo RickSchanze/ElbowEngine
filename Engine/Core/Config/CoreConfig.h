@@ -14,7 +14,7 @@
 
 namespace core
 {
-
+// TODO: 或许可以文件分的不那么细?
 class CLASS(Config = "Config/Core/MemoryConfig.cfg", Category = "Core") MemoryConfig : extends IConfig
 {
     GENERATED_CLASS(MemoryConfig)
