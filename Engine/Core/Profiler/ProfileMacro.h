@@ -6,8 +6,8 @@
  */
 
 #pragma once
-
-#ifdef ENABLE_PROFILING
+#include "Core/CoreDef.h"
+#if ENABLE_PROFILING
 #include "tracy/Tracy.hpp"
 
 uint32_t GetColor(int index);

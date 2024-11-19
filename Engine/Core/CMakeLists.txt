@@ -86,6 +86,10 @@ add_library(${PROJECT_NAME}
         Config/CoreConfig.h
         Config/ConfigManager.cpp
         Config/ConfigManager.h
+        Memory/FrameAllocator.cpp
+        Memory/FrameAllocator.h
+        CoreDef.cpp
+        Base/UniquePtr.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

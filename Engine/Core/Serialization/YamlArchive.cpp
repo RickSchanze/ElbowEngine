@@ -7,8 +7,9 @@
 
 #include "YamlArchive.h"
 
-
+#include "Core/Profiler/ProfileMacro.h"
 #include "Core/Log/CoreLogCategory.h"
+#include "Core/Memory/FrameAllocator.h"
 #include "Core/Reflection/CtorManager.h"
 #include "Core/Reflection/ITypeGetter.h"
 #include "yaml-cpp/yaml.h"
@@ -187,6 +188,7 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
 
 bool YamlArchive::Serialize(const Any& obj, String& out)
 {
+    PROFILE_SCOPE_AUTO;
     if (!obj.HasValue())
     {
         LOGGER.Error(logcat::Archive_Serialization, "Try to serialize null object.");
@@ -247,12 +249,26 @@ static bool DeserializePrimitiveNode(const YAML::Node& node, void* out, const Ty
 
 struct ScopedAny
 {
-    ScopedAny(int32_t size, const Type* type) : ptr(malloc(size)), type_(type) { CtorManager::Get()->ConstructAt(type, ptr); }
+    ScopedAny(int32_t size, const Type* type) : type_(type)
+    {
+        if (FrameAllocator::IsValid())
+        {
+            ptr = core::FrameAllocator::Malloc(size);
+        }
+        else
+        {
+            ptr = malloc(size);
+        }
+        CtorManager::Get()->ConstructAt(type, ptr);
+    }
 
     ~ScopedAny()
     {
         CtorManager::Get()->DestroyAt(type_, ptr);
-        free(ptr);
+        if (!FrameAllocator::IsValid())
+        {
+            free(ptr);
+        }
     }
 
     void*       ptr;
@@ -435,6 +451,7 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
 
 bool YamlArchive::Deserialize(StringView source, void* out, const Type* type)
 {
+    PROFILE_SCOPE_AUTO;
     if (out == nullptr || type == nullptr)
     {
         LOGGER.Error(logcat::Archive_Deserialization, "Deserialize null object");

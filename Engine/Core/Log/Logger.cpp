@@ -7,12 +7,12 @@
 
 #include "Logger.h"
 
+#include "Core/Base/CallStackFrame.h"
+#include "Core/Core.h"
 #include "CoreLogCategory.h"
 #include "LogEvent.h"
 #include "LogRecorder.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include "Core/Base/CallStackFrame.h"
-#include "Core/Core.h"
 
 namespace core
 {
@@ -34,9 +34,14 @@ Logger::Logger()
 {
     auto color_logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
 
-    logger_ = MakeUnique<spdlog::logger>("ElbowEngine", spdlog::sinks_init_list{color_logger});
+    logger_ = new spdlog::logger("ElbowEngine", spdlog::sinks_init_list{color_logger});
     logger_->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
     Event_OnLog.AddBind(&LogErrorStack);
+}
+
+Logger::~Logger()
+{
+    delete logger_;
 }
 
 void Logger::LogStackTrace(LogLevel level)

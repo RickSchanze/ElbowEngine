@@ -4,28 +4,6 @@ set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(ElbowEngine)
 
-option(ENABLE_TEST "Enable test" OFF) # 测试需要图形的代码
-option(BUILD_TEST "Build Test" ON) # 测试不需要图形的代码
-option(USE_IMGUI "Enable imgui" ON)
-option(ENABLE_PROFILING "Enable profiling" OFF)
-option(WITH_EDITOR "Enable editor" ON)
-
-if (ENABLE_TEST)
-    add_compile_definitions(ENABLE_TEST)
-endif ()
-
-if (USE_IMGUI)
-    add_compile_definitions(USE_IMGUI)
-endif ()
-
-if (ENABLE_PROFILING)
-    add_compile_definitions(ENABLE_PROFILING)
-endif ()
-
-if (WITH_EDITOR)
-    add_compile_definitions(WITH_EDITOR)
-endif ()
-
 set(CMAKE_CXX_STANDARD 23)
 set(ELBOWENGINE_MAKE_WORK_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 

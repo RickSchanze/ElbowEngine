@@ -6,34 +6,29 @@
  */
 
 #pragma once
+#include "Core/CoreGlobal.h"
 #include <utility>
 
 namespace core
 {
-template<typename T>
+
+template <typename T, MemoryAllocType type = MemoryAllocType::Normal>
 class UniquePtr
 {
 public:
     // 构造函数
-    template<typename... Args>
+    template <typename... Args>
     static UniquePtr<T> Create(Args&&... args)
     {
-#ifdef ENABLE_PROFILING
-        MemoryTraceAllocator<T> allocator;
-        T*                      ptr = allocator.allocate(1);
-        try
-        {
-            new (ptr) T(std::forward<Args>(args)...);
-        }
-        catch (...)
-        {
-            allocator.deallocate(ptr, 1);
-            throw;
-        }
-#else
-        T* ptr = new T(std::forward<Args>(args)...);
-#endif
+        T* ptr = New<T>(std::forward<Args>(args)...);
         return UniquePtr<T>(ptr);
+    }
+
+    template <typename... Args>
+    static UniquePtr<T, MemoryAllocType::FrameTemp> CreateFrameTemp(Args&&... args)
+    {
+        T* ptr = NewFrameTemp<T>(std::forward<Args>(args)...);
+        return UniquePtr<T, MemoryAllocType::FrameTemp>(ptr);
     }
 
     // 默认构造函数
@@ -57,7 +52,7 @@ public:
     }
 
     // 子类到父类的转换
-    template<typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
+    template <typename U, typename = std::enable_if_t<std::is_base_of_v<T, U>>>
     UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release())
     {
     }
@@ -75,11 +70,7 @@ public:
     {
         if (ptr_)
         {
-#ifdef ENABLE_PROFILING
-            MemoryTraceDeleter<T>()(ptr_);
-#else
-            delete ptr_;
-#endif
+            Delete<T, type>(ptr);
         }
         ptr_ = ptr;
     }
@@ -110,7 +101,7 @@ private:
     T* ptr_ = nullptr;
 };
 
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 UniquePtr<T> MakeUnique(Args&&... args)
 {
     return UniquePtr<T>::Create(std::forward<Args>(args)...);

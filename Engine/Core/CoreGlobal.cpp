@@ -6,25 +6,23 @@
  */
 
 #include "Core/CoreGlobal.h"
+#include "Core/Profiler/ProfileMacro.h"
+#include "Memory/FrameAllocator.h"
 
-void EngineStatistics::IncreaseFrameIndex()
+void* FrameTempAlloc(size_t size)
 {
-    current_frame_index = (current_frame_index + 1) % graphics.parallel_render_frame_count;
+    PROFILE_SCOPE_AUTO;
+    return core::FrameAllocator::Malloc(size);
 }
 
-void EngineStatistics::ResetDrawCalls()
+void* NormalAlloc(size_t size)
 {
-    graphics.draw_calls = 0;
+    PROFILE_SCOPE_AUTO;
+    return malloc(size);
 }
 
-void EngineStatistics::IncreaseDrawCall(const int32_t count)
+void FreeNormalAllocatedMemory(void* ptr)
 {
-    graphics.draw_calls += count;
+    PROFILE_SCOPE_AUTO;
+    free(ptr);
 }
-
-float GetFrameTime()
-{
-    return g_engine_statistics.time_delta;
-}
-
-EngineStatistics g_engine_statistics = {};

@@ -11,11 +11,13 @@
 #include "Core/Base/Base.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Ref.h"
+#include "Core/Base/UniquePtr.h"
 #include "Core/CoreGlobal.h"
 #include "Core/CoreTypeTraits.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
 #include "MetaInfoManager.h"
+
 #include <utility>
 
 namespace core

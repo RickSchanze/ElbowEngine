@@ -12,7 +12,7 @@
 #include "Core/Base/Interface.h"
 #include "Core/Object/Object.h"
 
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
 #define DECLARE_CONFIG_ITEM(type, field_name, name, ...) \
 private:                                                 \
     PROPERTY()                                           \

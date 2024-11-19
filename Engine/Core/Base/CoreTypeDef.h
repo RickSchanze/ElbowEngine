@@ -67,7 +67,7 @@ using WeakPtr = std::weak_ptr<T>;
 template <typename T, typename... Args>
 SharedPtr<T> MakeShared(Args&&... args)
 {
-#ifdef ENABLE_PROFILING
+#if ENABLE_PROFILING
     return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
 #else
     return std::make_shared<T>(std::forward<Args>(args)...);

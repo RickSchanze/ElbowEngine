@@ -9,7 +9,6 @@
 #define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 
 #include "Core/Base/EString.h"
-#include "Core/Base/UniquePtr.h"
 #include "spdlog/spdlog.h"
 
 namespace core
@@ -28,6 +27,8 @@ class Logger
 {
 public:
     Logger();
+
+    ~Logger();
 
     template<typename... Args>
     void Debug(const core::StringView category, const spdlog::format_string_t<Args...> msg, Args&&... args)
@@ -98,7 +99,7 @@ private:
     void LogStackTrace(LogLevel level);
     void SendLog(LogLevel level, core::StringView category, core::StringView msg);
 
-    UniquePtr<spdlog::logger> logger_;
+    spdlog::logger* logger_;
 };
 
 Logger& GetLogger();
