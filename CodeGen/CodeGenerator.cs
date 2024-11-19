@@ -226,7 +226,7 @@ public class CodeGenerator
                 sw.Write($"->SetAttribute(Type::{attr.Key})");
             }
 
-            if (attr.Key is "Config")
+            if (attr.Key is "Config" or "Categorty")
             {
                 var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
                 sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, {attrValue})");

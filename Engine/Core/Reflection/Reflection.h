@@ -385,6 +385,7 @@ struct Type
     enum class ValueAttribute
     {
         Config,
+        Category,
         Count,
     };
 

@@ -20,6 +20,12 @@ add_library(Platform
         FileSystem/File.cpp
         FileSystem/File.h
         PlatformLogcat.h
+        RHI/GfxContext.cpp
+        RHI/GfxContext.h
+        RHI/Vulkan/GfxContext_Vulkan.cpp
+        RHI/Vulkan/GfxContext_Vulkan.h
+        Config/RHIConfig.cpp
+        Config/RHIConfig.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

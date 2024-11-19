@@ -25,4 +25,32 @@ class CLASS(Config = "Config/Core/MemoryConfig.cfg", Category = "Core") MemoryCo
     // 帧分配器是否一定要分成功
     DECLARE_CONFIG_ITEM(bool, frame_allocator_must_success, FrameAllocatorMustSuccess, true);
 };
+
+struct STRUCT() Version
+{
+    GENERATED_STRUCT(Version)
+
+    PROPERTY()
+    int major;
+
+    PROPERTY()
+    int minor;
+
+    PROPERTY()
+    int patch;
+
+    bool operator==(const Version& o) const
+    {
+        return major == o.major && minor == o.minor && patch == o.patch;
+    }
+};
+
+class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : extends IConfig {
+    GENERATED_CLASS(CoreConfig)
+
+    // 应用的名称
+    DECLARE_CONFIG_ITEM(core::String, app_name, AppName, "肘击引擎");
+    // 应用版本号
+    DECLARE_CONFIG_ITEM(Version, app_version, AppVersion, { 0, 0, 0 });
+};
 }   // namespace core

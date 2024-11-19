@@ -11,7 +11,8 @@ public class CodeGenConfig
         @"Engine",
         @"Engine\ThirdParty\IconFontCppHeaders",
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
-        @"Generated"
+        @"Generated",
+        @"Engine\ThirdParty\tracy\public"
     ];
 
     public List<string> SourceDirs { get; } =
