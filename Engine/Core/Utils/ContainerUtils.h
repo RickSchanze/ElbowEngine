@@ -92,7 +92,7 @@ public:
         return {};
     }
 #endif
-
+#include <ranges>
 #if REGION(容器特化操作.Array)
     /**
      * 快速删除一个元素,但是只是把它移动到最后
@@ -107,6 +107,11 @@ public:
         // DebugAssert(Container, index >= 0 && index < array.size(), "Index out of range");
         std::swap(array[index], array[array.size() - 1]);
         array.pop_back();
+    }
+
+    core::Array<const char*> ToCStyleStringArray(const core::Array<core::String>& array)
+    {
+        array | std::views::transform([](const core::String& str) { return str.c_str(); }) | std::views::to_array;
     }
 #endif
 };

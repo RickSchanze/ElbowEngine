@@ -16,9 +16,7 @@ namespace core
 FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), enum_value_(info.enum_value_), attribute_(info.attribute_),
     value_attr_(info.value_attr_), container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_),
-    container_identifier_(info.container_identifier_)
-{
-}
+    container_identifier_(info.container_identifier_) {}
 
 bool FieldInfo::IsPrimitive() const
 {
@@ -54,10 +52,10 @@ FieldInfo* FieldInfo::SetAttribute(FlagAttribute attr)
 
 FieldInfo* FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
 {
-#ifndef WITH_EDITOR
-    if (attr == ValueAttribute::Label)
+#if !WITH_EDITOR
+    if (attr == ValueAttribute::Label || attr == ValueAttribute::EnableWhen || attr == ValueAttribute::Category)
     {
-        return *this;
+        return this;
     }
 #endif
     if (IsDefined(attr))
@@ -86,7 +84,10 @@ Any FieldInfo::GetValue(const Any& obj) const
     if (!obj.IsDerivedFrom(outer_))
     {
         LOGGER.Error(
-            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj.GetType()->GetFullName(), outer_->GetFullName()
+            logcat::Archive_Serialization,
+            "Different outer type, obj type: {}, outer type: {}",
+            obj.GetType()->GetFullName(),
+            outer_->GetFullName()
         );
         return {};
     }
@@ -333,4 +334,4 @@ Optional<int32_t> Type::GetEnumValueFromString(StringView str) const
     return NullOpt;
 }
 
-}   // namespace core
+} // namespace core

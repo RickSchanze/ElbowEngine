@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using CppAst;
@@ -160,17 +161,19 @@ public class CodeGenerator
         foreach (var attribute in attributes)
         {
             var attr = attribute.Arguments;
-            if (attr?.Contains('=') ?? false)
+            int idx = attr.IndexOf("=", StringComparison.Ordinal);
+
+            string key = attr.Trim().Trim('"').Trim();
+            string value = "-";
+            if (idx != -1)
             {
-                var parts = attr.Split('=');
-                result[parts[0].Trim()] = parts[1].Trim();
+                key = attr.Substring(0, idx);
+                key = key.Trim().Trim('"').Trim();
+                value = attr[(idx + 1)..];
+                value = value.Trim().Trim('"').Trim();
             }
-            else
-            {
-                if (attr == null) continue;
-                attr = attr.Trim();
-                result[attr] = "";
-            }
+
+            result.Add(key, value);
         }
 
         result.Remove("Reflection");
@@ -224,13 +227,17 @@ public class CodeGenerator
             if (attr.Key is "Interface" or "Trivial")
             {
                 sw.Write($"->SetAttribute(Type::{attr.Key})");
+                continue;
             }
 
-            if (attr.Key is "Config" or "Categorty")
+            if (attr.Key is "Config" or "Category")
             {
-                var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
-                sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, {attrValue})");
+                var attrValue = attr.Value;
+                sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, \"{attrValue}\")");
+                continue;
             }
+
+            throw new Exception($"Error: Unknown attribute {attr.Key} = {attr.Value}");
         }
 
         sw.WriteLine("; \\");
@@ -265,6 +272,26 @@ public class CodeGenerator
         {
             sw.Write($"->SetComment(\"{comment}\")");
         }
+
+
+        foreach (var attr in attributes)
+        {
+            if (attr.Key is "Transient" or "EnumValue")
+            {
+                sw.Write($"->SetAttribute(FieldInfo::{attr.Key})");
+                continue;
+            }
+
+            if (attr.Key is "Getter" or "Setter" or "Label" or "EnableWhen" or "Category")
+            {
+                var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
+                sw.Write($"->SetAttribute(core::FieldInfo::ValueAttribute::{attr.Key}, \"{attrValue}\")");
+                continue;
+            }
+
+            throw new Exception($"Error: Unknown attribute {attr.Key} = {attr.Value}");
+        }
+
 
         sw.WriteLine("; \\");
     }

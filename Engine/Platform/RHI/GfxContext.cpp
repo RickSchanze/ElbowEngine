@@ -13,6 +13,10 @@
 #include "Platform/PlatformLogcat.h"
 #include "Vulkan/GfxContext_Vulkan.h"
 
+#include GEN_HEADER("Platform.GfxContext.generated.h")
+
+GENERATED_SOURCE()
+
 namespace platform::rhi
 {
 static GfxContext* ctx;
@@ -37,4 +41,4 @@ void UseGraphicsAPI(GraphicsAPI api)
     default: Assert(logcat::Platform_RHI, false, "Unsupported Graphics API");
     }
 }
-}   // namespace platform::rhi
+} // namespace platform::rhi

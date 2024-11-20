@@ -11,11 +11,15 @@
 
 namespace platform::rhi::vulkan
 {
-class GfxContext_Vulkan : public GfxContext {
+class GfxContext_Vulkan final : public GfxContext
+{
 public:
     GfxContext_Vulkan();
 
     [[nodiscard]] GraphicsAPI GetAPI() const override;
+
+    void Initialize() override;
+    void Deinitialize() override;
 
 private:
     VkInstance instance_ = nullptr;
