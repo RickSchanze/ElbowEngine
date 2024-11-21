@@ -109,10 +109,6 @@ public:
         array.pop_back();
     }
 
-    core::Array<const char*> ToCStyleStringArray(const core::Array<core::String>& array)
-    {
-        array | std::views::transform([](const core::String& str) { return str.c_str(); }) | std::views::to_array;
-    }
 #endif
 };
 

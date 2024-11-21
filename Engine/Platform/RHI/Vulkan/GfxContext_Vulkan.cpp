@@ -16,23 +16,54 @@ void PostProcessVulkanExtensions(core::Array<core::String>& extensions) {}
 
 namespace platform::rhi::vulkan
 {
-GfxContext_Vulkan::GfxContext_Vulkan() {}
+GfxContext_Vulkan::GfxContext_Vulkan() = default;
 
 GraphicsAPI GfxContext_Vulkan::GetAPI() const
 {
     return GraphicsAPI::Vulkan;
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagsEXT         severity, VkDebugUtilsMessageTypeFlagsEXT type,
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      severity, VkDebugUtilsMessageTypeFlagsEXT type,
                                                     const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void*                      user_data)
 {
-    switch (severity)
+    const char* message_type = nullptr;
+    if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
     {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: break;
-    default: break;
+        message_type = "General";
     }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+    {
+        message_type = "Validation";
+    }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+    {
+        message_type = "Performance";
+    }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT)
+    {
+        message_type = "Device Address Binding";
+    }
+    else
+    {
+        message_type = "Unknown";
+    }
+    if (severity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "[{}] {}", message_type, callback_data->pMessage);
+    }
+    else if (severity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        LOGGER.Warn(logcat::Platform_RHI_Vulkan, "[{}] {}", message_type, callback_data->pMessage);
+    }
+    else if (severity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    {
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "[{}] {}", message_type, callback_data->pMessage);
+    }
+    else
+    {
+        LOGGER.Debug(logcat::Platform_RHI_Vulkan, "[{}] {}", message_type, callback_data->pMessage);
+    }
+    return VK_FALSE;
 }
 
 void GfxContext_Vulkan::Initialize()
@@ -63,17 +94,17 @@ void GfxContext_Vulkan::Initialize()
     instance_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_info.pApplicationInfo = &app_info;
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Enable validation layer: {}", rhi_cfg->GetEnableValidationLayer());
+
     const char* validation_layer_names[1] = {*rhi_cfg->GetValidationLayerName()};
 
     VkDebugUtilsMessengerCreateInfoEXT debug_info = {};
     debug_info.sType                              = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_info.messageSeverity                    = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+    debug_info.messageSeverity                    = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     debug_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug_info.pfnUserCallback
+    debug_info.pfnUserCallback = DebugCallback;
     if (rhi_cfg->GetEnableValidationLayer())
     {
         instance_info.enabledLayerCount   = 1;
