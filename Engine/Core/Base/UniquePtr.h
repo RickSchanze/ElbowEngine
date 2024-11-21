@@ -75,6 +75,10 @@ public:
         ptr_ = ptr;
     }
 
+    T* GetWritePtr() noexcept { return ptr_; }
+
+    T& GetRef() const noexcept { return *ptr_; }
+
     // 释放指针
     T* Release() noexcept
     {

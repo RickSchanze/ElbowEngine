@@ -8,4 +8,5 @@
 #include "RHIConfig.h"
 
 #include GEN_HEADER("Platform.RHIConfig.generated.h")
+
 GENERATED_SOURCE()

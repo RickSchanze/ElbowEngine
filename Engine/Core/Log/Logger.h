@@ -10,6 +10,7 @@
 
 #include "Core/Base/EString.h"
 #include "spdlog/spdlog.h"
+#include "Core/CoreDef.h"
 
 namespace core
 {
@@ -93,6 +94,21 @@ public:
         String message = fmt::format(msg, std::forward<Args>(args)...);
         logger_->critical("[{}] {}", category.Data(), message);
         SendLog(LogLevel::Critical, category, message);
+#if ELBOW_DEBUG
+        DEBUG_BREAK();
+#endif
+        assert(false && message.Data());
+    }
+
+    template<typename... Args>
+    void CriticalNoQuit(const core::StringView category, const spdlog::format_string_t<Args...> msg, Args&&... args)
+    {
+        String message = fmt::format(msg, std::forward<Args>(args)...);
+        logger_->critical("[{}] {}", category.Data(), message);
+        SendLog(LogLevel::Critical, category, message);
+#if ELBOW_DEBUG
+        DEBUG_BREAK();
+#endif
     }
 
 private:

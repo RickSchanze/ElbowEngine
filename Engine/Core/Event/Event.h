@@ -53,7 +53,10 @@ struct Event
 
     [[nodiscard]] bool HasBound() const { return delegate_.HasBound(); }
 
-    ReturnType Invoke(ArgumentArgs&&... args) { return delegate_.Invoke(Move(args)...); }
+    ReturnType Invoke(ArgumentArgs&&... args)
+    {
+        return delegate_.Invoke(Move(args)...);
+    }
 
     ReturnType InvokeOnce(ArgumentArgs&&... args)
     {

@@ -19,12 +19,6 @@ void* core::FrameAllocator::Malloc(size_t size)
         return malloc(size);
     }
 
-    if (GetRuntimeStage() != RuntimeStage::Running)
-    {
-        LOGGER.Warn(logcat::Core_Memory, "FrameAllocator only can be used in a frame. Use malloc instead");
-        return malloc(size);
-    }
-
     const auto ret = peek_;
     peek_ += size;
     return ret;
@@ -41,6 +35,7 @@ void core::FrameAllocator::Startup()
         "Init frame allocator failed!"
     );
     peek_ = memory_;
+    top_  = memory_ + size;
     LOGGER.Info(logcat::Core_Memory, "Frame allocator initialized with size = {}.", size);
 }
 

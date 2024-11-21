@@ -20,7 +20,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "matchit.h"
 #include "tl/expected.hpp"
 
 namespace core
@@ -123,7 +122,4 @@ tl::unexpected<T> Unexpected(T&& value)
 {
     return tl::unexpected(std::forward<T>(value));
 }
-
-// 模式匹配
-using namespace matchit;
 }   // namespace core

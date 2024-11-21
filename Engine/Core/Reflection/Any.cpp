@@ -38,3 +38,10 @@ bool core::Any::IsEnum() const
 {
     return GetType()->IsEnum();
 }
+
+bool core::CanConvertTo(const Type* from, const Type* to)
+{
+    if (from == to) return true;
+    if (from->IsEnum() && to == TypeOf<int32_t>()) return true;
+    return false;
+}

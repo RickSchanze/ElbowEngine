@@ -38,7 +38,13 @@ void UseGraphicsAPI(GraphicsAPI api)
     switch (api)
     {
     case GraphicsAPI::Vulkan: ctx = New<vulkan::GfxContext_Vulkan>();
+        break;
     default: Assert(logcat::Platform_RHI, false, "Unsupported Graphics API");
     }
+}
+
+void ReleaseGfxContext()
+{
+    Delete(ctx);
 }
 } // namespace platform::rhi

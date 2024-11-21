@@ -9,7 +9,9 @@
 
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/CoreDef.h"
+#include "Core/Log/CoreLogCategory.h"
 #include "fmt/format.h"
+#include "Core/Log/Logger.h"
 
 namespace core
 {
@@ -97,12 +99,26 @@ struct Delegate
 
     void Bind(Function<ReturnT(ArgumentTypes...)>&& function)
     {
-        // DebugAssert(Event.Delegate, HasBound(), L"Delegate is already bound, rebinding...");
+        DebugAssert(logcat::Core_Event, !HasBound(), "Delegate is already bound, rebinding...");
         function_ = Move(function);
         id_       = Move(DelegateID(true));
     }
 
-    ReturnT Invoke(ArgumentTypes&&... args) { return function_(Forward<ArgumentTypes>(args)...); }
+    ReturnT Invoke(ArgumentTypes&&... args)
+    {
+        if (HasBound())
+        {
+            return function_(Forward<ArgumentTypes>(args)...);
+        }
+        else
+        {
+            LOGGER.Warn(logcat::Core_Event, "Delegate {} is not bound, invoke failed. return {{}} if there needs a return value.", GetID());
+            if constexpr (!std::is_same_v<ReturnT, void>)
+            {
+                return {};
+            }
+        }
+    }
 
 private:
     Function<ReturnT(ArgumentTypes...)> function_;

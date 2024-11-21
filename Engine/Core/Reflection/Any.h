@@ -11,7 +11,6 @@
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Ref.h"
 #include "Core/CoreGlobal.h"
-#include "Core/Log/CoreLogCategory.h"
 #include "MetaInfoManager.h"
 
 namespace core
@@ -103,6 +102,8 @@ private:
     Base* ptr_;
 };
 
+bool CanConvertTo(const Type* from, const Type* to);
+
 template <typename T>
 Optional<T> Any::AsCopy() const
 {
@@ -111,7 +112,7 @@ Optional<T> Any::AsCopy() const
         return NullOpt;
     }
     const Type* t = TypeOf<T>();
-    if (t != GetType())
+    if (!CanConvertTo(GetType(), t))
     {
         return NullOpt;
     }

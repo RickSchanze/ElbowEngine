@@ -26,6 +26,8 @@ add_library(Platform
         RHI/Vulkan/GfxContext_Vulkan.h
         Config/RHIConfig.cpp
         Config/RHIConfig.h
+        Window/Window.cpp
+        Window/Window.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

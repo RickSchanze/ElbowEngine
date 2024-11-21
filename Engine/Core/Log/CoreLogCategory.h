@@ -20,6 +20,7 @@ constexpr auto Archive_Serialization   = "Archive.Serialization";
 constexpr auto Archive_Deserialization = "Archive.Deserialization";
 constexpr auto Reflection              = "Reflection";
 constexpr auto Core                    = "Core";
+constexpr auto Core_Event              = "Core.Event";
 constexpr auto Config                  = "Config";
 constexpr auto Core_Memory             = "Core.Memory";
-}   // namespace logcat
+} // namespace logcat

@@ -29,7 +29,9 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
     else if (auto op_int64 = value.AsCopy<int64_t>())
         emitter << *op_int64;
     else if (auto op_uint8 = value.AsCopy<uint8_t>())
-        emitter << *op_uint8;
+    {
+        emitter << (int32_t)*op_uint8;
+    }
     else if (auto op_uint16 = value.AsCopy<uint16_t>())
         emitter << *op_uint16;
     else if (auto op_uint32 = value.AsCopy<uint32_t>())
@@ -167,11 +169,21 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
         }
         else if (field->IsEnum())
         {
-            // clang-format off
-            field->GetObjEnumValue(obj)
-                .and_then([field](const int32_t value) { return field->GetType()->GetEnumValueString(value); })
-                .transform([&emitter, field](const StringView& value) { emitter << YAML::Key << field->GetName().Data() << YAML::Value << value.Data(); return 0; });
-            // clang-format on
+            auto enum_op_value = field->GetObjEnumValue(obj);
+            if (enum_op_value.has_value())
+            {
+                auto enum_value = enum_op_value.value();
+                auto enum_str_value_op = field->GetType()->GetEnumValueString(enum_value);
+                if (enum_str_value_op.has_value())
+                {
+                    core::StringView enum_str_value = enum_str_value_op.value();
+                    emitter << YAML::Key << field->GetName().Data() << YAML::Value << enum_str_value.Data();
+                }
+            }
+            else
+            {
+                LOGGER.Error(logcat::Archive_Serialization, "Serialize filed {} failed: get enum value failed!", field->GetName());
+            }
         }
         else
         {

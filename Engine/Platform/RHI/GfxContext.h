@@ -13,7 +13,7 @@
 
 namespace platform::rhi
 {
-DECLARE_EVENT(PostProcessVulkanExtensionsEvent, void, core::Array<core::String>&)
+DECLARE_EVENT(PostProcessVulkanExtensionsEvent, void, core::Ref<core::Array<const char*>>)
 
 inline PostProcessVulkanExtensionsEvent Event_PostProcessVulkanExtensions;
 
@@ -27,19 +27,10 @@ enum class ENUM() GraphicsAPI
     Count,
 };
 
-enum class ENUM() WindowLib
-{
-    GLFW,
-    SDL2,
-};
-
 class GfxContext
 {
 public:
     virtual ~GfxContext() = default;
-
-    virtual void Initialize() = 0;
-    virtual void Deinitialize() = 0;
 
     [[nodiscard]] virtual GraphicsAPI GetAPI() const = 0;
 
@@ -47,6 +38,16 @@ public:
 };
 
 GfxContext& GetGfxContext();
-void        UseGraphicsAPI(GraphicsAPI api);
+
+/**
+ * 设置使用的图形API并以此创建GfxContext
+ * @param api 图形API
+ */
+void UseGraphicsAPI(GraphicsAPI api);
+
+/**
+ * 释放GfxContext
+ */
+void ReleaseGfxContext();
 
 } // namespace platform::rhi

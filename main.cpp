@@ -7,15 +7,14 @@
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
+#include "Platform/Config/RHIConfig.h"
 #include "Platform/FileSystem/Path.h"
+#include "cpptrace/cpptrace.hpp"
 
-struct B
-{
-    B(int) {}
-};
 
 int main()
 {
+    cpptrace::generate_trace(); // 这里需要先调用一次generate_trace 否则后面的无法生成trace
     SetRuntimeStage(RuntimeStage::Startup);
     LOGGER.Info(logcat::Engine, "Initializing Engine...");
     Assert(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
@@ -29,6 +28,12 @@ int main()
         return -1;
     }
     core::FrameAllocator::Startup();
+    // 图形初始化
+    {
+        PROFILE_SCOPE("Graphics Initialize")
+        auto rhi_cfg = core::GetConfig<platform::rhi::RHIConfig>();
+        UseGraphicsAPI(rhi_cfg->GetAPI());
+    }
     LOGGER.Info(logcat::Engine, "Engine initialized.");
     SetRuntimeStage(RuntimeStage::Running);
     LOGGER.Info(logcat::Engine, "Engine running...");

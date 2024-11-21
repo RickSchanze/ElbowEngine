@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include "Any.h"
 #include "ContainerView.h"
 #include "Core/Base/Base.h"
 #include "Core/Base/CoreTypeDef.h"
@@ -139,7 +138,7 @@ struct FieldInfo
     typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].IsEmpty(); }
     [[nodiscard]] bool IsPrimitive() const;
     /// 这个Field是不是被声明为某一个枚举?
     /// class A {
