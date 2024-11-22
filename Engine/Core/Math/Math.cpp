@@ -142,9 +142,9 @@ float Math::ClampAngle(float a, float min, float max)
     return Clamp(a, min, max);
 }
 
-Matrix4x4 Math::Perspective(float fov, float aspect, float near, float far)
+Matrix4x4 Math::Perspective(float fov, float aspect, float my_near, float my_far)
 {
-    Matrix4x4 rtn = glm::perspective(fov, aspect, near, far);
+    Matrix4x4 rtn = glm::perspective(fov, aspect, my_near, my_far);
     rtn[1][1] *= -1;
     return rtn;
 }

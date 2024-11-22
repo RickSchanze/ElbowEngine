@@ -124,6 +124,16 @@ public class CodeGenerator
             sw.Write($"->SetComment(\"{comment}\")");
         }
 
+        var attribues = ParseAttribute(validEnum.Attributes);
+        foreach (var attribute in attributes)
+        {
+            if (attribute.Key == "Flag")
+            {
+                sw.Write($"->SetAttribute(Type::FlagAttribute::{attribute.Key})");
+                continue;
+            }
+            throw new Exception($"Unknown attribute: {attribute.Key}");
+        }
         sw.WriteLine("; \\");
         sw.WriteLine($"using enum {validEnum.FullName}; \\");
         GenerateEnumFields(sw, validEnum.Items);
@@ -149,6 +159,16 @@ public class CodeGenerator
             if (!string.IsNullOrEmpty(comment))
             {
                 sw.Write($"->SetComment(\"{comment}\")");
+            }
+
+            foreach (var attribute in attributes)
+            {
+                if (attribute.Key is "Category" or "EnumFlag" or "Label")
+                {
+                    sw.Write($"->SetAttribute(FieldInfo::ValueAttribute::{attribute.Key}, \"{attribute.Value}\")");
+                    continue;
+                }
+                throw new Exception("Unknown attribute: " + attribute.Key);
             }
 
             sw.WriteLine("; \\");
@@ -282,7 +302,7 @@ public class CodeGenerator
                 continue;
             }
 
-            if (attr.Key is "Getter" or "Setter" or "Label" or "EnableWhen" or "Category")
+            if (attr.Key is "Getter" or "Setter" or "Label" or "EnableWhen" or "Category" or "EnumFlag")
             {
                 var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
                 sw.Write($"->SetAttribute(core::FieldInfo::ValueAttribute::{attr.Key}, \"{attrValue}\")");

@@ -109,6 +109,7 @@ int32_t StringView::LastIndexOf(const StringView& o) const
 bool StringView::operator==(const StringView& o) const
 {
     if (o.Length() != Length()) return false;
+    if (Data() == o.Data()) return true;
     for (int32_t i = 0; i < Length(); ++i)
     {
         if (str_[i] != o[i]) return false;

@@ -119,6 +119,7 @@ public:
         return fmt::format(std::forward<T>(format), std::forward<Args>(args)...);
     }
 
+    core::StringView ToStringView() const { return {str_}; }
 
 private:
     std::string str_;

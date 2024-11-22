@@ -9,6 +9,7 @@
 
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
+#include "Core/Singleton/MManager.h"
 #include "Core/Singleton/Singleton.h"
 
 namespace core
@@ -45,18 +46,20 @@ struct RTTITypeInfo
     bool operator==(const RTTITypeInfo& o) const { return hash_code == o.hash_code; }
 };
 
-class MetaInfoManager : public Singleton<MetaInfoManager>
+class MetaInfoManager : public Manager<MetaInfoManager>
 {
 public:
-    MetaInfoManager();
-
-    ~MetaInfoManager() override;
+    void Startup() override;
+    void Shutdown() override;
 
     void RegisterType(RTTITypeInfo type_info);
     void RegisterTypeRegisterer(RTTITypeInfo type_info, MetaDataRegisterer registerer);
     void RegisterType(RTTITypeInfo type_info, Type* type);
 
     Type* GetType(const RTTITypeInfo& type_info);
+
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Bottom; }
+    [[nodiscard]] StringView   GetName() const override { return "MetaInfoManager"; }
 
 private:
     HashMap<RTTITypeInfo, Type*>              types_registered_;

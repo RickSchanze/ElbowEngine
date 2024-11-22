@@ -5,8 +5,8 @@
  * @brief 
  */
 
-#include "RHIConfig.h"
+#include "PlatformConfig.h"
 
-#include GEN_HEADER("Platform.RHIConfig.generated.h")
+#include GEN_HEADER("Platform.PlatformConfig.generated.h")
 
 GENERATED_SOURCE()

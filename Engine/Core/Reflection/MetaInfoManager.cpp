@@ -54,8 +54,9 @@ static void RegisterOtherType(MetaInfoManager& manager)
     }
 }
 
-MetaInfoManager::MetaInfoManager()
+void MetaInfoManager::Startup()
 {
+
     REGISTER_ATOMIC_TYPE(int8_t);
     REGISTER_ATOMIC_TYPE(int16_t);
     REGISTER_ATOMIC_TYPE(int32_t);
@@ -71,7 +72,7 @@ MetaInfoManager::MetaInfoManager()
     RegisterOtherType(*this);
 }
 
-MetaInfoManager::~MetaInfoManager()
+void MetaInfoManager::Shutdown()
 {
     for (auto& val: types_registered_ | std::views::values)
     {

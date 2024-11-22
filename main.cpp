@@ -7,9 +7,10 @@
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
-#include "Platform/Config/RHIConfig.h"
-#include "Platform/FileSystem/Path.h"
 #include "cpptrace/cpptrace.hpp"
+#include "Platform/Config/PlatformConfig.h"
+#include "Platform/FileSystem/Path.h"
+#include "Platform/Window/WindowManager.h"
 
 
 int main()
@@ -28,11 +29,16 @@ int main()
         return -1;
     }
     core::FrameAllocator::Startup();
+    // 窗口初始化
+    {
+        PROFILE_SCOPE("Window Initialize");
+        CreateAWindow(platform::WindowLib::GLFW);
+    }
     // 图形初始化
     {
         PROFILE_SCOPE("Graphics Initialize")
-        auto rhi_cfg = core::GetConfig<platform::rhi::RHIConfig>();
-        UseGraphicsAPI(rhi_cfg->GetAPI());
+        auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
+        UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
     }
     LOGGER.Info(logcat::Engine, "Engine initialized.");
     SetRuntimeStage(RuntimeStage::Running);
@@ -41,6 +47,13 @@ int main()
     {
         MARK_FRAME_AUTO;
         core::FrameAllocator::Refresh();
+        platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
+        if (main_window->ShouldClose())
+        {
+            main_window->Close();
+            break;
+        }
+        main_window->PollInputs();
     }
     LOGGER.Info(logcat::Engine, "Engine shutdown...");
     SetRuntimeStage(RuntimeStage::Shutdown);

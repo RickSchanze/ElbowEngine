@@ -9,7 +9,7 @@
 
 #include "Core/Config/ConfigManager.h"
 #include "Core/CoreGlobal.h"
-#include "Platform/Config/RHIConfig.h"
+#include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Vulkan/GfxContext_Vulkan.h"
 
@@ -23,7 +23,7 @@ static GfxContext* ctx;
 
 uint8_t GfxContext::GetSwapchainImageCount() const
 {
-    const auto cfg = core::GetConfig<RHIConfig>();
+    const auto cfg = core::GetConfig<PlatformConfig>();
     return cfg->GetSwapchainImageCount();
 }
 

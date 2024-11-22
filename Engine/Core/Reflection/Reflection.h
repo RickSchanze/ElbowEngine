@@ -7,7 +7,6 @@
 
 #pragma once
 #include "ContainerView.h"
-#include "Core/Base/Base.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Ref.h"
 #include "Core/Base/UniquePtr.h"
@@ -21,6 +20,7 @@
 
 namespace core
 {
+
 class ITypeGetter;
 
 enum class ContainerIdentifier
@@ -114,7 +114,7 @@ struct FieldInfo
         Transient = 1 << 0,
         EnumValue = 1 << 1,
         // Editor Only
-        Hidden = 1 << 16,
+        Hidden    = 1 << 16,
     };
 
     enum class ValueAttribute
@@ -125,6 +125,7 @@ struct FieldInfo
         Label,
         EnableWhen,
         Category,
+        EnumFlag,
         Count,
     };
 
@@ -135,10 +136,10 @@ struct FieldInfo
         UnsupportedContainer,
     };
 
-    typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
+    typedef StaticArray<StringView, static_cast<int32_t>(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return !value_attr_[static_cast<int32_t>(attr)].IsEmpty(); }
     [[nodiscard]] bool IsPrimitive() const;
     /// 这个Field是不是被声明为某一个枚举?
     /// class A {
@@ -158,10 +159,10 @@ struct FieldInfo
     /// enum class Enum {
     ///   A, -> IsEnum() == false, IsAEnumField() == true
     /// }
-    [[nodiscard]] bool       IsAEnumField() const { return enum_value_ != -1; }
-    [[nodiscard]] StringView GetAttribute(ValueAttribute attr) const;
-    [[nodiscard]] int32_t    GetOffset() const { return offset_; }
-    [[nodiscard]] StringView GetName() const { return name_; }
+    [[nodiscard]] bool        IsAEnumField() const { return enum_value_ != -1; }
+    [[nodiscard]] StringView  GetAttribute(ValueAttribute attr) const;
+    [[nodiscard]] int32_t     GetOffset() const { return offset_; }
+    [[nodiscard]] StringView  GetName() const { return name_; }
     // 这个函数有可能返回null, 因为当包装关联容器时,
     // 不知道应该是KeyType还是ValueType就返回了null
     [[nodiscard]] const Type* GetType() const { return type_; }
@@ -186,7 +187,7 @@ struct FieldInfo
 
     [[nodiscard]] Any GetValue(const Any& obj) const;
 
-    Expected<void, Error> SetValue(const Any& obj, const Any& value) const;
+    [[nodiscard]] Expected<void, Error> SetValue(const Any& obj, const Any& value) const;
 
     SequentialContainerView* CreateSequentialContainerView(void* obj) const;
 
@@ -198,7 +199,7 @@ protected:
     int32_t                  size_   = 0;
     StringView               name_;
     int32_t                  enum_value_ = -1;
-    int32_t                  attribute_  = 0; // bool attribute
+    int32_t                  attribute_  = 0;   // bool attribute
     ValueAttributes          value_attr_{};
     UniquePtr<ContainerView> container_view_ = nullptr;
 
@@ -207,15 +208,19 @@ protected:
     ContainerIdentifier container_identifier_ = ContainerIdentifier::Count;
 
 #if WITH_EDITOR
-    StringView comment_ = ""; // 注释 或者imgui显示的label
+    StringView comment_ = "";   // 注释 或者imgui显示的label
 #endif
 };
 
 struct FunctionParamInfo
 {
-    enum FlagAttribute {};
+    enum FlagAttribute
+    {
+    };
 
-    enum class ValueAttribute {};
+    enum class ValueAttribute
+    {
+    };
 
     Type*      type = nullptr;
     StringView name;
@@ -229,9 +234,9 @@ struct FunctionInfo
 
     enum FlagAttribute
     {
-        Static = 1 << 0,
+        Static      = 1 << 0,
         Constructor = 1 << 1,
-        Member = 1 << 2,
+        Member      = 1 << 2,
     };
 
     enum class ValueAttribute
@@ -239,7 +244,7 @@ struct FunctionInfo
         Count,
     };
 
-    typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
+    typedef StaticArray<StringView, static_cast<int32_t>(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (attribute & attr) != 0; }
 
@@ -382,9 +387,10 @@ struct Type
     enum FlagAttribute
     {
         Interface = 1 << 0,
-        Atomic = 1 << 1,
-        Enum = 1 << 2, // 枚举类型
-        Trivial = 1 << 3, // 简单类型
+        Atomic    = 1 << 1,
+        Enum      = 1 << 2,   // 枚举类型
+        Trivial   = 1 << 3,   // 简单类型
+        Flag      = 1 << 4,   // 这是一个Flag, 表示可以通过 | 连接
     };
 
     enum class ValueAttribute
@@ -394,10 +400,10 @@ struct Type
         Count,
     };
 
-    typedef StaticArray<StringView, GetEnumValue(ValueAttribute::Count)> ValueAttributes;
+    typedef StaticArray<StringView, static_cast<int32_t>(ValueAttribute::Count)> ValueAttributes;
 
     [[nodiscard]] bool       IsDefined(FlagAttribute attr) const { return (attribute_ & attr) != 0; }
-    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[GetEnumValue(attr)].IsEmpty(); }
+    [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[static_cast<int32_t>(attr)].IsEmpty(); }
     [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
     [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
     [[nodiscard]] StringView GetFullName() const { return name_; }
@@ -515,7 +521,7 @@ struct Type
 protected:
     StringView           name_;
     int32_t              size_      = 0;
-    int32_t              attribute_ = 0; // bool attribute
+    int32_t              attribute_ = 0;   // bool attribute
     ValueAttributes      value_attr_{};
     Array<const Type*>   parents_{};
     Array<FieldInfo>     fields_{};
@@ -523,30 +529,30 @@ protected:
     size_t               type_hash_ = 0;
 
 #if WITH_EDITOR
-    StringView comment_; // 注释
+    StringView comment_;   // 注释
 #endif
 };
 
-} // namespace core
+}   // namespace core
 
-template <>
-inline core::StringView GetEnumString<core::FieldInfo::ValueAttribute>(core::FieldInfo::ValueAttribute value)
+inline core::StringView GetEnumStringFieldValueAttribute(core::FieldInfo::ValueAttribute value)
 {
     switch (value)
     {
     case core::FieldInfo::ValueAttribute::Getter: return "Getter";
     case core::FieldInfo::ValueAttribute::Setter: return "Setter";
     case core::FieldInfo::ValueAttribute::Label: return "Label";
-    default: return ENUM_INVALID;
+    default: return "OutOfRange";
     }
 }
 
-template <>
-inline core::StringView GetEnumString<core::Type::ValueAttribute>(core::Type::ValueAttribute value)
+inline core::StringView GetEnumStringTypeValueAttribute(core::Type::ValueAttribute value)
 {
     switch (value)
     {
-    default: return ENUM_INVALID;
+    case core::Type::ValueAttribute::Category: return "Category";
+    case core::Type::ValueAttribute::Config: return "Config";
+    default: return "OutOfRange";
     }
 }
 

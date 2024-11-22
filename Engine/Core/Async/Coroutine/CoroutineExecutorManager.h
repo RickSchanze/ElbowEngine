@@ -6,16 +6,17 @@
  */
 
 #pragma once
-#include "Core/CoreDef.h"
-#include "IExecutor.h"
-#include "Core/Singleton/Singleton.h"
 #include "Core/Base/Base.h"
+#include "Core/CoreDef.h"
+#include "Core/Singleton/MManager.h"
+#include "Core/Singleton/Singleton.h"
+#include "IExecutor.h"
 
 namespace async::coro
 {
 
 // 管理所有的协程Executor 每一个Executor相当于一个调度器
-class CoroutineExecutorManager : public Singleton<CoroutineExecutorManager>
+class CoroutineExecutorManager : public core::Manager<CoroutineExecutorManager>
 {
 public:
     /**
@@ -33,7 +34,7 @@ public:
 
     IExecutor* GetExecutor(EExecutorType type) const { return executors_[GetEnumValue(type)]; }
 
-    template<typename T>
+    template <typename T>
         requires std::is_base_of_v<IExecutor, T>
     T* GetExecutor(EExecutorType type) const
     {
@@ -41,6 +42,9 @@ public:
     }
 
     ~CoroutineExecutorManager() override;
+
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Middle; }
+    [[nodiscard]] core::StringView   GetName() const override { return "core.CoroutineExecutorManager"; }
 
 private:
     core::StaticArray<IExecutor*, GetEnumValue(EExecutorType::Count)> executors_{};

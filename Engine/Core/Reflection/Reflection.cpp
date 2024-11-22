@@ -38,10 +38,10 @@ core::StringView core::FieldInfo::GetAttribute(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
-        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumStringFieldValueAttribute(attr));
         return "";
     }
-    return value_attr_[GetEnumValue(attr)];
+    return value_attr_[static_cast<int32_t>(attr)];
 }
 
 FieldInfo* FieldInfo::SetAttribute(FlagAttribute attr)
@@ -60,9 +60,9 @@ FieldInfo* FieldInfo::SetAttribute(ValueAttribute attr, StringView value)
 #endif
     if (IsDefined(attr))
     {
-        LOGGER.Warn(logcat::Reflection, "重复定义Attribute: {}", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "重复定义Attribute: {}", GetEnumStringFieldValueAttribute(attr));
     }
-    value_attr_[GetEnumValue(attr)] = value;
+    value_attr_[static_cast<int32_t>(attr)] = value;
     return this;
 }
 
@@ -138,10 +138,10 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
     {
-        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "Attribute {} is not defined", GetEnumStringTypeValueAttribute(attr));
         return "";
     }
-    return value_attr_[GetEnumValue(attr)];
+    return value_attr_[static_cast<int32_t>(attr)];
 }
 
 StringView Type::GetName() const
@@ -294,9 +294,9 @@ Type* Type::SetAttribute(ValueAttribute attr, StringView value)
 {
     if (IsDefined(attr))
     {
-        LOGGER.Warn(logcat::Reflection, "重复定义Attribute {}", GetEnumString(attr));
+        LOGGER.Warn(logcat::Reflection, "重复定义Attribute {}", GetEnumStringTypeValueAttribute(attr));
     }
-    value_attr_[GetEnumValue(attr)] = value;
+    value_attr_[static_cast<int32_t>(attr)] = value;
     return this;
 }
 

@@ -90,6 +90,8 @@ add_library(${PROJECT_NAME}
         Memory/FrameAllocator.h
         CoreDef.cpp
         Base/UniquePtr.cpp
+        Singleton/MManager.cpp
+        Singleton/MManager.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

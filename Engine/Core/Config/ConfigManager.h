@@ -8,6 +8,7 @@
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Reflection/MetaInfoManager.h"
+#include "Core/Singleton/MManager.h"
 #include "Core/Singleton/Singleton.h"
 
 namespace core
@@ -20,10 +21,12 @@ struct Type;
 }
 namespace core
 {
-class ConfigManager : public Singleton<ConfigManager>
+class ConfigManager : public Manager<ConfigManager>
 {
 public:
-    IConfig* GetConfig(const Type* type);
+    IConfig*                   GetConfig(const Type* type);
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
+    [[nodiscard]] StringView   GetName() const override { return "core.ConfigManager"; }
 
 private:
     HashMap<const Type*, IConfig*> configs_;

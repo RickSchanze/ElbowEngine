@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Singleton/MManager.h"
 #include "Reflection.h"
 
 namespace core
@@ -20,14 +21,16 @@ struct CtorDtor
     InplaceDtor dtor;
 };
 
-class CtorManager : public Singleton<CtorManager>
+class CtorManager : public Manager<CtorManager>
 {
 public:
     CtorManager();
 
     void RegisterCtorDtor(RTTITypeInfo info, InplaceCtor ctor, InplaceDtor dtor);
     bool ConstructAt(const Type* info, void* ptr) const;
-    bool DestroyAt(const Type* info, void* ptr) const;
+    bool                       DestroyAt(const Type* info, void* ptr) const;
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Middle; }
+    [[nodiscard]] StringView   GetName() const override { return "CtorManager"; }
 
 private:
     HashMap<RTTITypeInfo, CtorDtor> ctors_;
