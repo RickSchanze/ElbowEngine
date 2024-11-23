@@ -89,11 +89,11 @@ namespace core
 class CLASS(Interface) IConfig : extends Interface
 {
     GENERATED_CLASS(IConfig)
+public:
     [[nodiscard]] bool IsDirty() const { return dirty_; }
 
 protected:
     void SetDirty(bool dirty);
-
 
     bool dirty_ = false;
 };

@@ -121,6 +121,8 @@ public class CodeGenerator
         var comment = validEnum.Comment?.ToString();
         if (!string.IsNullOrEmpty(comment))
         {
+            comment = comment.Replace("\r\n", "\\n");
+            comment = comment.Replace("\n", "\\n");
             sw.Write($"->SetComment(\"{comment}\")");
         }
 
@@ -158,6 +160,7 @@ public class CodeGenerator
             var comment = validEnumItem.Comment?.ToString();
             if (!string.IsNullOrEmpty(comment))
             {
+                comment = comment.Replace("\n", "\\n");
                 sw.Write($"->SetComment(\"{comment}\")");
             }
 
@@ -239,6 +242,7 @@ public class CodeGenerator
 
         if (!string.IsNullOrEmpty(comment))
         {
+            comment = comment.Replace("\n", "\\n");
             sw.Write($"->SetComment(\"{comment}\")");
         }
 
@@ -290,6 +294,7 @@ public class CodeGenerator
         var comment = field.Comment?.ToString();
         if (!string.IsNullOrEmpty(comment))
         {
+            comment = comment.Replace("\n", "\\n");
             sw.Write($"->SetComment(\"{comment}\")");
         }
 

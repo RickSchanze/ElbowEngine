@@ -7,9 +7,9 @@
 
 #include "YamlArchive.h"
 
-#include "Core/Profiler/ProfileMacro.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Memory/FrameAllocator.h"
+#include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/CtorManager.h"
 #include "Core/Reflection/ITypeGetter.h"
 #include "yaml-cpp/yaml.h"
@@ -172,7 +172,7 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
             auto enum_op_value = field->GetObjEnumValue(obj);
             if (enum_op_value.has_value())
             {
-                auto enum_value = enum_op_value.value();
+                auto enum_value        = enum_op_value.value();
                 auto enum_str_value_op = field->GetType()->GetEnumValueString(enum_value);
                 if (enum_str_value_op.has_value())
                 {
@@ -374,10 +374,13 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
         const auto field_type = field->GetType();
         if (!field_node.IsDefined())
         {
-            LOGGER.Error(
-                logcat::Archive_Deserialization, "Deserialize field {} failed, type = {}, node is not defined", field_name, type->GetFullName()
+            LOGGER.Warn(
+                logcat::Archive_Deserialization,
+                "Deserialize field {} failed, type = {}, node is not defined, use default value instead",
+                field_name,
+                type->GetFullName()
             );
-            return false;
+            continue;
         }
 
         if (field->IsSequentialContainer())

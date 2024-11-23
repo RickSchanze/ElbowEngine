@@ -95,9 +95,14 @@ public:
 
     String& operator+=(const String& str);
 
-    bool operator==(const String&) const;
+    bool operator==(const String& o) const { return str_ == o.str_; }
+    bool operator<=(const String& o) const { return str_ <= o.str_; }
+    bool operator>=(const String& o) const { return str_ >= o.str_; }
+    bool operator<(const String& o) const { return str_ < o.str_; }
+    bool operator>(const String& o) const { return str_ > o.str_; }
+    bool operator!=(const String& o) const { return str_ != o.str_; }
 
-    bool EqualsStringView(const StringView& str) const;
+    [[nodiscard]] bool EqualsStringView(const StringView& str) const;
 
     [[nodiscard]] bool Contains(StringView str) const;
 

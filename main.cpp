@@ -38,7 +38,7 @@ int main()
     {
         PROFILE_SCOPE("Graphics Initialize")
         auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
-        UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
+        platform::rhi::UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
     }
     LOGGER.Info(logcat::Engine, "Engine initialized.");
     SetRuntimeStage(RuntimeStage::Running);
@@ -58,4 +58,5 @@ int main()
     LOGGER.Info(logcat::Engine, "Engine shutdown...");
     SetRuntimeStage(RuntimeStage::Shutdown);
     core::FrameAllocator::Shutdown();
+    core::MManager::Get()->Shutdown();
 }

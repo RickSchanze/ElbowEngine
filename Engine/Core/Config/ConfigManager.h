@@ -28,6 +28,8 @@ public:
     [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
     [[nodiscard]] StringView   GetName() const override { return "core.ConfigManager"; }
 
+    void Shutdown() override;
+
 private:
     HashMap<const Type*, IConfig*> configs_;
 };

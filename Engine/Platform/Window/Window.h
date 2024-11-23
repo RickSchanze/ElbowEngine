@@ -7,8 +7,13 @@
 
 #pragma once
 #include "Core/Core.h"
+#include "Platform/RHI/GfxContext.h"
+#include "Platform/RHI/RHIEnums.h"
 
-
+namespace platform::rhi
+{
+class Surface;
+}
 namespace platform
 {
 enum class ENUM() WindowLib
@@ -27,14 +32,29 @@ enum ENUM(Flag) WindowFlag
 class Window
 {
 public:
-    Window(core::StringView title = "", int32_t width = 0, int32_t height = 0, int32_t flags = -1);
+    explicit Window(core::StringView title = "", int32_t width = 0, int32_t height = 0, int32_t flags = -1);
     virtual ~Window() = default;
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
 
-    virtual void PollInputs() = 0;
+    virtual void PollInputs()  = 0;
     virtual bool ShouldClose() = 0;
     virtual void Close()       = 0;
+
+    /**
+     * 创建一个Surface
+     * 这个函数主要用于GfxContext创建Surface, 满足Vulkan需求
+     * @param instance 大部分时候是API数据, 例如如果是Vulkan可能传入的就是一个VkInstance, D3D12可能就是一个nullptr
+     * @param api 表示当前在用什么API
+     * @return
+     */
+    virtual rhi::Surface* CreateSurface(void* instance, GraphicsAPI api) = 0;
+
+    /**
+     * 销毁一个Surface
+     * @param surface 需要销毁的Surface, 因为是一个Ref因此也会将传入的surface置为nullptr
+     */
+    virtual void DestroySurface(core::Ref<rhi::Surface*> surface) = 0;
 
     [[nodiscard]] core::StringView GetTitle() const { return title_; }
     [[nodiscard]] int32_t          GetWidth() const { return width_; }

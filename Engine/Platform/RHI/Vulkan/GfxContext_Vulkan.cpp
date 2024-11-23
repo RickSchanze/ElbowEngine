@@ -6,17 +6,23 @@
  */
 
 #include "GfxContext_Vulkan.h"
+
 #include "Core/Base/EString.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
-#include "Platform/PlatformLogcat.h"
-#include "Platform/Config/PlatformConfig.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Platform/Config/PlatformConfig.h"
+#include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/Surface.h"
+#include "Platform/Window/WindowManager.h"
 #include "range/v3/all.hpp"
+#include "RHIEnums_Vulkan.h"
 
-static core::Array<VkLayerProperties>     available_layers;
-static core::Array<VkPhysicalDevice>      physical_devices;
-static core::Array<const char*>           required_extensions;
+static core::Array<VkLayerProperties> available_layers;
+static core::Array<VkPhysicalDevice>  physical_devices;
+static core::Array<core::String>      required_instance_extensions;
+
+using namespace ranges::views;
 
 static core::Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance)
 {
@@ -35,12 +41,6 @@ static core::Array<VkLayerProperties> GetAvailableLayers()
     core::Array<VkLayerProperties> available_layers(layer_count);
     vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
     return available_layers;
-}
-
-static bool IsPhysicalDeviceSuitable(VkPhysicalDevice device)
-{
-    // 看扩展是不是完全支持
-
 }
 
 static bool SupportValidationLayer(core::StringView layer_name)
@@ -71,8 +71,89 @@ core::Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkP
     return available_extensions;
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      severity, VkDebugUtilsMessageTypeFlagsEXT type,
-                                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void*                      user_data)
+static core::Size2D FromVkExtent2D(const VkExtent2D& extent)
+{
+    core::Size2D size{};
+    size.width  = extent.width;
+    size.height = extent.height;
+    return size;
+}
+
+static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice device, Surface* surface)
+{
+    SwapChainSupportInfo     info;
+    const auto               surfaceVk = static_cast<VkSurfaceKHR>(surface->GetNativeHandle());
+    VkSurfaceCapabilitiesKHR capabilities;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surfaceVk, &capabilities);
+    info.current_extent         = FromVkExtent2D(capabilities.currentExtent);
+    info.min_image_extent       = FromVkExtent2D(capabilities.minImageExtent);
+    info.max_image_extent       = FromVkExtent2D(capabilities.maxImageExtent);
+    info.min_image_count        = capabilities.minImageCount;
+    info.max_image_count        = capabilities.maxImageCount;
+    info.max_image_array_layers = capabilities.maxImageArrayLayers;
+
+    uint32_t format_count;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, nullptr);
+    if (format_count != 0)
+    {
+        core::Array<VkSurfaceFormatKHR> formats(format_count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, formats.data());
+        info.formats =
+            formats | transform([](const VkSurfaceFormatKHR& format) {
+                return SurfaceFormat{.format = VkFormatToRHIFormat(format.format), .color_space = VkColorSpaceToRHIColorSpace(format.colorSpace)};
+            }) |
+            ranges::to_vector;
+    }
+
+    uint32_t present_mode_count;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, nullptr);
+    if (present_mode_count != 0)
+    {
+        core::Array<VkPresentModeKHR> present_modes(present_mode_count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, present_modes.data());
+        info.present_modes = present_modes | transform([](VkPresentModeKHR mode) { return VkPresentModeToRHIPresentMode(mode); }) | ranges::to_vector;
+    }
+    return info;
+}
+
+SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo()
+{
+    if (swap_chain_support_info_.has_value())
+    {
+        return swap_chain_support_info_.value();
+    }
+    swap_chain_support_info_ = vulkan::QuerySwapChainSupportInfo(physical_device_, surface_);
+    return swap_chain_support_info_.value();
+}
+
+PhysicalDeviceFeature GfxContext_Vulkan::QueryDeviceFeature()
+{
+    if (device_feature_.has_value()) return device_feature_.value();
+    VkPhysicalDeviceFeatures features;
+    vkGetPhysicalDeviceFeatures(physical_device_, &features);
+    PhysicalDeviceFeature feature;
+    feature.sampler_anisotropy = features.samplerAnisotropy;
+    device_feature_            = feature;
+    return feature;
+}
+
+PhysicalDeviceInfo GfxContext_Vulkan::QueryDeviceInfo()
+{
+    if (device_info_.has_value()) return device_info_.value();
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(physical_device_, &properties);
+    PhysicalDeviceInfo info;
+    info.name                                  = properties.deviceName;
+    info.limits.framebuffer_color_sample_count = properties.limits.framebufferColorSampleCounts;
+    info.limits.framebuffer_depth_sample_count = properties.limits.framebufferDepthSampleCounts;
+    device_info_                               = info;
+    return info;
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+    void* user_data
+)
 {
     const char* message_type = nullptr;
     if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
@@ -122,42 +203,38 @@ static void CreateInstance(core::Ref<VkInstance> instance)
     VkApplicationInfo app_info{};
     app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName   = core_cfg->GetAppName().Data();
-    app_info.applicationVersion = VK_MAKE_VERSION(
-        core_cfg->GetAppVersion().major,
-        core_cfg->GetAppVersion().minor,
-        core_cfg->GetAppVersion().patch
-    );
-    app_info.pEngineName   = "Elbow Engine";
-    app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-    app_info.apiVersion    = VK_API_VERSION_1_3;
+    app_info.applicationVersion = VK_MAKE_VERSION(core_cfg->GetAppVersion().major, core_cfg->GetAppVersion().minor, core_cfg->GetAppVersion().patch);
+    app_info.pEngineName        = "Elbow Engine";
+    app_info.engineVersion      = VK_MAKE_VERSION(0, 1, 0);
+    app_info.apiVersion         = VK_API_VERSION_1_3;
 
     if (rhi_cfg->GetEnableValidationLayer())
     {
-        required_extensions.emplace_back("VK_EXT_debug_utils");
+        required_instance_extensions.emplace_back("VK_EXT_debug_utils");
     }
-    Event_PostProcessVulkanExtensions.InvokeOnce(required_extensions);
-    for (auto& extension: required_extensions)
+    required_instance_extensions = Event_PostProcessVulkanExtensions.InvokeOnce(required_instance_extensions);
+    for (auto& extension: required_instance_extensions)
     {
-        LOGGER.Info(logcat::Platform_RHI_Vulkan, "Enabled extension: {}", extension);
+        LOGGER.Info(logcat::Platform_RHI_Vulkan, "  Enabled instance extension: {}", extension);
     }
 
     VkInstanceCreateInfo instance_info{};
-    instance_info.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_info.pApplicationInfo        = &app_info;
-    instance_info.enabledExtensionCount   = required_extensions.size();
-    instance_info.ppEnabledExtensionNames = required_extensions.data();
+    instance_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &app_info;
+    const auto required_extension_cstr =
+        required_instance_extensions | transform([](const core::String& str) { return str.Data(); }) | ranges::to_vector;
+    instance_info.enabledExtensionCount   = required_extension_cstr.size();
+    instance_info.ppEnabledExtensionNames = required_extension_cstr.data();
 
-    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Enable validation layer: {}", rhi_cfg->GetEnableValidationLayer());
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "  Enable validation layer: {}", rhi_cfg->GetEnableValidationLayer());
     VkDebugUtilsMessengerCreateInfoEXT debug_info = {};
     if (rhi_cfg->GetEnableValidationLayer())
     {
         Assert(logcat::Platform_RHI_Vulkan, SupportValidationLayer(rhi_cfg->GetValidationLayerName()), "Validation layer is not supported!");
         const char* validation_layer_names[1] = {*rhi_cfg->GetValidationLayerName()};
         debug_info.sType                      = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_info.messageSeverity            = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        debug_info.messageSeverity            = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debug_info.messageType                = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         debug_info.pfnUserCallback        = DebugCallback;
         instance_info.enabledLayerCount   = 1;
@@ -178,10 +255,92 @@ static void DestroyInstance(core::Ref<VkInstance> instance)
     instance = VK_NULL_HANDLE;
 }
 
-static void SelectPhysicalDevice(core::Ref<VkPhysicalDevice> physical_device)
+static void CreateSurface(core::Ref<Surface*> surface, VkInstance instance)
+{
+    const auto window = WindowManager::Get()->GetMainWindow();
+    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!") surface =
+        window->CreateSurface(instance, GraphicsAPI::Vulkan);
+}
+
+static void DestroySurface(const core::Ref<Surface*>& surface)
+{
+    const auto window = WindowManager::Get()->GetMainWindow();
+    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be destroyed after surface destroyed!") window->DestroySurface(surface);
+}
+
+static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
+{
+    uint32_t cnt;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, nullptr);
+    core::Array<VkExtensionProperties> extensions(cnt);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, extensions.data());
+    auto* cfg = core::GetConfig<PlatformConfig>();
+    auto my_required_extensions = cfg->GetVulkanRequiredDeviceExtensions();
+    auto filter_exts = my_required_extensions | ranges::views::remove_if([&extensions](const core::String & ext) {
+        return ranges::any_of(extensions, [&ext](const VkExtensionProperties & prop) {
+            return ext == prop.extensionName;
+        });
+    });
+    return filter_exts.empty();
+}
+
+static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, Surface* surface)
+{
+    QueueFamilyIndices indices;
+    uint32_t           queue_family_count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
+    core::Array<VkQueueFamilyProperties> queue_families(queue_family_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
+    int i = 0;
+    for (const auto& queue_family: queue_families)
+    {
+        if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            indices.graphics_family = i;
+        }
+        VkBool32 present_support = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, static_cast<VkSurfaceKHR>(surface->GetNativeHandle()), &present_support);
+        if (present_support)
+        {
+            indices.present_family = i;
+        }
+        if (indices.IsComplete())
+        {
+            break;
+        }
+        ++i;
+    }
+    return indices;
+}
+
+static bool IsDeviceSuitable(VkPhysicalDevice device, Surface* surface)
+{
+    QueueFamilyIndices indices = FindQueueFamilies(device, surface);
+    if (!indices.IsComplete()) return false;
+    if (!CheckDeviceExtensionSupport(device)) return false;
+    auto support = QuerySwapChainSupportInfo(device, surface);
+    if (support.formats.empty() || support.present_modes.empty()) return false;
+    VkPhysicalDeviceFeatures features;
+    vkGetPhysicalDeviceFeatures(device, &features);
+    return features.samplerAnisotropy;
+}
+
+static void SelectPhysicalDevice(core::Ref<VkPhysicalDevice> physical_device, VkInstance instance, Surface* surface)
 {
     PROFILE_SCOPE_AUTO;
-    for (auto candidate: physical_devices) {}
+    if (physical_devices.empty())
+    {
+        physical_devices = GetAvailablePhysicalDevices(instance);
+    }
+    for (auto candidate: physical_devices)
+    {
+        if (IsDeviceSuitable(candidate, surface))
+        {
+            physical_device = candidate;
+            break;
+        }
+    }
+    Assert(logcat::Platform_RHI_Vulkan, physical_device != VK_NULL_HANDLE, "Failed to find a suitable GPU!");
 }
 
 GfxContext_Vulkan::GfxContext_Vulkan()
@@ -189,15 +348,18 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     available_layers = GetAvailableLayers();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Initializing Vulkan Graphics API...");
     CreateInstance(instance_);
-    physical_devices     = GetAvailablePhysicalDevices(instance_);
-    SelectPhysicalDevice(physical_device_);
+    CreateSurface(surface_, instance_);
+    SelectPhysicalDevice(physical_device_, instance_, surface_);
+    auto info = QueryDeviceInfo();
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", info.name);
 }
 
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {
+    DestroySurface(surface_);
     DestroyInstance(instance_);
 }
-}
+}   // namespace platform::rhi::vulkan
 
 core::StringView VulkanErrorToString(VkResult result)
 {

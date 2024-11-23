@@ -33,6 +33,7 @@ struct Ref
     const T* GetPtr() const { return ptr_; }
 
     bool operator==(const Ref& other) const { return ptr_ == other.ptr_; }
+    bool operator==(const T& other) const { return *ptr_ == other; }
 
     Ref& operator=(const T& other)
     {
@@ -59,15 +60,19 @@ Ref<T> MakeRef(T& ref)
 }
 
 template <typename T>
-struct IsRef : std::false_type {};
+struct IsRef : std::false_type
+{
+};
 
 template <typename T>
-struct IsRef<Ref<T>> : std::true_type {};
+struct IsRef<Ref<T>> : std::true_type
+{
+};
 
 template <typename T>
 constexpr bool IsRef_V = IsRef<T>::value;
 
-} // namespace core
+}   // namespace core
 
 template <typename T>
 struct fmt::formatter<core::Ref<T>>

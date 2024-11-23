@@ -7,9 +7,10 @@
 
 #pragma once
 #include "Window.h"
-#include "GLFW/glfw3.h"
+struct GLFWwindow;
 
-namespace platform {
+namespace platform
+{
 
 class Window_GLFW final : public Window
 {
@@ -20,12 +21,15 @@ public:
 
     [[nodiscard]] void* GetNativeHandle() const override;
 
-    void                PollInputs() override;
-    bool                ShouldClose() override;
-    void                Close() override;
+    void PollInputs() override;
+    bool ShouldClose() override;
+    void Close() override;
+
+    rhi::Surface* CreateSurface(void* user_data, GraphicsAPI api) override;
+    void          DestroySurface(core::Ref<rhi::Surface*> surface) override;
 
 private:
-    GLFWwindow* window_= nullptr;
+    GLFWwindow* window_ = nullptr;
 };
 
-}
+}   // namespace platform

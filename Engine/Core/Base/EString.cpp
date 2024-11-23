@@ -9,7 +9,6 @@
 #include "Core/CoreDef.h"
 #include "unicode/unistr.h"
 
-#include <ostream>
 #include <string_view>
 
 namespace core
@@ -53,11 +52,6 @@ String& String::operator+=(const String& str)
 {
     str_ += str.str_;
     return *this;
-}
-
-bool String::operator==(const String& o) const
-{
-    return str_ == o.str_;
 }
 
 uint32_t String::AtUnicode(int32_t i) const

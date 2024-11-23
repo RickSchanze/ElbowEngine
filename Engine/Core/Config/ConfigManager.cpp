@@ -60,3 +60,24 @@ core::IConfig* core::ConfigManager::GetConfig(const Type* type)
     }
     return nullptr;
 }
+
+void core::ConfigManager::Shutdown()
+{
+    for (auto& [type, config]: configs_)
+    {
+        if (config->IsDirty())
+        {
+            String config_path = type->GetAttributeValue(Type::ValueAttribute::Config);
+            if (config_path.IsEmpty() || config_path == "Config")
+            {
+                config_path = String("Config/") + type->GetName() + ".config";
+            }
+            YamlArchive archive;
+            String      config_str;
+            if (!archive.Serialize(*config, config_str) || !Event_OnWriteFileText.Invoke(config_path, config_str))
+            {
+                LOGGER.Error(logcat::Config, "Serialize config {} failed!", config_path);
+            }
+        }
+    }
+}
