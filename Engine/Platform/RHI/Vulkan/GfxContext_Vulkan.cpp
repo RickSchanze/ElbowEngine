@@ -258,8 +258,8 @@ static void DestroyInstance(core::Ref<VkInstance> instance)
 static void CreateSurface(core::Ref<Surface*> surface, VkInstance instance)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
-    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!") surface =
-        window->CreateSurface(instance, GraphicsAPI::Vulkan);
+    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!");
+    surface = window->CreateSurface(instance, GraphicsAPI::Vulkan);
 }
 
 static void DestroySurface(const core::Ref<Surface*>& surface)
@@ -274,13 +274,12 @@ static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, nullptr);
     core::Array<VkExtensionProperties> extensions(cnt);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, extensions.data());
-    auto* cfg = core::GetConfig<PlatformConfig>();
-    auto my_required_extensions = cfg->GetVulkanRequiredDeviceExtensions();
-    auto filter_exts = my_required_extensions | ranges::views::remove_if([&extensions](const core::String & ext) {
-        return ranges::any_of(extensions, [&ext](const VkExtensionProperties & prop) {
-            return ext == prop.extensionName;
-        });
-    });
+    auto* cfg                    = core::GetConfig<PlatformConfig>();
+    auto  my_required_extensions = cfg->GetVulkanRequiredDeviceExtensions();
+    auto  filter_exts            = my_required_extensions |   //
+                       remove_if([&extensions](const core::String& ext) {
+                           return ranges::any_of(extensions, [&ext](const VkExtensionProperties& prop) { return ext == prop.extensionName; });
+                       });
     return filter_exts.empty();
 }
 
@@ -343,6 +342,60 @@ static void SelectPhysicalDevice(core::Ref<VkPhysicalDevice> physical_device, Vk
     Assert(logcat::Platform_RHI_Vulkan, physical_device != VK_NULL_HANDLE, "Failed to find a suitable GPU!");
 }
 
+static void CreateLogicalDevice(
+    VkPhysicalDevice physical_device, Surface* surface, OUT core::Ref<VkDevice> device, OUT core::Ref<VkQueue> graphics_queue,
+    OUT core::Ref<VkQueue> present_queue
+)
+{
+    auto indices = FindQueueFamilies(physical_device, surface);
+    Assert(logcat::Platform_RHI_Vulkan, indices.IsComplete(), "Find uncompleted queue families.");
+    core::Array<VkDeviceQueueCreateInfo> queue_create_infos;
+    queue_create_infos.reserve(2);
+    core::Set<uint32_t> unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
+    float               queue_priority        = 1.0f;
+    for (uint32_t queue_family: unique_queue_families)
+    {
+        VkDeviceQueueCreateInfo create_info = {};
+        create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        create_info.queueFamilyIndex        = queue_family;
+        create_info.queueCount              = 1;
+        create_info.pQueuePriorities        = &queue_priority;
+        queue_create_infos.emplace_back(create_info);
+    }
+    VkDeviceCreateInfo create_info    = {};
+    create_info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    create_info.queueCreateInfoCount  = static_cast<uint32_t>(queue_create_infos.size());
+    create_info.pQueueCreateInfos     = queue_create_infos.data();
+    // TODO: 这里改成由配置文件配置设备特性
+    auto                     cfg      = core::GetConfig<PlatformConfig>();
+    VkPhysicalDeviceFeatures features = {};
+    features.samplerAnisotropy        = VK_TRUE;
+    create_info.pEnabledFeatures      = &features;
+    auto required_extension_cstrs =
+        cfg->GetVulkanRequiredDeviceExtensions() | transform([](const core::String& a) { return *a; }) | ranges::to_vector;
+    create_info.enabledExtensionCount   = required_extension_cstrs.size();
+    create_info.ppEnabledExtensionNames = required_extension_cstrs.data();
+    core::Array layers                  = {*cfg->GetValidationLayerName()};
+    if (cfg->GetEnableValidationLayer())
+    {
+        create_info.enabledLayerCount   = 1;
+        create_info.ppEnabledLayerNames = layers.data();
+    }
+    else
+    {
+        create_info.enabledLayerCount = 0;
+    }
+    VERIFY_VULKAN_RESULT(vkCreateDevice(physical_device, &create_info, nullptr, device.GetPtr()));
+    vkGetDeviceQueue(*device, indices.graphics_family.value(), 0, graphics_queue.GetPtr());
+    vkGetDeviceQueue(*device, indices.present_family.value(), 0, present_queue.GetPtr());
+}
+
+static void DestroyLogicalDevice(core::Ref<VkDevice> device)
+{
+    vkDestroyDevice(*device, nullptr);
+    device = nullptr;
+}
+
 GfxContext_Vulkan::GfxContext_Vulkan()
 {
     available_layers = GetAvailableLayers();
@@ -350,12 +403,14 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     CreateInstance(instance_);
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
-    auto info = QueryDeviceInfo();
-    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", info.name);
+    CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
+    auto [name, limits] = QueryDeviceInfo();
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", name);
 }
 
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {
+    DestroyLogicalDevice(device_);
     DestroySurface(surface_);
     DestroyInstance(instance_);
 }

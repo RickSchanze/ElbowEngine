@@ -47,6 +47,8 @@ private:
     Surface*         surface_         = nullptr;
     VkPhysicalDevice physical_device_ = nullptr;
     VkDevice         device_          = nullptr;
+    VkQueue          graphics_queue_  = nullptr;
+    VkQueue          present_queue_   = nullptr;
 
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;
