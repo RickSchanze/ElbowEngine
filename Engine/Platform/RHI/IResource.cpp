@@ -5,4 +5,4 @@
  * @brief 
  */
 
-#include "IRHIResource.h"
+#include "IResource.h"

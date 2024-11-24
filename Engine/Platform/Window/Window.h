@@ -7,8 +7,8 @@
 
 #pragma once
 #include "Core/Core.h"
+#include "Platform/RHI/Enums.h"
 #include "Platform/RHI/GfxContext.h"
-#include "Platform/RHI/RHIEnums.h"
 
 namespace platform::rhi
 {
@@ -48,7 +48,7 @@ public:
      * @param api 表示当前在用什么API
      * @return
      */
-    virtual rhi::Surface* CreateSurface(void* instance, GraphicsAPI api) = 0;
+    virtual rhi::Surface* CreateSurface(void* instance, rhi::GraphicsAPI api) = 0;
 
     /**
      * 销毁一个Surface

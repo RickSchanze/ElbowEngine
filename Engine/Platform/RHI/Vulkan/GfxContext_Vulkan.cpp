@@ -11,12 +11,12 @@
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Enums_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/Surface.h"
 #include "Platform/Window/WindowManager.h"
 #include "range/v3/all.hpp"
-#include "RHIEnums_Vulkan.h"
 
 static core::Array<VkLayerProperties> available_layers;
 static core::Array<VkPhysicalDevice>  physical_devices;
@@ -79,7 +79,7 @@ static core::Size2D FromVkExtent2D(const VkExtent2D& extent)
     return size;
 }
 
-static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice device, Surface* surface)
+static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice device, const Surface* surface)
 {
     SwapChainSupportInfo     info;
     const auto               surfaceVk = static_cast<VkSurfaceKHR>(surface->GetNativeHandle());
@@ -116,7 +116,7 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
     return info;
 }
 
-SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo()
+const SwapChainSupportInfo& GfxContext_Vulkan::QuerySwapChainSupportInfo()
 {
     if (swap_chain_support_info_.has_value())
     {
@@ -126,7 +126,7 @@ SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo()
     return swap_chain_support_info_.value();
 }
 
-PhysicalDeviceFeature GfxContext_Vulkan::QueryDeviceFeature()
+const PhysicalDeviceFeature& GfxContext_Vulkan::QueryDeviceFeature()
 {
     if (device_feature_.has_value()) return device_feature_.value();
     VkPhysicalDeviceFeatures features;
@@ -134,10 +134,10 @@ PhysicalDeviceFeature GfxContext_Vulkan::QueryDeviceFeature()
     PhysicalDeviceFeature feature;
     feature.sampler_anisotropy = features.samplerAnisotropy;
     device_feature_            = feature;
-    return feature;
+    return device_feature_.value();
 }
 
-PhysicalDeviceInfo GfxContext_Vulkan::QueryDeviceInfo()
+const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
 {
     if (device_info_.has_value()) return device_info_.value();
     VkPhysicalDeviceProperties properties;
@@ -147,7 +147,7 @@ PhysicalDeviceInfo GfxContext_Vulkan::QueryDeviceInfo()
     info.limits.framebuffer_color_sample_count = properties.limits.framebufferColorSampleCounts;
     info.limits.framebuffer_depth_sample_count = properties.limits.framebufferDepthSampleCounts;
     device_info_                               = info;
-    return info;
+    return device_info_.value();
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -283,7 +283,7 @@ static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     return filter_exts.empty();
 }
 
-static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, Surface* surface)
+static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surface* surface)
 {
     QueueFamilyIndices indices;
     uint32_t           queue_family_count = 0;
@@ -396,6 +396,65 @@ static void DestroyLogicalDevice(core::Ref<VkDevice> device)
     device = nullptr;
 }
 
+static void CreateSwapChain(
+    const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device,
+    OUT core::Ref<VkSwapchainKHR> swapchain
+)
+{
+    const auto cfg            = core::GetConfig<PlatformConfig>();
+    auto       surface_handle = static_cast<VkSurfaceKHR>(surface->GetNativeHandle());
+
+    SurfaceFormat available_format{};
+    for (auto& surface_format: swapchain_support.formats)
+    {
+        if (surface_format.format == Format::B8G8R8A8_SRGB && surface_format.color_space == ColorSpace::sRGB)
+        {
+            available_format = surface_format;
+        }
+    }
+    PresentMode        present_mode = cfg->GetPresentMode();
+    const core::Size2D extent       = cfg->GetDefaultWindowSize();
+    const int8_t       image_count  = cfg->GetSwapchainImageCount();
+    Assert(
+        logcat::Platform_RHI_Vulkan,
+        image_count <= swapchain_support.max_image_count && image_count >= swapchain_support.min_image_count,
+        "Unsupported swap chain image count"
+    );
+    VkSwapchainCreateInfoKHR swapchain_create_info{};
+    swapchain_create_info.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchain_create_info.surface          = surface_handle;
+    swapchain_create_info.minImageCount    = image_count;
+    swapchain_create_info.imageFormat      = RHIFormatToVkFormat(available_format.format);
+    swapchain_create_info.imageColorSpace  = RHIColorSpaceToVkColorSpace(available_format.color_space);
+    swapchain_create_info.imageExtent      = VkExtent2D{.width = extent.width, .height = extent.height};
+    swapchain_create_info.imageArrayLayers = 1;
+    swapchain_create_info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    QueueFamilyIndices indices                = FindQueueFamilies(physical_device, surface);
+    uint32_t           queue_family_indices[] = {indices.graphics_family.value(), indices.present_family.value()};
+    if (indices.graphics_family != indices.present_family)
+    {
+        swapchain_create_info.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;
+        swapchain_create_info.queueFamilyIndexCount = 2;
+        swapchain_create_info.pQueueFamilyIndices   = queue_family_indices;
+    }
+    else
+    {
+        swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+    swapchain_create_info.preTransform   = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchain_create_info.presentMode    = RHIPresentModeToVkPresentMode(present_mode);
+    swapchain_create_info.clipped        = VK_TRUE;
+    VERIFY_VULKAN_RESULT(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, swapchain.GetPtr()));
+}
+
+static void DestroySwapChain(VkDevice device, core::Ref<VkSwapchainKHR> swapchain)
+{
+    vkDestroySwapchainKHR(device, *swapchain, nullptr);
+    swapchain = nullptr;
+}
+
 GfxContext_Vulkan::GfxContext_Vulkan()
 {
     available_layers = GetAvailableLayers();
@@ -404,12 +463,14 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
+    CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_);
     auto [name, limits] = QueryDeviceInfo();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", name);
 }
 
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {
+    DestroySwapChain(device_, swapchain_);
     DestroyLogicalDevice(device_);
     DestroySurface(surface_);
     DestroyInstance(instance_);

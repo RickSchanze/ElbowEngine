@@ -29,12 +29,12 @@ struct STRUCT() Size2D
     GENERATED_STRUCT(Size2D)
 
     PROPERTY()
-    int32_t width;
+    uint32_t width;
 
     PROPERTY()
-    int32_t height;
+    uint32_t height;
 
-    Size2D(const int32_t w, const int32_t h) : width(w), height(h) {}
+    Size2D(const uint32_t w, const uint32_t h) : width(w), height(h) {}
 
     Size2D() = default;
 

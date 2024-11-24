@@ -25,7 +25,7 @@ public:
     bool ShouldClose() override;
     void Close() override;
 
-    rhi::Surface* CreateSurface(void* user_data, GraphicsAPI api) override;
+    rhi::Surface* CreateSurface(void* user_data, rhi::GraphicsAPI api) override;
     void          DestroySurface(core::Ref<rhi::Surface*> surface) override;
 
 private:

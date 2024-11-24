@@ -60,13 +60,13 @@ platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height
     {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     }
-    if (config->GetGraphicsAPI() == GraphicsAPI::Vulkan)
+    if (config->GetGraphicsAPI() == rhi::GraphicsAPI::Vulkan)
     {
         Assert(logcat::Platform_Window, glfwVulkanSupported(), "GLFW: Vulkan not supported");
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window_ = glfwCreateWindow(GetWidth(), GetHeight(), GetTitle().Data(), nullptr, nullptr);
     }
-    if (config->GetGraphicsAPI() == GraphicsAPI::Vulkan)
+    if (config->GetGraphicsAPI() == rhi::GraphicsAPI::Vulkan)
     {
         rhi::Event_PostProcessVulkanExtensions.Bind(GLFWGetVulkanExtensions);
     }
@@ -126,9 +126,9 @@ private:
     VkInstance   instance_ = nullptr;
 };
 
-platform::rhi::Surface* platform::Window_GLFW::CreateSurface(void* user_data, GraphicsAPI api)
+platform::rhi::Surface* platform::Window_GLFW::CreateSurface(void* user_data, rhi::GraphicsAPI api)
 {
-    if (api == GraphicsAPI::Vulkan)
+    if (api == rhi::GraphicsAPI::Vulkan)
     {
         auto instance = static_cast<VkInstance>(user_data);
         return New<GLFWSurface>(instance, window_);

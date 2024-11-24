@@ -35,12 +35,16 @@ add_library(Platform
         Window/WindowManager.h
         RHI/Surface.cpp
         RHI/Surface.h
-        RHI/IRHIResource.cpp
-        RHI/IRHIResource.h
-        RHI/RHIEnums.cpp
-        RHI/RHIEnums.h
-        RHI/Vulkan/RHIEnums_Vulkan.cpp
-        RHI/Vulkan/RHIEnums_Vulkan.h
+        RHI/IResource.cpp
+        RHI/IResource.h
+        RHI/Enums.cpp
+        RHI/Enums.h
+        RHI/Vulkan/Enums_Vulkan.cpp
+        RHI/Vulkan/Enums_Vulkan.h
+        RHI/Image.cpp
+        RHI/Image.h
+        RHI/ImageView.cpp
+        RHI/ImageView.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "IRHIResource.h"
+#include "IResource.h"
 
 namespace platform::rhi
 {
@@ -14,7 +14,7 @@ namespace platform::rhi
  * Surface是对Vulkan Surface的抽象
  * 交由platform::Window类实现并创建
  */
-class Surface : public IRHIResource
+class Surface : public IResource
 {
 };
 }

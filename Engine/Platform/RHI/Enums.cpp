@@ -5,8 +5,8 @@
  * @brief 
  */
 
-#include "RHIEnums.h"
+#include "Enums.h"
 
-#include GEN_HEADER("Platform.RHIEnums.generated.h")
+#include GEN_HEADER("Platform.Enums.generated.h")
 
 GENERATED_SOURCE()

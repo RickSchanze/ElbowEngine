@@ -9,9 +9,9 @@
 
 namespace platform::rhi
 {
-class IRHIResource {
+class IResource {
 public:
-    virtual ~IRHIResource() = default;
+    virtual ~IResource() = default;
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
 };

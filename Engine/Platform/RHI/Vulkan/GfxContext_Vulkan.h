@@ -38,9 +38,9 @@ public:
 
     static core::Array<VkExtensionProperties> GetAvailableExtensions(VkPhysicalDevice);
 
-    [[nodiscard]] SwapChainSupportInfo  QuerySwapChainSupportInfo() override;
-    [[nodiscard]] PhysicalDeviceFeature QueryDeviceFeature() override;
-    [[nodiscard]] PhysicalDeviceInfo    QueryDeviceInfo() override;
+    [[nodiscard]] const SwapChainSupportInfo&  QuerySwapChainSupportInfo() override;
+    [[nodiscard]] const PhysicalDeviceFeature& QueryDeviceFeature() override;
+    [[nodiscard]] const PhysicalDeviceInfo&    QueryDeviceInfo() override;
 
 private:
     VkInstance       instance_        = nullptr;
@@ -49,6 +49,7 @@ private:
     VkDevice         device_          = nullptr;
     VkQueue          graphics_queue_  = nullptr;
     VkQueue          present_queue_   = nullptr;
+    VkSwapchainKHR   swapchain_       = nullptr;
 
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;
