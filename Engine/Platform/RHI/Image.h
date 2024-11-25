@@ -11,6 +11,10 @@
 
 namespace platform::rhi
 {
+class ImageView;
+}
+namespace platform::rhi
+{
 
 enum class ImageState
 {
@@ -66,6 +70,8 @@ struct ImageDesc
 
 class Image : public IResource
 {
+    friend class platform::rhi::ImageView;
+
 public:
     explicit Image(const ImageDesc& desc) : desc_(desc) {}
 

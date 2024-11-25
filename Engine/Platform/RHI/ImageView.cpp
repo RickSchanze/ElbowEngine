@@ -6,3 +6,13 @@
  */
 
 #include "ImageView.h"
+
+#include "Image.h"
+
+platform::rhi::ImageView::~ImageView()
+{
+    if (desc_.image)
+    {
+        desc_.image->RemoveView(this);
+    }
+}

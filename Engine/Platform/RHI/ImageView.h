@@ -10,6 +10,8 @@
 #include "Core/Core.h"
 #include "Enums.h"
 #include "IResource.h"
+#include "Platform/PlatformLogcat.h"
+
 #include <vulkan/vulkan_core.h>
 
 namespace platform::rhi
@@ -107,6 +109,8 @@ class ImageView : public IResource
 {
 public:
     explicit ImageView(const ImageViewDesc& decs_) : desc_(decs_) {}
+
+    ~ImageView() override;
 
     [[nodiscard]] Image*                       GetImage() const { return desc_.image; }
     [[nodiscard]] ImageViewType                GetType() const { return desc_.type; }
