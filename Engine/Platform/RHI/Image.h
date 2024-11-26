@@ -29,48 +29,55 @@ enum class ImageState
 
 enum ImageUsage
 {
-    IU_TransferSrc  = 0b000001,   // VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-    IU_TransferDst  = 0b000010,   // VK_IMAGE_USAGE_TRANSFER_DST_BIT
-    IU_RenderTarget = 0b000100,   // VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-    IU_DepthStencil = 0b001000,   // VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-    IU_ShaderRead   = 0b010000,   // VK_IMAGE_USAGE_SAMPLED_BIT
-    IU_Transient    = 0b100000,   // VK_IMAGE_USAGE_STORAGE_BIT
-    IU_Max,                       // VK_IMAGE_USAGE_MAX_ENUM
+    IU_TransferSrc  = 0b0000001,   // VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+    IU_TransferDst  = 0b0000010,   // VK_IMAGE_USAGE_TRANSFER_DST_BIT
+    IU_RenderTarget = 0b0000100,   // VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    IU_DepthStencil = 0b0001000,   // VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+    IU_ShaderRead   = 0b0010000,   // VK_IMAGE_USAGE_SAMPLED_BIT
+    IU_Transient    = 0b0100000,   // VK_IMAGE_USAGE_STORAGE_BIT
+    IU_SwapChain    = 0b1000000,   // For swapchain use
+    IU_Max,                        // VK_IMAGE_USAGE_MAX_ENUM
 };
 
 enum class ImageDimension
 {
-    D_1,   // 一维图像
-    D_2,   // 二维图像
-    D_3,   // 三维图像
+    D1,   // 一维图像
+    D2,   // 二维图像
+    D3,   // 三维图像
+    Cube,
+    Array1D,
+    Array2D,
+    ArrayCube,
+    Count,
 };
 
 struct ImageDesc
 {
-    size_t         width;
-    size_t         height;
-    ImageUsage     usage;
-    ImageDimension dimension;
-    uint16_t       depth_or_layers;   // 对于2D图像, 代表layerCount, 对于3D图像, 代表depth
-    uint16_t       mip_levels;
-    Format         format;
-    SampleCount    samples;
-    ImageState     state;   // 初始图像状态
+    size_t           width;
+    size_t           height;
+    ImageUsage       usage;
+    ImageDimension   dimension;
+    uint16_t         depth_or_layers;   // 对于2D图像, 代表layerCount, 对于3D图像, 代表depth
+    uint16_t         mip_levels;
+    Format           format;
+    SampleCount      samples;
+    ImageState       initial_state;   // 初始图像状态
+    core::StringView name;
 
     ImageDesc(
-        const size_t width, const size_t height, const ImageUsage usage, const Format format, const ImageDimension dimension = ImageDimension::D_2,
-        const uint16_t depth_or_layers = 1, const uint16_t mipLevels = 1, const SampleCount samples = SC_1,
-        const ImageState state = ImageState::Undefined
+        const core::StringView name_, const size_t width_, const size_t height_, const ImageUsage usage_, const Format format_,
+        const ImageDimension dimension_ = ImageDimension::D2, const uint16_t depth_or_layers_ = 1, const uint16_t mip_levels_ = 1,
+        const SampleCount samples_ = SC_1, const ImageState initial_state_ = ImageState::Undefined
     ) :
-        width(width), height(height), usage(usage), dimension(dimension), depth_or_layers(depth_or_layers), mip_levels(mipLevels), format(format),
-        samples(samples), state(state)
+        width(width_), height(height_), usage(usage_), dimension(dimension_), depth_or_layers(depth_or_layers_), mip_levels(mip_levels_),
+        format(format_), samples(samples_), initial_state(initial_state_), name(name_)
     {
     }
 };
 
 class Image : public IResource
 {
-    friend class platform::rhi::ImageView;
+    friend class ImageView;
 
 public:
     explicit Image(const ImageDesc& desc) : desc_(desc) {}
@@ -83,9 +90,11 @@ public:
     [[nodiscard]] uint16_t       GetMipLevels() const { return desc_.mip_levels; }
     [[nodiscard]] Format         GetFormat() const { return desc_.format; }
     [[nodiscard]] SampleCount    GetSampleCount() const { return desc_.samples; }
-    [[nodiscard]] ImageState     GetState() const { return desc_.state; }
+    [[nodiscard]] ImageState     GetState() const { return desc_.initial_state; }
 
 protected:
+    explicit Image() : desc_("", 0, 0, IU_Max, Format::Count) {}
+
     ImageDesc desc_;
 };
 }   // namespace platform::rhi

@@ -126,3 +126,71 @@ platform::rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits s
     }
     return platform::rhi::SampleCount::SC_Count;
 }
+
+VkImageAspectFlags RHIImageAspectToVkImageAspect(int aspect)
+{
+    VkImageAspectFlags flags = 0;
+    if (aspect & platform::rhi::ImageAspect::IA_Color)
+    {
+        flags |= VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+    if (aspect & platform::rhi::ImageAspect::IA_Depth)
+    {
+        flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+    if (aspect & platform::rhi::ImageAspect::IA_Stencil)
+    {
+        flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    return flags;
+}
+
+int VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect)
+{
+    int rtn = 0;
+    if (rtn & VK_IMAGE_ASPECT_COLOR_BIT)
+    {
+        rtn |= platform::rhi::ImageAspect::IA_Color;
+    }
+    if (rtn & VK_IMAGE_ASPECT_DEPTH_BIT)
+    {
+        rtn |= platform::rhi::ImageAspect::IA_Depth;
+    }
+    if (rtn & VK_IMAGE_ASPECT_STENCIL_BIT)
+    {
+        rtn |= platform::rhi::ImageAspect::IA_Stencil;
+    }
+    return rtn;
+}
+
+platform::rhi::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle)
+{
+    switch (swizzle)
+    {
+    case VK_COMPONENT_SWIZZLE_IDENTITY: return platform::rhi::ComponentMappingElement::Identity;
+    case VK_COMPONENT_SWIZZLE_ZERO: return platform::rhi::ComponentMappingElement::Zero;
+    case VK_COMPONENT_SWIZZLE_ONE: return platform::rhi::ComponentMappingElement::One;
+    case VK_COMPONENT_SWIZZLE_R: return platform::rhi::ComponentMappingElement::R;
+    case VK_COMPONENT_SWIZZLE_G: return platform::rhi::ComponentMappingElement::G;
+    case VK_COMPONENT_SWIZZLE_B: return platform::rhi::ComponentMappingElement::B;
+    case VK_COMPONENT_SWIZZLE_A: return platform::rhi::ComponentMappingElement::A;
+    case VK_COMPONENT_SWIZZLE_MAX_ENUM: return platform::rhi::ComponentMappingElement::Count;
+    }
+    return platform::rhi::ComponentMappingElement::Count;
+}
+
+VkComponentSwizzle RHIComponentMappingElementToVkComponentSwizzle(platform::rhi::ComponentMappingElement swizzle)
+{
+    switch (swizzle)
+    {
+    case platform::rhi::ComponentMappingElement::Identity: return VK_COMPONENT_SWIZZLE_IDENTITY;
+    case platform::rhi::ComponentMappingElement::Zero: return VK_COMPONENT_SWIZZLE_ZERO;
+    case platform::rhi::ComponentMappingElement::One: return VK_COMPONENT_SWIZZLE_ONE;
+    case platform::rhi::ComponentMappingElement::R: return VK_COMPONENT_SWIZZLE_R;
+    case platform::rhi::ComponentMappingElement::G: return VK_COMPONENT_SWIZZLE_G;
+    case platform::rhi::ComponentMappingElement::B: return VK_COMPONENT_SWIZZLE_B;
+    case platform::rhi::ComponentMappingElement::A: return VK_COMPONENT_SWIZZLE_A;
+    case platform::rhi::ComponentMappingElement::Count: return VK_COMPONENT_SWIZZLE_MAX_ENUM;
+    }
+    return VK_COMPONENT_SWIZZLE_MAX_ENUM;
+}

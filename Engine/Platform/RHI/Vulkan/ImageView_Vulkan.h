@@ -7,8 +7,11 @@
 
 #pragma once
 #include "Platform/RHI/ImageView.h"
+#include "vulkan/vulkan.h"
 
 namespace platform::rhi::vulkan {
+
+VkComponentMapping FromComponentMapping(const ComponentMapping& mapping);
 
 class ImageView_Vulkan : public ImageView
 {

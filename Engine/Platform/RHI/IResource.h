@@ -1,5 +1,5 @@
 /**
- * @file IRHIResource.h
+ * @file IResource.h
  * @author Echo 
  * @Date 24-11-23
  * @brief 
@@ -14,5 +14,7 @@ public:
     virtual ~IResource() = default;
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
+
+    [[nodiscard]] virtual bool IsValid() const;
 };
 }

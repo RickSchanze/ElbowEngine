@@ -47,6 +47,8 @@ add_library(Platform
         RHI/ImageView.h
         RHI/Vulkan/ImageView_Vulkan.cpp
         RHI/Vulkan/ImageView_Vulkan.h
+        RHI/Vulkan/Image_Vulkan.cpp
+        RHI/Vulkan/Image_Vulkan.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

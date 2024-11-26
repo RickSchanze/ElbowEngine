@@ -76,9 +76,22 @@ public:
      * @return
      */
     [[nodiscard]] virtual const PhysicalDeviceInfo& QueryDeviceInfo() = 0;
+
+    /**
+     * 获取默认的深度图像Format
+     * @return
+     */
+    [[nodiscard]] virtual Format GetDefaultDepthFormat() const = 0;
+
+    /**
+     * 获取默认Color Format
+     * @return
+     */
+    [[nodiscard]] virtual Format GetDefaultColorFormat() const = 0;
 };
 
-GfxContext& GetGfxContext();
+GfxContext* GetGfxContext();
+GfxContext& GetGfxContextRef();
 
 /**
  * 设置使用的图形API并以此创建GfxContext

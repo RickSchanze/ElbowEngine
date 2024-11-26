@@ -12,6 +12,8 @@
 #include "Core/Config/CoreConfig.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Enums_Vulkan.h"
+#include "Image_Vulkan.h"
+#include "ImageView_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/Surface.h"
@@ -150,6 +152,26 @@ const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
     return device_info_.value();
 }
 
+#if ELBOW_DEBUG
+void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
+{
+    VkDebugUtilsObjectNameInfoEXT name_info = {};
+    name_info.sType                         = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    name_info.objectType                    = type;
+    name_info.objectHandle                  = reinterpret_cast<uint64_t>(handle);
+    name_info.pObjectName                   = name.Data();
+    if (const VkResult result = SetDebugUtilsObjectNameEXT(device_, &name_info); result != VK_SUCCESS)
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to set debug name for object: {}", VulkanErrorToString(result));
+    }
+}
+#endif
+
+void GfxContext_Vulkan::FindVulkanExtensionSymbols()
+{
+    SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(instance_, "vkSetDebugUtilsObjectNameEXT"));
+}
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data
@@ -265,7 +287,8 @@ static void CreateSurface(core::Ref<Surface*> surface, VkInstance instance)
 static void DestroySurface(const core::Ref<Surface*>& surface)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
-    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be destroyed after surface destroyed!") window->DestroySurface(surface);
+    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be destroyed after surface destroyed!");
+    window->DestroySurface(surface);
 }
 
 static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
@@ -398,7 +421,7 @@ static void DestroyLogicalDevice(core::Ref<VkDevice> device)
 
 static void CreateSwapChain(
     const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device,
-    OUT core::Ref<VkSwapchainKHR> swapchain
+    OUT core::Array<Image_Vulkan*>& imgs, OUT core::Array<ImageView_Vulkan*>& img_views, OUT core::Ref<VkSwapchainKHR> swapchain
 )
 {
     const auto cfg            = core::GetConfig<PlatformConfig>();
@@ -412,9 +435,9 @@ static void CreateSwapChain(
             available_format = surface_format;
         }
     }
-    PresentMode        present_mode = cfg->GetPresentMode();
+    const PresentMode  present_mode = cfg->GetPresentMode();
     const core::Size2D extent       = cfg->GetDefaultWindowSize();
-    const int8_t       image_count  = cfg->GetSwapchainImageCount();
+    const uint32_t     image_count  = cfg->GetSwapchainImageCount();
     Assert(
         logcat::Platform_RHI_Vulkan,
         image_count <= swapchain_support.max_image_count && image_count >= swapchain_support.min_image_count,
@@ -447,6 +470,18 @@ static void CreateSwapChain(
     swapchain_create_info.presentMode    = RHIPresentModeToVkPresentMode(present_mode);
     swapchain_create_info.clipped        = VK_TRUE;
     VERIFY_VULKAN_RESULT(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, swapchain.GetPtr()));
+
+    core::Array<VkImage> images(swapchain_create_info.minImageCount);
+    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(device, *swapchain, &swapchain_create_info.minImageCount, images.data()));
+    int index = 0;
+    imgs.resize(images.size());
+    for (auto& image_handle: images)
+    {
+        const auto image = New<Image_Vulkan>(
+            image_handle, index, swapchain_create_info.imageExtent.width, swapchain_create_info.imageExtent.height, available_format.format
+        );
+        imgs[index++] = image;
+    }
 }
 
 static void DestroySwapChain(VkDevice device, core::Ref<VkSwapchainKHR> swapchain)
@@ -463,7 +498,7 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
-    CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_);
+    CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_images_, swapchain_image_views_, swapchain_);
     auto [name, limits] = QueryDeviceInfo();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", name);
 }

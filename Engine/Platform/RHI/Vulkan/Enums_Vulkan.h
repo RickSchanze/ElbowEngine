@@ -21,3 +21,17 @@ platform::rhi::PresentMode VkPresentModeToRHIPresentMode(VkPresentModeKHR presen
 
 VkSampleCountFlagBits      RHISampleCountToVkSampleCount(platform::rhi::SampleCount sample_count);
 platform::rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
+
+/**
+ * @param aspect 由ImageAspect组成的bitmask, 类型int
+ * @return 由VkImageAspectFlagBits组成的bitmask, 类型VkImageAspectFlags(uint32_t)
+ */
+VkImageAspectFlags RHIImageAspectToVkImageAspect(/** ImageAspect */ int aspect);
+/**
+ * @param aspect 由VkImageAspectFlagBits组成的bitmask, 类型VkImageAspectFlags(uint32_t)
+ * @return 由ImageAspect组成的bitmask, 类型int
+ */
+int                VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect);
+
+platform::rhi::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle);
+VkComponentSwizzle                     RHIComponentMappingElementToVkComponentSwizzle(platform::rhi::ComponentMappingElement swizzle);

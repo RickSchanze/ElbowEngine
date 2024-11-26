@@ -9,6 +9,14 @@
 #include "Platform/RHI/GfxContext.h"
 #include "vulkan/vulkan.h"
 
+namespace platform::rhi::vulkan
+{
+class ImageView_Vulkan;
+}
+namespace platform::rhi::vulkan
+{
+class Image_Vulkan;
+}
 namespace platform::rhi
 {
 class Surface;
@@ -42,7 +50,13 @@ public:
     [[nodiscard]] const PhysicalDeviceFeature& QueryDeviceFeature() override;
     [[nodiscard]] const PhysicalDeviceInfo&    QueryDeviceInfo() override;
 
+#if ELBOW_DEBUG
+    void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
+#endif
+
 private:
+    void FindVulkanExtensionSymbols();
+
     VkInstance       instance_        = nullptr;
     Surface*         surface_         = nullptr;
     VkPhysicalDevice physical_device_ = nullptr;
@@ -51,8 +65,13 @@ private:
     VkQueue          present_queue_   = nullptr;
     VkSwapchainKHR   swapchain_       = nullptr;
 
+    core::Array<Image_Vulkan*>     swapchain_images_;
+    core::Array<ImageView_Vulkan*> swapchain_image_views_;
+
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;
     core::Optional<PhysicalDeviceInfo>    device_info_;
+
+    PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 };
 }   // namespace platform::rhi::vulkan
