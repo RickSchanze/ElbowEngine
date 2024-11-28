@@ -78,13 +78,13 @@ public:
     [[nodiscard]] virtual const PhysicalDeviceInfo& QueryDeviceInfo() = 0;
 
     /**
-     * 获取默认的深度图像Format
+     * 获取默认的深度/模版图像Format
      * @return
      */
-    [[nodiscard]] virtual Format GetDefaultDepthFormat() const = 0;
+    [[nodiscard]] virtual Format GetDefaultDepthStencilFormat() const = 0;
 
     /**
-     * 获取默认Color Format
+     * 获取默认Color Format(也就是交换链图像格式)
      * @return
      */
     [[nodiscard]] virtual Format GetDefaultColorFormat() const = 0;

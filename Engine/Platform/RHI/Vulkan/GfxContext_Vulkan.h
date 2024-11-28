@@ -50,11 +50,16 @@ public:
     [[nodiscard]] const PhysicalDeviceFeature& QueryDeviceFeature() override;
     [[nodiscard]] const PhysicalDeviceInfo&    QueryDeviceInfo() override;
 
+    [[nodiscard]] Format GetDefaultDepthStencilFormat() const override;
+    [[nodiscard]] Format GetDefaultColorFormat() const override;
+
 #if ELBOW_DEBUG
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
 #endif
 
 private:
+    [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+
     void FindVulkanExtensionSymbols();
 
     VkInstance       instance_        = nullptr;
@@ -71,6 +76,9 @@ private:
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;
     core::Optional<PhysicalDeviceInfo>    device_info_;
+
+    Format default_depth_stencil_format_ = Format::Count;
+    Format default_color_format_         = Format::Count;
 
     PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 };

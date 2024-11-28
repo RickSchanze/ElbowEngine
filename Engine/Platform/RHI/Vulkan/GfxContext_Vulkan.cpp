@@ -146,10 +146,20 @@ const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
     vkGetPhysicalDeviceProperties(physical_device_, &properties);
     PhysicalDeviceInfo info;
     info.name                                  = properties.deviceName;
-    info.limits.framebuffer_color_sample_count = properties.limits.framebufferColorSampleCounts;
-    info.limits.framebuffer_depth_sample_count = properties.limits.framebufferDepthSampleCounts;
+    info.limits.framebuffer_color_sample_count = static_cast<int32_t>(properties.limits.framebufferColorSampleCounts);
+    info.limits.framebuffer_depth_sample_count = static_cast<int32_t>(properties.limits.framebufferDepthSampleCounts);
     device_info_                               = info;
     return device_info_.value();
+}
+
+Format GfxContext_Vulkan::GetDefaultDepthStencilFormat() const
+{
+    return default_depth_stencil_format_;
+}
+
+Format GfxContext_Vulkan::GetDefaultColorFormat() const
+{
+    return default_color_format_;
 }
 
 #if ELBOW_DEBUG
@@ -164,6 +174,25 @@ void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle
     {
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to set debug name for object: {}", VulkanErrorToString(result));
     }
+}
+
+Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
+{
+    for (const core::Array<VkFormat> fmts = candidates | transform([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | ranges::to_vector;
+         const auto                  fmt: fmts)
+    {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physical_device_, fmt, &props);
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+        {
+            return VkFormatToRHIFormat(fmt);
+        }
+        if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+        {
+            return VkFormatToRHIFormat(fmt);
+        }
+    }
+    return Format::Count;
 }
 #endif
 
@@ -277,7 +306,7 @@ static void DestroyInstance(core::Ref<VkInstance> instance)
     instance = VK_NULL_HANDLE;
 }
 
-static void CreateSurface(core::Ref<Surface*> surface, VkInstance instance)
+static void CreateSurface(core::Ref<Surface*> surface, const VkInstance instance)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
     Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!");
@@ -419,7 +448,7 @@ static void DestroyLogicalDevice(core::Ref<VkDevice> device)
     device = nullptr;
 }
 
-static void CreateSwapChain(
+static Format CreateSwapChain(
     const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device,
     OUT core::Array<Image_Vulkan*>& imgs, OUT core::Array<ImageView_Vulkan*>& img_views, OUT core::Ref<VkSwapchainKHR> swapchain
 )
@@ -482,6 +511,7 @@ static void CreateSwapChain(
         );
         imgs[index++] = image;
     }
+    return VkFormatToRHIFormat(swapchain_create_info.imageFormat);
 }
 
 static void DestroySwapChain(VkDevice device, core::Ref<VkSwapchainKHR> swapchain)
@@ -498,7 +528,16 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
-    CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_images_, swapchain_image_views_, swapchain_);
+    default_color_format_ =
+        CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_images_, swapchain_image_views_, swapchain_);
+    Format depth_format = FindSupportedFormat(
+        {Format::D32_Float, Format::D32_Float_S8X24_UInt, Format::D24_UNorm_S8_UInt},
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+    Assert(logcat::Platform_RHI_Vulkan, depth_format != Format::Count, "Failed to find supported depth format!");
+    default_depth_stencil_format_ = depth_format;
+
     auto [name, limits] = QueryDeviceInfo();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", name);
 }
