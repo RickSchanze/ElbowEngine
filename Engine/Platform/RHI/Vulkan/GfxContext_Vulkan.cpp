@@ -162,6 +162,36 @@ Format GfxContext_Vulkan::GetDefaultColorFormat() const
     return default_color_format_;
 }
 
+VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
+{
+    const auto img        = desc.image;
+    auto       img_handle = static_cast<VkImage>(img->GetNativeHandle());
+    Assert(logcat::Platform_RHI_Vulkan, img, "Image cannot be nullptr when creating a ImageView.");
+    VkImageViewCreateInfo view_info{};
+    view_info.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.image                           = img_handle;
+    view_info.components                      = FromComponentMapping(desc.component_mapping);
+    view_info.format                          = RHIFormatToVkFormat(desc.format);
+    view_info.subresourceRange.aspectMask     = RHIImageAspectToVkImageAspect(desc.subresource_range.aspect_mask);
+    view_info.subresourceRange.baseMipLevel   = desc.subresource_range.base_mip_level;
+    view_info.subresourceRange.levelCount     = desc.subresource_range.level_count;
+    view_info.subresourceRange.baseArrayLayer = desc.subresource_range.base_array_layer;
+    view_info.subresourceRange.layerCount     = desc.subresource_range.layer_count;
+    view_info.viewType                        = RHIImageViewTypeToVkImageViewType(desc.type);
+    view_info.pNext                           = nullptr;
+    VkImageView view_handle                   = VK_NULL_HANDLE;
+    if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS)
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to create ImageView: {}", VulkanErrorToString(result));
+    }
+    return view_handle;
+}
+
+void GfxContext_Vulkan::DestroyImageView(VkImageView view) const
+{
+    vkDestroyImageView(device_, view, nullptr);
+}
+
 #if ELBOW_DEBUG
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
@@ -199,6 +229,11 @@ Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candida
 void GfxContext_Vulkan::FindVulkanExtensionSymbols()
 {
     SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(instance_, "vkSetDebugUtilsObjectNameEXT"));
+}
+
+GfxContext_Vulkan* GetVulkanGfxContext()
+{
+    return static_cast<GfxContext_Vulkan*>(GetGfxContext());
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

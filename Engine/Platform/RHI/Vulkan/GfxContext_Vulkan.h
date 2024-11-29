@@ -19,8 +19,9 @@ class Image_Vulkan;
 }
 namespace platform::rhi
 {
+struct ImageViewDesc;
 class Surface;
-}
+}   // namespace platform::rhi
 static core::StringView VulkanErrorToString(VkResult result);
 
 #define VERIFY_VULKAN_RESULT(result) Assert(logcat::Platform_RHI_Vulkan, (result) == VK_SUCCESS, "Vulkan error: {}", VulkanErrorToString(result))
@@ -53,6 +54,11 @@ public:
     [[nodiscard]] Format GetDefaultDepthStencilFormat() const override;
     [[nodiscard]] Format GetDefaultColorFormat() const override;
 
+#if REGION(资源创建/销毁)
+    [[nodiscard]] VkImageView CreateImageView(const ImageViewDesc& desc) const;
+    void                      DestroyImageView(VkImageView view) const;
+#endif
+
 #if ELBOW_DEBUG
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
 #endif
@@ -82,4 +88,7 @@ private:
 
     PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
 };
+
+GfxContext_Vulkan* GetVulkanGfxContext();
+
 }   // namespace platform::rhi::vulkan

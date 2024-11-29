@@ -19,6 +19,8 @@ class ImageView_Vulkan : public ImageView
 public:
     explicit ImageView_Vulkan(const ImageViewDesc& desc);
 
+    ~ImageView_Vulkan();
+
     [[nodiscard]] void* GetNativeHandle() const override { return reinterpret_cast<void*>(handle_); }
 
 private:

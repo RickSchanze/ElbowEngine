@@ -194,3 +194,35 @@ VkComponentSwizzle RHIComponentMappingElementToVkComponentSwizzle(platform::rhi:
     }
     return VK_COMPONENT_SWIZZLE_MAX_ENUM;
 }
+
+VkImageViewType RHIImageViewTypeToVkImageViewType(platform::rhi::ImageViewType type)
+{
+    switch (type)
+    {
+    case platform::rhi::ImageViewType::D1: return VK_IMAGE_VIEW_TYPE_1D;
+    case platform::rhi::ImageViewType::D2: return VK_IMAGE_VIEW_TYPE_2D;
+    case platform::rhi::ImageViewType::D3: return VK_IMAGE_VIEW_TYPE_3D;
+    case platform::rhi::ImageViewType::Cube: return VK_IMAGE_VIEW_TYPE_CUBE;
+    case platform::rhi::ImageViewType::Array1D: return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+    case platform::rhi::ImageViewType::Array2D: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    case platform::rhi::ImageViewType::ArrayCube: return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    case platform::rhi::ImageViewType::Count: return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
+    }
+    return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
+}
+
+platform::rhi::ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType type)
+{
+    switch (type)
+    {
+    case VK_IMAGE_VIEW_TYPE_1D: return platform::rhi::ImageViewType::D1;
+    case VK_IMAGE_VIEW_TYPE_2D: return platform::rhi::ImageViewType::D2;
+    case VK_IMAGE_VIEW_TYPE_3D: return platform::rhi::ImageViewType::D3;
+    case VK_IMAGE_VIEW_TYPE_CUBE: return platform::rhi::ImageViewType::Cube;
+    case VK_IMAGE_VIEW_TYPE_1D_ARRAY: return platform::rhi::ImageViewType::Array1D;
+    case VK_IMAGE_VIEW_TYPE_2D_ARRAY: return platform::rhi::ImageViewType::Array2D;
+    case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY: return platform::rhi::ImageViewType::ArrayCube;
+    case VK_IMAGE_VIEW_TYPE_MAX_ENUM: return platform::rhi::ImageViewType::Count;
+    }
+    return platform::rhi::ImageViewType::Count;
+}

@@ -44,10 +44,27 @@ struct ImageViewDesc
     ComponentMapping      component_mapping{};
     core::StringView      name;   // 此Desc并不拥有name的生命周期, 其生命周期和父Image是一样的
 
+    /**
+     * 参数完全指定的版本
+     * @param name_
+     * @param image_
+     * @param type_
+     * @param format_
+     * @param subresource_range_
+     * @param component_mapping_
+     */
     explicit ImageViewDesc(
-        core::StringView name_, Image* image_, const ImageViewType type_ = ImageViewType::Count, const Format format_ = Format::Count,
-        const ImageSubresourceRange& subresource_range_ = ImageSubresourceRange{}, const ComponentMapping component_mapping_ = ComponentMapping{}
+        core::StringView name_, Image* image_, ImageViewType type_ = ImageViewType::Count, Format format_ = Format::Count,
+        const ImageSubresourceRange& subresource_range_ = ImageSubresourceRange{}, ComponentMapping component_mapping_ = ComponentMapping{}
     );
+
+    /**
+     * 只指定aspect_mask的版本
+     * @param name_
+     * @param image_
+     * @param aspect_mask
+     */
+    explicit ImageViewDesc(core::StringView name_, Image* image_, /** ImageAspect */ int32_t aspect_mask);
 };
 
 class ImageView : public IResource

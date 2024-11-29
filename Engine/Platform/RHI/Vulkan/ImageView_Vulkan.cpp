@@ -8,8 +8,7 @@
 #include "ImageView_Vulkan.h"
 
 #include "Enums_Vulkan.h"
-#include "Platform/PlatformLogcat.h"
-#include "Platform/RHI/Image.h"
+#include "GfxContext_Vulkan.h"
 
 VkComponentMapping platform::rhi::vulkan::FromComponentMapping(const ComponentMapping& mapping)
 {
@@ -23,13 +22,10 @@ VkComponentMapping platform::rhi::vulkan::FromComponentMapping(const ComponentMa
 
 platform::rhi::vulkan::ImageView_Vulkan::ImageView_Vulkan(const ImageViewDesc& desc) : ImageView(desc)
 {
-    const auto img        = desc_.image;
-    auto       img_handle = static_cast<VkImage>(img->GetNativeHandle());
-    Assert(logcat::Platform_RHI_Vulkan, img, "Image cannot be nullptr when creating a ImageView.");
-    VkImageViewCreateInfo view_info{};
-    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    view_info.image = img_handle;
-    view_info.components = FromComponentMapping(desc_.component_mapping);
-    view_info.format = RHIFormatToVkFormat(desc_.format);
-    view_info.subresourceRange.aspectMask = RHIImageAspectToVkImageAspect(desc_.subresource_range.aspect_mask);
+    handle_ = GetVulkanGfxContext()->CreateImageView(desc_);
+}
+
+platform::rhi::vulkan::ImageView_Vulkan::~ImageView_Vulkan()
+{
+    GetVulkanGfxContext()->DestroyImageView(handle_);
 }

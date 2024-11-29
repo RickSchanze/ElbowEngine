@@ -35,3 +35,6 @@ int                VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect);
 
 platform::rhi::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle);
 VkComponentSwizzle                     RHIComponentMappingElementToVkComponentSwizzle(platform::rhi::ComponentMappingElement swizzle);
+
+VkImageViewType              RHIImageViewTypeToVkImageViewType(platform::rhi::ImageViewType type);
+platform::rhi::ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType type);

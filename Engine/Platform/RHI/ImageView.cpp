@@ -40,21 +40,24 @@ platform::rhi::ImageViewDesc::ImageViewDesc(
     {
         format = image->GetFormat();
     }
-    if (type == ImageViewType::Cube)
     {
-        if (subresource_range.layer_count != 6) subresource_range.layer_count = 6;
-    }
-    else if (type == ImageViewType::Array1D || type == ImageViewType::Array2D || type == ImageViewType::ArrayCube)
-    {
-        if (subresource_range.layer_count == -1)
+        // layer_count
+        if (type == ImageViewType::Cube)
         {
-            LOGGER.Error(logcat::Platform_RHI, "layer_count must be specified when creating an array image view.");
-            return;
+            if (subresource_range.layer_count != 6) subresource_range.layer_count = 6;
         }
-    }
-    else
-    {
-        subresource_range.layer_count = 1;
+        else if (type == ImageViewType::Array1D || type == ImageViewType::Array2D || type == ImageViewType::ArrayCube)
+        {
+            if (subresource_range.layer_count == -1)
+            {
+                LOGGER.Error(logcat::Platform_RHI, "layer_count must be specified when creating an array image view.");
+                return;
+            }
+        }
+        else
+        {
+            subresource_range.layer_count = 1;
+        }
     }
     if (subresource_range.level_count == -1)
     {
@@ -62,6 +65,12 @@ platform::rhi::ImageViewDesc::ImageViewDesc(
     }
     if (subresource_range.aspect_mask == -1)
     {
-        if (image->GetUsage() )
+        LOGGER.Error(logcat::Platform_RHI, "aspect_mask must be specified when creating an image view.");
+        return;
     }
+}
+
+platform::rhi::ImageViewDesc::ImageViewDesc(const core::StringView name_, Image* image_, const int32_t aspect_mask) :
+    ImageViewDesc(name_, image_, ImageViewType::Count, Format::Count, ImageSubresourceRange{aspect_mask})
+{
 }
