@@ -245,8 +245,8 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         "SwapChainImageView7",
         "SwapChainImageView8",   // 开发设备最多支持八个
     };
-    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
-    auto vk_imgs    = core::Array<VkImage>(vulkan_ctx->GetSwapchainImageCount());
+    auto     vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+    auto     vk_imgs    = core::Array<VkImage>(vulkan_ctx->GetSwapchainImageCount());
     uint32_t img_cnt;
     VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, vk_imgs.data()));
     vulkan_ctx->swapchain_images_ =   //
@@ -263,6 +263,7 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
             return New<ImageView_Vulkan>(desc);
         }) |
         ranges::to_vector;
+    Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
 }
 
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
@@ -279,6 +280,7 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
     vulkan_ctx->swapchain_images_.clear();
     vulkan_ctx->swapchain_image_views_.clear();
     vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
+    Event_GfxContextPreDestroyed.RemoveBind(vulkan_ctx->pre_vulkan_gfx_context_destroyed_);
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()
