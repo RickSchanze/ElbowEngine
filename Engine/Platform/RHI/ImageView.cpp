@@ -10,7 +10,7 @@
 #include "Image.h"
 #include "Platform/PlatformLogcat.h"
 platform::rhi::ImageViewDesc::ImageViewDesc(
-    core::StringView name_, Image* image_, const ImageViewType type_, const Format format_, const ImageSubresourceRange& subresource_range_,
+    const core::StringView name_, Image* image_, const ImageViewType type_, const Format format_, const ImageSubresourceRange& subresource_range_,
     const ComponentMapping component_mapping_
 ) : image(image_), type(type_), format(format_), subresource_range(subresource_range_), component_mapping(component_mapping_), name(name_)
 {

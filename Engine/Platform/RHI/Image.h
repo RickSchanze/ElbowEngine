@@ -73,6 +73,12 @@ struct ImageDesc
         format(format_), samples(samples_), initial_state(initial_state_), name(name_)
     {
     }
+
+    /**
+     * 获得一个默认构造的ImageDesc, 但是这个ImageDesc是无法使用的
+     * @return
+     */
+    static ImageDesc Default();
 };
 
 class Image : public IResource

@@ -28,4 +28,5 @@ platform::rhi::vulkan::ImageView_Vulkan::ImageView_Vulkan(const ImageViewDesc& d
 platform::rhi::vulkan::ImageView_Vulkan::~ImageView_Vulkan()
 {
     GetVulkanGfxContext()->DestroyImageView(handle_);
+    handle_ = nullptr;
 }

@@ -36,15 +36,20 @@ GfxContext& GetGfxContextRef()
 
 void UseGraphicsAPI(GraphicsAPI api)
 {
+    Event_GfxContextPreInitialized.Invoke();
     switch (api)
     {
     case GraphicsAPI::Vulkan: ctx = New<vulkan::GfxContext_Vulkan>(); break;
     default: Assert(logcat::Platform_RHI, false, "Unsupported Graphics API");
     }
+    Event_GfxContextPostInitialized.Invoke(ctx);
 }
 
 void ReleaseGfxContext()
 {
+    Event_GfxContextPreDestroyed.Invoke(ctx);
     Delete(ctx);
+    ctx = nullptr;
+    Event_GfxContextPostDestroyed.Invoke();
 }
 }   // namespace platform::rhi

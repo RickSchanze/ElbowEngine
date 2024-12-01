@@ -15,11 +15,11 @@ VkComponentMapping FromComponentMapping(const ComponentMapping& mapping);
 
 class ImageView_Vulkan : public ImageView
 {
-    friend class platform::rhi::Image;
+    friend class Image;
 public:
     explicit ImageView_Vulkan(const ImageViewDesc& desc);
 
-    ~ImageView_Vulkan();
+    ~ImageView_Vulkan() override;
 
     [[nodiscard]] void* GetNativeHandle() const override { return reinterpret_cast<void*>(handle_); }
 

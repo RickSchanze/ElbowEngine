@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Platform/RHI/GfxContext.h"
+#include "Platform/RHI/Image.h"
 #include "vulkan/vulkan.h"
 
 namespace platform::rhi::vulkan
@@ -40,6 +41,8 @@ struct QueueFamilyIndices
 class GfxContext_Vulkan final : public GfxContext
 {
 public:
+    using ThisType = GfxContext_Vulkan;
+
     GfxContext_Vulkan();
     ~GfxContext_Vulkan() override;
 
@@ -68,6 +71,11 @@ private:
 
     void FindVulkanExtensionSymbols();
 
+    core::DelegateID post_vulkan_gfx_context_init_;
+    static void      PostVulkanGfxContextInit(GfxContext* ctx);
+    core::DelegateID pre_vulkan_gfx_context_destroyed_;
+    static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
+
     VkInstance       instance_        = nullptr;
     Surface*         surface_         = nullptr;
     VkPhysicalDevice physical_device_ = nullptr;
@@ -87,6 +95,8 @@ private:
     Format default_color_format_         = Format::Count;
 
     PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
+
+    ImageDesc swapchain_image_desc_ = ImageDesc::Default();
 };
 
 GfxContext_Vulkan* GetVulkanGfxContext();

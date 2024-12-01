@@ -165,7 +165,7 @@ Format GfxContext_Vulkan::GetDefaultColorFormat() const
 VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
 {
     const auto img        = desc.image;
-    auto       img_handle = static_cast<VkImage>(img->GetNativeHandle());
+    const auto img_handle = static_cast<VkImage>(img->GetNativeHandle());
     Assert(logcat::Platform_RHI_Vulkan, img, "Image cannot be nullptr when creating a ImageView.");
     VkImageViewCreateInfo view_info{};
     view_info.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -184,10 +184,11 @@ VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
     {
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to create ImageView: {}", VulkanErrorToString(result));
     }
+    SetObjectDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, view_handle, desc.name);
     return view_handle;
 }
 
-void GfxContext_Vulkan::DestroyImageView(VkImageView view) const
+void GfxContext_Vulkan::DestroyImageView(const VkImageView view) const
 {
     vkDestroyImageView(device_, view, nullptr);
 }
@@ -229,6 +230,55 @@ Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candida
 void GfxContext_Vulkan::FindVulkanExtensionSymbols()
 {
     SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(instance_, "vkSetDebugUtilsObjectNameEXT"));
+}
+
+void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
+{
+    constexpr const char* swapchain_image_view_names_[] = {
+        "SwapChainImageView0",
+        "SwapChainImageView1",
+        "SwapChainImageView2",
+        "SwapChainImageView3",
+        "SwapChainImageView4",
+        "SwapChainImageView5",
+        "SwapChainImageView6",
+        "SwapChainImageView7",
+        "SwapChainImageView8",   // 开发设备最多支持八个
+    };
+    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+    auto vk_imgs    = core::Array<VkImage>(vulkan_ctx->GetSwapchainImageCount());
+    uint32_t img_cnt;
+    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, vk_imgs.data()));
+    vulkan_ctx->swapchain_images_ =   //
+        vk_imgs | enumerate | transform([vulkan_ctx](const auto& pair) {
+            auto& desc             = vulkan_ctx->swapchain_image_desc_;
+            const auto& [idx, img] = pair;
+            return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
+        }) |
+        ranges::to_vector;
+    vulkan_ctx->swapchain_image_views_ =   //
+        vulkan_ctx->swapchain_images_ | enumerate | transform([&swapchain_image_view_names_](const auto& pair) {
+            const auto& [idx, img] = pair;
+            ImageViewDesc desc{swapchain_image_view_names_[idx], img, IA_Color};
+            return New<ImageView_Vulkan>(desc);
+        }) |
+        ranges::to_vector;
+}
+
+void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
+{
+    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+    for (auto img: vulkan_ctx->swapchain_images_)
+    {
+        Delete(img);
+    }
+    for (auto img_view: vulkan_ctx->swapchain_image_views_)
+    {
+        Delete(img_view);
+    }
+    vulkan_ctx->swapchain_images_.clear();
+    vulkan_ctx->swapchain_image_views_.clear();
+    vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()
@@ -484,8 +534,8 @@ static void DestroyLogicalDevice(core::Ref<VkDevice> device)
 }
 
 static Format CreateSwapChain(
-    const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device,
-    OUT core::Array<Image_Vulkan*>& imgs, OUT core::Array<ImageView_Vulkan*>& img_views, OUT core::Ref<VkSwapchainKHR> swapchain
+    const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device, ImageDesc& desc,
+    OUT core::Ref<VkSwapchainKHR> swapchain
 )
 {
     const auto cfg            = core::GetConfig<PlatformConfig>();
@@ -517,6 +567,13 @@ static Format CreateSwapChain(
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
+    desc.depth_or_layers = 1;
+    desc.format          = available_format.format;
+    desc.height          = extent.height;
+    desc.width           = extent.width;
+    desc.mip_levels      = 1;
+    desc.initial_state   = ImageState::Undefined;
+
     QueueFamilyIndices indices                = FindQueueFamilies(physical_device, surface);
     uint32_t           queue_family_indices[] = {indices.graphics_family.value(), indices.present_family.value()};
     if (indices.graphics_family != indices.present_family)
@@ -534,18 +591,6 @@ static Format CreateSwapChain(
     swapchain_create_info.presentMode    = RHIPresentModeToVkPresentMode(present_mode);
     swapchain_create_info.clipped        = VK_TRUE;
     VERIFY_VULKAN_RESULT(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, swapchain.GetPtr()));
-
-    core::Array<VkImage> images(swapchain_create_info.minImageCount);
-    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(device, *swapchain, &swapchain_create_info.minImageCount, images.data()));
-    int index = 0;
-    imgs.resize(images.size());
-    for (auto& image_handle: images)
-    {
-        const auto image = New<Image_Vulkan>(
-            image_handle, index, swapchain_create_info.imageExtent.width, swapchain_create_info.imageExtent.height, available_format.format
-        );
-        imgs[index++] = image;
-    }
     return VkFormatToRHIFormat(swapchain_create_info.imageFormat);
 }
 
@@ -557,15 +602,17 @@ static void DestroySwapChain(VkDevice device, core::Ref<VkSwapchainKHR> swapchai
 
 GfxContext_Vulkan::GfxContext_Vulkan()
 {
-    available_layers = GetAvailableLayers();
+    post_vulkan_gfx_context_init_     = Event_GfxContextPostInitialized.AddBind(&ThisType::PostVulkanGfxContextInit);
+    pre_vulkan_gfx_context_destroyed_ = Event_GfxContextPreDestroyed.AddBind(&ThisType::PreVulkanGfxContextDestroyed);
+    available_layers                  = GetAvailableLayers();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Initializing Vulkan Graphics API...");
     CreateInstance(instance_);
+    FindVulkanExtensionSymbols();
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
-    default_color_format_ =
-        CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_images_, swapchain_image_views_, swapchain_);
-    Format depth_format = FindSupportedFormat(
+    default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, swapchain_);
+    Format depth_format   = FindSupportedFormat(
         {Format::D32_Float, Format::D32_Float_S8X24_UInt, Format::D24_UNorm_S8_UInt},
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
