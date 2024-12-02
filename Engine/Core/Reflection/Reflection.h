@@ -14,6 +14,7 @@
 #include "Core/CoreTypeTraits.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
+#include "Core/Object/Object.h"
 #include "MetaInfoManager.h"
 
 #include <utility>
@@ -113,6 +114,7 @@ struct FieldInfo
     {
         Transient = 1 << 0,
         EnumValue = 1 << 1,
+        ObjectPtr = 1 << 2,
         // Editor Only
         Hidden    = 1 << 16,
     };
@@ -432,6 +434,13 @@ struct Type
     // 如果type == this 返回true
     [[nodiscard]] bool IsDerivedFrom(const Type* type) const;
 
+#define REGISTER_FIELD_IMPL(name)                                                                                                 \
+    else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                                 \
+    {                                                                                                                             \
+        info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
+        info.container_identifier_ = ContainerIdentifier::name;                                                                   \
+        info.container_view_       = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
+    }
     // clang-format off
     /**
      * 注册一个字段信息, 但是不应该人为调用只应由代码生成器生成代码调用
@@ -445,14 +454,13 @@ struct Type
         info.outer_  = this;
         info.offset_ = offset;
         info.size_   = sizeof(T);
-#define REGISTER_FIELD_IMPL(name)                                                                                                 \
-    else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                                 \
-    {                                                                                                                             \
-        info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
-        info.container_identifier_ = ContainerIdentifier::name;                                                                   \
-        info.container_view_       = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
-    }
-        if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Count)
+
+        if constexpr (ObjectPtrTrait<T>::IsObjPtr())
+        {
+            info.type_ = TypeOf<typename ObjectPtrTrait<T>::type>();
+            info.SetAttribute(FieldInfo::ObjectPtr);
+        }
+        else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Count)
         {
             // 不是容器
             info.type_                 = TypeOf<T>();
@@ -489,6 +497,8 @@ struct Type
         }
         return &fields_.emplace_back(Move(info));
     }
+
+#undef REGISTER_FIELD_IMPL
 
     /**
      * 注册一个枚举值信息, 但是不应该人为调用只应由代码生成器生成代码调用

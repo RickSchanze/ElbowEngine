@@ -28,6 +28,7 @@ int main()
         LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
         return -1;
     }
+    // 读取项目的基本配置
     core::FrameAllocator::Startup();
     // 窗口初始化
     {

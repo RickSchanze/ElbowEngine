@@ -370,8 +370,16 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
     for (auto field: fields)
     {
         const auto field_name = field->GetName();
-        const auto field_node = node[field_name.Data()];
+        auto       field_node = node[field_name.Data()];
         const auto field_type = field->GetType();
+        if (field->IsDefined(FieldInfo::Transient))
+        {
+            continue;
+        }
+        if (field->IsDefined(FieldInfo::ObjectPtr))
+        {
+
+        }
         if (!field_node.IsDefined())
         {
             LOGGER.Warn(

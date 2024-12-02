@@ -237,12 +237,16 @@ public class CodeGenerator
         sw.Write($"Type* type = Type::Create<{class_.FullName}>(\"{className}\")");
         foreach (var baseType in class_.BaseTypes)
         {
-            sw.Write($"->Internal_AddParent(TypeOf<{baseType.Type.FullName}>())");
+            if (baseType.Type is not CppClass cls) continue;
+            if (cls.Attributes.Any((attribute => attribute.ToString().Contains("Reflection"))))
+            {
+                sw.Write($"->Internal_AddParent(TypeOf<{baseType.Type.FullName}>())");
+            }
         }
 
         if (!string.IsNullOrEmpty(comment))
         {
-            comment = comment.Replace("\n", "\\n");
+            comment = comment.Replace(System.Environment.NewLine, "\\n");
             sw.Write($"->SetComment(\"{comment}\")");
         }
 

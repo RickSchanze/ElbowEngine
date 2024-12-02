@@ -27,6 +27,7 @@ namespace core
 
 class ISerializer;
 
+// TODO: Archive疑似不够灵活
 class Archive
 {
 public:

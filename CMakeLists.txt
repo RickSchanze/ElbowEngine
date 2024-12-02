@@ -17,6 +17,9 @@ set(ENABLE_TEST OFF CACHE BOOL "Enable test")
 add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp
+        Engine/Resource/Project.cpp
+        Engine/Resource/Project.h
+        Engine/Resource/Logcat.h
 )
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行

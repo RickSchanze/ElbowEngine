@@ -8,14 +8,14 @@
 #pragma once
 
 #include "Core/CoreTypeTraits.h"
-#include "Delegate.h"
 #include "Core/Utils/ContainerUtils.h"
+#include "Delegate.h"
 
 // TODO: AsyncEvent AsyncMultiCastEvent
 
 namespace core
 {
-template<typename ReturnT, typename... ArgumentArgs>
+template <typename ReturnT, typename... ArgumentArgs>
 struct Event
 {
     using ReturnType   = ReturnT;
@@ -35,14 +35,14 @@ struct Event
         delegate_ = Move(DelegateType(func));
     }
 
-    template<typename Class>
+    template <typename Class>
     void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...))
     {
         // DebugAssert(Event, !HasBound(), "Event has been bound, rebinding.");
         delegate_ = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
     }
 
-    template<typename Class>
+    template <typename Class>
     void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
     {
         // DebugAssert(Event, !HasBound(), "Event has been bound, rebinding.");
@@ -53,10 +53,7 @@ struct Event
 
     [[nodiscard]] bool HasBound() const { return delegate_.HasBound(); }
 
-    ReturnType Invoke(ArgumentArgs&&... args)
-    {
-        return delegate_.Invoke(Move(args)...);
-    }
+    ReturnType Invoke(ArgumentArgs&&... args) { return delegate_.Invoke(Move(args)...); }
 
     ReturnType InvokeOnce(ArgumentArgs&&... args)
     {
@@ -82,7 +79,7 @@ private:
  * 多播委托
  * @note 顺序是乱的, 不能让逻辑依赖绑定顺序！！！
  */
-template<typename ReturnT, typename... ArgumentArgs>
+template <typename ReturnT, typename... ArgumentArgs>
 struct MulticastEvent
 {
     using ReturnType   = ReturnT;
@@ -109,14 +106,14 @@ struct MulticastEvent
         return AddBind(Move(delegate));
     }
 
-    template<typename Class>
+    template <typename Class>
     DelegateID AddBind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...))
     {
         DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args...); });
         return AddBind(Move(delegate));
     }
 
-    template<typename Class>
+    template <typename Class>
     DelegateID AddBind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
     {
         DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args); });
@@ -138,7 +135,7 @@ struct MulticastEvent
 
     void ClearBind() { delegates_.clear(); }
 
-    template<typename... Args>
+    template <typename... Args>
     void Invoke(Args&&... args)
         requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::Value
     {
@@ -148,7 +145,7 @@ struct MulticastEvent
         }
     }
 
-    template<typename... Args>
+    template <typename... Args>
     void InvokeOnce(Args&&... args)
         requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::Value
     {
@@ -165,11 +162,29 @@ private:
 }   // namespace core
 
 // 定义一个事件可以带有返回值
-#define DECLARE_EVENT(name, return_type, ...)            \
+#define DECLARE_EVENT(name, return_type, ...)                  \
     struct name : public core::Event<return_type, __VA_ARGS__> \
-    {                                                    \
+    {                                                          \
     };
 
 // 定义一个多播事件, 注意: 不能有返回值
-#define DECLARE_MULTICAST_EVENT(name, ...) \
-    struct name : public core::MulticastEvent<void, __VA_ARGS__> {};
+#define DECLARE_MULTICAST_EVENT(name, ...)                       \
+    struct name : public core::MulticastEvent<void, __VA_ARGS__> \
+    {                                                            \
+    };
+
+// 定义一个事件注册函数, 注册发生于main函数之前
+#define REGISTER_EVENT_HANDLER_BEFORE_MAIN()               \
+    static void REGISTER_EVENT_HANDLERS();                 \
+    namespace                                              \
+    {                                                      \
+    struct STATIC_INIT                                     \
+    {                                                      \
+        STATIC_INIT()                                      \
+        {                                                  \
+            REGISTER_EVENT_HANDLERS();                     \
+        }                                                  \
+    };                                                     \
+    [[maybe_unused]] static const STATIC_INIT static_init; \
+    }                                                      \
+    void REGISTER_EVENT_HANDLERS()

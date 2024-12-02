@@ -114,6 +114,12 @@ Optional<String> platform::File::ReadAllText() const
     return err ? std::make_optional(text) : NullOpt;
 }
 
+core::Optional<core::String> platform::File::ReadAllText(const core::String& path)
+{
+    const File file = path;
+    return file.ReadAllText();
+}
+
 bool platform::File::WriteText(core::StringView text) const
 {
     if (Create())

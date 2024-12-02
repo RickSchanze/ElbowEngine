@@ -69,12 +69,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
-find_package(spirv_cross_reflect CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-reflect)
-
-find_package(spirv_cross_core CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-core)
-
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
