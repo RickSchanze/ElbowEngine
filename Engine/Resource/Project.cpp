@@ -14,7 +14,13 @@
 #include "Core/Serialization/YamlArchive.h"
 #include GEN_HEADER("Resource.Project.generated.h")
 
-GENERATED_SOURCE() resource::Project& resource::Project::GetInstance() {}
+GENERATED_SOURCE()
+
+resource::Project& resource::Project::GetInstance()
+{
+    static Project p;
+    return p;
+}
 
 void resource::Project::CreateInstance(core::StringView path) {}
 

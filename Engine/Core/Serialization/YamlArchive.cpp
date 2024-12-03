@@ -212,12 +212,42 @@ bool YamlArchive::Serialize(const Any& obj, String& out)
         return false;
     }
     YAML::Emitter emitter;
+    // 序列化元数据
+    emitter << YAML::BeginMap;
+    {
+        emitter << YAML::Key;
+        emitter << "Meta";
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        {
+            emitter << YAML::Key;
+            emitter << "TypeInfo";
+            emitter << YAML::Value;
+            emitter << YAML::BeginMap;
+            {
+                emitter << YAML::Key;
+                emitter << "Name";
+                emitter << YAML::Value;
+                emitter << obj.GetType()->GetFullName().Data();
+                emitter << YAML::Key;
+                emitter << "HashCode";
+                emitter << YAML::Value;
+                emitter << obj.GetType()->GetTypeHash();
+            }
+            emitter << YAML::EndMap;
+        }
+        emitter << YAML::EndMap;
+    }
+    emitter << YAML::Key;
+    emitter << "Data";
+    emitter << YAML::Value;
     if (SerializeEmitter(emitter, obj))
     {
         out = emitter.c_str();
         return true;
     }
     out = "";
+    emitter << YAML::EndMap;
     return false;
 }
 
@@ -378,7 +408,6 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
         }
         if (field->IsDefined(FieldInfo::ObjectPtr))
         {
-
         }
         if (!field_node.IsDefined())
         {
@@ -495,8 +524,25 @@ bool YamlArchive::Deserialize(StringView source, void* out, const Type* type)
     {
         LOGGER.Error(logcat::Archive_Deserialization, "Parse error: {}", e.msg);
     }
-
-    return DeserializeNode(node, out, type);
+    // 通过元数据验证是否有效
+    if (!node["Meta"].IsDefined())
+    {
+        LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, serialized file meta info is not valid");
+        return false;
+    }
+    auto meta_node = node["Meta"];
+    if (!meta_node["TypeInfo"].IsDefined())
+    {
+        LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, serialized file meta info is not valid");
+        return false;
+    }
+    auto type_hash = meta_node["TypeInfo"]["HashCode"].as<size_t>();
+    if (type_hash != type->GetTypeHash())
+    {
+        LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, type has not same");
+        return false;
+    }
+    return DeserializeNode(node["Data"], out, type);
 }
 
 }   // namespace core

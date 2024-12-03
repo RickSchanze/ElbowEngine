@@ -24,10 +24,4 @@ public:
 
     [[nodiscard]] bool Is(const Type* type) const;
 };
-
-inline bool ITypeGetter::Is(const Type* type) const
-{
-    DebugAssert(logcat::Reflection, GetType() != nullptr, "self type is nullptr");
-    return GetType()->IsDerivedFrom(type);
-}
 }   // namespace core

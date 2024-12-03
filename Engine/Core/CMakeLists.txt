@@ -92,6 +92,7 @@ add_library(${PROJECT_NAME}
         Base/UniquePtr.cpp
         Singleton/MManager.cpp
         Singleton/MManager.h
+        Reflection/ITypeGetter.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
