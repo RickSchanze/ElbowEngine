@@ -120,7 +120,7 @@ core::Optional<core::String> platform::File::ReadAllText(const core::String& pat
     return file.ReadAllText();
 }
 
-bool platform::File::WriteText(core::StringView text) const
+bool platform::File::WriteAllText(core::StringView text) const
 {
     if (Create())
     {
@@ -138,6 +138,12 @@ bool platform::File::WriteText(core::StringView text) const
         LOGGER.Error(logcat::Platform_FileSystem, "Failed to write file: {}", path_);
         return false;
     }
+}
+
+bool platform::File::WriteAllText(const core::String& path, core::StringView text)
+{
+    const File file = path;
+    return file.WriteAllText(text);
 }
 
 bool platform::File::Create(FileCreateMode mode, bool create_folder, bool overwrite) const
@@ -158,7 +164,7 @@ struct StaticInit
     static bool WriteText(const String& path, const String& text)
     {
         const platform::File f = path;
-        return f.WriteText(text);
+        return f.WriteAllText(text);
     }
 
     static void BindOther(StringView path)

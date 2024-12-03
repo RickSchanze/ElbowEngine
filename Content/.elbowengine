@@ -1,0 +1,9 @@
+Meta:
+  TypeInfo:
+    Name: resource.Project
+    HashCode: 1419688037100425177
+Data:
+  name_: New Project
+  path_: C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content
+  version_: 0.0.1
+  database_path_: Library/AssetDataBase

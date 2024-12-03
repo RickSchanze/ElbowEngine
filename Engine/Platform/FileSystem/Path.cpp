@@ -76,5 +76,10 @@ bool platform::Path::IsFolder(core::StringView path)
 }
 
 core::String platform::Path::GetParent(core::StringView path){
-    return std::filesystem::path(path.GetStdStringView()).parent_path().string();
+    auto parent = std::filesystem::path(path.GetStdStringView()).parent_path().string();
+    if (parent.empty())
+    {
+        return GetProjectPath();
+    }
+    return parent;
 }

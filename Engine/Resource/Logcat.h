@@ -7,7 +7,8 @@
 
 #pragma once
 
-namespace resource
+namespace logcat
 {
-
+constexpr auto Resource = "Resource";
+constexpr auto Resource_Project = "Resource.Project";
 }

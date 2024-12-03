@@ -48,7 +48,8 @@ public:
     bool                                      TryReadAllText(core::String& out) const;
     [[nodiscard]] std::optional<core::String> ReadAllText() const;
     static core::Optional<core::String>       ReadAllText(const core::String& path);
-    [[nodiscard]] bool                        WriteText(core::StringView text) const;
+    [[nodiscard]] bool                        WriteAllText(core::StringView text) const;
+    static bool                               WriteAllText(const core::String& path, core::StringView text);
 
     [[nodiscard]] bool Create(FileCreateMode mode = FileCreateMode::Text, bool create_folder = true, bool overwrite = true) const;
 

@@ -20,7 +20,7 @@ class CLASS() Project : public core::ITypeGetter
 {
     GENERATED_CLASS(Project)
 public:
-    static Project& GetInstance();
+    static Project& GetCurrentProject();
     static void CreateInstance(core::StringView path);
 
 protected:

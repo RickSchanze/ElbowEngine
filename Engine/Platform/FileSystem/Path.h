@@ -20,6 +20,12 @@ public:
     static bool             SetProjectPath(core::StringView path);
     static bool             IsExist(core::StringView path);
     static bool             IsFolder(core::StringView path);
+
+    /**
+     * 获取path的父文件夹路径
+     * @param path path是一个相对路径, 如果是顶层, 则返回项目路径, 如果不是顶层则返回上一级路径
+     * @return
+     */
     static core::String     GetParent(core::StringView path);
 
 private:
