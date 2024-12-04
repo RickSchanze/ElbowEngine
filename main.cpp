@@ -12,7 +12,6 @@
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
 
-
 int main()
 {
     cpptrace::generate_trace(); // 这里需要先调用一次generate_trace 否则后面的无法生成trace
@@ -30,6 +29,10 @@ int main()
     }
     // 读取项目的基本配置
     core::FrameAllocator::Startup();
+    // 资产数据库初始化
+    {
+        PROFILE_SCOPE("AssetDataBase Initialize");
+    }
     // 窗口初始化
     {
         PROFILE_SCOPE("Window Initialize");

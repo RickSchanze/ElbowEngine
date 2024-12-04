@@ -20,6 +20,10 @@ add_executable(ElbowEngine main.cpp
         Engine/Resource/Project.cpp
         Engine/Resource/Project.h
         Engine/Resource/Logcat.h
+        Engine/Resource/AssetDataBase.cpp
+        Engine/Resource/AssetDataBase.h
+        Engine/Resource/AssetType.h
+        Engine/Resource/AssetType.cpp
 )
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行

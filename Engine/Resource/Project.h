@@ -16,12 +16,17 @@ namespace resource
  * Project阐述了一个项目的基本信息
  * 例如 项目名称 项目路径 项目版本号 项目数据库位置等
  */
-class CLASS() Project : public core::ITypeGetter
+class CLASS() Project final : public core::ITypeGetter
 {
     GENERATED_CLASS(Project)
 public:
     static Project& GetCurrentProject();
-    static void CreateInstance(core::StringView path);
+    static void     CreateInstance(core::StringView path);
+
+    [[nodiscard]] core::StringView GetProjectName() const { return name_; }
+    [[nodiscard]] core::StringView GetProjectPath() const { return path_; }
+    [[nodiscard]] core::StringView GetVersion() const { return version_; }
+    [[nodiscard]] core::StringView GetDatabasePath() const { return database_path_; }
 
 protected:
     Project() = default;

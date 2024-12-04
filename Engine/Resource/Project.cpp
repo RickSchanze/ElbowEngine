@@ -9,8 +9,8 @@
 #include "Core/CoreEvents.h"
 #include "Core/Event/Event.h"
 #include "Core/Serialization/YamlArchive.h"
-#include "Platform/FileSystem/Path.h"
 #include "Logcat.h"
+#include "Platform/FileSystem/Path.h"
 
 #include GEN_HEADER("Resource.Project.generated.h")
 
@@ -20,8 +20,7 @@ core::Optional<resource::Project> loaded_project;
 
 resource::Project& resource::Project::GetCurrentProject()
 {
-    static Project p;
-    return p;
+    return loaded_project.value();
 }
 
 void resource::Project::CreateInstance(core::StringView path)
@@ -36,17 +35,16 @@ void resource::Project::CreateInstance(core::StringView path)
 
 resource::Project::Project(core::StringView path)
 {
-    auto meta_text      = platform::File::ReadAllText(".elbowengine");
+    auto meta_text = platform::File::ReadAllText(".elbowengine");
     Assert(logcat::Engine, meta_text.has_value(), "Failed to read project meta file.");
-    auto& meta = meta_text.value();
-    core::YamlArchive ar;
-    if (meta.IsEmpty())
+    if (const auto& meta = meta_text.value(); meta.IsEmpty())
     {
-        name_          = "New Project";
-        path_          = path;
-        version_       = "0.0.1";
-        database_path_ = "Library/AssetDataBase";
-        bool success = true;
+        core::YamlArchive ar;
+        name_                = "New Project";
+        path_                = path;
+        version_             = "0.0.1";
+        database_path_       = "Library/AssetDataBase";
+        bool         success = true;
         core::String temp;
         success &= ar.Serialize(*this, temp);
         success &= platform::File::WriteAllText(".elbowengine", temp);
