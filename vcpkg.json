@@ -54,5 +54,8 @@
   }, {
     "name" : "sqlitecpp",
     "version>=" : "3.3.2"
+  }, {
+    "name" : "shader-slang",
+    "version>=" : "2024.15"
   } ]
 }
