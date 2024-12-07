@@ -29,23 +29,6 @@ add_library(${PROJECT_NAME}
         Math/Math.h
         Profiler/ProfileMacro.cpp
         Profiler/ProfileMacro.h
-        Async/Coroutine/Task.cpp
-        Async/Coroutine/Task.h
-        Async/Coroutine/Promise.cpp
-        Async/Coroutine/Promise.h
-        Async/Coroutine/Awaiter.cpp
-        Async/Coroutine/Awaiter.h
-        Async/Coroutine/IExecutor.h
-        Async/Coroutine/Result.cpp
-        Async/Coroutine/Result.h
-        Async/Coroutine/CoroutineExecutorManager.cpp
-        Async/Coroutine/CoroutineExecutorManager.h
-        Async/Coroutine/MainThreadExecutor.cpp
-        Async/Coroutine/MainThreadExecutor.h
-        Async/Coroutine/CoroutineCommon.h
-        Async/Coroutine/TaskAwaiter.cpp
-        Async/Coroutine/TaskAwaiter.h
-        Async/Coroutine/Coroutine.h
         Event/Delegate.h
         Event/Event.h
         Serialization/Archive.h
@@ -93,6 +76,9 @@ add_library(${PROJECT_NAME}
         Singleton/MManager.cpp
         Singleton/MManager.h
         Reflection/ITypeGetter.cpp
+        Async/Execution/Common.cpp
+        Async/Execution/Common.h
+        Base/TagInvoke.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
