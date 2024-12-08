@@ -76,9 +76,12 @@ add_library(${PROJECT_NAME}
         Singleton/MManager.cpp
         Singleton/MManager.h
         Reflection/ITypeGetter.cpp
-        Async/Execution/Common.cpp
-        Async/Execution/Common.h
         Base/TagInvoke.h
+        Base/TypeList.h
+        Base/TypeTraits.h
+        Async/Execution/Concept.h
+        Async/Execution/Just.h
+        Async/Execution/Then.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

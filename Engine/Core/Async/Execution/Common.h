@@ -7,15 +7,10 @@
 
 #pragma once
 #include "Core/Base/TagInvoke.h"
-#include "Core/Log/CoreLogCategory.h"
-#include "Core/Log/Logger.h"
-#include "Resource/Logcat.h"
 
-
-#include <exception>
 #include <utility>
 
-namespace core::execution
+namespace core::exec
 {
 // 定制SetDone (for receiver)
 struct SetDoneType
@@ -53,22 +48,10 @@ struct SetValueType
 };
 inline constexpr SetValueType SetValue{};
 
-template <class T, class E = std::exception_ptr>
-concept CReceiver = requires(std::remove_cvref_t<T>&& t, E&& e) {
-    std::move_constructible<std::remove_cvref_t<T>>&& std::constructible_from<std::remove_cvref_t<T>, T>;
-    { SetDone(std::move(t)) } noexcept;
-    { SetError(std::move(t), std::forward<E>(e)) } noexcept;
-};
-
-template <class T, class... Args>
-concept CReceiverOfConcept = CReceiver<T> && requires(std::remove_cvref_t<T>&& t, Args&&... args) {
-    { SetValue(std::move(t), std::forward<Args>(args)...) } noexcept;
-};
-
 // 定制Connect
 struct ConnectType
 {
-    template <typename Sender, CReceiver Receiver>
+    template <typename Sender, typename Receiver>
         requires TagInvocable<ConnectType, Sender, Receiver>
     auto operator()(Sender&& s, Receiver&& r) const noexcept -> TagInvokeResultType<ConnectType, Sender, Receiver>
     {
@@ -88,4 +71,10 @@ struct StartType
     }
 };
 inline constexpr StartType Start{};
-}   // namespace core::execution
+
+template <typename Sender>
+struct SenderTraits
+{
+    using ValueTypes = typename Sender::ValueTypes;
+};
+}   // namespace core::exec
