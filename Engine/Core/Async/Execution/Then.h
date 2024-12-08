@@ -95,6 +95,7 @@ struct ThenType
     auto operator()(F&& f) const noexcept;
 
     template <typename Sender, typename F>
+        requires CanParameterPackConvert<typename SenderTraits<Sender>::ValueTypes, FunctionArgsAsTuple<F>>::Value
     auto operator()(Sender&& s, F&& f)
     {
         return ThenSender{Forward<Sender>(s), Forward<F>(f)};
