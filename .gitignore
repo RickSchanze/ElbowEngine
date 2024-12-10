@@ -4,7 +4,6 @@ Release
 cmake-build-debug
 cmake-build-release
 cmake-build-relwithdebinfo
-Generated
 
 cmake-build--relwithdebinfo
 ### C++ template

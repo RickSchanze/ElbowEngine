@@ -1,4 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
+#include "Core/Async/Execution/Common.h"
+#include "Core/Async/Execution/Just.h"
+#include "Core/Async/Execution/Then.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
@@ -14,7 +17,7 @@
 
 int main()
 {
-    cpptrace::generate_trace(); // 这里需要先调用一次generate_trace 否则后面的无法生成trace
+    cpptrace::generate_trace();   // 这里需要先调用一次generate_trace 否则后面的无法生成trace
     SetRuntimeStage(RuntimeStage::Startup);
     LOGGER.Info(logcat::Engine, "Initializing Engine...");
     Assert(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
@@ -22,6 +25,10 @@ int main()
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
     SetConsoleOutputCP(65001);
+
+    auto a =
+        core::exec::Just() | core::exec::Then([]() { return 15; }) | core::exec::Then([](int num) { LOGGER.Info(logcat::Test, "num: {}", num); });
+
     if (!platform::Path::SetProjectPath("C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content"))
     {
         LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");

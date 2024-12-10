@@ -76,6 +76,8 @@ struct Receiver
 template <typename Sender, typename F>
 struct ThenSender
 {
+    using ValueTypes = Tuple<FunctionReturnType<F>>;
+
     Sender sender_;
     F      function_;
 
@@ -121,5 +123,3 @@ auto ThenType::operator()(F&& f) const noexcept
 }   // namespace then_detail
 inline constexpr auto Then = then_detail::ThenType{};
 }   // namespace core::exec
-
-constexpr auto a = core::exec::Just(1, 2, 3) | core::exec::Then(+[](int, int, int) { return true; });
