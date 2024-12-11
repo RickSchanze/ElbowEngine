@@ -26,6 +26,12 @@ struct CanParameterPackConvert
     constexpr static bool Value = false;
 };
 
+template <>
+struct CanParameterPackConvert<void, void>
+{
+    constexpr static bool Value = true;
+};
+
 template <typename... Args1, typename... Args2>
 struct CanParameterPackConvert<std::tuple<Args1...>, std::tuple<Args2...>>
 {
@@ -113,3 +119,15 @@ using FunctionArgsAsTuple = typename FunctionTraits<F>::ArgsTuple;
 
 template <typename F>
 using FunctionReturnType = typename FunctionTraits<F>::ReturnType;
+
+template <typename T>
+struct MakeTupleType
+{
+    using Type = core::Tuple<T>;
+};
+
+template <>
+struct MakeTupleType<void>
+{
+    using Type = void;
+};

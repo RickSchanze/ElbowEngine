@@ -82,6 +82,9 @@ add_library(${PROJECT_NAME}
         Async/Execution/Concept.h
         Async/Execution/Just.h
         Async/Execution/Then.h
+        Async/Execution/NullReceiver.cpp
+        Async/Execution/NullReceiver.h
+        Async/Execution/NullScheduler.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

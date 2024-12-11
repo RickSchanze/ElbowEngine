@@ -30,4 +30,10 @@ constexpr bool FunctionThrowReturnInvokable()
 {
     return !std::is_nothrow_invocable_v<F, Vs...>;
 }
+
+template <typename... Args>
+constexpr bool ArgTypesAllNotVoid()
+{
+    return (!std::is_same_v<Args, void> && ...);
+}
 }

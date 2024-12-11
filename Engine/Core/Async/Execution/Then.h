@@ -15,21 +15,21 @@ namespace core::exec
 namespace then_detail
 {
 template <typename R, typename F>
-struct Receiver
+struct ThenReceiver
 {
     [[no_unique_address]] R receiver;
     [[no_unique_address]] F function;
 
     template <typename... Vs>
         requires(FunctionNoThrowInvokable<F, Vs...>() && !FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, Receiver&& r, Vs&&... vs) noexcept
+    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
     {
         SetValue(std::move(r.receiver), std::invoke(Move(r.function), Forward<Vs>(vs)...));
     }
 
     template <typename... Vs>
         requires(!FunctionNoThrowInvokable<F, Vs...>() && !FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, Receiver&& r, Vs&&... vs) noexcept
+    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
     {
         try
         {
@@ -43,7 +43,7 @@ struct Receiver
 
     template <typename... Vs>
         requires(!FunctionNoThrowInvokable<F, Vs...>() && FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, Receiver&& r, Vs&&... vs) noexcept
+    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
     {
         try
         {
@@ -58,25 +58,25 @@ struct Receiver
 
     template <typename... Vs>
         requires(FunctionNoThrowInvokable<F, Vs...>() && FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, Receiver&& r, Vs&&... vs) noexcept
+    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
     {
         std::invoke(Move(r.function), Forward<Vs>(vs)...);
         SetValue(std::move(r.receiver));
     }
 
     template <typename E>
-    friend auto TagInvoke(SetErrorType, Receiver&& r, E&& e) noexcept
+    friend auto TagInvoke(SetErrorType, ThenReceiver&& r, E&& e) noexcept
     {
         SetError(std::move(r.receiver), Forward<E>(e));
     }
 
-    friend auto TagInvoke(SetValueType, Receiver&& r) noexcept { SetDone(std::move(r.receiver)); }
+    friend auto TagInvoke(SetValueType, ThenReceiver&& r) noexcept { SetDone(std::move(r.receiver)); }
 };
 
 template <typename Sender, typename F>
 struct ThenSender
 {
-    using ValueTypes = Tuple<FunctionReturnType<F>>;
+    using ValueTypes = typename MakeTupleType<FunctionReturnType<F>>::Type;
 
     Sender sender_;
     F      function_;
@@ -86,7 +86,8 @@ struct ThenSender
     friend auto TagInvoke(ConnectType, SelfSender&& sender, Receiver&& receiver)
     {
         return Connect(
-            Forward<SelfSender>(sender).sender_, then_detail::Receiver{Forward<Receiver>(receiver), Forward<SelfSender>(sender).function_}
+            Forward<SelfSender>(sender).sender_,
+            ThenReceiver<Receiver, F>{Forward<Receiver>(receiver), Forward<SelfSender>(sender).function_}
         );
     }
 };
@@ -108,11 +109,11 @@ template <typename F>
 struct ThenClosure
 {
     F f_;
-    template <typename Sender>
-        requires CanParameterPackConvert<typename SenderTraits<Sender>::ValueTypes, FunctionArgsAsTuple<F>>::Value
-    friend auto operator|(Sender&& s, ThenClosure&& t)
+    template <typename SenderT>
+        requires CanParameterPackConvert<typename SenderTraits<std::remove_cvref_t<SenderT>>::ValueTypes, FunctionArgsAsTuple<F>>::Value
+    friend auto operator|(SenderT&& s, ThenClosure&& t)
     {
-        return ThenType{}(Forward<Sender>(s), Move(t.f_));
+        return ThenType{}(Move(s), Move(t.f_));
     }
 };
 template <typename F>

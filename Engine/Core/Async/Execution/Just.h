@@ -27,7 +27,7 @@ struct JustSender
         {
             try
             {
-                std::apply([&s](Args&... Values) { SetValue(s.r, Move(Values)...); }, s.args);
+                std::apply([&s](Args&... Values) { SetValue(Move(s.r), Move(Values)...); }, s.args);
             }
             catch (...)
             {
@@ -37,16 +37,55 @@ struct JustSender
     };
 
     template <typename Self, typename R>
-        requires std::is_same_v<std::remove_cvref_t<Self>, JustSender> && CReceiverOf<R, Args...>
+        requires std::is_same_v<std::remove_cvref_t<Self>, JustSender>
     friend auto TagInvoke(ConnectType, Self&& s, R&& r)
     {
         return Operation<std::remove_cvref_t<R>>{Forward<Self>(s).args, Forward<R>(r)};
     }
 };
+
+template <>
+struct JustSender<void>
+{
+    using ValueTypes = void;
+
+    template <typename R>
+    struct Operation
+    {
+        [[no_unique_address]] R r;
+
+        friend void TagInvoke(StartType, Operation& s) noexcept
+        {
+            try
+            {
+                SetValue(Move(s.r));
+            }
+            catch (...)
+            {
+                SetError(Move(s.r), std::current_exception());
+            }
+        }
+    };
+
+    template <typename Self, typename R>
+        requires std::is_same_v<std::remove_cvref_t<Self>, JustSender>
+    friend auto TagInvoke(ConnectType, Self&& s, R&& r)
+    {
+        return Operation<std::remove_cvref_t<R>>{Forward<R>(r)};
+    }
+};
 }   // namespace just_detail
 template <typename... Args>
-constexpr just_detail::JustSender<std::remove_cvref_t<Args>...> Just(Args&&... args)
+constexpr std::conditional_t<sizeof...(Args) == 0, just_detail::JustSender<void>, just_detail::JustSender<std::remove_cvref_t<Args>...>>
+Just(Args&&... args)
 {
-    return just_detail::JustSender<std::remove_cvref_t<Args>...>{Forward<Args>(args)...};
+    if constexpr (sizeof...(Args) > 0)
+    {
+        return just_detail::JustSender<std::remove_cvref_t<Args>...>{std::make_tuple(Forward<Args>(args)...)};
+    }
+    else
+    {
+        return just_detail::JustSender<void>{};
+    }
 }
 }   // namespace core::exec

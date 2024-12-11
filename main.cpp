@@ -1,7 +1,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include "Core/Async/Execution/Common.h"
 #include "Core/Async/Execution/Just.h"
+#include "Core/Async/Execution/NullReceiver.h"
 #include "Core/Async/Execution/Then.h"
+#include "Core/Base/TagInvoke.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
@@ -24,10 +26,25 @@ int main()
     // 让std::wcout 顺利运行
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
+
     SetConsoleOutputCP(65001);
 
-    auto a =
-        core::exec::Just() | core::exec::Then([]() { return 15; }) | core::exec::Then([](int num) { LOGGER.Info(logcat::Test, "num: {}", num); });
+    auto a = core::exec::Just(1, 2, 3) | core::exec::Then([](int a, int b, int c) {
+                 LOGGER.Info(logcat::Test, "{}{}{}", a, b, c);
+                 return 12;
+             }) |
+             core::exec::Then([](int a) {
+                 LOGGER.Info(logcat::Test, "{}", a);
+                 return 24;
+             }) |
+             core::exec::Then([](int a) {
+                 LOGGER.Info(logcat::Test, "{}", a);
+                 LOGGER.Info(logcat::Test, "Then end");
+             });
+
+    core::exec::NullReceiver<void> receiver;
+    auto c = core::exec::Connect(a, receiver);
+    core::exec::Start(c);
 
     if (!platform::Path::SetProjectPath("C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content"))
     {
@@ -48,7 +65,7 @@ int main()
     // 图形初始化
     {
         PROFILE_SCOPE("Graphics Initialize")
-        auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
+        const auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
         platform::rhi::UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
     }
     LOGGER.Info(logcat::Engine, "Engine initialized.");

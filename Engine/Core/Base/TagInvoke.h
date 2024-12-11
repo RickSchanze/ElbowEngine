@@ -13,13 +13,10 @@ namespace core
 {
 namespace detail
 {
-void TagInvoke();
-
 struct TagInvokeType
 {
     template <class Tag, class... Args>
-    constexpr auto operator()(Tag tag, Args&&... args) const noexcept(noexcept(TagInvoke(static_cast<Tag&&>(tag), static_cast<Args&&>(args)...)))
-        -> decltype(TagInvoke(static_cast<Tag&&>(tag), static_cast<Args&&>(args)...))
+    constexpr auto operator()(Tag tag, Args&&... args) const
     {
         return TagInvoke(static_cast<Tag&&>(tag), static_cast<Args&&>(args)...);
     }

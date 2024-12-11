@@ -6,6 +6,9 @@
  */
 
 #pragma once
+#include "TypeTraits.h"
+
+
 #include <array>
 #include <chrono>
 #include <functional>

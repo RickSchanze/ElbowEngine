@@ -19,7 +19,7 @@ struct SetDoneType
         requires NoThrowTagInvocable<SetDoneType, Receiver>
     auto operator()(Receiver&& r) const noexcept -> TagInvokeResultType<SetDoneType, Receiver>
     {
-        return TagInvoke(SetDoneType{}, std::forward<Receiver>(r));
+        return tag_invoke(SetDoneType{}, std::forward<Receiver>(r));
     }
 };
 inline constexpr SetDoneType SetDone{};
@@ -27,11 +27,10 @@ inline constexpr SetDoneType SetDone{};
 // 定制SetError (for receiver)
 struct SetErrorType
 {
-    template <typename Receiver, typename Error>
-        requires NoThrowTagInvocable<SetErrorType, Receiver, Error>
+    template <typename Receiver, typename Error> requires TagInvocable<SetErrorType, Receiver, Error>
     auto operator()(Receiver&& r, Error&& e) const noexcept -> TagInvokeResultType<SetErrorType, Receiver, Error>
     {
-        return TagInvoke(SetErrorType{}, std::forward<Receiver>(r), std::forward<Error>(e));
+        return tag_invoke(SetErrorType{}, std::forward<Receiver>(r), std::forward<Error>(e));
     }
 };
 inline constexpr SetErrorType SetError{};
@@ -39,11 +38,11 @@ inline constexpr SetErrorType SetError{};
 // 定制SetValue (for receiver)
 struct SetValueType
 {
-    template <typename Receiver, typename Value>
-        requires NoThrowTagInvocable<SetValueType, Receiver, Value>
-    auto operator()(Receiver&& r, Value&& v) const noexcept -> TagInvokeResultType<SetValueType, Receiver, Value>
+    template <typename Receiver, typename... Vs>
+        requires TagInvocable<SetValueType, Receiver, Vs...>
+    auto operator()(Receiver&& r, Vs&&... v) const noexcept -> TagInvokeResultType<SetValueType, Receiver, Vs...>
     {
-        return TagInvoke(SetValueType{}, std::forward<Receiver>(r), std::forward<Value>(v));
+        return tag_invoke(SetValueType{}, std::forward<Receiver>(r), std::forward<Vs>(v)...);
     }
 };
 inline constexpr SetValueType SetValue{};
@@ -51,11 +50,10 @@ inline constexpr SetValueType SetValue{};
 // 定制Connect
 struct ConnectType
 {
-    template <typename Sender, typename Receiver>
-        requires TagInvocable<ConnectType, Sender, Receiver>
-    auto operator()(Sender&& s, Receiver&& r) const noexcept -> TagInvokeResultType<ConnectType, Sender, Receiver>
+    template <typename Sender, typename Receiver> requires TagInvocable<ConnectType, Sender, Receiver>
+    auto operator()(Sender&& s, Receiver&& r) const noexcept
     {
-        return TagInvoke(ConnectType{}, std::forward<Sender>(s), std::forward<Receiver>(r));
+        return tag_invoke(ConnectType{}, static_cast<Sender&&>(s), static_cast<Receiver&&>(r));
     }
 };
 inline constexpr ConnectType Connect{};
@@ -63,18 +61,17 @@ inline constexpr ConnectType Connect{};
 // 定制Start
 struct StartType
 {
-    template <typename OperationState>
-        requires TagInvocable<StartType, OperationState>
-    auto operator()(OperationState&& s) const noexcept -> TagInvokeResultType<StartType, OperationState>
+    template <typename OperationState> requires TagInvocable<StartType, OperationState>
+    auto operator()(OperationState&& s) const noexcept
     {
-        return TagInvoke(StartType{}, std::forward<OperationState>(s));
+        return tag_invoke(StartType{}, std::forward<OperationState>(s));
     }
 };
 inline constexpr StartType Start{};
 
-template <typename Sender>
+template <typename SenderT>
 struct SenderTraits
 {
-    using ValueTypes = typename Sender::ValueTypes;
+    using ValueTypes = typename SenderT::ValueTypes;
 };
 }   // namespace core::exec

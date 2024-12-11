@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.27)
 set(VCPKG_TARGET_TRIPLET x64-windows)
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Software/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(ElbowEngine)
 
