@@ -85,6 +85,7 @@ add_library(${PROJECT_NAME}
         Async/Execution/NullReceiver.cpp
         Async/Execution/NullReceiver.h
         Async/Execution/NullScheduler.h
+        Async/Execution/Repeat.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

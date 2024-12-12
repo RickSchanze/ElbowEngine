@@ -2,6 +2,7 @@
 #include "Core/Async/Execution/Common.h"
 #include "Core/Async/Execution/Just.h"
 #include "Core/Async/Execution/NullReceiver.h"
+#include "Core/Async/Execution/Repeat.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Base/TagInvoke.h"
 #include "Core/Config/ConfigManager.h"
@@ -28,22 +29,14 @@ int main()
     // 让spdlog不产生乱码
 
     SetConsoleOutputCP(65001);
-
-    auto a = core::exec::Just(1, 2, 3) | core::exec::Then([](int a, int b, int c) {
-                 LOGGER.Info(logcat::Test, "{}{}{}", a, b, c);
-                 return 12;
-             }) |
-             core::exec::Then([](int a) {
-                 LOGGER.Info(logcat::Test, "{}", a);
-                 return 24;
-             }) |
-             core::exec::Then([](int a) {
-                 LOGGER.Info(logcat::Test, "{}", a);
-                 LOGGER.Info(logcat::Test, "Then end");
-             });
-
+    auto a = core::exec::Just();
+    auto b = a
+    | core::exec::Then([] { LOGGER.Info(logcat::Test, "Repeating..."); })
+    | core::exec::Then([] { LOGGER.Info(logcat::Test, "Repeat Complete."); })
+    | core::exec::Repeat(12);
     core::exec::NullReceiver<void> receiver;
-    auto c = core::exec::Connect(a, receiver);
+
+    auto c = core::exec::Connect(b, receiver);
     core::exec::Start(c);
 
     if (!platform::Path::SetProjectPath("C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content"))

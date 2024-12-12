@@ -70,7 +70,7 @@ struct ThenReceiver
         SetError(std::move(r.receiver), Forward<E>(e));
     }
 
-    friend auto TagInvoke(SetValueType, ThenReceiver&& r) noexcept { SetDone(std::move(r.receiver)); }
+    friend auto TagInvoke(SetDoneType, ThenReceiver&& r) noexcept { SetDone(std::move(r.receiver)); }
 };
 
 template <typename Sender, typename F>
@@ -87,21 +87,26 @@ struct ThenSender
     {
         return Connect(
             Forward<SelfSender>(sender).sender_,
-            ThenReceiver<Receiver, F>{Forward<Receiver>(receiver), Forward<SelfSender>(sender).function_}
+            ThenReceiver<Pure<Receiver>, F>{Forward<Pure<Receiver>>(receiver), Forward<SelfSender>(sender).function_}
         );
     }
 };
+
+template <typename Sender, typename F>
+concept CanFunctionReceiveSender =
+    CanParameterPackConvert<typename SenderTraits<std::remove_cvref_t<Sender>>::ValueTypes, FunctionArgsAsTuple<F>>::Value ||
+    std::is_same_v<typename Sender::ValueTypes, FunctionReturnType<F>>;
 
 struct ThenType
 {
     template <typename F>
     auto operator()(F&& f) const noexcept;
 
-    template <typename Sender, typename F>
-        requires CanParameterPackConvert<typename SenderTraits<Sender>::ValueTypes, FunctionArgsAsTuple<F>>::Value
-    auto operator()(Sender&& s, F&& f)
+    template <typename SenderT, typename F>
+        requires CanFunctionReceiveSender<SenderT, F>
+    auto operator()(SenderT&& s, F&& f)
     {
-        return ThenSender{Forward<Sender>(s), Forward<F>(f)};
+        return ThenSender{Forward<SenderT>(s), Forward<F>(f)};
     }
 };
 
@@ -110,7 +115,6 @@ struct ThenClosure
 {
     F f_;
     template <typename SenderT>
-        requires CanParameterPackConvert<typename SenderTraits<std::remove_cvref_t<SenderT>>::ValueTypes, FunctionArgsAsTuple<F>>::Value
     friend auto operator|(SenderT&& s, ThenClosure&& t)
     {
         return ThenType{}(Move(s), Move(t.f_));

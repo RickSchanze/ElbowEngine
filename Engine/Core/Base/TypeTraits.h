@@ -36,4 +36,7 @@ constexpr bool ArgTypesAllNotVoid()
 {
     return (!std::is_same_v<Args, void> && ...);
 }
+
+template <typename T>
+using Pure = std::remove_cvref_t<T>;
 }

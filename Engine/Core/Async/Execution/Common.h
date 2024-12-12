@@ -74,4 +74,7 @@ struct SenderTraits
 {
     using ValueTypes = typename SenderT::ValueTypes;
 };
+
+template <typename Sender, typename Receiver>
+using ConnectResultType = std::invoke_result_t<ConnectType, Sender, Receiver>;
 }   // namespace core::exec
