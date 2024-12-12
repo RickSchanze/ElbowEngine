@@ -95,7 +95,7 @@ struct ThenSender
 template <typename Sender, typename F>
 concept CanFunctionReceiveSender =
     CanParameterPackConvert<typename SenderTraits<std::remove_cvref_t<Sender>>::ValueTypes, FunctionArgsAsTuple<F>>::Value ||
-    std::is_same_v<typename Sender::ValueTypes, FunctionReturnType<F>>;
+    (std::is_same_v<typename SenderTraits<std::remove_cvref_t<Sender>>::ValueTypes, void> && FunctionTraits<F>::IsNoInput);
 
 struct ThenType
 {

@@ -16,7 +16,7 @@ struct NullReceiver;
 template <typename... Args>
 struct NullReceiver
 {
-    static_assert(ArgTypesAllNotVoid<Args...>(), "Arg types can not bo void");
+    static_assert(ArgTypesAllNotVoid<Args...>::Value, "Arg types can not bo void");
 
     template <typename Receiver>
         requires std::is_same_v<std::remove_cvref_t<Receiver>, NullReceiver>

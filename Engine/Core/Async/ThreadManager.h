@@ -23,18 +23,18 @@ void ThreadManagerAddSlotTask(ThreadSlot run_slot, ITask* task);
 template <typename R>
 struct ThreadSchedulerOperationState
 {
-    R          receiver;
+    Pure<R>    receiver;
     ThreadSlot slot_to_run_;
 
     void Execute()
     {
         try
         {
-            exec::SetValue(receiver);
+            exec::SetValue(Move(receiver));
         }
         catch (...)
         {
-            exec::SetError(receiver, std::current_exception());
+            exec::SetError(Move(receiver), std::current_exception());
         }
     }
 
@@ -68,7 +68,7 @@ struct ThreadScheduler
         requires std::is_same_v<Pure<Scheduler>, ThreadScheduler>
     friend auto TagInvoke(exec::ScheduleType, Scheduler scheduler, const ThreadSlot slot)
     {
-        ThreadSchedulerSender sender;
+        ThreadSchedulerSender sender{};
         sender.slot_to_run = slot;
         return sender;
     }

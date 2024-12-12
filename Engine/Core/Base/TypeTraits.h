@@ -3,6 +3,7 @@
 */
 
 #pragma once
+#include <tuple>
 #include <type_traits>
 
 namespace core
@@ -32,10 +33,16 @@ constexpr bool FunctionThrowReturnInvokable()
 }
 
 template <typename... Args>
-constexpr bool ArgTypesAllNotVoid()
+struct ArgTypesAllNotVoid
 {
-    return (!std::is_same_v<Args, void> && ...);
-}
+    static constexpr bool Value = (!std::is_same_v<Args, void> && ...);
+};
+
+template <typename... Args>
+struct ArgTypesAllNotVoid<std::tuple<Args...>>
+{
+    static constexpr bool Value = (!std::is_same_v<Args, void> && ...);
+};
 
 template <typename T>
 using Pure = std::remove_cvref_t<T>;

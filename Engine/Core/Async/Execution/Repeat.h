@@ -109,5 +109,11 @@ inline auto RepeatType::operator()(const int cnt) const noexcept
     return RepeatClosure{cnt};
 }
 }   // namespace repeat_details
+
+/**
+ * 重复之前的操作n次
+ * @param cnt 重复次数
+ * @note 只管重复, 不管等待！！！
+ */
 inline constexpr auto Repeat = repeat_details::RepeatType{};
 }   // namespace core::exec

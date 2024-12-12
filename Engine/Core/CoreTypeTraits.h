@@ -41,7 +41,6 @@ struct CanParameterPackConvert<std::tuple<Args1...>, std::tuple<Args2...>>
 template <typename T, typename... Types>
 concept OneOf = (std::is_same_v<T, Types> || ...);
 
-
 template <typename T>
 concept ArrayLikeIterable = requires(T t) {
     t.begin();
@@ -93,18 +92,21 @@ struct FunctionTraits<Ret(Args...)>
 template <typename Ret, typename... Args>
 struct FunctionTraits<Ret (*)(Args...)> : FunctionTraits<Ret(Args...)>
 {
+    constexpr static bool IsNoInput = sizeof...(Args) == 0;
 };
 
 // 针对成员函数指针的特化
 template <typename C, typename Ret, typename... Args>
 struct FunctionTraits<Ret (C::*)(Args...)> : FunctionTraits<Ret(Args...)>
 {
+    constexpr static bool IsNoInput = sizeof...(Args) == 0;
 };
 
 // 针对 const 成员函数指针的特化
 template <typename C, typename Ret, typename... Args>
 struct FunctionTraits<Ret (C::*)(Args...) const> : FunctionTraits<Ret(Args...)>
 {
+    constexpr static bool IsNoInput = sizeof...(Args) == 0;
 };
 
 // 针对 Lambda 或函数对象

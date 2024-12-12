@@ -37,9 +37,16 @@ int main()
     // 读取项目的基本配置
     core::FrameAllocator::Startup();
     auto& scheduler = core::ThreadManager::GetScheduler();
-    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Other);
+
+    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Resource) | core::exec::Then([] {
+                           LOGGER.Info(logcat::Test, "Repearting");
+                           return 12;
+                       }) |
+                       core::exec::Then([](int a) { LOGGER.Info(logcat::Test, "Repeat {}", a); }) | core::exec::Repeat(10) |
+                       core::exec::Then([] { LOGGER.Info(logcat::Test, "Test End."); });
+
     core::exec::NullReceiver<void> receiver;
-    auto op = core::exec::Connect(test_thread, receiver);
+    auto                           op = core::exec::Connect(test_thread, receiver);
     core::exec::Start(op);
     // 资产数据库初始化
     {
