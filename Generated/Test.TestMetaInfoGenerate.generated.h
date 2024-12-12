@@ -35,7 +35,7 @@ static void DestroyAt(void* ptr) { static_cast<core::TestMetaInfoGenerate1*>(ptr
 #define GENERATED_IMPLEMENTATION \
 core::Type* TestMetaInfoGenerate::REFLECTION_Register_TestMetaInfoGenerate_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<TestMetaInfoGenerate>("TestMetaInfoGenerate")->Internal_AddParent(TypeOf<core::ITypeGetter>())->SetComment("测试TestMetaInfoGenerate"); \
+Type* type = Type::Create<TestMetaInfoGenerate>("TestMetaInfoGenerate")->SetComment("测试TestMetaInfoGenerate"); \
 type->Internal_RegisterField("value1_", &TestMetaInfoGenerate::value1_, offsetof(TestMetaInfoGenerate, value1_))->SetComment("测试属性注释"); \
 type->Internal_RegisterField("value2_", &TestMetaInfoGenerate::value2_, offsetof(TestMetaInfoGenerate, value2_)); \
 type->Internal_RegisterField("value3_", &TestMetaInfoGenerate::value3_, offsetof(TestMetaInfoGenerate, value3_)); \
@@ -44,7 +44,7 @@ return type; \
 } \
 core::Type* core::TestMetaInfoGenerate1::REFLECTION_Register_TestMetaInfoGenerate1_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::TestMetaInfoGenerate1>("core.TestMetaInfoGenerate1")->Internal_AddParent(TypeOf<core::ITypeGetter>()); \
+Type* type = Type::Create<core::TestMetaInfoGenerate1>("core.TestMetaInfoGenerate1"); \
 type->Internal_RegisterField("value1_", &core::TestMetaInfoGenerate1::value1_, offsetof(core::TestMetaInfoGenerate1, value1_)); \
 type->Internal_RegisterField("value2_", &core::TestMetaInfoGenerate1::value2_, offsetof(core::TestMetaInfoGenerate1, value2_)); \
 type->Internal_RegisterField("value3_", &core::TestMetaInfoGenerate1::value3_, offsetof(core::TestMetaInfoGenerate1, value3_)); \
@@ -53,7 +53,7 @@ return type; \
 } \
 core::Type* core::inner::TestMetaInfoGenerate2::REFLECTION_Register_TestMetaInfoGenerate2_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::inner::TestMetaInfoGenerate2>("NewName")->Internal_AddParent(TypeOf<core::ITypeGetter>())->SetAttribute(Type::Interface); \
+Type* type = Type::Create<core::inner::TestMetaInfoGenerate2>("NewName")->SetAttribute(Type::Interface); \
 type->Internal_RegisterField("value1_", &core::inner::TestMetaInfoGenerate2::value1_, offsetof(core::inner::TestMetaInfoGenerate2, value1_)); \
 type->Internal_RegisterField("value2_", &core::inner::TestMetaInfoGenerate2::value2_, offsetof(core::inner::TestMetaInfoGenerate2, value2_)); \
 type->Internal_RegisterField("value3_", &core::inner::TestMetaInfoGenerate2::value3_, offsetof(core::inner::TestMetaInfoGenerate2, value3_)); \

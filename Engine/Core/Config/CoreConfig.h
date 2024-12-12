@@ -11,6 +11,7 @@
 #include "IConfig.h"
 
 #include GEN_HEADER("Core.CoreConfig.generated.h")
+#include "Core/Async/ThreadManager.h"
 
 namespace core
 {
@@ -39,10 +40,7 @@ struct STRUCT() Version
     PROPERTY()
     int patch;
 
-    bool operator==(const Version& o) const
-    {
-        return major == o.major && minor == o.minor && patch == o.patch;
-    }
+    bool operator==(const Version& o) const { return major == o.major && minor == o.minor && patch == o.patch; }
 };
 
 class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : extends IConfig
@@ -55,5 +53,11 @@ class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : ext
     // 应用版本号
     PROPERTY()
     DECLARE_CONFIG_ITEM(Version, app_version, AppVersion, {});
+
+    // 各ThreadSlot对应的线程数
+    PROPERTY(Category = "Thread")
+    DECLARE_CONFIG_ITEM_MAP(
+        HashMap<ThreadSlot, int>, thread_slot_count, ThreadSlotCountMap, {{ThreadSlot::Render, 1}, {ThreadSlot::Resource, 3}, {ThreadSlot::Other, 5}
+    });
 };
 } // namespace core

@@ -27,7 +27,8 @@ inline constexpr SetDoneType SetDone{};
 // 定制SetError (for receiver)
 struct SetErrorType
 {
-    template <typename Receiver, typename Error> requires TagInvocable<SetErrorType, Receiver, Error>
+    template <typename Receiver, typename Error>
+        requires TagInvocable<SetErrorType, Receiver, Error>
     auto operator()(Receiver&& r, Error&& e) const noexcept -> TagInvokeResultType<SetErrorType, Receiver, Error>
     {
         return tag_invoke(SetErrorType{}, std::forward<Receiver>(r), std::forward<Error>(e));
@@ -50,7 +51,8 @@ inline constexpr SetValueType SetValue{};
 // 定制Connect
 struct ConnectType
 {
-    template <typename Sender, typename Receiver> requires TagInvocable<ConnectType, Sender, Receiver>
+    template <typename Sender, typename Receiver>
+        requires TagInvocable<ConnectType, Sender, Receiver>
     auto operator()(Sender&& s, Receiver&& r) const noexcept
     {
         return tag_invoke(ConnectType{}, static_cast<Sender&&>(s), static_cast<Receiver&&>(r));
@@ -61,13 +63,27 @@ inline constexpr ConnectType Connect{};
 // 定制Start
 struct StartType
 {
-    template <typename OperationState> requires TagInvocable<StartType, OperationState>
+    template <typename OperationState>
+        requires TagInvocable<StartType, OperationState>
     auto operator()(OperationState&& s) const noexcept
     {
         return tag_invoke(StartType{}, std::forward<OperationState>(s));
     }
 };
 inline constexpr StartType Start{};
+
+// 定制Schedule
+struct ScheduleType
+{
+    template <typename Scheduler, typename... Args>
+        requires TagInvocable<ScheduleType, Scheduler, Args...>
+    auto operator()(Scheduler&& s, Args&&... args) const noexcept
+    {
+        return tag_invoke(ScheduleType{}, std::move(s), Forward<Args>(args)...);
+    }
+};
+inline constexpr ScheduleType Schedule{};
+
 
 template <typename SenderT>
 struct SenderTraits

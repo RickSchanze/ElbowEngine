@@ -29,23 +29,18 @@ int main()
     // 让spdlog不产生乱码
 
     SetConsoleOutputCP(65001);
-    auto a = core::exec::Just();
-    auto b = a
-    | core::exec::Then([] { LOGGER.Info(logcat::Test, "Repeating..."); })
-    | core::exec::Then([] { LOGGER.Info(logcat::Test, "Repeat Complete."); })
-    | core::exec::Repeat(12);
-    core::exec::NullReceiver<void> receiver;
-
-    auto c = core::exec::Connect(b, receiver);
-    core::exec::Start(c);
-
-    if (!platform::Path::SetProjectPath("C:/Users/Echo/SyncWork/Work/Projects/ElbowEngine/Content"))
+    if (!platform::Path::SetProjectPath("C:/Users/Echo/Documents/Projects/ElbowEngine/Content"))
     {
         LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
         return -1;
     }
     // 读取项目的基本配置
     core::FrameAllocator::Startup();
+    auto& scheduler = core::ThreadManager::GetScheduler();
+    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Other);
+    core::exec::NullReceiver<void> receiver;
+    auto op = core::exec::Connect(test_thread, receiver);
+    core::exec::Start(op);
     // 资产数据库初始化
     {
         PROFILE_SCOPE("AssetDataBase Initialize");

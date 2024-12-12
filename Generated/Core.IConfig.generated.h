@@ -12,7 +12,7 @@ core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<
 #define GENERATED_IMPLEMENTATION \
 core::Type* core::IConfig::REFLECTION_Register_IConfig_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::IConfig>("core.IConfig")->Internal_AddParent(TypeOf<core::Interface>())->SetAttribute(Type::Interface); \
+Type* type = Type::Create<core::IConfig>("core.IConfig")->SetAttribute(Type::Interface); \
 return type; \
 } \
 

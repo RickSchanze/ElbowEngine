@@ -74,6 +74,11 @@ bool core::CtorManager::ConstructAt(const Type* info, void* ptr) const
         LOGGER.Error(logcat::Reflection, "ptr is nullptr");
         return false;
     }
+    if (info->IsEnum() )
+    {
+        *static_cast<uint8_t*>(ptr) = 0;
+        return true;
+    }
     for (auto& [key, value]: ctors_)
     {
         if (key.hash_code == info->GetTypeHash())
@@ -97,6 +102,11 @@ bool core::CtorManager::DestroyAt(const Type* info, void* ptr) const
     {
         LOGGER.Error(logcat::Reflection, "ptr is nullptr");
         return false;
+    }
+    if (info->IsEnum())
+    {
+        *static_cast<uint8_t*>(ptr) = 0;
+        return true;
     }
     for (auto& [key, value]: ctors_)
     {

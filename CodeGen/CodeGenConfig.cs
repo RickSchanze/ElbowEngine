@@ -4,7 +4,7 @@ namespace CodeGen;
 
 public class CodeGenConfig
 {
-    public string WorkDir { get; set; } = @"C:\Users\RickS\Proj\ElbowEngine";
+    public string WorkDir { get; set; } = @"C:\Users\Echo\Documents\Projects\ElbowEngine";
 
     public List<string> IncludeDirs { get; set; } =
     [

@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "EString.h"
 #include "Core/Reflection/Reflection.h"
+#include "EString.h"
 
-template<typename T>
+template <typename T>
     requires ::std::is_enum_v<T>
 core::StringView GetEnumString(T e)
 {
@@ -26,14 +26,21 @@ core::StringView GetEnumString(T e)
     return "ENUM_INVALID";
 }
 
-template<typename T>
+template <typename T>
     requires ::std::is_enum_v<T>
 constexpr int32_t GetEnumValue(const T e)
 {
     return static_cast<int32_t>(e);
 }
 
-template<typename T>
+template <typename T>
+    requires ::std::is_enum_v<T>
+constexpr T GetEnumValue(int32_t value)
+{
+    return static_cast<T>(value);
+}
+
+template <typename T>
     requires ::std::is_enum_v<T>
 T GetEnumValue(core::StringView str)
 {

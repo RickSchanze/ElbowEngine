@@ -123,7 +123,7 @@ using FunctionReturnType = typename FunctionTraits<F>::ReturnType;
 template <typename T>
 struct MakeTupleType
 {
-    using Type = core::Tuple<T>;
+    using Type = std::tuple<T>;
 };
 
 template <>

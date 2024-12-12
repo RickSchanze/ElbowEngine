@@ -15,7 +15,7 @@ static void DestroyAt(void* ptr) { static_cast<TestArchiveSerialization*>(ptr)->
 #define GENERATED_IMPLEMENTATION \
 core::Type* TestArchiveSerialization::REFLECTION_Register_TestArchiveSerialization_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<TestArchiveSerialization>("TestArchiveSerialization")->Internal_AddParent(TypeOf<core::ITypeGetter>()); \
+Type* type = Type::Create<TestArchiveSerialization>("TestArchiveSerialization"); \
 type->Internal_RegisterField("a_", &TestArchiveSerialization::a_, offsetof(TestArchiveSerialization, a_)); \
 type->Internal_RegisterField("b_", &TestArchiveSerialization::b_, offsetof(TestArchiveSerialization, b_)); \
 type->Internal_RegisterField("c_", &TestArchiveSerialization::c_, offsetof(TestArchiveSerialization, c_)); \

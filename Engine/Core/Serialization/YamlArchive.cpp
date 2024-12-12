@@ -127,6 +127,23 @@ static bool SerializeEmitterAssociativeContainerView(YAML::Emitter& emitter, Ass
 static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
 {
     auto fields = obj.GetType()->GetFields();
+    if (obj.IsEnum())
+    {
+        auto h = obj.AsCopy<int32_t>();
+        if (h.has_value())
+        {
+            for (const auto& field: fields)
+            {
+                if (field->GetEnumFieldValue() == h.value())
+                {
+                    emitter << field->GetName().Data();
+                    return true;
+                }
+            }
+        }
+        LOGGER.Error(logcat::Archive_Serialization, "Serialize enum failed: no match enum value!");
+        return false;
+    }
     emitter << YAML::BeginMap;
     for (auto field: fields)
     {
@@ -396,6 +413,23 @@ static bool DeserializeAssociativeContainer(const YAML::Node& node, AssociativeC
 
 static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
 {
+    if (type->IsEnum())
+    {
+        auto key_str = node.as<std::string>();
+        auto value   = type->GetEnumValueFromString(key_str);
+        if (value.has_value())
+        {
+            *static_cast<uint32_t*>(out) = value.value();
+            return true;
+        }
+        LOGGER.Error(
+            logcat::Archive_Deserialization,
+            "Deserialize field failed, type = {}, failed to find enum value: {}",
+            type->GetFullName(),
+            key_str
+        );
+        return false;
+    }
     auto fields = type->GetFields();
     for (auto field: fields)
     {

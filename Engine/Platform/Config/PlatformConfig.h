@@ -1,5 +1,5 @@
 /**
- * @file RHIConfig.h
+ * @file PlatformConfig.h
  * @author Echo 
  * @Date 24-11-19
  * @brief 
@@ -8,11 +8,11 @@
 #pragma once
 #include "Core/Config/IConfig.h"
 #include "Core/Core.h"
-#include "Platform/RHI/GfxContext.h"
-
 #include "Core/Math/MathTypes.h"
-#include GEN_HEADER("Platform.PlatformConfig.generated.h")
+#include "Platform/RHI/GfxContext.h"
 #include "Platform/Window/Window.h"
+
+#include GEN_HEADER("Platform.PlatformConfig.generated.h")
 
 namespace platform
 {

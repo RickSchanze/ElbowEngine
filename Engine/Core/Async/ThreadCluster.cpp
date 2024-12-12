@@ -1,0 +1,54 @@
+//
+// Created by Echo on 24-12-12.
+//
+
+#include "ThreadCluster.h"
+void core::ThreadCluster::Work()
+{
+    while (true)
+    {
+        ITask* task = nullptr;
+        {
+            if (stopping_ && task_queue_.Empty())
+            {
+                return;
+            }
+            task_queue_.TryPop(task);
+        }
+        if (task)
+        {
+            task->Execute();
+            // TODO: 这里可能在主线程基于loop的协程时出现问题
+            Delete(task);
+        }
+    }
+}
+
+core::ThreadCluster::ThreadCluster(size_t num_threads)
+{
+    for (size_t i = 0; i < num_threads; i++)
+    {
+        threads_.emplace_back(&ThreadCluster::Work, this);
+    }
+}
+
+core::ThreadCluster::~ThreadCluster()
+{
+    {
+        std::unique_lock lock(mutex_);
+        stopping_ = true;
+    }
+    condition_.notify_all();
+    for (auto& thread: threads_)
+    {
+        if (thread.joinable())
+        {
+            thread.join();
+        }
+    }
+}
+
+void core::ThreadCluster::AddTask(ITask* task)
+{
+    task_queue_.Push(task);
+}

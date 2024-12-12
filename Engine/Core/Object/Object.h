@@ -12,7 +12,7 @@
 #include "Core/Reflection/ITypeGetter.h"
 #include "Core/Reflection/MetaInfoMacro.h"
 
-#include "Core.Object.generated.h"
+#include GEN_HEADER("Core.Object.generated.h")
 
 namespace core
 {

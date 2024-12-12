@@ -86,6 +86,13 @@ add_library(${PROJECT_NAME}
         Async/Execution/NullReceiver.h
         Async/Execution/NullScheduler.h
         Async/Execution/Repeat.h
+        Async/ThreadSafeQueue.cpp
+        Async/ThreadSafeQueue.h
+        Async/ITask.h
+        Async/ThreadCluster.cpp
+        Async/ThreadCluster.h
+        Async/ThreadManager.cpp
+        Async/ThreadManager.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
