@@ -34,6 +34,8 @@ private:
 public:
     explicit ThreadCluster(size_t num_threads);
 
+    void SetClusterName(core::StringView name);
+
     ThreadCluster(const ThreadCluster&)            = delete;
     ThreadCluster& operator=(const ThreadCluster&) = delete;
 

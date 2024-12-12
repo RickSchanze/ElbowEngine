@@ -3,6 +3,8 @@
 //
 
 #include "ThreadCluster.h"
+
+#include "ThreadUtils.h"
 void core::ThreadCluster::Work()
 {
     while (true)
@@ -29,6 +31,16 @@ core::ThreadCluster::ThreadCluster(size_t num_threads)
     for (size_t i = 0; i < num_threads; i++)
     {
         threads_.emplace_back(&ThreadCluster::Work, this);
+    }
+}
+
+void core::ThreadCluster::SetClusterName(const StringView name)
+{
+    const String prefix = name;
+    for (size_t i = 0; i < threads_.size(); i++)
+    {
+        String thread_name = prefix+ std::to_string(i);
+        ThreadUtils::SetThreadName(threads_[i], thread_name);
     }
 }
 

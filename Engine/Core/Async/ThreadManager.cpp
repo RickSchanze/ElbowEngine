@@ -36,6 +36,7 @@ void core::ThreadManager::Startup()
             thread_num = thread_cfg[idx_slot];
         }
         clusters_[idx_slot] = MakeUnique<ThreadCluster>(thread_num);
+        clusters_[idx_slot]->SetClusterName(GetEnumString(idx_slot));
     }
 }
 

@@ -93,6 +93,8 @@ add_library(${PROJECT_NAME}
         Async/ThreadCluster.h
         Async/ThreadManager.cpp
         Async/ThreadManager.h
+        Async/ThreadUtils.cpp
+        Async/ThreadUtils.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
