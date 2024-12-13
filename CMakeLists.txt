@@ -17,18 +17,12 @@ set(ENABLE_TEST OFF CACHE BOOL "Enable test")
 add_subdirectory(Engine)
 
 add_executable(ElbowEngine main.cpp
-        Engine/Resource/Project.cpp
-        Engine/Resource/Project.h
-        Engine/Resource/Logcat.h
-        Engine/Resource/AssetDataBase.cpp
-        Engine/Resource/AssetDataBase.h
-        Engine/Resource/AssetType.h
-        Engine/Resource/AssetType.cpp
 )
 
 # WHOLEARCHIEVE确保RTTR注册一定会先于main执行
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core -WHOLEARCHIVE:$<TARGET_FILE:Engine::Core>)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Resource -WHOLEARCHIVE:$<TARGET_FILE:Engine::Resource>)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)

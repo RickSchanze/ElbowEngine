@@ -11,6 +11,13 @@ endif ()
 
 
 add_library(Resource
+        AssetType.cpp
+        AssetType.h
+        AssetDataBase.h
+        AssetDataBase.cpp
+        Logcat.h
+        Project.h
+        Project.cpp
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
