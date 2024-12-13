@@ -507,7 +507,7 @@ struct Type
     template <typename T> requires std::is_enum_v<T>
     FieldInfo* Internal_RegisterEnumValue(T value, StringView name)
     {
-        Assert(logcat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
+        Assert::Require(logcat::Reflection, IsEnum(), "RegisterEnumValue 只能在枚举类型上调用");
         FieldInfo filed_info;
         filed_info.attribute_ |= FieldInfo::EnumValue;
         filed_info.name_ = name;

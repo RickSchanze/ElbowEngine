@@ -42,7 +42,7 @@ core::String platform::Path::Combine(core::StringView left, core::StringView rig
 
 core::StringView platform::Path::GetProjectPath()
 {
-    Assert(logcat::Platform_FileSystem, IsProjectPathValid(s_proj_path_), "Project path is not valid!");
+    core::Assert::Require(logcat::Platform_FileSystem, IsProjectPathValid(s_proj_path_), "Project path is not valid!");
     return s_proj_path_;
 }
 

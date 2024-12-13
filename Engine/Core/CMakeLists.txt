@@ -1,9 +1,11 @@
 set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Core)
 
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
+if (MSVC)
+    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("/Zc:__cplusplus")
+endif ()
 add_library(${PROJECT_NAME}
         Object/Object.h
         Object/Object.cpp
@@ -95,6 +97,7 @@ add_library(${PROJECT_NAME}
         Async/ThreadManager.h
         Async/ThreadUtils.cpp
         Async/ThreadUtils.h
+        Assert.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -116,10 +119,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/..)
 target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
 
 find_package(ICU REQUIRED COMPONENTS uc i18n)
-target_link_libraries(${PROJECT_NAME}  PRIVATE ICU::uc ICU::i18n)
+target_link_libraries(${PROJECT_NAME} PRIVATE ICU::uc ICU::i18n)
 
 find_package(xxHash CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME}  PRIVATE xxHash::xxhash)
+target_link_libraries(${PROJECT_NAME} PRIVATE xxHash::xxhash)
 
 find_package(tl-expected CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected)

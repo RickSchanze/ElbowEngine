@@ -36,7 +36,7 @@ void resource::Project::CreateInstance(core::StringView path)
 resource::Project::Project(core::StringView path)
 {
     auto meta_text = platform::File::ReadAllText(".elbowengine");
-    Assert(logcat::Engine, meta_text.has_value(), "Failed to read project meta file.");
+    core::Assert::Require(logcat::Engine, meta_text.has_value(), "Failed to read project meta file.");
     if (const auto& meta = meta_text.value(); meta.IsEmpty())
     {
         core::YamlArchive ar;
@@ -48,7 +48,7 @@ resource::Project::Project(core::StringView path)
         core::String temp;
         success &= ar.Serialize(*this, temp);
         success &= platform::File::WriteAllText(".elbowengine", temp);
-        Assert(logcat::Resource_Project, success, "Failed to create project {}", name_);
+        core::Assert::Require(logcat::Resource_Project, success, "Failed to create project {}", name_);
         return;
     }
 }

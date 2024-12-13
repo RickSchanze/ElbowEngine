@@ -29,7 +29,7 @@ void core::FrameAllocator::Startup()
     auto cfg  = core::GetConfig<core::MemoryConfig>();
     auto size = cfg->GetFrameAllocatorSize();
     memory_   = static_cast<uint8_t*>(malloc(size));
-    Assert(
+    Assert::Require(
         logcat::Core_Memory,
         (memory_ != nullptr && cfg->GetFrameAllocatorMustSuccess()) || !(memory_ == nullptr && cfg->GetFrameAllocatorMustSuccess()),
         "Init frame allocator failed!"

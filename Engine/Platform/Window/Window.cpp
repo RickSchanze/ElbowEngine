@@ -41,7 +41,7 @@ platform::Window* platform::CreateAWindow(WindowLib window_lib, core::StringView
     switch (window_lib)
     {
     case WindowLib::GLFW: return New<Window_GLFW>(title, width, height, flags);
-    default: Assert(logcat::Platform_Window, false, "Window lib {} not supported.", GetEnumString(window_lib));
+    default: core::Assert::Require(logcat::Platform_Window, false, "Window lib {} not supported.", GetEnumString(window_lib));
     }
     return nullptr;
 }

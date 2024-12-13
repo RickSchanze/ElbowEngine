@@ -22,6 +22,6 @@ void resource::AssetDataBase::Startup()
     {
         platform::Folder::CreateFolder(db_path);
     }
-    Assert(logcat::Resource, platform::Path::IsFolder(db_path), "DataBasePath in project must be a valid folder path.");
+    core::Assert::Require(logcat::Resource, platform::Path::IsFolder(db_path), "DataBasePath in project must be a valid folder path.");
     CreateOrOpenDataBase(databases_);
 }

@@ -134,7 +134,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        Assert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Assert::Require(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {
@@ -252,7 +252,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        DebugAssert(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Assert::Ensure(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {

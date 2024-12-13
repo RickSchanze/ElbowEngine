@@ -25,7 +25,7 @@ uint8_t GfxContext::GetSwapchainImageCount() const
 
 GfxContext* GetGfxContext()
 {
-    Assert(logcat::Platform_RHI, ctx, "GfxContext not initialized");
+    core::Assert::Require(logcat::Platform_RHI, ctx, "GfxContext not initialized");
     return ctx;
 }
 
@@ -40,7 +40,7 @@ void UseGraphicsAPI(GraphicsAPI api)
     switch (api)
     {
     case GraphicsAPI::Vulkan: ctx = New<vulkan::GfxContext_Vulkan>(); break;
-    default: Assert(logcat::Platform_RHI, false, "Unsupported Graphics API");
+    default: core::Assert::Require(logcat::Platform_RHI, false, "Unsupported Graphics API");
     }
     Event_GfxContextPostInitialized.Invoke(ctx);
 }

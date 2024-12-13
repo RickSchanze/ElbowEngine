@@ -162,15 +162,20 @@ private:
 }   // namespace core
 
 // 定义一个事件可以带有返回值
-#define DECLARE_EVENT(name, return_type, ...)                  \
-    struct name : public core::Event<return_type, __VA_ARGS__> \
-    {                                                          \
+#define DECLARE_EVENT(name, return_type, ...)           \
+    struct name : core::Event<return_type, __VA_ARGS__> \
+    {                                                   \
     };
 
 // 定义一个多播事件, 注意: 不能有返回值
-#define DECLARE_MULTICAST_EVENT(name, ...)                       \
-    struct name : public core::MulticastEvent<void, __VA_ARGS__> \
-    {                                                            \
+#define DECLARE_MULTICAST_EVENT(name, ...)                \
+    struct name : core::MulticastEvent<void, __VA_ARGS__> \
+    {                                                     \
+    };
+
+#define DECLARE_MULTICAST_EVENT_NO_PARAMS(name) \
+    struct name : core::MulticastEvent<void>    \
+    {                                           \
     };
 
 // 定义一个事件注册函数, 注册发生于main函数之前

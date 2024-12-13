@@ -14,10 +14,10 @@ template <typename T>
 core::StringView GetEnumString(T e)
 {
     const core::Type* type = core::TypeOf<T>();
-    Assert(logcat::Core, type != nullptr && type->IsEnum(), "Type not valid");
+    core::Assert::Require(logcat::Core, type != nullptr && type->IsEnum(), "Type not valid");
     for (auto field: type->GetSelfDefinedFields())
     {
-        Assert(logcat::Core, type != nullptr && type->IsEnum(), "Type is a enum but its fields are not enum values");
+        core::Assert::Require(logcat::Core, type != nullptr && type->IsEnum(), "Type is a enum but its fields are not enum values");
         if (field->GetEnumFieldValue() == static_cast<int32_t>(e))
         {
             return field->GetName();
@@ -45,10 +45,10 @@ template <typename T>
 T GetEnumValue(core::StringView str)
 {
     const core::Type* type = core::TypeOf<T>();
-    Assert(logcat::Core, type != nullptr && type->IsEnum(), "Type not valid");
+    core::Assert::Require(logcat::Core, type != nullptr && type->IsEnum(), "Type not valid");
     for (auto field: type->GetSelfDefinedFields())
     {
-        Assert(logcat::Core, type != nullptr && type->IsEnum(), "Type is a enum but its fields are not enum values");
+        core::Assert::Require(logcat::Core, type != nullptr && type->IsEnum(), "Type is a enum but its fields are not enum values");
         if (field->GetName() == str)
         {
             return static_cast<T>(field->GetEnumFieldValue());

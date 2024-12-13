@@ -49,7 +49,7 @@ static core::Array<core::String> GLFWGetVulkanExtensions(const core::Array<core:
 
 platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height, int flags) : Window(title, width, height, flags)
 {
-    Assert(logcat::Platform_Window, glfwInit(), "Failed to initialize GLFW");
+    core::Assert::Require(logcat::Platform_Window, glfwInit(), "Failed to initialize GLFW");
     auto config = core::GetConfig<PlatformConfig>();
     glfwSetErrorCallback(GLFWErrorCallback);
     if (GetFlags() | WF_NoWindowTitle)
@@ -62,7 +62,7 @@ platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height
     }
     if (config->GetGraphicsAPI() == rhi::GraphicsAPI::Vulkan)
     {
-        Assert(logcat::Platform_Window, glfwVulkanSupported(), "GLFW: Vulkan not supported");
+        core::Assert::Require(logcat::Platform_Window, glfwVulkanSupported(), "GLFW: Vulkan not supported");
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window_ = glfwCreateWindow(GetWidth(), GetHeight(), GetTitle().Data(), nullptr, nullptr);
     }
@@ -108,7 +108,7 @@ public:
     explicit GLFWSurface(VkInstance instance, GLFWwindow* window) : instance_(instance)
     {
         auto result = glfwCreateWindowSurface(instance, window, nullptr, &surface_);
-        Assert(logcat::Platform_Window, result == VK_SUCCESS, "Failed to create window surface, code: {}", static_cast<int32_t>(result));
+        core::Assert::Require(logcat::Platform_Window, result == VK_SUCCESS, "Failed to create window surface, code: {}", static_cast<int32_t>(result));
     }
 
     ~GLFWSurface() override
@@ -133,7 +133,7 @@ platform::rhi::Surface* platform::Window_GLFW::CreateSurface(void* user_data, rh
         auto instance = static_cast<VkInstance>(user_data);
         return New<GLFWSurface>(instance, window_);
     }
-    Assert(logcat::Platform_Window, false, "Unsupported graphics API {} for create a surface", GetEnumString(api));
+    core::Assert::Require(logcat::Platform_Window, false, "Unsupported graphics API {} for create a surface", GetEnumString(api));
     return nullptr;
 }
 

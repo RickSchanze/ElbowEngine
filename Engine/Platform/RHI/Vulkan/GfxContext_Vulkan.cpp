@@ -30,7 +30,7 @@ static core::Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance inst
 {
     uint32_t device_cnt = 0;
     vkEnumeratePhysicalDevices(instance, &device_cnt, nullptr);
-    Assert(logcat::Platform_RHI_Vulkan, device_cnt > 0, "No physical device found");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, device_cnt > 0, "No physical device found");
     core::Array<VkPhysicalDevice> physical_devices(device_cnt);
     vkEnumeratePhysicalDevices(instance, &device_cnt, physical_devices.data());
     return physical_devices;
@@ -166,7 +166,7 @@ VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
 {
     const auto img        = desc.image;
     const auto img_handle = static_cast<VkImage>(img->GetNativeHandle());
-    Assert(logcat::Platform_RHI_Vulkan, img, "Image cannot be nullptr when creating a ImageView.");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, img, "Image cannot be nullptr when creating a ImageView.");
     VkImageViewCreateInfo view_info{};
     view_info.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image                           = img_handle;
@@ -368,7 +368,9 @@ static void CreateInstance(core::Ref<VkInstance> instance)
     VkDebugUtilsMessengerCreateInfoEXT debug_info = {};
     if (rhi_cfg->GetEnableValidationLayer())
     {
-        Assert(logcat::Platform_RHI_Vulkan, SupportValidationLayer(rhi_cfg->GetValidationLayerName()), "Validation layer is not supported!");
+        core::Assert::Require(
+            logcat::Platform_RHI_Vulkan, SupportValidationLayer(rhi_cfg->GetValidationLayerName()), "Validation layer is not supported!"
+        );
         const char* validation_layer_names[1] = {*rhi_cfg->GetValidationLayerName()};
         debug_info.sType                      = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debug_info.messageSeverity            = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -384,7 +386,7 @@ static void CreateInstance(core::Ref<VkInstance> instance)
         instance_info.enabledLayerCount = 0;
         instance_info.pNext             = nullptr;
     }
-    VERIFY_VULKAN_RESULT(vkCreateInstance(&instance_info, nullptr, instance.GetPtr()))
+    VERIFY_VULKAN_RESULT(vkCreateInstance(&instance_info, nullptr, instance.GetPtr()));
 }
 
 static void DestroyInstance(core::Ref<VkInstance> instance)
@@ -396,14 +398,14 @@ static void DestroyInstance(core::Ref<VkInstance> instance)
 static void CreateSurface(core::Ref<Surface*> surface, const VkInstance instance)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
-    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!");
     surface = window->CreateSurface(instance, GraphicsAPI::Vulkan);
 }
 
 static void DestroySurface(const core::Ref<Surface*>& surface)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
-    Assert(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be destroyed after surface destroyed!");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be destroyed after surface destroyed!");
     window->DestroySurface(surface);
 }
 
@@ -478,7 +480,7 @@ static void SelectPhysicalDevice(core::Ref<VkPhysicalDevice> physical_device, Vk
             break;
         }
     }
-    Assert(logcat::Platform_RHI_Vulkan, physical_device != VK_NULL_HANDLE, "Failed to find a suitable GPU!");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, physical_device != VK_NULL_HANDLE, "Failed to find a suitable GPU!");
 }
 
 static void CreateLogicalDevice(
@@ -487,7 +489,7 @@ static void CreateLogicalDevice(
 )
 {
     auto indices = FindQueueFamilies(physical_device, surface);
-    Assert(logcat::Platform_RHI_Vulkan, indices.IsComplete(), "Find uncompleted queue families.");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, indices.IsComplete(), "Find uncompleted queue families.");
     core::Array<VkDeviceQueueCreateInfo> queue_create_infos;
     queue_create_infos.reserve(2);
     core::Set<uint32_t> unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
@@ -554,7 +556,7 @@ static Format CreateSwapChain(
     const PresentMode  present_mode = cfg->GetPresentMode();
     const core::Size2D extent       = cfg->GetDefaultWindowSize();
     const uint32_t     image_count  = cfg->GetSwapchainImageCount();
-    Assert(
+    core::Assert::Require(
         logcat::Platform_RHI_Vulkan,
         image_count <= swapchain_support.max_image_count && image_count >= swapchain_support.min_image_count,
         "Unsupported swap chain image count"
@@ -619,7 +621,7 @@ GfxContext_Vulkan::GfxContext_Vulkan()
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
     );
-    Assert(logcat::Platform_RHI_Vulkan, depth_format != Format::Count, "Failed to find supported depth format!");
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, depth_format != Format::Count, "Failed to find supported depth format!");
     default_depth_stencil_format_ = depth_format;
 
     auto [name, limits] = QueryDeviceInfo();

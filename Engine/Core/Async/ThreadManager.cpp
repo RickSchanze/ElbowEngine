@@ -54,8 +54,8 @@ void core::ThreadManager::Shutdown()
 
 void core::ThreadManager::AddTask(ITask* task, ThreadSlot slot)
 {
-    Assert(logcat::Async, slot != ThreadSlot::Game, "Schedule of game thread cannot perform in ThreadManager");
-    Assert(logcat::Async, clusters_.contains(slot) && clusters_[slot].IsSet(), "Thread slot {} not initialized!", GetEnumString(slot));
+    Assert::Require(logcat::Async, slot != ThreadSlot::Game, "Schedule of game thread cannot perform in ThreadManager");
+    Assert::Require(logcat::Async, clusters_.contains(slot) && clusters_[slot].IsSet(), "Thread slot {} not initialized!", GetEnumString(slot));
     const auto& cluster = clusters_.at(slot);
     cluster->AddTask(task);
 }

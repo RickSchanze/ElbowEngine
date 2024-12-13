@@ -23,7 +23,7 @@ int main()
     cpptrace::generate_trace();   // 这里需要先调用一次generate_trace 否则后面的无法生成trace
     SetRuntimeStage(RuntimeStage::Startup);
     LOGGER.Info(logcat::Engine, "Initializing Engine...");
-    Assert(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
+    core::Assert::Require(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
     // 让std::wcout 顺利运行
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码

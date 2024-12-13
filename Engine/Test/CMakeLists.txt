@@ -14,3 +14,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 include(GoogleTest)
 gtest_add_tests(TARGET ${PROJECT_NAME} SOURCES )
 
+target_compile_options(${PROJECT_NAME} $<$CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)

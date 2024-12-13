@@ -37,28 +37,6 @@
 
 #define REGION(region_name) 1
 
-
-#ifdef ELBOW_DEBUG
-#define DebugAssert(log_cat, expr, msg, ...)              \
-    if (!(expr))                                          \
-    {                                                     \
-        LOGGER.CriticalNoQuit(log_cat, msg, __VA_ARGS__); \
-    }
-
-#define Assert(log_cat, expr, msg, ...)             \
-    if (!(expr))                                    \
-    {                                               \
-        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
-    }
-#else
-#define DebugAssert(log_cat, expr, msg, ...)
-#define Assert(log_cat, expr, msg, ...)             \
-    if (!(expr))                                    \
-    {                                               \
-        LOGGER.Critical(log_cat, msg, __VA_ARGS__); \
-    }
-#endif
-
 // 特性开关
 #define ENABLE_PROFILING 1
 #define WITH_EDITOR 1

@@ -99,7 +99,7 @@ struct Delegate
 
     void Bind(Function<ReturnT(ArgumentTypes...)>&& function)
     {
-        DebugAssert(logcat::Core_Event, !HasBound(), "Delegate is already bound, rebinding...");
+        Assert::Require(logcat::Core_Event, !HasBound(), "Delegate is already bound, rebinding...");
         function_ = Move(function);
         id_       = Move(DelegateID(true));
     }

@@ -13,6 +13,6 @@
 
 bool core::ITypeGetter::Is(const Type* type) const
 {
-    DebugAssert(logcat::Reflection, GetType() != nullptr, "self type is nullptr");
+    Assert::Ensure(logcat::Reflection, GetType() != nullptr, "self type is nullptr");
     return GetType()->IsDerivedFrom(type);
 }

@@ -25,7 +25,9 @@ class Surface;
 }   // namespace platform::rhi
 static core::StringView VulkanErrorToString(VkResult result);
 
-#define VERIFY_VULKAN_RESULT(result) Assert(logcat::Platform_RHI_Vulkan, (result) == VK_SUCCESS, "Vulkan error: {}", VulkanErrorToString(result))
+#define VERIFY_VULKAN_RESULT(result) \
+    auto result_ = result;           \
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, result_ == VK_SUCCESS, "Vulkan error: {}", VulkanErrorToString(result_))
 
 namespace platform::rhi::vulkan
 {

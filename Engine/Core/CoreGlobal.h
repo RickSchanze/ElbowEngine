@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Assert.h"
 #include "Core/Log/Logger.h"
 #include "CoreDef.h"
 #include "Log/CoreLogCategory.h"
@@ -26,7 +27,7 @@ T* New(Args&&... args)
 {
     size_t size = sizeof(T);
     void*  t    = NormalAlloc(size);
-    Assert(logcat::Core_Memory, t, "Memory allocation failed!");
+    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
     return new (t) T(std::forward<Args>(args)...);
 }
 
@@ -35,7 +36,7 @@ T* NewFrameTemp(Args&&... args)
 {
     size_t size = sizeof(T);
     void*  t    = FrameTempAlloc(size);
-    Assert(logcat::Core_Memory, t, "Memory allocation failed!");
+    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
     return new (t) T(std::forward<Args>(args)...);
 }
 

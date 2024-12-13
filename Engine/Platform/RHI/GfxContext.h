@@ -99,10 +99,11 @@ GfxContext& GetGfxContextRef();
  */
 void UseGraphicsAPI(GraphicsAPI api);
 
-DECLARE_MULTICAST_EVENT(GfxContextPreInitializedEvent);
+DECLARE_MULTICAST_EVENT_NO_PARAMS(GfxContextPreInitializedEvent);
 DECLARE_MULTICAST_EVENT(GfxContextPostInitializedEvent, GfxContext*);
 DECLARE_MULTICAST_EVENT(GfxContextPreDestroyedEvent, GfxContext*);
-DECLARE_MULTICAST_EVENT(GfxContextPostDestroyedEvent);
+DECLARE_MULTICAST_EVENT_NO_PARAMS(GfxContextPostDestroyedEvent);
+
 inline GfxContextPreInitializedEvent  Event_GfxContextPreInitialized;
 inline GfxContextPostInitializedEvent Event_GfxContextPostInitialized;
 inline GfxContextPreDestroyedEvent    Event_GfxContextPreDestroyed;
