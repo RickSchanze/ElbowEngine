@@ -29,4 +29,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 include_directories(Engine/ThirdParty)
 include_directories(Generated)
-include_directories("C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0\\um")
