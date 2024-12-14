@@ -1,3 +1,6 @@
+# 此分支用于学习Execution 内容在Core/Async/Execution
+# 主干分支已使用更成熟的stdexec
+
 # 注意事项
 ## 1. 反射标注
 由于编写时自己写了个反射库并且通过C#的CppAst自己编写了CodeGenerator工具  
