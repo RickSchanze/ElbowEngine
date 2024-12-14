@@ -4,6 +4,7 @@
 #include "Core/Async/Execution/NullReceiver.h"
 #include "Core/Async/Execution/Repeat.h"
 #include "Core/Async/Execution/Then.h"
+#include "Core/Async/ThreadUtils.h"
 #include "Core/Base/TagInvoke.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
@@ -40,6 +41,7 @@ int main()
 
     auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Resource) | core::exec::Then([] {
                            LOGGER.Info(logcat::Test, "Repearting");
+                           core::ThreadUtils::Sleep(5s);
                            return 12;
                        }) |
                        core::exec::Then([](int a) { LOGGER.Info(logcat::Test, "Repeat {}", a); }) | core::exec::Repeat(10) |
