@@ -4,6 +4,7 @@
 #include "Core/Async/Execution/NullReceiver.h"
 #include "Core/Async/Execution/Repeat.h"
 #include "Core/Async/Execution/Then.h"
+#include "Core/Async/Execution/WhenAll.h"
 #include "Core/Async/ThreadUtils.h"
 #include "Core/Base/TagInvoke.h"
 #include "Core/Config/ConfigManager.h"
@@ -18,7 +19,6 @@
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
-
 int main()
 {
     cpptrace::generate_trace();   // 这里需要先调用一次generate_trace 否则后面的无法生成trace
@@ -39,17 +39,14 @@ int main()
     core::FrameAllocator::Startup();
     auto& scheduler = core::ThreadManager::GetScheduler();
 
-    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Resource) | core::exec::Then([] {
-                           LOGGER.Info(logcat::Test, "Repearting");
-                           core::ThreadUtils::Sleep(5s);
-                           return 12;
-                       }) |
-                       core::exec::Then([](int a) { LOGGER.Info(logcat::Test, "Repeat {}", a); }) | core::exec::Repeat(10) |
-                       core::exec::Then([] { LOGGER.Info(logcat::Test, "Test End."); });
+    auto test_thread = core::exec::Just(1);
+
+    auto all = core::exec::WhenAll(test_thread);
 
     core::exec::NullReceiver<void> receiver;
-    auto                           op = core::exec::Connect(test_thread, receiver);
+    auto                           op = core::exec::Connect(all, receiver);
     core::exec::Start(op);
+    // core::exec::Start(op);
     // 资产数据库初始化
     {
         PROFILE_SCOPE("AssetDataBase Initialize");

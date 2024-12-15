@@ -51,14 +51,14 @@ struct JustOperation
 
     friend void TagInvoke(StartType, JustOperation& s) noexcept
     {
-        try
-        {
-            SetValue(Move(s.r));
-        }
-        catch (...)
-        {
-            SetError(Move(s.r), std::current_exception());
-        }
+        // try
+        // {
+        //     SetValue(Move(s.r));
+        // }
+        // catch (...)
+        // {
+        //     SetError(Move(s.r), std::current_exception());
+        // }
     }
 };
 

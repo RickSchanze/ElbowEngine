@@ -44,14 +44,14 @@ template <typename PreviousSender, typename Receiver>
 struct RepeatOperation
 {
     Receiver       receiver;
-    PreviousSender previous_sender;
+    PreviousSender sender;
     int            repeat_count;
 
     friend void TagInvoke(StartType, RepeatOperation& operation)
     {
         if (operation.repeat_count > 0)
         {
-            auto previous_op = Connect(operation.previous_sender, operation.receiver);
+            auto previous_op = Connect(operation.sender, operation.receiver);
             for (auto i = 0; i < operation.repeat_count; ++i)
             {
                 Start(previous_op);
@@ -66,7 +66,7 @@ struct RepeatSender
 {
     using ValueTypes = void;
 
-    PreviousSender previous_sender;
+    PreviousSender sender;
     int            repeat_count = 0;
 
     template <typename SelfSender, typename Receiver>
@@ -74,9 +74,9 @@ struct RepeatSender
     friend auto TagInvoke(ConnectType, SelfSender&& self, Receiver&& receiver)
     {
         RepeatOperation<Pure<PreviousSender>, RepeatReceiver<Pure<Receiver>>> operation;
-        operation.receiver        = RepeatReceiver<Pure<Receiver>>(receiver);
-        operation.previous_sender = self.previous_sender;
-        operation.repeat_count    = self.repeat_count;
+        operation.receiver     = RepeatReceiver<Pure<Receiver>>(receiver);
+        operation.sender       = self.sender;
+        operation.repeat_count = self.repeat_count;
         return operation;
     }
 };

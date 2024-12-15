@@ -46,4 +46,79 @@ struct ArgTypesAllNotVoid<std::tuple<Args...>>
 
 template <typename T>
 using Pure = std::remove_cvref_t<T>;
+
+// 将多个std::tuple合为一个std::tuple 同时void不计入计算
+// MergeTuples<std::tuple<int>, std::tuple<double>, void, std::tuple<char>>::type = std::tuple<int, double, char>
+template <typename... Senders>
+struct MergeTuples;
+
+// 偏特化：当第一个类型是 std::tuple 时
+template <typename First, typename... Rest>
+struct MergeTuples<First, Rest...>
+{
+    // 如果 First 是 std::tuple，递归合并
+    using type = decltype(std::tuple_cat(
+        std::declval<First>(),                                // 当前的 std::tuple
+        std::declval<typename MergeTuples<Rest...>::type>()   // 递归结果
+    ));
+};
+
+// 偏特化：当第一个类型是 void 时
+template <typename... Rest>
+struct MergeTuples<void, Rest...>
+{
+    // 跳过 void，直接递归处理剩余类型
+    using type = typename MergeTuples<Rest...>::type;
+};
+
+// 偏特化：终止条件（无更多类型时，返回空的 std::tuple）
+template <>
+struct MergeTuples<>
+{
+    using type = std::tuple<>;
+};
+
+// 辅助模板：判断是否为 std::tuple
+template <typename T>
+struct is_tuple : std::false_type
+{
+};
+
+template <typename... Args>
+struct is_tuple<std::tuple<Args...>> : std::true_type
+{
+};
+
+// 主模板：MergeTupleNested
+template <typename... Senders>
+struct MergeTupleNested;
+
+// 递归处理：当前类型是 std::tuple
+template <typename First, typename... Rest>
+struct MergeTupleNested<First, Rest...>
+{
+    // 如果 First 是 std::tuple，直接将它嵌套到 std::tuple 中
+    using type = decltype(std::tuple_cat(
+        std::declval<std::tuple<First>>(),                         // 包装 First
+        std::declval<typename MergeTupleNested<Rest...>::type>()   // 递归结果
+    ));
+};
+
+// 递归处理：当前类型是 void
+template <typename... Rest>
+struct MergeTupleNested<void, Rest...>
+{
+    // 如果是 void，包装为 std::tuple<void>
+    using type = decltype(std::tuple_cat(
+        std::declval<std::tuple<std::tuple<>>>(),                  // 包装 void
+        std::declval<typename MergeTupleNested<Rest...>::type>() // 递归结果
+    ));
+};
+
+// 递归终止条件：无更多类型时
+template <>
+struct MergeTupleNested<>
+{
+    using type = std::tuple<>; // 空 tuple
+};
 }
