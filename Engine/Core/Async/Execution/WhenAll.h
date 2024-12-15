@@ -17,7 +17,7 @@ struct WhenAllSubReceiver
 {
     using ValueTypes = typename SenderTraits<Sender>::ValueTypes;
 
-    Ref<Pure<Receiver>> receiver;
+    std::shared_ptr<Pure<Receiver>> receiver;
 
     template <typename... Args>
         requires std::convertible_to<std::tuple<Args...>, ValueTypes>
@@ -58,6 +58,13 @@ struct WhenAllReceiver
     int      value_count = sizeof...(Senders);
     int      counter     = 0;
 
+    WhenAllReceiver() = default;
+
+    ~WhenAllReceiver()
+    {
+        LOGGER.Info(logcat::Test, "de");
+    }
+
     template <int Index, typename Tuple>
     void SetValue(Tuple&& tuple)
     {
@@ -89,7 +96,7 @@ struct WhenAllReceiver
 template <typename Receiver, typename... Senders>
 struct WhenAllOperation
 {
-    Receiver receiver;
+    std::shared_ptr<Pure<Receiver>> receiver;
 
     using SendersType = std::tuple<Pure<Senders>...>;
 
@@ -122,9 +129,9 @@ struct WhenAllSender
     friend auto TagInvoke(ConnectType, Self&& self, Receiver&& receiver)
     {
         WhenAllOperation<WhenAllReceiver<Pure<Receiver>, Senders...>, Senders...> operation;
-        WhenAllReceiver<Pure<Receiver>, Senders...>                               inner_receiver{};
+        auto inner_receiver = std::make_shared<WhenAllReceiver<Pure<Receiver>, Senders...>>();
 
-        inner_receiver.receiver = Move(receiver);
+        inner_receiver->receiver = Move(receiver);
         operation.receiver      = inner_receiver;
         operation.senders       = self.senders;
         return operation;

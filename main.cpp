@@ -55,7 +55,7 @@ int main()
             return 15.7f;
         });
 
-    auto op = core::exec::StartAsync(t2);
+    auto op = core::exec::StartAsync(core::exec::WhenAll(test_thread, t2));
     // core::exec::Start(op);
     // 资产数据库初始化
     {

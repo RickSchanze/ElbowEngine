@@ -7,7 +7,6 @@
 #include "ThreadUtils.h"
 void core::ThreadCluster::Work()
 {
-    std::unique_lock lock(mutex_);
     while (true)
     {
         ITask* task = nullptr;
