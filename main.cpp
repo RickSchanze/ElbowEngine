@@ -57,7 +57,7 @@ int main()
 
     auto all = core::exec::WhenAll(t2);
 
-    auto op = core::exec::StartAsync(t2);
+    auto op = core::exec::StartAsync(all);
     // core::exec::Start(op);
     // 资产数据库初始化
     {
