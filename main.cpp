@@ -39,12 +39,23 @@ int main()
     core::FrameAllocator::Startup();
     auto& scheduler = core::ThreadManager::GetScheduler();
 
-    auto test_thread = core::exec::Just(1);
+    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Render) | core::exec::Then([] {
+                           core::ThreadUtils::Sleep(5s);
+                           LOGGER.Info(logcat::Test, "Task 1");
+                           return 15;
+                       });
 
-    auto all = core::exec::WhenAll(test_thread);
+    auto t2 = core::exec::Just() | core::exec::Then([] {
+                  LOGGER.Info(logcat::Test, "Task 2");
+                  return 15.7f;
+              });
 
-    core::exec::NullReceiver<void> receiver;
-    auto                           op = core::exec::Connect(all, receiver);
+    auto all = core::exec::WhenAll(test_thread, t2);
+
+    core::exec::NullReceiver<int, float> receiver;
+
+    auto op = core::exec::Connect(all, receiver);
+
     core::exec::Start(op);
     // core::exec::Start(op);
     // 资产数据库初始化

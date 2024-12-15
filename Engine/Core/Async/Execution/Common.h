@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Core/Base/TagInvoke.h"
+#include "Core/Base/TypeTraits.h"
 
 #include <utility>
 
@@ -88,8 +89,19 @@ inline constexpr ScheduleType Schedule{};
 template <typename SenderT>
 struct SenderTraits
 {
-    using ValueTypes = typename SenderT::ValueTypes;
+    using ValueTypes = typename Pure<SenderT>::ValueTypes;
 };
+
+template <typename Receiver>
+struct ReceiverTraits
+{
+    using ReceiveTypes = typename Pure<Receiver>::ReceiveTypes;
+};
+
+template <typename Sender, typename Receiver>
+concept CConnectable =
+    std::convertible_to<typename SenderTraits<Sender>::ValueTypes, typename ReceiverTraits<Receiver>::ReceiveTypes> ||
+    (std::same_as<typename SenderTraits<Sender>::ValueTypes, void> && std::same_as<typename ReceiverTraits<Receiver>::ReceiveTypes, void>);
 
 template <typename Sender, typename Receiver>
 using ConnectResultType = std::invoke_result_t<ConnectType, Sender, Receiver>;

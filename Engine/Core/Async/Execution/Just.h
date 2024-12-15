@@ -7,7 +7,6 @@
 
 namespace core::exec
 {
-
 namespace just_detail
 {
 template <typename... Args>
@@ -51,14 +50,14 @@ struct JustOperation
 
     friend void TagInvoke(StartType, JustOperation& s) noexcept
     {
-        // try
-        // {
-        //     SetValue(Move(s.r));
-        // }
-        // catch (...)
-        // {
-        //     SetError(Move(s.r), std::current_exception());
-        // }
+        try
+        {
+            SetValue(Move(s.r));
+        }
+        catch (...)
+        {
+            SetError(Move(s.r), std::current_exception());
+        }
     }
 };
 

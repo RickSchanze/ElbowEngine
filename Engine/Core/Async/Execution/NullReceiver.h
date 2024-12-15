@@ -18,8 +18,10 @@ struct NullReceiver
 {
     static_assert(ArgTypesAllNotVoid<Args...>::Value, "Arg types can not bo void");
 
+    using ReceiveTypes = std::tuple<Args...>;
+
     template <typename Receiver>
-        requires std::is_same_v<std::remove_cvref_t<Receiver>, NullReceiver>
+        requires std::is_same_v<Pure<Receiver>, NullReceiver>
     friend auto TagInvoke(SetValueType, Receiver&& r, Args&&... vs) noexcept
     {
         (LOGGER.Info(logcat::Test, "NullReceiver receive value: {}", std::forward<Args>(vs)), ...);

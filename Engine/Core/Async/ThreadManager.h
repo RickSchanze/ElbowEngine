@@ -55,10 +55,7 @@ struct ThreadSchedulerSender
         requires std::is_same_v<Pure<Self>, ThreadSchedulerSender>
     friend auto TagInvoke(exec::ConnectType, Self&& self, R&& receiver)
     {
-        ThreadSchedulerOperationState<Pure<R>> state;
-        state.receiver     = std::forward<R>(receiver);
-        state.slot_to_run_ = self.slot_to_run;
-        return state;
+        return ThreadSchedulerOperationState<Pure<R>>{std::forward<R>(receiver), self.slot_to_run};
     }
 };
 

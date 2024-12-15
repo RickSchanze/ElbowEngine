@@ -5,6 +5,7 @@
 #pragma once
 #include "Common.h"
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Ref.h"
 #include "Core/Base/TypeTraits.h"
 #include "Core/CoreTypeTraits.h"
 
@@ -16,36 +17,36 @@ struct WhenAllSubReceiver
 {
     using ValueTypes = typename SenderTraits<Sender>::ValueTypes;
 
-    Pure<Receiver> receiver;
+    Ref<Pure<Receiver>> receiver;
 
     template <typename... Args>
         requires std::convertible_to<std::tuple<Args...>, ValueTypes>
-    friend auto TagInvoke(SetValueType, WhenAllSubReceiver&& receiver, Args&&... args)
+    friend auto TagInvoke(SetValueType, WhenAllSubReceiver&& receiver, Args&&... args) noexcept
     {
         try
         {
             if constexpr (std::same_as<ValueTypes, void>)
             {
-                SetValue(Move(receiver), Index, std::tuple<>{});
+                receiver.receiver->SetValue<Index>(std::tuple{});
             }
             else
             {
-                SetValue(Move(receiver), Index, std::tuple<int>{12});
+                receiver.receiver->SetValue<Index>(std::tuple{Forward<Args>(args)...});
             }
         }
         catch (...)
         {
-            SetError(Move(receiver), std::current_exception());
+            SetError(Move(*receiver.receiver), std::current_exception());
         }
     }
 
     template <typename E>
     friend auto TagInvoke(SetErrorType, WhenAllSubReceiver&& r, E&& e) noexcept
     {
-        SetError(std::move(r.receiver), Forward<E>(e));
+        SetError(std::move(*r.receiver), Forward<E>(e));
     }
 
-    friend auto TagInvoke(SetDoneType, WhenAllSubReceiver&& r) noexcept { SetDone(std::move(r.receiver)); }
+    friend auto TagInvoke(SetDoneType, WhenAllSubReceiver&& r) noexcept { SetDone(std::move(*r.receiver)); }
 };
 
 template <typename Receiver, typename... Senders>
@@ -57,23 +58,22 @@ struct WhenAllReceiver
     int      value_count = sizeof...(Senders);
     int      counter     = 0;
 
-    template <typename Tuple>
-    friend void TagInvoke(SetValueType, WhenAllReceiver&& receiver, int index, Tuple&& tuple)
+    template <int Index, typename Tuple>
+    void SetValue(Tuple&& tuple)
     {
         try
         {
-            std::get<index>(receiver.values) = Forward<Tuple>(tuple);
-            if (++receiver.counter == receiver.value_count)
+            std::get<Index>(values) = Forward<Tuple>(tuple);
+            counter++;
+            if (counter == value_count)
             {
-                std::apply(
-                    [&receiver]<typename... T>(T&&... args) { SetValue(Move(receiver.receiver), Forward<T>(args)...); },
-                    std::tuple_cat(receiver.values)
-                );
+                auto a = FlattenTuple(values);
+                std::apply([this]<typename... T>(T&... args) { exec::SetValue(Move(receiver), Forward<T>(args)...); }, a);
             }
         }
         catch (...)
         {
-            SetDone(std::move(receiver), std::current_exception());
+            exec::SetError(std::move(receiver), std::current_exception());
         }
     }
 
@@ -113,12 +113,12 @@ struct WhenAllOperation
 template <typename... Senders>
 struct WhenAllSender
 {
-    using ValueTypes = MergeTuples<typename SenderTraits<Senders>::ValueTypes...>;
+    using ValueTypes = typename MergeTuples<typename SenderTraits<Senders>::ValueTypes...>::type;
 
     std::tuple<Pure<Senders>...> senders;
 
     template <typename Self, typename Receiver>
-        requires std::is_same_v<Pure<Self>, WhenAllSender>
+        requires(std::is_same_v<Pure<Self>, WhenAllSender> && CConnectable<WhenAllSender, Receiver>)
     friend auto TagInvoke(ConnectType, Self&& self, Receiver&& receiver)
     {
         WhenAllOperation<WhenAllReceiver<Pure<Receiver>, Senders...>, Senders...> operation;

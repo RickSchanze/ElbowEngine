@@ -47,7 +47,7 @@ struct ArgTypesAllNotVoid<std::tuple<Args...>>
 template <typename T>
 using Pure = std::remove_cvref_t<T>;
 
-// 将多个std::tuple合为一个std::tuple 同时void不计入计算
+// 将多个std::tuple合为一个std::tuple 同时void不计入计算 对类型计算
 // MergeTuples<std::tuple<int>, std::tuple<double>, void, std::tuple<char>>::type = std::tuple<int, double, char>
 template <typename... Senders>
 struct MergeTuples;
@@ -89,7 +89,8 @@ struct is_tuple<std::tuple<Args...>> : std::true_type
 {
 };
 
-// 主模板：MergeTupleNested
+// MergeTupleNested<std::tuple<int>, std::tuple<double>, void, std::tuple<char>>::type = std::tuple<std::tuple<int>, std::tuple<double>, std::tuple<>, std::tuple<char>>
+// 对类型进行计算
 template <typename... Senders>
 struct MergeTupleNested;
 
@@ -111,7 +112,7 @@ struct MergeTupleNested<void, Rest...>
     // 如果是 void，包装为 std::tuple<void>
     using type = decltype(std::tuple_cat(
         std::declval<std::tuple<std::tuple<>>>(),                  // 包装 void
-        std::declval<typename MergeTupleNested<Rest...>::type>() // 递归结果
+        std::declval<typename MergeTupleNested<Rest...>::type>()   // 递归结果
     ));
 };
 
@@ -119,6 +120,21 @@ struct MergeTupleNested<void, Rest...>
 template <>
 struct MergeTupleNested<>
 {
-    using type = std::tuple<>; // 空 tuple
+    using type = std::tuple<>;   // 空 tuple
 };
+
+// std::tuple<std::tuple<int>, std::tuple<double>, std::tuple<>, std::tuple<char>> -> std::tuple<int, double, char>
+// 对值进行计算
+template <int Index = 0, typename Tuple>
+constexpr auto FlattenTuple(Tuple&& tuples)
+{
+    if constexpr (Index < std::tuple_size_v<std::decay_t<Tuple>> - 1)
+    {
+        return std::tuple_cat(std::get<Index>(std::forward<Tuple>(tuples)), FlattenTuple<Index + 1>(std::forward<Tuple>(tuples)));
+    }
+    else
+    {
+        return std::get<Index>(std::forward<Tuple>(tuples));
+    }
+}
 }
