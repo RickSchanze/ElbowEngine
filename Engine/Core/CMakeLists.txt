@@ -98,6 +98,7 @@ add_library(${PROJECT_NAME}
         Async/ThreadUtils.h
         Assert.h
         Async/Execution/WhenAll.h
+        Async/Execution/StartAsync.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

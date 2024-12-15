@@ -65,7 +65,7 @@ struct WhenAllReceiver
         {
             std::get<Index>(values) = Forward<Tuple>(tuple);
             counter++;
-            if (counter == value_count)
+            if (counter >= value_count)
             {
                 auto a = FlattenTuple(values);
                 std::apply([this]<typename... T>(T&... args) { exec::SetValue(Move(receiver), Forward<T>(args)...); }, a);

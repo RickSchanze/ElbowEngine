@@ -3,6 +3,7 @@
 #include "Core/Async/Execution/Just.h"
 #include "Core/Async/Execution/NullReceiver.h"
 #include "Core/Async/Execution/Repeat.h"
+#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Async/Execution/WhenAll.h"
 #include "Core/Async/ThreadUtils.h"
@@ -37,26 +38,26 @@ int main()
     }
     // 读取项目的基本配置
     core::FrameAllocator::Startup();
+
     auto& scheduler = core::ThreadManager::GetScheduler();
 
-    auto test_thread = core::exec::Schedule(scheduler, core::ThreadSlot::Render) | core::exec::Then([] {
-                           core::ThreadUtils::Sleep(5s);
-                           LOGGER.Info(logcat::Test, "Task 1");
-                           return 15;
-                       });
+    auto test_thread =   //
+        core::exec::Schedule(scheduler, core::ThreadSlot::Render) | core::exec::Then([] {
+            core::ThreadUtils::Sleep(3s);
+            LOGGER.Info(logcat::Test, "Task 1");
+            return 15;
+        });
 
-    auto t2 = core::exec::Just() | core::exec::Then([] {
-                  LOGGER.Info(logcat::Test, "Task 2");
-                  return 15.7f;
-              });
+    auto t2 =   //
+        core::exec::Schedule(scheduler, core::ThreadSlot::Resource) | core::exec::Then([] {
+            core::ThreadUtils::Sleep(10s);
+            LOGGER.Info(logcat::Test, "Task 2");
+            return 15.7f;
+        });
 
-    auto all = core::exec::WhenAll(test_thread, t2);
+    auto all = core::exec::WhenAll(t2);
 
-    core::exec::NullReceiver<int, float> receiver;
-
-    auto op = core::exec::Connect(all, receiver);
-
-    core::exec::Start(op);
+    auto op = core::exec::StartAsync(t2);
     // core::exec::Start(op);
     // 资产数据库初始化
     {
@@ -74,6 +75,7 @@ int main()
         platform::rhi::UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
     }
     LOGGER.Info(logcat::Engine, "Engine initialized.");
+    core::exec::SyncWait(op);
     SetRuntimeStage(RuntimeStage::Running);
     LOGGER.Info(logcat::Engine, "Engine running...");
     while (GetRuntimeStage() != RuntimeStage::Shutdown)
