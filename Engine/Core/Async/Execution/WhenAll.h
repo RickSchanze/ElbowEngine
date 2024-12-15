@@ -60,11 +60,6 @@ struct WhenAllReceiver
 
     WhenAllReceiver() = default;
 
-    ~WhenAllReceiver()
-    {
-        LOGGER.Info(logcat::Test, "de");
-    }
-
     template <int Index, typename Tuple>
     void SetValue(Tuple&& tuple)
     {
