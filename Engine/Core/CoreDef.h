@@ -61,3 +61,5 @@
 #endif
 
 bool ValidateFeatureState();
+
+#define NAMEOF(x) #x

@@ -166,7 +166,13 @@ public class CodeGenerator
 
             foreach (var attribute in attributes)
             {
-                if (attribute.Key is "Category" or "EnumFlag" or "Label")
+                if (_config.EnumFlagAttrs.Contains(attribute.Key))
+                {
+                    sw.Write($"->SetAttribute(FieldInfo::FlagAttribute::{attribute.Key})");
+                    continue;
+                }
+                
+                if (_config.EnumValueAttrs.Contains(attribute.Key))
                 {
                     sw.Write($"->SetAttribute(FieldInfo::ValueAttribute::{attribute.Key}, \"{attribute.Value}\")");
                     continue;
@@ -252,13 +258,13 @@ public class CodeGenerator
 
         foreach (var attr in attributes)
         {
-            if (attr.Key is "Interface" or "Trivial")
+            if (_config.TypeFlagAttrs.Contains(attr.Key))
             {
                 sw.Write($"->SetAttribute(Type::{attr.Key})");
                 continue;
             }
 
-            if (attr.Key is "Config" or "Category")
+            if (_config.TypeValueAttrs.Contains(attr.Key))
             {
                 var attrValue = attr.Value;
                 sw.Write($"->SetAttribute(core::Type::ValueAttribute::{attr.Key}, \"{attrValue}\")");
@@ -305,13 +311,13 @@ public class CodeGenerator
 
         foreach (var attr in attributes)
         {
-            if (attr.Key is "Transient" or "EnumValue")
+            if (_config.FieldFlagAttrs.Contains(attr.Key))
             {
                 sw.Write($"->SetAttribute(FieldInfo::{attr.Key})");
                 continue;
             }
 
-            if (attr.Key is "Getter" or "Setter" or "Label" or "EnableWhen" or "Category" or "EnumFlag")
+            if (_config.FieldValueAttrs.Contains(attr.Key))
             {
                 var attrValue = string.IsNullOrEmpty(attr.Value) ? "Config" : attr.Value;
                 sw.Write($"->SetAttribute(core::FieldInfo::ValueAttribute::{attr.Key}, \"{attrValue}\")");

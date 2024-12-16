@@ -46,4 +46,13 @@ public class CodeGenConfig
     public string OutputDir { get; } = "Generated";
 
     public string FileCachePath { get; } = @"Generated\FileCache.json";
+
+    public readonly List<string> TypeValueAttrs = ["Config", "Category", "SQLTable"];
+    public readonly List<string> TypeFlagAttrs = ["Interface", "Trivial"];
+    
+    public readonly List<string> EnumValueAttrs = ["Label"];
+    public readonly List<string> EnumFlagAttrs = [];
+    
+    public readonly List<string> FieldValueAttrs = ["Getter", "Setter", "Label", "Category", "EnableWhen", "EnumFlag", "SQLAttr"];
+    public readonly List<string> FieldFlagAttrs = ["Transient"];
 }

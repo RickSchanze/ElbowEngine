@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "CoreTypeDef.h"
 #include "fmt/format.h"
 #include <ostream>
 #include <regex>
@@ -23,6 +24,7 @@ public:
     StringView() : str_(nullptr), length_(0) {}
     StringView(const String& str);
     StringView(const std::string& str) : str_(str.c_str()), length_(static_cast<int32_t>(str.length())) {}
+    StringView(const std::string_view& str) : str_(str.data()), length_(static_cast<int32_t>(str.length())) {}
 
     [[nodiscard]] char Back() const { return str_[length_ - 1]; }
 
@@ -50,6 +52,11 @@ public:
     [[nodiscard]] std::string_view GetStdStringView() const { return {str_, (size_t)length_}; }
 
     String operator+(const StringView& o) const;
+
+    [[nodiscard]] Array<StringView> Split(StringView s = "", bool utf8_mode = false) const;
+    [[nodiscard]] StringView        TrimLeft(StringView s = "", bool utf8_mode = false) const;
+    [[nodiscard]] StringView        TrimRight(StringView s = "", bool utf8_mode = false) const;
+    [[nodiscard]] StringView        Trim(StringView s = "", bool utf8_mode = false) const;
 
 private:
     const char* str_;

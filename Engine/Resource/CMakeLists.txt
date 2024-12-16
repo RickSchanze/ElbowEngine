@@ -17,6 +17,10 @@ add_library(Resource
         Logcat.h
         Project.h
         Project.cpp
+        SQLHelper.cpp
+        SQLHelper.h
+        Meta/MeshMeta.cpp
+        Meta/MeshMeta.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

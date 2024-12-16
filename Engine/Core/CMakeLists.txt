@@ -99,6 +99,8 @@ add_library(${PROJECT_NAME}
         Assert.h
         Async/Execution/WhenAll.h
         Async/Execution/StartAsync.h
+        Base/Exception.cpp
+        Base/Exception.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

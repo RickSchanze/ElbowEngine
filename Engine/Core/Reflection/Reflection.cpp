@@ -7,6 +7,7 @@
 
 #include "Reflection.h"
 
+#include "Core/Base/Exception.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
 #include "Core/Utils/ContainerUtils.h"
@@ -16,7 +17,9 @@ namespace core
 FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), enum_value_(info.enum_value_), attribute_(info.attribute_),
     value_attr_(info.value_attr_), container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_),
-    container_identifier_(info.container_identifier_) {}
+    container_identifier_(info.container_identifier_)
+{
+}
 
 bool FieldInfo::IsPrimitive() const
 {
@@ -84,10 +87,7 @@ Any FieldInfo::GetValue(const Any& obj) const
     if (!obj.IsDerivedFrom(outer_))
     {
         LOGGER.Error(
-            logcat::Archive_Serialization,
-            "Different outer type, obj type: {}, outer type: {}",
-            obj.GetType()->GetFullName(),
-            outer_->GetFullName()
+            logcat::Archive_Serialization, "Different outer type, obj type: {}, outer type: {}", obj.GetType()->GetFullName(), outer_->GetFullName()
         );
         return {};
     }
@@ -142,6 +142,11 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
         return "";
     }
     return value_attr_[static_cast<int32_t>(attr)];
+}
+
+bool Type::IsAttributeValueNull(const ValueAttribute attr) const
+{
+    return GetAttributeValue(attr) != "-";
 }
 
 StringView Type::GetName() const
@@ -332,6 +337,36 @@ Optional<int32_t> Type::GetEnumValueFromString(StringView str) const
         }
     }
     return NullOpt;
+}
+
+nlohmann::json ParseSubAttr(const StringView attr)
+{
+    using namespace nlohmann;
+    json       result;
+    const auto step1 = attr.Trim().TrimLeft("(").TrimRight(")").Trim();
+    for (const auto step2 = step1.Split(","); const auto& step3: step2)
+    {
+        const auto step4 = step3.Trim();
+        if (const auto step5 = step4.Split("="); step5.size() == 2)
+        {
+            const auto key         = step5[0].Trim();
+            const auto val         = step5[1].Trim();
+            const auto key_storage = key.GetStdStringView();
+            const auto val_storage = val.GetStdStringView();
+            result[key_storage]    = val_storage;
+        }
+        else if (step5.size() == 1)
+        {
+            const auto key         = step5[0].Trim();
+            const auto key_storage = key.GetStdStringView();
+            result[key_storage]    = true;
+        }
+        else
+        {
+            throw ArgumentException(NAMEOF(attr), "嵌套SubAttr尚不支持");
+        }
+    }
+    return result;
 }
 
 } // namespace core

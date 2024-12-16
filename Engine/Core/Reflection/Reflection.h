@@ -17,6 +17,8 @@
 #include "Core/Object/Object.h"
 #include "MetaInfoManager.h"
 
+#include <nlohmann/json.hpp>
+
 #include <utility>
 
 namespace core
@@ -123,6 +125,7 @@ struct FieldInfo
     {
         Getter,
         Setter,
+        SQLAttr,
         // EditorOnly
         Label,
         EnableWhen,
@@ -392,13 +395,14 @@ struct Type
         Atomic    = 1 << 1,
         Enum      = 1 << 2,   // 枚举类型
         Trivial   = 1 << 3,   // 简单类型
-        Flag      = 1 << 4,   // 这是一个Flag, 表示可以通过 | 连接
+        Flag      = 1 << 4,   // 这是一个Flag, 表示可以通过 | 连接(枚举使用)
     };
 
     enum class ValueAttribute
     {
         Config,
         Category,
+        SQLTable,   // 这个类型是一个数据库表, 其值代表数据库名字
         Count,
     };
 
@@ -408,6 +412,7 @@ struct Type
     [[nodiscard]] bool       IsDefined(ValueAttribute attr) const { return !value_attr_[static_cast<int32_t>(attr)].IsEmpty(); }
     [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
     [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
+    [[nodiscard]] bool       IsAttributeValueNull(ValueAttribute attr) const;
     [[nodiscard]] StringView GetFullName() const { return name_; }
     [[nodiscard]] StringView GetName() const;
     [[nodiscard]] int32_t    GetSize() const { return size_; }
@@ -543,6 +548,16 @@ protected:
 #endif
 };
 
+/**
+ * 解析一个属性到子属性
+ * PROPERTY(SQLAttr="(PrimaryKey, AutoIncrement, SomeOther=(Test=P))") -> { "PrimaryKey": true, "AutoIncrement": true, "SomeOther": {"Test": "P" } }
+ * 不加等号默认为true
+ * 目前只支持一层嵌套, 也就是上面的SomeOther=里面的内容不支持
+ * TODO: 多层嵌套支持
+ * @param attr
+ * @return
+ */
+nlohmann::json ParseSubAttr(StringView attr);
 }   // namespace core
 
 inline core::StringView GetEnumStringFieldValueAttribute(core::FieldInfo::ValueAttribute value)
