@@ -51,6 +51,8 @@ resource::Project::Project(core::StringView path)
         core::Assert::Require(logcat::Resource_Project, success, "Failed to create project {}", name_);
         return;
     }
+    core::YamlArchive ar;
+    ar.Deserialize(meta_text.value(), this, core::TypeOf<Project>());
 }
 
 REGISTER_EVENT_HANDLER_BEFORE_MAIN()

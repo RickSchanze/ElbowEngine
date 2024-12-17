@@ -6,11 +6,14 @@
  */
 
 #pragma once
-#include "AssetType.h"
 #include "Core/Base/Base.h"
-#include "Core/Base/UniquePtr.h"
 #include "Core/Singleton/MManager.h"
-#include "SQLiteCpp/SQLiteCpp.h"
+#include "SQLHelper.h"
+
+namespace SQLite
+{
+class Database;
+}
 
 namespace resource
 {
@@ -25,7 +28,12 @@ public:
      */
     void Startup() override;
 
+    void Shutdown() override;
+
 protected:
-    core::UniquePtr<SQLite::Database> db_;
+    void CreateAssetTables();
+
+    SQLite::Database* db_ = nullptr;
+    core::HashMap<const core::Type*, core::resource::SQLTable> tables_;
 };
 }   // namespace resource

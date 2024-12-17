@@ -14,7 +14,7 @@ namespace core
 class Exception : std::exception
 {
 public:
-    explicit Exception(const core::String& msg) : message_(msg) {}
+    explicit Exception(const core::String& msg);
 
     [[nodiscard]] char const* what() const override { return message_.Data(); }
 

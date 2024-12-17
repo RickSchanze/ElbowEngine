@@ -37,3 +37,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/..)
+
+find_package(SQLiteCpp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SQLiteCpp)

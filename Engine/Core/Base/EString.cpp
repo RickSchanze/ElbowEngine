@@ -90,6 +90,7 @@ bool StringView::IsPureSpace() const
 
 StringView StringView::SubString(int32_t begin, int32_t end) const
 {
+    if (end == -1) end = Length();
     return {str_ + begin, end - begin};
 }
 
@@ -284,7 +285,7 @@ StringView StringView::TrimRight(const StringView s, const bool utf8_mode) const
 
 StringView StringView::Trim(const StringView s, const bool utf8_mode) const
 {
-    return TrimLeft(TrimRight(s, utf8_mode), utf8_mode);
+    return TrimLeft(s, utf8_mode).TrimRight(s, utf8_mode);
 }
 
 }   // namespace core

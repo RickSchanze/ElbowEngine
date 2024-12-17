@@ -38,7 +38,7 @@ public:
     [[nodiscard]] constexpr int32_t Length() const { return length_; }
     [[nodiscard]] constexpr bool    IsEmpty() const { return length_ == 0; }
     [[nodiscard]] bool              IsPureSpace() const;
-    [[nodiscard]] StringView        SubString(int32_t begin, int32_t end) const;
+    [[nodiscard]] StringView        SubString(int32_t begin, int32_t end = -1) const;
     [[nodiscard]] int32_t           IndexOf(const StringView& o) const;
     [[nodiscard]] int32_t           LastIndexOf(const StringView& o) const;
     [[nodiscard]] bool              operator==(const StringView& o) const;
@@ -125,13 +125,13 @@ public:
     [[nodiscard]] uint8_t  At(int32_t i) const { return str_.at(i); }
     [[nodiscard]] uint32_t AtUnicode(int32_t i) const;
 
-    template <typename T, typename... Args>
-    static String Format(T&& format, Args&&... args)
+    template <typename... Args>
+    static String Format(fmt::format_string<Args...> format, Args&&... args)
     {
-        return fmt::format(std::forward<T>(format), std::forward<Args>(args)...);
+        return fmt::format(format, std::forward<Args>(args)...);
     }
 
-    core::StringView ToStringView() const { return {str_}; }
+    [[nodiscard]] core::StringView ToStringView() const { return {str_}; }
 
 private:
     std::string str_;

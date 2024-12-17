@@ -21,4 +21,6 @@ struct CallStackFrame
 
 Array<CallStackFrame> GetCurrentStackTrace();
 
+core::String FormatStackTrace(const Array<CallStackFrame>& frames);
+
 }   // namespace core

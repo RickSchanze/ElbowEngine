@@ -146,7 +146,7 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 
 bool Type::IsAttributeValueNull(const ValueAttribute attr) const
 {
-    return GetAttributeValue(attr) != "-";
+    return GetAttributeValue(attr) == "-";
 }
 
 StringView Type::GetName() const

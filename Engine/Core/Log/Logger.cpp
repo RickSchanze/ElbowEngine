@@ -13,6 +13,7 @@
 #include "LogEvent.h"
 #include "LogRecorder.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 namespace core
 {
@@ -33,8 +34,9 @@ static void LogErrorStack(core::Log& log)
 Logger::Logger()
 {
     auto color_logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
+    auto file_logger = std::make_shared<spdlog::sinks::basic_file_sink_mt>("ElbowEngine.log", true);
 
-    logger_ = new spdlog::logger("ElbowEngine", spdlog::sinks_init_list{color_logger});
+    logger_ = new spdlog::logger("ElbowEngine", spdlog::sinks_init_list{color_logger, file_logger});
     logger_->set_pattern("[%Y-%m-%d %H:%M:%S] [thread: %t] [%l] %v");
     Event_OnLog.AddBind(&LogErrorStack);
 }

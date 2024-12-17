@@ -54,5 +54,5 @@ public class CodeGenConfig
     public readonly List<string> EnumFlagAttrs = [];
     
     public readonly List<string> FieldValueAttrs = ["Getter", "Setter", "Label", "Category", "EnableWhen", "EnumFlag", "SQLAttr"];
-    public readonly List<string> FieldFlagAttrs = ["Transient"];
+    public readonly List<string> FieldFlagAttrs = ["Transient", "Hidden"];
 }
