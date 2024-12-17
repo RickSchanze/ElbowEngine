@@ -4,7 +4,7 @@ project(Core)
 if (MSVC)
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("/Zc:__cplusplus")
+    add_compile_options("/wd4244")
 endif ()
 add_library(${PROJECT_NAME}
         Object/Object.h
@@ -101,6 +101,8 @@ add_library(${PROJECT_NAME}
         Async/Execution/StartAsync.h
         Base/Exception.cpp
         Base/Exception.h
+        Reflection/SharedAny.cpp
+        Reflection/SharedAny.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

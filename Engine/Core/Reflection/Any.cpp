@@ -41,21 +41,31 @@ bool core::Any::IsEnum() const
 
 core::Optional<int64_t> core::Any::AsInt64() const
 {
-    if (GetType() == TypeOf<int8_t>()) return AsCopy<int8_t>().value();
-    if (GetType() == TypeOf<int16_t>()) return AsCopy<int16_t>().value();
-    if (GetType() == TypeOf<int32_t>()) return AsCopy<int32_t>().value();
-    if (GetType() == TypeOf<int64_t>()) return AsCopy<int64_t>().value();
-    if (GetType() == TypeOf<uint8_t>()) return AsCopy<uint8_t>().value();
-    if (GetType() == TypeOf<uint16_t>()) return AsCopy<uint16_t>().value();
-    if (GetType() == TypeOf<uint32_t>()) return AsCopy<uint32_t>().value();
-    if (GetType() == TypeOf<uint64_t>()) return AsCopy<uint64_t>().value();
-    if (GetType() == TypeOf<bool>()) return AsCopy<bool>().value();
+    if (GetType() == TypeOf<int8_t>()) return *static_cast<int8_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<int16_t>()) return *static_cast<int16_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<int32_t>()) return *static_cast<int32_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<int64_t>()) return *static_cast<int64_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<uint8_t>()) return *static_cast<uint8_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<uint16_t>()) return *static_cast<uint16_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<uint32_t>()) return *static_cast<uint32_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<uint64_t>()) return *static_cast<uint64_t*>(ptr_->GetData());
+    if (GetType() == TypeOf<bool>()) return *static_cast<bool*>(ptr_->GetData());
     return {};
 }
 
-bool core::CanConvertTo(const Type* from, const Type* to)
+core::Optional<double> core::Any::AsDouble() const
 {
+    if (GetType() == TypeOf<float>()) return *static_cast<float*>(ptr_->GetData());
+    if (GetType() == TypeOf<double>()) return *static_cast<double*>(ptr_->GetData());
+    return {};
+}
+
+bool core::CanConvertCopy(const Type* from, const Type* to)
+{
+    if (from == nullptr || to == nullptr) return false;
     if (from == to) return true;
     if (from->IsEnum() && to == TypeOf<int32_t>()) return true;
+    if (from->IsNumericInteger() && to->IsNumericInteger()) return true;
+    if (from->IsNumericFloat() && to->IsNumericFloat()) return true;
     return false;
 }

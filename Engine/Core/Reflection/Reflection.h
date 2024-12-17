@@ -2,12 +2,13 @@
  * @file Reflection.h
  * @author Echo
  * @Date 24-10-26
- * @brief
+ * @brief 与反射有关的所有数值类型转换精度的丢失不由反射负责, 想不丢失自己写不会丢失精度的代码！
  */
 
 #pragma once
 #include "ContainerView.h"
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Exception.h"
 #include "Core/Base/Ref.h"
 #include "Core/Base/UniquePtr.h"
 #include "Core/CoreGlobal.h"
@@ -25,6 +26,12 @@ namespace core
 {
 
 class ITypeGetter;
+
+class CastException : public Exception
+{
+public:
+    explicit CastException(const StringView& msg);
+};
 
 enum class ContainerIdentifier
 {
@@ -192,7 +199,7 @@ struct FieldInfo
 
     [[nodiscard]] Any GetValue(const Any& obj) const;
 
-    [[nodiscard]] Expected<void, Error> SetValue(const Any& obj, const Any& value) const;
+    [[nodiscard]] void SetValue(const Any& obj, const Any& value) const;
 
     SequentialContainerView* CreateSequentialContainerView(void* obj) const;
 
@@ -413,6 +420,10 @@ struct Type
     [[nodiscard]] bool       IsEnum() const { return IsDefined(FlagAttribute::Enum); }
     [[nodiscard]] StringView GetAttributeValue(ValueAttribute attr) const;
     [[nodiscard]] bool       IsAttributeValueNull(ValueAttribute attr) const;
+    [[nodiscard]] bool       IsNumericInteger() const;
+    [[nodiscard]] bool       IsNumericFloat() const;
+    [[nodiscard]] bool       IsBoolean() const;
+    [[nodiscard]] bool       IsString() const;
     [[nodiscard]] StringView GetFullName() const { return name_; }
     [[nodiscard]] StringView GetName() const;
     [[nodiscard]] int32_t    GetSize() const { return size_; }

@@ -14,6 +14,12 @@
 
 namespace core
 {
+
+CastException::CastException(const StringView& msg) : Exception("")
+{
+    message_ = String::Format("类型转换时发生错误: {}", msg);
+}
+
 FieldInfo::FieldInfo(FieldInfo&& info) noexcept :
     offset_(info.offset_), size_(info.size_), name_(info.name_), enum_value_(info.enum_value_), attribute_(info.attribute_),
     value_attr_(info.value_attr_), container_view_(Move(info.container_view_)), type_(info.type_), outer_(info.outer_),
@@ -94,22 +100,70 @@ Any FieldInfo::GetValue(const Any& obj) const
     return {GetFieldPtr(obj.GetRawPtr()), type_};
 }
 
-Expected<void, FieldInfo::Error> FieldInfo::SetValue(const Any& obj, const Any& value) const
+static void CastInteger(void* target, const Type* t, int64_t v)
+{
+    if (t == TypeOf<int8_t>()) *static_cast<int8_t*>(target) = static_cast<int8_t>(v);
+    if (t == TypeOf<uint8_t>()) *static_cast<uint8_t*>(target) = static_cast<uint8_t>(v);
+    if (t == TypeOf<int16_t>()) *static_cast<int16_t*>(target) = static_cast<int16_t>(v);
+    if (t == TypeOf<uint16_t>()) *static_cast<uint16_t*>(target) = static_cast<uint16_t>(v);
+    if (t == TypeOf<int32_t>()) *static_cast<int32_t*>(target) = static_cast<int32_t>(v);
+    if (t == TypeOf<uint32_t>()) *static_cast<uint32_t*>(target) = static_cast<uint32_t>(v);
+    if (t == TypeOf<int64_t>()) *static_cast<int64_t*>(target) = static_cast<int64_t>(v);
+    if (t == TypeOf<uint64_t>()) *static_cast<uint64_t*>(target) = static_cast<uint64_t>(v);
+}
+
+static void CastFloat(void* target, const Type* t, double v)
+{
+    if (t == TypeOf<float>()) *static_cast<float*>(target) = static_cast<float>(v);
+    if (t == TypeOf<double>()) *static_cast<double*>(target) = static_cast<double>(v);
+}
+
+void FieldInfo::SetValue(const Any& obj, const Any& value) const
 {
     if (!obj.HasValue() || !value.HasValue())
     {
-        return Unexpected(Error::InputInvalid);
+        throw ArgumentException("value或者obj没有设置值");
     }
     if (obj.GetType() != outer_ || value.GetType() != type_)
     {
-        return Unexpected(Error::TypeMismatch);
+        throw ArgumentException("value或obj类型错误");
     }
     if (IsSequentialContainer() || IsAssociativeContainer())
     {
-        return Unexpected(Error::UnsupportedContainer);
+        throw ArgumentException("容器类型的错误设置");
+    }
+    if (type_->IsNumericInteger())
+    {
+        // TODO: 自定义Optional抛出自定义异常
+        const int64_t v = value.AsInt64().value();
+        CastInteger(GetFieldPtr(obj.GetRawPtr()), type_, v);
+        return;
+    }
+    if (type_->IsBoolean())
+    {
+        if (value.GetType()->IsBoolean())
+        {
+            memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
+            return;
+        }
+        if (value.GetType()->IsNumericInteger())
+        {
+            const int64_t v                                   = value.AsInt64().value();
+            *static_cast<bool*>(GetFieldPtr(obj.GetRawPtr())) = v != 0;
+            return;
+        }
+        throw CastException("bool只能由bool或者整数类型转换而来");
+    }
+    if (type_->IsNumericFloat())
+    {
+        const double v = value.AsDouble().value();
+        CastFloat(GetFieldPtr(obj.GetRawPtr()), type_, v);
+    }
+    if (type_->IsString())
+    {
+        *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = value.AsCopy<String>().value();
     }
     memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
-    return {};
 }
 
 SequentialContainerView* FieldInfo::CreateSequentialContainerView(void* obj) const
@@ -147,6 +201,27 @@ core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 bool Type::IsAttributeValueNull(const ValueAttribute attr) const
 {
     return GetAttributeValue(attr) == "-";
+}
+
+bool Type::IsNumericInteger() const
+{
+    return this == TypeOf<int8_t>() || this == TypeOf<uint8_t>() || this == TypeOf<int16_t>() || this == TypeOf<uint16_t>() ||
+           this == TypeOf<int32_t>() || this == TypeOf<uint32_t>() || this == TypeOf<int64_t>() || this == TypeOf<uint64_t>();
+}
+
+bool Type::IsNumericFloat() const
+{
+    return this == TypeOf<float>() || this == TypeOf<double>();
+}
+
+bool Type::IsBoolean() const
+{
+    return this == TypeOf<bool>();
+}
+
+bool Type::IsString() const
+{
+    return this == TypeOf<String>();
 }
 
 StringView Type::GetName() const

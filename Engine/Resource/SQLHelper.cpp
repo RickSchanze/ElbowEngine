@@ -165,13 +165,6 @@ void core::resource::SQLTable::Insert(const Any& data)
     insert.exec();
 }
 
-void core::resource::SQLTable::Query(core::StringView name, int64_t value, void* data)
-{
-}
-
-void core::resource::SQLTable::Query(core::StringView name, core::StringView value, void* data){
-}
-
 core::resource::SQLTable core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
 {
     PROFILE_SCOPE_AUTO;
@@ -214,6 +207,68 @@ void core::resource::SQLHelper::InitializeDataBase(SQLite::Database& db)
     db.exec(sql_str.Data());
 }
 
-core::StringView core::resource::SQLHelper::GetTypeMetaTableName(){
+core::StringView core::resource::SQLHelper::GetTypeMetaTableName()
+{
     return "__TYPE_META__";
+}
+
+core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, StringView where)
+{
+    if (type_ != type)
+    {
+        throw ArgumentException(NAMEOF(type), "输入类型不符");
+    }
+    Array<SharedAny> results;
+    // 1. 构建字段语句
+    core::String     field_stat;
+    const auto       fields = type->GetFields();
+    for (int i = 0; i < fields.size(); ++i)
+    {
+        field_stat += fields[i]->GetName();
+        if (i != fields.size() - 1)
+        {
+            field_stat += ", ";
+        }
+    }
+    String query_stat = String::Format("SELECT {} FROM {}", field_stat, table_name_);
+    if (!where.IsEmpty())
+    {
+        query_stat += String::Format(" WHERE {}", where);
+    }
+    SQLite::Statement query(*db_, query_stat);
+    while (query.executeStep())
+    {
+        SharedAny result(type);
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            auto& field = fields[i];
+            if (field->GetType()->IsNumericInteger())
+            {
+                const int64_t value = query.getColumn(i).getInt64();
+                field->SetValue(result.AsAny(), value);
+                continue;
+            }
+            if (field->GetType()->IsNumericFloat())
+            {
+                const double value = query.getColumn(i).getDouble();
+                field->SetValue(result.AsAny(), value);
+                continue;
+            }
+            if (field->GetType()->IsBoolean())
+            {
+                const int64_t value = query.getColumn(i).getInt64();
+                field->SetValue(result.AsAny(), value != 0);
+                continue;
+            }
+            if (field->GetType()->IsString())
+            {
+                const auto value = query.getColumn(i).getString();
+                field->SetValue(result.AsAny(), String(value));
+                continue;
+            }
+            throw SQLException("查询类型错误");
+        }
+        results.emplace_back(result);
+    }
+    return results;
 }

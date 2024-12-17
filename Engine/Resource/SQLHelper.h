@@ -6,6 +6,7 @@
 #include "Core/Base/EString.h"
 #include "Core/Base/Exception.h"
 #include "Core/Reflection/Reflection.h"
+#include "Core/Reflection/SharedAny.h"
 
 
 namespace SQLite
@@ -23,13 +24,19 @@ public:
     SQLTable(const SQLTable& other) = default;
 
     void Insert(const Any& data);
-    void Query(core::StringView name, int64_t value, void* data);
-    void Query(core::StringView name, core::StringView value, void* data);
+
+    /**
+     * 查询特定条件的数据
+     * @param type 用于校验
+     * @param where 查询条件
+     * @return
+     */
+    Array<SharedAny> Query(const Type* type, core::StringView where = "");
 
 private:
     const Type*       type_ = nullptr;
     SQLite::Database* db_   = nullptr;
-    core::StringView  table_name_;
+    StringView  table_name_;
 };
 
 class SQLException : public Exception

@@ -44,6 +44,12 @@ struct ArgTypesAllNotVoid<std::tuple<Args...>>
     static constexpr bool Value = (!std::is_same_v<Args, void> && ...);
 };
 
+template <typename T, typename... Args>
+struct IsAnyOf
+{
+    static constexpr bool Value = (std::is_same_v<T, Args> || ...);
+};
+
 template <typename T>
 using Pure = std::remove_cvref_t<T>;
 

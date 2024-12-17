@@ -10,7 +10,6 @@
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
 #include "Core/Singleton/MManager.h"
-#include "Core/Singleton/Singleton.h"
 
 namespace core
 {

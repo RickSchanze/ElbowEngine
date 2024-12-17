@@ -22,8 +22,7 @@ namespace core
 struct Type;
 
 /**
- * 只读Any 注意不要试图利用Any修改原始数据
- * 同时生命周期不由Any拥有
+ * 注意: 生命周期不由Any拥有
  */
 struct Any
 {
@@ -33,7 +32,7 @@ struct Any
     Any(const void* data, const Type* data_type);
 
     template <typename T>
-    Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), t.GetType())} {};
+    Any(const T& t) : ptr_{New<TypeLessData>(std::addressof(t), TypeOf<T>())} {};
 
     Any(const Any& rhs) { ptr_ = rhs.ptr_->Clone(); }
 
@@ -74,6 +73,7 @@ struct Any
     [[nodiscard]] Optional<T> AsCopy() const;
 
     [[nodiscard]] Optional<int64_t> AsInt64() const;
+    [[nodiscard]] Optional<double>  AsDouble() const;
 
     template <typename T>
     [[nodiscard]] const T* As() const;
@@ -105,7 +105,7 @@ private:
     Base* ptr_;
 };
 
-bool CanConvertTo(const Type* from, const Type* to);
+bool CanConvertCopy(const Type* from, const Type* to);
 
 template <typename T>
 Optional<T> Any::AsCopy() const
@@ -115,9 +115,17 @@ Optional<T> Any::AsCopy() const
         return NullOpt;
     }
     const Type* t = TypeOf<T>();
-    if (!CanConvertTo(GetType(), t))
+    if (!CanConvertCopy(GetType(), t))
     {
         return NullOpt;
+    }
+    if constexpr (IsAnyOf<T, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, bool>::Value)
+    {
+        return AsInt64();
+    }
+    if constexpr (IsAnyOf<T, float, double>::Value)
+    {
+        return AsDouble();
     }
     const T& tmp = *static_cast<T*>(ptr_->GetData());
     T        result{tmp};

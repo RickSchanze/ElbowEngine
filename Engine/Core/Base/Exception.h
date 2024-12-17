@@ -26,5 +26,6 @@ class ArgumentException : public Exception
 {
 public:
     explicit ArgumentException(core::StringView arg_name, core::StringView msg);
+    explicit ArgumentException(core::StringView msg) : Exception(msg) {}
 };
 }   // namespace core
