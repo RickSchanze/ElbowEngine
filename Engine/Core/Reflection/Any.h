@@ -23,6 +23,7 @@ struct Type;
 
 /**
  * 只读Any 注意不要试图利用Any修改原始数据
+ * 同时生命周期不由Any拥有
  */
 struct Any
 {
@@ -71,6 +72,8 @@ struct Any
     // 将void*的内容复制到T中
     template <typename T>
     [[nodiscard]] Optional<T> AsCopy() const;
+
+    [[nodiscard]] Optional<int64_t> AsInt64() const;
 
     template <typename T>
     [[nodiscard]] const T* As() const;

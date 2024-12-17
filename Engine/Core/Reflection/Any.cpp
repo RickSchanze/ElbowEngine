@@ -39,6 +39,20 @@ bool core::Any::IsEnum() const
     return GetType()->IsEnum();
 }
 
+core::Optional<int64_t> core::Any::AsInt64() const
+{
+    if (GetType() == TypeOf<int8_t>()) return AsCopy<int8_t>().value();
+    if (GetType() == TypeOf<int16_t>()) return AsCopy<int16_t>().value();
+    if (GetType() == TypeOf<int32_t>()) return AsCopy<int32_t>().value();
+    if (GetType() == TypeOf<int64_t>()) return AsCopy<int64_t>().value();
+    if (GetType() == TypeOf<uint8_t>()) return AsCopy<uint8_t>().value();
+    if (GetType() == TypeOf<uint16_t>()) return AsCopy<uint16_t>().value();
+    if (GetType() == TypeOf<uint32_t>()) return AsCopy<uint32_t>().value();
+    if (GetType() == TypeOf<uint64_t>()) return AsCopy<uint64_t>().value();
+    if (GetType() == TypeOf<bool>()) return AsCopy<bool>().value();
+    return {};
+}
+
 bool core::CanConvertTo(const Type* from, const Type* to)
 {
     if (from == to) return true;

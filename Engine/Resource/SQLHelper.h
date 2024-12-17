@@ -19,12 +19,17 @@ class SQLTable
 {
 public:
     SQLTable() = default;
-    SQLTable(const Type* type, SQLite::Database* db) : type_(type), db_(db) {}
+    SQLTable(const Type* type, SQLite::Database* db, core::StringView table_name) : type_(type), db_(db), table_name_(table_name) {}
     SQLTable(const SQLTable& other) = default;
+
+    void Insert(const Any& data);
+    void Query(core::StringView name, int64_t value, void* data);
+    void Query(core::StringView name, core::StringView value, void* data);
 
 private:
     const Type*       type_ = nullptr;
     SQLite::Database* db_   = nullptr;
+    core::StringView  table_name_;
 };
 
 class SQLException : public Exception

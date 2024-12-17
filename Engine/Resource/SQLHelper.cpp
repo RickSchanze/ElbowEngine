@@ -105,7 +105,71 @@ static core::resource::SQLTable CreateTypeTable(SQLite::Database& db, core::Stri
     insert.bind(2, type->GetName().Data());
     insert.bind(3, type->GetTypeHash());
     insert.exec();
-    return {type, &db};
+    return {type, &db, name};
+}
+
+void core::resource::SQLTable::Insert(const Any& data)
+{
+    PROFILE_SCOPE_AUTO;
+    const auto type = data.GetType();
+    if (type != type_)
+    {
+        throw ArgumentException(NAMEOF(data), "输入类型不符");
+    }
+    core::String position_argument    = "(";
+    core::String placeholder_argument = "(";
+    const auto   fields               = type->GetFields();
+    for (size_t i = 0; i < fields.size(); ++i)
+    {
+        const auto& field_info = fields[i];
+        position_argument += field_info->GetName();
+        placeholder_argument += "?";
+        if (i != fields.size() - 1)
+        {
+            position_argument += ", ";
+            placeholder_argument += ", ";
+        }
+    }
+    position_argument += ")";
+    placeholder_argument += ")";
+    SQLite::Statement insert(*db_, core::String::Format("INSERT INTO {} {} VALUES {};", table_name_, position_argument, placeholder_argument));
+    for (size_t i = 0; i < fields.size(); ++i)
+    {
+        const auto& field_info = fields[i];
+        if (const auto& field_type = field_info->GetType();
+            field_type == TypeOf<bool>() || field_type == TypeOf<int8_t>() || field_type == TypeOf<int16_t>() || field_type == TypeOf<int32_t>() ||
+            field_type == TypeOf<int64_t>() || field_type == TypeOf<uint8_t>() || field_type == TypeOf<uint16_t>() ||
+            field_type == TypeOf<uint32_t>() || field_type == TypeOf<uint64_t>())
+        {
+            auto op = field_info->GetValue(data).AsInt64();
+            if (!op)
+            {
+                throw SQLException("存储类型错误");
+            }
+            insert.bind(static_cast<int32_t>(i) + 1, *op);
+        }
+        else if (field_type == TypeOf<String>())
+        {
+            const auto value = field_info->GetValue(data).As<core::String>();
+            if (value == nullptr)
+            {
+                throw SQLException("存储类型错误");
+            }
+            insert.bind(static_cast<int32_t>(i) + 1, *value);
+        }
+        else
+        {
+            throw SQLException("存储类型错误");
+        }
+    }
+    insert.exec();
+}
+
+void core::resource::SQLTable::Query(core::StringView name, int64_t value, void* data)
+{
+}
+
+void core::resource::SQLTable::Query(core::StringView name, core::StringView value, void* data){
 }
 
 core::resource::SQLTable core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
@@ -131,7 +195,7 @@ core::resource::SQLTable core::resource::SQLHelper::CreateTable(Ref<SQLite::Data
             const String msg = String::Format("表{}已存在.", table_name);
             throw SQLException(msg);
         }
-        return {type, db.GetPtr()};
+        return {type, db.GetPtr(), table_name};
     }
     return CreateTypeTable(db, table_name, type);
 }
