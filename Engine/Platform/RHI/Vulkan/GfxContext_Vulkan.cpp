@@ -193,9 +193,10 @@ void GfxContext_Vulkan::DestroyImageView(const VkImageView view) const
     vkDestroyImageView(device_, view, nullptr);
 }
 
-#if ELBOW_DEBUG
+
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
+#if ELBOW_DEBUG
     VkDebugUtilsObjectNameInfoEXT name_info = {};
     name_info.sType                         = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
     name_info.objectType                    = type;
@@ -205,6 +206,7 @@ void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle
     {
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to set debug name for object: {}", VulkanErrorToString(result));
     }
+#endif
 }
 
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
@@ -225,7 +227,6 @@ Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candida
     }
     return Format::Count;
 }
-#endif
 
 void GfxContext_Vulkan::FindVulkanExtensionSymbols()
 {

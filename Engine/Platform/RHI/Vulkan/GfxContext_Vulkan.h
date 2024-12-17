@@ -64,9 +64,7 @@ public:
     void                      DestroyImageView(VkImageView view) const;
 #endif
 
-#if ELBOW_DEBUG
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
-#endif
 
 private:
     [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
