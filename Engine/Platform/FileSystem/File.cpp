@@ -109,18 +109,20 @@ bool platform::File::TryReadAllText(core::String& out) const
 
 Optional<String> platform::File::ReadAllText() const
 {
-    String     text;
-    const auto err = TryReadAllText(text);
-    return err ? std::make_optional(text) : NullOpt;
+    if (String text; TryReadAllText(text))
+    {
+        return MakeOptional(text);
+    }
+    return {};
 }
 
-core::Optional<core::String> platform::File::ReadAllText(const core::String& path)
+Optional<String> platform::File::ReadAllText(const String& path)
 {
     const File file = path;
     return file.ReadAllText();
 }
 
-bool platform::File::WriteAllText(core::StringView text) const
+bool platform::File::WriteAllText(StringView text) const
 {
     if (Create())
     {

@@ -11,7 +11,6 @@
 #include "Core/Memory/FrameAllocator.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/CtorManager.h"
-#include "Core/Reflection/ITypeGetter.h"
 #include "yaml-cpp/yaml.h"
 
 
@@ -30,7 +29,7 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
         emitter << *op_int64;
     else if (auto op_uint8 = value.AsCopy<uint8_t>())
     {
-        emitter << (int32_t)*op_uint8;
+        emitter << static_cast<int32_t>(*op_uint8);
     }
     else if (auto op_uint16 = value.AsCopy<uint16_t>())
         emitter << *op_uint16;
@@ -41,30 +40,30 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
     else if (auto op_float = value.AsCopy<float>())
     {
         std::ostringstream oss;
-        if (std::floor(op_float.value()) == op_float.value())
+        if (std::floor(*op_float) == *op_float)
         {
             // 如果是整数，则保留一位小数
-            oss << std::fixed << std::setprecision(1) << op_float.value();
+            oss << std::fixed << std::setprecision(1) << *op_float;
         }
         else
         {
             // 如果不是整数，保持原格式
-            oss << op_float.value();
+            oss << *op_float;
         }
         emitter << oss.str();
     }
     else if (auto op_double = value.AsCopy<double>())
     {
         std::ostringstream oss;
-        if (std::floor(op_double.value()) == op_double.value())
+        if (std::floor(*op_double) == *op_double)
         {
             // 如果是整数，则保留一位小数
-            oss << std::fixed << std::setprecision(1) << op_double.value();
+            oss << std::fixed << std::setprecision(1) << *op_double;
         }
         else
         {
             // 如果不是整数，保持原格式
-            oss << op_double.value();
+            oss << *op_double;
         }
         emitter << oss.str();
     }
@@ -129,12 +128,11 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
     auto fields = obj.GetType()->GetFields();
     if (obj.IsEnum())
     {
-        auto h = obj.AsCopy<int32_t>();
-        if (h.has_value())
+        if (auto h = obj.AsCopy<int32_t>())
         {
             for (const auto& field: fields)
             {
-                if (field->GetEnumFieldValue() == h.value())
+                if (field->GetEnumFieldValue() == *h)
                 {
                     emitter << field->GetName().Data();
                     return true;
@@ -186,14 +184,12 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
         }
         else if (field->IsEnum())
         {
-            auto enum_op_value = field->GetObjEnumValue(obj);
-            if (enum_op_value.has_value())
+            if (auto enum_op_value = field->GetObjEnumValue(obj); *enum_op_value)
             {
-                auto enum_value        = enum_op_value.value();
-                auto enum_str_value_op = field->GetType()->GetEnumValueString(enum_value);
-                if (enum_str_value_op.has_value())
+                const auto enum_value = *enum_op_value;
+                if (auto enum_str_value_op = field->GetType()->GetEnumValueString(enum_value))
                 {
-                    core::StringView enum_str_value = enum_str_value_op.value();
+                    core::StringView enum_str_value = *enum_str_value_op;
                     emitter << YAML::Key << field->GetName().Data() << YAML::Value << enum_str_value.Data();
                 }
             }
@@ -389,9 +385,8 @@ static bool DeserializeAssociativeContainer(const YAML::Node& node, AssociativeC
             success = DeserializeNode(it->first, key.ptr, view->GetKeyType());
         }
 
-        ScopedAny  value      = {view->GetValueType()->GetSize(), view->GetValueType()};
-        const auto value_type = view->GetValueType();
-        if (value_type->IsPrimitive())
+        const ScopedAny value = {view->GetValueType()->GetSize(), view->GetValueType()};
+        if (const auto value_type = view->GetValueType(); value_type->IsPrimitive())
         {
             success = DeserializePrimitiveNode(it->second, value.ptr, value_type);
         }
@@ -416,17 +411,13 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
     if (type->IsEnum())
     {
         auto key_str = node.as<std::string>();
-        auto value   = type->GetEnumValueFromString(key_str);
-        if (value.has_value())
+        if (auto value = type->GetEnumValueFromString(key_str))
         {
-            *static_cast<uint32_t*>(out) = value.value();
+            *static_cast<uint32_t*>(out) = *value;
             return true;
         }
         LOGGER.Error(
-            logcat::Archive_Deserialization,
-            "Deserialize field failed, type = {}, failed to find enum value: {}",
-            type->GetFullName(),
-            key_str
+            logcat::Archive_Deserialization, "Deserialize field failed, type = {}, failed to find enum value: {}", type->GetFullName(), key_str
         );
         return false;
     }

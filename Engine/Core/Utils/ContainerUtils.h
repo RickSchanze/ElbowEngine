@@ -9,6 +9,7 @@
 
 #include "Core/CoreDef.h"
 #include "Core/CoreGlobal.h"
+#include "Core/Base/Optional.h"
 
 #include <algorithm>
 

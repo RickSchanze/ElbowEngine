@@ -8,6 +8,7 @@
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
+#include "Core/Base/Optional.h"
 #include "Core/Reflection/ITypeGetter.h"
 
 #include <utility>
@@ -33,7 +34,7 @@ class File
 {
 public:
     File() = default;
-    File(const core::String& path) : path_(std::move(path)) {}
+    File(const core::String& path) : path_(path) {}
 
     static bool Create_File(core::StringView path, FileCreateMode mode = FileCreateMode::Text, bool create_folder = true, bool overwrite = true);
 
@@ -45,11 +46,11 @@ public:
 
     [[nodiscard]] bool IsExist() const;
 
-    bool                                      TryReadAllText(core::String& out) const;
-    [[nodiscard]] std::optional<core::String> ReadAllText() const;
-    static core::Optional<core::String>       ReadAllText(const core::String& path);
-    [[nodiscard]] bool                        WriteAllText(core::StringView text) const;
-    static bool                               WriteAllText(const core::String& path, core::StringView text);
+    bool                                       TryReadAllText(core::String& out) const;
+    [[nodiscard]] core::Optional<core::String> ReadAllText() const;
+    static core::Optional<core::String>        ReadAllText(const core::String& path);
+    [[nodiscard]] bool                         WriteAllText(core::StringView text) const;
+    static bool                                WriteAllText(const core::String& path, core::StringView text);
 
     [[nodiscard]] bool Create(FileCreateMode mode = FileCreateMode::Text, bool create_folder = true, bool overwrite = true) const;
 

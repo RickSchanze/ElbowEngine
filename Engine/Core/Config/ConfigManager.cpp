@@ -31,10 +31,10 @@ core::IConfig* core::ConfigManager::GetConfig(const Type* type)
     }
     Optional<core::String> str    = Event_OnRequireReadFileText.Invoke(config_path);
     void*                  config = nullptr;
-    if (str.has_value())
+    if (str.HasValue())
     {
         YamlArchive archive;
-        config = archive.DeserializePtr(str.value(), type);
+        config = archive.DeserializePtr(*str, type);
     }
     if (config != nullptr)
     {

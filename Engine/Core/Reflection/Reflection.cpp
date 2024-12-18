@@ -134,8 +134,7 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     }
     if (type_->IsNumericInteger())
     {
-        // TODO: 自定义Optional抛出自定义异常
-        const int64_t v = value.AsInt64().value();
+        const int64_t v = *value.AsInt64();
         CastInteger(GetFieldPtr(obj.GetRawPtr()), type_, v);
         return;
     }
@@ -148,7 +147,7 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
         }
         if (value.GetType()->IsNumericInteger())
         {
-            const int64_t v                                   = value.AsInt64().value();
+            const int64_t v                                   = *value.AsInt64();
             *static_cast<bool*>(GetFieldPtr(obj.GetRawPtr())) = v != 0;
             return;
         }
@@ -156,12 +155,12 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     }
     if (type_->IsNumericFloat())
     {
-        const double v = value.AsDouble().value();
+        const double v = *value.AsDouble();
         CastFloat(GetFieldPtr(obj.GetRawPtr()), type_, v);
     }
     if (type_->IsString())
     {
-        *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = value.AsCopy<String>().value();
+        *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = *value.AsCopy<String>();
     }
     memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
 }
@@ -238,7 +237,7 @@ Optional<Ref<const FieldInfo>> Type::GetSelfDefinedField(StringView name) const
             return MakeRef(field);
         }
     }
-    return NullOpt;
+    return {};
 }
 
 Array<const FunctionInfo*> Type::GetSelfDefinedMemberFunctions() const
@@ -294,7 +293,7 @@ Optional<Ref<const FieldInfo>> Type::GetField(StringView name) const
             return field;
         }
     }
-    return NullOpt;
+    return {};
 }
 
 Array<const FunctionInfo*> Type::GetMemberFunctions() const
@@ -345,7 +344,7 @@ bool Type::IsDerivedFrom(const Type* type) const
     {
         return true;
     }
-    for (auto parent: parents_)
+    for (const auto parent: parents_)
     {
         if (parent->IsDerivedFrom(type))
         {
@@ -357,20 +356,20 @@ bool Type::IsDerivedFrom(const Type* type) const
 
 Type* Type::Internal_AddParent(const Type* parent)
 {
-    if (auto exist_parent = std::ranges::find(parents_, parent); exist_parent == parents_.end())
+    if (const auto exist_parent = std::ranges::find(parents_, parent); exist_parent == parents_.end())
     {
         parents_.push_back(parent);
     }
     return this;
 }
 
-Type* Type::SetAttribute(FlagAttribute attr)
+Type* Type::SetAttribute(const FlagAttribute attr)
 {
     attribute_ |= attr;
     return this;
 }
 
-Type* Type::SetAttribute(ValueAttribute attr, StringView value)
+Type* Type::SetAttribute(ValueAttribute attr, const StringView value)
 {
     if (IsDefined(attr))
     {
@@ -390,7 +389,7 @@ Type* Type::SetComment(const StringView str)
 
 Optional<core::StringView> Type::GetEnumValueString(int32_t value) const
 {
-    if (!IsEnum()) return NullOpt;
+    if (!IsEnum()) return {};
     for (auto enum_value: GetSelfDefinedFields())
     {
         if (enum_value->GetEnumFieldValue() == value)
@@ -398,20 +397,20 @@ Optional<core::StringView> Type::GetEnumValueString(int32_t value) const
             return enum_value->GetName();
         }
     }
-    return NullOpt;
+    return {};
 }
 
 Optional<int32_t> Type::GetEnumValueFromString(StringView str) const
 {
-    if (!IsEnum()) return NullOpt;
+    if (!IsEnum()) return {};
     for (auto element: GetSelfDefinedFields())
     {
         if (element->GetName() == str)
         {
-            return std::make_optional(element->GetEnumFieldValue());
+            return MakeOptional(element->GetEnumFieldValue());
         }
     }
-    return NullOpt;
+    return {};
 }
 
 nlohmann::json ParseSubAttr(const StringView attr)

@@ -20,12 +20,12 @@ core::Optional<resource::Project> loaded_project;
 
 resource::Project& resource::Project::GetCurrentProject()
 {
-    return loaded_project.value();
+    return *loaded_project;
 }
 
 void resource::Project::CreateInstance(core::StringView path)
 {
-    if (loaded_project.has_value())
+    if (loaded_project.HasValue())
     {
         LOGGER.Warn(logcat::Resource_Project, "Project already loaded. This loading will be ignored.");
         return;
@@ -36,8 +36,8 @@ void resource::Project::CreateInstance(core::StringView path)
 resource::Project::Project(core::StringView path)
 {
     auto meta_text = platform::File::ReadAllText(".elbowengine");
-    core::Assert::Require(logcat::Engine, meta_text.has_value(), "Failed to read project meta file.");
-    if (const auto& meta = meta_text.value(); meta.IsEmpty())
+    core::Assert::Require(logcat::Engine, meta_text.HasValue(), "Failed to read project meta file.");
+    if (const auto& meta = *meta_text; meta.IsEmpty())
     {
         core::YamlArchive ar;
         name_                = "New Project";
@@ -52,7 +52,7 @@ resource::Project::Project(core::StringView path)
         return;
     }
     core::YamlArchive ar;
-    ar.Deserialize(meta_text.value(), this, core::TypeOf<Project>());
+    ar.Deserialize(*meta_text, this, core::TypeOf<Project>());
 }
 
 REGISTER_EVENT_HANDLER_BEFORE_MAIN()

@@ -103,6 +103,7 @@ add_library(${PROJECT_NAME}
         Base/Exception.h
         Reflection/SharedAny.cpp
         Reflection/SharedAny.h
+        Base/Optional.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

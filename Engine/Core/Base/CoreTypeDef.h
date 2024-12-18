@@ -7,15 +7,12 @@
 
 #pragma once
 #include "TypeTraits.h"
-
-
 #include <array>
 #include <chrono>
 #include <functional>
 #include <list>
 #include <map>
 #include <memory>
-#include <optional>
 #include <set>
 #include <string_view>
 #include <tuple>
@@ -52,10 +49,6 @@ using Map = std::map<KeyType, ValueType, Comparator, Allocator>;
 
 template <typename T, typename Allocator = std::allocator<T>>
 using List = std::list<T, Allocator>;
-
-// std::optional -> Optional
-template <typename T>
-using Optional = std::optional<T>;
 
 inline constexpr auto NullOpt = std::nullopt;
 

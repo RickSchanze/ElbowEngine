@@ -37,7 +37,7 @@ struct QueueFamilyIndices
     core::Optional<uint32_t> graphics_family;
     core::Optional<uint32_t> present_family;
 
-    [[nodiscard]] bool IsComplete() const { return graphics_family.has_value() && present_family.has_value(); }
+    [[nodiscard]] bool IsComplete() const { return graphics_family.HasValue() && present_family.HasValue(); }
 };
 
 class GfxContext_Vulkan final : public GfxContext

@@ -120,28 +120,28 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
 
 const SwapChainSupportInfo& GfxContext_Vulkan::QuerySwapChainSupportInfo()
 {
-    if (swap_chain_support_info_.has_value())
+    if (swap_chain_support_info_)
     {
-        return swap_chain_support_info_.value();
+        return *swap_chain_support_info_;
     }
     swap_chain_support_info_ = vulkan::QuerySwapChainSupportInfo(physical_device_, surface_);
-    return swap_chain_support_info_.value();
+    return *swap_chain_support_info_;
 }
 
 const PhysicalDeviceFeature& GfxContext_Vulkan::QueryDeviceFeature()
 {
-    if (device_feature_.has_value()) return device_feature_.value();
+    if (device_feature_) return *device_feature_;
     VkPhysicalDeviceFeatures features;
     vkGetPhysicalDeviceFeatures(physical_device_, &features);
     PhysicalDeviceFeature feature;
     feature.sampler_anisotropy = features.samplerAnisotropy;
     device_feature_            = feature;
-    return device_feature_.value();
+    return *device_feature_;
 }
 
 const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
 {
-    if (device_info_.has_value()) return device_info_.value();
+    if (device_info_) return *device_info_;
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(physical_device_, &properties);
     PhysicalDeviceInfo info;
@@ -149,7 +149,7 @@ const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
     info.limits.framebuffer_color_sample_count = static_cast<int32_t>(properties.limits.framebufferColorSampleCounts);
     info.limits.framebuffer_depth_sample_count = static_cast<int32_t>(properties.limits.framebufferDepthSampleCounts);
     device_info_                               = info;
-    return device_info_.value();
+    return *device_info_;
 }
 
 Format GfxContext_Vulkan::GetDefaultDepthStencilFormat() const
@@ -493,7 +493,7 @@ static void CreateLogicalDevice(
     core::Assert::Require(logcat::Platform_RHI_Vulkan, indices.IsComplete(), "Find uncompleted queue families.");
     core::Array<VkDeviceQueueCreateInfo> queue_create_infos;
     queue_create_infos.reserve(2);
-    core::Set<uint32_t> unique_queue_families = {indices.graphics_family.value(), indices.present_family.value()};
+    core::Set<uint32_t> unique_queue_families = {*indices.graphics_family, *indices.present_family};
     float               queue_priority        = 1.0f;
     for (uint32_t queue_family: unique_queue_families)
     {
@@ -528,8 +528,8 @@ static void CreateLogicalDevice(
         create_info.enabledLayerCount = 0;
     }
     VERIFY_VULKAN_RESULT(vkCreateDevice(physical_device, &create_info, nullptr, device.GetPtr()));
-    vkGetDeviceQueue(*device, indices.graphics_family.value(), 0, graphics_queue.GetPtr());
-    vkGetDeviceQueue(*device, indices.present_family.value(), 0, present_queue.GetPtr());
+    vkGetDeviceQueue(*device, *indices.graphics_family, 0, graphics_queue.GetPtr());
+    vkGetDeviceQueue(*device, *indices.present_family, 0, present_queue.GetPtr());
 }
 
 static void DestroyLogicalDevice(core::Ref<VkDevice> device)
@@ -580,7 +580,7 @@ static Format CreateSwapChain(
     desc.initial_state   = ImageState::Undefined;
 
     QueueFamilyIndices indices                = FindQueueFamilies(physical_device, surface);
-    uint32_t           queue_family_indices[] = {indices.graphics_family.value(), indices.present_family.value()};
+    uint32_t           queue_family_indices[] = {*indices.graphics_family, *indices.present_family};
     if (indices.graphics_family != indices.present_family)
     {
         swapchain_create_info.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;

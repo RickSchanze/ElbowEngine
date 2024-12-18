@@ -5,8 +5,6 @@
 #pragma once
 
 #include "EString.h"
-
-
 #include <exception>
 
 namespace core

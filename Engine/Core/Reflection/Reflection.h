@@ -9,6 +9,7 @@
 #include "ContainerView.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Exception.h"
+#include "Core/Base/Optional.h"
 #include "Core/Base/Ref.h"
 #include "Core/Base/UniquePtr.h"
 #include "Core/CoreGlobal.h"
@@ -199,7 +200,7 @@ struct FieldInfo
 
     [[nodiscard]] Any GetValue(const Any& obj) const;
 
-    [[nodiscard]] void SetValue(const Any& obj, const Any& value) const;
+    void SetValue(const Any& obj, const Any& value) const;
 
     SequentialContainerView* CreateSequentialContainerView(void* obj) const;
 
@@ -432,14 +433,14 @@ struct Type
     [[nodiscard]] Array<Ref<const FieldInfo>>    GetSelfDefinedFields() const;
     [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields_.size()); }
     [[nodiscard]] Optional<Ref<const FieldInfo>> GetSelfDefinedField(StringView name) const;
-    [[nodiscard]] bool                           HasSelfDefinedMember(StringView name) const { return GetSelfDefinedField(name) != NullOpt; }
+    [[nodiscard]] bool                           HasSelfDefinedMember(const StringView name) const { return GetSelfDefinedField(name).HasValue(); }
     [[nodiscard]] Array<const FunctionInfo*>     GetSelfDefinedMemberFunctions() const;
     [[nodiscard]] bool                           HasSelfDefinedMemberFunction(StringView name) const;
 
     [[nodiscard]] Array<Ref<const FieldInfo>>    GetFields() const;
     [[nodiscard]] int32_t                        GetFieldsCount() const { return static_cast<int32_t>(GetFields().size()); }
     [[nodiscard]] Optional<Ref<const FieldInfo>> GetField(StringView name) const;
-    [[nodiscard]] bool                           HasMember(StringView name) const { return GetField(name) != NullOpt; }
+    [[nodiscard]] bool                           HasMember(const StringView name) const { return GetField(name).HasValue(); }
     [[nodiscard]] Array<const FunctionInfo*>     GetMemberFunctions() const;
     [[nodiscard]] bool                           HasMemberFunction(StringView name) const;
 

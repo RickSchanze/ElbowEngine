@@ -9,7 +9,7 @@
 
 // 此头文件不能包含Reflection.h
 #include "Core/Base/CoreTypeDef.h"
-#include "Core/Base/Ref.h"
+#include "Core/Base/Optional.h"
 #include "Core/CoreGlobal.h"
 #include "MetaInfoManager.h"
 
@@ -112,20 +112,20 @@ Optional<T> Any::AsCopy() const
 {
     if (ptr_ == nullptr)
     {
-        return NullOpt;
+        return {};
     }
     const Type* t = TypeOf<T>();
     if (!CanConvertCopy(GetType(), t))
     {
-        return NullOpt;
+        return {};
     }
     if constexpr (IsAnyOf<T, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, bool>::Value)
     {
-        return AsInt64();
+        return *AsInt64();
     }
     if constexpr (IsAnyOf<T, float, double>::Value)
     {
-        return AsDouble();
+        return *AsDouble();
     }
     const T& tmp = *static_cast<T*>(ptr_->GetData());
     T        result{tmp};

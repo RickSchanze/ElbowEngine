@@ -375,9 +375,9 @@ public:
             return {};
         }
         auto cast_op = key.AsCopy<K>();
-        if (cast_op.has_value())
+        if (cast_op)
         {
-            auto& key_value = cast_op.value();
+            auto& key_value = *cast_op;
             if ((instance_->*container_).find(key_value) != (instance_->*container_).end())
             {
                 auto& it = (instance_->*container_)[key_value];
@@ -396,11 +396,11 @@ public:
         }
         auto key_op   = key.AsCopy<K>();
         auto value_op = value.AsCopy<V>();
-        if (key_op.has_value() && value_op.has_value())
+        if (key_op && value_op)
         {
-            if ((instance_->*container_).find(key_op.value()) == (instance_->*container_).end())
+            if ((instance_->*container_).find(*key_op) == (instance_->*container_).end())
             {
-                (instance_->*container_)[key_op.value()] = value_op.value();
+                (instance_->*container_)[*key_op] = *value_op;
                 return true;
             }
         }

@@ -8,7 +8,6 @@
 #pragma once
 #include "CoreTypeDef.h"
 #include "fmt/format.h"
-#include <ostream>
 #include <regex>
 #include <string>
 #include <utility>
@@ -49,7 +48,7 @@ public:
     [[nodiscard]] bool ContainsAny(const StringView& o, bool use_utf8 = false) const;
     [[nodiscard]] bool EndsWith(const StringView& o) const;
 
-    [[nodiscard]] std::string_view GetStdStringView() const { return {str_, (size_t)length_}; }
+    [[nodiscard]] std::string_view GetStdStringView() const { return {str_, static_cast<size_t>(length_)}; }
 
     String operator+(const StringView& o) const;
 
