@@ -3,18 +3,25 @@
 //
 
 #pragma once
+#include "Core/Reflection/MetaInfoManager.h"
 #include "Object.h"
+
+#include GEN_HEADER("Core.ObjectPtr.generated.h")
 
 namespace core
 {
 
-class ObjectPtrBase
+class CLASS() ObjectPtrBase
 {
+    GENERATED_CLASS(ObjectPtrBase)
 public:
     void SetOuter(const ObjectHandle outer) { outer_ = outer; }
 
 protected:
     ObjectHandle outer_ = InvalidObjectHandle;   // 即包含此成员的父对象
+
+    PROPERTY()
+    ObjectHandle object_ = InvalidObjectHandle;   // 引用的Object
 };
 
 /**
@@ -28,40 +35,6 @@ template <typename T>
 class ObjectPtr : public ObjectPtrBase
 {
 public:
-    using Type = T;
-
-    ObjectPtr() = default;
-
-    /**
-     * 设置handle并调整引用关系
-     * @param ptr
-     */
-    ObjectPtr(T* ptr);
-
-    /**
-     * 通过handle_查找Object表来看是否有效
-     * 可以避免指针失效的问题
-     * @return
-     */
-    [[nodiscard]] bool IsValid() const;
-
-    /**
-     * 查找Object表 获取对象
-     * @return
-     * */
-    [[nodiscard]] T* Get() const;
-
-    T* operator->() const;
-    T& operator*() const;
-
-    /**
-     * SetHandle会调整目标Object和outer的引用关系
-     * @param handle
-     */
-    void SetHandle(const ObjectHandle handle);
-
-protected:
-    ObjectHandle handle_ = InvalidObjectHandle;   // 指向的对象
 };
 
 template <typename T>
@@ -71,7 +44,8 @@ struct IsObjectPtr : std::false_type
 
 template <typename T>
 struct IsObjectPtr<ObjectPtr<T>> : std::true_type
-{};
+{
+};
 
 template <typename T>
 struct ObjPtrTraits

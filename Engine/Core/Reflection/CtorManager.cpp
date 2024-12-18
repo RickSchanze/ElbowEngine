@@ -74,7 +74,7 @@ bool core::CtorManager::ConstructAt(const Type* info, void* ptr) const
         LOGGER.Error(logcat::Reflection, "ptr is nullptr");
         return false;
     }
-    if (info->IsEnum() )
+    if (info->IsEnum())
     {
         *static_cast<uint8_t*>(ptr) = 0;
         return true;

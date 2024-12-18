@@ -431,9 +431,6 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
         {
             continue;
         }
-        if (field->IsDefined(FieldInfo::ObjectPtr))
-        {
-        }
         if (!field_node.IsDefined())
         {
             LOGGER.Warn(

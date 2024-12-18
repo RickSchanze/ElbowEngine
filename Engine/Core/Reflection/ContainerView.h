@@ -80,7 +80,7 @@ public:
     {
         if constexpr (IsObjectPtr<T>::value)
         {
-            element_type_ = TypeOf<typename ObjPtrTraits<T>::Type>();
+            element_type_ = TypeOf<ObjectPtrBase>();
         }
         else
         {
@@ -188,7 +188,7 @@ public:
     {
         if constexpr (IsObjectPtr<T>::value)
         {
-            element_type_ = TypeOf<typename ObjPtrTraits<T>::Type>();
+            element_type_ = TypeOf<ObjectPtrBase>();
         }
         else
         {
@@ -318,15 +318,15 @@ class MapView : public AssociativeContainerView
     using value_type    = typename Container<K, V>::value_type;
     using iterator_type = typename Container<K, V>::iterator;
 
-    static_assert(!IsObjectPtr<K>::value, "Type of K can not be a ObjectPtr");
+    static_assert(!IsObjectPtr<K>::value, "Key type must not be ObjectPtr");
 
 public:
-    MapView(Container<K, V> ClassT::* container, const Type* outer) : container_(container), key_type_(TypeOf<K>()), outer_(outer)
+    MapView(Container<K, V> ClassT::* container, const Type* outer) :
+        container_(container), key_type_(TypeOf<K>()), outer_(outer)
     {
-        // 没给加ObjPtr的标志是因为对于MapView 如果是ObjPtr那么只可能是value是ObjPtr而不是key
         if constexpr (IsObjectPtr<V>::value)
         {
-            value_type_ = TypeOf<typename ObjPtrTraits<V>::Type>();
+            value_type_ = TypeOf<ObjectPtrBase>();
         }
         else
         {

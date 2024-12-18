@@ -108,6 +108,7 @@ add_library(${PROJECT_NAME}
         Object/ObjectRegistry.h
         Base/FlatMap.h
         Object/ObjectPtr.h
+        Object/ObjectPtr.cpp
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

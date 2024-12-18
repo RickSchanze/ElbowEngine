@@ -56,7 +56,6 @@ static void RegisterOtherType(MetaInfoManager& manager)
 
 void MetaInfoManager::Startup()
 {
-
     REGISTER_ATOMIC_TYPE(int8_t);
     REGISTER_ATOMIC_TYPE(int16_t);
     REGISTER_ATOMIC_TYPE(int32_t);

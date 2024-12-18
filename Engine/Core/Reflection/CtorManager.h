@@ -34,6 +34,5 @@ public:
 
 private:
     HashMap<RTTITypeInfo, CtorDtor> ctors_;
-
 };
 }   // namespace core
