@@ -104,6 +104,10 @@ add_library(${PROJECT_NAME}
         Reflection/SharedAny.cpp
         Reflection/SharedAny.h
         Base/Optional.h
+        Object/ObjectRegistry.cpp
+        Object/ObjectRegistry.h
+        Base/FlatMap.h
+        Object/ObjectPtr.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

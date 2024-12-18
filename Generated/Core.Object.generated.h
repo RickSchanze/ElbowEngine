@@ -4,6 +4,12 @@
 using namespace core; \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Object>(), &core::Object::REFLECTION_Register_Object_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Object>(), &core::Object::ConstructAt, &core::Object::DestroyAt); \
+{ \
+Type* type = Type::Create<core::ObjectFlagType>("core.ObjectFlagType")->SetAttribute(Type::FlagAttribute::Flag); \
+using enum core::ObjectFlagType; \
+type->Internal_RegisterEnumValue(Persistent ,"Persistent")->SetComment("此对象需要持久化存储"); \
+core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<core::ObjectFlagType>(), type); \
+} \
 
 #undef GENERATED_BODY_IMPL_Object
 #define GENERATED_BODY_IMPL_Object \
@@ -15,9 +21,10 @@ static void DestroyAt(void* ptr) { static_cast<core::Object*>(ptr)->~Object(); }
 #define GENERATED_IMPLEMENTATION \
 core::Type* core::Object::REFLECTION_Register_Object_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::Object>("core.Object"); \
+Type* type = Type::Create<core::Object>("core.Object")->SetComment("Object不自动生成默认构造函数"); \
 type->Internal_RegisterField("name_", &core::Object::name_, offsetof(core::Object, name_)); \
-type->Internal_RegisterField("display_name_", &core::Object::display_name_, offsetof(core::Object, display_name_)); \
+type->Internal_RegisterField("handle_", &core::Object::handle_, offsetof(core::Object, handle_)); \
+type->Internal_RegisterField("flags_", &core::Object::flags_, offsetof(core::Object, flags_)); \
 return type; \
 } \
 

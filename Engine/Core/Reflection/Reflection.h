@@ -16,7 +16,7 @@
 #include "Core/CoreTypeTraits.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
-#include "Core/Object/Object.h"
+#include "Core/Object/ObjectPtr.h"
 #include "MetaInfoManager.h"
 
 #include <nlohmann/json.hpp>
@@ -454,7 +454,11 @@ struct Type
 #define REGISTER_FIELD_IMPL(name)                                                                                                 \
     else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                                 \
     {                                                                                                                             \
-        info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
+        info.type_ = nullptr;                                                                                                     \
+        if (IsObjectPtr<typename ContainerTypeTrait<T>::ValueType>::value)                                                        \
+        {                                                                                                                         \
+            info.SetAttribute(FieldInfo::ObjectPtr);                                                                              \
+        }                                                                                                                         \
         info.container_identifier_ = ContainerIdentifier::name;                                                                   \
         info.container_view_       = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
     }
@@ -472,9 +476,9 @@ struct Type
         info.offset_ = offset;
         info.size_   = sizeof(T);
 
-        if constexpr (ObjectPtrTrait<T>::IsObjPtr())
+        if constexpr (IsObjectPtr<T>::value)
         {
-            info.type_ = TypeOf<typename ObjectPtrTrait<T>::type>();
+            info.type_ = TypeOf<typename ObjPtrTraits<T>::Type>();
             info.SetAttribute(FieldInfo::ObjectPtr);
         }
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Count)
@@ -489,13 +493,21 @@ struct Type
         REGISTER_FIELD_IMPL(HashSet)
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
         {
-            info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();
+            info.type_                 = nullptr;
+            if (IsObjectPtr<typename ContainerTypeTrait<T>::ValueType>::value)
+            {
+                info.SetAttribute(FieldInfo::ObjectPtr);
+            }
             info.container_identifier_ = ContainerIdentifier::StaticArray;
             info.container_view_ =
                 New<StaticArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, ContainerTypeTrait<T>::ConstantSize>>(field, this);
         }
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Map)
         {
+            if (IsObjectPtr<typename ContainerTypeTrait<T>::ValueType>::value)
+            {
+                info.SetAttribute(FieldInfo::ObjectPtr);
+            }
             info.type_                 = nullptr;
             info.container_identifier_ = ContainerIdentifier::Map;
             info.container_view_ =
@@ -503,6 +515,10 @@ struct Type
         }
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::HashMap)
         {
+            if (IsObjectPtr<typename ContainerTypeTrait<T>::ValueType>::value)
+            {
+                info.SetAttribute(FieldInfo::ObjectPtr);
+            }
             info.type_                 = nullptr;
             info.container_identifier_ = ContainerIdentifier::HashMap;
             info.container_view_ =

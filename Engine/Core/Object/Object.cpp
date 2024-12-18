@@ -15,6 +15,12 @@
 
 GENERATED_SOURCE()
 
+void core::Object::PostSerialized()
+{
+
+}
+
 namespace core
 {
+
 }   // namespace core

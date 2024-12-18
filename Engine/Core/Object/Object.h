@@ -8,7 +8,6 @@
 #pragma once
 
 #include "Core/Base/EString.h"
-#include "Core/CoreDef.h"
 #include "Core/Reflection/ITypeGetter.h"
 #include "Core/Reflection/MetaInfoMacro.h"
 
@@ -17,21 +16,39 @@
 namespace core
 {
 
+using ObjectHandle                                = int32_t;
+constexpr inline ObjectHandle InvalidObjectHandle = 0;
+
+enum ENUM(Flag) ObjectFlagType
+{
+    Persistent = 1 << 1,   // 此对象需要持久化存储
+};
+
+using ObjectFlag = int32_t;
+
+/**
+ * Object不自动生成默认构造函数
+ */
 class CLASS() Object : public ITypeGetter
 {
     GENERATED_CLASS(Object)
 public:
-    virtual void PostSerialized() {}
+    /**
+     * 默认的实现中, 会遍历所有成员, 将由
+     * ObjectPtr包裹的成语初始化
+     */
+    virtual void PostSerialized();
     virtual void PreSerialized() {}
 
 protected:
     PROPERTY()
     String name_;
 
-#if WITH_EDITOR
     PROPERTY()
-    String display_name_;
-#endif
+    ObjectHandle handle_ = 0;
+
+    PROPERTY()
+    ObjectFlag flags_ = 0;
 };
 
 template <typename T>
@@ -44,45 +61,5 @@ T* Cast(Object* obj)
     }
     return nullptr;
 }
-
-template <typename T>
-    requires std::is_base_of_v<Object, T>
-class ObjectPtr
-{
-public:
-    ObjectPtr() = default;
-
-    ObjectPtr(T* ptr) : ptr_(ptr) {}
-
-    T* operator->() const { return ptr_; }
-    T& operator*() const { return *ptr_; }
-    T* Get() const { return ptr_; }
-    operator T*() const { return ptr_; }
-
-    [[nodiscard]] const Type* GetObjectType() const
-    {
-        if (ptr_)
-        {
-            return ptr_->GetType();
-        }
-        return nullptr;
-    }
-
-private:
-    Object* ptr_ = nullptr;
-};
-
-template <typename T>
-struct ObjectPtrTrait
-{
-    static constexpr bool IsObjPtr() { return false; }
-};
-
-template <typename T>
-struct ObjectPtrTrait<ObjectPtr<T>> : std::true_type
-{
-    using type = T;
-    static constexpr bool IsObjPtr() { return true; }
-};
 
 }   // namespace core

@@ -23,22 +23,23 @@ private:
     T*                                            value_ptr = nullptr;   // 指针是否为空表示是否有效
 
     // 将 storage 转换为 T 类型的指针
+    T* AsValueInternal() { return reinterpret_cast<T*>(&storage); }
+
+    const T* AsValueInternal() const { return reinterpret_cast<const T*>(&storage); }
+
     T* AsValue()
     {
-        if (!HasValue())
+        if (!value_ptr)
         {
             throw OptionalValueException();
         }
-        return reinterpret_cast<T*>(&storage);
+        return value_ptr;
     }
 
     const T* AsValue() const
     {
-        if (!HasValue())
-        {
-            throw OptionalValueException();
-        }
-        return reinterpret_cast<const T*>(&storage);
+        if (!value_ptr) throw OptionalValueException();
+        return value_ptr;
     }
 
 public:
@@ -49,14 +50,14 @@ public:
     Optional(const T& val)
     {
         new (&storage) T(val);
-        value_ptr = AsValue();
+        value_ptr = AsValueInternal();
     }
 
     // 移动构造函数
     Optional(T&& val) noexcept(std::is_nothrow_move_constructible_v<T>)
     {
         new (&storage) T(std::move(val));
-        value_ptr = AsValue();
+        value_ptr = AsValueInternal();
     }
 
     // 析构函数
@@ -67,8 +68,8 @@ public:
     {
         if (other.HasValue())
         {
-            new (&storage) T(*other.AsValue());
-            value_ptr = AsValue();
+            new (&storage) T(*other.AsValueInternal());
+            value_ptr = AsValueInternal();
         }
         else
         {
@@ -81,8 +82,8 @@ public:
     {
         if (other.HasValue())
         {
-            new (&storage) T(std::move(*other.AsValue()));
-            value_ptr = AsValue();
+            new (&storage) T(std::move(*other.AsValueInternal()));
+            value_ptr = AsValueInternal();
         }
         else
         {
@@ -98,8 +99,8 @@ public:
             Reset();
             if (other.HasValue())
             {
-                new (&storage) T(*other.AsValue());
-                value_ptr = AsValue();
+                new (&storage) T(*other.AsValueInternal());
+                value_ptr = AsValueInternal();
             }
         }
         return *this;
@@ -113,8 +114,8 @@ public:
             Reset();
             if (other.HasValue())
             {
-                new (&storage) T(std::move(*other.AsValue()));
-                value_ptr = AsValue();
+                new (&storage) T(std::move(*other.AsValueInternal()));
+                value_ptr = AsValueInternal();
             }
         }
         return *this;
@@ -139,7 +140,7 @@ public:
     {
         if (value_ptr)
         {
-            AsValue()->~T();   // 显式调用析构函数
+            AsValueInternal()->~T();   // 显式调用析构函数
             value_ptr = nullptr;
         }
     }
@@ -150,7 +151,7 @@ public:
     {
         Reset();
         new (&storage) T(std::forward<Args>(args)...);
-        value_ptr = AsValue();
+        value_ptr = AsValueInternal();
     }
 };
 

@@ -12,6 +12,7 @@
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
+#include "Core/Object/ObjectPtr.h"
 
 namespace core
 {
@@ -75,9 +76,16 @@ public:
     static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
     using Iterator = typename StaticArray<T, N>::iterator;
 
-    explicit StaticArrayView(StaticArray<T, N> ClassT::*container, const Type* outer) :
-        container_(container), element_type_(TypeOf<T>()), outer_(outer)
+    explicit StaticArrayView(StaticArray<T, N> ClassT::* container, const Type* outer) : container_(container), outer_(outer)
     {
+        if constexpr (IsObjectPtr<T>::value)
+        {
+            element_type_ = TypeOf<typename ObjPtrTraits<T>::Type>();
+        }
+        else
+        {
+            element_type_ = TypeOf<T>();
+        }
     }
 
     bool Add(Any element) override { return false; }
@@ -153,15 +161,12 @@ public:
         return N;
     }
 
-    void Clear() override
-    {
-
-    }
+    void Clear() override {}
 
 private:
     ClassT* instance_ = nullptr;
 
-    StaticArray<T, N> ClassT::*container_ = nullptr;
+    StaticArray<T, N> ClassT::* container_ = nullptr;
 
     Iterator    iter_;
     size_t      iter_cnt_ = 0;
@@ -179,8 +184,16 @@ public:
     static_assert(!std::is_reference_v<T>, "T must not be a reference, could be Ref<T> instead");
     using Iterator = typename Container<T>::iterator;
 
-    explicit DynamicArrayView(Container<T> ClassT::*container, const Type* outer) : container_(container), element_type_(TypeOf<T>()), outer_(outer)
+    explicit DynamicArrayView(Container<T> ClassT::* container, const Type* outer) : container_(container), outer_(outer)
     {
+        if constexpr (IsObjectPtr<T>::value)
+        {
+            element_type_ = TypeOf<typename ObjPtrTraits<T>::Type>();
+        }
+        else
+        {
+            element_type_ = TypeOf<T>();
+        }
     }
 
     bool BeginIterate() override
@@ -284,7 +297,7 @@ public:
 private:
     ClassT* instance_ = nullptr;
 
-    Container<T> ClassT::*container_ = nullptr;
+    Container<T> ClassT::* container_ = nullptr;
 
     Iterator    iter_;
     size_t      iter_cnt_ = 0;
@@ -305,10 +318,20 @@ class MapView : public AssociativeContainerView
     using value_type    = typename Container<K, V>::value_type;
     using iterator_type = typename Container<K, V>::iterator;
 
+    static_assert(!IsObjectPtr<K>::value, "Type of K can not be a ObjectPtr");
+
 public:
-    MapView(Container<K, V> ClassT::*container, const Type* outer) :
-        container_(container), key_type_(TypeOf<K>()), value_type_(TypeOf<V>()), outer_(outer)
+    MapView(Container<K, V> ClassT::* container, const Type* outer) : container_(container), key_type_(TypeOf<K>()), outer_(outer)
     {
+        // 没给加ObjPtr的标志是因为对于MapView 如果是ObjPtr那么只可能是value是ObjPtr而不是key
+        if constexpr (IsObjectPtr<V>::value)
+        {
+            value_type_ = TypeOf<typename ObjPtrTraits<V>::Type>();
+        }
+        else
+        {
+            value_type_ = TypeOf<V>();
+        }
     }
 
     bool BeginIterate() override
@@ -418,7 +441,7 @@ public:
     }
 
 private:
-    Container<K, V> ClassT::*container_ = nullptr;
+    Container<K, V> ClassT::* container_ = nullptr;
 
     ClassT*       instance_ = nullptr;
     iterator_type iter_{};
