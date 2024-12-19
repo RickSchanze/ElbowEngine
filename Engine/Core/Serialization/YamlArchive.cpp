@@ -421,6 +421,10 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
         );
         return false;
     }
+    if (type->IsDerivedFrom(TypeOf<Object>()))
+    {
+        static_cast<Object*>(out)->PreDeserialized();
+    }
     auto fields = type->GetFields();
     for (auto field: fields)
     {
@@ -519,6 +523,10 @@ static bool DeserializeNode(const YAML::Node& node, void* out, const Type* type)
                 return false;
             }
         }
+    }
+    if (type->IsDerivedFrom(TypeOf<Object>()))
+    {
+        static_cast<Object*>(out)->PostDeserialized();
     }
     return true;
 }

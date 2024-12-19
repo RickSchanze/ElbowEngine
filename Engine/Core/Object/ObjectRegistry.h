@@ -5,7 +5,8 @@
 #pragma once
 
 #include "Core/Base/FlatMap.h"
-#include "Core/Core.h"
+#include "Core/Reflection/MetaInfoMacro.h"
+#include "Core/Object/Object.h"
 
 namespace core
 {
@@ -14,6 +15,8 @@ class CLASS() ObjectRegistry
 public:
     ObjectHandle NextInstanceHandle();
     ObjectHandle NextPersistentHandle();
+
+    Object* GetObjectByHandle(ObjectHandle handle);
 
 private:
     // 所有的Object
@@ -29,5 +32,21 @@ private:
     // 可用的, 由于删除造成的handle(persistent only)
     PROPERTY()
     Array<ObjectHandle> free_handles_;
+};
+
+class ObjectManager : public Manager<ObjectManager>
+{
+private:
+    ObjectRegistry registry_;
+
+public:
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
+    [[nodiscard]] StringView   GetName() const override { return "ObjectManager"; }
+
+    void Startup() override;
+    void Shutdown() override;
+
+    static ObjectRegistry& GetRegistry();
+    static Object*         GetObjectByHandle(ObjectHandle handle);
 };
 }   // namespace core

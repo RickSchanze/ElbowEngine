@@ -187,6 +187,10 @@ AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(void* obj) c
     return static_cast<AssociativeContainerView*>(container_view_.Get());
 }
 
+const Type* GetObjectPtrBaseType(){
+    return TypeOf<ObjectPtrBase>();
+}
+
 core::StringView core::Type::GetAttributeValue(ValueAttribute attr) const
 {
     if (!IsDefined(attr))
