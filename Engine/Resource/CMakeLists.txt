@@ -19,8 +19,12 @@ add_library(Resource
         Project.cpp
         SQLHelper.cpp
         SQLHelper.h
-        Meta/MeshMeta.cpp
-        Meta/MeshMeta.h
+        Assets/Mesh/MeshMeta.cpp
+        Assets/Mesh/MeshMeta.h
+        Assets/Mesh/Mesh.cpp
+        Assets/Mesh/Mesh.h
+        Assets/Asset.cpp
+        Assets/Asset.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

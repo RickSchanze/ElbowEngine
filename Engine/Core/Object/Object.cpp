@@ -12,6 +12,7 @@
 #include "Core/Serialization/Archive.h"
 
 #include "Core.Object.generated.h"
+#include "PersistentObject.h"
 
 GENERATED_SOURCE()
 
@@ -35,11 +36,50 @@ void core::Object::RemoveReferenced(ObjectHandle handle)
     erase(referenced_, handle);
 }
 
+void core::Object::GenerateInstanceHandle()
+{
+    handle_ = ObjectManager::Get()->GetRegistry().NextInstanceHandle();
+}
+
+void core::Object::RegisterSelf()
+{
+    ObjectManager::Get()->GetRegistry().RegisterObject(this);
+}
+
+void core::Object::ResolveObjectPtr()
+{
+    const auto type   = GetType();
+    const auto fields = type->GetFields();
+    for (const auto& field: fields)
+    {
+        if (field->GetType() == TypeOf<ObjectPtrBase>())
+        {
+            auto ptr = field->GetFieldPtr(this);
+            static_cast<ObjectPtrBase*>(ptr)->SetOuter(handle_);
+        }
+    }
+}
+
+void core::Object::PerformPersistentObjectLoad()
+{
+    if (Is(TypeOf<PersistentObject>()))
+    {
+        Cast<PersistentObject>(this)->PerformLoad();
+    }
+}
+
 void core::Object::PostSerialized() {}
 
-void core::Object::PostDeserialized() {}
-
-namespace core
+void core::Object::PostDeserialized()
 {
+    RegisterSelf();
+    ResolveObjectPtr();
+    PerformPersistentObjectLoad();
+}
 
-}   // namespace core
+void core::Object::OnCreated()
+{
+    GenerateInstanceHandle();
+    RegisterSelf();
+    ResolveObjectPtr();
+}

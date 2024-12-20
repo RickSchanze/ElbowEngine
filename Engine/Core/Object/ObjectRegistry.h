@@ -18,6 +18,8 @@ public:
 
     Object* GetObjectByHandle(ObjectHandle handle);
 
+    void RegisterObject(Object* object);
+
 private:
     // 所有的Object
     FlatMap<ObjectHandle, Object*> objects_;

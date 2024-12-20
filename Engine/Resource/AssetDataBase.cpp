@@ -8,7 +8,7 @@
 #include "AssetDataBase.h"
 
 #include "Logcat.h"
-#include "Meta/MeshMeta.h"
+#include "Assets/Mesh/MeshMeta.h"
 #include "Platform/FileSystem/Folder.h"
 #include "Platform/FileSystem/Path.h"
 #include "Project.h"
@@ -42,5 +42,5 @@ void resource::AssetDataBase::Shutdown()
 
 void resource::AssetDataBase::CreateAssetTables()
 {
-    CREATE_ASSET_TABLE(core::resource::MeshMeta)
+    CREATE_ASSET_TABLE(resource::MeshMeta);
 }

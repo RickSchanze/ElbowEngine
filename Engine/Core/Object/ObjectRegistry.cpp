@@ -33,6 +33,13 @@ core::Object* core::ObjectRegistry::GetObjectByHandle(const ObjectHandle handle)
     return ptr;
 }
 
+void core::ObjectRegistry::RegisterObject(Object* object)
+{
+    if (object == nullptr) return;
+    Assert::Require(logcat::Core_Object, !objects_.contains(object->GetHandle()), "ObjectHandle的重复注册");
+    objects_[object->GetHandle()] = object;
+}
+
 void core::ObjectManager::Startup()
 {
     if (auto text = Event_OnRequireReadFileText.Invoke(REGISTRY_PATH))

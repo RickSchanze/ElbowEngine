@@ -7,7 +7,7 @@
 
 #include GEN_HEADER("Resource.MeshMeta.generated.h")
 
-namespace core::resource
+namespace resource
 {
 class CLASS(SQLTable = "Mesh") MeshMeta
 {
@@ -15,7 +15,7 @@ class CLASS(SQLTable = "Mesh") MeshMeta
 
 public:
     [[nodiscard]] int32_t GetId() const { return id; }
-    [[nodiscard]] int32_t GetObjectId() const { return object_id; }
+    [[nodiscard]] int32_t GetObjectId() const { return object_handle; }
     [[nodiscard]] bool    GetTriangulate() const { return triangulate; }
     [[nodiscard]] bool    GetGenerateNormals() const { return generate_normals; }
     [[nodiscard]] bool    GetGenerateSmoothNormals() const { return generate_smooth_normals; }
@@ -27,7 +27,7 @@ private:
     int32_t id = 0;
 
     PROPERTY()
-    int32_t object_id = 0;
+    int32_t object_handle = 0;
 
     PROPERTY()
     core::String path;

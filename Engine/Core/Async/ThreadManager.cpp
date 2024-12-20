@@ -11,6 +11,8 @@
 
 GENERATED_SOURCE()
 
+static std::thread::id main_thread_id{};
+
 void core::ThreadManagerAddSlotTask(const ThreadSlot run_slot, ITask* task)
 {
     auto& mgr = ThreadManager::GetByRef();
@@ -23,8 +25,14 @@ core::ThreadScheduler& core::ThreadManager::GetScheduler()
     return scheduler;
 }
 
+std::thread::id core::ThreadManager::GetMainThreadId()
+{
+    return main_thread_id;
+}
+
 void core::ThreadManager::Startup()
 {
+    main_thread_id   = std::this_thread::get_id();
     auto& thread_cfg = GetConfig<CoreConfig>()->GetThreadSlotCountMap();
     for (auto i = GetEnumValue(ThreadSlot::Game); i < GetEnumValue(ThreadSlot::Count); ++i)
     {

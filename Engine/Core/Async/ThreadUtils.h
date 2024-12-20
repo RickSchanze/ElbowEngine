@@ -18,6 +18,8 @@ public:
     {
         std::this_thread::sleep_for(ms);
     }
+
+    static bool IsCurrentMainThread();
 };
 
 }

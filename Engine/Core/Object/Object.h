@@ -41,10 +41,13 @@ class CLASS() Object : public ITypeGetter
     GENERATED_CLASS(Object)
     friend class ObjectPtrBase;
 
-protected:
-    PROPERTY()
-    String name_;
+public:
+    Object(ObjectFlag flag) : flags_(flag) {}
+    Object() : flags_(0) {}
 
+    [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
+
+private:
     PROPERTY()
     ObjectHandle handle_ = 0;
 
@@ -53,6 +56,10 @@ protected:
 
     PROPERTY()
     ObjectStateFlag state_ = 0;
+
+protected:
+    PROPERTY()
+    String name_;
 
 private:
     // 此Object正在引用的对象, 用Array是因为可能会被同一个Object多次引用
@@ -65,15 +72,27 @@ private:
     void AddReferenced(ObjectHandle handle);
     void RemoveReferenced(ObjectHandle handle);
 
+    void GenerateInstanceHandle();
+    void RegisterSelf();
+    void ResolveObjectPtr();
+    void PerformPersistentObjectLoad();
+
 public:
     virtual void PostSerialized();
     virtual void PreSerialized() {}
+
     /**
      * 默认的实现中, 会遍历所有成员, 将由
      * ObjectPtr包裹的成语初始化
      */
     virtual void PostDeserialized();
     virtual void PreDeserialized() {}
+
+    /**
+     * 通过NewObject创建出来的对象不是Persistent对象, 不应该被序列化
+     * 此时由此函数来生成ObjectHandle, 以及初始化ObjectPtr
+     */
+    virtual void OnCreated();
 
     [[nodiscard]] bool IsPendingKill() const { return state_ & PendingKill; }
 

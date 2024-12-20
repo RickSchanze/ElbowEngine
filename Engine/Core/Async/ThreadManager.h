@@ -79,6 +79,8 @@ private:
 public:
     static ThreadScheduler& GetScheduler();
 
+    static std::thread::id GetMainThreadId();
+
     [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
     [[nodiscard]] StringView   GetName() const override { return "ThreadManager"; }
 

@@ -25,4 +25,5 @@ constexpr auto Core_Event              = "Core.Event";
 constexpr auto Config                  = "Config";
 constexpr auto Core_Memory             = "Core.Memory";
 constexpr auto Exception               = "Exception";
+constexpr auto Core_Thread             = "Core.Thread";
 }   // namespace logcat
