@@ -14,13 +14,14 @@ class CLASS(SQLTable = "Mesh") MeshMeta
     GENERATED_CLASS(MeshMeta)
 
 public:
-    [[nodiscard]] int32_t GetId() const { return id; }
-    [[nodiscard]] int32_t GetObjectId() const { return object_handle; }
-    [[nodiscard]] bool    GetTriangulate() const { return triangulate; }
-    [[nodiscard]] bool    GetGenerateNormals() const { return generate_normals; }
-    [[nodiscard]] bool    GetGenerateSmoothNormals() const { return generate_smooth_normals; }
-    [[nodiscard]] bool    GetMergeDuplicateVertices() const { return merge_duplicate_vertices; }
-    [[nodiscard]] bool    GetRemoveUnusedMaterials() const { return remove_unused_materials; }
+    [[nodiscard]] int32_t          GetId() const { return id; }
+    [[nodiscard]] int32_t          GetObjectId() const { return object_handle; }
+    [[nodiscard]] bool             GetTriangulate() const { return triangulate; }
+    [[nodiscard]] bool             GetGenerateNormals() const { return generate_normals; }
+    [[nodiscard]] bool             GetGenerateSmoothNormals() const { return generate_smooth_normals; }
+    [[nodiscard]] bool             GetMergeDuplicateVertices() const { return merge_duplicate_vertices; }
+    [[nodiscard]] bool             GetRemoveUnusedMaterials() const { return remove_unused_materials; }
+    [[nodiscard]] core::StringView GetPath() const { return path; }
 
 private:
     PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")

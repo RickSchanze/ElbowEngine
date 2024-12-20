@@ -3,30 +3,21 @@
 //
 
 #pragma once
-#include "Core/Math/MathTypes.h"
+
+#include "Platform/Config/PlatformConfig.h"
 #include "Resource/Assets/Asset.h"
 
 namespace resource
 {
 
-template <typename Vertex>
-struct SubMeshStorage
-{
-    core::Array<Vertex>   vertices;
-    core::Array<uint32_t> indices;
-};
-
-template <typename Vertex>
 struct MeshStorage
 {
-    core::Array<SubMeshStorage<Vertex>> sub_meshes;
-};
+    core::UniquePtr<platform::rhi::Buffer> vertex_buffer;
+    core::UniquePtr<platform::rhi::Buffer> index_buffer;
+    size_t                                 vertex_count;
+    size_t                                 index_count;
 
-struct StaticMeshVertex
-{
-    core::Vector3 position;
-    core::Vector3 normal;
-    core::Vector2 uv;
+    bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
 class Mesh : public Asset
@@ -37,6 +28,6 @@ public:
     void PerformLoad() override;
 
 private:
-    MeshStorage<StaticMeshVertex> storage_;
+    core::UniquePtr<MeshStorage> storage_;
 };
 }   // namespace resource
