@@ -72,13 +72,31 @@ enum ENUM(Flag) SampleCount
 
 
 // 指示要访问图像的哪些"方面"
-enum ImageAspect
+enum ImageAspectBits
 {
     IA_Color   = 0b1,     // 颜色
     IA_Depth   = 0b10,    // 深度
     IA_Stencil = 0b100,   // 模板
     IA_Max,
 };
+typedef uint32_t ImageAspect;
+
+enum BufferUsageBits
+{
+    BUB_VertexBuffer  = 1,
+    BUB_IndexBuffer   = 1 << 1,
+    BUB_UniformBuffer = 1 << 2,
+};
+typedef uint32_t BufferUsage;
+
+enum BufferMemoryPropertyBits
+{
+    BMPB_DeviceLocal  = 1,        // GPU Only CPU无法访问(纹理、IndexBuffer、VertexBuffer)
+    BMPB_HostVisible  = 1 << 1,   // CPU可以访问(UniformBuffer) 通常和 HostCoherent 一起使用
+    BMPB_HostCoherent = 1 << 2,   // CPU可以访问, 但GPU会自动刷新(UniformBuffer)而不用手动同步
+    BMPB_Max          = 0x7FFFFFFF,
+};
+typedef uint32_t BufferMemoryProperty;
 
 /**
  * 对应VkImageSubresourceRange

@@ -62,9 +62,19 @@ public:
 #if REGION(资源创建/销毁)
     [[nodiscard]] VkImageView CreateImageView(const ImageViewDesc& desc) const;
     void                      DestroyImageView(VkImageView view) const;
+
+    [[nodiscard]] VkBuffer CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage) const;
+    void                   DestroyBuffer(VkBuffer buffer) const;
+
+    [[nodiscard]] VkDeviceMemory AllocateBufferMemory(VkBuffer buffer, VkMemoryPropertyFlags properties) const;
+    void                         FreeBufferMemory(VkDeviceMemory memory) const;
+
+    void BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory) const;
 #endif
 
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
+
+    [[nodiscard]] uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
 private:
     [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;

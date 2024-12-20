@@ -130,15 +130,15 @@ platform::rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits s
 VkImageAspectFlags RHIImageAspectToVkImageAspect(int aspect)
 {
     VkImageAspectFlags flags = 0;
-    if (aspect & platform::rhi::ImageAspect::IA_Color)
+    if (aspect & platform::rhi::ImageAspectBits::IA_Color)
     {
         flags |= VK_IMAGE_ASPECT_COLOR_BIT;
     }
-    if (aspect & platform::rhi::ImageAspect::IA_Depth)
+    if (aspect & platform::rhi::ImageAspectBits::IA_Depth)
     {
         flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
     }
-    if (aspect & platform::rhi::ImageAspect::IA_Stencil)
+    if (aspect & platform::rhi::ImageAspectBits::IA_Stencil)
     {
         flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -150,15 +150,15 @@ int VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect)
     int rtn = 0;
     if (rtn & VK_IMAGE_ASPECT_COLOR_BIT)
     {
-        rtn |= platform::rhi::ImageAspect::IA_Color;
+        rtn |= platform::rhi::ImageAspectBits::IA_Color;
     }
     if (rtn & VK_IMAGE_ASPECT_DEPTH_BIT)
     {
-        rtn |= platform::rhi::ImageAspect::IA_Depth;
+        rtn |= platform::rhi::ImageAspectBits::IA_Depth;
     }
     if (rtn & VK_IMAGE_ASPECT_STENCIL_BIT)
     {
-        rtn |= platform::rhi::ImageAspect::IA_Stencil;
+        rtn |= platform::rhi::ImageAspectBits::IA_Stencil;
     }
     return rtn;
 }
@@ -225,4 +225,76 @@ platform::rhi::ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType t
     case VK_IMAGE_VIEW_TYPE_MAX_ENUM: return platform::rhi::ImageViewType::Count;
     }
     return platform::rhi::ImageViewType::Count;
+}
+
+VkBufferUsageFlags RHIBufferUsageToVkBufferUsage(platform::rhi::BufferUsage usage)
+{
+    VkBufferUsageFlags flags = 0;
+    if (usage & platform::rhi::BUB_VertexBuffer)
+    {
+        flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    }
+    if (usage & platform::rhi::BUB_IndexBuffer)
+    {
+        flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    }
+    if (usage & platform::rhi::BUB_UniformBuffer)
+    {
+        flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    }
+    return flags;
+}
+
+platform::rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usage)
+{
+    platform::rhi::BufferUsage flags = 0;
+    if (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+    {
+        flags |= platform::rhi::BUB_VertexBuffer;
+    }
+    if (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+    {
+        flags |= platform::rhi::BUB_IndexBuffer;
+    }
+    if (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+    {
+        flags |= platform::rhi::BUB_UniformBuffer;
+    }
+    return flags;
+}
+
+VkMemoryPropertyFlags RHIMemoryPropertyToVkMemoryProperty(platform::rhi::BufferMemoryProperty property)
+{
+    VkMemoryPropertyFlags flags = 0;
+    if (property & platform::rhi::BMPB_DeviceLocal)
+    {
+        flags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    }
+    if (property & platform::rhi::BMPB_HostVisible)
+    {
+        flags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    }
+    if (property & platform::rhi::BMPB_HostCoherent)
+    {
+        flags |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    }
+    return flags;
+}
+
+platform::rhi::BufferMemoryProperty VkMemoryPropertyToRHIMemoryProperty(VkMemoryPropertyFlags property)
+{
+    platform::rhi::BufferMemoryProperty flags = 0;
+    if (property & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    {
+        flags |= platform::rhi::BMPB_DeviceLocal;
+    }
+    if (property & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+    {
+        flags |= platform::rhi::BMPB_HostVisible;
+    }
+    if (property & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+    {
+        flags |= platform::rhi::BMPB_HostCoherent;
+    }
+    return flags;
 }

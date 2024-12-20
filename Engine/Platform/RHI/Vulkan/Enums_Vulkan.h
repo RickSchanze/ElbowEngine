@@ -38,3 +38,9 @@ VkComponentSwizzle                     RHIComponentMappingElementToVkComponentSw
 
 VkImageViewType              RHIImageViewTypeToVkImageViewType(platform::rhi::ImageViewType type);
 platform::rhi::ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType type);
+
+VkBufferUsageFlags         RHIBufferUsageToVkBufferUsage(platform::rhi::BufferUsage usage);
+platform::rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usage);
+
+VkMemoryPropertyFlags               RHIMemoryPropertyToVkMemoryProperty(platform::rhi::BufferMemoryProperty property);
+platform::rhi::BufferMemoryProperty VkMemoryPropertyToRHIMemoryProperty(VkMemoryPropertyFlags property);

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Buffer.h"
 #include "Core/Core.h"
 #include "Core/Event/Event.h"
 #include "Core/Math/MathTypes.h"
@@ -52,6 +53,12 @@ struct PhysicalDeviceInfo
         /** SampleCount */ int framebuffer_depth_sample_count;
     };
     Limits limits;
+};
+
+class RHIException : public core::Exception
+{
+public:
+    explicit RHIException(const core::String& msg) : Exception(core::String::Format("RHI错误:\n{}", msg)) {}
 };
 
 class GfxContext

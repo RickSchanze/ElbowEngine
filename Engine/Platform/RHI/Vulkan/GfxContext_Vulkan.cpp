@@ -193,6 +193,49 @@ void GfxContext_Vulkan::DestroyImageView(const VkImageView view) const
     vkDestroyImageView(device_, view, nullptr);
 }
 
+VkBuffer GfxContext_Vulkan::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage) const
+{
+    VkBufferCreateInfo buffer_info{};
+    buffer_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size        = size;
+    buffer_info.usage       = usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBuffer       buffer;
+    const VkResult result = vkCreateBuffer(device_, &buffer_info, nullptr, &buffer);
+    VERIFY_VULKAN_RESULT(result);
+    return buffer;
+}
+
+void GfxContext_Vulkan::DestroyBuffer(VkBuffer buffer) const
+{
+    vkDestroyBuffer(device_, buffer, nullptr);
+}
+
+VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory(VkBuffer buffer, VkMemoryPropertyFlags properties) const
+{
+    VkMemoryRequirements mem_requirements;
+    vkGetBufferMemoryRequirements(device_, buffer, &mem_requirements);
+
+    VkMemoryAllocateInfo alloc_info{};
+    alloc_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.allocationSize  = mem_requirements.size;
+    alloc_info.memoryTypeIndex = FindMemoryType(mem_requirements.memoryTypeBits, properties);
+    VkDeviceMemory memory;
+    const VkResult result = vkAllocateMemory(device_, &alloc_info, nullptr, &memory);
+    VERIFY_VULKAN_RESULT(result);
+    return memory;
+}
+
+void GfxContext_Vulkan::FreeBufferMemory(VkDeviceMemory memory) const
+{
+    vkFreeMemory(device_, memory, nullptr);
+}
+
+void GfxContext_Vulkan::BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory) const
+{
+    vkBindBufferMemory(device_, buffer, memory, 0);
+}
+
 
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
@@ -207,6 +250,20 @@ void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to set debug name for object: {}", VulkanErrorToString(result));
     }
 #endif
+}
+
+uint32_t GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const
+{
+    VkPhysicalDeviceMemoryProperties mem_properties;
+    vkGetPhysicalDeviceMemoryProperties(physical_device_, &mem_properties);
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+    {
+        if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+    throw RHIException("未找到合适的内存类型");
 }
 
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
