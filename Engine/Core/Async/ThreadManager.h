@@ -40,8 +40,16 @@ struct ThreadSchedulerOperationState
 
     friend void TagInvoke(exec::StartType, ThreadSchedulerOperationState& op)
     {
-        auto* task = New<OperationStateTask<ThreadSchedulerOperationState>>(op);
-        ThreadManagerAddSlotTask(op.slot_to_run_, task);
+        if (op.slot_to_run_ != ThreadSlot::Render)
+        {
+            auto* task = New<OperationStateTask<ThreadSchedulerOperationState>>(op);
+            ThreadManagerAddSlotTask(op.slot_to_run_, task);
+        }
+        else
+        {
+            auto* task = NewDoubleFrameTemp<OperationStateTask<ThreadSchedulerOperationState>>(op);
+            ThreadManagerAddSlotTask(op.slot_to_run_, task);
+        }
     }
 };
 

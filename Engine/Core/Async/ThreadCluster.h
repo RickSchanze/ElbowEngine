@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Core/Base/UniquePtr.h"
+#include "Core/Base/EString.h"
 #include "ITask.h"
 #include "ThreadSafeQueue.h"
 

@@ -4,6 +4,7 @@
 
 #include "ThreadCluster.h"
 
+#include "Core/CoreGlobal.h"
 #include "ThreadUtils.h"
 void core::ThreadCluster::Work()
 {
@@ -21,7 +22,10 @@ void core::ThreadCluster::Work()
         {
             task->Execute();
             // TODO: 这里可能在主线程基于loop的协程时出现问题
-            Delete(task);
+            if (task->ShouldDeleteAfterExecute())
+            {
+                Delete(task);
+            }
         }
     }
 }
@@ -39,7 +43,7 @@ void core::ThreadCluster::SetClusterName(const StringView name)
     const String prefix = name;
     for (size_t i = 0; i < threads_.size(); i++)
     {
-        String thread_name = prefix+ std::to_string(i);
+        String thread_name = prefix + std::to_string(i);
         ThreadUtils::SetThreadName(threads_[i], thread_name);
     }
 }
