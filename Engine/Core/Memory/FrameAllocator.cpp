@@ -6,9 +6,9 @@
  */
 
 #include "FrameAllocator.h"
-#include "Core/Profiler/ProfileMacro.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
+#include "Core/Profiler/ProfileMacro.h"
 
 void* core::FrameAllocator::Malloc(size_t size)
 {
@@ -29,11 +29,7 @@ void core::FrameAllocator::Startup()
     auto cfg  = core::GetConfig<core::MemoryConfig>();
     auto size = cfg->GetFrameAllocatorSize();
     memory_   = static_cast<uint8_t*>(malloc(size));
-    Assert::Require(
-        logcat::Core_Memory,
-        (memory_ != nullptr && cfg->GetFrameAllocatorMustSuccess()) || !(memory_ == nullptr && cfg->GetFrameAllocatorMustSuccess()),
-        "Init frame allocator failed!"
-    );
+    Assert::Require(logcat::Core_Memory, memory_ != nullptr, "Init frame allocator failed!");
     peek_ = memory_;
     top_  = memory_ + size;
     LOGGER.Info(logcat::Core_Memory, "Frame allocator initialized with size = {}.", size);

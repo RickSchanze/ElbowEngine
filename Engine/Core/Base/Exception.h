@@ -26,4 +26,10 @@ public:
     explicit ArgumentException(core::StringView arg_name, core::StringView msg);
     explicit ArgumentException(core::StringView msg) : Exception(msg) {}
 };
+
+class NotSupportException : public Exception
+{
+public:
+    explicit NotSupportException(core::StringView msg) : Exception(msg) {}
+};
 }   // namespace core

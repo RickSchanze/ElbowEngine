@@ -45,8 +45,6 @@ public:
     Object(ObjectFlag flag) : flags_(flag) {}
     Object() : flags_(0) {}
 
-    [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
-
 private:
     PROPERTY()
     ObjectHandle handle_ = 0;

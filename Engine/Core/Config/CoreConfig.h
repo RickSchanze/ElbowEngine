@@ -24,8 +24,8 @@ class CLASS(Config = "Config/Core/MemoryConfig.cfg", Category = "Core") MemoryCo
     PROPERTY()
     DECLARE_CONFIG_ITEM(int32_t, frame_allocator_size, FrameAllocatorSize, 1024 * 1024);
 
-    // 帧分配器是否一定要分成功
-    DECLARE_CONFIG_ITEM(bool, frame_allocator_must_success, FrameAllocatorMustSuccess, true);
+    PROPERTY()
+    DECLARE_CONFIG_ITEM(size_t, double_frame_allocator_size, DoubleFrameAllocatorSize, 1024 * 1024);
 };
 
 struct STRUCT() Version

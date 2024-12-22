@@ -111,6 +111,8 @@ add_library(${PROJECT_NAME}
         Object/ObjectPtr.cpp
         Object/PersistentObject.cpp
         Object/PersistentObject.h
+        Memory/DoubleFrameAllocator.cpp
+        Memory/DoubleFrameAllocator.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

@@ -29,6 +29,11 @@ public:
 
     [[nodiscard]] size_t      GetSize() const { return create_info_.size; }
     [[nodiscard]] BufferUsage GetUsage() const { return create_info_.usage; }
+
+    virtual void BeginWrite()            = 0;
+    virtual void Write(const void* data) = 0;
+    virtual void EndWrite()              = 0;
+
 protected:
     BufferCreateInfo create_info_;
 };

@@ -51,6 +51,11 @@ add_library(Platform
         RHI/Buffer.h
         RHI/Vulkan/Buffer_Vulkan.cpp
         RHI/Vulkan/Buffer_Vulkan.h
+        RHI/CommandBuffer.cpp
+        RHI/CommandBuffer.h
+        RHI/Commands.h
+        RHI/Vulkan/CommandBuffer_Vulkan.cpp
+        RHI/Vulkan/CommandBuffer_Vulkan.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

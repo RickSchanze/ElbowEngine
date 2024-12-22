@@ -7,12 +7,18 @@
 
 #include "Core/CoreGlobal.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Memory/DoubleFrameAllocator.h"
 #include "Memory/FrameAllocator.h"
 
 void* FrameTempAlloc(size_t size)
 {
     PROFILE_SCOPE_AUTO;
     return core::FrameAllocator::Malloc(size);
+}
+
+void* FrameDoubleTempAlloc(size_t size)
+{
+    return core::DoubleFrameAllocator::Malloc(size);
 }
 
 void* NormalAlloc(size_t size)

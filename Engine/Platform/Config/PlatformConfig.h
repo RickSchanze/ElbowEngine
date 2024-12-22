@@ -41,7 +41,11 @@ class CLASS(Config = "Config/Platform/PlatformConfig.cfg", Category = "Platform"
 
     // 交换链图像数量
     PROPERTY(Label = "交换链图像数量", Category = "Platform|RHI")
-    DECLARE_CONFIG_ITEM(uint32_t, swapchain_image_count, SwapchainImageCount, 2)
+    DECLARE_CONFIG_ITEM(uint32_t, swapchain_image_count, SwapchainImageCount, 2);
+
+    // 是否使用多线程渲染
+    PROPERTY(Label = "是否使用多线程渲染", Category = "Platform|RHI")
+    DECLARE_CONFIG_ITEM(bool, enable_multithread_render, EnableMultithreadRender, false)
 
     // 是否开启验证层
     PROPERTY(Label = "开启验证层", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")

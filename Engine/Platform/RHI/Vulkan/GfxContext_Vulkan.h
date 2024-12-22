@@ -59,6 +59,8 @@ public:
     [[nodiscard]] Format GetDefaultDepthStencilFormat() const override;
     [[nodiscard]] Format GetDefaultColorFormat() const override;
 
+    [[nodiscard]] const QueueFamilyIndices& GetCurrentQueueFamilyIndices() const;
+
 #if REGION(资源创建/销毁)
     [[nodiscard]] VkImageView CreateImageView(const ImageViewDesc& desc) const;
     void                      DestroyImageView(VkImageView view) const;
@@ -70,6 +72,13 @@ public:
     void                         FreeBufferMemory(VkDeviceMemory memory) const;
 
     void BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory) const;
+
+    void MapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset = 0) const;
+    void UnmapMemory(VkDeviceMemory memory) const;
+
+    [[nodiscard]] VkCommandPool CreateCommandPool(const VkCommandPoolCreateInfo& info) const;
+    void                        DestroyCommandPool(VkCommandPool pool) const;
+    void                        CreateCommandBuffers(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
 #endif
 
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
@@ -86,13 +95,14 @@ private:
     core::DelegateID pre_vulkan_gfx_context_destroyed_;
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
 
-    VkInstance       instance_        = nullptr;
-    Surface*         surface_         = nullptr;
-    VkPhysicalDevice physical_device_ = nullptr;
-    VkDevice         device_          = nullptr;
-    VkQueue          graphics_queue_  = nullptr;
-    VkQueue          present_queue_   = nullptr;
-    VkSwapchainKHR   swapchain_       = nullptr;
+    VkInstance         instance_        = nullptr;
+    Surface*           surface_         = nullptr;
+    VkPhysicalDevice   physical_device_ = nullptr;
+    VkDevice           device_          = nullptr;
+    VkQueue            graphics_queue_  = nullptr;
+    VkQueue            present_queue_   = nullptr;
+    VkSwapchainKHR     swapchain_       = nullptr;
+    QueueFamilyIndices queue_family_indices_{};
 
     core::Array<Image_Vulkan*>     swapchain_images_;
     core::Array<ImageView_Vulkan*> swapchain_image_views_;

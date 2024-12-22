@@ -23,11 +23,14 @@ struct MeshStorage
 class Mesh : public Asset
 {
 public:
-    AssetType GetAssetType() const override { return AssetType::Mesh; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 
     void PerformLoad() override;
+    bool IsLoaded() const override;
 
 private:
     core::UniquePtr<MeshStorage> storage_;
+
+    bool loaded_ = false;
 };
 }   // namespace resource

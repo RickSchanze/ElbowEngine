@@ -162,6 +162,11 @@ Format GfxContext_Vulkan::GetDefaultColorFormat() const
     return default_color_format_;
 }
 
+const QueueFamilyIndices& GfxContext_Vulkan::GetCurrentQueueFamilyIndices() const
+{
+    return queue_family_indices_;
+}
+
 VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
 {
     const auto img        = desc.image;
@@ -236,6 +241,34 @@ void GfxContext_Vulkan::BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory)
     vkBindBufferMemory(device_, buffer, memory, 0);
 }
 
+void GfxContext_Vulkan::MapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset) const
+{
+    vkMapMemory(device_, memory, offset, size, 0, data);
+}
+
+void GfxContext_Vulkan::UnmapMemory(VkDeviceMemory memory) const
+{
+    vkUnmapMemory(device_, memory);
+}
+
+VkCommandPool GfxContext_Vulkan::CreateCommandPool(const VkCommandPoolCreateInfo& info) const
+{
+    VkCommandPool command_pool_;
+    const auto    result = vkCreateCommandPool(device_, &info, nullptr, &command_pool_);
+    VERIFY_VULKAN_RESULT(result);
+    return command_pool_;
+}
+
+void GfxContext_Vulkan::DestroyCommandPool(VkCommandPool pool) const
+{
+    vkDestroyCommandPool(device_, pool, nullptr);
+}
+
+void GfxContext_Vulkan::CreateCommandBuffers(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const
+{
+    const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
+    VERIFY_VULKAN_RESULT(result);
+}
 
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
@@ -672,6 +705,7 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     FindVulkanExtensionSymbols();
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
+    queue_family_indices_ = FindQueueFamilies(physical_device_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
     default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, swapchain_);
     Format depth_format   = FindSupportedFormat(

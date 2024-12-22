@@ -17,10 +17,15 @@ public:
 
     ~Buffer_Vulkan() override;
 
-    [[nodiscard]] void* GetNativeHandle() const override { return buffer; }
+    [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
+
+    void BeginWrite() override;
+    void Write(const void* data) override;
+    void EndWrite() override;
 
 private:
-    VkBuffer       buffer = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VkBuffer       buffer_        = VK_NULL_HANDLE;
+    VkDeviceMemory memory_        = VK_NULL_HANDLE;
+    void*          mapped_memory_ = nullptr;
 };
 }   // namespace platform::rhi::vulkan

@@ -4,6 +4,7 @@
 #include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
+#include "Core/Memory/DoubleFrameAllocator.h"
 #include "Core/Memory/FrameAllocator.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/Reflection.h"
@@ -32,8 +33,11 @@ int main()
             LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
             return -1;
         }
-        // 读取项目的基本配置
-        core::FrameAllocator::Startup();
+        // 初始化内存
+        {
+            core::FrameAllocator::Startup();
+            core::DoubleFrameAllocator::Startup();
+        }
         // 资产数据库初始化
         {
             PROFILE_SCOPE("AssetDataBase Initialize");
@@ -57,6 +61,7 @@ int main()
         {
             MARK_FRAME_AUTO;
             core::FrameAllocator::Refresh();
+            core::DoubleFrameAllocator::Refresh();
             platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
             if (main_window->ShouldClose())
             {
@@ -68,6 +73,7 @@ int main()
         LOGGER.Info(logcat::Engine, "Engine shutdown...");
         SetRuntimeStage(RuntimeStage::Shutdown);
         core::FrameAllocator::Shutdown();
+        core::DoubleFrameAllocator::Shutdown();
         core::MManager::Get()->Shutdown();
     }
     catch (const core::Exception& e)

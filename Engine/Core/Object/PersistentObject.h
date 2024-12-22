@@ -17,5 +17,7 @@ public:
      * 根据此去加载持久化资产
      */
     virtual void PerformLoad() {}
+
+    [[nodiscard]] virtual bool IsLoaded() const { return false; }
 };
 }   // namespace core

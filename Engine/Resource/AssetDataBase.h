@@ -32,10 +32,10 @@ public:
 
 
     template <typename T>
-    core::Optional<T> QueryMeta(core::ObjectHandle handle);
+    static core::Optional<T> QueryMeta(core::ObjectHandle handle);
 
     template <typename T>
-    core::Optional<T> QueryMeta(core::StringView where);
+    static core::Optional<T> QueryMeta(core::StringView where);
 
 protected:
     void CreateAssetTables();
@@ -54,9 +54,10 @@ core::Optional<T> AssetDataBase::QueryMeta(core::ObjectHandle handle)
 template <typename T>
 core::Optional<T> AssetDataBase::QueryMeta(core::StringView where)
 {
-    const core::Type* meta_type = T::GetStaticMetaType();
-    if (!tables_.contains(meta_type)) return {};
-    auto& table  = tables_[meta_type];
+    auto&             self      = GetByRef();
+    const core::Type* meta_type = core::TypeOf<T>();
+    if (!self.tables_.contains(meta_type)) return {};
+    auto& table  = self.tables_[meta_type];
     auto  result = table.Query(meta_type, where);
     if (result.empty()) return {};
     auto meta = result[0];

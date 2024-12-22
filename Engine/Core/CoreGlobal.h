@@ -11,31 +11,36 @@
 #include "CoreDef.h"
 #include "Log/CoreLogCategory.h"
 
+
+void* NormalAlloc(size_t size);
+void  FreeNormalAllocatedMemory(void* ptr);
+
+
 enum class MemoryAllocType
 {
     Normal,      // 正常分配
     FrameTemp,   // 使用FrameAllocator分配
 };
 
+/**
+ * 单帧临时内存分配, 过一帧被自动覆盖
+ * @param size
+ * @return
+ */
 void* FrameTempAlloc(size_t size);
 
-void* NormalAlloc(size_t size);
-void  FreeNormalAllocatedMemory(void* ptr);
+/**
+ * 双帧临时内存分配, 过两帧被自动覆盖
+ * @param size
+ * @return
+ */
+void* FrameDoubleTempAlloc(size_t size);
 
 template <typename T, typename... Args>
 T* New(Args&&... args)
 {
     size_t size = sizeof(T);
     void*  t    = NormalAlloc(size);
-    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
-    return new (t) T(std::forward<Args>(args)...);
-}
-
-template <typename T, typename... Args>
-T* NewFrameTemp(Args&&... args)
-{
-    size_t size = sizeof(T);
-    void*  t    = FrameTempAlloc(size);
     core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
     return new (t) T(std::forward<Args>(args)...);
 }
@@ -48,6 +53,24 @@ void Delete(T* ptr)
     {
         FreeNormalAllocatedMemory(ptr);
     }
+}
+
+template <typename T, typename... Args>
+T* NewFrameTemp(Args&&... args)
+{
+    size_t size = sizeof(T);
+    void*  t    = FrameTempAlloc(size);
+    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
+    return new (t) T(std::forward<Args>(args)...);
+}
+
+template <typename T, typename... Args>
+T* NewDoubleFrameTemp(Args&&... args)
+{
+    size_t size = sizeof(T);
+    void*  t    = FrameDoubleTempAlloc(size);
+    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
+    return new (t) T(std::forward<Args>(args)...);
 }
 
 // 编译时获得常量字符串长度

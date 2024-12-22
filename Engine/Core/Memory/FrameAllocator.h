@@ -20,6 +20,7 @@ public:
     static void Shutdown();
     static void Refresh();
 
+private:
     // 栈底
     static inline uint8_t* memory_ = nullptr;
     // 栈指针
