@@ -25,19 +25,19 @@ class CLASS(Config = "Config/Platform/PlatformConfig.cfg", Category = "Platform"
 
     // 窗口库
     PROPERTY(Label = "使用的窗口库", Category = "Platform")
-    DECLARE_CONFIG_ITEM(WindowLib, window_lib, WindowLib, WindowLib::GLFW)
+    DECLARE_CONFIG_ITEM(WindowLib, window_lib, WindowLib, WindowLib::GLFW);
 
     PROPERTY(Label = "默认窗口大小", Category = "Platform")
-    DECLARE_CONFIG_ITEM(core::Size2D, default_window_size, DefaultWindowSize, core::Size2D(1920, 1080))
+    DECLARE_CONFIG_ITEM(core::Size2D, default_window_size, DefaultWindowSize, core::Size2D(1920, 1080));
 
     PROPERTY(Label = "默认窗口属性", Category = "Platform", EnumFlag = "platform.WindowFlag")
     DECLARE_CONFIG_ITEM(int, window_flag, WindowFlag, 0);
 
     PROPERTY(Label = "MSAA采样次数", Category = "Platform|RHI", EnumFlag = "platform.rhi.SampleCount")
-    DECLARE_CONFIG_ITEM(int, msaa_sample_count, MSAASampleCount, 1)
+    DECLARE_CONFIG_ITEM(int, msaa_sample_count, MSAASampleCount, 1);
 
     PROPERTY(Label = "呈现方式", Category = "Platform|RHI")
-    DECLARE_CONFIG_ITEM(rhi::PresentMode, present_mode, PresentMode, rhi::PresentMode::VSync)
+    DECLARE_CONFIG_ITEM(rhi::PresentMode, present_mode, PresentMode, rhi::PresentMode::VSync);
 
     // 交换链图像数量
     PROPERTY(Label = "交换链图像数量", Category = "Platform|RHI")
@@ -45,17 +45,17 @@ class CLASS(Config = "Config/Platform/PlatformConfig.cfg", Category = "Platform"
 
     // 是否使用多线程渲染
     PROPERTY(Label = "是否使用多线程渲染", Category = "Platform|RHI")
-    DECLARE_CONFIG_ITEM(bool, enable_multithread_render, EnableMultithreadRender, false)
+    DECLARE_CONFIG_ITEM(bool, enable_multithread_render, EnableMultithreadRender, true);
 
     // 是否开启验证层
     PROPERTY(Label = "开启验证层", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
-    DECLARE_CONFIG_ITEM(bool, enable_validation_layer, EnableValidationLayer, true)
+    DECLARE_CONFIG_ITEM(bool, enable_validation_layer, EnableValidationLayer, true);
 
     // 验证层名字 一般不用修改
     PROPERTY(Label = "验证层名字", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
-    DECLARE_CONFIG_ITEM(core::String, validation_layer_name, ValidationLayerName, {"VK_LAYER_KHRONOS_validation"})
+    DECLARE_CONFIG_ITEM(core::String, validation_layer_name, ValidationLayerName, {"VK_LAYER_KHRONOS_validation"});
 
     PROPERTY(Label = "需要的扩展", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
-    DECLARE_CONFIG_ITEM(core::Array<core::String>, required_device_extensions, VulkanRequiredDeviceExtensions, {"VK_KHR_swapchain"})
+    DECLARE_CONFIG_ITEM(core::Array<core::String>, required_device_extensions, VulkanRequiredDeviceExtensions, {"VK_KHR_swapchain"});
 };
 } // namespace platform::rhi

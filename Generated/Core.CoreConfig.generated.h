@@ -31,6 +31,7 @@ core::Type* core::MemoryConfig::REFLECTION_Register_MemoryConfig_Registerer() { 
 using namespace core; \
 Type* type = Type::Create<core::MemoryConfig>("core.MemoryConfig")->Internal_AddParent(TypeOf<core::IConfig>())->SetComment("TODO: 或许可以文件分的不那么细?")->SetAttribute(core::Type::ValueAttribute::Config, "Config/Core/MemoryConfig.cfg")->SetAttribute(core::Type::ValueAttribute::Category, "Core"); \
 type->Internal_RegisterField("frame_allocator_size", &core::MemoryConfig::frame_allocator_size, offsetof(core::MemoryConfig, frame_allocator_size))->SetComment("帧分配器的内存大小, 默认大小为1MiB"); \
+type->Internal_RegisterField("double_frame_allocator_size", &core::MemoryConfig::double_frame_allocator_size, offsetof(core::MemoryConfig, double_frame_allocator_size)); \
 return type; \
 } \
 core::Type* core::Version::REFLECTION_Register_Version_Registerer() { \
