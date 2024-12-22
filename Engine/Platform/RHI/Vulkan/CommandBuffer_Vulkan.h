@@ -33,13 +33,17 @@ class CommandBuffer_Vulkan : public CommandBuffer
 public:
     CommandBuffer_Vulkan(VkCommandBuffer buffer) : buffer_(buffer) {}
 
-    void                BeginRecord() override;
-    void                EndRecord() override;
-    void                EnqueueCommand(RHICommand* command) override;
-    [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
-    void                Reset() override;
+    void* GetNativeHandle() const override { return buffer_; }
+
+    void Execute(core::StringView label) override;
+
+    void Submit() override;
+
+protected:
+    void InternalExecute(core::StringView label);
 
 private:
-    VkCommandBuffer buffer_ = VK_NULL_HANDLE;
+    VkCommandBuffer buffer_    = VK_NULL_HANDLE;
+    bool            recording_ = false;
 };
 }   // namespace platform::rhi::vulkan

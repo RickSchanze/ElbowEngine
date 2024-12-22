@@ -299,6 +299,16 @@ uint32_t GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropert
     throw RHIException("未找到合适的内存类型");
 }
 
+void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const
+{
+    CmdBeginDebugUtilsLabelEXT(cmd, &info);
+}
+
+void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const
+{
+    CmdEndDebugUtilsLabelEXT(cmd);
+}
+
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (const core::Array<VkFormat> fmts = candidates | transform([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | ranges::to_vector;
@@ -321,6 +331,8 @@ Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candida
 void GfxContext_Vulkan::FindVulkanExtensionSymbols()
 {
     SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(instance_, "vkSetDebugUtilsObjectNameEXT"));
+    CmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device_, "vkCmdBeginDebugUtilsLabelEXT"));
+    CmdEndDebugUtilsLabelEXT   = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device_, "vkCmdEndDebugUtilsLabelEXT"));
 }
 
 void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)

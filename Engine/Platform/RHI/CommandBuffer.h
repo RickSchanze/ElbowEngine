@@ -4,6 +4,8 @@
 
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/EString.h"
+#include "Core/CoreGlobal.h"
 #include "IResource.h"
 
 
@@ -40,10 +42,35 @@ class CommandBuffer : public IResource
 public:
     ~CommandBuffer() override = default;
 
-    virtual void BeginRecord()                       = 0;
-    virtual void EndRecord()                         = 0;
-    virtual void EnqueueCommand(RHICommand* command) = 0;
-    virtual void Reset()                             = 0;
+    /**
+     * 交给渲染线程去翻译
+     * 执行完成后会调用Clear
+     * @param label label 这一段命令的标签(for debug)
+     */
+    virtual void Execute(core::StringView label) = 0;
+
+    /**
+     * 清理队里里的命令 之前记录过的不会被清理
+     */
+    void Clear();
+
+    void EnqueueCommand(RHICommand* command);
+
+    template <typename T, typename... Args>
+        requires std::derived_from<T, RHICommand>
+    void Enqueue(Args&&... args)
+    {
+        auto cmd = NewDoubleFrameTemp<T>(core::Forward<Args>()...);
+        EnqueueCommand(cmd);
+    }
+
+    /**
+     * 提交命令
+     */
+    virtual void Submit() = 0;
+
+protected:
+    core::Array<RHICommand*> commands_;
 };
 
 class CommandPool : public IResource

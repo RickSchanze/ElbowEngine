@@ -1,5 +1,6 @@
 //
 // Created by Echo on 24-12-15.
+// TODO: shared_ptr的自定义内存分配
 //
 
 #pragma once
@@ -84,19 +85,35 @@ struct AsyncWrapper<std::tuple<Args...>>
     using ReceiverType = AsyncReceiver<Args...>;
 };
 
+template <>
+struct AsyncWrapper<void>
+{
+    using ReceiverType = AsyncReceiver<>;
+};
+
 struct StartAsyncType
 {
     template <typename Sender>
     auto operator()(Sender sender) const
     {
         using ValueTypes = typename SenderTraits<Sender>::ValueTypes;
-
-        auto holder = std::make_shared<AsyncDataHolder<ValueTypes>>();
         typename AsyncWrapper<ValueTypes>::ReceiverType receiver;
-        receiver.data = holder;
-        auto op       = Connect(std::move(sender), receiver);
-        Start(op);
-        return holder;
+        if constexpr (std::is_same_v<ValueTypes, void>)
+        {
+            auto holder = std::make_shared<AsyncDataHolder<std::tuple<>>>();
+            receiver.data = holder;
+            auto op       = Connect(std::move(sender), receiver);
+            Start(op);
+            return holder;
+        }
+        else
+        {
+            auto holder = std::make_shared<AsyncDataHolder<ValueTypes>>();
+            receiver.data = holder;
+            auto op       = Connect(std::move(sender), receiver);
+            Start(op);
+            return holder;
+        }
     }
 };
 

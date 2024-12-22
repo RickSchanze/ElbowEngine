@@ -85,6 +85,9 @@ public:
 
     [[nodiscard]] uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
+    void BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const;
+    void EndDebugLabel(VkCommandBuffer cmd) const;
+
 private:
     [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
@@ -115,6 +118,8 @@ private:
     Format default_color_format_         = Format::Count;
 
     PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
+    PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
+    PFN_vkCmdEndDebugUtilsLabelEXT   CmdEndDebugUtilsLabelEXT   = nullptr;
 
     ImageDesc swapchain_image_desc_ = ImageDesc::Default();
 };

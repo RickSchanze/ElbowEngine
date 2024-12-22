@@ -22,7 +22,7 @@ struct BufferCreateInfo
     }
 };
 
-class Buffer : IResource
+class Buffer : public IResource
 {
 public:
     explicit Buffer(const BufferCreateInfo& create_info) : create_info_(create_info) {}

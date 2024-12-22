@@ -85,7 +85,6 @@ struct ScheduleType
 };
 inline constexpr ScheduleType Schedule{};
 
-
 template <typename SenderT>
 struct SenderTraits
 {
