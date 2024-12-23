@@ -1,7 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
-#include "Core/Base/TagInvoke.h"
+
 #include "Core/Config/ConfigManager.h"
-#include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Memory/DoubleFrameAllocator.h"

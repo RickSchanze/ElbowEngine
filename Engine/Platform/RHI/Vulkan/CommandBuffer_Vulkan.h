@@ -21,17 +21,20 @@ public:
     core::SharedPtr<CommandBuffer>              CreateCommandBuffer() override;
     core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count) override;
 
+    void Reset() override;
+
 private:
     VkCommandPool command_pool_;
 };
 
-/**
- * CommandBuffer内存由CommandPool管理, 因此不提供析构函数
- */
 class CommandBuffer_Vulkan : public CommandBuffer
 {
 public:
-    explicit CommandBuffer_Vulkan(VkCommandBuffer buffer) : buffer_(buffer) {}
+    explicit CommandBuffer_Vulkan(VkCommandBuffer buffer, VkCommandPool pool) : buffer_(buffer), pool_(pool) {}
+
+    ~CommandBuffer_Vulkan() override;
+
+    void Reset() override;
 
     [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
 
@@ -42,6 +45,7 @@ protected:
 
 private:
     VkCommandBuffer buffer_    = VK_NULL_HANDLE;
+    VkCommandPool   pool_      = VK_NULL_HANDLE;
     bool            recording_ = false;
 };
 }   // namespace platform::rhi::vulkan

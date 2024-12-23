@@ -30,6 +30,11 @@ public:
 
     void Shutdown() override;
 
+    /**
+     * 导入资产
+     * @param path
+     */
+    static void Import(core::StringView path);
 
     template <typename T>
     static core::Optional<T> QueryMeta(core::ObjectHandle handle);
@@ -37,11 +42,14 @@ public:
     template <typename T>
     static core::Optional<T> QueryMeta(core::StringView where);
 
+    template <typename T>
+    static void InsertMeta(const T& meta);
+
 protected:
     void CreateAssetTables();
 
-    SQLite::Database*                                          db_ = nullptr;
-    core::HashMap<const core::Type*, core::resource::SQLTable> tables_;
+    SQLite::Database*                                                           db_ = nullptr;
+    core::HashMap<const core::Type*, core::UniquePtr<core::resource::SQLTable>> tables_;
 };
 
 template <typename T>
@@ -58,10 +66,19 @@ core::Optional<T> AssetDataBase::QueryMeta(core::StringView where)
     const core::Type* meta_type = core::TypeOf<T>();
     if (!self.tables_.contains(meta_type)) return {};
     auto& table  = self.tables_[meta_type];
-    auto  result = table.Query(meta_type, where);
+    auto  result = table->Query(meta_type, where);
     if (result.empty()) return {};
     auto meta = result[0];
     return meta.AsAny().AsCopy<T>();
+}
+
+template <typename T>
+void AssetDataBase::InsertMeta(const T& meta)
+{
+    const core::Type* meta_type = core::TypeOf<T>();
+    if (!Get()->tables_.contains(meta_type)) throw core::ArgumentException(NAMEOF(meta), "没有注册表类型");
+    const auto& table = Get()->tables_[meta_type];
+    table->Insert(meta);
 }
 
 }   // namespace resource

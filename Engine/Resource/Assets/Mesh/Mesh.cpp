@@ -9,6 +9,9 @@
 #include "assimp/scene.h"
 #include "MeshMeta.h"
 #include "Platform/FileSystem/Path.h"
+#include "Platform/RHI/CommandBuffer.h"
+#include "Platform/RHI/Commands.h"
+#include "Platform/RHI/GfxCommandHelper.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Logcat.h"
 
@@ -80,9 +83,49 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
             indices.emplace_back(face.mIndices[j]);
         }
     }
-    // platform::rhi::BufferCreateInfo vertex_buffer_create_info{}
+    out       = core::MakeUnique<resource::MeshStorage>();
+    auto& ctx = platform::rhi::GetGfxContextRef();
+    {
+        // vertex buffer
+        size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex);
+        platform::rhi::BufferCreateInfo vertex_buffer_info{
+            vertex_buffer_size, platform::rhi::BUB_VertexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
+        };
+        out->vertex_count  = vertices.size();
+        out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info);
 
-    // out->vertex_buffer = core::MakeUnique<platform::rhi::Buffer>();
+        platform::rhi::BufferCreateInfo staging_buffer_info{
+            vertex_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
+        };
+        auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
+        staging_buffer->BeginWrite();
+        staging_buffer->Write(vertices.data(), 0);
+        staging_buffer->EndWrite();
+        auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
+        cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->vertex_buffer.get());
+        cmd->Execute("VertexBuffer");
+        platform::GfxCommandHelper::EndSingleTransferCommand(*cmd);
+    }
+    {
+        // index buffer
+        size_t                          index_buffer_size = indices.size() * sizeof(uint32_t);
+        platform::rhi::BufferCreateInfo index_buffer_info{
+            index_buffer_size, platform::rhi::BUB_IndexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
+        };
+        out->index_count  = indices.size();
+        out->index_buffer = ctx.CreateBuffer(index_buffer_info);
+        platform::rhi::BufferCreateInfo staging_buffer_info{
+            index_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
+        };
+        auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
+        staging_buffer->BeginWrite();
+        staging_buffer->Write(indices.data(), 0);
+        staging_buffer->EndWrite();
+        auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
+        cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->index_buffer.get());
+        cmd->Execute("IndexBuffer");
+        platform::GfxCommandHelper::EndSingleTransferCommand(*cmd);
+    }
     return true;
 }
 

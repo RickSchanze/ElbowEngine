@@ -6,14 +6,16 @@
  */
 
 #pragma once
+
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Image.h"
 #include "vulkan/vulkan.h"
 
 namespace platform::rhi::vulkan
 {
+class CommandPool_Vulkan;
 class ImageView_Vulkan;
-}
+}   // namespace platform::rhi::vulkan
 namespace platform::rhi::vulkan
 {
 class Image_Vulkan;
@@ -87,6 +89,12 @@ public:
 
     core::exec::AsyncResultHandle Submit(const CommandBuffer& buffer, const SubmitParameter& parameter) override;
 
+    [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) override;
+
+    [[nodiscard]] core::SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo& create_info) override;
+
+    [[nodiscard]] CommandPool& GetTransferPool() override { return *transfer_pool_; }
+
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
 
     [[nodiscard]] uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
@@ -119,6 +127,8 @@ private:
     VkQueue            transfer_queue_  = nullptr;
     VkSwapchainKHR     swapchain_       = nullptr;
     QueueFamilyIndices queue_family_indices_{};
+
+    core::SharedPtr<CommandPool> transfer_pool_;
 
     core::Array<Image_Vulkan*>     swapchain_images_;
     core::Array<ImageView_Vulkan*> swapchain_image_views_;

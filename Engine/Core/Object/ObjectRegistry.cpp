@@ -6,6 +6,7 @@
 
 #include "Core/CoreEvents.h"
 #include "Core/Serialization/YamlArchive.h"
+#include "PersistentObject.h"
 core::ObjectHandle core::ObjectRegistry::NextInstanceHandle()
 {
     return next_handle_instanced_--;
@@ -31,6 +32,23 @@ core::Object* core::ObjectRegistry::GetObjectByHandle(const ObjectHandle handle)
     core::Object* ptr = objects_[handle];
     if (ptr->IsPendingKill()) return nullptr;
     return ptr;
+}
+
+void core::ObjectRegistry::RemoveObject(Object* object)
+{
+    if (object == nullptr) return;
+    ObjectHandle handle = object->GetHandle();
+    if (handle == INVALID_OBJECT_HANDLE)
+    {
+        LOGGER.Warn(logcat::Core_Object, "无效的ObjectHandle");
+        return;
+    }
+    if (object->IsPersistent())
+    {
+        static_cast<PersistentObject*>(object)->PerformUnload();
+    }
+    Delete(object);
+    objects_.erase(handle);
 }
 
 void core::ObjectRegistry::RegisterObject(Object* object)

@@ -48,6 +48,7 @@ Type* type = Type::Create<core::CoreConfig>("core.CoreConfig")->Internal_AddPare
 type->Internal_RegisterField("app_name", &core::CoreConfig::app_name, offsetof(core::CoreConfig, app_name))->SetComment("应用的名称"); \
 type->Internal_RegisterField("app_version", &core::CoreConfig::app_version, offsetof(core::CoreConfig, app_version))->SetComment("应用版本号"); \
 type->Internal_RegisterField("thread_slot_count", &core::CoreConfig::thread_slot_count, offsetof(core::CoreConfig, thread_slot_count))->SetComment("各ThreadSlot对应的线程数")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Thread"); \
+type->Internal_RegisterField("enable_persistent_load_multithread", &core::CoreConfig::enable_persistent_load_multithread, offsetof(core::CoreConfig, enable_persistent_load_multithread))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "启用多线程持久化对象加载"); \
 return type; \
 } \
 

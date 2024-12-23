@@ -7,7 +7,7 @@
 #include "Core/Base/Exception.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Reflection/SharedAny.h"
-
+#include <shared_mutex>
 
 namespace SQLite
 {
@@ -34,9 +34,10 @@ public:
     Array<SharedAny> Query(const Type* type, core::StringView where = "");
 
 private:
+    std::shared_mutex mutex_;
     const Type*       type_ = nullptr;
     SQLite::Database* db_   = nullptr;
-    StringView  table_name_;
+    StringView        table_name_;
 };
 
 class SQLException : public Exception
@@ -56,7 +57,7 @@ public:
      * @param type 表字段类型, 自动创建
      * @param allow_exist 允许表存在 为false时, 如果表存在, 抛出异常
      */
-    static SQLTable CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist = true);
+    static UniquePtr<SQLTable> CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist = true);
 
     /**
      * 初始化db 创建一个Meta表用于存储表名和类型的关系

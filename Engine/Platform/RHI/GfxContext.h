@@ -17,12 +17,11 @@
 
 namespace platform::rhi
 {
+struct CommandPoolCreateInfo;
+class CommandPool;
 struct Fence;
-}
-namespace platform::rhi
-{
 class CommandBuffer;
-}
+}   // namespace platform::rhi
 namespace platform::rhi
 {
 DECLARE_EVENT(PostProcessVulkanExtensionsEvent, core::Array<core::String>, const core::Array<core::String>&);
@@ -122,7 +121,26 @@ public:
      * 创建同步原语: Fence
      * @return
      */
-    virtual [[nodiscard]] core::SharedPtr<Fence> CreateFence() = 0;
+    [[nodiscard]] virtual core::SharedPtr<Fence> CreateFence() = 0;
+
+    /**
+     * 创建一个Buffer
+     * @param create_info
+     * @return
+     */
+    [[nodiscard]] virtual core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) = 0;
+
+    /**
+     * 创建一个CommandPool
+     * @return
+     */
+    [[nodiscard]] virtual core::SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo& create_info) = 0;
+
+    /**
+     * 获取用于传输队列的CommandPool
+     * @return
+     */
+    [[nodiscard]] virtual CommandPool& GetTransferPool() = 0;
 };
 
 GfxContext* GetGfxContext();

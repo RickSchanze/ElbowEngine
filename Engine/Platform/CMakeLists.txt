@@ -59,6 +59,8 @@ add_library(Platform
         RHI/SyncPrimitives.h
         RHI/Vulkan/SyncPrimitives_Vulkan.cpp
         RHI/Vulkan/SyncPrimitives_Vulkan.h
+        RHI/GfxCommandHelper.cpp
+        RHI/GfxCommandHelper.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

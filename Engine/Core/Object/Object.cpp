@@ -10,10 +10,13 @@
 #include "Core/Log/Logger.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/Archive.h"
-
-#include "Core.Object.generated.h"
+#include "Core/Async/Execution/StartAsync.h"
+#include "Core/Async/Execution/Then.h"
+#include "Core/Config/ConfigManager.h"
+#include "Core/Config/CoreConfig.h"
 #include "PersistentObject.h"
 
+#include GEN_HEADER("Core.Object.generated.h")
 GENERATED_SOURCE()
 
 void core::Object::AddReferencing(ObjectHandle handle)
@@ -62,9 +65,17 @@ void core::Object::ResolveObjectPtr()
 
 void core::Object::PerformPersistentObjectLoad()
 {
-    if (Is(TypeOf<PersistentObject>()))
+    if (!IsPersistent()) return;
+
+    auto* persistent = static_cast<PersistentObject*>(this);
+    if (GetConfig<CoreConfig>()->IsMultiThreadPersistentLoadEnabled())
     {
-        Cast<PersistentObject>(this)->PerformLoad();
+        auto& scheduler = ThreadManager::GetScheduler();
+        exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Resource) | exec::Then([persistent] { persistent->PerformLoad(); }));
+    }
+    else
+    {
+        persistent->PerformLoad();
     }
 }
 
@@ -82,4 +93,10 @@ void core::Object::OnCreated()
     GenerateInstanceHandle();
     RegisterSelf();
     ResolveObjectPtr();
+}
+
+void core::Object::InternalSetAssetHandle(ObjectHandle handle)
+{
+    handle_ = handle;
+    RegisterSelf();
 }

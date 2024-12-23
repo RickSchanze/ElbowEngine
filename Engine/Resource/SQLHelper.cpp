@@ -25,7 +25,7 @@ static core::String MapTypeToSqlType(const core::Type* type)
     return "INTEGER";
 }
 
-static core::resource::SQLTable CreateTypeTable(SQLite::Database& db, core::StringView name, const core::Type* type)
+static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Database& db, core::StringView name, const core::Type* type)
 {
     PROFILE_SCOPE_AUTO;
     // 第一步, 验证type字段是否合法
@@ -105,13 +105,14 @@ static core::resource::SQLTable CreateTypeTable(SQLite::Database& db, core::Stri
     insert.bind(2, type->GetName().Data());
     insert.bind(3, type->GetTypeHash());
     insert.exec();
-    return {type, &db, name};
+    return core::MakeUnique<core::resource::SQLTable>(type, &db, name);
 }
 
 void core::resource::SQLTable::Insert(const Any& data)
 {
     PROFILE_SCOPE_AUTO;
-    const auto type = data.GetType();
+    std::lock_guard lock(mutex_);
+    const auto      type = data.GetType();
     if (type != type_)
     {
         throw ArgumentException(NAMEOF(data), "输入类型不符");
@@ -165,7 +166,7 @@ void core::resource::SQLTable::Insert(const Any& data)
     insert.exec();
 }
 
-core::resource::SQLTable core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
+core::UniquePtr<core::resource::SQLTable> core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
 {
     PROFILE_SCOPE_AUTO;
     if (type == nullptr)
@@ -188,7 +189,7 @@ core::resource::SQLTable core::resource::SQLHelper::CreateTable(Ref<SQLite::Data
             const String msg = String::Format("表{}已存在.", table_name);
             throw SQLException(msg);
         }
-        return {type, db.GetPtr(), table_name};
+        return MakeUnique<SQLTable>(type, db.GetPtr(), table_name);
     }
     return CreateTypeTable(db, table_name, type);
 }
@@ -214,6 +215,7 @@ core::StringView core::resource::SQLHelper::GetTypeMetaTableName()
 
 core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, StringView where)
 {
+    std::shared_lock lock(mutex_);
     if (type_ != type)
     {
         throw ArgumentException(NAMEOF(type), "输入类型不符");

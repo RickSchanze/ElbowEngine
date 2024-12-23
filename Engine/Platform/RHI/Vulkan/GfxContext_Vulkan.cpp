@@ -7,6 +7,8 @@
 
 #include "GfxContext_Vulkan.h"
 
+#include "Buffer_Vulkan.h"
+#include "CommandBuffer_Vulkan.h"
 #include "Core/Async/Execution/StartAsync.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Base/EString.h"
@@ -312,6 +314,16 @@ AsyncResultHandle GfxContext_Vulkan::Submit(const CommandBuffer& buffer, const S
     }
 }
 
+core::SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferCreateInfo& create_info)
+{
+    return core::MakeShared<Buffer_Vulkan>(create_info);
+}
+
+core::SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandPoolCreateInfo& create_info)
+{
+    return core::MakeShared<CommandPool_Vulkan>(create_info);
+}
+
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
 #if ELBOW_DEBUG
@@ -421,6 +433,8 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         }) |
         ranges::to_vector;
     Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
+    CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
+    vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
 }
 
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)

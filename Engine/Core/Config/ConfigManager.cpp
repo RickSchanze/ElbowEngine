@@ -25,9 +25,9 @@ core::IConfig* core::ConfigManager::GetConfig(const Type* type)
         return configs_[type];
     }
     String config_path = type->GetAttributeValue(Type::ValueAttribute::Config);
-    if (config_path.IsEmpty() || config_path == "Config")
+    if (config_path.IsEmpty() || config_path == "-")
     {
-        config_path = String("Config/") + type->GetName() + ".config";
+        config_path = String("Config/") + type->GetName() + ".cfg";
     }
     Optional<core::String> str    = Event_OnRequireReadFileText.Invoke(config_path);
     void*                  config = nullptr;

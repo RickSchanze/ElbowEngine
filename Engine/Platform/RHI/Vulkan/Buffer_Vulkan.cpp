@@ -29,7 +29,7 @@ void platform::rhi::vulkan::Buffer_Vulkan::BeginWrite()
     ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory_);
 }
 
-void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data)
+void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data, size_t size)
 {
     if (mapped_memory_ == nullptr)
     {
@@ -41,7 +41,7 @@ void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data)
         LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "写入数据为空");
         return;
     }
-    memcpy(mapped_memory_, data, GetSize());
+    memcpy(mapped_memory_, data, size == 0 ? GetSize() : size);
 }
 
 void platform::rhi::vulkan::Buffer_Vulkan::EndWrite()

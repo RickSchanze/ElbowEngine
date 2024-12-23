@@ -9,9 +9,10 @@
 #include "Core/Core.h"
 #include "Core/Math/MathTypes.h"
 #include "IConfig.h"
+#include "Core/Async/ThreadManager.h"
 
 #include GEN_HEADER("Core.CoreConfig.generated.h")
-#include "Core/Async/ThreadManager.h"
+
 
 namespace core
 {
@@ -57,7 +58,17 @@ class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : ext
     // 各ThreadSlot对应的线程数
     PROPERTY(Category = "Thread")
     DECLARE_CONFIG_ITEM_MAP(
-        HashMap<ThreadSlot, int>, thread_slot_count, ThreadSlotCountMap, {{ThreadSlot::Render, 1}, {ThreadSlot::Resource, 3}, {ThreadSlot::Other, 5}
-    });
+        HashMap<ThreadSlot, int>, thread_slot_count, ThreadSlotCountMap, {{ThreadSlot::Render, 1}, {ThreadSlot::Resource, 3}, {ThreadSlot::Other, 5}}
+    );
+
+    PROPERTY(Label = "启用多线程持久化对象加载")
+    DECLARE_CONFIG_ITEM(bool, enable_persistent_load_multithread, EnablePersistentLoadMultiThread, true);
+
+public:
+    /**
+     * EnablePersistentLoadMultiThread = true && Resource slot count >= 1时为true
+     * @return
+     */
+    bool IsMultiThreadPersistentLoadEnabled() const;
 };
 } // namespace core

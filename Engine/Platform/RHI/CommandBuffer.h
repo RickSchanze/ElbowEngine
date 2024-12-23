@@ -55,9 +55,11 @@ public:
         requires std::derived_from<T, RHICommand>
     void Enqueue(Args&&... args)
     {
-        auto cmd = NewDoubleFrameTemp<T>(core::Forward<Args>()...);
+        auto cmd = NewDoubleFrameTemp<T>(core::Forward<Args>(args)...);
         EnqueueCommand(cmd);
     }
+
+    virtual void Reset() = 0;
 
 protected:
     core::Array<RHICommand*> commands_;
@@ -72,6 +74,11 @@ public:
 
     virtual core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count) = 0;
     virtual core::SharedPtr<CommandBuffer>              CreateCommandBuffer()                = 0;
+
+    /**
+     * 重置CommandPool, 同时会重置所有的CommandBuffer
+     */
+    virtual void Reset() = 0;
 };
 
 

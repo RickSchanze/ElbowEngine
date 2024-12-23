@@ -18,6 +18,8 @@ public:
 
     Object* GetObjectByHandle(ObjectHandle handle);
 
+    void RemoveObject(Object* object);
+
     void RegisterObject(Object* object);
 
 private:

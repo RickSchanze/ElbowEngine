@@ -18,6 +18,8 @@ public:
      */
     virtual void PerformLoad() {}
 
+    virtual void PerformUnload() {}
+
     [[nodiscard]] virtual bool IsLoaded() const { return false; }
 };
 }   // namespace core

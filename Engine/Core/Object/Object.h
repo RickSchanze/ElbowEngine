@@ -95,6 +95,11 @@ public:
     [[nodiscard]] bool IsPendingKill() const { return state_ & PendingKill; }
 
     [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
+
+    [[nodiscard]] bool IsPersistent() const { return flags_ & Persistent; }
+
+    void InternalSetAssetHandle(ObjectHandle handle);
+    void InternalPerformPersistentObjectLoad() { PerformPersistentObjectLoad(); }
 };
 
 template <typename T>

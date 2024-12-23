@@ -20,7 +20,7 @@ public:
     [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
 
     void BeginWrite() override;
-    void Write(const void* data) override;
+    void Write(const void* data, size_t size) override;
     void EndWrite() override;
 
 private:

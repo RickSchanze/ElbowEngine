@@ -33,6 +33,7 @@ CommandPool_Vulkan::CommandPool_Vulkan(CommandPoolCreateInfo info) : CommandPool
     case QueueFamilyType::Graphics: pool_info.queueFamilyIndex = *graphics_family; break;
     case QueueFamilyType::Compute: throw core::NotSupportException("计算队列尚不支持"); break;
     case QueueFamilyType::Transfer: pool_info.queueFamilyIndex = *transfer_family; break;
+    case QueueFamilyType::Present: break;
     }
     if (info.allow_reset)
     {
@@ -57,7 +58,7 @@ core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandB
     VkCommandBuffer command_buffer;
     const auto&     ctx = *GetVulkanGfxContext();
     ctx.CreateCommandBuffers_VK(alloc_info, &command_buffer);
-    return core::MakeShared<CommandBuffer_Vulkan>(command_buffer);
+    return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_);
 }
 
 core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::CreateCommandBuffers(uint32_t count)
@@ -71,8 +72,26 @@ core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::C
     alloc_info.commandBufferCount          = count;
     const auto& ctx                        = *GetVulkanGfxContext();
     ctx.CreateCommandBuffers_VK(alloc_info, command_buffers.data());
-    return command_buffers | transform([](auto& command_buffer) { return core::MakeShared<CommandBuffer_Vulkan>(command_buffer); }) |
+    return command_buffers |
+           transform([this](auto& command_buffer) { return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_); }) |
            to<core::Array<core::SharedPtr<CommandBuffer>>>();
+}
+
+void CommandPool_Vulkan::Reset()
+{
+    const auto& ctx = *GetVulkanGfxContext();
+    vkResetCommandPool(ctx.GetDevice(), command_pool_, 0);
+}
+
+CommandBuffer_Vulkan::~CommandBuffer_Vulkan()
+{
+    const auto& ctx = *GetVulkanGfxContext();
+    vkFreeCommandBuffers(ctx.GetDevice(), pool_, 1, &buffer_);
+}
+
+void CommandBuffer_Vulkan::Reset()
+{
+    vkResetCommandBuffer(buffer_, 0);
 }
 
 static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_copy_buffer)
@@ -130,6 +149,7 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         begin_info.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         begin_info.pInheritanceInfo         = nullptr;
         vkBeginCommandBuffer(buffer_, &begin_info);
+        recording_ = true;
     }
     VkDebugUtilsLabelEXT label_info = {};
     label_info.sType                = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;

@@ -242,6 +242,14 @@ VkBufferUsageFlags RHIBufferUsageToVkBufferUsage(platform::rhi::BufferUsage usag
     {
         flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     }
+    if (usage & platform::rhi::BUB_TransferSrc)
+    {
+        flags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    }
+    if (usage & platform::rhi::BUB_TransferDst)
+    {
+        flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    }
     return flags;
 }
 
@@ -259,6 +267,14 @@ platform::rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usag
     if (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
     {
         flags |= platform::rhi::BUB_UniformBuffer;
+    }
+    if (usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+    {
+        flags |= platform::rhi::BUB_TransferSrc;
+    }
+    if (usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+    {
+        flags |= platform::rhi::BUB_TransferDst;
     }
     return flags;
 }

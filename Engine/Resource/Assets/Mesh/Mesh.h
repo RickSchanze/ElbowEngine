@@ -12,8 +12,8 @@ namespace resource
 
 struct MeshStorage
 {
-    core::UniquePtr<platform::rhi::Buffer> vertex_buffer;
-    core::UniquePtr<platform::rhi::Buffer> index_buffer;
+    core::SharedPtr<platform::rhi::Buffer> vertex_buffer;
+    core::SharedPtr<platform::rhi::Buffer> index_buffer;
     size_t                                 vertex_count;
     size_t                                 index_count;
 

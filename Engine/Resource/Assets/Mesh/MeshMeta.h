@@ -23,7 +23,6 @@ public:
     [[nodiscard]] bool             GetRemoveUnusedMaterials() const { return remove_unused_materials; }
     [[nodiscard]] core::StringView GetPath() const { return path; }
 
-private:
     PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
     int32_t id = 0;
 

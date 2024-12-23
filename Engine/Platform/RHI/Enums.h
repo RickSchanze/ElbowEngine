@@ -62,7 +62,6 @@ enum class QueueFamilyType
     Present,
 };
 
-
 /**
  * MSAA采样次数
  * Vulkan API指示这里是个Flag Enum, Follow it.
@@ -95,6 +94,8 @@ enum BufferUsageBits
     BUB_VertexBuffer  = 1,
     BUB_IndexBuffer   = 1 << 1,
     BUB_UniformBuffer = 1 << 2,
+    BUB_TransferSrc   = 1 << 3,
+    BUB_TransferDst   = 1 << 4,
 };
 typedef uint32_t BufferUsage;
 
