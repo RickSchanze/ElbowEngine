@@ -18,8 +18,6 @@ class Image;
 }
 namespace platform::rhi
 {
-
-
 struct ComponentMapping
 {
     ComponentMappingElement r;

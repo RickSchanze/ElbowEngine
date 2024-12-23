@@ -3,9 +3,11 @@
 //
 
 #pragma once
+#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
 #include "Core/CoreGlobal.h"
+#include "Enums.h"
 #include "IResource.h"
 
 
@@ -19,19 +21,12 @@ struct RHICommand;
 namespace platform::rhi
 {
 
-enum class CommandPoolType
-{
-    Graphics,
-    Compute,
-    Transfer,
-};
-
 struct CommandPoolCreateInfo
 {
-    CommandPoolType type;
+    QueueFamilyType type;
     bool            allow_reset;   // 允许分配的command buffer在提交后可以被reset
 
-    CommandPoolCreateInfo(CommandPoolType type, bool allow_reset) : type(type), allow_reset(allow_reset) {}
+    CommandPoolCreateInfo(QueueFamilyType type, bool allow_reset) : type(type), allow_reset(allow_reset) {}
 };
 
 /**
@@ -47,7 +42,7 @@ public:
      * 执行完成后会调用Clear
      * @param label label 这一段命令的标签(for debug)
      */
-    virtual void Execute(core::StringView label) = 0;
+    virtual core::exec::AsyncResultHandle Execute(core::StringView label) = 0;
 
     /**
      * 清理队里里的命令 之前记录过的不会被清理
@@ -63,11 +58,6 @@ public:
         auto cmd = NewDoubleFrameTemp<T>(core::Forward<Args>()...);
         EnqueueCommand(cmd);
     }
-
-    /**
-     * 提交命令
-     */
-    virtual void Submit() = 0;
 
 protected:
     core::Array<RHICommand*> commands_;

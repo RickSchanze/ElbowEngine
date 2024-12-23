@@ -15,7 +15,6 @@
 
 #include <meta/meta.hpp>
 #include <range/v3/range/conversion.hpp>
-#include <range/v3/utility/addressof.hpp>
 #include <range/v3/view/transform.hpp>
 
 using namespace core::exec;
@@ -25,27 +24,27 @@ using namespace ranges;
 
 CommandPool_Vulkan::CommandPool_Vulkan(CommandPoolCreateInfo info) : CommandPool(info)
 {
-    const auto&             ctx                   = *GetVulkanGfxContext();
-    VkCommandPoolCreateInfo pool_info             = {};
-    pool_info.sType                               = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    const auto& [graphics_family, present_family] = ctx.GetCurrentQueueFamilyIndices();
+    const auto&             ctx                                    = *GetVulkanGfxContext();
+    VkCommandPoolCreateInfo pool_info                              = {};
+    pool_info.sType                                                = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    const auto& [graphics_family, present_family, transfer_family] = ctx.GetCurrentQueueFamilyIndices();
     switch (info.type)
     {
-    case CommandPoolType::Graphics: pool_info.queueFamilyIndex = *graphics_family; break;
-    case CommandPoolType::Compute: throw core::NotSupportException("计算队列尚不支持"); break;
-    case CommandPoolType::Transfer: throw core::NotSupportException("传输队列尚不支持"); break;
+    case QueueFamilyType::Graphics: pool_info.queueFamilyIndex = *graphics_family; break;
+    case QueueFamilyType::Compute: throw core::NotSupportException("计算队列尚不支持"); break;
+    case QueueFamilyType::Transfer: pool_info.queueFamilyIndex = *transfer_family; break;
     }
     if (info.allow_reset)
     {
         pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     }
-    command_pool_ = ctx.CreateCommandPool(pool_info);
+    command_pool_ = ctx.CreateCommandPool_VK(pool_info);
 }
 
 CommandPool_Vulkan::~CommandPool_Vulkan()
 {
     const auto& ctx = *GetVulkanGfxContext();
-    ctx.DestroyCommandPool(command_pool_);
+    ctx.DestroyCommandPool_VK(command_pool_);
 }
 
 core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer()
@@ -57,7 +56,7 @@ core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandB
     alloc_info.commandBufferCount          = 1;
     VkCommandBuffer command_buffer;
     const auto&     ctx = *GetVulkanGfxContext();
-    ctx.CreateCommandBuffers(alloc_info, &command_buffer);
+    ctx.CreateCommandBuffers_VK(alloc_info, &command_buffer);
     return core::MakeShared<CommandBuffer_Vulkan>(command_buffer);
 }
 
@@ -71,7 +70,7 @@ core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::C
     alloc_info.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     alloc_info.commandBufferCount          = count;
     const auto& ctx                        = *GetVulkanGfxContext();
-    ctx.CreateCommandBuffers(alloc_info, command_buffers.data());
+    ctx.CreateCommandBuffers_VK(alloc_info, command_buffers.data());
     return command_buffers | transform([](auto& command_buffer) { return core::MakeShared<CommandBuffer_Vulkan>(command_buffer); }) |
            to<core::Array<core::SharedPtr<CommandBuffer>>>();
 }
@@ -103,22 +102,22 @@ static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_c
     LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令CopyBuffer错误 src或者dst为空");
 }
 
-void CommandBuffer_Vulkan::Execute(core::StringView label)
+AsyncResultHandle CommandBuffer_Vulkan::Execute(core::StringView label)
 {
+    PROFILE_SCOPE_AUTO;
     auto* cfg = core::GetConfig<PlatformConfig>();
     if (cfg->GetEnableMultithreadRender())
     {
         auto scheduler = core::ThreadManager::GetScheduler();
         auto task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([this, label] { InternalExecute(label); });
-        StartAsync(task);
+        return StartAsync(task);
     }
     else
     {
         InternalExecute(label);
+        return nullptr;
     }
 }
-
-void CommandBuffer_Vulkan::Submit() {}
 
 void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
 {

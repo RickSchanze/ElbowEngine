@@ -6,18 +6,34 @@
 #pragma once
 #include "Common.h"
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/Optional.h"
 #include "Core/Base/TypeTraits.h"
 
 namespace core::exec
 {
 
-template <typename T>
-struct AsyncDataHolder
+struct AsyncResultBase
 {
+    bool               done = false;
     std::exception_ptr exception{};
 
-    T    data{};
-    bool done = false;
+    void SetException(const std::exception_ptr& _exception) { exception = _exception; }
+
+    std::exception_ptr GetException() { return exception; }
+
+    void SetDone() { done = true; }
+
+    bool IsDone() const { return done; }
+
+    virtual bool IsCanceled() const { return false; }
+};
+
+template <typename T>
+struct AsyncResult : public AsyncResultBase
+{
+    Optional<T> data{};
+
+    bool IsCanceled() const override { return IsDone() && !data; }
 
     void SetData(const T& _data)
     {
@@ -25,13 +41,7 @@ struct AsyncDataHolder
         done = true;
     }
 
-    void SetException(const std::exception_ptr& _exception) { exception = _exception; }
-
-    void SetDone() { done = true; }
-
-    bool IsDone() const { return done; }
-
-    std::optional<T> GetValue()
+    Optional<T> GetValue()
     {
         if (exception)
         {
@@ -43,16 +53,20 @@ struct AsyncDataHolder
         }
         return data;
     }
-
-    std::exception_ptr GetException() { return exception; }
 };
+
+template <typename... Args>
+Optional<std::tuple<Args...>> GetAsyncResult(const AsyncResultBase& result)
+{
+    return static_cast<AsyncResult<std::tuple<Args...>>*>(&result)->GetValue();
+}
 
 template <typename... Args>
 struct AsyncReceiver
 {
     using ReceiveTypes = std::tuple<Args...>;
 
-    std::shared_ptr<AsyncDataHolder<ReceiveTypes>> data;
+    std::shared_ptr<AsyncResult<ReceiveTypes>> data;
 
     template <typename Receiver>
         requires std::is_same_v<Pure<Receiver>, AsyncReceiver>
@@ -91,28 +105,32 @@ struct AsyncWrapper<void>
     using ReceiverType = AsyncReceiver<>;
 };
 
+using AsyncResultHandle = SharedPtr<AsyncResultBase>;
+
 struct StartAsyncType
 {
     template <typename Sender>
-    auto operator()(Sender sender) const
+    AsyncResultHandle operator()(Sender sender) const
     {
         using ValueTypes = typename SenderTraits<Sender>::ValueTypes;
         typename AsyncWrapper<ValueTypes>::ReceiverType receiver;
         if constexpr (std::is_same_v<ValueTypes, void>)
         {
-            auto holder = std::make_shared<AsyncDataHolder<std::tuple<>>>();
-            receiver.data = holder;
-            auto op       = Connect(std::move(sender), receiver);
+            auto              holder = std::make_shared<AsyncResult<std::tuple<>>>();
+            AsyncResultHandle rtn    = holder;
+            receiver.data            = holder;
+            auto op                  = Connect(std::move(sender), receiver);
             Start(op);
-            return holder;
+            return rtn;
         }
         else
         {
-            auto holder = std::make_shared<AsyncDataHolder<ValueTypes>>();
-            receiver.data = holder;
-            auto op       = Connect(std::move(sender), receiver);
+            auto              holder = std::make_shared<AsyncResult<ValueTypes>>();
+            AsyncResultHandle rtn    = holder;
+            receiver.data            = holder;
+            auto op                  = Connect(std::move(sender), receiver);
             Start(op);
-            return holder;
+            return rtn;
         }
     }
 };
@@ -121,13 +139,12 @@ inline constexpr StartAsyncType StartAsync{};
 
 struct SyncWaitType
 {
-    template <typename T>
-    auto operator()(const std::shared_ptr<AsyncDataHolder<T>>& re) const
+    void operator()(const AsyncResultHandle& re) const
     {
+        if (!re) return;
         while (!re->IsDone())
         {
         }
-        return re->GetValue();
     }
 };
 

@@ -23,7 +23,7 @@ public:
     /// **仅** 供交换链图像使用
     explicit Image_Vulkan(VkImage handle_, int32_t index, uint32_t width_, uint32_t height_, Format format_);
 
-    ~Image_Vulkan();
+    ~Image_Vulkan() override;
 
 public:
     [[nodiscard]] void* GetNativeHandle() const override { return image_handle_; }

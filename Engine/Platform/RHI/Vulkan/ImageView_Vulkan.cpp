@@ -22,11 +22,11 @@ VkComponentMapping platform::rhi::vulkan::FromComponentMapping(const ComponentMa
 
 platform::rhi::vulkan::ImageView_Vulkan::ImageView_Vulkan(const ImageViewDesc& desc) : ImageView(desc)
 {
-    handle_ = GetVulkanGfxContext()->CreateImageView(desc_);
+    handle_ = GetVulkanGfxContext()->CreateImageView_VK(desc_);
 }
 
 platform::rhi::vulkan::ImageView_Vulkan::~ImageView_Vulkan()
 {
-    GetVulkanGfxContext()->DestroyImageView(handle_);
+    GetVulkanGfxContext()->DestroyImageView_VK(handle_);
     handle_ = nullptr;
 }

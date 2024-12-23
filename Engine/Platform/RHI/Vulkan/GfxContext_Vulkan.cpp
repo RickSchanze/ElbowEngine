@@ -7,6 +7,8 @@
 
 #include "GfxContext_Vulkan.h"
 
+#include "Core/Async/Execution/StartAsync.h"
+#include "Core/Async/Execution/Then.h"
 #include "Core/Base/EString.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
@@ -16,15 +18,18 @@
 #include "ImageView_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
+#include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Surface.h"
 #include "Platform/Window/WindowManager.h"
 #include "range/v3/all.hpp"
+#include "SyncPrimitives_Vulkan.h"
 
 static core::Array<VkLayerProperties> available_layers;
 static core::Array<VkPhysicalDevice>  physical_devices;
 static core::Array<core::String>      required_instance_extensions;
 
 using namespace ranges::views;
+using namespace core::exec;
 
 static core::Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance)
 {
@@ -167,7 +172,7 @@ const QueueFamilyIndices& GfxContext_Vulkan::GetCurrentQueueFamilyIndices() cons
     return queue_family_indices_;
 }
 
-VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
+VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc& desc) const
 {
     const auto img        = desc.image;
     const auto img_handle = static_cast<VkImage>(img->GetNativeHandle());
@@ -193,12 +198,12 @@ VkImageView GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc) const
     return view_handle;
 }
 
-void GfxContext_Vulkan::DestroyImageView(const VkImageView view) const
+void GfxContext_Vulkan::DestroyImageView_VK(const VkImageView view) const
 {
     vkDestroyImageView(device_, view, nullptr);
 }
 
-VkBuffer GfxContext_Vulkan::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage) const
+VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const
 {
     VkBufferCreateInfo buffer_info{};
     buffer_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -211,12 +216,12 @@ VkBuffer GfxContext_Vulkan::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags u
     return buffer;
 }
 
-void GfxContext_Vulkan::DestroyBuffer(VkBuffer buffer) const
+void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const
 {
     vkDestroyBuffer(device_, buffer, nullptr);
 }
 
-VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory(VkBuffer buffer, VkMemoryPropertyFlags properties) const
+VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const
 {
     VkMemoryRequirements mem_requirements;
     vkGetBufferMemoryRequirements(device_, buffer, &mem_requirements);
@@ -231,27 +236,27 @@ VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory(VkBuffer buffer, VkMemory
     return memory;
 }
 
-void GfxContext_Vulkan::FreeBufferMemory(VkDeviceMemory memory) const
+void GfxContext_Vulkan::FreeBufferMemory_VK(VkDeviceMemory memory) const
 {
     vkFreeMemory(device_, memory, nullptr);
 }
 
-void GfxContext_Vulkan::BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory) const
+void GfxContext_Vulkan::BindBufferMemory_VK(VkBuffer buffer, VkDeviceMemory memory) const
 {
     vkBindBufferMemory(device_, buffer, memory, 0);
 }
 
-void GfxContext_Vulkan::MapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset) const
+void GfxContext_Vulkan::MapMemory_VK(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset) const
 {
     vkMapMemory(device_, memory, offset, size, 0, data);
 }
 
-void GfxContext_Vulkan::UnmapMemory(VkDeviceMemory memory) const
+void GfxContext_Vulkan::UnmapMemory_VK(VkDeviceMemory memory) const
 {
     vkUnmapMemory(device_, memory);
 }
 
-VkCommandPool GfxContext_Vulkan::CreateCommandPool(const VkCommandPoolCreateInfo& info) const
+VkCommandPool GfxContext_Vulkan::CreateCommandPool_VK(const VkCommandPoolCreateInfo& info) const
 {
     VkCommandPool command_pool_;
     const auto    result = vkCreateCommandPool(device_, &info, nullptr, &command_pool_);
@@ -259,15 +264,52 @@ VkCommandPool GfxContext_Vulkan::CreateCommandPool(const VkCommandPoolCreateInfo
     return command_pool_;
 }
 
-void GfxContext_Vulkan::DestroyCommandPool(VkCommandPool pool) const
+void GfxContext_Vulkan::DestroyCommandPool_VK(VkCommandPool pool) const
 {
     vkDestroyCommandPool(device_, pool, nullptr);
 }
 
-void GfxContext_Vulkan::CreateCommandBuffers(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const
+void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const
 {
     const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
     VERIFY_VULKAN_RESULT(result);
+}
+
+core::SharedPtr<Fence> GfxContext_Vulkan::CreateFence()
+{
+    return core::MakeShared<Fence_Vulkan>();
+}
+
+static void InternalSubmit(const CommandBuffer& buffer, const SubmitParameter& parameter)
+{
+    auto*        ctx = GetVulkanGfxContext();
+    VkSubmitInfo submit_info{};
+    submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount   = 1;
+    VkCommandBuffer command_buffer   = buffer.GetNativeHandleT<VkCommandBuffer>();
+    submit_info.pCommandBuffers      = &command_buffer;
+    // TODO: 填充信号量
+    submit_info.signalSemaphoreCount = 0;
+    submit_info.pWaitSemaphores      = nullptr;
+    submit_info.pWaitDstStageMask    = nullptr;
+    VkFence fence                    = parameter.fence->GetNativeHandleT<VkFence>();
+    vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
+}
+
+AsyncResultHandle GfxContext_Vulkan::Submit(const CommandBuffer& buffer, const SubmitParameter& parameter)
+{
+    auto* cfg = core::GetConfig<PlatformConfig>();
+    if (cfg->GetEnableMultithreadRender())
+    {
+        auto& scheduler = core::ThreadManager::GetScheduler();
+        auto  task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([&buffer, &parameter] { InternalSubmit(buffer, parameter); });
+        return StartAsync(task);
+    }
+    else
+    {
+        InternalSubmit(buffer, parameter);
+        return nullptr;
+    }
 }
 
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
@@ -307,6 +349,18 @@ void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsL
 void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const
 {
     CmdEndDebugUtilsLabelEXT(cmd);
+}
+
+VkQueue GfxContext_Vulkan::GetQueue(QueueFamilyType type) const
+{
+    switch (type)
+    {
+    case QueueFamilyType::Graphics: return graphics_queue_; break;
+    case QueueFamilyType::Compute: throw core::NotSupportException("Compute queue尚不支持"); break;
+    case QueueFamilyType::Transfer: return transfer_queue_; break;
+    case QueueFamilyType::Present: return present_queue_;
+    }
+    return VK_NULL_HANDLE;
 }
 
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
@@ -547,6 +601,10 @@ static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surfa
         {
             indices.present_family = i;
         }
+        if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT)
+        {
+            indices.transfer_family = i;
+        }
         if (indices.IsComplete())
         {
             break;
@@ -587,8 +645,8 @@ static void SelectPhysicalDevice(core::Ref<VkPhysicalDevice> physical_device, Vk
 }
 
 static void CreateLogicalDevice(
-    VkPhysicalDevice physical_device, Surface* surface, OUT core::Ref<VkDevice> device, OUT core::Ref<VkQueue> graphics_queue,
-    OUT core::Ref<VkQueue> present_queue
+    VkPhysicalDevice physical_device, Surface* surface, OUT VkDevice& device, OUT VkQueue& graphics_queue, OUT VkQueue& present_queue,
+    OUT VkQueue& transfer_queue
 )
 {
     auto indices = FindQueueFamilies(physical_device, surface);
@@ -629,9 +687,10 @@ static void CreateLogicalDevice(
     {
         create_info.enabledLayerCount = 0;
     }
-    VERIFY_VULKAN_RESULT(vkCreateDevice(physical_device, &create_info, nullptr, device.GetPtr()));
-    vkGetDeviceQueue(*device, *indices.graphics_family, 0, graphics_queue.GetPtr());
-    vkGetDeviceQueue(*device, *indices.present_family, 0, present_queue.GetPtr());
+    VERIFY_VULKAN_RESULT(vkCreateDevice(physical_device, &create_info, nullptr, &device));
+    vkGetDeviceQueue(device, *indices.graphics_family, 0, &graphics_queue);
+    vkGetDeviceQueue(device, *indices.present_family, 0, &present_queue);
+    vkGetDeviceQueue(device, *indices.transfer_family, 0, &transfer_queue);
 }
 
 static void DestroyLogicalDevice(core::Ref<VkDevice> device)
@@ -718,7 +777,7 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     queue_family_indices_ = FindQueueFamilies(physical_device_, surface_);
-    CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_);
+    CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_, transfer_queue_);
     default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, swapchain_);
     Format depth_format   = FindSupportedFormat(
         {Format::D32_Float, Format::D32_Float_S8X24_UInt, Format::D24_UNorm_S8_UInt},

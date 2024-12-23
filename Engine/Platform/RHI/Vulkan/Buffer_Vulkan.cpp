@@ -11,22 +11,22 @@
 platform::rhi::vulkan::Buffer_Vulkan::Buffer_Vulkan(const BufferCreateInfo& info) : Buffer(info)
 {
     auto ctx = *GetVulkanGfxContext();
-    buffer_  = ctx.CreateBuffer(create_info_.size, RHIBufferUsageToVkBufferUsage(create_info_.usage));
-    memory_  = ctx.AllocateBufferMemory(buffer_, (create_info_.usage));
-    ctx.BindBufferMemory(buffer_, memory_);
+    buffer_  = ctx.CreateBuffer_VK(create_info_.size, RHIBufferUsageToVkBufferUsage(create_info_.usage));
+    memory_  = ctx.AllocateBufferMemory_VK(buffer_, (create_info_.usage));
+    ctx.BindBufferMemory_VK(buffer_, memory_);
 }
 
 platform::rhi::vulkan::Buffer_Vulkan::~Buffer_Vulkan()
 {
     auto ctx = *GetVulkanGfxContext();
-    ctx.FreeBufferMemory(memory_);
-    ctx.DestroyBuffer(buffer_);
+    ctx.FreeBufferMemory_VK(memory_);
+    ctx.DestroyBuffer_VK(buffer_);
 }
 
 void platform::rhi::vulkan::Buffer_Vulkan::BeginWrite()
 {
     auto ctx = *GetVulkanGfxContext();
-    ctx.MapMemory(memory_, GetSize(), &mapped_memory_);
+    ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory_);
 }
 
 void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data)
@@ -47,6 +47,6 @@ void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data)
 void platform::rhi::vulkan::Buffer_Vulkan::EndWrite()
 {
     auto ctx = *GetVulkanGfxContext();
-    ctx.UnmapMemory(memory_);
+    ctx.UnmapMemory_VK(memory_);
     mapped_memory_ = nullptr;
 }

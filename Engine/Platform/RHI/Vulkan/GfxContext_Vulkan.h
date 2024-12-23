@@ -23,7 +23,8 @@ namespace platform::rhi
 struct ImageViewDesc;
 class Surface;
 }   // namespace platform::rhi
-static core::StringView VulkanErrorToString(VkResult result);
+
+inline core::StringView VulkanErrorToString(VkResult result);
 
 #define VERIFY_VULKAN_RESULT(result) \
     auto result_ = result;           \
@@ -36,8 +37,9 @@ struct QueueFamilyIndices
 {
     core::Optional<uint32_t> graphics_family;
     core::Optional<uint32_t> present_family;
+    core::Optional<uint32_t> transfer_family;
 
-    [[nodiscard]] bool IsComplete() const { return graphics_family.HasValue() && present_family.HasValue(); }
+    [[nodiscard]] bool IsComplete() const { return graphics_family.HasValue() && present_family.HasValue() && transfer_family.HasValue(); }
 };
 
 class GfxContext_Vulkan final : public GfxContext
@@ -61,25 +63,29 @@ public:
 
     [[nodiscard]] const QueueFamilyIndices& GetCurrentQueueFamilyIndices() const;
 
-#if REGION(资源创建/销毁)
-    [[nodiscard]] VkImageView CreateImageView(const ImageViewDesc& desc) const;
-    void                      DestroyImageView(VkImageView view) const;
+#if REGION(资源创建/销毁: Vulkan特化)
+    [[nodiscard]] VkImageView CreateImageView_VK(const ImageViewDesc& desc) const;
+    void                      DestroyImageView_VK(VkImageView view) const;
 
-    [[nodiscard]] VkBuffer CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage) const;
-    void                   DestroyBuffer(VkBuffer buffer) const;
+    [[nodiscard]] VkBuffer CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const;
+    void                   DestroyBuffer_VK(VkBuffer buffer) const;
 
-    [[nodiscard]] VkDeviceMemory AllocateBufferMemory(VkBuffer buffer, VkMemoryPropertyFlags properties) const;
-    void                         FreeBufferMemory(VkDeviceMemory memory) const;
+    [[nodiscard]] VkDeviceMemory AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const;
+    void                         FreeBufferMemory_VK(VkDeviceMemory memory) const;
 
-    void BindBufferMemory(VkBuffer buffer, VkDeviceMemory memory) const;
+    void BindBufferMemory_VK(VkBuffer buffer, VkDeviceMemory memory) const;
 
-    void MapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset = 0) const;
-    void UnmapMemory(VkDeviceMemory memory) const;
+    void MapMemory_VK(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset = 0) const;
+    void UnmapMemory_VK(VkDeviceMemory memory) const;
 
-    [[nodiscard]] VkCommandPool CreateCommandPool(const VkCommandPoolCreateInfo& info) const;
-    void                        DestroyCommandPool(VkCommandPool pool) const;
-    void                        CreateCommandBuffers(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
+    [[nodiscard]] VkCommandPool CreateCommandPool_VK(const VkCommandPoolCreateInfo& info) const;
+    void                        DestroyCommandPool_VK(VkCommandPool pool) const;
+    void                        CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
+
+    [[nodiscard]] core::SharedPtr<Fence> CreateFence() override;
 #endif
+
+    core::exec::AsyncResultHandle Submit(const CommandBuffer& buffer, const SubmitParameter& parameter) override;
 
     void SetObjectDebugName(VkObjectType type, void* handle, core::StringView name) const;
 
@@ -87,6 +93,10 @@ public:
 
     void BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const;
     void EndDebugLabel(VkCommandBuffer cmd) const;
+
+    [[nodiscard]] VkDevice GetDevice() const { return device_; }
+
+    [[nodiscard]] VkQueue GetQueue(QueueFamilyType type) const;
 
 private:
     [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
@@ -98,12 +108,15 @@ private:
     core::DelegateID pre_vulkan_gfx_context_destroyed_;
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
 
+
+private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;
     VkPhysicalDevice   physical_device_ = nullptr;
     VkDevice           device_          = nullptr;
     VkQueue            graphics_queue_  = nullptr;
     VkQueue            present_queue_   = nullptr;
+    VkQueue            transfer_queue_  = nullptr;
     VkSwapchainKHR     swapchain_       = nullptr;
     QueueFamilyIndices queue_family_indices_{};
 

@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Buffer.h"
+#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Core.h"
 #include "Core/Event/Event.h"
 #include "Core/Math/MathTypes.h"
@@ -14,6 +15,14 @@
 
 #include <cstdint>
 
+namespace platform::rhi
+{
+struct Fence;
+}
+namespace platform::rhi
+{
+class CommandBuffer;
+}
 namespace platform::rhi
 {
 DECLARE_EVENT(PostProcessVulkanExtensionsEvent, core::Array<core::String>, const core::Array<core::String>&);
@@ -61,6 +70,12 @@ public:
     explicit RHIException(const core::String& msg) : Exception(core::String::Format("RHI错误:\n{}", msg)) {}
 };
 
+struct SubmitParameter
+{
+    Fence*          fence             = nullptr;
+    QueueFamilyType submit_queue_type = QueueFamilyType::Graphics;
+};
+
 class GfxContext
 {
 public:
@@ -95,6 +110,19 @@ public:
      * @return
      */
     [[nodiscard]] virtual Format GetDefaultColorFormat() const = 0;
+
+    /**
+     * 提交命令到GPU
+     * @param buffer
+     * @param parameter
+     */
+    virtual core::exec::AsyncResultHandle Submit(const CommandBuffer& buffer, const SubmitParameter& parameter) = 0;
+
+    /**
+     * 创建同步原语: Fence
+     * @return
+     */
+    virtual [[nodiscard]] core::SharedPtr<Fence> CreateFence() = 0;
 };
 
 GfxContext* GetGfxContext();

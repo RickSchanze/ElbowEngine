@@ -17,4 +17,6 @@ namespace platform::rhi
 class Surface : public IResource
 {
 };
+
+
 }

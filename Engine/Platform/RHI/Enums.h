@@ -54,6 +54,15 @@ enum class ENUM() GraphicsAPI
     Count,
 };
 
+enum class QueueFamilyType
+{
+    Graphics,
+    Compute,
+    Transfer,
+    Present,
+};
+
+
 /**
  * MSAA采样次数
  * Vulkan API指示这里是个Flag Enum, Follow it.

@@ -13,7 +13,7 @@ namespace platform::rhi::vulkan
 class CommandPool_Vulkan final : public CommandPool
 {
 public:
-    CommandPool_Vulkan(CommandPoolCreateInfo info);
+    explicit CommandPool_Vulkan(CommandPoolCreateInfo info);
 
     ~CommandPool_Vulkan() override;
 
@@ -31,13 +31,11 @@ private:
 class CommandBuffer_Vulkan : public CommandBuffer
 {
 public:
-    CommandBuffer_Vulkan(VkCommandBuffer buffer) : buffer_(buffer) {}
+    explicit CommandBuffer_Vulkan(VkCommandBuffer buffer) : buffer_(buffer) {}
 
-    void* GetNativeHandle() const override { return buffer_; }
+    [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
 
-    void Execute(core::StringView label) override;
-
-    void Submit() override;
+    core::exec::AsyncResultHandle Execute(core::StringView label) override;
 
 protected:
     void InternalExecute(core::StringView label);
