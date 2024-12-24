@@ -5,25 +5,33 @@
 
 #pragma once
 #include "Common.h"
+#include "Core/Async/ThreadUtils.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Optional.h"
 #include "Core/Base/TypeTraits.h"
+#include "Core/Log/Logger.h"
+#include "Resource/Logcat.h"
+
+#include <condition_variable>
 
 namespace core::exec
 {
 
 struct AsyncResultBase
 {
-    bool               done = false;
-    std::exception_ptr exception{};
+    std::atomic<bool>       ready = false;
+    std::exception_ptr      exception{};
 
     void SetException(const std::exception_ptr& _exception) { exception = _exception; }
 
     std::exception_ptr GetException() { return exception; }
 
-    void SetDone() { done = true; }
+    void SetDone()
+    {
+        ready.store(true);
+    }
 
-    bool IsDone() const { return done; }
+    bool IsDone() const { return ready.load(); }
 
     virtual bool IsCanceled() const { return false; }
 };
@@ -38,14 +46,14 @@ struct AsyncResult : public AsyncResultBase
     void SetData(const T& _data)
     {
         data = _data;
-        done = true;
+        ready.store(true);
     }
 
     Optional<T> GetValue()
     {
         if (exception)
         {
-            if (done)
+            if (IsDone())
             {
                 return {};
             }
@@ -144,6 +152,7 @@ struct SyncWaitType
         if (!re) return;
         while (!re->IsDone())
         {
+            ThreadUtils::YieldThread();
         }
     }
 };

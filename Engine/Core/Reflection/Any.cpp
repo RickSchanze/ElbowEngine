@@ -41,6 +41,7 @@ bool core::Any::IsEnum() const
 
 core::Optional<int64_t> core::Any::AsInt64() const
 {
+    if (GetType()->IsEnum()) return *static_cast<int32_t*>(ptr_->GetData());
     if (GetType() == TypeOf<int8_t>()) return *static_cast<int8_t*>(ptr_->GetData());
     if (GetType() == TypeOf<int16_t>()) return *static_cast<int16_t*>(ptr_->GetData());
     if (GetType() == TypeOf<int32_t>()) return *static_cast<int32_t*>(ptr_->GetData());
@@ -66,6 +67,7 @@ bool core::CanConvertCopy(const Type* from, const Type* to)
     if (from == to) return true;
     if (from->IsEnum() && to == TypeOf<int32_t>()) return true;
     if (from->IsNumericInteger() && to->IsNumericInteger()) return true;
+    if (from->IsBoolean() && to->IsNumericInteger()) return true;
     if (from->IsNumericFloat() && to->IsNumericFloat()) return true;
     return false;
 }

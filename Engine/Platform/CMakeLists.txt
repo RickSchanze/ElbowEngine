@@ -86,3 +86,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME} PRIVATE IconFontCppHeaders)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/..)
+
+target_include_directories(${PROJECT_NAME} PUBLIC "C:/VulkanSDK/1.2.198.1/Include")
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})

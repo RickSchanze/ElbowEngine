@@ -18,6 +18,7 @@ core::SharedAny::SharedAny(const SharedAny& other)
 {
     data_    = other.data_;
     ref_cnt_ = other.ref_cnt_;
+    type_    = other.type_;
     AddRef();
 }
 
@@ -25,6 +26,7 @@ core::SharedAny::SharedAny(SharedAny&& other) noexcept
 {
     data_          = other.data_;
     ref_cnt_       = other.ref_cnt_;
+    type_          = other.type_;
     other.data_    = nullptr;
     other.ref_cnt_ = nullptr;
 }
@@ -62,6 +64,7 @@ core::Any core::SharedAny::AsAny() const
 
 void core::SharedAny::Release()
 {
+    if (ref_cnt_ == nullptr) return;
     --(*ref_cnt_);
     if (*ref_cnt_ == 0)
     {

@@ -18,7 +18,7 @@ core::SharedPtr<CommandBuffer> GfxCommandHelper::BeginSingleTransferCommand()
     return pool.CreateCommandBuffer();
 }
 
-void GfxCommandHelper::EndSingleTransferCommand(const CommandBuffer& command_buffer)
+void GfxCommandHelper::EndSingleTransferCommand(CommandBuffer& command_buffer)
 {
     auto&           ctx   = GetGfxContextRef();
     const auto      fence = ctx.CreateFence();

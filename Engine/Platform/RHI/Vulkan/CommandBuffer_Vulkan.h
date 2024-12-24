@@ -40,6 +40,10 @@ public:
 
     core::exec::AsyncResultHandle Execute(core::StringView label) override;
 
+    [[nodiscard]] bool IsRecording() const { return recording_; }
+
+    void StopRecording() { recording_ = false; }
+
 protected:
     void InternalExecute(core::StringView label);
 

@@ -8,9 +8,17 @@
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
+#include "Core/Base/Exception.h"
 
 namespace platform
 {
+class FolderException : public core::Exception
+{
+public:
+    FolderException(core::StringView msg) : core::Exception(msg) {}
+};
+
+
 class Folder
 {
 public:

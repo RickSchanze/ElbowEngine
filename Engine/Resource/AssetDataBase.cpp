@@ -54,7 +54,7 @@ void resource::AssetDataBase::Import(core::StringView path)
             {
                 registry.RemoveObject(obj);
             }
-            auto* mesh = New<resource::Mesh>();
+            auto* mesh = New<Mesh>();
             mesh->InternalSetAssetHandle(handle);
             mesh->InternalPerformPersistentObjectLoad();
         }

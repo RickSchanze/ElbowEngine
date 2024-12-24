@@ -7,6 +7,11 @@
 #include "Core/CoreEvents.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "PersistentObject.h"
+
+#include GEN_HEADER("Core.ObjectRegistry.generated.h")
+
+GENERATED_SOURCE()
+
 core::ObjectHandle core::ObjectRegistry::NextInstanceHandle()
 {
     return next_handle_instanced_--;
@@ -69,7 +74,7 @@ void core::ObjectManager::Startup()
     {
         String      serialized_str;
         YamlArchive archive;
-        archive.Serialize(&registry_, serialized_str);
+        archive.Serialize(registry_, serialized_str);
         Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
     }
 }

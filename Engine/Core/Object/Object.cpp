@@ -41,12 +41,12 @@ void core::Object::RemoveReferenced(ObjectHandle handle)
 
 void core::Object::GenerateInstanceHandle()
 {
-    handle_ = ObjectManager::Get()->GetRegistry().NextInstanceHandle();
+    handle_ = ObjectManager::GetRegistry().NextInstanceHandle();
 }
 
 void core::Object::RegisterSelf()
 {
-    ObjectManager::Get()->GetRegistry().RegisterObject(this);
+    ObjectManager::GetRegistry().RegisterObject(this);
 }
 
 void core::Object::ResolveObjectPtr()

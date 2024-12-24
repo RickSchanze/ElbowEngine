@@ -175,7 +175,14 @@ bool platform::Folder::ContainsFile(core::StringView path, core::StringView name
 bool platform::Folder::CreateFolder(core::StringView path)
 {
     auto v = path.GetStdStringView();
-    return std::filesystem::create_directory(v);
+    try
+    {
+        return std::filesystem::create_directories(v);
+    }
+    catch (std::exception& e)
+    {
+        throw FolderException(e.what());
+    }
 }
 
 bool platform::Folder::Create() const

@@ -427,7 +427,7 @@ struct Type
     [[nodiscard]] StringView GetFullName() const { return name_; }
     [[nodiscard]] StringView GetName() const;
     [[nodiscard]] int32_t    GetSize() const { return size_; }
-    [[nodiscard]] int64_t    GetTypeHash() const { return type_hash_; }
+    [[nodiscard]] size_t     GetTypeHash() const { return type_hash_; }
 
     [[nodiscard]] Array<Ref<const FieldInfo>>    GetSelfDefinedFields() const;
     [[nodiscard]] int32_t                        GetSelfDefinedFieldsCount() const { return static_cast<int32_t>(fields_.size()); }
@@ -551,7 +551,7 @@ protected:
     Array<const Type*>   parents_{};
     Array<FieldInfo>     fields_{};
     Array<FunctionInfo*> function_infos_{};
-    int64_t              type_hash_ = 0;
+    size_t               type_hash_ = 0;
 
 #if WITH_EDITOR
     StringView comment_;   // 注释

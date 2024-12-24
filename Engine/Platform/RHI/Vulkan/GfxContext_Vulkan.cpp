@@ -282,9 +282,15 @@ core::SharedPtr<Fence> GfxContext_Vulkan::CreateFence()
     return core::MakeShared<Fence_Vulkan>();
 }
 
-static void InternalSubmit(const CommandBuffer& buffer, const SubmitParameter& parameter)
+static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& parameter)
 {
-    auto*        ctx = GetVulkanGfxContext();
+    auto*                 ctx           = GetVulkanGfxContext();
+    CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(buffer);
+    if (buffer_vulkan.IsRecording())
+    {
+        buffer_vulkan.StopRecording();
+        vkEndCommandBuffer(buffer_vulkan.GetNativeHandleT<VkCommandBuffer>());
+    }
     VkSubmitInfo submit_info{};
     submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount   = 1;
@@ -294,11 +300,15 @@ static void InternalSubmit(const CommandBuffer& buffer, const SubmitParameter& p
     submit_info.signalSemaphoreCount = 0;
     submit_info.pWaitSemaphores      = nullptr;
     submit_info.pWaitDstStageMask    = nullptr;
-    VkFence fence                    = parameter.fence->GetNativeHandleT<VkFence>();
+    VkFence fence                    = VK_NULL_HANDLE;
+    if (parameter.fence != nullptr)
+    {
+        fence = parameter.fence->GetNativeHandleT<VkFence>();
+    }
     vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
 }
 
-AsyncResultHandle GfxContext_Vulkan::Submit(const CommandBuffer& buffer, const SubmitParameter& parameter)
+AsyncResultHandle GfxContext_Vulkan::Submit(CommandBuffer& buffer, const SubmitParameter& parameter)
 {
     auto* cfg = core::GetConfig<PlatformConfig>();
     if (cfg->GetEnableMultithreadRender())
@@ -327,6 +337,7 @@ core::SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandP
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
 #if ELBOW_DEBUG
+    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
     VkDebugUtilsObjectNameInfoEXT name_info = {};
     name_info.sType                         = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
     name_info.objectType                    = type;
@@ -355,11 +366,13 @@ uint32_t GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropert
 
 void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const
 {
+    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
     CmdBeginDebugUtilsLabelEXT(cmd, &info);
 }
 
 void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const
 {
+    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
     CmdEndDebugUtilsLabelEXT(cmd);
 }
 
@@ -787,11 +800,11 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     available_layers                  = GetAvailableLayers();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Initializing Vulkan Graphics API...");
     CreateInstance(instance_);
-    FindVulkanExtensionSymbols();
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     queue_family_indices_ = FindQueueFamilies(physical_device_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_, transfer_queue_);
+    FindVulkanExtensionSymbols();
     default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, swapchain_);
     Format depth_format   = FindSupportedFormat(
         {Format::D32_Float, Format::D32_Float_S8X24_UInt, Format::D24_UNorm_S8_UInt},

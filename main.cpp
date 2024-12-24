@@ -56,6 +56,7 @@ int main()
         LOGGER.Info(logcat::Engine, "Engine initialized.");
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
+        resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;

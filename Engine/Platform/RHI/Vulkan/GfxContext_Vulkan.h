@@ -50,6 +50,7 @@ public:
     using ThisType = GfxContext_Vulkan;
 
     GfxContext_Vulkan();
+    GfxContext_Vulkan(const GfxContext_Vulkan&) = delete;
     ~GfxContext_Vulkan() override;
 
     [[nodiscard]] GraphicsAPI GetAPI() const override;
@@ -87,7 +88,7 @@ public:
     [[nodiscard]] core::SharedPtr<Fence> CreateFence() override;
 #endif
 
-    core::exec::AsyncResultHandle Submit(const CommandBuffer& buffer, const SubmitParameter& parameter) override;
+    core::exec::AsyncResultHandle Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
 
     [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) override;
 

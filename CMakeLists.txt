@@ -29,3 +29,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 include_directories(Engine/ThirdParty)
 include_directories(Generated)
+
+set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.296.0")
+find_package(Vulkan REQUIRED)

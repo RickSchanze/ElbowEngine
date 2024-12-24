@@ -124,9 +124,9 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     {
         throw ArgumentException("value或者obj没有设置值");
     }
-    if (obj.GetType() != outer_ || value.GetType() != type_)
+    if (obj.GetType() != outer_)
     {
-        throw ArgumentException("value或obj类型错误");
+        throw ArgumentException("obj类型错误");
     }
     if (IsSequentialContainer() || IsAssociativeContainer())
     {
@@ -161,7 +161,13 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     if (type_->IsString())
     {
         *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = *value.AsCopy<String>();
+        return;
     }
+    if (value.GetType() != type_)
+    {
+        throw CastException("类型不匹配");
+    }
+    // TODO: memcpy有时候会比较危险, Field是指针的情况下
     memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
 }
 
@@ -187,7 +193,8 @@ AssociativeContainerView* FieldInfo::CreateAssociativeContainerView(void* obj) c
     return static_cast<AssociativeContainerView*>(container_view_.Get());
 }
 
-const Type* GetObjectPtrBaseType(){
+const Type* GetObjectPtrBaseType()
+{
     return TypeOf<ObjectPtrBase>();
 }
 

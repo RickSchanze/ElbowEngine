@@ -203,8 +203,10 @@ public:
             LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
+        const size_t size = (instance_->*container_).size();
+        if (size == 0) return false;
         iter_     = (instance_->*container_).begin();
-        size_     = (instance_->*container_).size();
+        size_     = size;
         iter_cnt_ = 1;
         return true;
     }
@@ -341,6 +343,7 @@ public:
             LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
+        if (Size() <= 0) return false;
         size_     = Size();
         iter_     = (instance_->*container_).begin();
         iter_cnt_ = 1;

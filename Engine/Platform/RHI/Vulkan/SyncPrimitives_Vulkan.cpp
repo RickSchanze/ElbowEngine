@@ -29,7 +29,7 @@ Fence_Vulkan::~Fence_Vulkan()
 void Fence_Vulkan::SyncWait()
 {
     auto& ctx = *GetVulkanGfxContext();
-    VERIFY_VULKAN_RESULT(vkWaitForFences(ctx.GetDevice(), 1, &handle, VK_TRUE, UINT16_MAX));
+    VERIFY_VULKAN_RESULT(vkWaitForFences(ctx.GetDevice(), 1, &handle, VK_TRUE, UINT64_MAX));
 }
 
 void Fence_Vulkan::Reset()

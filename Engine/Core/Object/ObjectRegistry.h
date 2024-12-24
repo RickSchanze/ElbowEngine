@@ -8,10 +8,13 @@
 #include "Core/Reflection/MetaInfoMacro.h"
 #include "Core/Object/Object.h"
 
+#include GEN_HEADER("Core.ObjectRegistry.generated.h")
+
 namespace core
 {
 class CLASS() ObjectRegistry
 {
+    GENERATED_CLASS(ObjectRegistry)
 public:
     ObjectHandle NextInstanceHandle();
     ObjectHandle NextPersistentHandle();

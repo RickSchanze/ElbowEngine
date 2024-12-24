@@ -20,6 +20,8 @@ public:
     }
 
     static bool IsCurrentMainThread();
+
+    static void YieldThread();
 };
 
 }

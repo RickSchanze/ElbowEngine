@@ -10,22 +10,22 @@
 
 platform::rhi::vulkan::Buffer_Vulkan::Buffer_Vulkan(const BufferCreateInfo& info) : Buffer(info)
 {
-    auto ctx = *GetVulkanGfxContext();
+    auto& ctx = *GetVulkanGfxContext();
     buffer_  = ctx.CreateBuffer_VK(create_info_.size, RHIBufferUsageToVkBufferUsage(create_info_.usage));
-    memory_  = ctx.AllocateBufferMemory_VK(buffer_, (create_info_.usage));
+    memory_  = ctx.AllocateBufferMemory_VK(buffer_, (create_info_.memory_property));
     ctx.BindBufferMemory_VK(buffer_, memory_);
 }
 
 platform::rhi::vulkan::Buffer_Vulkan::~Buffer_Vulkan()
 {
-    auto ctx = *GetVulkanGfxContext();
+    auto& ctx = *GetVulkanGfxContext();
     ctx.FreeBufferMemory_VK(memory_);
     ctx.DestroyBuffer_VK(buffer_);
 }
 
 void platform::rhi::vulkan::Buffer_Vulkan::BeginWrite()
 {
-    auto ctx = *GetVulkanGfxContext();
+    auto& ctx = *GetVulkanGfxContext();
     ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory_);
 }
 
@@ -46,7 +46,7 @@ void platform::rhi::vulkan::Buffer_Vulkan::Write(const void* data, size_t size)
 
 void platform::rhi::vulkan::Buffer_Vulkan::EndWrite()
 {
-    auto ctx = *GetVulkanGfxContext();
+    auto& ctx = *GetVulkanGfxContext();
     ctx.UnmapMemory_VK(memory_);
     mapped_memory_ = nullptr;
 }

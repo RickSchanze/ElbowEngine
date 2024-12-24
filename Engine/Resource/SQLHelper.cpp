@@ -103,7 +103,8 @@ static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Databas
     SQLite::Statement insert(db, sql_insert);
     insert.bind(1, name.Data());
     insert.bind(2, type->GetName().Data());
-    insert.bind(3, type->GetTypeHash());
+    // 这里插入
+    insert.bind(3, static_cast<int64_t>(type->GetTypeHash()));
     insert.exec();
     return core::MakeUnique<core::resource::SQLTable>(type, &db, name);
 }
@@ -137,6 +138,15 @@ void core::resource::SQLTable::Insert(const Any& data)
     for (size_t i = 0; i < fields.size(); ++i)
     {
         const auto& field_info = fields[i];
+        if (field_info->IsDefined(FieldInfo::ValueAttribute::SQLAttr))
+        {
+            auto attr_str = field_info->GetAttribute(FieldInfo::ValueAttribute::SQLAttr);
+            auto attr_map = ParseSubAttr(attr_str);
+            if (attr_map.contains("PrimaryKey"))
+            {
+                continue;
+            }
+        }
         if (const auto& field_type = field_info->GetType();
             field_type == TypeOf<bool>() || field_type == TypeOf<int8_t>() || field_type == TypeOf<int16_t>() || field_type == TypeOf<int32_t>() ||
             field_type == TypeOf<int64_t>() || field_type == TypeOf<uint8_t>() || field_type == TypeOf<uint16_t>() ||
@@ -163,7 +173,14 @@ void core::resource::SQLTable::Insert(const Any& data)
             throw SQLException("存储类型错误");
         }
     }
-    insert.exec();
+    try
+    {
+        insert.exec();
+    }
+    catch (std::exception& e)
+    {
+        throw SQLException(e.what());
+    }
 }
 
 core::UniquePtr<core::resource::SQLTable> core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)

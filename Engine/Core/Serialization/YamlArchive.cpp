@@ -19,26 +19,25 @@ namespace core
 static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj);
 static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
 {
-    if (auto op_int8 = value.AsCopy<int8_t>())
-        emitter << *op_int8;
-    else if (auto op_int16 = value.AsCopy<int16_t>())
-        emitter << *op_int16;
-    else if (auto op_int32 = value.AsCopy<int32_t>())
-        emitter << *op_int32;
-    else if (auto op_int64 = value.AsCopy<int64_t>())
-        emitter << *op_int64;
-    else if (auto op_uint8 = value.AsCopy<uint8_t>())
+    if (value.GetType() == TypeOf<uint8_t>())
+        emitter << *value.AsCopy<uint8_t>();
+    else if (value.GetType() == TypeOf<int8_t>())
+        emitter << *value.AsCopy<int8_t>();
+    else if (value.GetType() == TypeOf<int16_t>())
+        emitter << *value.AsCopy<int16_t>();
+    else if (value.GetType() == TypeOf<int32_t>())
+        emitter << *value.AsCopy<int32_t>();
+    else if (value.GetType() == TypeOf<int64_t>())
+        emitter << *value.AsCopy<int64_t>();
+    else if (value.GetType() == TypeOf<uint16_t>())
+        emitter << *value.AsCopy<uint16_t>();
+    else if (value.GetType() == TypeOf<uint32_t>())
+        emitter << *value.AsCopy<uint32_t>();
+    else if (value.GetType() == TypeOf<uint64_t>())
+        emitter << *value.AsCopy<uint64_t>();
+    else if (value.GetType() == TypeOf<float>())
     {
-        emitter << static_cast<int32_t>(*op_uint8);
-    }
-    else if (auto op_uint16 = value.AsCopy<uint16_t>())
-        emitter << *op_uint16;
-    else if (auto op_uint32 = value.AsCopy<uint32_t>())
-        emitter << *op_uint32;
-    else if (auto op_uint64 = value.AsCopy<uint64_t>())
-        emitter << *op_uint64;
-    else if (auto op_float = value.AsCopy<float>())
-    {
+        auto               op_float = value.AsCopy<float>();
         std::ostringstream oss;
         if (std::floor(*op_float) == *op_float)
         {
@@ -52,8 +51,9 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
         }
         emitter << oss.str();
     }
-    else if (auto op_double = value.AsCopy<double>())
+    else if (value.GetType() == TypeOf<double>())
     {
+        auto               op_double = value.AsCopy<double>();
         std::ostringstream oss;
         if (std::floor(*op_double) == *op_double)
         {
@@ -67,10 +67,10 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
         }
         emitter << oss.str();
     }
-    else if (auto op_bool = value.AsCopy<bool>())
-        emitter << *op_bool;
-    else if (auto op_string = value.AsCopy<String>())
-        emitter << op_string->Data();
+    else if (value.GetType() == TypeOf<bool>())
+        emitter << (value.AsCopy<int8_t>() != 0);
+    else if (value.GetType() == TypeOf<String>())
+        emitter << **value.AsCopy<String>();
     else if (value.GetType() == TypeOf<StringView>())
     {
         LOGGER.Error(logcat::Archive_Serialization, "Serialize StringView is not allowed!");
@@ -82,6 +82,7 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
 static bool SerializeEmitterSequentialContainerView(YAML::Emitter& emitter, SequentialContainerView* view)
 {
     if (view == nullptr) return false;
+    if (view->Size() == 0) return true;
     bool success = false;
     view->ForEach([&emitter, &success](const Any& value) {
         if (value.IsPrimitive())
@@ -128,7 +129,8 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
     auto fields = obj.GetType()->GetFields();
     if (obj.IsEnum())
     {
-        if (auto h = obj.AsCopy<int32_t>())
+        auto h = obj.AsCopy<int32_t>();
+        if (h)
         {
             for (const auto& field: fields)
             {
@@ -184,7 +186,8 @@ static bool SerializeEmitter(YAML::Emitter& emitter, const Any& obj)
         }
         else if (field->IsEnum())
         {
-            if (auto enum_op_value = field->GetObjEnumValue(obj); *enum_op_value)
+            auto enum_op_value = field->GetObjEnumValue(obj);
+            if (enum_op_value)
             {
                 const auto enum_value = *enum_op_value;
                 if (auto enum_str_value_op = field->GetType()->GetEnumValueString(enum_value))
@@ -566,13 +569,22 @@ bool YamlArchive::Deserialize(StringView source, void* out, const Type* type)
         LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, serialized file meta info is not valid");
         return false;
     }
-    auto type_hash = meta_node["TypeInfo"]["HashCode"].as<size_t>();
-    if (type_hash != type->GetTypeHash())
+    try
     {
-        LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, type has not same");
-        return false;
+        auto type_hash = meta_node["TypeInfo"]["HashCode"].as<size_t>();
+        if (type_hash != type->GetTypeHash())
+        {
+            LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, type has not same");
+            return false;
+        }
     }
+    catch (std::exception& e)
+    {
+        LOGGER.Error(logcat::Archive_Deserialization, "Deserialize failed, type has not same, {}", e.what());
+    }
+
     return DeserializeNode(node["Data"], out, type);
+
 }
 
 }   // namespace core

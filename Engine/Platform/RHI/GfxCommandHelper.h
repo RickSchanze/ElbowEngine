@@ -17,7 +17,7 @@ class GfxCommandHelper
 public:
     static core::SharedPtr<rhi::CommandBuffer> BeginSingleTransferCommand();
 
-    static void EndSingleTransferCommand(const rhi::CommandBuffer& command_buffer);
+    static void EndSingleTransferCommand(rhi::CommandBuffer& command_buffer);
 };
 
 }   // namespace platform

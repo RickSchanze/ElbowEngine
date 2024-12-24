@@ -118,7 +118,10 @@ static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_c
         copy_region.size         = size;
         vkCmdCopyBuffer(cmd, cmd_copy_buffer->src->GetNativeHandleT<VkBuffer>(), cmd_copy_buffer->dst->GetNativeHandleT<VkBuffer>(), 1, &copy_region);
     }
-    LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令CopyBuffer错误 src或者dst为空");
+    else
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令CopyBuffer错误 src或者dst为空");
+    }
 }
 
 AsyncResultHandle CommandBuffer_Vulkan::Execute(core::StringView label)

@@ -83,7 +83,6 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
             indices.emplace_back(face.mIndices[j]);
         }
     }
-    out       = core::MakeUnique<resource::MeshStorage>();
     auto& ctx = platform::rhi::GetGfxContextRef();
     {
         // vertex buffer
