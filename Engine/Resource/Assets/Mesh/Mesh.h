@@ -17,7 +17,7 @@ struct MeshStorage
     size_t                                 vertex_count;
     size_t                                 index_count;
 
-    bool Loaded() const { return vertex_buffer && index_buffer; }
+    [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
 class Mesh : public Asset
@@ -26,7 +26,7 @@ public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 
     void PerformLoad() override;
-    bool IsLoaded() const override;
+    [[nodiscard]] bool IsLoaded() const override;
 
 private:
     core::UniquePtr<MeshStorage> storage_;

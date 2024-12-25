@@ -26,14 +26,14 @@ static uint32_t GetColor()
     return GetColor(ColorScoped::level);
 }
 
-template<typename T>
+template <typename T>
 struct MemoryTraceAllocator
 {
     using value_type = T;
 
     MemoryTraceAllocator() = default;
 
-    template<typename U>
+    template <typename U>
     constexpr explicit MemoryTraceAllocator(const MemoryTraceAllocator<U>&) noexcept
     {
     }
@@ -60,7 +60,7 @@ struct MemoryTraceAllocator
     }
 };
 
-template<typename T>
+template <typename T>
 struct MemoryTraceDeleter
 {
     void operator()(T* ptr) const
@@ -74,13 +74,13 @@ struct MemoryTraceDeleter
     }
 };
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator==(const MemoryTraceAllocator<T>&, const MemoryTraceAllocator<U>&)
 {
     return true;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator!=(const MemoryTraceAllocator<T>&, const MemoryTraceAllocator<U>&)
 {
     return false;
@@ -96,10 +96,14 @@ bool operator!=(const MemoryTraceAllocator<T>&, const MemoryTraceAllocator<U>&)
 #define MARK_FRAME(name) FrameMarkNamed(name)
 #define MARK_FRAME_AUTO FrameMark
 #define SEND_MESSAGE_TO_PROFILER(txt, size) TracyMessage(txt, size)
+#define DECLARE_TRACEABLE_MUTEX(type, name, description) TracyLockableN(type, name, description)
+#define DECLARE_TRACEABLE_MUTEX_AUTO(type, name) TracyLockable(type, name)
 #else
 #define PROFILE_SCOPE_AUTO
 #define PROFILE_SCOPE(name)
 #define MARK_FRAME(name)
 #define MARK_FRAME_AUTO
 #define SEND_MESSAGE_TO_PROFILER(txt, size)
+#define DECLARE_TRACEABLE_MUTEX(type, name, description) type name
+#define DECLARE_TRACEABLE_MUTEX_AUTO(type, name) type name
 #endif

@@ -9,6 +9,7 @@
 
 #include "Assets/Mesh/Mesh.h"
 #include "Assets/Mesh/MeshMeta.h"
+#include "Assets/Shader/ShaderMeta.h"
 #include "Logcat.h"
 #include "Platform/FileSystem/Folder.h"
 #include "Platform/FileSystem/Path.h"
@@ -71,11 +72,14 @@ void resource::AssetDataBase::Import(core::StringView path)
     }
 }
 
-#define CREATE_ASSET_TABLE(asset_type)                   \
-    const core::Type* type = core::TypeOf<asset_type>(); \
-    tables_[type]          = std::move(core::resource::SQLHelper::CreateTable(*db_, type));
+#define CREATE_ASSET_TABLE(asset_type)                                                          \
+    {                                                                                           \
+        const core::Type* type = core::TypeOf<asset_type>();                                    \
+        tables_[type]          = std::move(core::resource::SQLHelper::CreateTable(*db_, type)); \
+    }
 
 void resource::AssetDataBase::CreateAssetTables()
 {
     CREATE_ASSET_TABLE(resource::MeshMeta);
+    CREATE_ASSET_TABLE(resource::ShaderMeta);
 }
