@@ -17,6 +17,9 @@ class Database;
 
 namespace resource
 {
+
+
+
 class AssetDataBase : public core::Manager<AssetDataBase>
 {
 public:
@@ -33,8 +36,9 @@ public:
     /**
      * 导入资产
      * @param path
+     * @return 异步handle
      */
-    static void Import(core::StringView path);
+    static core::exec::AsyncResultHandle Import(core::StringView path);
 
     template <typename T>
     static core::Optional<T> QueryMeta(core::ObjectHandle handle);

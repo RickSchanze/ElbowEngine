@@ -17,6 +17,10 @@
 
 namespace platform::rhi
 {
+class LowShader;
+}
+namespace platform::rhi
+{
 struct CommandPoolCreateInfo;
 class CommandPool;
 struct Fence;
@@ -141,6 +145,12 @@ public:
      * @return
      */
     [[nodiscard]] virtual CommandPool& GetTransferPool() = 0;
+
+    /**
+     * 创建一个底层装饰器
+     * @return
+     */
+    [[nodiscard]] virtual core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) = 0;
 };
 
 GfxContext* GetGfxContext();

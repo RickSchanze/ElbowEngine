@@ -3,10 +3,11 @@
 //
 
 #pragma once
+#include "IResource.h"
 
 namespace platform::rhi {
 
-enum class ShaderType
+enum class ShaderStage
 {
     Vertex,
     Fragment,
@@ -17,7 +18,8 @@ enum class ShaderType
 /**
  * LowLevel Shader
  */
-class LowShader {
+class LowShader : public IResource
+{
 
 };
 

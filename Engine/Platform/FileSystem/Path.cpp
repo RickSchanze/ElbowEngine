@@ -75,11 +75,28 @@ bool platform::Path::IsFolder(core::StringView path)
     return std::filesystem::is_directory(path.GetStdStringView());
 }
 
-core::String platform::Path::GetParent(core::StringView path){
+core::String platform::Path::GetParent(core::StringView path)
+{
     auto parent = std::filesystem::path(path.GetStdStringView()).parent_path().string();
     if (parent.empty())
     {
         return GetProjectPath();
     }
     return parent;
+}
+
+core::StringView platform::Path::GetFileName(const core::StringView file_path)
+{
+    const auto   p              = file_path.GetStdStringView();
+    const size_t last_slash_pos = p.find_last_of("\\/");
+    const size_t start          = last_slash_pos == std::string::npos ? 0 : last_slash_pos + 1;
+    return p.substr(start);
+}
+
+core::StringView platform::Path::GetFileNameWithoutExt(const core::StringView file_path)
+{
+    const auto p   = GetFileName(file_path).GetStdStringView();
+    const auto pos = p.find_last_of('.');
+    if (pos == std::string::npos) return p;
+    return p.substr(0, pos);
 }

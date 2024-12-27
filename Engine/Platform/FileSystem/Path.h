@@ -28,6 +28,10 @@ public:
      */
     static core::String     GetParent(core::StringView path);
 
+    static core::StringView GetFileName(core::StringView file_path);
+
+    static core::StringView GetFileNameWithoutExt(core::StringView file_path);
+
 private:
     static inline core::String s_proj_path_;
 };

@@ -20,13 +20,13 @@ class SlangShaderLoader
 public:
     SlangShaderLoader();
 
-    void Load(core::StringView path, OUT Shader& shader) const;
+    static void Load(core::StringView path, OUT Shader& shader);
 
     static void DiagnosticsIfNeeded(const Slang::ComPtr<slang::IBlob>& diag);
 
 protected:
-    Slang::ComPtr<slang::IGlobalSession> global_session_;
+    static inline Slang::ComPtr<slang::IGlobalSession> global_session_;
 
-    mutable DECLARE_TRACEABLE_MUTEX_AUTO(std::mutex, mutex_);
+    static inline DECLARE_TRACEABLE_MUTEX_AUTO(std::mutex, mutex_);
 };
 }   // namespace resource

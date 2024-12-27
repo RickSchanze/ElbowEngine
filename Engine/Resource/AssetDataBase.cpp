@@ -9,6 +9,7 @@
 
 #include "Assets/Mesh/Mesh.h"
 #include "Assets/Mesh/MeshMeta.h"
+#include "Assets/Shader/Shader.h"
 #include "Assets/Shader/ShaderMeta.h"
 #include "Logcat.h"
 #include "Platform/FileSystem/Folder.h"
@@ -17,7 +18,11 @@
 
 #include "SQLiteCpp/Database.h"
 
-void resource::AssetDataBase::Startup()
+using namespace resource;
+using namespace core;
+using namespace core::exec;
+
+void AssetDataBase::Startup()
 {
     const auto& proj    = Project::GetCurrentProject();
     const auto  db_path = proj.GetDatabasePath();
@@ -32,44 +37,55 @@ void resource::AssetDataBase::Startup()
     CreateAssetTables();
 }
 
-void resource::AssetDataBase::Shutdown()
+void AssetDataBase::Shutdown()
 {
     Delete(db_);
     db_ = nullptr;
 }
 
-void resource::AssetDataBase::Import(core::StringView path)
+template <typename T, typename TMeta>
+AsyncResultHandle InternalImport(StringView query, StringView path, ObjectRegistry& registry)
+{
+    auto result = AssetDataBase::QueryMeta<TMeta>(query);
+    if (result)
+    {
+        auto&        meta   = *result;
+        ObjectHandle handle = meta.object_handle;
+        auto*        obj    = registry.GetObjectByHandle(handle);
+        if (obj != nullptr)
+        {
+            registry.RemoveObject(obj);
+        }
+        auto* asset = New<T>();
+        asset->InternalSetAssetHandle(handle);
+        return asset->InternalPerformPersistentObjectLoad();
+    }
+    else
+    {
+        TMeta new_meta         = {};
+        new_meta.path          = path;
+        new_meta.object_handle = registry.NextPersistentHandle();
+        AssetDataBase::InsertMeta(new_meta);
+        auto* asset = New<T>();
+        asset->InternalSetAssetHandle(new_meta.object_handle);
+        return asset->InternalPerformPersistentObjectLoad();
+    }
+}
+
+AsyncResultHandle AssetDataBase::Import(StringView path)
 {
     // 先查一下是否存在, 存在的话按现有配置重新导入
-    auto  query    = core::String::Format("path = '{}'", path);
-    auto& registry = core::ObjectManager::GetRegistry();
+    auto  query    = String::Format("path = '{}'", path);
+    auto& registry = ObjectManager::GetRegistry();
     if (path.EndsWith(".fbx"))
     {
-        auto result = QueryMeta<MeshMeta>(query);
-        if (result)
-        {
-            auto&              meta   = *result;
-            core::ObjectHandle handle = meta.GetObjectId();
-            auto*              obj    = registry.GetObjectByHandle(handle);
-            if (obj != nullptr)
-            {
-                registry.RemoveObject(obj);
-            }
-            auto* mesh = New<Mesh>();
-            mesh->InternalSetAssetHandle(handle);
-            mesh->InternalPerformPersistentObjectLoad();
-        }
-        else
-        {
-            MeshMeta new_meta      = {};
-            new_meta.path          = path;
-            new_meta.object_handle = registry.NextPersistentHandle();
-            InsertMeta(new_meta);
-            auto* mesh = New<Mesh>();
-            mesh->InternalSetAssetHandle(new_meta.object_handle);
-            mesh->InternalPerformPersistentObjectLoad();
-        }
+        return InternalImport<Mesh, MeshMeta>(query, path, registry);
     }
+    if (path.EndsWith(".slang"))
+    {
+        return InternalImport<Shader, ShaderMeta>(query, path, registry);
+    }
+    return NULL_ASYNC_RESULT_HANDLE;
 }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                          \
@@ -78,8 +94,8 @@ void resource::AssetDataBase::Import(core::StringView path)
         tables_[type]          = std::move(core::resource::SQLHelper::CreateTable(*db_, type)); \
     }
 
-void resource::AssetDataBase::CreateAssetTables()
+void AssetDataBase::CreateAssetTables()
 {
-    CREATE_ASSET_TABLE(resource::MeshMeta);
-    CREATE_ASSET_TABLE(resource::ShaderMeta);
+    CREATE_ASSET_TABLE(::resource::MeshMeta);
+    CREATE_ASSET_TABLE(::resource::ShaderMeta);
 }

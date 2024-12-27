@@ -18,6 +18,7 @@
 #include "Enums_Vulkan.h"
 #include "Image_Vulkan.h"
 #include "ImageView_Vulkan.h"
+#include "LowShader_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -280,6 +281,11 @@ void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInf
 core::SharedPtr<Fence> GfxContext_Vulkan::CreateFence()
 {
     return core::MakeShared<Fence_Vulkan>();
+}
+
+core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, size_t size)
+{
+    return core::MakeShared<LowShader_Vulkan>(code, size);
 }
 
 static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& parameter)

@@ -63,6 +63,8 @@ add_library(Platform
         RHI/GfxCommandHelper.h
         RHI/LowShader.cpp
         RHI/LowShader.h
+        RHI/Vulkan/LowShader_Vulkan.cpp
+        RHI/Vulkan/LowShader_Vulkan.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

@@ -3,11 +3,13 @@
 //
 
 #pragma once
+#include "Core/Event/Event.h"
 #include "Core/Object/PersistentObject.h"
 #include "Resource/AssetType.h"
 
 namespace resource
 {
+
 class Asset : public core::PersistentObject
 {
 public:

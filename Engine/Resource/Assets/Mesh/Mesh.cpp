@@ -144,6 +144,10 @@ void resource::Mesh::PerformLoad()
         return;
     }
     loaded_ = LoadMesh(file_path, meta, storage_);
+    if (loaded_)
+    {
+        name_ = platform::Path::GetFileNameWithoutExt(file_path);
+    }
 }
 
 bool resource::Mesh::IsLoaded() const

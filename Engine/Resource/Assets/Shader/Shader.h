@@ -6,6 +6,8 @@
 
 #include "Resource/Assets/Asset.h"
 
+#include "Core/Base/Base.h"
+#include "Platform/RHI/LowShader.h"
 #include "slang-com-ptr.h"
 
 namespace resource
@@ -23,7 +25,22 @@ public:
 
     [[nodiscard]] bool IsLoaded() const override;
 
+    /**
+     * 编译, 获取shader_codes
+     */
+    void Compile(bool output_glsl);
+
+    [[nodiscard]] bool IsCompute() const;
+
+    [[nodiscard]] bool IsGraphics() const;
+
+    AssetType GetAssetType() const override { return AssetType::Shader; }
+
 protected:
-    Slang::ComPtr<slang::IModule> module_;
+    core::HashMap<platform::rhi::ShaderStage, int> stage_to_entry_point_index_;
+
+    core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)> shader_handles_;
+
+    Slang::ComPtr<slang::IComponentType> linked_program_;
 };
 }

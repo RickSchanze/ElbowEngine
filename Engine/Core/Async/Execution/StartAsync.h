@@ -19,22 +19,23 @@ namespace core::exec
 
 struct AsyncResultBase
 {
-    std::atomic<bool>       ready = false;
-    std::exception_ptr      exception{};
+    std::atomic<bool>  ready = false;
+    std::exception_ptr exception{};
 
     void SetException(const std::exception_ptr& _exception) { exception = _exception; }
 
     std::exception_ptr GetException() { return exception; }
 
-    void SetDone()
-    {
-        ready.store(true);
-    }
+    void SetDone() { ready.store(true); }
 
     bool IsDone() const { return ready.load(); }
 
     virtual bool IsCanceled() const { return false; }
+
+    template <typename... Args>
+    Optional<std::tuple<Args...>> GetAsyncResult();
 };
+
 
 template <typename T>
 struct AsyncResult : public AsyncResultBase
@@ -64,9 +65,9 @@ struct AsyncResult : public AsyncResultBase
 };
 
 template <typename... Args>
-Optional<std::tuple<Args...>> GetAsyncResult(const AsyncResultBase& result)
+Optional<std::tuple<Args...>> AsyncResultBase::GetAsyncResult()
 {
-    return static_cast<AsyncResult<std::tuple<Args...>>*>(&result)->GetValue();
+    return static_cast<AsyncResult<std::tuple<Args...>>*>(this)->GetValue();
 }
 
 template <typename... Args>
@@ -115,6 +116,8 @@ struct AsyncWrapper<void>
 
 using AsyncResultHandle = SharedPtr<AsyncResultBase>;
 
+#define NULL_ASYNC_RESULT_HANDLE nullptr
+
 struct StartAsyncType
 {
     template <typename Sender>
@@ -147,13 +150,14 @@ inline constexpr StartAsyncType StartAsync{};
 
 struct SyncWaitType
 {
-    void operator()(const AsyncResultHandle& re) const
+    AsyncResultHandle operator()(AsyncResultHandle re) const
     {
-        if (!re) return;
+        if (!re) return re;
         while (!re->IsDone())
         {
             ThreadUtils::YieldThread();
         }
+        return re;
     }
 };
 

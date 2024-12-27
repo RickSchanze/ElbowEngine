@@ -13,6 +13,7 @@
 #include "Core/Reflection/MetaInfoManager.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
+#include "Core/Async/Execution/StartAsync.h"
 
 namespace core
 {
@@ -73,7 +74,8 @@ private:
     void GenerateInstanceHandle();
     void RegisterSelf();
     void ResolveObjectPtr();
-    void PerformPersistentObjectLoad();
+
+    exec::AsyncResultHandle PerformPersistentObjectLoad();
 
 public:
     virtual void PostSerialized();
@@ -99,7 +101,8 @@ public:
     [[nodiscard]] bool IsPersistent() const { return flags_ & Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
-    void InternalPerformPersistentObjectLoad() { PerformPersistentObjectLoad(); }
+
+    exec::AsyncResultHandle InternalPerformPersistentObjectLoad() { return PerformPersistentObjectLoad(); }
 };
 
 template <typename T>

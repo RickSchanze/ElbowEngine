@@ -13,6 +13,9 @@
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
+#include "Resource/Assets/Shader/Shader.h"
+
+using namespace core::exec;
 
 int main()
 {
@@ -57,6 +60,12 @@ int main()
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
         resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
+        if (auto op = SyncWait(resource::AssetDataBase::Import("Assets/Shader/Error.slang"))->GetAsyncResult<core::ObjectHandle>())
+        {
+            const auto& [handle] = *op;
+            static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle))->Compile(true);
+        }
+
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;

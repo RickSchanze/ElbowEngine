@@ -86,6 +86,8 @@ public:
     void                        CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
 
     [[nodiscard]] core::SharedPtr<Fence> CreateFence() override;
+
+    [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) override;
 #endif
 
     core::exec::AsyncResultHandle Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
@@ -116,6 +118,7 @@ private:
     static void      PostVulkanGfxContextInit(GfxContext* ctx);
     core::DelegateID pre_vulkan_gfx_context_destroyed_;
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
+
 
 
 private:

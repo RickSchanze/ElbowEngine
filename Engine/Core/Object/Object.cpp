@@ -6,18 +6,20 @@
  */
 
 #include "Object.h"
-#include "Core/Core.h"
-#include "Core/Log/Logger.h"
-#include "Core/Reflection/Reflection.h"
-#include "Core/Serialization/Archive.h"
 #include "Core/Async/Execution/StartAsync.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
+#include "Core/Core.h"
+#include "Core/Log/Logger.h"
+#include "Core/Reflection/Reflection.h"
+#include "Core/Serialization/Archive.h"
 #include "PersistentObject.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
 GENERATED_SOURCE()
+
+using namespace core::exec;
 
 void core::Object::AddReferencing(ObjectHandle handle)
 {
@@ -63,20 +65,21 @@ void core::Object::ResolveObjectPtr()
     }
 }
 
-void core::Object::PerformPersistentObjectLoad()
+AsyncResultHandle core::Object::PerformPersistentObjectLoad()
 {
-    if (!IsPersistent()) return;
+    if (!IsPersistent()) return NULL_ASYNC_RESULT_HANDLE;
 
     auto* persistent = static_cast<PersistentObject*>(this);
     if (GetConfig<CoreConfig>()->IsMultiThreadPersistentLoadEnabled())
     {
         auto& scheduler = ThreadManager::GetScheduler();
-        exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Resource) | exec::Then([persistent] { persistent->PerformLoad(); }));
+        return StartAsync(Schedule(scheduler, ThreadSlot::Resource) | Then([this, persistent] {
+                              persistent->PerformLoad();
+                              return handle_;
+                          }));
     }
-    else
-    {
-        persistent->PerformLoad();
-    }
+    persistent->PerformLoad();
+    return NULL_ASYNC_RESULT_HANDLE;
 }
 
 void core::Object::PostSerialized() {}
