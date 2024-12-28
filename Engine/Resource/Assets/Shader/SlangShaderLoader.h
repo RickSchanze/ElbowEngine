@@ -18,8 +18,6 @@ class Shader;
 class SlangShaderLoader
 {
 public:
-    SlangShaderLoader();
-
     static void Load(core::StringView path, OUT Shader& shader);
 
     static void DiagnosticsIfNeeded(const Slang::ComPtr<slang::IBlob>& diag);

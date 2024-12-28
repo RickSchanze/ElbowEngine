@@ -6,6 +6,8 @@ cmake-build-release
 cmake-build-relwithdebinfo
 
 cmake-build--relwithdebinfo
+
+Content/Intermediate
 ### C++ template
 # Compiled Object files
 *.slo

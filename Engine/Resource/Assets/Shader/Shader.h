@@ -12,6 +12,14 @@
 
 namespace resource
 {
+
+enum class ShaderAnnotation
+{
+    Pipeline,
+    Name,
+    Count,
+};
+
 /**
  * 对应一个slang文件
  * 一个slang可以通过[shader]语法声明多个shader
@@ -34,13 +42,17 @@ public:
 
     [[nodiscard]] bool IsGraphics() const;
 
-    AssetType GetAssetType() const override { return AssetType::Shader; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Shader; }
 
 protected:
-    core::HashMap<platform::rhi::ShaderStage, int> stage_to_entry_point_index_;
+    core::StaticArray<int, GetEnumValue(platform::rhi::ShaderStage::Count)> stage_to_entry_point_index_;
 
     core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)> shader_handles_;
 
     Slang::ComPtr<slang::IComponentType> linked_program_;
+
+    core::StaticArray<int, GetEnumValue(ShaderAnnotation::Count)> annotations_;
+
+    Slang::ComPtr<slang::ISession> slang_session_;
 };
 }

@@ -26,7 +26,7 @@ void Shader::PerformLoad()
         LOGGER.Error(logcat::Resource, "加载失败: handle为{}的Shader不在资产数据库", GetHandle());
         return;
     }
-    auto&            meta        = *op_meta;
+    auto&      meta        = *op_meta;
     StringView shader_path = meta.path;
     if (!Path::IsExist(shader_path))
     {
@@ -49,6 +49,7 @@ bool Shader::IsLoaded() const
 void Shader::Compile(bool output_glsl)
 {
     if (!IsLoaded()) return;
+    PROFILE_SCOPE_AUTO;
     auto cfg = GetConfig<ResourceConfig>();
     if (IsGraphics())
     {
@@ -57,7 +58,7 @@ void Shader::Compile(bool output_glsl)
             String                      output_code = "Vertex: \n";
             Slang::ComPtr<slang::IBlob> diagnostics;
             Slang::ComPtr<slang::IBlob> vert_code;
-            linked_program_->getEntryPointCode(stage_to_entry_point_index_.at(ShaderStage::Vertex), 1, vert_code.writeRef(), diagnostics.writeRef());
+            linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 1, vert_code.writeRef(), diagnostics.writeRef());
             if (diagnostics)
             {
                 LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
@@ -67,7 +68,7 @@ void Shader::Compile(bool output_glsl)
             output_code += "Fragment: \n";
             diagnostics = nullptr;
             linked_program_->getEntryPointCode(
-                stage_to_entry_point_index_.at(ShaderStage::Fragment), 1, vert_code.writeRef(), diagnostics.writeRef()
+                stage_to_entry_point_index_[GetEnumValue(ShaderStage::Fragment)], 1, vert_code.writeRef(), diagnostics.writeRef()
             );
             if (diagnostics)
             {
@@ -82,7 +83,7 @@ void Shader::Compile(bool output_glsl)
         }
         Slang::ComPtr<slang::IBlob> vert_code;
         Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
-        linked_program_->getEntryPointCode(stage_to_entry_point_index_.at(ShaderStage::Vertex), 0, vert_code.writeRef(), diagnostics.writeRef());
+        linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 0, vert_code.writeRef(), diagnostics.writeRef());
         if (diagnostics)
         {
             LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
@@ -90,20 +91,12 @@ void Shader::Compile(bool output_glsl)
         }
         Slang::ComPtr<slang::IBlob> frag_code;
         diagnostics = nullptr;
-        linked_program_->getEntryPointCode(stage_to_entry_point_index_.at(ShaderStage::Fragment), 0, frag_code.writeRef(), diagnostics.writeRef());
+        linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Fragment)], 0, frag_code.writeRef(), diagnostics.writeRef());
         if (diagnostics)
         {
             LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
             return;
         }
-        diagnostics = nullptr;
-        linked_program_->getEntryPointCode(stage_to_entry_point_index_.at(ShaderStage::Compute), 0, frag_code.writeRef(), diagnostics.writeRef());
-        if (diagnostics)
-        {
-            LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
-            return;
-        }
-
         auto* ctx = GetGfxContext();
         shader_handles_[GetEnumValue(ShaderStage::Vertex)] =
             ctx->CreateShader(static_cast<const char*>(vert_code->getBufferPointer()), vert_code->getBufferSize());
@@ -114,11 +107,10 @@ void Shader::Compile(bool output_glsl)
 
 bool Shader::IsCompute() const
 {
-    return stage_to_entry_point_index_.contains(ShaderStage::Compute) && !IsGraphics();
+    return annotations_[GetEnumValue(ShaderAnnotation::Pipeline)] == 2;
 }
 
 bool Shader::IsGraphics() const
 {
-    return stage_to_entry_point_index_.contains(ShaderStage::Vertex) && stage_to_entry_point_index_.contains(ShaderStage::Fragment) &&
-           !stage_to_entry_point_index_.contains(ShaderStage::Compute);
+    return annotations_[GetEnumValue(ShaderAnnotation::Pipeline)] == 1;
 }

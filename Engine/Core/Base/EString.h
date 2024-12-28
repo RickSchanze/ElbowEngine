@@ -46,7 +46,8 @@ public:
 
     // 此字符串是否包含任意一个o中的字符
     [[nodiscard]] bool ContainsAny(const StringView& o, bool use_utf8 = false) const;
-    [[nodiscard]] bool EndsWith(const StringView& o) const;
+    [[nodiscard]] bool EndsWith(const StringView& o, bool use_utf8 = false) const;
+    [[nodiscard]] bool StartsWith(const StringView& o, bool use_utf8 = false) const;
 
     [[nodiscard]] std::string_view GetStdStringView() const { return {str_, static_cast<size_t>(length_)}; }
 

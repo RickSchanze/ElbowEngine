@@ -6,9 +6,11 @@
  */
 
 #include "EString.h"
+
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
+#include "Exception.h"
 #include "unicode/unistr.h"
 
 #include <ranges>
@@ -117,7 +119,7 @@ bool StringView::operator==(const StringView& o) const
 
 bool StringView::operator==(const char* str) const
 {
-    return ::std::string_view(str_) == ::std::string_view(str);
+    return GetStdStringView() == ::std::string_view(str);
 }
 
 bool StringView::ContainsAny(const StringView& o, bool use_utf8) const
@@ -144,9 +146,24 @@ bool StringView::ContainsAny(const StringView& o, bool use_utf8) const
     }
 }
 
-bool StringView::EndsWith(const StringView& o) const
+bool StringView::EndsWith(const StringView& o, bool use_utf8) const
 {
-    return Length() >= o.Length() && ::std::string_view(str_ + Length() - o.Length(), o.Length()) == ::std::string_view(o.Data(), o.Length());
+    if (!use_utf8)
+    {
+        return Length() >= o.Length() && GetStdStringView().ends_with(o.GetStdStringView());
+    }
+    // TODO: 实现utf8 ends with
+    throw core::NotSupportException("UTF8版本尚未支持");
+}
+
+bool StringView::StartsWith(const StringView& o, bool use_utf8) const
+{
+    if (!use_utf8)
+    {
+        return Length() >= o.Length() && GetStdStringView().starts_with(o.GetStdStringView());
+    }
+    // TODO: 实现utf8 starts with
+    throw core::NotSupportException("UTF8版本尚未支持");
 }
 
 String StringView::operator+(const StringView& o) const
