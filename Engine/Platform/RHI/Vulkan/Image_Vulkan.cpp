@@ -39,12 +39,13 @@ platform::rhi::vulkan::Image_Vulkan::Image_Vulkan(
     desc_.mip_levels      = 1;
     // TODO: samples应该为1吗？
     desc_.samples         = SC_1;
-    desc_.initial_state   = ImageState::Undefined;
+    desc_.initial_state   = ImageLayout::Undefined;
     desc_.dimension       = ImageDimension::D2;
     desc_.name            = swapchain_image_names[index];
 }
 
-platform::rhi::vulkan::Image_Vulkan::~Image_Vulkan(){
+platform::rhi::vulkan::Image_Vulkan::~Image_Vulkan()
+{
     if (desc_.usage & IU_SwapChain)
     {
         if (desc_.usage != IU_SwapChain)

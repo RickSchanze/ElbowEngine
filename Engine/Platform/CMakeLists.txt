@@ -65,6 +65,16 @@ add_library(Platform
         RHI/LowShader.h
         RHI/Vulkan/LowShader_Vulkan.cpp
         RHI/Vulkan/LowShader_Vulkan.h
+        RHI/RenderPass.cpp
+        RHI/RenderPass.h
+        RHI/Vulkan/RenderPass_Vulkan.cpp
+        RHI/Vulkan/RenderPass_Vulkan.h
+        RHI/Pipeline.cpp
+        RHI/Pipeline.h
+        RHI/Vulkan/Pipeline_Vulkan.cpp
+        RHI/Vulkan/Pipeline_Vulkan.h
+        RHI/DescriptorSet.cpp
+        RHI/DescriptorSet.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

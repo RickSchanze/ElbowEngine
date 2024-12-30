@@ -12,9 +12,14 @@
 #include "Core/Event/Event.h"
 #include "Core/Math/MathTypes.h"
 #include "Enums.h"
+#include "Pipeline.h"
 
 #include <cstdint>
 
+namespace platform::rhi
+{
+class GraphicsPipeline;
+}
 namespace platform::rhi
 {
 class LowShader;
@@ -151,6 +156,9 @@ public:
      * @return
      */
     [[nodiscard]] virtual core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) = 0;
+
+
+    [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info) = 0;
 };
 
 GfxContext* GetGfxContext();

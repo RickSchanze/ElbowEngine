@@ -19,8 +19,8 @@ platform::rhi::ColorSpace VkColorSpaceToRHIColorSpace(VkColorSpaceKHR color_spac
 VkPresentModeKHR           RHIPresentModeToVkPresentMode(platform::rhi::PresentMode present_mode);
 platform::rhi::PresentMode VkPresentModeToRHIPresentMode(VkPresentModeKHR present_mode);
 
-VkSampleCountFlagBits      RHISampleCountToVkSampleCount(platform::rhi::SampleCount sample_count);
-platform::rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
+VkSampleCountFlagBits          RHISampleCountToVkSampleCount(platform::rhi::SampleCount sample_count);
+platform::rhi::SampleCountBits VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
 
 /**
  * @param aspect 由ImageAspect组成的bitmask, 类型int
@@ -44,3 +44,30 @@ platform::rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usag
 
 VkMemoryPropertyFlags               RHIMemoryPropertyToVkMemoryProperty(platform::rhi::BufferMemoryProperty property);
 platform::rhi::BufferMemoryProperty VkMemoryPropertyToRHIMemoryProperty(VkMemoryPropertyFlags property);
+
+VkImageLayout              RHIImageLayoutToVkImageLayout(platform::rhi::ImageLayout layout);
+platform::rhi::ImageLayout VkImageLayoutToRHIImageLayout(VkImageLayout layout);
+
+VkAttachmentLoadOp                     RHIAttachmentLoadOpToVkAttachmentLoadOp(platform::rhi::AttachmentLoadOperation load_op);
+platform::rhi::AttachmentLoadOperation VkAttachmentLoadOpToRHIAttachmentLoadOp(VkAttachmentLoadOp load_op);
+
+VkAttachmentStoreOp                     RHIAttachmentStoreOpToVkAttachmentStoreOp(platform::rhi::AttachmentStoreOperation store_op);
+platform::rhi::AttachmentStoreOperation VkAttachmentStoreOpToRHIAttachmentStoreOp(VkAttachmentStoreOp store_op);
+
+VkPolygonMode              RHIPolygonModeToVkPolygonMode(platform::rhi::PolygonMode polygon_mode);
+platform::rhi::PolygonMode VkPolygonModeToRHIPolygonMode(VkPolygonMode polygon_mode);
+
+VkFrontFace              RHIFrontFaceToVkFrontFace(platform::rhi::FrontFace front_face);
+platform::rhi::FrontFace VkFrontFaceToRHIFrontFace(VkFrontFace front_face);
+
+VkCullModeFlags         RHICullModeToVkCullMode(platform::rhi::CullMode cull_mode);
+platform::rhi::CullMode VkCullModeToRHICullMode(VkCullModeFlags cull_mode);
+
+VkCompareOp              RHICompareOpToVkCompareOp(platform::rhi::CompareOp compare_op);
+platform::rhi::CompareOp VkCompareOpToRHICompareOp(VkCompareOp compare_op);
+
+VkShaderStageFlagBits      RHIStageToVkShaderStage(platform::rhi::ShaderStage stage);
+platform::rhi::ShaderStage VkShaderStageToRHIStage(VkShaderStageFlagBits stage);
+
+VkDescriptorType              RHIDescriptorTypeToVkDescriptorType(platform::rhi::DescriptorType type);
+platform::rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorType type);

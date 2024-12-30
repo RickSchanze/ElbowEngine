@@ -13,7 +13,7 @@ class LowShader_Vulkan : public LowShader
 public:
     LowShader_Vulkan(const char* code, size_t size);
 
-    ~LowShader_Vulkan();
+    ~LowShader_Vulkan() override;
 
     [[nodiscard]] void* GetNativeHandle() const override { return handle_; }
 

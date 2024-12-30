@@ -66,7 +66,7 @@ enum class QueueFamilyType
  * MSAA采样次数
  * Vulkan API指示这里是个Flag Enum, Follow it.
  */
-enum ENUM(Flag) SampleCount
+enum ENUM(Flag) SampleCountBits
 {
     SC_1  = 0b0000001,   // 1次
     SC_2  = 0b0000010,   // 2次
@@ -77,7 +77,7 @@ enum ENUM(Flag) SampleCount
     SC_64 = 0b1000000,   // 64次
     SC_Count,            // 超出范围
 };
-
+typedef uint32_t SampleCount;
 
 // 指示要访问图像的哪些"方面"
 enum ImageAspectBits
@@ -150,6 +150,87 @@ enum class ComponentMappingElement
     G,
     B,
     A,
+    Count,
+};
+
+enum class AttachmentLoadOperation
+{
+    Load,
+    Clear,
+    DontCare,
+    Count,
+};
+
+enum class AttachmentStoreOperation
+{
+    Store,
+    DontCare,
+    Count,
+};
+
+enum class ImageLayout
+{
+    Undefined,
+    General,
+    ColorAttachment,
+    DepthStencilAttachment,
+    TransferSrc,
+    TransferDst,
+    ShaderReadOnly,
+    PresentSrc,
+    Count,
+};
+
+enum class PolygonMode
+{
+    Fill,
+    Line,
+    Point,
+    Count
+};
+
+enum class CullMode
+{
+    None,
+    Front,
+    Back,
+    FrontAndBack,
+    Count,
+};
+
+enum class FrontFace
+{
+    Clockwise,
+    CounterClockwise,
+    Count,
+};
+
+enum class CompareOp
+{
+    Less,
+    LessOrEqual,
+    Greater,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    Never,
+    Always,
+    Count,
+};
+
+enum class ShaderStage
+{
+    Vertex,
+    Fragment,
+    Compute,
+    Count,
+};
+
+enum class DescriptorType
+{
+    Sampler,
+    UniformBuffer,
+    UniformBufferDynamic,
     Count,
 };
 

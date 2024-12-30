@@ -771,7 +771,7 @@ static Format CreateSwapChain(
     desc.height          = extent.height;
     desc.width           = extent.width;
     desc.mip_levels      = 1;
-    desc.initial_state   = ImageState::Undefined;
+    desc.initial_state   = ImageLayout::Undefined;
 
     QueueFamilyIndices indices                = FindQueueFamilies(physical_device, surface);
     uint32_t           queue_family_indices[] = {*indices.graphics_family, *indices.present_family};

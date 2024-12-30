@@ -5,22 +5,13 @@
 #pragma once
 #include "IResource.h"
 
-namespace platform::rhi {
-
-enum class ShaderStage
+namespace platform::rhi
 {
-    Vertex,
-    Fragment,
-    Compute,
-    Count,
-};
-
 /**
  * LowLevel Shader
  */
 class LowShader : public IResource
 {
-
 };
 
-}
+}   // namespace platform::rhi

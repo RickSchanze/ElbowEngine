@@ -45,6 +45,9 @@ public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Shader; }
 
 protected:
+    // 这一部分的函数用于配置GraphicsPipeline
+
+protected:
     core::StaticArray<int, GetEnumValue(platform::rhi::ShaderStage::Count)> stage_to_entry_point_index_;
 
     core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)> shader_handles_;
