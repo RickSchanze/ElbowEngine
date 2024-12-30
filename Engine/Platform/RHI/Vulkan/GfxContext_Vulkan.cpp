@@ -19,6 +19,7 @@
 #include "Image_Vulkan.h"
 #include "ImageView_Vulkan.h"
 #include "LowShader_Vulkan.h"
+#include "Pipeline_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -471,6 +472,13 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
     vulkan_ctx->swapchain_image_views_.clear();
     vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
     Event_GfxContextPreDestroyed.RemoveBind(vulkan_ctx->pre_vulkan_gfx_context_destroyed_);
+}
+
+core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(
+    const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, rhi::RenderPass* render_pass
+)
+{
+    return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, layouts, render_pass);
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

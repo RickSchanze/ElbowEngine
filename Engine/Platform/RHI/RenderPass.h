@@ -6,7 +6,7 @@
 #include "Enums.h"
 #include "IResource.h"
 
-namespace platform::rhi::vulkan
+namespace platform::rhi
 {
 
 struct AttachmentDesc

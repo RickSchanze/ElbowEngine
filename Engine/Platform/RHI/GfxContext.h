@@ -18,6 +18,15 @@
 
 namespace platform::rhi
 {
+class RenderPass;
+namespace vulkan
+{
+class RenderPass;
+}
+class DescriptorSetLayout;
+}   // namespace platform::rhi
+namespace platform::rhi
+{
 class GraphicsPipeline;
 }
 namespace platform::rhi
@@ -157,8 +166,18 @@ public:
      */
     [[nodiscard]] virtual core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) = 0;
 
-
-    [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info) = 0;
+    /**
+     * 创建一个GraphicsPipeline, 你需要自己管理它的生命周期
+     * 对于render_pass,
+     *   对于移动端设备, 由于其设备特性, render_pass和其subpass设计符合架构设计
+     *   对于桌面端, 可以直接传入nullptr使用dynamic rendering(vulkan)而无需担心性能损失
+     * @param create_info
+     * @param layouts
+     * @param render_pass
+     * @return
+     */
+    [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline>
+    CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, RenderPass* render_pass) = 0;
 };
 
 GfxContext* GetGfxContext();

@@ -121,7 +121,9 @@ private:
     core::DelegateID pre_vulkan_gfx_context_destroyed_;
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
 
-
+public:
+    [[nodiscard]] core::UniquePtr<GraphicsPipeline>
+    CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, rhi::RenderPass* render_pass) override;
 
 private:
     VkInstance         instance_        = nullptr;
