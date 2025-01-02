@@ -86,6 +86,9 @@ bool operator!=(const MemoryTraceAllocator<T>&, const MemoryTraceAllocator<U>&)
     return false;
 }
 
+void StartupProfiler();
+void ShutdownProfiler();
+
 #define COLOR_SCOPED ColorScoped __color_scope##__LINE__;
 #define PROFILE_SCOPE_AUTO \
     ZoneScoped;            \

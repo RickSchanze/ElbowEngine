@@ -49,6 +49,7 @@ type->Internal_RegisterField("app_name", &core::CoreConfig::app_name, offsetof(c
 type->Internal_RegisterField("app_version", &core::CoreConfig::app_version, offsetof(core::CoreConfig, app_version))->SetComment("应用版本号"); \
 type->Internal_RegisterField("thread_slot_count", &core::CoreConfig::thread_slot_count, offsetof(core::CoreConfig, thread_slot_count))->SetComment("各ThreadSlot对应的线程数")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Thread"); \
 type->Internal_RegisterField("enable_persistent_load_multithread", &core::CoreConfig::enable_persistent_load_multithread, offsetof(core::CoreConfig, enable_persistent_load_multithread))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "启用多线程持久化对象加载"); \
+type->Internal_RegisterField("profiler_max_memory_limit", &core::CoreConfig::profiler_max_memory_limit, offsetof(core::CoreConfig, profiler_max_memory_limit))->SetComment("Profiler最大内存限制")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Profiler"); \
 return type; \
 } \
 

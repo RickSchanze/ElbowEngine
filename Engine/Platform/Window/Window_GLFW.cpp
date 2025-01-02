@@ -85,7 +85,7 @@ void* platform::Window_GLFW::GetNativeHandle() const
     return glfwGetWin32Window(window_);
 }
 
-void platform::Window_GLFW::PollInputs()
+void platform::Window_GLFW::PollInputs(const Millisecond& sec)
 {
     PROFILE_SCOPE_AUTO;
     glfwPollEvents();

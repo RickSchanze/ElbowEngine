@@ -9,6 +9,7 @@
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "cpptrace/cpptrace.hpp"
+#include "Func/World/WorldClock.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
@@ -16,6 +17,7 @@
 #include "Resource/Assets/Shader/Shader.h"
 
 using namespace core::exec;
+using namespace func;
 
 int main()
 {
@@ -56,6 +58,10 @@ int main()
             const auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
             UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
         }
+        // 其他初始化
+        {
+            PROFILE_SCOPE("Other Initialize");
+        }
         LOGGER.Info(logcat::Engine, "Engine initialized.");
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
@@ -65,20 +71,21 @@ int main()
             const auto& [handle] = *op;
             static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle))->Compile(true);
         }
-
+        platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
+        TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;
             core::FrameAllocator::Refresh();
             core::DoubleFrameAllocator::Refresh();
-            platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
+            GetWorldClock().TickAll();
             if (main_window->ShouldClose())
             {
                 main_window->Close();
                 break;
             }
-            main_window->PollInputs();
         }
+        TickEvents::InputTickEvent.Unbind();
         LOGGER.Info(logcat::Engine, "Engine shutdown...");
         SetRuntimeStage(RuntimeStage::Shutdown);
         core::FrameAllocator::Shutdown();

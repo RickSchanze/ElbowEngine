@@ -23,6 +23,7 @@ add_executable(ElbowEngine main.cpp
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Core -WHOLEARCHIVE:$<TARGET_FILE:Engine::Core>)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Platform -WHOLEARCHIVE:$<TARGET_FILE:Engine::Platform>)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Resource -WHOLEARCHIVE:$<TARGET_FILE:Engine::Resource>)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine::Func -WHOLEARCHIVE:$<TARGET_FILE:Engine::Func>)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)

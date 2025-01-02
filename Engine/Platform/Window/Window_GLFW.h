@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] void* GetNativeHandle() const override;
 
-    void PollInputs() override;
+    void PollInputs(const Millisecond& sec) override;
     bool ShouldClose() override;
     void Close() override;
 

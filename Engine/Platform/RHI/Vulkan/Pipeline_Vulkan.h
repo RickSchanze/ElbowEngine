@@ -8,7 +8,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-namespace platform::rhi::vulkan
+namespace platform::rhi
 {
 class RenderPass;
 }

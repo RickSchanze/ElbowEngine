@@ -4,6 +4,7 @@ add_subdirectory(Core)
 add_subdirectory(Platform)
 add_subdirectory(ThirdParty)
 add_subdirectory(Resource)
+add_subdirectory(Func)
 
 if (BUILD_TEST)
     enable_testing()

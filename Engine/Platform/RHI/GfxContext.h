@@ -16,30 +16,19 @@
 
 #include <cstdint>
 
+// clang-format off
 namespace platform::rhi
 {
-class RenderPass;
-namespace vulkan
-{
-class RenderPass;
-}
-class DescriptorSetLayout;
-}   // namespace platform::rhi
-namespace platform::rhi
-{
-class GraphicsPipeline;
-}
-namespace platform::rhi
-{
-class LowShader;
-}
-namespace platform::rhi
-{
+class  RenderPass;
+class  DescriptorSetLayout;
+class  GraphicsPipeline;
+class  LowShader;
 struct CommandPoolCreateInfo;
-class CommandPool;
+class  CommandPool;
 struct Fence;
-class CommandBuffer;
+class  CommandBuffer;
 }   // namespace platform::rhi
+// clang-format on
 namespace platform::rhi
 {
 DECLARE_EVENT(PostProcessVulkanExtensionsEvent, core::Array<core::String>, const core::Array<core::String>&);
@@ -178,6 +167,12 @@ public:
      */
     [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline>
     CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, RenderPass* render_pass) = 0;
+
+    /**
+     * 同步获取当前交换链图像索引
+     * @return
+     */
+    [[nodiscard]] virtual int32_t GetCurrentSwapChainImageIndexSync() = 0;
 };
 
 GfxContext* GetGfxContext();

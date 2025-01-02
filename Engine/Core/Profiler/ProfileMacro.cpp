@@ -7,6 +7,8 @@
 
 #include "ProfileMacro.h"
 
+#include "Core/Config/ConfigManager.h"
+#include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
 #include "Core/Math/Math.h"
 
@@ -25,4 +27,16 @@ uint32_t GetColor(int index)
         0x8b4513,   // SaddleBrown
     };
     return colors[index % colors.size()];
+}
+
+void StartupProfiler()
+{
+#if ENABLE_PROFILING
+    auto* cfg = core::GetConfig<core::CoreConfig>();
+#endif
+}
+
+void ShutdownProfiler()
+{
+
 }

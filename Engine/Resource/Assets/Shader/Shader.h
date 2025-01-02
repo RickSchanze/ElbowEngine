@@ -7,6 +7,7 @@
 #include "Resource/Assets/Asset.h"
 
 #include "Core/Base/Base.h"
+#include "Platform/RHI/Enums.h"
 #include "Platform/RHI/LowShader.h"
 #include "slang-com-ptr.h"
 

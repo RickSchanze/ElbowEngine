@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Core/Core.h"
+#include "Core/Utils/TimeUtils.h"
 #include "Platform/RHI/Enums.h"
 #include "Platform/RHI/GfxContext.h"
 
@@ -37,7 +38,7 @@ public:
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
 
-    virtual void PollInputs()  = 0;
+    virtual void PollInputs(const Millisecond &sec)  = 0;
     virtual bool ShouldClose() = 0;
     virtual void Close()       = 0;
 

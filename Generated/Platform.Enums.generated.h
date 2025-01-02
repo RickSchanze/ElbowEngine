@@ -51,8 +51,8 @@ type->Internal_RegisterEnumValue(Count ,"Count"); \
 core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::GraphicsAPI>(), type); \
 } \
 { \
-Type* type = Type::Create<platform::rhi::SampleCount>("platform.rhi.SampleCount")->SetComment("MSAA采样次数\nVulkan API指示这里是个Flag Enum, Follow it.")->SetAttribute(Type::FlagAttribute::Flag); \
-using enum platform::rhi::SampleCount; \
+Type* type = Type::Create<platform::rhi::SampleCountBits>("platform.rhi.SampleCountBits")->SetComment("MSAA采样次数\nVulkan API指示这里是个Flag Enum, Follow it.")->SetAttribute(Type::FlagAttribute::Flag); \
+using enum platform::rhi::SampleCountBits; \
 type->Internal_RegisterEnumValue(SC_1 ,"SC_1")->SetComment("1次"); \
 type->Internal_RegisterEnumValue(SC_2 ,"SC_2")->SetComment("2次"); \
 type->Internal_RegisterEnumValue(SC_4 ,"SC_4")->SetComment("4次"); \
@@ -61,7 +61,7 @@ type->Internal_RegisterEnumValue(SC_16 ,"SC_16")->SetComment("16次"); \
 type->Internal_RegisterEnumValue(SC_32 ,"SC_32")->SetComment("32次"); \
 type->Internal_RegisterEnumValue(SC_64 ,"SC_64")->SetComment("64次"); \
 type->Internal_RegisterEnumValue(SC_Count ,"SC_Count")->SetComment("超出范围"); \
-core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::SampleCount>(), type); \
+core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::SampleCountBits>(), type); \
 } \
 
 

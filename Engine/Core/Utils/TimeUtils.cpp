@@ -6,3 +6,10 @@
  */
 
 #include "TimeUtils.h"
+
+#include <algorithm>
+
+Millisecond TimeUtils::Clamp(Millisecond time, Millisecond min, Millisecond max)
+{
+    return std::clamp(time, min, max);
+}

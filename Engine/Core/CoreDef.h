@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
+#include "Features.h"
 
 #if WITH_EDITOR
 #define EDITOR_META(...) (__VA_ARGS__)
@@ -36,11 +37,6 @@
 #define NEVER_ENTRY_WARN(cat) LOGGER.Warn(cat, "此方法未实现: {}", __FUNCSIG__)
 
 #define REGION(region_name) 1
-
-// 特性开关
-#define ENABLE_PROFILING 0
-#define WITH_EDITOR 1
-#define ENABLE_IMGUI 1
 
 #if defined(_WIN32) || defined(_WIN64)
 #define PLATFORM_WINDOWS

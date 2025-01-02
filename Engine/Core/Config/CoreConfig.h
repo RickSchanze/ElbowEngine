@@ -6,10 +6,10 @@
  */
 
 #pragma once
+#include "Core/Async/ThreadManager.h"
 #include "Core/Core.h"
 #include "Core/Math/MathTypes.h"
 #include "IConfig.h"
-#include "Core/Async/ThreadManager.h"
 
 #include GEN_HEADER("Core.CoreConfig.generated.h")
 
@@ -63,6 +63,10 @@ class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : ext
 
     PROPERTY(Label = "启用多线程持久化对象加载")
     DECLARE_CONFIG_ITEM(bool, enable_persistent_load_multithread, EnablePersistentLoadMultiThread, true);
+
+    // Profiler最大内存限制
+    PROPERTY(Category = "Profiler")
+    DECLARE_CONFIG_ITEM(size_t, profiler_max_memory_limit, ProfilerMaxMemoryLimit, 1024 * 1024 * 1024);
 
 public:
     /**

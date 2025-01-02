@@ -365,7 +365,6 @@ VkAttachmentLoadOp RHIAttachmentLoadOpToVkAttachmentLoadOp(AttachmentLoadOperati
 
 AttachmentLoadOperation VkAttachmentLoadOpToRHIAttachmentLoadOp(VkAttachmentLoadOp load_op)
 {
-    VK_POLYGON_MODE_FILL
     switch (load_op)
     {
     case VK_ATTACHMENT_LOAD_OP_LOAD: return AttachmentLoadOperation::Load;

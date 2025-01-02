@@ -125,6 +125,8 @@ public:
     [[nodiscard]] core::UniquePtr<GraphicsPipeline>
     CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, rhi::RenderPass* render_pass) override;
 
+    [[nodiscard]] int32_t GetCurrentSwapChainImageIndexSync() override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;
@@ -140,6 +142,7 @@ private:
 
     core::Array<Image_Vulkan*>     swapchain_images_;
     core::Array<ImageView_Vulkan*> swapchain_image_views_;
+    core::Array<VkSemaphore>       image_available_semaphores_;
 
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;

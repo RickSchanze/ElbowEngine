@@ -452,6 +452,15 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
             return New<ImageView_Vulkan>(desc);
         }) |
         ranges::to_vector;
+
+    auto* cfg = core::GetConfig<PlatformConfig>();
+    vulkan_ctx->image_available_semaphores_.resize(cfg->GetValidFrameCountInFlight());
+    for (auto& semaphore: vulkan_ctx->image_available_semaphores_)
+    {
+        VkSemaphoreCreateInfo info{};
+        info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VERIFY_VULKAN_RESULT(vkCreateSemaphore(vulkan_ctx->device_, &info, nullptr, &semaphore));
+    }
     Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
@@ -460,6 +469,11 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
 {
     auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+    for (auto semaphore: vulkan_ctx->image_available_semaphores_)
+    {
+        vkDestroySemaphore(vulkan_ctx->device_, semaphore, nullptr);
+    }
+    vulkan_ctx->image_available_semaphores_.clear();
     for (auto img: vulkan_ctx->swapchain_images_)
     {
         Delete(img);
