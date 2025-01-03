@@ -22,10 +22,10 @@ public:
 
     void SetRenderPipeline(core::UniquePtr<RenderPipeline> render_pipeline);
 
-    core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
-    core::StringView   GetName() const override { return "RenderContext"; }
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
+    [[nodiscard]] core::StringView   GetName() const override { return "RenderContext"; }
 
-    bool ShouldRender() const;
+    [[nodiscard]] bool ShouldRender() const;
 
     void Startup() override;
     void Shutdown() override;

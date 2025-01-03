@@ -58,7 +58,9 @@ void Shader::Compile(bool output_glsl)
             String                      output_code = "Vertex: \n";
             Slang::ComPtr<slang::IBlob> diagnostics;
             Slang::ComPtr<slang::IBlob> vert_code;
-            linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 1, vert_code.writeRef(), diagnostics.writeRef());
+            linked_program_->getEntryPointCode(
+                stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 1, vert_code.writeRef(), diagnostics.writeRef()
+            );
             if (diagnostics)
             {
                 LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
@@ -83,7 +85,9 @@ void Shader::Compile(bool output_glsl)
         }
         Slang::ComPtr<slang::IBlob> vert_code;
         Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
-        linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 0, vert_code.writeRef(), diagnostics.writeRef());
+        linked_program_->getEntryPointCode(
+            stage_to_entry_point_index_[GetEnumValue(ShaderStage::Vertex)], 0, vert_code.writeRef(), diagnostics.writeRef()
+        );
         if (diagnostics)
         {
             LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
@@ -91,7 +95,9 @@ void Shader::Compile(bool output_glsl)
         }
         Slang::ComPtr<slang::IBlob> frag_code;
         diagnostics = nullptr;
-        linked_program_->getEntryPointCode(stage_to_entry_point_index_[GetEnumValue(ShaderStage::Fragment)], 0, frag_code.writeRef(), diagnostics.writeRef());
+        linked_program_->getEntryPointCode(
+            stage_to_entry_point_index_[GetEnumValue(ShaderStage::Fragment)], 0, frag_code.writeRef(), diagnostics.writeRef()
+        );
         if (diagnostics)
         {
             LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
@@ -102,6 +108,7 @@ void Shader::Compile(bool output_glsl)
             ctx->CreateShader(static_cast<const char*>(vert_code->getBufferPointer()), vert_code->getBufferSize());
         shader_handles_[GetEnumValue(ShaderStage::Fragment)] =
             ctx->CreateShader(static_cast<const char*>(frag_code->getBufferPointer()), frag_code->getBufferSize());
+        is_compiled_ = true;
     }
 }
 
@@ -113,4 +120,8 @@ bool Shader::IsCompute() const
 bool Shader::IsGraphics() const
 {
     return annotations_[GetEnumValue(ShaderAnnotation::Pipeline)] == 1;
+}
+
+bool Shader::IsCompiled() const{
+
 }

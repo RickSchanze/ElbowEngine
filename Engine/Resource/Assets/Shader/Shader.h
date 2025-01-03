@@ -17,6 +17,7 @@ namespace resource
 enum class ShaderAnnotation
 {
     Pipeline,
+    InputLayout,   // 输入布局: VertexNormal, Vertex
     Name,
     Count,
 };
@@ -30,6 +31,7 @@ class Shader : public Asset
 {
 public:
     friend class SlangShaderLoader;
+
     void PerformLoad() override;
 
     [[nodiscard]] bool IsLoaded() const override;
@@ -43,20 +45,29 @@ public:
 
     [[nodiscard]] bool IsGraphics() const;
 
+    [[nodiscard]] bool IsCompiled() const { return is_compiled_; }
+
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Shader; }
 
-protected:
-    // 这一部分的函数用于配置GraphicsPipeline
+    using ShaderHandles       = core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)>;
+    using ShaderAnnotationMap = core::StaticArray<int, GetEnumValue(ShaderAnnotation::Count)>;
+
+    [[nodiscard]] ShaderHandles&             GetShaderHandles() { return shader_handles_; }
+    [[nodiscard]] const ShaderAnnotationMap& GetAnnotations() const { return annotations_; }
+
+    [[nodiscard]] const Slang::ComPtr<slang::IComponentType>& _GetLinkedProgram() const { return linked_program_; }
 
 protected:
     core::StaticArray<int, GetEnumValue(platform::rhi::ShaderStage::Count)> stage_to_entry_point_index_;
 
-    core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)> shader_handles_;
+    ShaderHandles shader_handles_;
 
     Slang::ComPtr<slang::IComponentType> linked_program_;
 
-    core::StaticArray<int, GetEnumValue(ShaderAnnotation::Count)> annotations_;
+    ShaderAnnotationMap annotations_;
 
     Slang::ComPtr<slang::ISession> slang_session_;
+
+    bool is_compiled_ = false;
 };
 }

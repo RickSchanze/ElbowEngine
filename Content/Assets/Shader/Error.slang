@@ -1,5 +1,6 @@
 /**
  * @Pipeline: Graphics
+ * @InputLayout: Vertex1
  */
 
 import CommonStructure;

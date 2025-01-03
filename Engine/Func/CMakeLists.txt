@@ -18,6 +18,8 @@ add_library(${PROJECT_NAME}
         Render/RenderPipeline.h
         Render/RenderContext.cpp
         Render/RenderContext.h
+        Render/Misc.cpp
+        Render/Misc.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

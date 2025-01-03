@@ -19,11 +19,14 @@ void RenderContext::Render(const Millisecond& sec)
     {
         return;
     }
+
 }
 
 void RenderContext::SetRenderPipeline(core::UniquePtr<RenderPipeline> render_pipeline)
 {
+    render_pipeline_->Clean();
     render_pipeline_ = Move(render_pipeline);
+    render_pipeline_->Build();
 }
 
 bool RenderContext::ShouldRender() const

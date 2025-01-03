@@ -30,4 +30,7 @@ protected:
 
     core::HashMap<int32_t, Window*> windows_;
 };
+
+inline WindowManager& GetWindowManager();
+
 }   // namespace platform

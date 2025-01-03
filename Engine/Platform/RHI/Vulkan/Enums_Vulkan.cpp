@@ -28,6 +28,7 @@ VkFormat RHIFormatToVkFormat(const Format format)
     case Format::A2B10G10R10_UNorm: return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
     case Format::B8G8R8A8_UNorm: return VK_FORMAT_B8G8R8A8_UNORM;
     case Format::R16G16B16A16_Float: return VK_FORMAT_R16G16B16A16_SFLOAT;
+    case Format::R32G32_SFloat: return VK_FORMAT_R32G32_SFLOAT;
     default: return VK_FORMAT_UNDEFINED;
     }
 }
@@ -51,6 +52,7 @@ Format VkFormatToRHIFormat(VkFormat format)
     case VK_FORMAT_A2B10G10R10_UNORM_PACK32: return Format::A2B10G10R10_UNorm;
     case VK_FORMAT_B8G8R8A8_UNORM: return Format::B8G8R8A8_UNorm;
     case VK_FORMAT_R16G16B16A16_SFLOAT: return Format::R16G16B16A16_Float;
+    case VK_FORMAT_R32G32_SFLOAT: return Format::R32G32_SFloat;
     default: return Format::Count;
     }
 }
@@ -542,16 +544,16 @@ platform::rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorTy
 {
     switch (type)
     {
-        case VK_DESCRIPTOR_TYPE_SAMPLER: return DescriptorType::Sampler;
-        // case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return DescriptorType::CombinedImageSampler;
-        // case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE: return DescriptorType::SampledImage;
-        // case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE: return DescriptorType::StorageImage;
-        // case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: return DescriptorType::UniformTexelBuffer;
-        // case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: return DescriptorType::StorageTexelBuffer;
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: return DescriptorType::UniformBuffer;
-        // case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER: return DescriptorType::StorageBuffer;
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: return DescriptorType::UniformBufferDynamic;
-        // case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: return DescriptorType::StorageBufferDynamic;
-        default: return DescriptorType::Count;
+    case VK_DESCRIPTOR_TYPE_SAMPLER: return DescriptorType::Sampler;
+    // case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return DescriptorType::CombinedImageSampler;
+    // case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE: return DescriptorType::SampledImage;
+    // case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE: return DescriptorType::StorageImage;
+    // case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: return DescriptorType::UniformTexelBuffer;
+    // case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: return DescriptorType::StorageTexelBuffer;
+    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: return DescriptorType::UniformBuffer;
+    // case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER: return DescriptorType::StorageBuffer;
+    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: return DescriptorType::UniformBufferDynamic;
+    // case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: return DescriptorType::StorageBufferDynamic;
+    default: return DescriptorType::Count;
     }
 }

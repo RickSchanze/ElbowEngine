@@ -17,15 +17,21 @@ namespace platform::rhi::vulkan
 class GraphicsPipeline_Vulkan : public GraphicsPipeline
 {
 public:
-    GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& desc, std::span<DescriptorSetLayout*> layouts, const RenderPass* render_pass = nullptr);
+    GraphicsPipeline_Vulkan(
+        const GraphicsPipelineDesc& desc, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, const RenderPass* render_pass = nullptr
+    );
+
+    ~GraphicsPipeline_Vulkan() override;
 
     void* GetNativeHandle() const override { return pipeline_; }
 
-    bool IsDynamicRendering() const  { return dynamic_rendering_; }
+    bool IsDynamicRendering() const { return dynamic_rendering_; }
 
 protected:
     VkPipelineLayout pipeline_layout_ = VK_NULL_HANDLE;
     VkPipeline       pipeline_        = VK_NULL_HANDLE;
+
+    core::Array<core::SharedPtr<DescriptorSetLayout>> descriptor_layouts_;
 
     bool dynamic_rendering_ = false;
 };

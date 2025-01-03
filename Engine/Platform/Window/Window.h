@@ -38,9 +38,9 @@ public:
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
 
-    virtual void PollInputs(const Millisecond &sec)  = 0;
-    virtual bool ShouldClose() = 0;
-    virtual void Close()       = 0;
+    virtual void PollInputs(const Millisecond& sec) = 0;
+    virtual bool ShouldClose()                      = 0;
+    virtual void Close()                            = 0;
 
     /**
      * 创建一个Surface

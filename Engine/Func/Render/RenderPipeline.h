@@ -17,6 +17,10 @@ public:
     virtual ~RenderPipeline() = default;
 
     virtual void Render(platform::rhi::CommandBuffer& cmd) = 0;
+
+    virtual void Build() {}
+    virtual void Clean() {}
+    virtual void Rebuild() {}
 };
 
 }   // namespace func

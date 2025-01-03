@@ -18,7 +18,7 @@ using namespace ranges;
 
 
 GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
-    const GraphicsPipelineDesc& desc, std::span<DescriptorSetLayout*> layouts, const RenderPass* render_pass
+    const GraphicsPipelineDesc& desc, std::span<SharedPtr<DescriptorSetLayout>> layouts, const RenderPass* render_pass
 )
 {
     auto                                   decive = GetVulkanGfxContext()->GetDevice();
@@ -121,7 +121,9 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
     pipeline_layout_info.setLayoutCount = layouts.size();
 
     Array<VkDescriptorSetLayout> layouts_native =
-        layouts | views::transform([](const DescriptorSetLayout* layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) | to<Array>();
+        layouts | views::transform([](const SharedPtr<DescriptorSetLayout>& layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) |
+        to<Array>();
+    descriptor_layouts_              = layouts | to<Array>();
     pipeline_layout_info.pSetLayouts = layouts_native.data();
     VERIFY_VULKAN_RESULT(vkCreatePipelineLayout(decive, &pipeline_layout_info, nullptr, &pipeline_layout_));
 
@@ -158,4 +160,12 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
     // TODO: PSO Cache
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
     VERIFY_VULKAN_RESULT(vkCreateGraphicsPipelines(decive, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_));
+}
+
+GraphicsPipeline_Vulkan::~GraphicsPipeline_Vulkan()
+{
+    auto& ctx    = *GetVulkanGfxContext();
+    auto  device = ctx.GetDevice();
+    vkDestroyPipeline(device, pipeline_, nullptr);
+    vkDestroyPipelineLayout(device, pipeline_layout_, nullptr);
 }

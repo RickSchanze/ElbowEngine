@@ -7,6 +7,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "Core/Misc/Vertex.h"
 #include "MeshMeta.h"
 #include "Platform/FileSystem/Path.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -14,13 +15,6 @@
 #include "Platform/RHI/GfxCommandHelper.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Logcat.h"
-
-struct Vertex
-{
-    core::Vector3 position;
-    core::Vector3 normal;
-    core::Vector2 texcoord;
-};
 
 static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core::UniquePtr<resource::MeshStorage>& out)
 {

@@ -73,7 +73,11 @@ static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValu
                 {
                     name = value;
                 }
-                else if (key == "Pipeline")
+                {
+                    // 一些默认值
+                    output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
+                }
+                if (key == "Pipeline")
                 {
                     if (value == "Graphics")
                     {
@@ -86,6 +90,13 @@ static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValu
                     else
                     {
                         LOGGER.Error(logcat::Resource, "Shader Load Error: 无效的Pipeline:注解 {}", value);
+                    }
+                }
+                if (key == "InputLayout")
+                {
+                    if (value == "Vertex1")
+                    {
+                        output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
                     }
                 }
             }

@@ -29,8 +29,8 @@ struct ViewportDesc
 {
     float x         = 0.0f;
     float y         = 0.0f;
-    float w         = 0.0f;
-    float h         = 0.0f;
+    float w         = 800.0f;
+    float h         = 600.0f;
     float min_depth = 0.0f;
     float max_depth = 1.0f;
 };

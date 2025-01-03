@@ -27,6 +27,7 @@ enum class ENUM() Format
     B8G8R8A8_UNorm,         // 每个元素由4个8位分量构成, 被映射到[0, 1]
     R16G16B16A16_Float,     // 每个元素由4个16位float分量构成
     A2B10G10R10_UNorm,      // a: 2位 b: 10位 g: 10位 r: 10位
+    R32G32_SFloat,          // 每个元素由2个32位float分量构成
     Count,                  // 超出范围(Undefined)
 };
 
