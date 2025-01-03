@@ -15,6 +15,7 @@
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "DescriptorSet_Vulkan.h"
 #include "Enums_Vulkan.h"
 #include "Image_Vulkan.h"
 #include "ImageView_Vulkan.h"
@@ -493,6 +494,11 @@ core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(
 )
 {
     return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, layouts, render_pass);
+}
+
+core::SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc)
+{
+    return core::MakeShared<DescriptorSetLayout_Vulkan>(desc);
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

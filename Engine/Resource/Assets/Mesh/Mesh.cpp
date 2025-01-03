@@ -7,14 +7,16 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "Core/Misc/Vertex.h"
 #include "MeshMeta.h"
 #include "Platform/FileSystem/Path.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxCommandHelper.h"
+#include "Platform/RHI/VertexLayout.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Logcat.h"
+
+using namespace platform::rhi;
 
 static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core::UniquePtr<resource::MeshStorage>& out)
 {
@@ -52,8 +54,8 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     }
     const aiMesh* mesh = scene->mMeshes[0];
     out                = core::MakeUnique<resource::MeshStorage>();
-    core::Array<Vertex>   vertices;
-    core::Array<uint32_t> indices;
+    core::Array<platform::rhi::Vertex1> vertices;
+    core::Array<uint32_t>               indices;
     vertices.reserve(mesh->mNumVertices);
     indices.reserve(mesh->mNumFaces * 3);
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
@@ -62,7 +64,7 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
         const aiVector3D& nor = mesh->mNormals[i];
         const aiVector3D& tex = mesh->mTextureCoords[0][i];
         vertices.emplace_back(
-            Vertex{
+            Vertex1{
                 {pos.x, pos.y, pos.z},
                 {nor.x, nor.y, nor.z},
                 {tex.x, tex.y},
@@ -80,7 +82,7 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     auto& ctx = platform::rhi::GetGfxContextRef();
     {
         // vertex buffer
-        size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex);
+        size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex1);
         platform::rhi::BufferCreateInfo vertex_buffer_info{
             vertex_buffer_size, platform::rhi::BUB_VertexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
         };

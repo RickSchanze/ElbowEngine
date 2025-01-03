@@ -19,6 +19,7 @@
 // clang-format off
 namespace platform::rhi
 {
+struct DescriptorSetLayoutDesc;
 class  RenderPass;
 class  DescriptorSetLayout;
 class  GraphicsPipeline;
@@ -167,6 +168,16 @@ public:
      */
     [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline>
     CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, RenderPass* render_pass) = 0;
+
+    /**
+     * 创建一个新的DescriptorSetLayout
+     * 一般来说 你不需要直接调用这个接口,
+     * 使用 DescriptorSetLayoutPool.GetOrCreate
+     * 这是个单例
+     * @param desc
+     * @return
+     */
+    [[nodiscard]] virtual core::SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc) = 0;
 
     /**
      * 同步获取当前交换链图像索引

@@ -127,6 +127,8 @@ public:
 
     [[nodiscard]] int32_t GetCurrentSwapChainImageIndexSync() override;
 
+    [[nodiscard]] core::SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc) override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;

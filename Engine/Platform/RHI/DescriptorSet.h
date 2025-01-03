@@ -33,10 +33,14 @@ struct DescriptorSetLayoutDesc
 class DescriptorSetLayout : public IResource
 {
 public:
-    size_t GetHashCode() const;
+    [[nodiscard]] size_t GetHashCode() const;
+
+    explicit DescriptorSetLayout(const DescriptorSetLayoutDesc& desc) : hash_(desc.GetHashCode()) {}
+
+    ~DescriptorSetLayout() override = default;
 
 protected:
-    DescriptorSetLayoutDesc desc;
+    size_t hash_ = 0;
 };
 
 class DescriptorSet : public IResource
@@ -52,18 +56,30 @@ struct std::hash<platform::rhi::DescriptorSetLayoutDesc>
 
 namespace platform::rhi
 {
-class DescriptorSetLayoutPool : Singleton<DescriptorSetLayoutPool>
+class DescriptorSetLayoutPool : public Singleton<DescriptorSetLayoutPool>
 {
 public:
     DescriptorSetLayoutPool();
 
-    core::SharedPtr<DescriptorSetLayoutPool> GetOrCreate(const DescriptorSetLayoutDesc& desc);
+    core::SharedPtr<DescriptorSetLayout> GetOrCreate(const DescriptorSetLayoutDesc& desc);
 
+    /**
+     * 如果hash对应的layout的ref count为1，则会释放掉
+     * @param hash
+     */
     void Release(size_t hash);
 
+    /**
+     * 无条件清除！！！
+     */
     void Clear(GfxContext*);
 
+    /**
+     * 此函数会将pool_里说要ref count为1的释放掉
+     */
+    void Update();
+
 private:
-    core::HashMap<size_t, core::SharedPtr<DescriptorSetLayoutPool>> pool_;
+    core::HashMap<size_t, core::SharedPtr<DescriptorSetLayout>> pool_;
 };
 }   // namespace platform::rhi

@@ -6,6 +6,7 @@
 
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/Logcat.h"
+#include "Platform/RHI/DescriptorSet.h"
 #include "Platform/RHI/Pipeline.h"
 #include "Platform/RHI/VertexLayout.h"
 #include "Platform/Window/Window.h"
@@ -60,10 +61,22 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
 
 static void FillGlobalParams(GraphicsPipelineDesc& desc, Shader* shader)
 {
-    const auto& linked_program = shader->_GetLinkedProgram();
-    auto        prog_layout    = linked_program->getLayout();
-    auto        param_layout   = prog_layout->getGlobalParamsVarLayout();
+    const auto&             linked_program = shader->_GetLinkedProgram();
+    auto                    prog_layout    = linked_program->getLayout();
+    DescriptorSetLayoutDesc layout_desc{};
 
+    for (SlangInt i = 0; i < prog_layout->getParameterCount(); ++i)
+    {
+        DescriptorSetLayoutBinding binding{};
+        auto                       parameter = prog_layout->getParameterByIndex(i);
+        binding.binding                      = parameter->getBindingIndex();
+        binding.descriptor_count             = 1;
+        switch (parameter->getCategory())
+        {
+        case slang::Uniform: binding.descriptor_type = DescriptorType::UniformBuffer; break;
+        default: continue;
+        }
+    }
 }
 
 UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bool output_glsl)

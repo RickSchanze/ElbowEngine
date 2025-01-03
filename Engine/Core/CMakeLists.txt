@@ -25,8 +25,6 @@ add_library(${PROJECT_NAME}
         CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
-        Misc/Vertex.h
-        Misc/Vertex.cpp
         Math/Math.cpp
         Math/Math.h
         Profiler/ProfileMacro.cpp

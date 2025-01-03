@@ -3,9 +3,11 @@
 //
 
 #include "DescriptorSet.h"
-
 #include "Core/Base/Base.h"
 #include "GfxContext.h"
+
+#include <range/v3/view/for_each.hpp>
+
 using namespace platform::rhi;
 
 size_t DescriptorSetLayoutDesc::GetHashCode() const
@@ -31,16 +33,23 @@ DescriptorSetLayoutPool::DescriptorSetLayoutPool()
     Event_GfxContextPreDestroyed.AddBind(this, &DescriptorSetLayoutPool::Clear);
 }
 
-core::SharedPtr<DescriptorSetLayoutPool> DescriptorSetLayoutPool::GetOrCreate(const DescriptorSetLayoutDesc& desc)
+core::SharedPtr<DescriptorSetLayout> DescriptorSetLayoutPool::GetOrCreate(const DescriptorSetLayoutDesc& desc)
 {
-    if (auto it = pool_.find(desc.GetHashCode()); it != pool_.end())
+    if (const auto it = pool_.find(desc.GetHashCode()); it != pool_.end())
     {
         return it->second;
     }
+    const auto rtn = GetGfxContextRef().CreateDescriptorSetLayout(desc);
+    if (rtn != nullptr)
+    {
+        pool_[rtn->GetHashCode()] = rtn;
+    }
+    return rtn;
 }
 
 void DescriptorSetLayoutPool::Release(size_t hash)
 {
+    // TODO: SharedPtr是析构完再减ref 还是先减ref再析构？
     if (pool_.contains(hash))
     {
         if (pool_[hash].use_count() == 1)
@@ -53,5 +62,9 @@ void DescriptorSetLayoutPool::Release(size_t hash)
 void DescriptorSetLayoutPool::Clear(GfxContext*)
 {
     pool_.clear();
+}
 
+void DescriptorSetLayoutPool::Update()
+{
+    std::erase_if(pool_, [](const auto& pair) { return pair.second.use_count() == 1; });
 }
