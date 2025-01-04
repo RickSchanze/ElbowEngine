@@ -25,6 +25,7 @@ public:
     virtual void Build() {}
     virtual void Clean() {}
     virtual void Rebuild() {}
+    virtual bool IsReady() const { return false; }
 };
 
 }   // namespace func

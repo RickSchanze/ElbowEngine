@@ -17,9 +17,7 @@ using namespace vulkan;
 using namespace ranges;
 
 
-GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
-    const GraphicsPipelineDesc& desc, std::span<SharedPtr<DescriptorSetLayout>> layouts, const RenderPass* render_pass
-)
+GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& desc, const RenderPass* render_pass)
 {
     auto                                   decive = GetVulkanGfxContext()->GetDevice();
     Array<VkPipelineShaderStageCreateInfo> shader_stages;
@@ -29,13 +27,7 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
         shader_stages[i].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shader_stages[i].stage  = static_cast<VkShaderStageFlagBits>(RHIShaderStageToVkShaderStage(desc.shaders[i].stage));
         shader_stages[i].module = desc.shaders[i].shader->GetNativeHandleT<VkShaderModule>();
-        switch (desc.shaders[i].stage)
-        {
-        case Vertex: shader_stages[i].pName = "main"; break;
-        case Fragment: shader_stages[i].pName = "main"; break;
-        case Compute: shader_stages[i].pName = "main"; break;
-        default: throw ArgumentException(NAMEOF(desc.shaders[i].stage), "未知的着色器阶段");
-        }
+        shader_stages[i].pName  = "main";
     }
 
     Array<VkVertexInputBindingDescription> input_bindings;
@@ -124,12 +116,13 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
 
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_info.setLayoutCount = layouts.size();
+    pipeline_layout_info.setLayoutCount = desc.descriptor_set_layouts.size();
 
     Array<VkDescriptorSetLayout> layouts_native =
-        layouts | views::transform([](const SharedPtr<DescriptorSetLayout>& layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) |
+        desc.descriptor_set_layouts |
+        views::transform([](const SharedPtr<DescriptorSetLayout>& layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) |
         to<Array>();
-    descriptor_layouts_              = layouts | to<Array>();
+    descriptor_layouts_              = desc.descriptor_set_layouts;
     pipeline_layout_info.pSetLayouts = layouts_native.data();
     VERIFY_VULKAN_RESULT(vkCreatePipelineLayout(decive, &pipeline_layout_info, nullptr, &pipeline_layout_));
 
@@ -152,6 +145,8 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
     pipeline_info.pColorBlendState    = &color_blend_info;
     pipeline_info.pDynamicState       = &dynamic_state_info;
     pipeline_info.layout              = pipeline_layout_;
+    // TODO: PSO Cache
+    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
     if (render_pass == nullptr)
     {
         dynamic_rendering_ = true;
@@ -167,16 +162,15 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
 
         pipeline_info.pNext      = &rendering_info;
         pipeline_info.renderPass = VK_NULL_HANDLE;
+        VERIFY_VULKAN_RESULT(vkCreateGraphicsPipelines(decive, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_));
     }
     else
     {
         dynamic_rendering_       = false;
         pipeline_info.renderPass = render_pass->GetNativeHandleT<VkRenderPass>();
         pipeline_info.subpass    = 0;
+        VERIFY_VULKAN_RESULT(vkCreateGraphicsPipelines(decive, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_));
     }
-    // TODO: PSO Cache
-    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
-    VERIFY_VULKAN_RESULT(vkCreateGraphicsPipelines(decive, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_));
 }
 
 GraphicsPipeline_Vulkan::~GraphicsPipeline_Vulkan()

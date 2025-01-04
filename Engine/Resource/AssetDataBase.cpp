@@ -11,6 +11,7 @@
 #include "Assets/Mesh/MeshMeta.h"
 #include "Assets/Shader/Shader.h"
 #include "Assets/Shader/ShaderMeta.h"
+#include "Core/Profiler/ProfileMacro.h"
 #include "Logcat.h"
 #include "Platform/FileSystem/Folder.h"
 #include "Platform/FileSystem/Path.h"
@@ -74,6 +75,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
 
 AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path)
 {
+    PROFILE_SCOPE_AUTO;
     // 先查一下是否存在, 存在的话按现有配置重新导入
     auto  query    = String::Format("path = '{}'", path);
     auto& registry = ObjectManager::GetRegistry();
@@ -90,6 +92,7 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path)
 
 Object* AssetDataBase::Load(StringView path)
 {
+    PROFILE_SCOPE_AUTO;
     auto handle = LoadAsync(path);
     if (!handle) return nullptr;
     handle->Wait();
@@ -104,6 +107,7 @@ Object* AssetDataBase::Load(StringView path)
 
 AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
 {
+    PROFILE_SCOPE_AUTO;
     if (path.EndsWith(".slang"))
     {
         if (const auto meta_op = QueryMeta<ShaderMeta>(String::Format("path = '{}'", path)); !meta_op)

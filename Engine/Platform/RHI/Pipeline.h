@@ -6,11 +6,13 @@
 #include "Enums.h"
 #include "IResource.h"
 #include "LowShader.h"
+#include "DescriptorSet.h"
 
 namespace platform::rhi
 {
 class LowShader;
 }
+
 namespace platform::rhi
 {
 
@@ -95,18 +97,19 @@ struct AttachmentsDesc
 
 struct GraphicsPipelineDesc
 {
-    RasterizationDecs                rasterization{};
-    ViewportDesc                     viewport{};
-    ScissorDesc                      scissor{};
-    core::Array<ShaderDesc>          shaders{};
-    core::Array<VertexInputDesc>     vertex_inputs{};
-    core::Array<VertexAttributeDesc> vertex_attributes{};
-    MultiSampleDesc                  multisample{};
-    DepthStencilDesc                 depth_stencil{};
-    ColorBlendDesc                   color_blend{};
+    RasterizationDecs                                 rasterization{};
+    ViewportDesc                                      viewport{};
+    ScissorDesc                                       scissor{};
+    core::Array<ShaderDesc>                           shaders{};
+    core::Array<VertexInputDesc>                      vertex_inputs{};
+    core::Array<VertexAttributeDesc>                  vertex_attributes{};
+    MultiSampleDesc                                   multisample{};
+    DepthStencilDesc                                  depth_stencil{};
+    ColorBlendDesc                                    color_blend{};
     // vulkan: dynamic_rendering启用时使用此
     // 否则使用render pass指定的attachment
-    AttachmentsDesc                  attachments{};
+    AttachmentsDesc                                   attachments{};
+    core::Array<core::SharedPtr<DescriptorSetLayout>> descriptor_set_layouts{};
 };
 
 class GraphicsPipeline : public IResource

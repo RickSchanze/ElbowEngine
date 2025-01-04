@@ -28,6 +28,7 @@ DescriptorSetLayout_Vulkan::DescriptorSetLayout_Vulkan(const DescriptorSetLayout
             layout_binding.binding         = binding.binding;
             layout_binding.descriptorCount = binding.descriptor_count;
             layout_binding.descriptorType  = RHIDescriptorTypeToVkDescriptorType(binding.descriptor_type);
+            layout_binding.stageFlags      = RHIShaderStageToVkShaderStage(binding.stage_flags);
             return layout_binding;
         }) |
         ranges::to<Array>();

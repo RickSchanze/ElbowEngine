@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Core/Base/UniquePtr.h"
+#include "Platform/RHI/Pipeline.h"
 
 namespace resource
 {
@@ -17,5 +18,5 @@ class GraphicsPipeline;
 
 namespace func
 {
-core::UniquePtr<platform::rhi::GraphicsPipeline> CreateGraphicsPSOFromShader(resource::Shader* shader, bool output_glsl);
+bool FillGraphicsPSODescFromShader(resource::Shader* shader, platform::rhi::GraphicsPipelineDesc& desc, bool output_glsl = true);
 }

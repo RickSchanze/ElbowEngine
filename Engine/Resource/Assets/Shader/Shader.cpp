@@ -95,10 +95,14 @@ void Shader::Compile(bool output_glsl)
             LOGGER.Error(logcat::Resource, "Shader编译失败: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
             return;
         }
-        auto* ctx                           = GetGfxContext();
-        shader_handles_[VERTEX_STAGE_IDX]   = ctx->CreateShader(static_cast<const char*>(vert_code->getBufferPointer()), vert_code->getBufferSize());
-        shader_handles_[FRAGMENT_STAGE_IDX] = ctx->CreateShader(static_cast<const char*>(frag_code->getBufferPointer()), frag_code->getBufferSize());
-        is_compiled_                        = true;
+        auto*  ctx       = GetGfxContext();
+        String vert_name = String::Format("{}.Vert", name_);
+        String frag_name = String::Format("{}.Frag", name_);
+        shader_handles_[VERTEX_STAGE_IDX] =
+            ctx->CreateShader(static_cast<const char*>(vert_code->getBufferPointer()), vert_code->getBufferSize(), vert_name);
+        shader_handles_[FRAGMENT_STAGE_IDX] =
+            ctx->CreateShader(static_cast<const char*>(frag_code->getBufferPointer()), frag_code->getBufferSize(), frag_name);
+        is_compiled_ = true;
     }
 }
 

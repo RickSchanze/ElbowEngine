@@ -96,27 +96,13 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
     return layouts;
 }
 
-static void FillFragmentOutputAttachment(GraphicsPipelineDesc& desc, Shader* shader)
-{
-    if (shader->IsDepthEnabled())
-    {
-        desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
-    }
-    auto entry_point = shader->_GetLinkedProgram()->getLayout()->getEntryPointByIndex(shader->GetEntryPointIndex(Shader::FRAGMENT_STAGE_IDX));
-    auto result_layout = entry_point->getResultVarLayout();
-    if (result_layout->getTypeLayout()->getKind() != slang::TypeReflection::Kind::None)
-    {
-        // TODO: 输出格式反射
-    }
-}
-
-UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bool output_glsl)
+bool func::FillGraphicsPSODescFromShader(Shader* shader, GraphicsPipelineDesc& pso_desc, bool output_glsl)
 {
     PROFILE_SCOPE_AUTO;
     if (shader == nullptr || !shader->IsLoaded())
     {
         LOGGER.Error(logcat::Func_Render, "CreatePSOFromShader: shader is nullptr or not loaded");
-        return nullptr;
+        return false;
     }
     if (!shader->IsCompiled())
     {
@@ -128,14 +114,13 @@ UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bo
     if (!shader->IsCompiled())
     {
         LOGGER.Error(logcat::Func_Render, "CreatePSOFromShader: shader is not compiled");
-        return nullptr;
+        return false;
     }
     if (!shader->IsGraphics())
     {
         LOGGER.Error(logcat::Func_Render, "CreatePSOFromShader: shader is not graphics");
-        return nullptr;
+        return false;
     }
-    GraphicsPipelineDesc pso_desc{};
 
     if (window != nullptr)
     {
@@ -152,18 +137,18 @@ UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bo
     Array<ShaderDesc> shader_descs;
     {
         const auto& shader_stages = shader->GetShaderHandles();
-        if (shader_stages.at(GetEnumValue(ShaderStageBits::Vertex)))
+        if (shader_stages.at(Shader::VERTEX_STAGE_IDX))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(GetEnumValue(ShaderStageBits::Vertex)).get();
-            desc.stage  = ShaderStageBits::Vertex;
+            desc.shader = shader_stages.at(Shader::VERTEX_STAGE_IDX).get();
+            desc.stage  = Vertex;
             shader_descs.push_back(desc);
         }
-        if (shader_stages.at(GetEnumValue(ShaderStageBits::Fragment)))
+        if (shader_stages.at(Shader::FRAGMENT_STAGE_IDX))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(GetEnumValue(ShaderStageBits::Fragment)).get();
-            desc.stage  = ShaderStageBits::Fragment;
+            desc.shader = shader_stages.at(Shader::FRAGMENT_STAGE_IDX).get();
+            desc.stage  = Fragment;
             shader_descs.push_back(desc);
         }
     }
@@ -171,6 +156,7 @@ UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bo
     const auto&    anno             = shader->GetAnnotations();
     const uint32_t input_layout_idx = anno[GetEnumValue(ShaderAnnotation::InputLayout)];
     FillInputLayout(pso_desc, input_layout_idx);
-    auto layout = GetShaderDescriptorSetLayout(shader);
-    return GetGfxContextRef().CreateGraphicsPipeline(pso_desc, layout, nullptr);
+    auto layout                     = GetShaderDescriptorSetLayout(shader);
+    pso_desc.descriptor_set_layouts = layout;
+    return true;
 }

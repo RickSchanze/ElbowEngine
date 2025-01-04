@@ -285,9 +285,13 @@ core::SharedPtr<Fence> GfxContext_Vulkan::CreateFence()
     return core::MakeShared<Fence_Vulkan>();
 }
 
-core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, size_t size)
+core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, size_t size, core::StringView debug_name)
 {
-    return core::MakeShared<LowShader_Vulkan>(code, size);
+    auto rtn = core::MakeShared<LowShader_Vulkan>(code, size);
+#if ELBOW_DEBUG
+    SetObjectDebugName(VK_OBJECT_TYPE_SHADER_MODULE, rtn->GetNativeHandleT<VkShaderModule>(), debug_name);
+#endif
+    return rtn;
 }
 
 static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& parameter)
@@ -489,11 +493,9 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
     Event_GfxContextPreDestroyed.RemoveBind(vulkan_ctx->pre_vulkan_gfx_context_destroyed_);
 }
 
-core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(
-    const GraphicsPipelineDesc& create_info, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, rhi::RenderPass* render_pass
-)
+core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, rhi::RenderPass* render_pass)
 {
-    return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, layouts, render_pass);
+    return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
 
 int32_t GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync()
@@ -503,7 +505,16 @@ int32_t GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync()
 
 core::SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc)
 {
-    return core::MakeShared<DescriptorSetLayout_Vulkan>(desc);
+    auto rtn = core::MakeShared<DescriptorSetLayout_Vulkan>(desc);
+    // #if ELBOW_DEBUG
+    //     VkDebugUtilsObjectNameInfoEXT name_info{};
+    //     name_info.sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    //     name_info.objectType   = VK_OBJECT_TYPE_SHADER_MODULE;
+    //     name_info.objectHandle = reinterpret_cast<uint64_t>(rtn->GetNativeHandleT<VkDescriptorSetLayout>());
+    //     name_info.pObjectName  = *debug_name;
+    //     SetDebugUtilsObjectNameEXT(device_, &name_info);
+    // #endif
+    return rtn;
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

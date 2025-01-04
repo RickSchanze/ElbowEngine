@@ -10,7 +10,8 @@ namespace platform::rhi
 {
 class GraphicsPipeline;
 }
-namespace func {
+namespace func
+{
 
 class FixedBasicTestRenderPipeline : public RenderPipeline
 {
@@ -20,8 +21,10 @@ public:
     void Build() override;
     void Clean() override;
 
+    [[nodiscard]] bool IsReady() const override;
+
 private:
     core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
 };
 
-}
+}   // namespace func

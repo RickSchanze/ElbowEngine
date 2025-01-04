@@ -89,7 +89,7 @@ public:
 
     [[nodiscard]] core::SharedPtr<Fence> CreateFence() override;
 
-    [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) override;
+    [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size, core::StringView debug_name) override;
 #endif
 
     core::exec::AsyncResultHandle<> Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
@@ -122,9 +122,8 @@ private:
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
 
 public:
-    [[nodiscard]] core::UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(
-        const GraphicsPipelineDesc& create_info, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, rhi::RenderPass* render_pass
-    ) override;
+    [[nodiscard]] core::UniquePtr<GraphicsPipeline>
+    CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, rhi::RenderPass* render_pass) override;
 
     [[nodiscard]] int32_t GetCurrentSwapChainImageIndexSync() override;
 

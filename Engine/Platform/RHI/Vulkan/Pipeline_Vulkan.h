@@ -18,7 +18,7 @@ class GraphicsPipeline_Vulkan : public GraphicsPipeline
 {
 public:
     GraphicsPipeline_Vulkan(
-        const GraphicsPipelineDesc& desc, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, const RenderPass* render_pass = nullptr
+        const GraphicsPipelineDesc& desc, const RenderPass* render_pass = nullptr
     );
 
     ~GraphicsPipeline_Vulkan() override;
