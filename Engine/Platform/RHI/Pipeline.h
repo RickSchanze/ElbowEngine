@@ -86,6 +86,13 @@ struct ColorBlendDesc
     // TODO: blend color
 };
 
+struct AttachmentsDesc
+{
+    Format              depth_format   = Format::Count;   // Count表示不使用深度
+    Format              stencil_format = Format::Count;   // Count表示不使用模板
+    core::Array<Format> color_formats{};
+};
+
 struct GraphicsPipelineDesc
 {
     RasterizationDecs                rasterization{};
@@ -97,6 +104,9 @@ struct GraphicsPipelineDesc
     MultiSampleDesc                  multisample{};
     DepthStencilDesc                 depth_stencil{};
     ColorBlendDesc                   color_blend{};
+    // vulkan: dynamic_rendering启用时使用此
+    // 否则使用render pass指定的attachment
+    AttachmentsDesc                  attachments{};
 };
 
 class GraphicsPipeline : public IResource

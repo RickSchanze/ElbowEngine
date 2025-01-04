@@ -29,7 +29,13 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
         shader_stages[i].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shader_stages[i].stage  = static_cast<VkShaderStageFlagBits>(RHIShaderStageToVkShaderStage(desc.shaders[i].stage));
         shader_stages[i].module = desc.shaders[i].shader->GetNativeHandleT<VkShaderModule>();
-        shader_stages[i].pName  = "main";
+        switch (desc.shaders[i].stage)
+        {
+        case Vertex: shader_stages[i].pName = "main"; break;
+        case Fragment: shader_stages[i].pName = "main"; break;
+        case Compute: shader_stages[i].pName = "main"; break;
+        default: throw ArgumentException(NAMEOF(desc.shaders[i].stage), "未知的着色器阶段");
+        }
     }
 
     Array<VkVertexInputBindingDescription> input_bindings;
@@ -148,7 +154,18 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
     pipeline_info.layout              = pipeline_layout_;
     if (render_pass == nullptr)
     {
-        dynamic_rendering_       = true;
+        dynamic_rendering_ = true;
+        VkPipelineRenderingCreateInfo rendering_info{};
+
+        rendering_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        rendering_info.depthAttachmentFormat   = RHIFormatToVkFormat(desc.attachments.depth_format);
+        rendering_info.stencilAttachmentFormat = RHIFormatToVkFormat(desc.attachments.stencil_format);
+        Array<VkFormat> color_formats =
+            desc.attachments.color_formats | views::transform([](Format format) { return RHIFormatToVkFormat(format); }) | to<Array>();
+        rendering_info.colorAttachmentCount    = color_formats.size();
+        rendering_info.pColorAttachmentFormats = color_formats.data();
+
+        pipeline_info.pNext      = &rendering_info;
         pipeline_info.renderPass = VK_NULL_HANDLE;
     }
     else

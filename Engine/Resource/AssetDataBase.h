@@ -45,6 +45,9 @@ public:
      */
     static core::Object* Load(core::StringView path);
 
+    template <typename T> requires std::derived_from<T, core::Object>
+    static T* Load(core::StringView path) { return static_cast<T*>(Load(path)); }
+
     static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
 
     template <typename T>

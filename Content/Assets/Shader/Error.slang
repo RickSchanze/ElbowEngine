@@ -6,7 +6,9 @@
 import CommonStructure;
 #include "Common/InputUniform.slang"
 
-DLEARE_COMMON_MVP_UNIFORM
+    import CommonStructure;
+    uniform ConstantBuffer<VP> vp;
+    uniform ConstantBuffer<M> m;
 
 struct VertexOutput {
     float4 position: SV_Position;

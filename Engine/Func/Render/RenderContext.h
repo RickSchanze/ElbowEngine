@@ -15,7 +15,7 @@ class CommandPool;
 }
 namespace func
 {
-class RenderContext final : core::Manager<RenderContext>
+class RenderContext final : public core::Manager<RenderContext>
 {
 public:
     void Render(const Millisecond& sec);

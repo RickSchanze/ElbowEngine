@@ -496,6 +496,11 @@ core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(
     return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, layouts, render_pass);
 }
 
+int32_t GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync()
+{
+    return 0;
+}
+
 core::SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc)
 {
     return core::MakeShared<DescriptorSetLayout_Vulkan>(desc);
@@ -725,10 +730,17 @@ static void CreateLogicalDevice(
         create_info.pQueuePriorities        = &queue_priority;
         queue_create_infos.emplace_back(create_info);
     }
+
+    // 开启特性Dynamic Rendering
+    VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features = {};
+    dynamic_rendering_features.sType                                    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+    dynamic_rendering_features.dynamicRendering                         = VK_TRUE;
+
     VkDeviceCreateInfo create_info    = {};
     create_info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     create_info.queueCreateInfoCount  = static_cast<uint32_t>(queue_create_infos.size());
     create_info.pQueueCreateInfos     = queue_create_infos.data();
+    create_info.pNext                 = &dynamic_rendering_features;
     // TODO: 这里改成由配置文件配置设备特性
     auto                     cfg      = core::GetConfig<PlatformConfig>();
     VkPhysicalDeviceFeatures features = {};

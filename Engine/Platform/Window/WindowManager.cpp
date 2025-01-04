@@ -88,8 +88,3 @@ platform::Window* platform::WindowManager::GetWindow(core::StringView window_tit
     }
     return nullptr;
 }
-
-platform::WindowManager& platform::GetWindowManager()
-{
-    return WindowManager::GetByRef();
-}

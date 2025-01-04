@@ -34,7 +34,7 @@ struct DescriptorSetLayoutDesc
 class DescriptorSetLayout : public IResource
 {
 public:
-    [[nodiscard]] size_t GetHashCode() const;
+    [[nodiscard]] size_t GetHashCode() const { return hash_; }
 
     explicit DescriptorSetLayout(const DescriptorSetLayoutDesc& desc) : hash_(desc.GetHashCode()) {}
 

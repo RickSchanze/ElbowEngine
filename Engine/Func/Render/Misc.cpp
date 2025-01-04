@@ -36,7 +36,6 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
         location.binding  = 0;
         location.format   = Format::R32G32B32_Float;
         location.offset   = offsetof(Vertex1, position);
-        desc.vertex_attributes.push_back(location);
 
         VertexAttributeDesc normal{};
         normal.location = 1;
@@ -61,25 +60,54 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
 
 static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const Shader* shader)
 {
-    const auto&                           linked_program = shader->_GetLinkedProgram();
-    auto                                  prog_layout    = linked_program->getLayout();
+    const auto& linked_program = shader->_GetLinkedProgram();
+    auto        prog_layout    = linked_program->getLayout();
+    auto        global         = prog_layout->getGlobalParamsVarLayout();
+
     DescriptorSetLayoutDesc               layout_desc{};
     Array<SharedPtr<DescriptorSetLayout>> layouts;
-    for (SlangInt i = 0; i < prog_layout->getParameterCount(); ++i)
+    auto                                  scope_type_layout = global->getTypeLayout();
+    switch (scope_type_layout->getKind())
     {
-        DescriptorSetLayoutBinding binding{};
-        auto                       parameter = prog_layout->getParameterByIndex(i);
-        binding.binding                      = parameter->getBindingIndex();
-        binding.descriptor_count             = 1;
-        switch (parameter->getCategory())
+    case slang::TypeReflection::Kind::Struct: {
+        int param_cnt = scope_type_layout->getFieldCount();
+        for (int i = 0; i < param_cnt; ++i)
         {
-        case slang::Uniform: binding.descriptor_type = DescriptorType::UniformBuffer; break;
-        default: continue;
+            DescriptorSetLayoutBinding binding{};
+
+            const auto field         = scope_type_layout->getFieldByIndex(i);
+            binding.binding          = field->getBindingIndex();
+            binding.stage_flags      = Vertex | Fragment;
+            binding.descriptor_count = 1;
+            switch (field->getCategory())
+            {
+            case slang::DescriptorTableSlot: {
+                binding.descriptor_type = DescriptorType::UniformBuffer;
+                break;
+            default: break;
+            }
+            }
+            layout_desc.bindings.push_back(binding);
         }
-        layout_desc.bindings.push_back(binding);
+    }
+    default: break;
     }
     layouts.push_back(GetGfxContextRef().CreateDescriptorSetLayout(layout_desc));
     return layouts;
+}
+
+static void FillFragmentOutputAttachment(GraphicsPipelineDesc& desc, Shader* shader)
+{
+    if (shader->IsDepthEnabled())
+    {
+        desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
+    }
+    auto entry_point = shader->_GetLinkedProgram()->getLayout()->getEntryPointByIndex(shader->GetEntryPointIndex(Shader::FRAGMENT_STAGE_IDX));
+    auto result_layout = entry_point->getResultVarLayout();
+    if (result_layout->getTypeLayout()->getKind() != slang::TypeReflection::Kind::None)
+    {
+        // TODO: 输出格式反射
+    }
 }
 
 UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bool output_glsl)

@@ -221,10 +221,9 @@ enum class CompareOp
 
 enum ShaderStageBits
 {
-    Vertex,
-    Fragment,
-    Compute,
-    Count,
+    Vertex = 1,
+    Fragment = 1 << 1,
+    Compute = 1 << 2,
 };
 typedef uint32_t ShaderStage;
 

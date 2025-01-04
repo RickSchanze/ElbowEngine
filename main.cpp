@@ -9,6 +9,8 @@
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "cpptrace/cpptrace.hpp"
+#include "Func/Render/FixedBasicTestRenderPipeline.h"
+#include "Func/Render/RenderContext.h"
 #include "Func/World/WorldClock.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/FileSystem/Path.h"
@@ -73,6 +75,7 @@ int main()
         }
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
+        RenderContext::GetByRef().SetRenderPipeline(core::MakeUnique<FixedBasicTestRenderPipeline>());
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;

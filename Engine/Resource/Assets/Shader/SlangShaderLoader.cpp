@@ -76,6 +76,7 @@ static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValu
                 {
                     // 一些默认值
                     output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
+                    output[GetEnumValue(ShaderAnnotation::EnableDepth)] = 1;
                 }
                 if (key == "Pipeline")
                 {
@@ -97,6 +98,13 @@ static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValu
                     if (value == "Vertex1")
                     {
                         output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
+                    }
+                }
+                if (key == "EnableDepth")
+                {
+                    if (value == "false")
+                    {
+                        output[GetEnumValue(ShaderAnnotation::EnableDepth)] = 0;
                     }
                 }
             }
@@ -152,6 +160,7 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
 
     SlangResult                                result;
     core::Array<Slang::ComPtr<IComponentType>> linking_programs;
+    Array<Format>                              output_formats;
     if (pipeline == 1)   // Graphics
     {
         Slang::ComPtr<IEntryPoint> vert;
@@ -200,7 +209,7 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
     VERIFY_SLANG_RESULT(result);
 
     // 获取各个阶段的index
-    StaticArray<int, GetEnumValue(ShaderStageBits::Count)> stage_index{};
+    StaticArray<int, Shader::SHADER_STAGE_COUNT> stage_index{};
     stage_index.fill(-1);
     module->getDefinedEntryPointCount();
     for (int i = 0; i < module->getDefinedEntryPointCount(); i++)
@@ -209,15 +218,15 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
         VERIFY_SLANG_RESULT(module->getDefinedEntryPoint(i, entry_point.writeRef()));
         if (strcmp(entry_point->getFunctionReflection()->getName(), "vert") == 0)
         {
-            stage_index[GetEnumValue(ShaderStageBits::Vertex)] = i;
+            stage_index[Shader::VERTEX_STAGE_IDX] = i;
         }
         else if (strcmp(entry_point->getFunctionReflection()->getName(), "frag") == 0)
         {
-            stage_index[GetEnumValue(ShaderStageBits::Fragment)] = i;
+            stage_index[Shader::FRAGMENT_STAGE_IDX] = i;
         }
         else if (strcmp(entry_point->getFunctionReflection()->getName(), "compute") == 0)
         {
-            stage_index[GetEnumValue(ShaderStageBits::Compute)] = i;
+            stage_index[Shader::COMPUTE_STAGE_IDX] = i;
         }
     }
     shader.stage_to_entry_point_index_ = stage_index;

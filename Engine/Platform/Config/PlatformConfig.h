@@ -59,6 +59,9 @@ class CLASS(Config = "Config/Platform/PlatformConfig.cfg", Category = "Platform"
     PROPERTY(Label = "验证层名字", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
     DECLARE_CONFIG_ITEM(core::String, validation_layer_name, ValidationLayerName, {"VK_LAYER_KHRONOS_validation"});
 
+    PROPERTY(Label = "是否开启DynamicRendering特性", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
+    DECLARE_CONFIG_ITEM(bool, enable_dynamic_rendering, EnableDynamicRendering, true);
+
     PROPERTY(Label = "需要的扩展", EnableWhen = "api == GraphicsAPI::Vulkan", Category = "Platform|RHI|Vulkan")
     DECLARE_CONFIG_ITEM(core::Array<core::String>, required_device_extensions, VulkanRequiredDeviceExtensions, {"VK_KHR_swapchain"});
 
