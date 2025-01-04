@@ -135,6 +135,9 @@ public:
 
     const T* operator->() const { return AsValue(); }
 
+    T&       GetValue() { return *this; }
+    const T& GetValue() const { return *this; }
+
     // 重置
     void Reset()
     {

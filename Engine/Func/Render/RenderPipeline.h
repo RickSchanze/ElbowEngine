@@ -11,6 +11,10 @@ class CommandBuffer;
 namespace func
 {
 
+/**
+ * 渲染管线的基类
+ * @TODO: RDGRenderPipeline: 通过RenderPassNode来声明一个RDG 由此RDG自动生成RenderPipeline
+ */
 class RenderPipeline
 {
 public:

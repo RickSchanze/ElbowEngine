@@ -38,7 +38,7 @@ public:
 
     [[nodiscard]] void* GetNativeHandle() const override { return buffer_; }
 
-    core::exec::AsyncResultHandle Execute(core::StringView label) override;
+    core::exec::AsyncResultHandle<> Execute(core::StringView label) override;
 
     [[nodiscard]] bool IsRecording() const { return recording_; }
 

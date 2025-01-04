@@ -66,8 +66,8 @@ platform::rhi::CullMode VkCullModeToRHICullMode(VkCullModeFlags cull_mode);
 VkCompareOp              RHICompareOpToVkCompareOp(platform::rhi::CompareOp compare_op);
 platform::rhi::CompareOp VkCompareOpToRHICompareOp(VkCompareOp compare_op);
 
-VkShaderStageFlagBits      RHIStageToVkShaderStage(platform::rhi::ShaderStage stage);
-platform::rhi::ShaderStage VkShaderStageToRHIStage(VkShaderStageFlagBits stage);
+VkShaderStageFlags         RHIShaderStageToVkShaderStage(platform::rhi::ShaderStage stage);
+platform::rhi::ShaderStage VkShaderStageToRHIShaderStage(VkShaderStageFlags stage);
 
 VkDescriptorType              RHIDescriptorTypeToVkDescriptorType(platform::rhi::DescriptorType type);
 platform::rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorType type);

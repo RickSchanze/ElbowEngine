@@ -42,7 +42,7 @@ public:
      * 执行完成后会调用Clear
      * @param label label 这一段命令的标签(for debug)
      */
-    virtual core::exec::AsyncResultHandle Execute(core::StringView label) = 0;
+    virtual core::exec::AsyncResultHandle<> Execute(core::StringView label) = 0;
 
     /**
      * 清理队里里的命令 之前记录过的不会被清理

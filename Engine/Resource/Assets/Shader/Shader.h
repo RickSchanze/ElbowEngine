@@ -49,7 +49,7 @@ public:
 
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Shader; }
 
-    using ShaderHandles       = core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStage::Count)>;
+    using ShaderHandles       = core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, GetEnumValue(platform::rhi::ShaderStageBits::Count)>;
     using ShaderAnnotationMap = core::StaticArray<int, GetEnumValue(ShaderAnnotation::Count)>;
 
     [[nodiscard]] ShaderHandles&             GetShaderHandles() { return shader_handles_; }
@@ -58,7 +58,7 @@ public:
     [[nodiscard]] const Slang::ComPtr<slang::IComponentType>& _GetLinkedProgram() const { return linked_program_; }
 
 protected:
-    core::StaticArray<int, GetEnumValue(platform::rhi::ShaderStage::Count)> stage_to_entry_point_index_;
+    core::StaticArray<int, GetEnumValue(platform::rhi::ShaderStageBits::Count)> stage_to_entry_point_index_;
 
     ShaderHandles shader_handles_;
 

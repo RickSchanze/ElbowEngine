@@ -20,6 +20,8 @@ add_library(${PROJECT_NAME}
         Render/RenderContext.h
         Render/Misc.cpp
         Render/Misc.h
+        Render/FixedBasicTestRenderPipeline.cpp
+        Render/FixedBasicTestRenderPipeline.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

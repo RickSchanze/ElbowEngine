@@ -316,7 +316,7 @@ static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& paramet
     vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
 }
 
-AsyncResultHandle GfxContext_Vulkan::Submit(CommandBuffer& buffer, const SubmitParameter& parameter)
+AsyncResultHandle<> GfxContext_Vulkan::Submit(CommandBuffer& buffer, const SubmitParameter& parameter)
 {
     auto* cfg = core::GetConfig<PlatformConfig>();
     if (cfg->GetEnableMultithreadRender())
@@ -328,7 +328,7 @@ AsyncResultHandle GfxContext_Vulkan::Submit(CommandBuffer& buffer, const SubmitP
     else
     {
         InternalSubmit(buffer, parameter);
-        return nullptr;
+        return MakeAsyncResult();
     }
 }
 
@@ -490,7 +490,7 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
 }
 
 core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(
-    const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, rhi::RenderPass* render_pass
+    const GraphicsPipelineDesc& create_info, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, rhi::RenderPass* render_pass
 )
 {
     return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, layouts, render_pass);

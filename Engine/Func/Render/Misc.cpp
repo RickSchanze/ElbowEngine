@@ -59,12 +59,12 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
     }
 }
 
-static void FillGlobalParams(GraphicsPipelineDesc& desc, Shader* shader)
+static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const Shader* shader)
 {
-    const auto&             linked_program = shader->_GetLinkedProgram();
-    auto                    prog_layout    = linked_program->getLayout();
-    DescriptorSetLayoutDesc layout_desc{};
-
+    const auto&                           linked_program = shader->_GetLinkedProgram();
+    auto                                  prog_layout    = linked_program->getLayout();
+    DescriptorSetLayoutDesc               layout_desc{};
+    Array<SharedPtr<DescriptorSetLayout>> layouts;
     for (SlangInt i = 0; i < prog_layout->getParameterCount(); ++i)
     {
         DescriptorSetLayoutBinding binding{};
@@ -76,7 +76,10 @@ static void FillGlobalParams(GraphicsPipelineDesc& desc, Shader* shader)
         case slang::Uniform: binding.descriptor_type = DescriptorType::UniformBuffer; break;
         default: continue;
         }
+        layout_desc.bindings.push_back(binding);
     }
+    layouts.push_back(GetGfxContextRef().CreateDescriptorSetLayout(layout_desc));
+    return layouts;
 }
 
 UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bool output_glsl)
@@ -121,18 +124,18 @@ UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bo
     Array<ShaderDesc> shader_descs;
     {
         const auto& shader_stages = shader->GetShaderHandles();
-        if (shader_stages.at(GetEnumValue(ShaderStage::Vertex)))
+        if (shader_stages.at(GetEnumValue(ShaderStageBits::Vertex)))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(GetEnumValue(ShaderStage::Vertex)).get();
-            desc.stage  = ShaderStage::Vertex;
+            desc.shader = shader_stages.at(GetEnumValue(ShaderStageBits::Vertex)).get();
+            desc.stage  = ShaderStageBits::Vertex;
             shader_descs.push_back(desc);
         }
-        if (shader_stages.at(GetEnumValue(ShaderStage::Fragment)))
+        if (shader_stages.at(GetEnumValue(ShaderStageBits::Fragment)))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(GetEnumValue(ShaderStage::Fragment)).get();
-            desc.stage  = ShaderStage::Fragment;
+            desc.shader = shader_stages.at(GetEnumValue(ShaderStageBits::Fragment)).get();
+            desc.stage  = ShaderStageBits::Fragment;
             shader_descs.push_back(desc);
         }
     }
@@ -140,4 +143,6 @@ UniquePtr<GraphicsPipeline> func::CreateGraphicsPSOFromShader(Shader* shader, bo
     const auto&    anno             = shader->GetAnnotations();
     const uint32_t input_layout_idx = anno[GetEnumValue(ShaderAnnotation::InputLayout)];
     FillInputLayout(pso_desc, input_layout_idx);
+    auto layout = GetShaderDescriptorSetLayout(shader);
+    return GetGfxContextRef().CreateGraphicsPipeline(pso_desc, layout, nullptr);
 }

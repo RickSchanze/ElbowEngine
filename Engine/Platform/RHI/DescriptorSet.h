@@ -21,13 +21,14 @@ struct DescriptorSetLayoutBinding
     uint32_t       binding;
     uint32_t       descriptor_count;
     DescriptorType descriptor_type;
+    ShaderStage    stage_flags;
 };
 
 struct DescriptorSetLayoutDesc
 {
     core::Array<DescriptorSetLayoutBinding> bindings;
 
-    size_t GetHashCode() const;
+    [[nodiscard]] size_t GetHashCode() const;
 };
 
 class DescriptorSetLayout : public IResource

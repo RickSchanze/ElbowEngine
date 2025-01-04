@@ -43,7 +43,7 @@ class CLASS() Object : public ITypeGetter
     friend class ObjectPtrBase;
 
 public:
-    Object(ObjectFlag flag) : flags_(flag) {}
+    explicit Object(ObjectFlag flag) : flags_(flag) {}
     Object() : flags_(0) {}
 
 private:
@@ -75,7 +75,7 @@ private:
     void RegisterSelf();
     void ResolveObjectPtr();
 
-    exec::AsyncResultHandle PerformPersistentObjectLoad();
+    exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoad();
 
 public:
     virtual void PostSerialized();
@@ -102,7 +102,7 @@ public:
 
     void InternalSetAssetHandle(ObjectHandle handle);
 
-    exec::AsyncResultHandle InternalPerformPersistentObjectLoad() { return PerformPersistentObjectLoad(); }
+    exec::AsyncResultHandle<ObjectHandle> InternalPerformPersistentObjectLoad() { return PerformPersistentObjectLoad(); }
 };
 
 template <typename T>

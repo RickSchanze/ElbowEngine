@@ -25,6 +25,6 @@ void GfxCommandHelper::EndSingleTransferCommand(CommandBuffer& command_buffer)
     SubmitParameter param{};
     param.fence             = fence.get();
     param.submit_queue_type = QueueFamilyType::Transfer;
-    core::exec::SyncWait(ctx.Submit(command_buffer, param));
+    ctx.Submit(command_buffer, param)->Wait();
     fence->SyncWait();
 }

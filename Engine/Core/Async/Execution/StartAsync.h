@@ -9,18 +9,16 @@
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/Optional.h"
 #include "Core/Base/TypeTraits.h"
-#include "Core/Log/Logger.h"
-#include "Resource/Logcat.h"
-
-#include <condition_variable>
 
 namespace core::exec
 {
 
-struct AsyncResultBase
+template <typename T>
+struct AsyncResult
 {
     std::atomic<bool>  ready = false;
     std::exception_ptr exception{};
+    Optional<T>        data{};
 
     void SetException(const std::exception_ptr& _exception) { exception = _exception; }
 
@@ -30,19 +28,7 @@ struct AsyncResultBase
 
     bool IsDone() const { return ready.load(); }
 
-    virtual bool IsCanceled() const { return false; }
-
-    template <typename... Args>
-    Optional<std::tuple<Args...>> GetAsyncResult();
-};
-
-
-template <typename T>
-struct AsyncResult : public AsyncResultBase
-{
-    Optional<T> data{};
-
-    bool IsCanceled() const override { return IsDone() && !data; }
+    bool IsCanceled() const { return IsDone() && !data; }
 
     void SetData(const T& _data)
     {
@@ -54,21 +40,23 @@ struct AsyncResult : public AsyncResultBase
     {
         if (exception)
         {
-            if (IsDone())
-            {
-                return {};
-            }
             std::rethrow_exception(exception);
         }
         return data;
     }
+
+    AsyncResult& Wait()
+    {
+        while (!IsDone())
+        {
+            ThreadUtils::YieldThread();
+        }
+        return *this;
+    }
 };
 
 template <typename... Args>
-Optional<std::tuple<Args...>> AsyncResultBase::GetAsyncResult()
-{
-    return static_cast<AsyncResult<std::tuple<Args...>>*>(this)->GetValue();
-}
+using AsyncResultHandle = SharedPtr<AsyncResult<std::tuple<Pure<Args>...>>>;
 
 template <typename... Args>
 struct AsyncReceiver
@@ -114,52 +102,42 @@ struct AsyncWrapper<void>
     using ReceiverType = AsyncReceiver<>;
 };
 
-using AsyncResultHandle = SharedPtr<AsyncResultBase>;
-
 #define NULL_ASYNC_RESULT_HANDLE nullptr
+
+template <typename... Args>
+auto MakeAsyncResult(Args&&... args)
+{
+    auto holder = MakeShared<AsyncResult<std::tuple<Pure<Args>...>>>();
+    holder->SetData(std::make_tuple(Forward<Args>(args)...));
+    return holder;
+}
 
 struct StartAsyncType
 {
     template <typename Sender>
-    AsyncResultHandle operator()(Sender sender) const
+    auto operator()(Sender sender) const
     {
         using ValueTypes = typename SenderTraits<Sender>::ValueTypes;
         typename AsyncWrapper<ValueTypes>::ReceiverType receiver;
+
         if constexpr (std::is_same_v<ValueTypes, void>)
         {
-            auto              holder = std::make_shared<AsyncResult<std::tuple<>>>();
-            AsyncResultHandle rtn    = holder;
-            receiver.data            = holder;
-            auto op                  = Connect(std::move(sender), receiver);
+            auto result_handle = MakeShared<AsyncResult<std::tuple<>>>();
+            receiver.data      = result_handle;
+            auto op            = Connect(std::move(sender), receiver);
             Start(op);
-            return rtn;
+            return result_handle;
         }
         else
         {
-            auto              holder = std::make_shared<AsyncResult<ValueTypes>>();
-            AsyncResultHandle rtn    = holder;
-            receiver.data            = holder;
-            auto op                  = Connect(std::move(sender), receiver);
+            auto result_handle = MakeShared<AsyncResult<ValueTypes>>();
+            receiver.data      = result_handle;
+            auto op            = Connect(std::move(sender), receiver);
             Start(op);
-            return rtn;
+            return result_handle;
         }
     }
 };
 
 inline constexpr StartAsyncType StartAsync{};
-
-struct SyncWaitType
-{
-    AsyncResultHandle operator()(AsyncResultHandle re) const
-    {
-        if (!re) return re;
-        while (!re->IsDone())
-        {
-            ThreadUtils::YieldThread();
-        }
-        return re;
-    }
-};
-
-inline constexpr SyncWaitType SyncWait{};
 }   // namespace core::exec

@@ -123,7 +123,7 @@ public:
      * @param buffer
      * @param parameter
      */
-    virtual core::exec::AsyncResultHandle Submit(CommandBuffer& buffer, const SubmitParameter& parameter) = 0;
+    virtual core::exec::AsyncResultHandle<> Submit(CommandBuffer& buffer, const SubmitParameter& parameter) = 0;
 
     /**
      * 创建同步原语: Fence
@@ -166,8 +166,9 @@ public:
      * @param render_pass
      * @return
      */
-    [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline>
-    CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, RenderPass* render_pass) = 0;
+    [[nodiscard]] virtual core::UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(
+        const GraphicsPipelineDesc& create_info, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, RenderPass* render_pass
+    ) = 0;
 
     /**
      * 创建一个新的DescriptorSetLayout

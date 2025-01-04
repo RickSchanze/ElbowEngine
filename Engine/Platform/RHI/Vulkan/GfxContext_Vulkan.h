@@ -92,7 +92,7 @@ public:
     [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size) override;
 #endif
 
-    core::exec::AsyncResultHandle Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
+    core::exec::AsyncResultHandle<> Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
 
     [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) override;
 
@@ -122,8 +122,9 @@ private:
     static void      PreVulkanGfxContextDestroyed(GfxContext* ctx);
 
 public:
-    [[nodiscard]] core::UniquePtr<GraphicsPipeline>
-    CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, std::span<DescriptorSetLayout*> layouts, rhi::RenderPass* render_pass) override;
+    [[nodiscard]] core::UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(
+        const GraphicsPipelineDesc& create_info, std::span<core::SharedPtr<DescriptorSetLayout>> layouts, rhi::RenderPass* render_pass
+    ) override;
 
     [[nodiscard]] int32_t GetCurrentSwapChainImageIndexSync() override;
 

@@ -6,7 +6,7 @@
 
 namespace logcat
 {
-consteval auto Func        = "Func";
+constexpr auto Func        = "Func";
 constexpr auto Func_Render = "Func.Render";
 constexpr auto Func_Tick   = "Func.Tick";
 }   // namespace logcat

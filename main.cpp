@@ -66,7 +66,7 @@ int main()
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
         resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
-        if (auto op = SyncWait(resource::AssetDataBase::Import("Assets/Shader/Error.slang"))->GetAsyncResult<core::ObjectHandle>())
+        if (auto op = resource::AssetDataBase::Import("Assets/Shader/Error.slang")->Wait().GetValue())
         {
             const auto& [handle] = *op;
             static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle))->Compile(true);

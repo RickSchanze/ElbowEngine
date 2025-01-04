@@ -44,7 +44,7 @@ void AssetDataBase::Shutdown()
 }
 
 template <typename T, typename TMeta>
-AsyncResultHandle InternalImport(StringView query, StringView path, ObjectRegistry& registry)
+AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path, ObjectRegistry& registry)
 {
     auto result = AssetDataBase::QueryMeta<TMeta>(query);
     if (result)
@@ -72,7 +72,7 @@ AsyncResultHandle InternalImport(StringView query, StringView path, ObjectRegist
     }
 }
 
-AsyncResultHandle AssetDataBase::Import(StringView path)
+AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path)
 {
     // 先查一下是否存在, 存在的话按现有配置重新导入
     auto  query    = String::Format("path = '{}'", path);
@@ -84,6 +84,50 @@ AsyncResultHandle AssetDataBase::Import(StringView path)
     if (path.EndsWith(".slang"))
     {
         return InternalImport<Shader, ShaderMeta>(query, path, registry);
+    }
+    return MakeAsyncResult(0);
+}
+
+Object* AssetDataBase::Load(StringView path)
+{
+    auto handle = LoadAsync(path);
+    if (!handle) return nullptr;
+    handle->Wait();
+    auto op = handle->GetValue();
+    if (!op)
+    {
+        return nullptr;
+    }
+    auto [obj] = *op;
+    return ObjectManager::GetObjectByHandle(obj);
+}
+
+AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
+{
+    if (path.EndsWith(".slang"))
+    {
+        if (const auto meta_op = QueryMeta<ShaderMeta>(String::Format("path = '{}'", path)); !meta_op)
+        {
+            LOGGER.Warn(logcat::Resource_Load, "Shader资产{}未在资产数据库中找到.", path);
+            return NULL_ASYNC_RESULT_HANDLE;
+        }
+        else
+        {
+            auto&           meta     = *meta_op;
+            ObjectHandle    handle   = meta.object_handle;
+            ObjectRegistry& registry = ObjectManager::GetRegistry();
+            Object*         obj      = registry.GetObjectByHandle(handle);
+            if (obj != nullptr)
+            {
+                return MakeAsyncResult(handle);
+            }
+            else
+            {
+                auto* asset = New<Shader>();
+                asset->InternalSetAssetHandle(handle);
+                return asset->InternalPerformPersistentObjectLoad();
+            }
+        }
     }
     return NULL_ASYNC_RESULT_HANDLE;
 }

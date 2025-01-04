@@ -27,7 +27,7 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(
     for (size_t i = 0; i < desc.shaders.size(); ++i)
     {
         shader_stages[i].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shader_stages[i].stage  = RHIStageToVkShaderStage(desc.shaders[i].stage);
+        shader_stages[i].stage  = static_cast<VkShaderStageFlagBits>(RHIShaderStageToVkShaderStage(desc.shaders[i].stage));
         shader_stages[i].module = desc.shaders[i].shader->GetNativeHandleT<VkShaderModule>();
         shader_stages[i].pName  = "main";
     }

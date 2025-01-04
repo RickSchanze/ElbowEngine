@@ -18,8 +18,6 @@ class Database;
 namespace resource
 {
 
-
-
 class AssetDataBase : public core::Manager<AssetDataBase>
 {
 public:
@@ -38,7 +36,16 @@ public:
      * @param path
      * @return 异步handle
      */
-    static core::exec::AsyncResultHandle Import(core::StringView path);
+    static core::exec::AsyncResultHandle<core::ObjectHandle> Import(core::StringView path);
+
+    /**
+     * 加载一个资产
+     * @param path
+     * @return
+     */
+    static core::Object* Load(core::StringView path);
+
+    static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
 
     template <typename T>
     static core::Optional<T> QueryMeta(core::ObjectHandle handle);

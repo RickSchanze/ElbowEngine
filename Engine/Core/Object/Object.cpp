@@ -10,7 +10,6 @@
 #include "Core/Async/Execution/Then.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
-#include "Core/Core.h"
 #include "Core/Log/Logger.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/Archive.h"
@@ -65,7 +64,7 @@ void core::Object::ResolveObjectPtr()
     }
 }
 
-AsyncResultHandle core::Object::PerformPersistentObjectLoad()
+AsyncResultHandle<core::ObjectHandle> core::Object::PerformPersistentObjectLoad()
 {
     if (!IsPersistent()) return NULL_ASYNC_RESULT_HANDLE;
 
@@ -78,8 +77,11 @@ AsyncResultHandle core::Object::PerformPersistentObjectLoad()
                               return handle_;
                           }));
     }
-    persistent->PerformLoad();
-    return NULL_ASYNC_RESULT_HANDLE;
+    else
+    {
+        persistent->PerformLoad();
+        return MakeAsyncResult(GetHandle());
+    }
 }
 
 void core::Object::PostSerialized() {}

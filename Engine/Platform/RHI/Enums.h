@@ -219,13 +219,14 @@ enum class CompareOp
     Count,
 };
 
-enum class ShaderStage
+enum ShaderStageBits
 {
     Vertex,
     Fragment,
     Compute,
     Count,
 };
+typedef uint32_t ShaderStage;
 
 enum class DescriptorType
 {

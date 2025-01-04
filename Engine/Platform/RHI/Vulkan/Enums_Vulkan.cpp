@@ -494,32 +494,40 @@ platform::rhi::CompareOp VkCompareOpToRHICompareOp(VkCompareOp compare_op)
     }
 }
 
-VkShaderStageFlagBits RHIStageToVkShaderStage(platform::rhi::ShaderStage stage)
+VkShaderStageFlags RHIShaderStageToVkShaderStage(ShaderStage stage)
 {
-    switch (stage)
+    VkShaderStageFlags flags = 0;
+    if (stage & ShaderStageBits::Vertex)
     {
-    case ShaderStage::Vertex: return VK_SHADER_STAGE_VERTEX_BIT;
-    // case ShaderStage::TessellationControl: return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-    // case ShaderStage::TessellationEvaluation: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-    // case ShaderStage::Geometry: return VK_SHADER_STAGE_GEOMETRY_BIT;
-    case ShaderStage::Fragment: return VK_SHADER_STAGE_FRAGMENT_BIT;
-    case ShaderStage::Compute: return VK_SHADER_STAGE_COMPUTE_BIT;
-    default: return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+        flags |= VK_SHADER_STAGE_VERTEX_BIT;
     }
+    if (stage & ShaderStageBits::Fragment)
+    {
+        flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
+    if (stage & ShaderStageBits::Compute)
+    {
+        flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+    return flags;
 }
 
-platform::rhi::ShaderStage VkShaderStageToRHIStage(VkShaderStageFlagBits stage)
+ShaderStage VkShaderStageToRHIShaderStage(VkShaderStageFlags stage)
 {
-    switch (stage)
+    ShaderStage flags = 0;
+    if (stage & VK_SHADER_STAGE_VERTEX_BIT)
     {
-    case VK_SHADER_STAGE_VERTEX_BIT: return ShaderStage::Vertex;
-    // case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ShaderStage::TessellationControl;
-    // case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ShaderStage::TessellationEvaluation;
-    // case VK_SHADER_STAGE_GEOMETRY_BIT: return ShaderStage::Geometry;
-    case VK_SHADER_STAGE_FRAGMENT_BIT: return ShaderStage::Fragment;
-    case VK_SHADER_STAGE_COMPUTE_BIT: return ShaderStage::Compute;
-    default: return ShaderStage::Count;
+        flags |= ShaderStageBits::Vertex;
     }
+    if (stage & VK_SHADER_STAGE_FRAGMENT_BIT)
+    {
+        flags |= ShaderStageBits::Fragment;
+    }
+    if (stage & VK_SHADER_STAGE_COMPUTE_BIT)
+    {
+        flags |= ShaderStageBits::Compute;
+    }
+    return flags;
 }
 
 VkDescriptorType RHIDescriptorTypeToVkDescriptorType(platform::rhi::DescriptorType type)

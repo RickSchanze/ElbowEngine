@@ -124,7 +124,7 @@ static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_c
     }
 }
 
-AsyncResultHandle CommandBuffer_Vulkan::Execute(core::StringView label)
+AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
 {
     PROFILE_SCOPE_AUTO;
     auto* cfg = core::GetConfig<PlatformConfig>();
