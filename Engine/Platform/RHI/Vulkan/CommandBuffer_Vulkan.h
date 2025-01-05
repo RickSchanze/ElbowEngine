@@ -18,8 +18,8 @@ public:
     ~CommandPool_Vulkan() override;
 
     [[nodiscard]] void*                         GetNativeHandle() const override { return command_pool_; }
-    core::SharedPtr<CommandBuffer>              CreateCommandBuffer() override;
-    core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count) override;
+    core::SharedPtr<CommandBuffer>              CreateCommandBuffer(bool self_managed = false) override;
+    core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count, bool self_managed) override;
 
     void Reset() override;
 
@@ -27,10 +27,16 @@ private:
     VkCommandPool command_pool_;
 };
 
+/**
+ * 这个由CommandPool管理其内存 因此不提供析构函数
+ */
 class CommandBuffer_Vulkan : public CommandBuffer
 {
 public:
-    explicit CommandBuffer_Vulkan(VkCommandBuffer buffer, VkCommandPool pool) : buffer_(buffer), pool_(pool) {}
+    explicit CommandBuffer_Vulkan(VkCommandBuffer buffer, VkCommandPool pool, bool self_managed = false) :
+        buffer_(buffer), pool_(pool), self_managed_(self_managed)
+    {
+    }
 
     ~CommandBuffer_Vulkan() override;
 
@@ -42,14 +48,18 @@ public:
 
     [[nodiscard]] bool IsRecording() const { return recording_; }
 
+    [[nodiscard]] bool IsEmpty() const { return empty_; }
+
     void StopRecording() { recording_ = false; }
 
 protected:
     void InternalExecute(core::StringView label);
 
 private:
-    VkCommandBuffer buffer_    = VK_NULL_HANDLE;
-    VkCommandPool   pool_      = VK_NULL_HANDLE;
-    bool            recording_ = false;
+    VkCommandBuffer buffer_       = VK_NULL_HANDLE;
+    VkCommandPool   pool_         = VK_NULL_HANDLE;
+    bool            self_managed_ = false;
+    bool            recording_    = false;
+    bool            empty_        = true;
 };
 }   // namespace platform::rhi::vulkan

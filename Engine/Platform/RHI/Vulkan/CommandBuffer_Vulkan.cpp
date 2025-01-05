@@ -48,7 +48,7 @@ CommandPool_Vulkan::~CommandPool_Vulkan()
     ctx.DestroyCommandPool_VK(command_pool_);
 }
 
-core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer()
+core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer(bool self_managed)
 {
     VkCommandBufferAllocateInfo alloc_info = {};
     alloc_info.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -58,10 +58,10 @@ core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandB
     VkCommandBuffer command_buffer;
     const auto&     ctx = *GetVulkanGfxContext();
     ctx.CreateCommandBuffers_VK(alloc_info, &command_buffer);
-    return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_);
+    return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_, self_managed);
 }
 
-core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::CreateCommandBuffers(uint32_t count)
+core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::CreateCommandBuffers(uint32_t count, bool self_managed)
 {
     core::Array<VkCommandBuffer> command_buffers;
     command_buffers.resize(count);
@@ -72,8 +72,9 @@ core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::C
     alloc_info.commandBufferCount          = count;
     const auto& ctx                        = *GetVulkanGfxContext();
     ctx.CreateCommandBuffers_VK(alloc_info, command_buffers.data());
-    return command_buffers |
-           transform([this](auto& command_buffer) { return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_); }) |
+    return command_buffers | transform([this, self_managed](auto& command_buffer) {
+               return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_, self_managed);
+           }) |
            to<core::Array<core::SharedPtr<CommandBuffer>>>();
 }
 
@@ -85,8 +86,11 @@ void CommandPool_Vulkan::Reset()
 
 CommandBuffer_Vulkan::~CommandBuffer_Vulkan()
 {
-    const auto& ctx = *GetVulkanGfxContext();
-    vkFreeCommandBuffers(ctx.GetDevice(), pool_, 1, &buffer_);
+    if (self_managed_)
+    {
+        const auto& ctx = *GetVulkanGfxContext();
+        vkFreeCommandBuffers(ctx.GetDevice(), pool_, 1, &buffer_);
+    }
 }
 
 void CommandBuffer_Vulkan::Reset()
@@ -160,6 +164,7 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
     ctx.BeginDebugLabel(buffer_, label_info);
     for (auto& command: commands_)
     {
+        empty_ = false;
         switch (command->GetType())
         {
         case RHICommandType::CopyBuffer: ExecuteCmd(buffer_, static_cast<Cmd_CopyBuffer*>(command)); break;

@@ -29,7 +29,6 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& des
         shader_stages[i].module = desc.shaders[i].shader->GetNativeHandleT<VkShaderModule>();
         shader_stages[i].pName  = "main";
     }
-
     Array<VkVertexInputBindingDescription> input_bindings;
     input_bindings.resize(desc.vertex_inputs.size());
     for (size_t i = 0; i < desc.vertex_inputs.size(); ++i)

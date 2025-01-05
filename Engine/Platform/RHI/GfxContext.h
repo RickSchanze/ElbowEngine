@@ -13,6 +13,7 @@
 #include "Core/Math/MathTypes.h"
 #include "Enums.h"
 #include "Pipeline.h"
+#include "SyncPrimitives.h"
 
 #include <cstdint>
 
@@ -81,6 +82,10 @@ struct SubmitParameter
 {
     Fence*          fence             = nullptr;
     QueueFamilyType submit_queue_type = QueueFamilyType::Graphics;
+    Semaphore*      signal_semaphore  = nullptr;
+    uint64_t        wait_value        = 0;
+    Semaphore*      wait_semaphore    = nullptr;
+    uint64_t        signal_value      = 0;
 };
 
 class GfxContext
@@ -180,9 +185,27 @@ public:
 
     /**
      * 同步获取当前交换链图像索引
+     * @param signal_semaphore 信号量(非Timeline Semaphore)
      * @return
      */
-    [[nodiscard]] virtual int32_t GetCurrentSwapChainImageIndexSync() = 0;
+    [[nodiscard]] virtual core::Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore* signal_semaphore = nullptr) = 0;
+
+    /**
+     * 创建一个信号量
+     * 为什么叫CreateASemaphore? 因为byd微软把CreateSemaphore定义成宏了
+     * @param init_value 初始值
+     * @param vk_timeline 是否是timeline semaphore(vulkan)
+     * @return
+     */
+    [[nodiscard]] virtual core::UniquePtr<Semaphore> CreateASemaphore(uint64_t init_value = 0, bool vk_timeline = true) = 0;
+
+    /**
+     * 进行Present操作
+     * @param image_index
+     * @param wait_semaphore
+     * @return
+     */
+    virtual bool Present(uint32_t image_index, Semaphore* wait_semaphore = nullptr) = 0;
 };
 
 GfxContext* GetGfxContext();

@@ -11,6 +11,10 @@
 
 namespace platform::rhi
 {
+struct Semaphore;
+}
+namespace platform::rhi
+{
 class CommandPool;
 }
 namespace func
@@ -25,19 +29,29 @@ public:
     [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
     [[nodiscard]] core::StringView   GetName() const override { return "RenderContext"; }
 
-    [[nodiscard]] bool ShouldRender() const;
-
     void Startup() override;
     void Shutdown() override;
 
+    void               SetRenderEnable(bool enable);
+    [[nodiscard]] bool IsRenderEnable() const { return should_render_; }
+
 private:
+    [[nodiscard]] bool ShouldRender() const;
+
     // 当前渲染管线
     core::UniquePtr<RenderPipeline> render_pipeline_{};
 
-    // 有几个交换链就有几个CommandPool
-    // 每帧情况交换链索引的CommandPool
+    core::Array<core::UniquePtr<platform::rhi::Semaphore>> image_available_semaphores_{};
+    core::Array<core::UniquePtr<platform::rhi::Semaphore>> render_finished_semaphores_{};
+
+    // 每次渲染时的命令池
     core::Array<core::SharedPtr<platform::rhi::CommandPool>> command_pools_{};
 
     core::DelegateID render_evt_handle_{};
+
+    bool should_render_{true};
+
+    uint32_t frames_in_flight_{2};
+    uint32_t current_frame_{0};
 };
 }   // namespace func

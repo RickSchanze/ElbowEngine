@@ -125,9 +125,15 @@ public:
     [[nodiscard]] core::UniquePtr<GraphicsPipeline>
     CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, rhi::RenderPass* render_pass) override;
 
-    [[nodiscard]] int32_t GetCurrentSwapChainImageIndexSync() override;
+    [[nodiscard]] core::Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore* signal_semaphore) override;
 
     [[nodiscard]] core::SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc) override;
+
+    [[nodiscard]] core::UniquePtr<Semaphore> CreateASemaphore(uint64_t init_value, bool timeline) override;
+
+    bool Present(uint32_t image_index, Semaphore* wait_semaphore) override;
+
+    [[nodiscard]] VkSwapchainKHR GetSwapchain() const { return swapchain_; }
 
 private:
     VkInstance         instance_        = nullptr;
@@ -144,7 +150,7 @@ private:
 
     core::Array<Image_Vulkan*>     swapchain_images_;
     core::Array<ImageView_Vulkan*> swapchain_image_views_;
-    core::Array<VkSemaphore>       image_available_semaphores_;
+    int32_t                        current_image_index_ = 0;
 
     core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;

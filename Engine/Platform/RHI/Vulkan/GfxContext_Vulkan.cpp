@@ -298,21 +298,54 @@ static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& paramet
 {
     auto*                 ctx           = GetVulkanGfxContext();
     CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(buffer);
+    if (buffer_vulkan.IsEmpty())
+    {
+        VkCommandBuffer          command_buffer = buffer_vulkan.GetNativeHandleT<VkCommandBuffer>();
+        VkCommandBufferBeginInfo begin_info{};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(command_buffer, &begin_info);
+        vkEndCommandBuffer(command_buffer);
+    }
     if (buffer_vulkan.IsRecording())
     {
         buffer_vulkan.StopRecording();
         vkEndCommandBuffer(buffer_vulkan.GetNativeHandleT<VkCommandBuffer>());
     }
     VkSubmitInfo submit_info{};
-    submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount   = 1;
-    VkCommandBuffer command_buffer   = buffer.GetNativeHandleT<VkCommandBuffer>();
-    submit_info.pCommandBuffers      = &command_buffer;
-    // TODO: 填充信号量
-    submit_info.signalSemaphoreCount = 0;
-    submit_info.pWaitSemaphores      = nullptr;
-    submit_info.pWaitDstStageMask    = nullptr;
-    VkFence fence                    = VK_NULL_HANDLE;
+    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    VkCommandBuffer command_buffer = buffer.GetNativeHandleT<VkCommandBuffer>();
+    submit_info.pCommandBuffers    = &command_buffer;
+    VkTimelineSemaphoreSubmitInfo timeline_submit_info{};
+    timeline_submit_info.sType   = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+    VkSemaphore signal_semaphore = VK_NULL_HANDLE;
+    VkSemaphore wait_semaphore   = VK_NULL_HANDLE;
+    if (parameter.signal_semaphore != nullptr)
+    {
+        if (parameter.signal_semaphore->Vulkan_IsTimelineSemaphore())
+        {
+            timeline_submit_info.signalSemaphoreValueCount = 1;
+            timeline_submit_info.pSignalSemaphoreValues    = &parameter.signal_value;
+        }
+        submit_info.signalSemaphoreCount = 1;
+        signal_semaphore                 = parameter.signal_semaphore->GetNativeHandleT<VkSemaphore>();
+        submit_info.pSignalSemaphores    = &signal_semaphore;
+    }
+    if (parameter.wait_semaphore != nullptr)
+    {
+        if (parameter.wait_semaphore->Vulkan_IsTimelineSemaphore())
+        {
+            timeline_submit_info.waitSemaphoreValueCount = 1;
+            timeline_submit_info.pWaitSemaphoreValues    = &parameter.wait_value;
+        }
+        submit_info.waitSemaphoreCount = 1;
+        wait_semaphore                 = parameter.wait_semaphore->GetNativeHandleT<VkSemaphore>();
+        submit_info.pWaitSemaphores    = &wait_semaphore;
+    }
+    submit_info.pNext = &timeline_submit_info;
+    VkFence fence     = VK_NULL_HANDLE;
     if (parameter.fence != nullptr)
     {
         fence = parameter.fence->GetNativeHandleT<VkFence>();
@@ -459,13 +492,6 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         ranges::to_vector;
 
     auto* cfg = core::GetConfig<PlatformConfig>();
-    vulkan_ctx->image_available_semaphores_.resize(cfg->GetValidFrameCountInFlight());
-    for (auto& semaphore: vulkan_ctx->image_available_semaphores_)
-    {
-        VkSemaphoreCreateInfo info{};
-        info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        VERIFY_VULKAN_RESULT(vkCreateSemaphore(vulkan_ctx->device_, &info, nullptr, &semaphore));
-    }
     Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
@@ -474,11 +500,6 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
 {
     auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
-    for (auto semaphore: vulkan_ctx->image_available_semaphores_)
-    {
-        vkDestroySemaphore(vulkan_ctx->device_, semaphore, nullptr);
-    }
-    vulkan_ctx->image_available_semaphores_.clear();
     for (auto img: vulkan_ctx->swapchain_images_)
     {
         Delete(img);
@@ -498,9 +519,24 @@ core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(cons
     return core::MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
 
-int32_t GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync()
+core::Optional<int32_t> GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync(Semaphore* signal_semaphore = nullptr)
 {
-    return 0;
+    uint32_t    image_idx;
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    if (signal_semaphore != nullptr)
+    {
+        semaphore = signal_semaphore->GetNativeHandleT<VkSemaphore>();
+    }
+    VkResult result = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX, semaphore, VK_NULL_HANDLE, &image_idx);
+    if (result == VK_SUCCESS)
+    {
+        return core::MakeOptional<int32_t>(image_idx);
+    }
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        return {};
+    }
+    throw RHIException(core::String::Format("获取交换链图像索引失败: {}", VulkanErrorToString(result)));
 }
 
 core::SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc)
@@ -515,6 +551,42 @@ core::SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayou
     //     SetDebugUtilsObjectNameEXT(device_, &name_info);
     // #endif
     return rtn;
+}
+
+core::UniquePtr<Semaphore> GfxContext_Vulkan::CreateASemaphore(uint64_t init_value, bool timeline)
+{
+    return core::MakeUnique<Semaphore_Vulkan>(init_value, timeline);
+}
+
+static bool InternalPresent(uint32_t image_index, Semaphore* wait_semaphore)
+{
+    VkPresentInfoKHR present_info{};
+    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    if (wait_semaphore != nullptr)
+    {
+        present_info.waitSemaphoreCount = 1;
+        VkSemaphore semaphore           = wait_semaphore->GetNativeHandleT<VkSemaphore>();
+        present_info.pWaitSemaphores    = &semaphore;
+    }
+    present_info.swapchainCount = 1;
+    VkSwapchainKHR swapchain    = GetVulkanGfxContext()->GetSwapchain();
+    present_info.pSwapchains    = &swapchain;
+    present_info.pImageIndices  = &image_index;
+    VkResult result             = vkQueuePresentKHR(GetVulkanGfxContext()->GetQueue(QueueFamilyType::Present), &present_info);
+    if (result == VK_SUCCESS)
+    {
+        return true;
+    }
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        return false;
+    }
+    throw RHIException(core::String::Format("交换链呈现操作提交失败: {}", VulkanErrorToString(result)));
+}
+
+bool GfxContext_Vulkan::Present(uint32_t image_index, Semaphore* wait_semaphore)
+{
+    return InternalPresent(image_index, wait_semaphore);
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

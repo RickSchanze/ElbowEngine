@@ -15,7 +15,8 @@ core::SharedPtr<CommandBuffer> GfxCommandHelper::BeginSingleTransferCommand()
 {
     auto& ctx  = GetGfxContextRef();
     auto& pool = ctx.GetTransferPool();
-    return pool.CreateCommandBuffer();
+    auto cmd = pool.CreateCommandBuffer(true);
+    return cmd;
 }
 
 void GfxCommandHelper::EndSingleTransferCommand(CommandBuffer& command_buffer)

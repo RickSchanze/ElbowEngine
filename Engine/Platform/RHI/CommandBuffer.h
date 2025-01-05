@@ -72,8 +72,20 @@ public:
 
     explicit CommandPool(CommandPoolCreateInfo info) {}
 
-    virtual core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count) = 0;
-    virtual core::SharedPtr<CommandBuffer>              CreateCommandBuffer()                = 0;
+    /**
+     * 创建一堆CommandBuffer
+     * @param count
+     * @param self_managed 为true则其析构函数会调用Free, 否则由CommandPoolReset时释放
+     * @return
+     */
+    virtual core::Array<core::SharedPtr<CommandBuffer>> CreateCommandBuffers(uint32_t count, bool self_managed) = 0;
+
+    /**
+     * 创建一个CommandBuffer
+     * @param self_managed 为true则其析构函数会调用Free, 否则由CommandPoolReset时释放
+     * @return
+     */
+    virtual core::SharedPtr<CommandBuffer> CreateCommandBuffer(bool self_managed) = 0;
 
     /**
      * 重置CommandPool, 同时会重置所有的CommandBuffer
