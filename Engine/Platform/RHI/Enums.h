@@ -221,9 +221,9 @@ enum class CompareOp
 
 enum ShaderStageBits
 {
-    Vertex = 1,
+    Vertex   = 1,
     Fragment = 1 << 1,
-    Compute = 1 << 2,
+    Compute  = 1 << 2,
 };
 typedef uint32_t ShaderStage;
 
@@ -235,4 +235,15 @@ enum class DescriptorType
     Count,
 };
 
+enum AccessFlagBits
+{
+    AFB_None = 0,
+    AFB_ColorAttachmentRead = 1,
+    AFB_ColorAttachmentWrite = 1 << 1,
+    AFB_DepthStencilAttachmentRead = 1 << 2,
+    AFB_DepthStencilAttachmentWrite = 1 << 3,
+    AFB_TransferRead = 1 << 4,
+    AFB_TransferWrite = 1 << 5,
+};
+using AccessFlags = uint32_t;
 }

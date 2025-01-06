@@ -79,6 +79,4 @@ public:
 protected:
     ImageViewDesc desc_;
 };
-
-
 }   // namespace platform::rhi

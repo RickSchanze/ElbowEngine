@@ -9,10 +9,14 @@
 
 namespace platform::rhi
 {
+class Image;
+}
+namespace platform::rhi
+{
 class ImageView;
 class GraphicsPipeline;
 class Buffer;
-}
+}   // namespace platform::rhi
 namespace platform::rhi
 {
 
@@ -27,6 +31,7 @@ enum class RHICommandType
     EndRender,
     BeginRenderPass,
     EndRenderPass,
+    ImagePipelineBarrier,
     Count,
 };
 
@@ -100,7 +105,7 @@ struct Cmd_BeginRender final : RHICommand
 {
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BeginRender; }
 
-    Cmd_BeginRender(const core::Array<RenderAttachment>& colors_, const RenderAttachment& depth_, core::Size2D size_);
+    Cmd_BeginRender(const core::Array<RenderAttachment>& colors_, const RenderAttachment& depth_ = {}, core::Size2D size_ = {0, 0});
 
     core::Array<RenderAttachment> colors;
     RenderAttachment              depth;
@@ -110,6 +115,36 @@ struct Cmd_BeginRender final : RHICommand
 struct Cmd_EndRender final : RHICommand
 {
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::EndRender; }
+};
+
+struct Cmd_ImagePipelineBarrier final : RHICommand
+{
+    [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::ImagePipelineBarrier; }
+
+    /**
+     * 参数解释－VkImageMemoryBarrier
+     * @param old_layout_
+     * @param new_layout_
+     * @param target_
+     * @param subresource_range_
+     * @param src_access_
+     * @param dst_access_
+     */
+    explicit Cmd_ImagePipelineBarrier(
+        ImageLayout old_layout_, ImageLayout new_layout_, Image* target_, const ImageSubresourceRange& subresource_range_, AccessFlags src_access_,
+        AccessFlags dst_access_
+    ) :
+        old_layout(old_layout_), new_layout(new_layout_), target(target_), subresource_range(subresource_range_), src_access(src_access_),
+        dst_access(dst_access_)
+    {
+    }
+
+    ImageLayout           old_layout;
+    ImageLayout           new_layout;
+    Image*                target;
+    ImageSubresourceRange subresource_range;
+    AccessFlags           src_access;
+    AccessFlags           dst_access;
 };
 
 

@@ -6,6 +6,7 @@
 
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
+#include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Pipeline.h"
 #include "Resource/AssetDataBase.h"
@@ -19,6 +20,18 @@ using namespace platform::rhi;
 void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 current_index)
 {
     auto view = GetBackBufferView(current_index);
+
+    RenderAttachment attachment{};
+    attachment.clear_color = Color::Green();
+    attachment.target      = view;
+    attachment.layout      = ImageLayout::ColorAttachment;
+    Array attachments{attachment};
+
+    cmd.Enqueue<Cmd_BeginRender>(attachments);
+    cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
+    BindAndDrawMesh(cmd, mesh_);
+    cmd.Enqueue<Cmd_EndRender>();
+    cmd.Execute("Draw Cube Mesh");
 }
 
 void func::FixedBasicTestRenderPipeline::Build()

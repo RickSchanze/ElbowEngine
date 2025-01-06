@@ -3,6 +3,8 @@
 //
 #include "Commands.h"
 
+#include "Image.h"
+#include "ImageView.h"
 #include "Platform/Window/Window.h"
 #include "Platform/Window/WindowManager.h"
 
