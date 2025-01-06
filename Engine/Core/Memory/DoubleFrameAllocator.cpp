@@ -29,7 +29,7 @@ void core::DoubleFrameAllocator::Startup()
     auto cfg    = core::GetConfig<core::MemoryConfig>();
     auto size   = cfg->GetDoubleFrameAllocatorSize();
     buffers_[0] = new uint8_t[size];
-    buffers_[1] = buffers_[0] + size;
+    buffers_[1] = new uint8_t[size];
     size_       = size;
     Assert::Require(logcat::Core_Memory, buffers_[0] && buffers_[1], "Init frame allocator failed!");
     LOGGER.Info(logcat::Core_Memory, "DoubleFrameAllocator每帧内存 = {}.", size);

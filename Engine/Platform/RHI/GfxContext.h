@@ -19,6 +19,10 @@
 
 namespace platform::rhi
 {
+class Image;
+}
+namespace platform::rhi
+{
 class ImageView;
 }
 // clang-format off
@@ -218,6 +222,25 @@ public:
      * @return
      */
     virtual ImageView* GetSwapChainView(UInt32 index) = 0;
+
+    /**
+     * 获取交换链图像
+     * @param index
+     * @return
+     */
+    virtual Image* GetSwapChainImage(UInt32 index) = 0;
+
+    /**
+     * 等待队列执行完成
+     * !!慢速操作!!
+     */
+    virtual void WaitForQueueExecution(QueueFamilyType type) = 0;
+
+    /**
+     * 等待设备空闲
+     * !! 慢速操作 !!
+     */
+    virtual void WaitForDeviceIdle() = 0;
 };
 
 GfxContext* GetGfxContext();

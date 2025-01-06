@@ -7,9 +7,10 @@
 
 namespace platform::rhi
 {
+class Image;
 class ImageView;
 class CommandBuffer;
-}
+}   // namespace platform::rhi
 namespace func
 {
 
@@ -31,6 +32,7 @@ public:
 
 protected:
     platform::rhi::ImageView* GetBackBufferView(UInt32 current_image_index);
+    platform::rhi::Image*     GetBackBuffer(UInt32 current_image_index);
 };
 
 }   // namespace func

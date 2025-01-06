@@ -237,13 +237,22 @@ enum class DescriptorType
 
 enum AccessFlagBits
 {
-    AFB_None = 0,
-    AFB_ColorAttachmentRead = 1,
-    AFB_ColorAttachmentWrite = 1 << 1,
+    AFB_None                        = 0,
+    AFB_ColorAttachmentRead         = 1,
+    AFB_ColorAttachmentWrite        = 1 << 1,
     AFB_DepthStencilAttachmentRead = 1 << 2,
     AFB_DepthStencilAttachmentWrite = 1 << 3,
     AFB_TransferRead = 1 << 4,
     AFB_TransferWrite = 1 << 5,
 };
 using AccessFlags = uint32_t;
+
+enum PipelineStageFlagBits
+{
+    PSFB_None = 0,
+    PSFB_TopOfPipe = 1,
+    PSFB_ColorAttachmentOutput = 1 << 1,
+    PSFB_BottomOfPipe = 1 << 2,
+};
+using PipelineStageFlags = uint32_t;
 }

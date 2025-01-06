@@ -565,3 +565,49 @@ platform::rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorTy
     default: return DescriptorType::Count;
     }
 }
+
+VkAccessFlags RHIAccessFlagToVkAccessFlag(platform::rhi::AccessFlags access_flag)
+{
+    if (access_flag == 0) return 0;
+    VkAccessFlags flags = 0;
+    if (access_flag & AFB_ColorAttachmentRead) flags |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+    if (access_flag & AFB_ColorAttachmentWrite) flags |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    if (access_flag & AFB_DepthStencilAttachmentRead) flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    if (access_flag & AFB_DepthStencilAttachmentWrite) flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    if (access_flag & AFB_TransferRead) flags |= VK_ACCESS_TRANSFER_READ_BIT;
+    if (access_flag & AFB_TransferWrite) flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    return flags;
+}
+
+platform::rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag)
+{
+    if (access_flag == 0) return 0;
+    platform::rhi::AccessFlags flags = 0;
+    if (access_flag & VK_ACCESS_COLOR_ATTACHMENT_READ_BIT) flags |= AFB_ColorAttachmentRead;
+    if (access_flag & VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT) flags |= AFB_ColorAttachmentWrite;
+    if (access_flag & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT) flags |= AFB_DepthStencilAttachmentRead;
+    if (access_flag & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT) flags |= AFB_DepthStencilAttachmentWrite;
+    if (access_flag & VK_ACCESS_TRANSFER_READ_BIT) flags |= AFB_TransferRead;
+    if (access_flag & VK_ACCESS_TRANSFER_WRITE_BIT) flags |= AFB_TransferWrite;
+    return flags;
+}
+
+VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineStageFlags pipeline_stage)
+{
+    if (pipeline_stage == 0) return 0;
+    VkPipelineStageFlags flags = 0;
+    if (pipeline_stage & PSFB_ColorAttachmentOutput) flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    if (pipeline_stage & PSFB_TopOfPipe) flags |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    if (pipeline_stage & PSFB_BottomOfPipe) flags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    return flags;
+}
+
+PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage)
+{
+    if (pipeline_stage == 0) return 0;
+    PipelineStageFlags flags = 0;
+    if (pipeline_stage & VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) flags |= PSFB_ColorAttachmentOutput;
+    if (pipeline_stage & VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) flags |= PSFB_TopOfPipe;
+    if (pipeline_stage & VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT) flags |= PSFB_BottomOfPipe;
+    return flags;
+}

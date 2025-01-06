@@ -137,6 +137,12 @@ public:
 
     ImageView* GetSwapChainView(UInt32 index) override;
 
+    Image* GetSwapChainImage(UInt32 index) override;
+
+    void WaitForDeviceIdle() override;
+
+    void WaitForQueueExecution(QueueFamilyType type) override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;

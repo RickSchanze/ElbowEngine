@@ -20,17 +20,43 @@ using namespace platform::rhi;
 void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 current_index)
 {
     auto view = GetBackBufferView(current_index);
+    auto image = GetBackBuffer(current_index);
 
     RenderAttachment attachment{};
     attachment.clear_color = Color::Green();
     attachment.target      = view;
     attachment.layout      = ImageLayout::ColorAttachment;
-    Array attachments{attachment};
-
+    Array                 attachments{attachment};
+    ImageSubresourceRange range{};
+    range.aspect_mask      = ImageAspectBits::IA_Color;
+    range.base_array_layer = 0;
+    range.base_mip_level   = 0;
+    range.layer_count      = 1;
+    range.level_count      = 1;
+    cmd.Enqueue<Cmd_ImagePipelineBarrier>(
+        ImageLayout::Undefined,
+        ImageLayout::ColorAttachment,
+        image,
+        range,
+        0,
+        AFB_ColorAttachmentWrite,
+        PSFB_ColorAttachmentOutput,
+        PSFB_ColorAttachmentOutput
+    );
     cmd.Enqueue<Cmd_BeginRender>(attachments);
     cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
     BindAndDrawMesh(cmd, mesh_);
     cmd.Enqueue<Cmd_EndRender>();
+    cmd.Enqueue<Cmd_ImagePipelineBarrier>(
+        ImageLayout::ColorAttachment,
+        ImageLayout::PresentSrc,
+        image,
+        range,
+        AFB_ColorAttachmentWrite,
+        0,
+        PSFB_ColorAttachmentOutput,
+        PSFB_BottomOfPipe
+    );
     cmd.Execute("Draw Cube Mesh");
 }
 

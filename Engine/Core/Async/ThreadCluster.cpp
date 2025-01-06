@@ -8,7 +8,7 @@
 #include "ThreadUtils.h"
 void core::ThreadCluster::Work()
 {
-    while (true)
+    while (!stopping_)
     {
         ITask* task = nullptr;
         {
@@ -16,7 +16,7 @@ void core::ThreadCluster::Work()
             {
                 return;
             }
-            task_queue_.TryPop(task);
+            task_queue_.TryPop(task, 100ms);
         }
         if (task)
         {
@@ -54,7 +54,6 @@ core::ThreadCluster::~ThreadCluster()
         std::unique_lock lock(mutex_);
         stopping_ = true;
     }
-    condition_.notify_all();
     for (auto& thread: threads_)
     {
         if (thread.joinable())

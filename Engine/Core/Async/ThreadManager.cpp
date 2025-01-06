@@ -50,7 +50,6 @@ void core::ThreadManager::Startup()
 
 void core::ThreadManager::Shutdown()
 {
-    Manager<ThreadManager>::Shutdown();
     for (auto i = GetEnumValue(ThreadSlot::Game); i < GetEnumValue(ThreadSlot::Count); ++i)
     {
         if (i == 0) continue;   // Game Thread特殊处理

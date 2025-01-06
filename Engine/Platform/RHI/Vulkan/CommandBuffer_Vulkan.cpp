@@ -239,6 +239,32 @@ static void ExecuteCmdEndRender(VkCommandBuffer& cmd)
     vkCmdEndRendering(cmd);
 }
 
+static void ExecuteCmdImagePipelineBarrier(VkCommandBuffer cmd, platform::rhi::Cmd_ImagePipelineBarrier* cmd_image_pipeline_barrier)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_image_pipeline_barrier == nullptr || cmd_image_pipeline_barrier->target == nullptr || !cmd_image_pipeline_barrier->target->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令ImagePipelineBarrier错误, 传入的target无效");
+        return;
+    }
+    VkImageMemoryBarrier barrier            = {};
+    barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.image                           = cmd_image_pipeline_barrier->target->GetNativeHandleT<VkImage>();
+    barrier.oldLayout                       = RHIImageLayoutToVkImageLayout(cmd_image_pipeline_barrier->old_layout);
+    barrier.newLayout                       = RHIImageLayoutToVkImageLayout(cmd_image_pipeline_barrier->new_layout);
+    barrier.srcAccessMask                   = RHIAccessFlagToVkAccessFlag(cmd_image_pipeline_barrier->src_access);
+    barrier.dstAccessMask                   = RHIAccessFlagToVkAccessFlag(cmd_image_pipeline_barrier->dst_access);
+    barrier.subresourceRange.aspectMask     = RHIImageAspectToVkImageAspect(cmd_image_pipeline_barrier->subresource_range.aspect_mask);
+    barrier.subresourceRange.baseMipLevel   = cmd_image_pipeline_barrier->subresource_range.base_mip_level;
+    barrier.subresourceRange.levelCount     = cmd_image_pipeline_barrier->subresource_range.level_count;
+    barrier.subresourceRange.baseArrayLayer = cmd_image_pipeline_barrier->subresource_range.base_array_layer;
+    barrier.subresourceRange.layerCount     = cmd_image_pipeline_barrier->subresource_range.layer_count;
+
+    VkPipelineStageFlags src_stage = RHIPipelineStageToVkPipelineStage(cmd_image_pipeline_barrier->src_stage);
+    VkPipelineStageFlags dst_stage = RHIPipelineStageToVkPipelineStage(cmd_image_pipeline_barrier->dst_stage);
+    vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
 AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
 {
     PROFILE_SCOPE_AUTO;
@@ -287,6 +313,7 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         case RHICommandType::DrawIndexed: ExecuteCmdDrawIndexed(buffer_, static_cast<Cmd_DrawIndexed*>(command)); break;
         case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer_, static_cast<Cmd_BeginRender*>(command)); break;
         case RHICommandType::EndRender: ExecuteCmdEndRender(buffer_); break;
+        case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer_, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
         }
     }
     ctx.EndDebugLabel(buffer_);

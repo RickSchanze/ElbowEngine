@@ -83,7 +83,7 @@ void core::ObjectManager::Shutdown()
 {
     YamlArchive archive;
     String      serialized_str;
-    archive.Serialize(&registry_, serialized_str);
+    archive.Serialize(registry_, serialized_str);
     Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
 }
 

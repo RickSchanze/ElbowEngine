@@ -71,3 +71,10 @@ platform::rhi::ShaderStage VkShaderStageToRHIShaderStage(VkShaderStageFlags stag
 
 VkDescriptorType              RHIDescriptorTypeToVkDescriptorType(platform::rhi::DescriptorType type);
 platform::rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorType type);
+
+VkAccessFlags              RHIAccessFlagToVkAccessFlag(platform::rhi::AccessFlags access_flag);
+platform::rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag);
+
+VkPipelineStageFlags              RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineStageFlags pipeline_stage);
+platform::rhi::PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage);
+

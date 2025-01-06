@@ -52,11 +52,11 @@ platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height
     core::Assert::Require(logcat::Platform_Window, glfwInit(), "Failed to initialize GLFW");
     auto config = core::GetConfig<PlatformConfig>();
     glfwSetErrorCallback(GLFWErrorCallback);
-    if (GetFlags() | WF_NoWindowTitle)
+    if (GetFlags() & WF_NoWindowTitle)
     {
         glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     }
-    if (GetFlags() | WF_NoResize)
+    if (GetFlags() & WF_NoResize)
     {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     }

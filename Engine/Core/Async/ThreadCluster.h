@@ -25,7 +25,6 @@ class ThreadCluster
 private:
     ThreadSafeQueue<ITask*> task_queue_;
     Array<std::thread>      threads_;
-    std::condition_variable condition_;
     std::mutex              mutex_;
     bool                    stopping_ = false;
 

@@ -76,9 +76,9 @@ protected:
  * @param title 窗口标题 没有的话从PlatformConfig里取
  * @param width 窗口宽度 =0 则从PlatformConfig里取
  * @param height 窗口高度 =0 则从PlatformConfig里取
- * @param flags 窗口标志 =-1 则从PlatformConfig里取
+ * @param flags 窗口标志 =0 则从PlatformConfig里取
  * @return
  */
 Window*
-CreateAWindow(WindowLib window_lib = WindowLib::Count, core::StringView title = "", uint32_t width = 0, uint32_t height = 0, int32_t flags = -1);
+CreateAWindow(WindowLib window_lib = WindowLib::Count, core::StringView title = "", uint32_t width = 0, uint32_t height = 0, int32_t flags = 0);
 }

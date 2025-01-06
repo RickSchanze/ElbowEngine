@@ -56,15 +56,16 @@ class Manager : public ManagerBase
 public:
     static T* Get()
     {
-        static T instance;
-        MManager::GetByRef().RegisterManager(&instance);
-        return &instance;
+        static T* instance;
+        if (!instance)
+        {
+            instance = New<T>();
+        }
+        MManager::GetByRef().RegisterManager(instance);
+        return instance;
     }
 
-    static T& GetByRef()
-    {
-        return *Get();
-    }
+    static T& GetByRef() { return *Get(); }
 };
 
 }   // namespace core

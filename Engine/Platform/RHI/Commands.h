@@ -132,10 +132,10 @@ struct Cmd_ImagePipelineBarrier final : RHICommand
      */
     explicit Cmd_ImagePipelineBarrier(
         ImageLayout old_layout_, ImageLayout new_layout_, Image* target_, const ImageSubresourceRange& subresource_range_, AccessFlags src_access_,
-        AccessFlags dst_access_
+        AccessFlags dst_access_, PipelineStageFlags src_stage_, PipelineStageFlags dst_stage_
     ) :
         old_layout(old_layout_), new_layout(new_layout_), target(target_), subresource_range(subresource_range_), src_access(src_access_),
-        dst_access(dst_access_)
+        dst_access(dst_access_), src_stage(src_stage_), dst_stage(dst_stage_)
     {
     }
 
@@ -145,6 +145,8 @@ struct Cmd_ImagePipelineBarrier final : RHICommand
     ImageSubresourceRange subresource_range;
     AccessFlags           src_access;
     AccessFlags           dst_access;
+    PipelineStageFlags    src_stage;
+    PipelineStageFlags    dst_stage;
 };
 
 

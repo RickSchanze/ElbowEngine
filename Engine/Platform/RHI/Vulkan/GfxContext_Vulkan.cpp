@@ -504,6 +504,7 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
 {
     auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+    vkDeviceWaitIdle(vulkan_ctx->device_);
     for (auto img: vulkan_ctx->swapchain_images_)
     {
         Delete(img);
@@ -516,6 +517,16 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
     vulkan_ctx->swapchain_image_views_.clear();
     vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
     Event_GfxContextPreDestroyed.RemoveBind(vulkan_ctx->pre_vulkan_gfx_context_destroyed_);
+}
+
+void GfxContext_Vulkan::WaitForDeviceIdle()
+{
+    vkDeviceWaitIdle(device_);
+}
+
+void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type)
+{
+    vkQueueWaitIdle(GetQueue(type));
 }
 
 core::UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, rhi::RenderPass* render_pass)
@@ -597,6 +608,12 @@ ImageView* GfxContext_Vulkan::GetSwapChainView(UInt32 index)
 {
     core::Assert::Require(logcat::Platform_RHI_Vulkan, index < swapchain_image_views_.size(), "交换链索引超出范围");
     return swapchain_image_views_[index];
+}
+
+Image* GfxContext_Vulkan::GetSwapChainImage(UInt32 index)
+{
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, index < swapchain_images_.size(), "交换链索引超出范围");
+    return swapchain_images_[index];
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

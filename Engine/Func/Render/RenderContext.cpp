@@ -44,7 +44,7 @@ void RenderContext::Render(const Millisecond& sec)
     param.wait_semaphore    = image_available_semaphores_[current_frame_].Get();
     ctx.Submit(*cmd, param)->Wait();
 
-    if (!ctx.Present(image_index, render_finished_semaphores_[current_frame_].Get()))
+    if (!ctx.Present(*image_index, render_finished_semaphores_[current_frame_].Get()))
     {
         // TODO: 重建交换链/渲染管线
     }
@@ -103,6 +103,11 @@ void RenderContext::Startup()
 void RenderContext::Shutdown()
 {
     TickEvents::RenderTickEvent.Unbind();
+    for (auto& fence: in_flight_fences_)
+    {
+        fence->SyncWait();
+    }
+    GetGfxContextRef().WaitForDeviceIdle();
     if (render_pipeline_)
     {
         render_pipeline_->Clean();
