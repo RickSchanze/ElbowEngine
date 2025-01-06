@@ -4,6 +4,7 @@
 
 #include "FixedBasicTestRenderPipeline.h"
 
+#include "Core/Profiler/ProfileMacro.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -19,6 +20,7 @@ using namespace platform::rhi;
 
 void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 current_index)
 {
+    PROFILE_SCOPE_AUTO;
     auto view = GetBackBufferView(current_index);
     auto image = GetBackBuffer(current_index);
 

@@ -295,10 +295,10 @@ core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, siz
     return rtn;
 }
 
-static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& parameter)
+static void InternalSubmit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter)
 {
     auto*                 ctx           = GetVulkanGfxContext();
-    CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(buffer);
+    CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(*buffer);
     if (buffer_vulkan.IsEmpty())
     {
         VkCommandBuffer          command_buffer = buffer_vulkan.GetNativeHandleT<VkCommandBuffer>();
@@ -317,7 +317,7 @@ static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& paramet
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
-    VkCommandBuffer command_buffer = buffer.GetNativeHandleT<VkCommandBuffer>();
+    VkCommandBuffer command_buffer = buffer->GetNativeHandleT<VkCommandBuffer>();
     submit_info.pCommandBuffers    = &command_buffer;
     VkTimelineSemaphoreSubmitInfo timeline_submit_info{};
     timeline_submit_info.sType   = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
@@ -357,13 +357,13 @@ static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& paramet
     vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
 }
 
-AsyncResultHandle<> GfxContext_Vulkan::Submit(CommandBuffer& buffer, const SubmitParameter& parameter)
+AsyncResultHandle<> GfxContext_Vulkan::Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter)
 {
     auto* cfg = core::GetConfig<PlatformConfig>();
     if (cfg->GetEnableMultithreadRender())
     {
         auto& scheduler = core::ThreadManager::GetScheduler();
-        auto  task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([&buffer, &parameter] { InternalSubmit(buffer, parameter); });
+        auto  task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
         return StartAsync(task);
     }
     else

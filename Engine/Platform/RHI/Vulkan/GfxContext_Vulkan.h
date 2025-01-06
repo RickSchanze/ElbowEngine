@@ -92,7 +92,7 @@ public:
     [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size, core::StringView debug_name) override;
 #endif
 
-    core::exec::AsyncResultHandle<> Submit(CommandBuffer& buffer, const SubmitParameter& parameter) override;
+    core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
 
     [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) override;
 

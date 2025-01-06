@@ -99,7 +99,7 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
         auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
         cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->vertex_buffer.get());
         cmd->Execute("VertexBuffer");
-        platform::GfxCommandHelper::EndSingleTransferCommand(*cmd);
+        platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
     }
     {
         // index buffer
@@ -119,7 +119,7 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
         auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
         cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->index_buffer.get());
         cmd->Execute("IndexBuffer");
-        platform::GfxCommandHelper::EndSingleTransferCommand(*cmd);
+        platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
     }
     return true;
 }

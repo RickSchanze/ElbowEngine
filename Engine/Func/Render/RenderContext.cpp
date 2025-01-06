@@ -31,9 +31,10 @@ void RenderContext::Render(const Millisecond& sec)
     {
         // TODO: 重建交换链/渲染管线
     }
+
     in_flight_fences_[current_frame_]->Reset();
-    command_pools_[current_frame_]->Reset();
-    auto cmd = command_pools_[current_frame_]->CreateCommandBuffer(false);
+
+    auto cmd = command_pool_->CreateCommandBuffer(true);
 
     render_pipeline_->Render(*cmd, *image_index);
 
@@ -42,7 +43,7 @@ void RenderContext::Render(const Millisecond& sec)
     param.submit_queue_type = QueueFamilyType::Graphics;
     param.signal_semaphore  = render_finished_semaphores_[current_frame_].Get();
     param.wait_semaphore    = image_available_semaphores_[current_frame_].Get();
-    ctx.Submit(*cmd, param)->Wait();
+    ctx.Submit(cmd, param)->Wait();
 
     if (!ctx.Present(*image_index, render_finished_semaphores_[current_frame_].Get()))
     {
@@ -76,12 +77,8 @@ void RenderContext::Startup()
 {
     auto& ctx         = GetGfxContextRef();
     frames_in_flight_ = core::GetConfig<PlatformConfig>()->GetValidFrameCountInFlight();
-    command_pools_.resize(frames_in_flight_);
     const CommandPoolCreateInfo info{QueueFamilyType::Graphics, false};
-    for (auto& pool: command_pools_)
-    {
-        pool = ctx.CreateCommandPool(info);
-    }
+    command_pool_ = ctx.CreateCommandPool(info);
     image_available_semaphores_.resize(frames_in_flight_);
     for (auto& semaphore: image_available_semaphores_)
     {
@@ -115,7 +112,7 @@ void RenderContext::Shutdown()
     }
     in_flight_fences_.clear();
     image_available_semaphores_.clear();
-    command_pools_.clear();
+    command_pool_ = nullptr;
 }
 
 void RenderContext::SetRenderEnable(bool enable)

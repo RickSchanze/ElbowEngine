@@ -136,7 +136,7 @@ public:
      * @param buffer
      * @param parameter
      */
-    virtual core::exec::AsyncResultHandle<> Submit(CommandBuffer& buffer, const SubmitParameter& parameter) = 0;
+    virtual core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) = 0;
 
     /**
      * 创建同步原语: Fence
