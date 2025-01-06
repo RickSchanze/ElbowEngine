@@ -124,6 +124,7 @@ static void ExecuteCmdCopyBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuf
         VkBufferCopy copy_region = {};
         copy_region.size         = size;
         vkCmdCopyBuffer(cmd, cmd_copy_buffer->src->GetNativeHandleT<VkBuffer>(), cmd_copy_buffer->dst->GetNativeHandleT<VkBuffer>(), 1, &copy_region);
+        // Delete(cmd_copy_buffer);
     }
     else
     {
@@ -272,6 +273,8 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
     label_info.sType                = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     label_info.pLabelName           = *label;
     ctx.BeginDebugLabel(buffer_, label_info);
+    // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
+    // 如果调用了Delete会崩溃
     for (auto& command: commands_)
     {
         empty_ = false;
@@ -285,7 +288,6 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer_, static_cast<Cmd_BeginRender*>(command)); break;
         case RHICommandType::EndRender: ExecuteCmdEndRender(buffer_); break;
         }
-        Delete(command);
     }
     ctx.EndDebugLabel(buffer_);
     Clear();
