@@ -22,9 +22,9 @@ core::SharedPtr<CommandBuffer> GfxCommandHelper::BeginSingleTransferCommand()
 void GfxCommandHelper::EndSingleTransferCommand(CommandBuffer& command_buffer)
 {
     auto&           ctx   = GetGfxContextRef();
-    const auto      fence = ctx.CreateFence();
+    const auto      fence = ctx.CreateFence(false);
     SubmitParameter param{};
-    param.fence             = fence.get();
+    param.fence             = fence.Get();
     param.submit_queue_type = QueueFamilyType::Transfer;
     ctx.Submit(command_buffer, param)->Wait();
     fence->SyncWait();

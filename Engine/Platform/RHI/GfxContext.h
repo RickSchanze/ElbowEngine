@@ -132,9 +132,10 @@ public:
 
     /**
      * 创建同步原语: Fence
+     * @param signaled 创建出来的是否处于signaled状态
      * @return
      */
-    [[nodiscard]] virtual core::SharedPtr<Fence> CreateFence() = 0;
+    [[nodiscard]] virtual core::UniquePtr<Fence> CreateFence(bool signaled) = 0;
 
     /**
      * 创建一个Buffer

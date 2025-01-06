@@ -87,7 +87,7 @@ public:
     void                        DestroyCommandPool_VK(VkCommandPool pool) const;
     void                        CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
 
-    [[nodiscard]] core::SharedPtr<Fence> CreateFence() override;
+    [[nodiscard]] core::UniquePtr<Fence> CreateFence(bool signaled) override;
 
     [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size, core::StringView debug_name) override;
 #endif

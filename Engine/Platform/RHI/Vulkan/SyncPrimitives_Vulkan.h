@@ -12,7 +12,7 @@ namespace platform::rhi::vulkan
 
 struct Fence_Vulkan : Fence
 {
-    Fence_Vulkan();
+    Fence_Vulkan(bool signaled);
 
     ~Fence_Vulkan() override;
 

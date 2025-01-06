@@ -70,7 +70,7 @@ public:
     {
         if (ptr_)
         {
-            Delete<T, type>(ptr);
+            Delete<T, type>(ptr_);
         }
         ptr_ = ptr;
     }

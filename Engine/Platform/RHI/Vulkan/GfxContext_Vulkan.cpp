@@ -280,9 +280,9 @@ void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInf
     VERIFY_VULKAN_RESULT(result);
 }
 
-core::SharedPtr<Fence> GfxContext_Vulkan::CreateFence()
+core::UniquePtr<Fence> GfxContext_Vulkan::CreateFence(bool signaled)
 {
-    return core::MakeShared<Fence_Vulkan>();
+    return core::MakeUnique<Fence_Vulkan>(signaled);
 }
 
 core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, size_t size, core::StringView debug_name)
@@ -344,8 +344,11 @@ static void InternalSubmit(CommandBuffer& buffer, const SubmitParameter& paramet
         wait_semaphore                 = parameter.wait_semaphore->GetNativeHandleT<VkSemaphore>();
         submit_info.pWaitSemaphores    = &wait_semaphore;
     }
-    submit_info.pNext = &timeline_submit_info;
-    VkFence fence     = VK_NULL_HANDLE;
+    submit_info.pNext                = &timeline_submit_info;
+    // TODO: wait_stages参数化
+    VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    submit_info.pWaitDstStageMask    = &wait_stages;
+    VkFence fence                    = VK_NULL_HANDLE;
     if (parameter.fence != nullptr)
     {
         fence = parameter.fence->GetNativeHandleT<VkFence>();

@@ -11,12 +11,10 @@
 
 namespace platform::rhi
 {
+struct Fence;
 struct Semaphore;
-}
-namespace platform::rhi
-{
 class CommandPool;
-}
+}   // namespace platform::rhi
 namespace func
 {
 class RenderContext final : public core::Manager<RenderContext>
@@ -43,6 +41,7 @@ private:
 
     core::Array<core::UniquePtr<platform::rhi::Semaphore>> image_available_semaphores_{};
     core::Array<core::UniquePtr<platform::rhi::Semaphore>> render_finished_semaphores_{};
+    core::Array<core::UniquePtr<platform::rhi::Fence>>     in_flight_fences_{};
 
     // 每次渲染时的命令池
     core::Array<core::SharedPtr<platform::rhi::CommandPool>> command_pools_{};

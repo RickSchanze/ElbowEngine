@@ -25,22 +25,24 @@ void RenderContext::Render(const Millisecond& sec)
     {
         return;
     }
+    in_flight_fences_[current_frame_]->SyncWait();
     auto image_index = ctx.GetCurrentSwapChainImageIndexSync(image_available_semaphores_[current_frame_].Get());
     if (!image_index)
     {
         // TODO: 重建交换链/渲染管线
     }
+    in_flight_fences_[current_frame_]->Reset();
     command_pools_[current_frame_]->Reset();
     auto cmd = command_pools_[current_frame_]->CreateCommandBuffer(false);
 
     render_pipeline_->Render(*cmd);
 
     SubmitParameter param{};
-    param.fence             = nullptr;
+    param.fence             = in_flight_fences_[current_frame_].Get();
     param.submit_queue_type = QueueFamilyType::Graphics;
     param.signal_semaphore  = render_finished_semaphores_[current_frame_].Get();
     param.wait_semaphore    = image_available_semaphores_[current_frame_].Get();
-    ctx.Submit(*cmd, param);
+    ctx.Submit(*cmd, param)->Wait();
 
     if (!ctx.Present(image_index, render_finished_semaphores_[current_frame_].Get()))
     {
@@ -90,12 +92,23 @@ void RenderContext::Startup()
     {
         semaphore = ctx.CreateASemaphore(0, false);
     }
+    in_flight_fences_.resize(frames_in_flight_);
+    for (auto& fence: in_flight_fences_)
+    {
+        fence = ctx.CreateFence(true);
+    }
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
 }
 
 void RenderContext::Shutdown()
 {
     TickEvents::RenderTickEvent.Unbind();
+    if (render_pipeline_)
+    {
+        render_pipeline_->Clean();
+        render_pipeline_.Reset();
+    }
+    in_flight_fences_.clear();
     image_available_semaphores_.clear();
     command_pools_.clear();
 }

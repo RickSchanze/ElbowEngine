@@ -10,12 +10,16 @@
 using namespace platform::rhi::vulkan;
 using namespace platform::rhi;
 
-Fence_Vulkan::Fence_Vulkan()
+Fence_Vulkan::Fence_Vulkan(bool signaled)
 {
     auto&             ctx = *GetVulkanGfxContext();
     VkFenceCreateInfo fence_info{};
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    VkResult result  = vkCreateFence(ctx.GetDevice(), &fence_info, nullptr, &handle);
+    if (signaled)
+    {
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    }
+    VkResult result = vkCreateFence(ctx.GetDevice(), &fence_info, nullptr, &handle);
     VERIFY_VULKAN_RESULT(result);
 }
 
