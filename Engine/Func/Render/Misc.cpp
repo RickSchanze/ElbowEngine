@@ -124,7 +124,7 @@ bool func::FillGraphicsPSODescFromShader(Shader* shader, GraphicsPipelineDesc& p
         LOGGER.Error(logcat::Func_Render, "CreatePSOFromShader: shader is not graphics");
         return false;
     }
-    GraphicsPipelineDesc pso_desc{};
+
     if (window != nullptr)
     {
         pso_desc.viewport.x = 0;

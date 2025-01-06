@@ -35,7 +35,7 @@ void RenderContext::Render(const Millisecond& sec)
     command_pools_[current_frame_]->Reset();
     auto cmd = command_pools_[current_frame_]->CreateCommandBuffer(false);
 
-    render_pipeline_->Render(*cmd);
+    render_pipeline_->Render(*cmd, *image_index);
 
     SubmitParameter param{};
     param.fence             = in_flight_fences_[current_frame_].Get();

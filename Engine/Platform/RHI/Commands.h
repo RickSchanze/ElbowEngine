@@ -5,9 +5,12 @@
 #pragma once
 #include "Core/CoreGlobal.h"
 #include "Core/Math/MathTypes.h"
+#include "Enums.h"
 
 namespace platform::rhi
 {
+class ImageView;
+class GraphicsPipeline;
 class Buffer;
 }
 namespace platform::rhi
