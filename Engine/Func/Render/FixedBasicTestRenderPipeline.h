@@ -6,6 +6,10 @@
 #include "Core/Base/UniquePtr.h"
 #include "RenderPipeline.h"
 
+namespace resource
+{
+class Mesh;
+}
 namespace platform::rhi
 {
 class GraphicsPipeline;
@@ -16,7 +20,7 @@ namespace func
 class FixedBasicTestRenderPipeline : public RenderPipeline
 {
 public:
-    void Render(platform::rhi::CommandBuffer& cmd) override;
+    void Render(platform::rhi::CommandBuffer& cmd, UInt32 current_index) override;
 
     void Build() override;
     void Clean() override;
@@ -25,6 +29,7 @@ public:
 
 private:
     core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
+    resource::Mesh*                                  mesh_ = nullptr;
 };
 
 }   // namespace func

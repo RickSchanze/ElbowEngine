@@ -25,8 +25,10 @@ class Mesh : public Asset
 public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 
-    void PerformLoad() override;
+    void               PerformLoad() override;
     [[nodiscard]] bool IsLoaded() const override;
+
+    MeshStorage& _GetStorage() const { return *storage_; }
 
 private:
     core::UniquePtr<MeshStorage> storage_;

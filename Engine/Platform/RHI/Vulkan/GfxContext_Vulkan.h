@@ -135,6 +135,8 @@ public:
 
     [[nodiscard]] VkSwapchainKHR GetSwapchain() const { return swapchain_; }
 
+    ImageView* GetSwapChainView(UInt32 index) override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;

@@ -9,9 +9,12 @@
 #include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Enums_Vulkan.h"
 #include "GfxContext_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
+#include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/Commands.h"
+#include "Platform/RHI/ImageView.h"
 
 #include <meta/meta.hpp>
 #include <range/v3/range/conversion.hpp>
@@ -98,7 +101,7 @@ void CommandBuffer_Vulkan::Reset()
     vkResetCommandBuffer(buffer_, 0);
 }
 
-static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_copy_buffer)
+static void ExecuteCmdCopyBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_copy_buffer)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_copy_buffer->src && cmd_copy_buffer->dst)
@@ -126,6 +129,113 @@ static void ExecuteCmd(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_c
     {
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令CopyBuffer错误 src或者dst为空");
     }
+}
+
+static void ExecuteCmdBindPipeline(VkCommandBuffer cmd, platform::rhi::Cmd_BindPipeline* cmd_bind_pipeline)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_bind_pipeline == nullptr || cmd_bind_pipeline->pipeline == nullptr || !cmd_bind_pipeline->pipeline->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BindPipeline错误, 传入的pipeline无效");
+        return;
+    }
+    auto native_pipeline = cmd_bind_pipeline->pipeline->GetNativeHandleT<VkPipeline>();
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, native_pipeline);
+}
+
+static void ExecuteCmdBindVertexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_BindVertexBuffer* cmd_bind_vertex_buffer)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_bind_vertex_buffer == nullptr || cmd_bind_vertex_buffer->buffer == nullptr || !cmd_bind_vertex_buffer->buffer->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BindVertexBuffer错误, 传入的buffer无效");
+        return;
+    }
+    auto native_buffer = cmd_bind_vertex_buffer->buffer->GetNativeHandleT<VkBuffer>();
+    vkCmdBindVertexBuffers(cmd, 0, 1, &native_buffer, &cmd_bind_vertex_buffer->offset);
+}
+
+static void ExecuteCmdBindIndexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_BindIndexBuffer* cmd_bind_index_buffer)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_bind_index_buffer == nullptr || cmd_bind_index_buffer->buffer == nullptr || !cmd_bind_index_buffer->buffer->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BindIndexBuffer错误, 传入的buffer无效");
+        return;
+    }
+    auto native_buffer = cmd_bind_index_buffer->buffer->GetNativeHandleT<VkBuffer>();
+    vkCmdBindIndexBuffer(cmd, native_buffer, cmd_bind_index_buffer->offset, VK_INDEX_TYPE_UINT32);
+}
+
+static void ExecuteCmdDrawIndexed(VkCommandBuffer cmd, platform::rhi::Cmd_DrawIndexed* cmd_draw_indexed)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_draw_indexed == nullptr)
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令DrawIndexed错误, 传入的cmd_draw_indexed无效");
+        return;
+    }
+    vkCmdDrawIndexed(cmd, cmd_draw_indexed->index_count, 1, 0, 0, 0);
+}
+
+static void ExecuteCmdBeginRender(VkCommandBuffer& cmd, platform::rhi::Cmd_BeginRender* cmd_begin_render_pass)
+{
+    PROFILE_SCOPE_AUTO;
+    if (cmd_begin_render_pass == nullptr)
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BeginRender错误, 传入的cmd_begin_render_pass无效");
+        return;
+    }
+    core::Array<VkRenderingAttachmentInfo> colors;
+    for (int i = 0; i < cmd_begin_render_pass->colors.size(); i++)
+    {
+        auto& color = cmd_begin_render_pass->colors[i];
+        if (color.target == nullptr || !color.target->IsValid())
+        {
+            LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BeginRender错误, 传入的colors[{}].target无效", i);
+            return;
+        }
+        VkRenderingAttachmentInfo color_info = {};
+        color_info.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        color_info.imageView                 = color.target->GetNativeHandleT<VkImageView>();
+        color_info.imageLayout               = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        color_info.loadOp                    = RHIAttachmentLoadOpToVkAttachmentLoadOp(color.load_op);
+        color_info.storeOp                   = RHIAttachmentStoreOpToVkAttachmentStoreOp(color.store_op);
+        VkClearValue clear_value             = {};
+        clear_value.color.float32[0]         = color.clear_color.r;
+        clear_value.color.float32[1]         = color.clear_color.g;
+        clear_value.color.float32[2]         = color.clear_color.b;
+        clear_value.color.float32[3]         = color.clear_color.a;
+        color_info.clearValue                = clear_value;
+        colors.push_back(color_info);
+    }
+    VkRenderingAttachmentInfo depth_info = {};
+    depth_info.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    if (cmd_begin_render_pass->depth.target != nullptr && cmd_begin_render_pass->depth.target->IsValid())
+    {
+        depth_info.imageView           = cmd_begin_render_pass->depth.target->GetNativeHandleT<VkImageView>();
+        depth_info.imageLayout         = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depth_info.loadOp              = RHIAttachmentLoadOpToVkAttachmentLoadOp(cmd_begin_render_pass->depth.load_op);
+        depth_info.storeOp             = RHIAttachmentStoreOpToVkAttachmentStoreOp(cmd_begin_render_pass->depth.store_op);
+        VkClearValue clear_value       = {};
+        clear_value.depthStencil.depth = cmd_begin_render_pass->depth.clear_color.r;
+        depth_info.clearValue          = clear_value;
+    }
+    VkRenderingInfo render_info      = {};
+    render_info.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    render_info.renderArea.offset    = {0, 0};
+    render_info.renderArea.extent    = {cmd_begin_render_pass->render_size.width, cmd_begin_render_pass->render_size.height};
+    render_info.layerCount           = 1;
+    render_info.colorAttachmentCount = static_cast<uint32_t>(colors.size());
+    render_info.pColorAttachments    = colors.data();
+    render_info.pDepthAttachment     = &depth_info;
+    vkCmdBeginRendering(cmd, &render_info);
+}
+
+static void ExecuteCmdEndRender(VkCommandBuffer& cmd)
+{
+    PROFILE_SCOPE_AUTO;
+    vkCmdEndRendering(cmd);
 }
 
 AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
@@ -167,8 +277,15 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         empty_ = false;
         switch (command->GetType())
         {
-        case RHICommandType::CopyBuffer: ExecuteCmd(buffer_, static_cast<Cmd_CopyBuffer*>(command)); break;
+        case RHICommandType::CopyBuffer: ExecuteCmdCopyBuffer(buffer_, static_cast<Cmd_CopyBuffer*>(command)); break;
+        case RHICommandType::BindGraphicsPipeline: ExecuteCmdBindPipeline(buffer_, static_cast<Cmd_BindPipeline*>(command)); break;
+        case RHICommandType::BindVertexBuffer: ExecuteCmdBindVertexBuffer(buffer_, static_cast<Cmd_BindVertexBuffer*>(command)); break;
+        case RHICommandType::BindIndexBuffer: ExecuteCmdBindIndexBuffer(buffer_, static_cast<Cmd_BindIndexBuffer*>(command)); break;
+        case RHICommandType::DrawIndexed: ExecuteCmdDrawIndexed(buffer_, static_cast<Cmd_DrawIndexed*>(command)); break;
+        case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer_, static_cast<Cmd_BeginRender*>(command)); break;
+        case RHICommandType::EndRender: ExecuteCmdEndRender(buffer_); break;
         }
+        Delete(command);
     }
     ctx.EndDebugLabel(buffer_);
     Clear();

@@ -5,16 +5,21 @@
 #include "FixedBasicTestRenderPipeline.h"
 
 #include "Misc.h"
+#include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Pipeline.h"
 #include "Resource/AssetDataBase.h"
+#include "Resource/Assets/Mesh/Mesh.h"
 #include "Resource/Assets/Shader/Shader.h"
 
 using namespace resource;
 using namespace core;
 using namespace platform::rhi;
 
-void func::FixedBasicTestRenderPipeline::Render(platform::rhi::CommandBuffer& cmd) {}
+void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 current_index)
+{
+    auto view = GetBackBufferView(current_index);
+}
 
 void func::FixedBasicTestRenderPipeline::Build()
 {
@@ -29,6 +34,7 @@ void func::FixedBasicTestRenderPipeline::Build()
             pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
         }
     }
+    mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
 }
 
 void func::FixedBasicTestRenderPipeline::Clean()

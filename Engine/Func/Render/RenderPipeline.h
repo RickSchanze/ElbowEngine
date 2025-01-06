@@ -3,9 +3,11 @@
 //
 
 #pragma once
+#include "Core/Base/CoreTypeDef.h"
 
 namespace platform::rhi
 {
+class ImageView;
 class CommandBuffer;
 }
 namespace func
@@ -20,12 +22,15 @@ class RenderPipeline
 public:
     virtual ~RenderPipeline() = default;
 
-    virtual void Render(platform::rhi::CommandBuffer& cmd) = 0;
+    virtual void Render(platform::rhi::CommandBuffer& cmd, UInt32 current_image_index) = 0;
 
     virtual void Build() {}
     virtual void Clean() {}
     virtual void Rebuild() {}
     virtual bool IsReady() const { return false; }
+
+protected:
+    platform::rhi::ImageView* GetBackBufferView(UInt32 current_image_index);
 };
 
 }   // namespace func

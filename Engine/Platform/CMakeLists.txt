@@ -78,6 +78,7 @@ add_library(Platform
         RHI/VertexLayout.h
         RHI/Vulkan/DescriptorSet_Vulkan.cpp
         RHI/Vulkan/DescriptorSet_Vulkan.h
+        RHI/Commands.cpp
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

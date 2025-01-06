@@ -35,6 +35,7 @@ static core::Array<core::String>      required_instance_extensions;
 
 using namespace ranges::views;
 using namespace core::exec;
+using namespace core;
 
 static core::Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance)
 {
@@ -590,6 +591,12 @@ static bool InternalPresent(uint32_t image_index, Semaphore* wait_semaphore)
 bool GfxContext_Vulkan::Present(uint32_t image_index, Semaphore* wait_semaphore)
 {
     return InternalPresent(image_index, wait_semaphore);
+}
+
+ImageView* GfxContext_Vulkan::GetSwapChainView(UInt32 index)
+{
+    core::Assert::Require(logcat::Platform_RHI_Vulkan, index < swapchain_image_views_.size(), "交换链索引超出范围");
+    return swapchain_image_views_[index];
 }
 
 GfxContext_Vulkan* GetVulkanGfxContext()

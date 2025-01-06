@@ -17,6 +17,10 @@
 
 #include <cstdint>
 
+namespace platform::rhi
+{
+class ImageView;
+}
 // clang-format off
 namespace platform::rhi
 {
@@ -207,6 +211,13 @@ public:
      * @return
      */
     virtual bool Present(uint32_t image_index, Semaphore* wait_semaphore = nullptr) = 0;
+
+    /**
+     * 获取交换链图像视图
+     * @param index
+     * @return
+     */
+    virtual ImageView* GetSwapChainView(UInt32 index) = 0;
 };
 
 GfxContext* GetGfxContext();
