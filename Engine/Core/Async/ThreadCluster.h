@@ -28,6 +28,8 @@ private:
     std::mutex              mutex_;
     bool                    stopping_ = false;
 
+    Array<ITask*> tasks_pending_kill_;
+
     void Work();
 
 public:

@@ -294,21 +294,6 @@ static void InternalSubmit(const SharedPtr<CommandBuffer>& buffer, const SubmitP
 {
     auto*                 ctx           = GetVulkanGfxContext();
     CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(*buffer);
-    if (buffer_vulkan.IsEmpty())
-    {
-        VkCommandBuffer          command_buffer = buffer_vulkan.GetNativeHandleT<VkCommandBuffer>();
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        vkBeginCommandBuffer(command_buffer, &begin_info);
-        vkEndCommandBuffer(command_buffer);
-    }
-    if (buffer_vulkan.IsRecording())
-    {
-        buffer_vulkan.StopRecording();
-        vkEndCommandBuffer(buffer_vulkan.GetNativeHandleT<VkCommandBuffer>());
-    }
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;

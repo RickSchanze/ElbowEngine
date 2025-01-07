@@ -11,6 +11,7 @@
 #include "Core/Core.h"
 #include "Core/Event/Event.h"
 #include "Core/Math/MathTypes.h"
+#include "Core/Memory/FrameAllocator.h"
 #include "Enums.h"
 #include "Pipeline.h"
 #include "SyncPrimitives.h"
@@ -252,6 +253,13 @@ public:
      * @param height
      */
     virtual void ResizeSwapChain(Int32 width, Int32 height) = 0;
+
+    virtual void Update();
+
+    core::FrameAllocator& GetCommandAllocator();
+
+private:
+    core::FrameAllocator* cmd_allocator_ = nullptr;
 };
 
 GfxContext* GetGfxContext();

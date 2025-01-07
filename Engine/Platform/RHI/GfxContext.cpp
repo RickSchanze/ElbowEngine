@@ -29,6 +29,27 @@ uint8_t GfxContext::GetSwapchainImageCount() const
     return cfg->GetSwapchainImageCount();
 }
 
+void GfxContext::Update()
+{
+    if (cmd_allocator_)
+    {
+        cmd_allocator_->Refresh();
+    }
+    else
+    {
+        cmd_allocator_ = new core::FrameAllocator(2);
+    }
+}
+
+core::FrameAllocator& GfxContext::GetCommandAllocator()
+{
+    if (!cmd_allocator_)
+    {
+        cmd_allocator_ = new core::FrameAllocator(2);
+    }
+    return *cmd_allocator_;
+}
+
 GfxContext* GetGfxContext()
 {
     core::Assert::Require(logcat::Platform_RHI, ctx, "GfxContext not initialized");

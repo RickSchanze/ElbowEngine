@@ -105,33 +105,43 @@ Object* AssetDataBase::Load(StringView path)
     return ObjectManager::GetObjectByHandle(obj);
 }
 
+template <typename T, typename TMeta>
+AsyncResultHandle<ObjectHandle> InternalLoadAsync(StringView path)
+{
+    if (const auto meta_op = AssetDataBase::QueryMeta<TMeta>(String::Format("path = '{}'", path)); !meta_op)
+    {
+        LOGGER.Warn(logcat::Resource_Load, "资产{}未在资产数据库中找到.", path);
+        return NULL_ASYNC_RESULT_HANDLE;
+    }
+    else
+    {
+        auto&           meta     = *meta_op;
+        ObjectHandle    handle   = meta.object_handle;
+        ObjectRegistry& registry = ObjectManager::GetRegistry();
+        Object*         obj      = registry.GetObjectByHandle(handle);
+        if (obj != nullptr)
+        {
+            return MakeAsyncResult(handle);
+        }
+        else
+        {
+            auto* asset = New<T>();
+            asset->InternalSetAssetHandle(handle);
+            return asset->InternalPerformPersistentObjectLoad();
+        }
+    }
+}
+
 AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
 {
     PROFILE_SCOPE_AUTO;
     if (path.EndsWith(".slang"))
     {
-        if (const auto meta_op = QueryMeta<ShaderMeta>(String::Format("path = '{}'", path)); !meta_op)
-        {
-            LOGGER.Warn(logcat::Resource_Load, "Shader资产{}未在资产数据库中找到.", path);
-            return NULL_ASYNC_RESULT_HANDLE;
-        }
-        else
-        {
-            auto&           meta     = *meta_op;
-            ObjectHandle    handle   = meta.object_handle;
-            ObjectRegistry& registry = ObjectManager::GetRegistry();
-            Object*         obj      = registry.GetObjectByHandle(handle);
-            if (obj != nullptr)
-            {
-                return MakeAsyncResult(handle);
-            }
-            else
-            {
-                auto* asset = New<Shader>();
-                asset->InternalSetAssetHandle(handle);
-                return asset->InternalPerformPersistentObjectLoad();
-            }
-        }
+        return InternalLoadAsync<Shader, ShaderMeta>(path);
+    }
+    if (path.EndsWith(".fbx"))
+    {
+        return InternalLoadAsync<Mesh, MeshMeta>(path);
     }
     return NULL_ASYNC_RESULT_HANDLE;
 }

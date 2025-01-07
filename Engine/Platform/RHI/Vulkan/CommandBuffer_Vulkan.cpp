@@ -298,6 +298,38 @@ static void ExecuteCmdSetViewport(VkCommandBuffer cmd, platform::rhi::Cmd_SetVie
     vkCmdSetViewport(cmd, 0, 1, &viewport);
 }
 
+
+using namespace platform::rhi;
+
+static void InternalExecute(VkCommandBuffer buffer, const core::Array<platform::rhi::RHICommand*>& commands, core::StringView label)
+{
+    PROFILE_SCOPE_AUTO;
+    auto&                ctx        = *GetVulkanGfxContext();
+    VkDebugUtilsLabelEXT label_info = {};
+    label_info.sType                = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+    label_info.pLabelName           = *label;
+    ctx.BeginDebugLabel(buffer, label_info);
+    // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
+    // 如果调用了Delete会崩溃
+    for (auto& command: commands)
+    {
+        switch (command->GetType())
+        {
+        case RHICommandType::CopyBuffer: ExecuteCmdCopyBuffer(buffer, static_cast<Cmd_CopyBuffer*>(command)); break;
+        case RHICommandType::BindGraphicsPipeline: ExecuteCmdBindPipeline(buffer, static_cast<Cmd_BindPipeline*>(command)); break;
+        case RHICommandType::BindVertexBuffer: ExecuteCmdBindVertexBuffer(buffer, static_cast<Cmd_BindVertexBuffer*>(command)); break;
+        case RHICommandType::BindIndexBuffer: ExecuteCmdBindIndexBuffer(buffer, static_cast<Cmd_BindIndexBuffer*>(command)); break;
+        case RHICommandType::DrawIndexed: ExecuteCmdDrawIndexed(buffer, static_cast<Cmd_DrawIndexed*>(command)); break;
+        case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer, static_cast<Cmd_BeginRender*>(command)); break;
+        case RHICommandType::EndRender: ExecuteCmdEndRender(buffer); break;
+        case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
+        case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer, static_cast<Cmd_SetScissor*>(command)); break;
+        case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer, static_cast<Cmd_SetViewport*>(command)); break;
+        }
+    }
+    ctx.EndDebugLabel(buffer);
+}
+
 AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
 {
     PROFILE_SCOPE_AUTO;
@@ -305,56 +337,56 @@ AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
     if (cfg->GetEnableMultithreadRender())
     {
         auto scheduler = core::ThreadManager::GetScheduler();
-        auto task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([this, label] { InternalExecute(label); });
+        auto task      = Schedule(scheduler, core::ThreadSlot::Render) |
+                    Then([commands = commands_, label = label, buffer = buffer_] { InternalExecute(buffer, commands, label); });
+        commands_.clear();
         return StartAsync(task);
     }
     else
     {
-        InternalExecute(label);
+        InternalExecute(buffer_, commands_, label);
+        commands_.clear();
         return nullptr;
     }
 }
 
-void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
+void CommandBuffer_Vulkan::Begin()
 {
     PROFILE_SCOPE_AUTO;
-    auto& ctx = *GetVulkanGfxContext();
-    if (!recording_)
+    auto* cfg = core::GetConfig<PlatformConfig>();
+    if (cfg->GetEnableMultithreadRender())
+    {
+        auto scheduler = core::ThreadManager::GetScheduler();
+        auto task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer = buffer_] {
+                        VkCommandBufferBeginInfo begin_info = {};
+                        begin_info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        begin_info.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                        vkBeginCommandBuffer(buffer, &begin_info);
+                    });
+        StartAsync(task);
+    }
+    else
     {
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        begin_info.pInheritanceInfo         = nullptr;
         vkBeginCommandBuffer(buffer_, &begin_info);
-        recording_ = true;
     }
-    VkDebugUtilsLabelEXT label_info = {};
-    label_info.sType                = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-    label_info.pLabelName           = *label;
-    ctx.BeginDebugLabel(buffer_, label_info);
-    // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
-    // 如果调用了Delete会崩溃
-    for (auto& command: commands_)
-    {
-        empty_ = false;
-        switch (command->GetType())
-        {
-        case RHICommandType::CopyBuffer: ExecuteCmdCopyBuffer(buffer_, static_cast<Cmd_CopyBuffer*>(command)); break;
-        case RHICommandType::BindGraphicsPipeline: ExecuteCmdBindPipeline(buffer_, static_cast<Cmd_BindPipeline*>(command)); break;
-        case RHICommandType::BindVertexBuffer: ExecuteCmdBindVertexBuffer(buffer_, static_cast<Cmd_BindVertexBuffer*>(command)); break;
-        case RHICommandType::BindIndexBuffer: ExecuteCmdBindIndexBuffer(buffer_, static_cast<Cmd_BindIndexBuffer*>(command)); break;
-        case RHICommandType::DrawIndexed: ExecuteCmdDrawIndexed(buffer_, static_cast<Cmd_DrawIndexed*>(command)); break;
-        case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer_, static_cast<Cmd_BeginRender*>(command)); break;
-        case RHICommandType::EndRender: ExecuteCmdEndRender(buffer_); break;
-        case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer_, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
-        case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer_, static_cast<Cmd_SetScissor*>(command)); break;
-        case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer_, static_cast<Cmd_SetViewport*>(command)); break;
-        }
-    }
-    for (auto& command: commands_)
-    {
-        DeleteWithPoolId(MEMORY_POOL_ID_CMD, command);
-    }
-    ctx.EndDebugLabel(buffer_);
-    Clear();
 }
+
+void CommandBuffer_Vulkan::End()
+{
+    PROFILE_SCOPE_AUTO;
+    auto* cfg = core::GetConfig<PlatformConfig>();
+    if (cfg->GetEnableMultithreadRender())
+    {
+        auto scheduler = core::ThreadManager::GetScheduler();
+        auto task      = Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
+        StartAsync(task);
+    }
+    else
+    {
+        vkEndCommandBuffer(buffer_);
+    }
+}
+

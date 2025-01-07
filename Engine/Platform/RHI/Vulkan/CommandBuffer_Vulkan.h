@@ -46,20 +46,12 @@ public:
 
     core::exec::AsyncResultHandle<> Execute(core::StringView label) override;
 
-    [[nodiscard]] bool IsRecording() const { return recording_; }
-
-    [[nodiscard]] bool IsEmpty() const { return empty_; }
-
-    void StopRecording() { recording_ = false; }
-
-protected:
-    void InternalExecute(core::StringView label);
+    void Begin() override;
+    void End() override;
 
 private:
     VkCommandBuffer buffer_       = VK_NULL_HANDLE;
     VkCommandPool   pool_         = VK_NULL_HANDLE;
     bool            self_managed_ = false;
-    bool            recording_    = false;
-    bool            empty_        = true;
 };
 }   // namespace platform::rhi::vulkan

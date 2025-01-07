@@ -21,6 +21,7 @@ void RenderContext::Render(const Millisecond& sec)
 {
     PROFILE_SCOPE_AUTO;
     auto& ctx = GetGfxContextRef();
+    ctx.Update();
     // 我们要向这张交换链图像上渲染
     if (!ShouldRender())
     {

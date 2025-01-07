@@ -14,6 +14,10 @@
 
 #include <queue>
 
+namespace core
+{
+class FrameAllocator;
+}
 namespace platform::rhi
 {
 class CommandPool;
@@ -56,11 +60,14 @@ public:
         requires std::derived_from<T, RHICommand>
     void Enqueue(Args&&... args)
     {
-        auto cmd = NewWithPoolId<T>(MEMORY_POOL_ID_CMD, core::Forward<Args>(args)...);
+        auto cmd = core::NewFrameTemp<T>(GetGfxContextRef().GetCommandAllocator(), core::Forward<Args>(args)...);
         EnqueueCommand(cmd);
     }
 
     virtual void Reset() = 0;
+
+    virtual void Begin() = 0;
+    virtual void End()   = 0;
 
 protected:
     core::Array<RHICommand*> commands_;

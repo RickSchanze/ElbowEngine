@@ -24,17 +24,16 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     PROFILE_SCOPE_AUTO;
     auto view  = GetBackBufferView(params.current_image_index);
     auto image = GetBackBuffer(params.current_image_index);
+    cmd.Begin();
 
 
-    if (params.window_resized)
-    {
         auto         w = platform::GetWindowManager().GetMainWindow();
         core::Rect2D rect{};
         rect.size = {w->GetWidth(), w->GetHeight()};
         cmd.Enqueue<Cmd_SetScissor>(rect);
         cmd.Enqueue<Cmd_SetViewport>(rect);
         cmd.Execute("WindowResize");
-    }
+
     ImageSubresourceRange range{};
     range.aspect_mask      = IA_Color;
     range.base_array_layer = 0;
@@ -71,6 +70,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
         PSFB_BottomOfPipe
     );
     cmd.Execute("Draw Cube Mesh");
+    cmd.End();
 }
 
 void func::FixedBasicTestRenderPipeline::Build()
@@ -81,7 +81,7 @@ void func::FixedBasicTestRenderPipeline::Build()
         auto desc = GraphicsPipelineDesc{};
         if (FillGraphicsPSODescFromShader(shader, desc))
         {
-            desc.attachments.depth_format = Format::D32_Float;
+            desc.attachments.depth_format = Format::Count;
             desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());
             pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
         }

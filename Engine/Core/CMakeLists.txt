@@ -112,6 +112,8 @@ add_library(${PROJECT_NAME}
         Memory/MemoryPool.h
         Memory/MemoryManager.cpp
         Memory/MemoryManager.h
+        Memory/FrameAllocator.cpp
+        Memory/FrameAllocator.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

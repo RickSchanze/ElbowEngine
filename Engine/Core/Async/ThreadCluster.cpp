@@ -7,10 +7,19 @@
 #include "Core/CoreGlobal.h"
 #include "ThreadManager.h"
 #include "ThreadUtils.h"
+
 void core::ThreadCluster::Work()
 {
     while (!stopping_)
     {
+        if (tasks_pending_kill_.size() > 100)
+        {
+            for (auto& task: tasks_pending_kill_)
+            {
+                DeleteWithPool(ThreadManager::GetTaskMemoryPool(), task);
+            }
+            tasks_pending_kill_.clear();
+        }
         ITask* task = nullptr;
         {
             if (stopping_ && task_queue_.Empty())
@@ -22,7 +31,7 @@ void core::ThreadCluster::Work()
         if (task)
         {
             task->Execute();
-            DeleteWithPool(ThreadManager::GetTaskMemoryPool(), task);
+            tasks_pending_kill_.push_back(task);
         }
     }
 }

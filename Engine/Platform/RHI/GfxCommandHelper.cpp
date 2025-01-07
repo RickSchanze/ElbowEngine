@@ -16,11 +16,13 @@ core::SharedPtr<CommandBuffer> GfxCommandHelper::BeginSingleTransferCommand()
     auto& ctx  = GetGfxContextRef();
     auto& pool = ctx.GetTransferPool();
     auto cmd = pool.CreateCommandBuffer(true);
+    cmd->Begin();
     return cmd;
 }
 
 void GfxCommandHelper::EndSingleTransferCommand(const core::SharedPtr<CommandBuffer>& command_buffer)
 {
+    command_buffer->End();
     auto&           ctx   = GetGfxContextRef();
     const auto      fence = ctx.CreateFence(false);
     SubmitParameter param{};
