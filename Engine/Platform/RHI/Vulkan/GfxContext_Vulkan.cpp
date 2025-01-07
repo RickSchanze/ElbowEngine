@@ -582,11 +582,12 @@ core::UniquePtr<Semaphore> GfxContext_Vulkan::CreateASemaphore(uint64_t init_val
 static bool InternalPresent(uint32_t image_index, Semaphore* wait_semaphore)
 {
     VkPresentInfoKHR present_info{};
-    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.sType    = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    VkSemaphore semaphore = VK_NULL_HANDLE;
     if (wait_semaphore != nullptr)
     {
         present_info.waitSemaphoreCount = 1;
-        VkSemaphore semaphore           = wait_semaphore->GetNativeHandleT<VkSemaphore>();
+        semaphore                       = wait_semaphore->GetNativeHandleT<VkSemaphore>();
         present_info.pWaitSemaphores    = &semaphore;
     }
     present_info.swapchainCount = 1;

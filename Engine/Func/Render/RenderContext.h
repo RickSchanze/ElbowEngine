@@ -44,7 +44,8 @@ private:
     core::Array<core::UniquePtr<platform::rhi::Fence>>     in_flight_fences_{};
 
     // 每次渲染时的命令池
-    core::SharedPtr<platform::rhi::CommandPool> command_pool_{};
+    core::SharedPtr<platform::rhi::CommandPool>                command_pool_{};
+    core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> command_buffers_{};
 
     core::DelegateID render_evt_handle_{};
 

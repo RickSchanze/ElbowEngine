@@ -34,7 +34,8 @@ void RenderContext::Render(const Millisecond& sec)
 
     in_flight_fences_[current_frame_]->Reset();
 
-    auto cmd = command_pool_->CreateCommandBuffer(true);
+    command_buffers_[current_frame_] = command_pool_->CreateCommandBuffer(true);
+    auto& cmd                        = command_buffers_[current_frame_];
 
     render_pipeline_->Render(*cmd, *image_index);
 
@@ -94,17 +95,19 @@ void RenderContext::Startup()
     {
         fence = ctx.CreateFence(true);
     }
+    command_buffers_.resize(frames_in_flight_);
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
 }
 
 void RenderContext::Shutdown()
 {
+    GetGfxContextRef().WaitForDeviceIdle();
     TickEvents::RenderTickEvent.Unbind();
+    command_buffers_.clear();
     for (auto& fence: in_flight_fences_)
     {
         fence->SyncWait();
     }
-    GetGfxContextRef().WaitForDeviceIdle();
     if (render_pipeline_)
     {
         render_pipeline_->Clean();
