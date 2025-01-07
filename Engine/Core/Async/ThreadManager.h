@@ -18,7 +18,7 @@ enum class ENUM() ThreadSlot
     Count,
 };
 
-void ThreadManagerAddSlotTask(ThreadSlot run_slot, ITask* task);
+void ThreadManagerAddSlotTask(ThreadSlot run_slot, SharedPtr<ITask> task);
 
 MemoryPool* _GetThreadManagerTaskMemoryPool();
 
@@ -42,7 +42,7 @@ struct ThreadSchedulerOperationState
 
     friend void TagInvoke(exec::StartType, ThreadSchedulerOperationState& op)
     {
-        auto* task = NewWithPool<OperationStateTask<ThreadSchedulerOperationState>>(_GetThreadManagerTaskMemoryPool(), op);
+        auto task = MakeShared<OperationStateTask<ThreadSchedulerOperationState>>(op);
         ThreadManagerAddSlotTask(op.slot_to_run_, task);
     }
 };
@@ -95,7 +95,7 @@ public:
     void Startup() override;
     void Shutdown() override;
 
-    void AddTask(ITask* task, ThreadSlot slot);
+    void AddTask(SharedPtr<ITask> task, ThreadSlot slot);
 };
 
 }   // namespace core

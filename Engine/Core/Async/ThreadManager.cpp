@@ -14,7 +14,7 @@ GENERATED_SOURCE()
 
 static std::thread::id main_thread_id{};
 
-void core::ThreadManagerAddSlotTask(const ThreadSlot run_slot, ITask* task)
+void core::ThreadManagerAddSlotTask(const ThreadSlot run_slot, SharedPtr<ITask> task)
 {
     auto& mgr = ThreadManager::GetByRef();
     mgr.AddTask(task, run_slot);
@@ -72,7 +72,7 @@ void core::ThreadManager::Shutdown()
     }
 }
 
-void core::ThreadManager::AddTask(ITask* task, ThreadSlot slot)
+void core::ThreadManager::AddTask(SharedPtr<ITask> task, ThreadSlot slot)
 {
     Assert::Require(logcat::Async, slot != ThreadSlot::Game, "Schedule of game thread cannot perform in ThreadManager");
     Assert::Require(logcat::Async, clusters_.contains(slot) && clusters_[slot].IsSet(), "Thread slot {} not initialized!", GetEnumString(slot));

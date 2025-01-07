@@ -23,12 +23,10 @@ enum class SlotType
 class ThreadCluster
 {
 private:
-    ThreadSafeQueue<ITask*> task_queue_;
+    ThreadSafeQueue<SharedPtr<ITask>> task_queue_;
     Array<std::thread>      threads_;
     std::mutex              mutex_;
     bool                    stopping_ = false;
-
-    Array<ITask*> tasks_pending_kill_;
 
     void Work();
 
@@ -42,6 +40,6 @@ public:
 
     ~ThreadCluster();
 
-    void AddTask(ITask* task);
+    void AddTask(SharedPtr<ITask> task);
 };
 }   // namespace core

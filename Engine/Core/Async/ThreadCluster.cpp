@@ -12,15 +12,7 @@ void core::ThreadCluster::Work()
 {
     while (!stopping_)
     {
-        if (tasks_pending_kill_.size() > 100)
-        {
-            for (auto& task: tasks_pending_kill_)
-            {
-                DeleteWithPool(ThreadManager::GetTaskMemoryPool(), task);
-            }
-            tasks_pending_kill_.clear();
-        }
-        ITask* task = nullptr;
+        SharedPtr<ITask> task = nullptr;
         {
             if (stopping_ && task_queue_.Empty())
             {
@@ -31,7 +23,6 @@ void core::ThreadCluster::Work()
         if (task)
         {
             task->Execute();
-            tasks_pending_kill_.push_back(task);
         }
     }
 }
@@ -69,7 +60,7 @@ core::ThreadCluster::~ThreadCluster()
     }
 }
 
-void core::ThreadCluster::AddTask(ITask* task)
+void core::ThreadCluster::AddTask(SharedPtr<ITask> task)
 {
     task_queue_.Push(task);
 }
