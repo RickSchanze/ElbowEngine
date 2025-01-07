@@ -8,6 +8,7 @@
 #include "Core/Async/Execution/Then.h"
 #include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
+#include "Core/Math/Math.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Enums_Vulkan.h"
 #include "GfxContext_Vulkan.h"
@@ -265,6 +266,38 @@ static void ExecuteCmdImagePipelineBarrier(VkCommandBuffer cmd, platform::rhi::C
     vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
+static void ExecuteCmdSetScissor(VkCommandBuffer cmd, platform::rhi::Cmd_SetScissor* cmd_set_scissor)
+{
+    if (cmd_set_scissor == nullptr || core::Math::ApproximatelyEqual(cmd_set_scissor->scissor.Area(), 0))
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令SetScissor错误, 传入的cmd_set_scissor无效");
+        return;
+    }
+    VkRect2D scissor      = {};
+    scissor.offset.x      = cmd_set_scissor->scissor.position.x;
+    scissor.offset.y      = cmd_set_scissor->scissor.position.y;
+    scissor.extent.width  = cmd_set_scissor->scissor.size.x;
+    scissor.extent.height = cmd_set_scissor->scissor.size.y;
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
+}
+
+static void ExecuteCmdSetViewport(VkCommandBuffer cmd, platform::rhi::Cmd_SetViewport* cmd_set_viewport)
+{
+    if (cmd_set_viewport == nullptr || core::Math::ApproximatelyEqual(cmd_set_viewport->viewport.Area(), 0))
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令SetViewport错误, 传入的cmd_set_viewport无效");
+        return;
+    }
+    VkViewport viewport = {};
+    viewport.x          = cmd_set_viewport->viewport.position.x;
+    viewport.y          = cmd_set_viewport->viewport.position.y;
+    viewport.width      = cmd_set_viewport->viewport.size.x;
+    viewport.height     = cmd_set_viewport->viewport.size.y;
+    viewport.minDepth   = 0.f;
+    viewport.maxDepth   = 1.f;
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
+}
+
 AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label)
 {
     PROFILE_SCOPE_AUTO;
@@ -314,6 +347,8 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer_, static_cast<Cmd_BeginRender*>(command)); break;
         case RHICommandType::EndRender: ExecuteCmdEndRender(buffer_); break;
         case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer_, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
+        case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer_, static_cast<Cmd_SetScissor*>(command)); break;
+        case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer_, static_cast<Cmd_SetViewport*>(command)); break;
         }
     }
     for (auto& command: commands_)

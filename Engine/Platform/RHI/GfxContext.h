@@ -113,7 +113,7 @@ public:
      * 查询交换链特性支持情况
      * @return
      */
-    [[nodiscard]] virtual const SwapChainSupportInfo& QuerySwapChainSupportInfo() = 0;
+    [[nodiscard]] virtual SwapChainSupportInfo QuerySwapChainSupportInfo() = 0;
 
     [[nodiscard]] virtual const PhysicalDeviceFeature& QueryDeviceFeature() = 0;
 
@@ -245,6 +245,13 @@ public:
      * !! 慢速操作 !!
      */
     virtual void WaitForDeviceIdle() = 0;
+
+    /**
+     * 重新调整交换链大小
+     * @param width
+     * @param height
+     */
+    virtual void ResizeSwapChain(Int32 width, Int32 height) = 0;
 };
 
 GfxContext* GetGfxContext();

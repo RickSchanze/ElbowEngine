@@ -14,6 +14,12 @@ class CommandBuffer;
 namespace func
 {
 
+struct RenderParams
+{
+    UInt32 current_image_index;
+    bool   window_resized;
+};
+
 /**
  * 渲染管线的基类
  * @TODO: RDGRenderPipeline: 通过RenderPassNode来声明一个RDG 由此RDG自动生成RenderPipeline
@@ -23,7 +29,7 @@ class RenderPipeline
 public:
     virtual ~RenderPipeline() = default;
 
-    virtual void Render(platform::rhi::CommandBuffer& cmd, UInt32 current_image_index) = 0;
+    virtual void Render(platform::rhi::CommandBuffer& cmd, const RenderParams& current_image_index) = 0;
 
     virtual void Build() {}
     virtual void Clean() {}

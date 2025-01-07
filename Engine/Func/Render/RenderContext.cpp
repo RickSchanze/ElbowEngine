@@ -10,6 +10,7 @@
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/GfxContext.h"
+#include "Platform/Window/WindowManager.h"
 
 using namespace platform::rhi;
 using namespace func;
@@ -23,6 +24,14 @@ void RenderContext::Render(const Millisecond& sec)
     // 我们要向这张交换链图像上渲染
     if (!ShouldRender())
     {
+        if (window_resized_)
+        {
+            // 调整交换链图像大小
+            Window* main = GetWindowManager().GetMainWindow();
+            if (main->GetWidth() == 0 || main->GetHeight() == 0) return;
+            ctx.ResizeSwapChain(main->GetWidth(), main->GetHeight());
+            SetRenderEnable(true);
+        }
         return;
     }
     in_flight_fences_[current_frame_]->SyncWait();
@@ -30,6 +39,7 @@ void RenderContext::Render(const Millisecond& sec)
     if (!image_index)
     {
         // TODO: 重建交换链/渲染管线
+        return;
     }
 
     in_flight_fences_[current_frame_]->Reset();
@@ -37,7 +47,11 @@ void RenderContext::Render(const Millisecond& sec)
     command_buffers_[current_frame_] = command_pool_->CreateCommandBuffer(true);
     auto& cmd                        = command_buffers_[current_frame_];
 
-    render_pipeline_->Render(*cmd, *image_index);
+    RenderParams params{};
+    params.current_image_index = *image_index;
+    params.window_resized      = window_resized_;
+    render_pipeline_->Render(*cmd, params);
+    window_resized_ = false;
 
     SubmitParameter param{};
     param.fence             = in_flight_fences_[current_frame_].Get();
@@ -74,6 +88,12 @@ bool RenderContext::ShouldRender() const
     return render_pipeline_valid && render_evt_registered && should_render_;
 }
 
+void RenderContext::OnWindowResized(Window* window, Int32 width, Int32 height)
+{
+    SetRenderEnable(false);
+    window_resized_ = true;
+}
+
 void RenderContext::Startup()
 {
     auto& ctx         = GetGfxContextRef();
@@ -97,11 +117,13 @@ void RenderContext::Startup()
     }
     command_buffers_.resize(frames_in_flight_);
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
+    window_resized_evt_handle_ = WindowEvents::OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
 }
 
 void RenderContext::Shutdown()
 {
     GetGfxContextRef().WaitForDeviceIdle();
+    WindowEvents::OnWindowResize.RemoveBind(window_resized_evt_handle_);
     TickEvents::RenderTickEvent.Unbind();
     command_buffers_.clear();
     for (auto& fence: in_flight_fences_)

@@ -25,6 +25,8 @@ public:
     [[nodiscard]] Window* GetWindow(core::StringView window_title) const;
     [[nodiscard]] Window* GetMainWindow() const { return GetWindow(0); }
 
+    Window* _GetWindowByPtr(void* ptr);
+
 protected:
     static inline int32_t next_window_id_ = 0;
 

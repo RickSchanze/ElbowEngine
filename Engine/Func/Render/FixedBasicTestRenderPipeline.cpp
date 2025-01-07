@@ -10,6 +10,7 @@
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Pipeline.h"
+#include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 #include "Resource/Assets/Shader/Shader.h"
@@ -18,19 +19,24 @@ using namespace resource;
 using namespace core;
 using namespace platform::rhi;
 
-void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 current_index)
+void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const RenderParams& params)
 {
     PROFILE_SCOPE_AUTO;
-    auto view = GetBackBufferView(current_index);
-    auto image = GetBackBuffer(current_index);
+    auto view  = GetBackBufferView(params.current_image_index);
+    auto image = GetBackBuffer(params.current_image_index);
 
-    RenderAttachment attachment{};
-    attachment.clear_color = Color::Green();
-    attachment.target      = view;
-    attachment.layout      = ImageLayout::ColorAttachment;
-    Array                 attachments{attachment};
+
+    if (params.window_resized)
+    {
+        auto         w = platform::GetWindowManager().GetMainWindow();
+        core::Rect2D rect{};
+        rect.size = {w->GetWidth(), w->GetHeight()};
+        cmd.Enqueue<Cmd_SetScissor>(rect);
+        cmd.Enqueue<Cmd_SetViewport>(rect);
+        cmd.Execute("WindowResize");
+    }
     ImageSubresourceRange range{};
-    range.aspect_mask      = ImageAspectBits::IA_Color;
+    range.aspect_mask      = IA_Color;
     range.base_array_layer = 0;
     range.base_mip_level   = 0;
     range.layer_count      = 1;
@@ -45,6 +51,11 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, UInt32 curre
         PSFB_ColorAttachmentOutput,
         PSFB_ColorAttachmentOutput
     );
+    RenderAttachment attachment{};
+    attachment.clear_color = Color::Green();
+    attachment.target      = view;
+    attachment.layout      = ImageLayout::ColorAttachment;
+    Array attachments{attachment};
     cmd.Enqueue<Cmd_BeginRender>(attachments);
     cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
     BindAndDrawMesh(cmd, mesh_);

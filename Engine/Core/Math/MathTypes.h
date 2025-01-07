@@ -35,6 +35,8 @@ struct STRUCT() Size2D
     uint32_t height;
 
     Size2D(const uint32_t w, const uint32_t h) : width(w), height(h) {}
+    Size2D(const Int32 w, const Int32 h) : width(w), height(h) {}
+    Size2D(const Float w, const Float h) : width(w), height(h) {}
 
     Size2D() = default;
 
@@ -50,6 +52,7 @@ struct STRUCT() Vector2
 
     Vector2() = default;
     Vector2(float x, float y) : x(x), y(y) {}
+    Vector2(Int32 x, Int32 y) : x(x), y(y) {}
 
     operator glm::vec2() const;
     operator glm::vec3() const { return {x, y, 0}; }
@@ -128,6 +131,31 @@ public:
      * @return
      */
     [[nodiscard]] Rotator ToRotatorRadian() const;
+};
+
+struct STRUCT() Rect2D
+{
+    GENERATED_STRUCT(Rect2D)
+public:
+    PROPERTY()
+    Vector2 position = {};
+
+    PROPERTY()
+    Vector2 size = {};
+
+    [[nodiscard]] String ToString() const;
+
+    [[nodiscard]] Vector2 Center() const;
+    [[nodiscard]] Vector2 TopLeft() const;
+    [[nodiscard]] Vector2 TopRight() const;
+    [[nodiscard]] Vector2 BottomLeft() const;
+    [[nodiscard]] Vector2 BottomRight() const;
+    /**
+     * 注意！！！返回的Size2D其存储的类型是Int
+     * @return
+     */
+    [[nodiscard]] Size2D  Size() const;
+    [[nodiscard]] Float   Area() const;
 };
 
 struct STRUCT() Color

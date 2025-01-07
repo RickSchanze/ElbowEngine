@@ -12,8 +12,9 @@
 #include <range/v3/view/map.hpp>
 
 using namespace ranges;
+using namespace platform;
 
-void platform::WindowManager::AddWindow(Window* window)
+void WindowManager::AddWindow(Window* window)
 {
     if (windows_.empty())
     {
@@ -32,7 +33,7 @@ void platform::WindowManager::AddWindow(Window* window)
     windows_[next_window_id_++] = window;
 }
 
-bool platform::WindowManager::RemoveWindow(int32_t window_id)
+bool WindowManager::RemoveWindow(int32_t window_id)
 {
     if (windows_.contains(window_id))
     {
@@ -42,7 +43,7 @@ bool platform::WindowManager::RemoveWindow(int32_t window_id)
     return false;
 }
 
-bool platform::WindowManager::RemoveWindow(Window* window)
+bool WindowManager::RemoveWindow(Window* window)
 {
     for (auto it = windows_.begin(); it != windows_.end(); ++it)
     {
@@ -55,7 +56,7 @@ bool platform::WindowManager::RemoveWindow(Window* window)
     return false;
 }
 
-bool platform::WindowManager::RemoveWindow(core::StringView window_title)
+bool WindowManager::RemoveWindow(core::StringView window_title)
 {
     for (auto it = windows_.begin(); it != windows_.end(); ++it)
     {
@@ -68,7 +69,7 @@ bool platform::WindowManager::RemoveWindow(core::StringView window_title)
     return false;
 }
 
-platform::Window* platform::WindowManager::GetWindow(int32_t window_id) const
+Window* WindowManager::GetWindow(int32_t window_id) const
 {
     if (windows_.contains(window_id))
     {
@@ -77,11 +78,23 @@ platform::Window* platform::WindowManager::GetWindow(int32_t window_id) const
     return nullptr;
 }
 
-platform::Window* platform::WindowManager::GetWindow(core::StringView window_title) const
+Window* WindowManager::GetWindow(core::StringView window_title) const
 {
     for (const auto& window: windows_ | views::values)
     {
         if (window->GetTitle() == window_title)
+        {
+            return window;
+        }
+    }
+    return nullptr;
+}
+
+Window* WindowManager::_GetWindowByPtr(void* ptr)
+{
+    for (const auto& window: windows_ | views::values)
+    {
+        if (window->GetNativeHandle() == ptr)
         {
             return window;
         }

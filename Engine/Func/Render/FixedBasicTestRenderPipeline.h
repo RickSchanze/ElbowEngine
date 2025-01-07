@@ -20,7 +20,7 @@ namespace func
 class FixedBasicTestRenderPipeline : public RenderPipeline
 {
 public:
-    void Render(platform::rhi::CommandBuffer& cmd, UInt32 current_index) override;
+    void Render(platform::rhi::CommandBuffer& cmd, const RenderParams& params) override;
 
     void Build() override;
     void Clean() override;

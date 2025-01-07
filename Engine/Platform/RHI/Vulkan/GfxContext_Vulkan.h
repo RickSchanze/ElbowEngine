@@ -59,7 +59,7 @@ public:
 
     static core::Array<VkExtensionProperties> GetAvailableExtensions(VkPhysicalDevice);
 
-    [[nodiscard]] const SwapChainSupportInfo&  QuerySwapChainSupportInfo() override;
+    [[nodiscard]] SwapChainSupportInfo         QuerySwapChainSupportInfo() override;
     [[nodiscard]] const PhysicalDeviceFeature& QueryDeviceFeature() override;
     [[nodiscard]] const PhysicalDeviceInfo&    QueryDeviceInfo() override;
 
@@ -143,6 +143,8 @@ public:
 
     void WaitForQueueExecution(QueueFamilyType type) override;
 
+    void ResizeSwapChain(Int32 width, Int32 height) override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;
@@ -160,7 +162,6 @@ private:
     core::Array<ImageView_Vulkan*> swapchain_image_views_;
     int32_t                        current_image_index_ = 0;
 
-    core::Optional<SwapChainSupportInfo>  swap_chain_support_info_;
     core::Optional<PhysicalDeviceFeature> device_feature_;
     core::Optional<PhysicalDeviceInfo>    device_info_;
 

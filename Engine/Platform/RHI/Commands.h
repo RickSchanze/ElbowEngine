@@ -32,6 +32,8 @@ enum class RHICommandType
     BeginRenderPass,
     EndRenderPass,
     ImagePipelineBarrier,
+    SetScissor,
+    SetViewport,
     Count,
 };
 
@@ -105,7 +107,7 @@ struct Cmd_BeginRender final : RHICommand
 {
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BeginRender; }
 
-    Cmd_BeginRender(const core::Array<RenderAttachment>& colors_, const RenderAttachment& depth_ = {}, core::Size2D size_ = {0, 0});
+    explicit Cmd_BeginRender(const core::Array<RenderAttachment>& colors_, const RenderAttachment& depth_ = {}, core::Size2D size_ = {0, 0});
 
     core::Array<RenderAttachment> colors;
     RenderAttachment              depth;
@@ -160,10 +162,22 @@ struct Cmd_EndRenderPass final : RHICommand
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::EndRenderPass; }
 };
 
-}   // namespace platform::rhi
-
-template <typename T, typename... Args>
-T* NewRHICommand(Args&&... args)
+struct Cmd_SetScissor final : RHICommand
 {
-    return NewDoubleFrameTemp<T>(Forward<Args>(args)...);
-}
+    [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::SetScissor; }
+
+    explicit Cmd_SetScissor(const core::Rect2D& scissor_) : scissor(scissor_) {}
+
+    core::Rect2D scissor;
+};
+
+struct Cmd_SetViewport final : RHICommand
+{
+    [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::SetViewport; }
+
+    explicit Cmd_SetViewport(const core::Rect2D& viewport_) : viewport(viewport_) {}
+
+    core::Rect2D viewport;
+};
+
+}   // namespace platform::rhi

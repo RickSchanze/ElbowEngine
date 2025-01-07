@@ -129,14 +129,9 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
     return info;
 }
 
-const SwapChainSupportInfo& GfxContext_Vulkan::QuerySwapChainSupportInfo()
+SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo()
 {
-    if (swap_chain_support_info_)
-    {
-        return *swap_chain_support_info_;
-    }
-    swap_chain_support_info_ = vulkan::QuerySwapChainSupportInfo(physical_device_, surface_);
-    return *swap_chain_support_info_;
+    return vulkan::QuerySwapChainSupportInfo(physical_device_, surface_);
 }
 
 const PhysicalDeviceFeature& GfxContext_Vulkan::QueryDeviceFeature()
@@ -295,7 +290,7 @@ core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, siz
     return rtn;
 }
 
-static void InternalSubmit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter)
+static void InternalSubmit(const SharedPtr<CommandBuffer>& buffer, const SubmitParameter& parameter)
 {
     auto*                 ctx           = GetVulkanGfxContext();
     CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(*buffer);
@@ -463,19 +458,21 @@ void GfxContext_Vulkan::FindVulkanExtensionSymbols()
     CmdEndDebugUtilsLabelEXT   = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device_, "vkCmdEndDebugUtilsLabelEXT"));
 }
 
+constexpr const char* swapchain_image_view_names_[] = {
+    "SwapChainImageView0",
+    "SwapChainImageView1",
+    "SwapChainImageView2",
+    "SwapChainImageView3",
+    "SwapChainImageView4",
+    "SwapChainImageView5",
+    "SwapChainImageView6",
+    "SwapChainImageView7",
+    "SwapChainImageView8",   // 开发设备最多支持八个
+};
+
 void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
 {
-    constexpr const char* swapchain_image_view_names_[] = {
-        "SwapChainImageView0",
-        "SwapChainImageView1",
-        "SwapChainImageView2",
-        "SwapChainImageView3",
-        "SwapChainImageView4",
-        "SwapChainImageView5",
-        "SwapChainImageView6",
-        "SwapChainImageView7",
-        "SwapChainImageView8",   // 开发设备最多支持八个
-    };
+
     auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
 
     uint32_t img_cnt = 0;
@@ -494,14 +491,13 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         }) |
         ranges::to_vector;
     vulkan_ctx->swapchain_image_views_ =   //
-        vulkan_ctx->swapchain_images_ | enumerate | transform([&swapchain_image_view_names_](const auto& pair) {
+        vulkan_ctx->swapchain_images_ | enumerate | transform([](const auto& pair) {
             const auto& [idx, img] = pair;
             ImageViewDesc desc{swapchain_image_view_names_[idx], img, IA_Color};
             return New<ImageView_Vulkan>(desc);
         }) |
         ranges::to_vector;
 
-    auto* cfg = core::GetConfig<PlatformConfig>();
     Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
@@ -736,7 +732,7 @@ static void DestroyInstance(core::Ref<VkInstance> instance)
     instance = VK_NULL_HANDLE;
 }
 
-static void CreateSurface(core::Ref<Surface*> surface, const VkInstance instance)
+static void CreateSurface(Ref<Surface*> surface, const VkInstance instance)
 {
     const auto window = WindowManager::Get()->GetMainWindow();
     core::Assert::Require(logcat::Platform_RHI_Vulkan, window != nullptr, "Window must be initialized before create surface!");
@@ -756,7 +752,6 @@ static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, nullptr);
     core::Array<VkExtensionProperties> extensions(cnt);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, extensions.data());
-    auto* cfg                    = core::GetConfig<PlatformConfig>();
     Array my_required_extensions = {"VK_KHR_swapchain"};
     auto  filter_exts            = my_required_extensions |   //
                        remove_if([&extensions](const core::String& ext) {
@@ -891,7 +886,7 @@ static void DestroyLogicalDevice(core::Ref<VkDevice> device)
 
 static Format CreateSwapChain(
     const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device, VkDevice device, ImageDesc& desc,
-    OUT core::Ref<VkSwapchainKHR> swapchain
+    core::Size2D size, OUT core::Ref<VkSwapchainKHR> swapchain
 )
 {
     const auto cfg            = core::GetConfig<PlatformConfig>();
@@ -905,9 +900,8 @@ static Format CreateSwapChain(
             available_format = surface_format;
         }
     }
-    const PresentMode  present_mode = cfg->GetPresentMode();
-    const core::Size2D extent       = cfg->GetDefaultWindowSize();
-    const uint32_t     image_count  = cfg->GetSwapchainImageCount();
+    const PresentMode present_mode = cfg->GetPresentMode();
+    const uint32_t    image_count  = cfg->GetSwapchainImageCount();
     core::Assert::Require(
         logcat::Platform_RHI_Vulkan,
         image_count <= swapchain_support.max_image_count && image_count >= swapchain_support.min_image_count,
@@ -919,14 +913,14 @@ static Format CreateSwapChain(
     swapchain_create_info.minImageCount    = image_count;
     swapchain_create_info.imageFormat      = RHIFormatToVkFormat(available_format.format);
     swapchain_create_info.imageColorSpace  = RHIColorSpaceToVkColorSpace(available_format.color_space);
-    swapchain_create_info.imageExtent      = VkExtent2D{.width = extent.width, .height = extent.height};
+    swapchain_create_info.imageExtent      = VkExtent2D{.width = size.width, .height = size.height};
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     desc.depth_or_layers = 1;
     desc.format          = available_format.format;
-    desc.height          = extent.height;
-    desc.width           = extent.width;
+    desc.height          = size.height;
+    desc.width           = size.width;
     desc.mip_levels      = 1;
     desc.initial_state   = ImageLayout::Undefined;
 
@@ -968,8 +962,11 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     queue_family_indices_ = FindQueueFamilies(physical_device_, surface_);
     CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_, transfer_queue_);
     FindVulkanExtensionSymbols();
-    default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, swapchain_);
-    Format depth_format   = FindSupportedFormat(
+    auto cfg              = GetConfig<PlatformConfig>();
+    default_color_format_ = CreateSwapChain(
+        QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, cfg->GetDefaultWindowSize(), swapchain_
+    );
+    Format depth_format = FindSupportedFormat(
         {Format::D32_Float, Format::D32_Float_S8X24_UInt, Format::D24_UNorm_S8_UInt},
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -980,6 +977,42 @@ GfxContext_Vulkan::GfxContext_Vulkan()
     auto [name, limits] = QueryDeviceInfo();
     LOGGER.Info(logcat::Platform_RHI_Vulkan, "Using device: {}", name);
 }
+
+void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
+{
+    for (auto& image_view: swapchain_image_views_)
+    {
+        Delete(image_view);
+    }
+    swapchain_image_views_.clear();
+    swapchain_images_.clear();
+    DestroySwapChain(device_, swapchain_);
+    default_color_format_ =
+        CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_, Size2D{width, height}, swapchain_);
+    uint32_t img_cnt = 0;
+    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(device_, swapchain_, &img_cnt, nullptr));
+    auto vk_imgs = core::Array<VkImage>(img_cnt);
+    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(device_, swapchain_, &img_cnt, vk_imgs.data()));
+    if (img_cnt <= 0)
+    {
+        LOGGER.Critical(logcat::Platform_RHI_Vulkan, "创建交换链获取失败");
+    }
+    swapchain_images_ =   //
+        vk_imgs | enumerate | transform([this](const auto& pair) {
+            auto& desc             = swapchain_image_desc_;
+            const auto& [idx, img] = pair;
+            return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
+        }) |
+        ranges::to_vector;
+    swapchain_image_views_ =   //
+        swapchain_images_ | enumerate | transform([](const auto& pair) {
+            const auto& [idx, img] = pair;
+            ImageViewDesc desc{swapchain_image_view_names_[idx], img, IA_Color};
+            return New<ImageView_Vulkan>(desc);
+        }) |
+        ranges::to_vector;
+}
+
 
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {

@@ -9,6 +9,10 @@
 #include "Core/Utils/TimeUtils.h"
 #include "RenderPipeline.h"
 
+namespace platform
+{
+class Window;
+}
 namespace platform::rhi
 {
 struct Fence;
@@ -33,8 +37,11 @@ public:
     void               SetRenderEnable(bool enable);
     [[nodiscard]] bool IsRenderEnable() const { return should_render_; }
 
+
 private:
     [[nodiscard]] bool ShouldRender() const;
+
+    void OnWindowResized(platform::Window* window, Int32 width, Int32 height);
 
     // 当前渲染管线
     core::UniquePtr<RenderPipeline> render_pipeline_{};
@@ -47,7 +54,9 @@ private:
     core::SharedPtr<platform::rhi::CommandPool>                command_pool_{};
     core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> command_buffers_{};
 
-    core::DelegateID render_evt_handle_{};
+    // 窗口
+    core::DelegateID window_resized_evt_handle_{};
+    bool             window_resized_{false};
 
     bool should_render_{true};
 

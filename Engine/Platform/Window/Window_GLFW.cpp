@@ -23,15 +23,27 @@
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Surface.h"
 #include "vulkan/vulkan.h"
+#include "WindowManager.h"
 
 #include <range/v3/all.hpp>
 
 using namespace ranges::views;
 using namespace ranges;
+using namespace platform;
+
+static bool glfw_callback_registered = false;
 
 static void GLFWErrorCallback(int error, const char* description)
 {
     LOGGER.Error(logcat::Platform_Window, "[GLFW] {}: {}", error, description);
+}
+
+static void GLFWWindowResizeCallback(GLFWwindow* window_glfw, Int32 width, Int32 height)
+{
+    Window* window = GetWindowManager()._GetWindowByPtr(window_glfw);
+    WindowEvents::OnWindowResize.Invoke(window, width, height);
+    window->SetWidth(width);
+    window->SetHeight(height);
 }
 
 static core::Array<core::String> GLFWGetVulkanExtensions(const core::Array<core::String>& extensions)
@@ -47,7 +59,7 @@ static core::Array<core::String> GLFWGetVulkanExtensions(const core::Array<core:
     return concat(result, extensions) | to_vector | actions::unique;
 }
 
-platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height, int flags) : Window(title, width, height, flags)
+Window_GLFW::Window_GLFW(core::StringView title, int width, int height, int flags) : Window(title, width, height, flags)
 {
     core::Assert::Require(logcat::Platform_Window, glfwInit(), "Failed to initialize GLFW");
     auto config = core::GetConfig<PlatformConfig>();
@@ -66,13 +78,18 @@ platform::Window_GLFW::Window_GLFW(core::StringView title, int width, int height
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window_ = glfwCreateWindow(GetWidth(), GetHeight(), GetTitle().Data(), nullptr, nullptr);
     }
-    if (config->GetGraphicsAPI() == rhi::GraphicsAPI::Vulkan)
+    if (!glfw_callback_registered)
     {
-        rhi::Event_PostProcessVulkanExtensions.Bind(GLFWGetVulkanExtensions);
+        if (config->GetGraphicsAPI() == rhi::GraphicsAPI::Vulkan)
+        {
+            rhi::Event_PostProcessVulkanExtensions.Bind(GLFWGetVulkanExtensions);
+        }
+        glfwSetFramebufferSizeCallback(window_, GLFWWindowResizeCallback);
+        glfw_callback_registered = true;
     }
 }
 
-platform::Window_GLFW::~Window_GLFW()
+Window_GLFW::~Window_GLFW()
 {
     if (window_)
     {
@@ -80,35 +97,37 @@ platform::Window_GLFW::~Window_GLFW()
     }
 }
 
-void* platform::Window_GLFW::GetNativeHandle() const
+void* Window_GLFW::GetNativeHandle() const
 {
-    return glfwGetWin32Window(window_);
+    return window_;
 }
 
-void platform::Window_GLFW::PollInputs(const Millisecond& sec)
+void Window_GLFW::PollInputs(const Millisecond& sec)
 {
     PROFILE_SCOPE_AUTO;
     glfwPollEvents();
 }
 
-bool platform::Window_GLFW::ShouldClose()
+bool Window_GLFW::ShouldClose()
 {
     return glfwWindowShouldClose(window_);
 }
 
-void platform::Window_GLFW::Close()
+void Window_GLFW::Close()
 {
     glfwDestroyWindow(window_);
     window_ = nullptr;
 }
 
-class GLFWSurface : public platform::rhi::Surface
+class GLFWSurface : public rhi::Surface
 {
 public:
     explicit GLFWSurface(VkInstance instance, GLFWwindow* window) : instance_(instance)
     {
         auto result = glfwCreateWindowSurface(instance, window, nullptr, &surface_);
-        core::Assert::Require(logcat::Platform_Window, result == VK_SUCCESS, "Failed to create window surface, code: {}", static_cast<int32_t>(result));
+        core::Assert::Require(
+            logcat::Platform_Window, result == VK_SUCCESS, "Failed to create window surface, code: {}", static_cast<int32_t>(result)
+        );
     }
 
     ~GLFWSurface() override
@@ -126,7 +145,7 @@ private:
     VkInstance   instance_ = nullptr;
 };
 
-platform::rhi::Surface* platform::Window_GLFW::CreateSurface(void* user_data, rhi::GraphicsAPI api)
+rhi::Surface* Window_GLFW::CreateSurface(void* user_data, rhi::GraphicsAPI api)
 {
     if (api == rhi::GraphicsAPI::Vulkan)
     {
@@ -137,7 +156,7 @@ platform::rhi::Surface* platform::Window_GLFW::CreateSurface(void* user_data, rh
     return nullptr;
 }
 
-void platform::Window_GLFW::DestroySurface(core::Ref<rhi::Surface*> surface)
+void Window_GLFW::DestroySurface(core::Ref<rhi::Surface*> surface)
 {
     Delete(surface.GetPtr());
     surface = nullptr;

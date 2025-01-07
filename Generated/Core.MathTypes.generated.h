@@ -8,6 +8,8 @@ core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Vector2>(), &core::Vector2::ConstructAt, &core::Vector2::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rotator>(), &core::Rotator::REFLECTION_Register_Rotator_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rotator>(), &core::Rotator::ConstructAt, &core::Rotator::DestroyAt); \
+core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rect2D>(), &core::Rect2D::REFLECTION_Register_Rect2D_Registerer); \
+core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rect2D>(), &core::Rect2D::ConstructAt, &core::Rect2D::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Color>(), &core::Color::REFLECTION_Register_Color_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Color>(), &core::Color::ConstructAt, &core::Color::DestroyAt); \
 
@@ -25,6 +27,11 @@ static void DestroyAt(void* ptr) { static_cast<core::Vector2*>(ptr)->~Vector2();
 #define GENERATED_BODY_IMPL_Rotator \
 static void ConstructAt(void* ptr) { new (ptr) core::Rotator(); } \
 static void DestroyAt(void* ptr) { static_cast<core::Rotator*>(ptr)->~Rotator(); } \
+
+#undef GENERATED_BODY_IMPL_Rect2D
+#define GENERATED_BODY_IMPL_Rect2D \
+static void ConstructAt(void* ptr) { new (ptr) core::Rect2D(); } \
+static void DestroyAt(void* ptr) { static_cast<core::Rect2D*>(ptr)->~Rect2D(); } \
 
 #undef GENERATED_BODY_IMPL_Color
 #define GENERATED_BODY_IMPL_Color \
@@ -54,6 +61,13 @@ Type* type = Type::Create<core::Rotator>("core.Rotator")->SetAttribute(Type::Tri
 type->Internal_RegisterField("yaw", &core::Rotator::yaw, offsetof(core::Rotator, yaw)); \
 type->Internal_RegisterField("roll", &core::Rotator::roll, offsetof(core::Rotator, roll)); \
 type->Internal_RegisterField("pitch", &core::Rotator::pitch, offsetof(core::Rotator, pitch)); \
+return type; \
+} \
+core::Type* core::Rect2D::REFLECTION_Register_Rect2D_Registerer() { \
+using namespace core; \
+Type* type = Type::Create<core::Rect2D>("core.Rect2D")->SetAttribute(Type::Trivial); \
+type->Internal_RegisterField("position", &core::Rect2D::position, offsetof(core::Rect2D, position)); \
+type->Internal_RegisterField("size", &core::Rect2D::size, offsetof(core::Rect2D, size)); \
 return type; \
 } \
 core::Type* core::Color::REFLECTION_Register_Color_Registerer() { \

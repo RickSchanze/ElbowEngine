@@ -62,12 +62,30 @@ public:
     [[nodiscard]] int32_t          GetHeight() const { return height_; }
     [[nodiscard]] int32_t          GetFlags() const { return flags_; }
 
+    /**
+     * 下面俩函数用于设置窗口宽高
+     * 被动设置, 也就是说当窗口大小变化时调用此函数调整width和height
+     * 但是主动设置, 也就是当调用SetWidth和SetHeight时, 是未定义行为
+     */
+    void SetWidth(int32_t width) { width_ = width; }
+    void SetHeight(int32_t height) { height_ = height; }
 
 protected:
     core::StringView title_;
     int32_t          width_;
     int32_t          height_;
     int32_t          flags_;
+};
+
+DECLARE_MULTICAST_EVENT(WindowResizeEvent, Window*, Int32, Int32);
+
+class WindowEvents
+{
+public:
+    /**
+     * 调用时, 传入的是新的数值, 可以通过GetWidth获取旧数值
+     */
+    static inline WindowResizeEvent OnWindowResize;
 };
 
 /**

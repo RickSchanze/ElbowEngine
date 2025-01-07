@@ -70,9 +70,7 @@ static void REFL_ConstructQuat(void* ptr)
     new (ptr) glm::quat();
 }
 
-static void REFL_DestroyDummy(void* ptr)
-{
-}
+static void REFL_DestroyDummy(void* ptr) {}
 
 void Z_MetaInfo_Registration_Func1()
 {
@@ -254,5 +252,45 @@ bool Color::operator==(const Color& other) const
 bool Color::operator!=(const Color& other) const
 {
     return !(*this == other);
+}
+
+String Rect2D::ToString() const
+{
+    return String::Format("Rect[position={{{}, {}}}, size={{{}, {}}}]", position.x, position.y, size.x, size.y);
+}
+
+Vector2 Rect2D::Center() const
+{
+    return Vector2(position.x + size.x / 2.0f, position.y + size.y / 2.0f);
+}
+
+Vector2 Rect2D::TopLeft() const
+{
+    return position;
+}
+
+Vector2 Rect2D::TopRight() const
+{
+    return {position.x + size.x, position.y};
+}
+
+Vector2 Rect2D::BottomLeft() const
+{
+    return {position.x, position.y + size.y};
+}
+
+Vector2 Rect2D::BottomRight() const
+{
+    return position + size;
+}
+
+Size2D Rect2D::Size() const
+{
+    return Size2D(size.x, size.y);
+}
+
+Float Rect2D::Area() const
+{
+    return size.x * size.y;
 }
 }
