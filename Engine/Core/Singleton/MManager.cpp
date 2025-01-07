@@ -33,7 +33,7 @@ void core::MManager::RegisterManager(ManagerBase* manager)
 
 void core::MManager::Startup()
 {
-    for (auto & manager : managers_)
+    for (auto& manager: managers_)
     {
         manager.reserve(10);
     }
@@ -41,19 +41,24 @@ void core::MManager::Startup()
 
 void core::MManager::Shutdown() const
 {
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Top)])
+    for (const auto manager: managers_[GetEnumValue(ManagerLevel::First)])
     {
         manager->Shutdown();
-        Delete(manager);
+        delete manager;
     }
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Middle)])
+    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Second)])
     {
         manager->Shutdown();
-        Delete(manager);
+        delete manager;
     }
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Bottom)])
+    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Third)])
     {
         manager->Shutdown();
-        Delete(manager);
+        delete manager;
+    }
+    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Fourth)])
+    {
+        manager->Shutdown();
+        delete manager;
     }
 }

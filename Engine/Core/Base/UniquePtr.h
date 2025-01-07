@@ -12,7 +12,7 @@
 namespace core
 {
 
-template <typename T, MemoryAllocType type = MemoryAllocType::Normal>
+template <typename T>
 class UniquePtr
 {
 public:
@@ -22,13 +22,6 @@ public:
     {
         T* ptr = New<T>(std::forward<Args>(args)...);
         return UniquePtr<T>(ptr);
-    }
-
-    template <typename... Args>
-    static UniquePtr<T, MemoryAllocType::FrameTemp> CreateFrameTemp(Args&&... args)
-    {
-        T* ptr = NewFrameTemp<T>(std::forward<Args>(args)...);
-        return UniquePtr<T, MemoryAllocType::FrameTemp>(ptr);
     }
 
     // 默认构造函数
@@ -70,7 +63,7 @@ public:
     {
         if (ptr_)
         {
-            Delete<T, type>(ptr_);
+            Delete(ptr_);
         }
         ptr_ = ptr;
     }

@@ -8,6 +8,7 @@
 #include "Core/Config/CoreConfig.h"
 
 #include GEN_HEADER("Core.ThreadScheduler.generated.h")
+#include "Core/Memory/MemoryManager.h"
 
 GENERATED_SOURCE()
 
@@ -19,6 +20,11 @@ void core::ThreadManagerAddSlotTask(const ThreadSlot run_slot, ITask* task)
     mgr.AddTask(task, run_slot);
 }
 
+core::MemoryPool* core::_GetThreadManagerTaskMemoryPool()
+{
+    return ThreadManager::GetTaskMemoryPool();
+}
+
 core::ThreadScheduler& core::ThreadManager::GetScheduler()
 {
     static ThreadScheduler scheduler;
@@ -28,6 +34,11 @@ core::ThreadScheduler& core::ThreadManager::GetScheduler()
 std::thread::id core::ThreadManager::GetMainThreadId()
 {
     return main_thread_id;
+}
+
+core::MemoryPool* core::ThreadManager::GetTaskMemoryPool()
+{
+    return GetByRef().task_memory_pool_;
 }
 
 void core::ThreadManager::Startup()
@@ -46,6 +57,8 @@ void core::ThreadManager::Startup()
         clusters_[idx_slot] = MakeUnique<ThreadCluster>(thread_num);
         clusters_[idx_slot]->SetClusterName(GetEnumString(idx_slot));
     }
+    MemoryManager::RequestPool(MEMORY_POOL_ID_TASK);
+    task_memory_pool_ = MemoryManager::GetPool(MEMORY_POOL_ID_TASK);
 }
 
 void core::ThreadManager::Shutdown()

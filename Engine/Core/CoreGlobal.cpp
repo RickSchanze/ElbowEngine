@@ -7,28 +7,20 @@
 
 #include "Core/CoreGlobal.h"
 #include "Core/Profiler/ProfileMacro.h"
-#include "Memory/DoubleFrameAllocator.h"
-#include "Memory/FrameAllocator.h"
+#include "Memory/MemoryManager.h"
+#include "Memory/MemoryPool.h"
 
-void* FrameTempAlloc(size_t size)
+void* _MemoryPoolAllocate(core::MemoryPool* pool, size_t size)
 {
-    PROFILE_SCOPE_AUTO;
-    return core::FrameAllocator::Malloc(size);
+    return pool->Allocate(size);
 }
 
-void* FrameDoubleTempAlloc(size_t size)
+void _MemoryPoolFree(core::MemoryPool* pool, void* p)
 {
-    return core::DoubleFrameAllocator::Malloc(size);
+    pool->Free(p);
 }
 
-void* NormalAlloc(size_t size)
+core::MemoryPool* _GetMemoryPool(Int32 id)
 {
-    PROFILE_SCOPE_AUTO;
-    return malloc(size);
-}
-
-void FreeNormalAllocatedMemory(void* ptr)
-{
-    PROFILE_SCOPE_AUTO;
-    free(ptr);
+    return core::MemoryManager::GetPool(id);
 }

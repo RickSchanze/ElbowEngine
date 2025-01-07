@@ -24,7 +24,7 @@ public:
 
     void SetRenderPipeline(core::UniquePtr<RenderPipeline> render_pipeline);
 
-    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::First; }
     [[nodiscard]] core::StringView   GetName() const override { return "RenderContext"; }
 
     void Startup() override;

@@ -53,7 +53,7 @@ public:
     void RegisterTick(ITick* tick);
     void UnRegisterTick(ITick* tick);
 
-    core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
+    core::ManagerLevel GetLevel() const override { return core::ManagerLevel::First; }
     core::StringView   GetName() const override { return "WorldClock"; }
 
 private:

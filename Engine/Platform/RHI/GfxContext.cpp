@@ -9,6 +9,7 @@
 
 #include "Core/Config/ConfigManager.h"
 #include "Core/CoreGlobal.h"
+#include "Core/Memory/MemoryManager.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Vulkan/GfxContext_Vulkan.h"
@@ -16,6 +17,11 @@
 namespace platform::rhi
 {
 static GfxContext* ctx;
+
+GfxContext::GfxContext()
+{
+    core::MemoryManager::RequestPool(MEMORY_POOL_ID_CMD);
+}
 
 uint8_t GfxContext::GetSwapchainImageCount() const
 {

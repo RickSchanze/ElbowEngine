@@ -9,68 +9,59 @@
 #include "Assert.h"
 #include "Core/Log/Logger.h"
 #include "CoreDef.h"
-#include "Log/CoreLogCategory.h"
 
-
-void* NormalAlloc(size_t size);
-void  FreeNormalAllocatedMemory(void* ptr);
-
-
-enum class MemoryAllocType
+namespace core
 {
-    Normal,      // 正常分配
-    FrameTemp,   // 使用FrameAllocator分配
-};
+class MemoryPool;
+}
 
-/**
- * 单帧临时内存分配, 过一帧被自动覆盖
- * @param size
- * @return
- */
-void* FrameTempAlloc(size_t size);
+void*             _MemoryPoolAllocate(core::MemoryPool* pool, size_t size);
+void              _MemoryPoolFree(core::MemoryPool* pool, void* p);
+core::MemoryPool* _GetMemoryPool(Int32 id);
 
-/**
- * 双帧临时内存分配, 过两帧被自动覆盖
- * @param size
- * @return
- */
-void* FrameDoubleTempAlloc(size_t size);
+template <typename T, typename... Args>
+T* NewWithPool(core::MemoryPool* pool, Args&&... args)
+{
+    const size_t size = sizeof(T);
+    T*           p    = static_cast<T*>(_MemoryPoolAllocate(pool, size));
+    if (p)
+    {
+        new (p) T(std::forward<Args>(args)...);
+    }
+    return p;
+}
+
+template <typename T, typename... Args>
+T* NewWithPoolId(const Int32 id, Args&&... args)
+{
+    auto pool = _GetMemoryPool(id);
+    return NewWithPool<T>(pool, std::forward<Args>(args)...);
+}
 
 template <typename T, typename... Args>
 T* New(Args&&... args)
 {
-    size_t size = sizeof(T);
-    void*  t    = NormalAlloc(size);
-    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
-    return new (t) T(std::forward<Args>(args)...);
+    return NewWithPoolId<T>(0, std::forward<Args>(args)...);
 }
 
-template <typename T, MemoryAllocType type = MemoryAllocType::Normal>
-void Delete(T* ptr)
+template <typename T>
+void DeleteWithPool(core::MemoryPool* pool, T* p)
 {
-    static_cast<T*>(ptr)->~T();
-    if constexpr (type == MemoryAllocType::Normal)
-    {
-        FreeNormalAllocatedMemory(ptr);
-    }
+    p->~T();
+    _MemoryPoolFree(pool, p);
 }
 
-template <typename T, typename... Args>
-T* NewFrameTemp(Args&&... args)
+template <typename T>
+void DeleteWithPoolId(const Int32 id, T* p)
 {
-    size_t size = sizeof(T);
-    void*  t    = FrameTempAlloc(size);
-    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
-    return new (t) T(std::forward<Args>(args)...);
+    auto pool = _GetMemoryPool(id);
+    DeleteWithPool(pool, p);
 }
 
-template <typename T, typename... Args>
-T* NewDoubleFrameTemp(Args&&... args)
+template <typename T>
+void Delete(T* p)
 {
-    size_t size = sizeof(T);
-    void*  t    = FrameDoubleTempAlloc(size);
-    core::Assert::Require(logcat::Core_Memory, t, "Memory allocation failed!");
-    return new (t) T(std::forward<Args>(args)...);
+    DeleteWithPoolId(0, p);
 }
 
 // 编译时获得常量字符串长度
@@ -79,8 +70,6 @@ constexpr std::size_t STRLEN(const char (&str)[N])
 {
     return N - 1;   // 字符串字面量包含结尾的 '\0'，所以减去 1
 }
-
-float GetFrameTime();
 
 namespace core
 {

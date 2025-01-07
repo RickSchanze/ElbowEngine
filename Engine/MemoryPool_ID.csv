@@ -1,0 +1,4 @@
+ID, Usage,
+0, 全局使用的Memory Pool,
+1, Task专用的Memory Pool,
+2, RHI Cmd专用的Memory Pool,

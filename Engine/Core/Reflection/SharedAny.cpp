@@ -3,13 +3,14 @@
 //
 
 #include "SharedAny.h"
+#include "Core/Memory/MemoryManager.h"
 #include "CtorManager.h"
 
 core::SharedAny::SharedAny(const Type* t)
 {
     Assert::Require(logcat::Reflection, t != nullptr, "Type不能为空");
     type_ = t;
-    data_ = NormalAlloc(t->GetSize());
+    data_ = MemoryManager::Allocate(t->GetSize());
     CtorManager::Get()->ConstructAt(type_, data_);
     ref_cnt_ = New<int>(1);
 }
@@ -68,6 +69,7 @@ void core::SharedAny::Release()
     --(*ref_cnt_);
     if (*ref_cnt_ == 0)
     {
+        CtorManager::Get()->DestroyAt(type_, data_);
         Delete(data_);
         Delete(ref_cnt_);
     }

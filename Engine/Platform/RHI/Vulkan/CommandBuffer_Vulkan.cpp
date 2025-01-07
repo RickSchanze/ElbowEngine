@@ -316,6 +316,10 @@ void CommandBuffer_Vulkan::InternalExecute(core::StringView label)
         case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer_, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
         }
     }
+    for (auto& command: commands_)
+    {
+        DeleteWithPoolId(MEMORY_POOL_ID_CMD, command);
+    }
     ctx.EndDebugLabel(buffer_);
     Clear();
 }

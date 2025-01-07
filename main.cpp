@@ -3,8 +3,7 @@
 #include "Core/Config/ConfigManager.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
-#include "Core/Memory/DoubleFrameAllocator.h"
-#include "Core/Memory/FrameAllocator.h"
+#include "Core/Memory/MemoryManager.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
@@ -41,8 +40,7 @@ int main()
         }
         // 初始化内存
         {
-            core::FrameAllocator::Startup();
-            core::DoubleFrameAllocator::Startup();
+            core::MemoryManager::Get();
         }
         // 资产数据库初始化
         {
@@ -79,8 +77,6 @@ int main()
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;
-            core::FrameAllocator::Refresh();
-            core::DoubleFrameAllocator::Refresh();
             GetWorldClock().TickAll();
             if (main_window->ShouldClose())
             {
@@ -91,8 +87,6 @@ int main()
         TickEvents::InputTickEvent.Unbind();
         LOGGER.Info(logcat::Engine, "Engine shutdown...");
         SetRuntimeStage(RuntimeStage::Shutdown);
-        core::FrameAllocator::Shutdown();
-        core::DoubleFrameAllocator::Shutdown();
         core::MManager::Get()->Shutdown();
     }
     catch (const core::Exception& e)

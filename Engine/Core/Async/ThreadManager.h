@@ -20,6 +20,8 @@ enum class ENUM() ThreadSlot
 
 void ThreadManagerAddSlotTask(ThreadSlot run_slot, ITask* task);
 
+MemoryPool* _GetThreadManagerTaskMemoryPool();
+
 template <typename R>
 struct ThreadSchedulerOperationState
 {
@@ -40,16 +42,8 @@ struct ThreadSchedulerOperationState
 
     friend void TagInvoke(exec::StartType, ThreadSchedulerOperationState& op)
     {
-        if (op.slot_to_run_ != ThreadSlot::Render)
-        {
-            auto* task = New<OperationStateTask<ThreadSchedulerOperationState>>(op);
-            ThreadManagerAddSlotTask(op.slot_to_run_, task);
-        }
-        else
-        {
-            auto* task = NewDoubleFrameTemp<OperationStateTask<ThreadSchedulerOperationState>>(op);
-            ThreadManagerAddSlotTask(op.slot_to_run_, task);
-        }
+        auto* task = NewWithPool<OperationStateTask<ThreadSchedulerOperationState>>(_GetThreadManagerTaskMemoryPool(), op);
+        ThreadManagerAddSlotTask(op.slot_to_run_, task);
     }
 };
 
@@ -79,17 +73,23 @@ struct ThreadScheduler
     }
 };
 
+constexpr auto MEMORY_POOL_ID_TASK = 1;
+
 class ThreadManager final : public Manager<ThreadManager>
 {
 private:
     HashMap<ThreadSlot, UniquePtr<ThreadCluster>> clusters_;
+
+    MemoryPool* task_memory_pool_ = nullptr;
 
 public:
     static ThreadScheduler& GetScheduler();
 
     static std::thread::id GetMainThreadId();
 
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
+    static MemoryPool* GetTaskMemoryPool();
+
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::First; }
     [[nodiscard]] StringView   GetName() const override { return "ThreadManager"; }
 
     void Startup() override;

@@ -5,6 +5,7 @@
 #include "ThreadCluster.h"
 
 #include "Core/CoreGlobal.h"
+#include "ThreadManager.h"
 #include "ThreadUtils.h"
 void core::ThreadCluster::Work()
 {
@@ -21,11 +22,7 @@ void core::ThreadCluster::Work()
         if (task)
         {
             task->Execute();
-            // TODO: 这里可能在主线程基于loop的协程时出现问题
-            if (task->ShouldDeleteAfterExecute())
-            {
-                Delete(task);
-            }
+            DeleteWithPool(ThreadManager::GetTaskMemoryPool(), task);
         }
     }
 }

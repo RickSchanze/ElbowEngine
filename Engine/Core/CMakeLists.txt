@@ -69,8 +69,6 @@ add_library(${PROJECT_NAME}
         Config/CoreConfig.h
         Config/ConfigManager.cpp
         Config/ConfigManager.h
-        Memory/FrameAllocator.cpp
-        Memory/FrameAllocator.h
         CoreDef.cpp
         Base/UniquePtr.cpp
         Singleton/MManager.cpp
@@ -109,9 +107,11 @@ add_library(${PROJECT_NAME}
         Object/ObjectPtr.cpp
         Object/PersistentObject.cpp
         Object/PersistentObject.h
-        Memory/DoubleFrameAllocator.cpp
-        Memory/DoubleFrameAllocator.h
         Features.h
+        Memory/MemoryPool.cpp
+        Memory/MemoryPool.h
+        Memory/MemoryManager.cpp
+        Memory/MemoryManager.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

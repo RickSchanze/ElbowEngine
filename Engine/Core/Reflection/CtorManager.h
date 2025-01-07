@@ -29,7 +29,7 @@ public:
     void RegisterCtorDtor(RTTITypeInfo info, InplaceCtor ctor, InplaceDtor dtor);
     bool ConstructAt(const Type* info, void* ptr) const;
     bool                       DestroyAt(const Type* info, void* ptr) const;
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Middle; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Second; }
     [[nodiscard]] StringView   GetName() const override { return "CtorManager"; }
 
 private:

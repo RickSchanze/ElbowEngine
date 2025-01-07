@@ -47,7 +47,7 @@ private:
     ObjectRegistry registry_;
 
 public:
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Top; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::First; }
     [[nodiscard]] StringView   GetName() const override { return "ObjectManager"; }
 
     void Startup() override;

@@ -8,7 +8,7 @@
 #include "YamlArchive.h"
 
 #include "Core/Log/CoreLogCategory.h"
-#include "Core/Memory/FrameAllocator.h"
+#include "Core/Memory/MemoryManager.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Reflection/CtorManager.h"
 #include "yaml-cpp/yaml.h"
@@ -309,24 +309,14 @@ struct ScopedAny
 {
     ScopedAny(int32_t size, const Type* type) : type_(type)
     {
-        if (FrameAllocator::IsValid())
-        {
-            ptr = core::FrameAllocator::Malloc(size);
-        }
-        else
-        {
-            ptr = malloc(size);
-        }
+        ptr = MemoryManager::Allocate(size);
         CtorManager::Get()->ConstructAt(type, ptr);
     }
 
     ~ScopedAny()
     {
         CtorManager::Get()->DestroyAt(type_, ptr);
-        if (!FrameAllocator::IsValid())
-        {
-            free(ptr);
-        }
+        MemoryManager::Free(ptr);
     }
 
     void*       ptr;

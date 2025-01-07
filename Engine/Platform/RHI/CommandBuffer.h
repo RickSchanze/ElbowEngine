@@ -8,6 +8,7 @@
 #include "Core/Base/EString.h"
 #include "Core/CoreGlobal.h"
 #include "Enums.h"
+#include "GfxContext.h"
 #include "IResource.h"
 
 
@@ -55,7 +56,7 @@ public:
         requires std::derived_from<T, RHICommand>
     void Enqueue(Args&&... args)
     {
-        auto cmd = NewDoubleFrameTemp<T>(core::Forward<Args>(args)...);
+        auto cmd = NewWithPoolId<T>(MEMORY_POOL_ID_CMD, core::Forward<Args>(args)...);
         EnqueueCommand(cmd);
     }
 

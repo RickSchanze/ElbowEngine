@@ -21,7 +21,7 @@ namespace resource
 class AssetDataBase : public core::Manager<AssetDataBase>
 {
 public:
-    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::Top; }
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::First; }
     [[nodiscard]] core::StringView   GetName() const override { return "AssetDataBase"; }
 
     /**

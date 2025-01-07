@@ -96,9 +96,13 @@ struct SubmitParameter
     uint64_t        signal_value      = 0;
 };
 
+constexpr auto MEMORY_POOL_ID_CMD = 2;
+
 class GfxContext
 {
 public:
+    GfxContext();
+
     virtual ~GfxContext() = default;
 
     [[nodiscard]] virtual GraphicsAPI GetAPI() const = 0;

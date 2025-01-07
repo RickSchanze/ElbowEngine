@@ -20,9 +20,10 @@ namespace core
 {
 enum class ManagerLevel
 {
-    Top,
-    Middle,
-    Bottom,
+    First,
+    Second,
+    Third,
+    Fourth,
     Count,
 };
 
@@ -59,7 +60,7 @@ public:
         static T* instance;
         if (!instance)
         {
-            instance = New<T>();
+            instance = new T;
         }
         MManager::GetByRef().RegisterManager(instance);
         return instance;
