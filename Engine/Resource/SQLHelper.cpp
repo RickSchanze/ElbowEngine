@@ -281,8 +281,8 @@ core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, S
             }
             if (field->GetType()->IsString())
             {
-                const auto value = query.getColumn(i).getString();
-                field->SetValue(result.AsAny(), String(value));
+                const String value = query.getColumn(i).getString();
+                field->SetValue(result.AsAny(), value);
                 continue;
             }
             throw SQLException("查询类型错误");

@@ -386,7 +386,7 @@ core::SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandP
 void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const core::StringView name) const
 {
 #if ELBOW_DEBUG
-    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
+    if (core::GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false) return;
     VkDebugUtilsObjectNameInfoEXT name_info = {};
     name_info.sType                         = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
     name_info.objectType                    = type;
@@ -415,13 +415,13 @@ uint32_t GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropert
 
 void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const
 {
-    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
+    if (core::GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false) return;
     CmdBeginDebugUtilsLabelEXT(cmd, &info);
 }
 
 void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const
 {
-    if (core::GetConfig<PlatformConfig>()->GetEnableValidationLayer() == false) return;
+    if (core::GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false) return;
     CmdEndDebugUtilsLabelEXT(cmd);
 }
 
@@ -476,10 +476,16 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         "SwapChainImageView7",
         "SwapChainImageView8",   // 开发设备最多支持八个
     };
-    auto     vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
-    auto     vk_imgs    = core::Array<VkImage>(vulkan_ctx->GetSwapchainImageCount());
-    uint32_t img_cnt;
+    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
+
+    uint32_t img_cnt = 0;
+    VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, nullptr));
+    auto vk_imgs = core::Array<VkImage>(img_cnt);
     VERIFY_VULKAN_RESULT(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, vk_imgs.data()));
+    if (img_cnt <= 0)
+    {
+        LOGGER.Critical(logcat::Platform_RHI_Vulkan, "创建交换链获取失败");
+    }
     vulkan_ctx->swapchain_images_ =   //
         vk_imgs | enumerate | transform([vulkan_ctx](const auto& pair) {
             auto& desc             = vulkan_ctx->swapchain_image_desc_;
@@ -679,7 +685,7 @@ static void CreateInstance(core::Ref<VkInstance> instance)
     app_info.engineVersion      = VK_MAKE_VERSION(0, 1, 0);
     app_info.apiVersion         = VK_API_VERSION_1_3;
 
-    if (rhi_cfg->GetEnableValidationLayer())
+    if (rhi_cfg->GetValidEnableValidationLayer())
     {
         required_instance_extensions.emplace_back("VK_EXT_debug_utils");
     }
@@ -697,21 +703,22 @@ static void CreateInstance(core::Ref<VkInstance> instance)
     instance_info.enabledExtensionCount   = required_extension_cstr.size();
     instance_info.ppEnabledExtensionNames = required_extension_cstr.data();
 
-    LOGGER.Info(logcat::Platform_RHI_Vulkan, "  Enable validation layer: {}", rhi_cfg->GetEnableValidationLayer());
+    LOGGER.Info(logcat::Platform_RHI_Vulkan, "  Enable validation layer: {}", rhi_cfg->GetValidEnableValidationLayer());
     VkDebugUtilsMessengerCreateInfoEXT debug_info = {};
-    if (rhi_cfg->GetEnableValidationLayer())
+    if (rhi_cfg->GetValidEnableValidationLayer())
     {
         core::Assert::Require(
-            logcat::Platform_RHI_Vulkan, SupportValidationLayer(rhi_cfg->GetValidationLayerName()), "Validation layer is not supported!"
+            logcat::Platform_RHI_Vulkan, SupportValidationLayer("VK_LAYER_KHRONOS_validation"), "Validation layer is not supported!"
         );
-        const char* validation_layer_names[1] = {*rhi_cfg->GetValidationLayerName()};
-        debug_info.sType                      = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_info.messageSeverity            = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_info.messageType                = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        const char* validation_layer_names = "VK_LAYER_KHRONOS_validation";
+        LOGGER.Info(logcat::Test, "Validation layer: {}", validation_layer_names);
+        debug_info.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        debug_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debug_info.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         debug_info.pfnUserCallback        = DebugCallback;
         instance_info.enabledLayerCount   = 1;
-        instance_info.ppEnabledLayerNames = validation_layer_names;
+        instance_info.ppEnabledLayerNames = &validation_layer_names;
         instance_info.pNext               = &debug_info;
     }
     else
@@ -749,7 +756,7 @@ static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     core::Array<VkExtensionProperties> extensions(cnt);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, extensions.data());
     auto* cfg                    = core::GetConfig<PlatformConfig>();
-    auto  my_required_extensions = cfg->GetVulkanRequiredDeviceExtensions();
+    Array my_required_extensions = {"VK_KHR_swapchain"};
     auto  filter_exts            = my_required_extensions |   //
                        remove_if([&extensions](const core::String& ext) {
                            return ranges::any_of(extensions, [&ext](const VkExtensionProperties& prop) { return ext == prop.extensionName; });
@@ -846,22 +853,21 @@ static void CreateLogicalDevice(
     dynamic_rendering_features.sType                                    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
     dynamic_rendering_features.dynamicRendering                         = VK_TRUE;
 
-    VkDeviceCreateInfo create_info    = {};
-    create_info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    create_info.queueCreateInfoCount  = static_cast<uint32_t>(queue_create_infos.size());
-    create_info.pQueueCreateInfos     = queue_create_infos.data();
-    create_info.pNext                 = &dynamic_rendering_features;
+    VkDeviceCreateInfo create_info      = {};
+    create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    create_info.queueCreateInfoCount    = static_cast<uint32_t>(queue_create_infos.size());
+    create_info.pQueueCreateInfos       = queue_create_infos.data();
+    create_info.pNext                   = &dynamic_rendering_features;
     // TODO: 这里改成由配置文件配置设备特性
-    auto                     cfg      = core::GetConfig<PlatformConfig>();
-    VkPhysicalDeviceFeatures features = {};
-    features.samplerAnisotropy        = VK_TRUE;
-    create_info.pEnabledFeatures      = &features;
-    auto required_extension_cstrs =
-        cfg->GetVulkanRequiredDeviceExtensions() | transform([](const core::String& a) { return *a; }) | ranges::to_vector;
+    auto                     cfg        = core::GetConfig<PlatformConfig>();
+    VkPhysicalDeviceFeatures features   = {};
+    features.samplerAnisotropy          = VK_TRUE;
+    create_info.pEnabledFeatures        = &features;
+    Array required_extension_cstrs      = {"VK_KHR_swapchain"};
     create_info.enabledExtensionCount   = required_extension_cstrs.size();
     create_info.ppEnabledExtensionNames = required_extension_cstrs.data();
-    core::Array layers                  = {*cfg->GetValidationLayerName()};
-    if (cfg->GetEnableValidationLayer())
+    core::Array layers                  = {"VK_LAYER_KHRONOS_validation"};
+    if (cfg->GetValidEnableValidationLayer())
     {
         create_info.enabledLayerCount   = 1;
         create_info.ppEnabledLayerNames = layers.data();
