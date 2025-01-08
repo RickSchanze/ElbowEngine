@@ -320,12 +320,13 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<platform::
         case RHICommandType::BindVertexBuffer: ExecuteCmdBindVertexBuffer(buffer, static_cast<Cmd_BindVertexBuffer*>(command)); break;
         case RHICommandType::BindIndexBuffer: ExecuteCmdBindIndexBuffer(buffer, static_cast<Cmd_BindIndexBuffer*>(command)); break;
         case RHICommandType::DrawIndexed: ExecuteCmdDrawIndexed(buffer, static_cast<Cmd_DrawIndexed*>(command)); break;
-        // case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer, static_cast<Cmd_BeginRender*>(command)); break;
-        // case RHICommandType::EndRender: ExecuteCmdEndRender(buffer); break;
+        case RHICommandType::BeginRender: ExecuteCmdBeginRender(buffer, static_cast<Cmd_BeginRender*>(command)); break;
+        case RHICommandType::EndRender: ExecuteCmdEndRender(buffer); break;
         case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
         case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer, static_cast<Cmd_SetScissor*>(command)); break;
         case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer, static_cast<Cmd_SetViewport*>(command)); break;
         }
+        std::destroy_at(command);
     }
     ctx.EndDebugLabel(buffer);
 }

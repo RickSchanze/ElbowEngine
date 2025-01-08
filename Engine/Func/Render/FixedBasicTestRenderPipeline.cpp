@@ -54,9 +54,9 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     attachment.target      = view;
     attachment.layout      = ImageLayout::ColorAttachment;
     Array attachments{attachment};
-    // cmd.Enqueue<Cmd_BeginRender>(attachments);
-    // cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
-    // BindAndDrawMesh(cmd, mesh_);
+    cmd.Enqueue<Cmd_BeginRender>(attachments);
+    cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
+    BindAndDrawMesh(cmd, mesh_);
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(
         ImageLayout::ColorAttachment,
