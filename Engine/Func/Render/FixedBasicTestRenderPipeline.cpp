@@ -26,14 +26,13 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     auto image = GetBackBuffer(params.current_image_index);
     cmd.Begin();
 
-
-        auto         w = platform::GetWindowManager().GetMainWindow();
-        core::Rect2D rect{};
-        rect.size = {w->GetWidth(), w->GetHeight()};
-        cmd.Enqueue<Cmd_SetScissor>(rect);
-        cmd.Enqueue<Cmd_SetViewport>(rect);
-        cmd.Execute("WindowResize");
-
+    auto         w = platform::GetWindowManager().GetMainWindow();
+    core::Rect2D rect{};
+    rect.size = {w->GetWidth(), w->GetHeight()};
+    cmd.Enqueue<Cmd_SetScissor>(rect);
+    cmd.Enqueue<Cmd_SetViewport>(rect);
+    cmd.Execute("WindowResize");
+    //
     ImageSubresourceRange range{};
     range.aspect_mask      = IA_Color;
     range.base_array_layer = 0;
@@ -55,9 +54,9 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     attachment.target      = view;
     attachment.layout      = ImageLayout::ColorAttachment;
     Array attachments{attachment};
-    cmd.Enqueue<Cmd_BeginRender>(attachments);
-    cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
-    BindAndDrawMesh(cmd, mesh_);
+    // cmd.Enqueue<Cmd_BeginRender>(attachments);
+    // cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
+    // BindAndDrawMesh(cmd, mesh_);
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(
         ImageLayout::ColorAttachment,
