@@ -22,6 +22,7 @@ static void LogErrorStack(core::Log& log)
 {
     if (log.level == LogLevel::Error)
     {
+        DEBUG_BREAK();
         String outStack = "Call Stack: \n";
         for (auto element: log.call_stack)
         {

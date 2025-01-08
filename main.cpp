@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 
+#include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
@@ -61,6 +62,7 @@ int main()
         // 其他初始化
         {
             PROFILE_SCOPE("Other Initialize");
+            core::ThreadManager::Get();
         }
         LOGGER.Info(logcat::Engine, "Engine initialized.");
         SetRuntimeStage(RuntimeStage::Running);

@@ -4,10 +4,12 @@
 
 #pragma once
 #include "Core/Core.h"
+#include "Core/Memory/MemoryManager.h"
 #include "Execution/Common.h"
 #include "ThreadCluster.h"
 namespace core
 {
+constexpr auto MEMORY_POOL_ID_TASK = 1;
 
 enum class ENUM() ThreadSlot
 {
@@ -42,7 +44,7 @@ struct ThreadSchedulerOperationState
 
     friend void TagInvoke(exec::StartType, ThreadSchedulerOperationState& op)
     {
-        auto task = MakeShared<OperationStateTask<ThreadSchedulerOperationState>>(op);
+        auto task = core::MakeShared<OperationStateTask<ThreadSchedulerOperationState>>(op);
         ThreadManagerAddSlotTask(op.slot_to_run_, task);
     }
 };
@@ -72,8 +74,6 @@ struct ThreadScheduler
         return sender;
     }
 };
-
-constexpr auto MEMORY_POOL_ID_TASK = 1;
 
 class ThreadManager final : public Manager<ThreadManager>
 {

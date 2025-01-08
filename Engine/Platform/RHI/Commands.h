@@ -5,6 +5,7 @@
 #pragma once
 #include "Core/CoreGlobal.h"
 #include "Core/Math/MathTypes.h"
+#include "Core/Memory/MemoryManager.h"
 #include "Enums.h"
 
 namespace platform::rhi
@@ -107,11 +108,11 @@ struct Cmd_BeginRender final : RHICommand
 {
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BeginRender; }
 
-    explicit Cmd_BeginRender(const core::Array<RenderAttachment>& colors_, const RenderAttachment& depth_ = {}, core::Size2D size_ = {0, 0});
+    explicit Cmd_BeginRender(const core::PooledArray<RenderAttachment>& colors_, const RenderAttachment& depth_ = {}, core::Size2D size_ = {0, 0});
 
-    core::Array<RenderAttachment> colors;
-    RenderAttachment              depth;
-    core::Size2D                  render_size;
+    core::PooledArray<RenderAttachment> colors;
+    RenderAttachment                    depth;
+    core::Size2D                        render_size{};
 };
 
 struct Cmd_EndRender final : RHICommand

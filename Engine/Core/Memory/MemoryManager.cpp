@@ -64,3 +64,24 @@ void MemoryManager::ReleasePool(Int32 id)
     }
     delete mgr.pools_[id];
 }
+
+void* core::_Allocate(MemoryPool* pool, size_t size)
+{
+    if (pool)
+    {
+        return pool->Allocate(size);
+    }
+    LOGGER.Error(logcat::Core_Memory, "无效的内存池!");
+    return malloc(size);
+}
+
+void core::_Free(MemoryPool* pool, void* ptr)
+{
+    if (pool)
+    {
+        pool->Free(ptr);
+        return;
+    }
+    LOGGER.Error(logcat::Core_Memory, "无效的内存池!");
+    free(ptr);
+}

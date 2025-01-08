@@ -27,12 +27,12 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     cmd.Begin();
 
     auto         w = platform::GetWindowManager().GetMainWindow();
-    core::Rect2D rect{};
+    Rect2D rect{};
     rect.size = {w->GetWidth(), w->GetHeight()};
     cmd.Enqueue<Cmd_SetScissor>(rect);
     cmd.Enqueue<Cmd_SetViewport>(rect);
     cmd.Execute("WindowResize");
-    //
+
     ImageSubresourceRange range{};
     range.aspect_mask      = IA_Color;
     range.base_array_layer = 0;
@@ -50,10 +50,11 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
         PSFB_ColorAttachmentOutput
     );
     RenderAttachment attachment{};
-    attachment.clear_color = Color::Green();
-    attachment.target      = view;
-    attachment.layout      = ImageLayout::ColorAttachment;
-    Array attachments{attachment};
+    attachment.clear_color  = Color::Green();
+    attachment.target       = view;
+    attachment.layout       = ImageLayout::ColorAttachment;
+    PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
+    attachments.push_back(attachment);
     cmd.Enqueue<Cmd_BeginRender>(attachments);
     cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
     BindAndDrawMesh(cmd, mesh_);

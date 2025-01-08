@@ -37,7 +37,6 @@ public:
     void               SetRenderEnable(bool enable);
     [[nodiscard]] bool IsRenderEnable() const { return should_render_; }
 
-
 private:
     [[nodiscard]] bool ShouldRender() const;
 
@@ -56,7 +55,7 @@ private:
 
     // 窗口
     core::DelegateID window_resized_evt_handle_{};
-    bool             window_resized_{false};
+    bool             window_resized_{true};
 
     bool should_render_{true};
 

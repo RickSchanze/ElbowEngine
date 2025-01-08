@@ -20,7 +20,7 @@ void              _MemoryPoolFree(core::MemoryPool* pool, void* p);
 core::MemoryPool* _GetMemoryPool(Int32 id);
 
 template <typename T, typename... Args>
-T* NewWithPool(core::MemoryPool* pool, Args&&... args)
+T* NewPooled(core::MemoryPool* pool, Args&&... args)
 {
     const size_t size = sizeof(T);
     T*           p    = static_cast<T*>(_MemoryPoolAllocate(pool, size));
@@ -32,36 +32,36 @@ T* NewWithPool(core::MemoryPool* pool, Args&&... args)
 }
 
 template <typename T, typename... Args>
-T* NewWithPoolId(const Int32 id, Args&&... args)
+T* NewPooledId(const Int32 id, Args&&... args)
 {
     auto pool = _GetMemoryPool(id);
-    return NewWithPool<T>(pool, std::forward<Args>(args)...);
+    return NewPooled<T>(pool, std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
 T* New(Args&&... args)
 {
-    return NewWithPoolId<T>(0, std::forward<Args>(args)...);
+    return NewPooledId<T>(0, std::forward<Args>(args)...);
 }
 
 template <typename T>
-void DeleteWithPool(core::MemoryPool* pool, T* p)
+void DeletePooled(core::MemoryPool* pool, T* p)
 {
     p->~T();
     _MemoryPoolFree(pool, p);
 }
 
 template <typename T>
-void DeleteWithPoolId(const Int32 id, T* p)
+void DeletePooledId(const Int32 id, T* p)
 {
     auto pool = _GetMemoryPool(id);
-    DeleteWithPool(pool, p);
+    DeletePooled(pool, p);
 }
 
 template <typename T>
 void Delete(T* p)
 {
-    DeleteWithPoolId(0, p);
+    DeletePooledId(0, p);
 }
 
 // 编译时获得常量字符串长度
