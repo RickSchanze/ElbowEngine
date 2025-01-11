@@ -114,26 +114,4 @@ public:
      */
     static int32_t RandomInt(int32_t min, int32_t max);
 };
-
-template<typename T>
-concept MathType = std::is_same_v<std::remove_cvref_t<T>, Vector3>;
-
-class MathRanges
-{
-public:
-    static auto Cross(Vector3 b)
-    {
-        return [&b](const Vector3& new_a) { return Math::Cross(new_a, b); };
-    }
-
-    static float Size(const Vector3 v) { return Math::Size(v); }
-
-    static Vector3 Normalize(const Vector3 v) { return Math::Normalize(v); }
-};
-
-template<MathType T, typename F>
-auto operator|(T&& value, F&& func)
-{
-    return func(value);
-}
 }

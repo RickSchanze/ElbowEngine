@@ -30,10 +30,10 @@ public class CodeGenConfig
 
     public Dictionary<string, string> LayerDir { get; } = new()
     {
-        { @"Engine\Core", "Core" },
-        { @"Engine\Test", "Test" },
-        { @"Engine\Platform", "Platform" },
-        { @"Engine\Resource", "Resource" },
+        { @"Engine/Core", "Core" },
+        { @"Engine/Test", "Test" },
+        { @"Engine/Platform", "Platform" },
+        { @"Engine/Resource", "Resource" },
     };
 
     public List<string> Macros { get; } = ["REFLECTION", "REFL_GEN"];

@@ -24,5 +24,9 @@
       <PackageReference Include="CppAst" Version="0.21.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="FileCppInfo.cs" />
+    </ItemGroup>
   
 </Project>

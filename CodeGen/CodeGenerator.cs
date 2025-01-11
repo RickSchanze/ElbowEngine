@@ -1,11 +1,107 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using CppAst;
 using Newtonsoft.Json;
 
 namespace CodeGen;
+
+public class FileCppInfo
+{
+    public HashSet<CppClass> Classes { get; } = new();
+    public HashSet<CppEnum> Enums { get; } = new();
+    public string FilePath { get; init; }
+}
+
+public class CodeGeneratorHelper
+{
+    static void ProcessClass(Dictionary<string, FileCppInfo> cache, CppClass cppClass, List<string> processingFiles)
+    {
+        string? sourceFile = cppClass.SourceFile?.Replace("\\", "/");
+        if (sourceFile == null) return;
+        if (!processingFiles.Contains(sourceFile)) return;
+        if (!cppClass.Attributes.Any(x => x.Arguments.Contains("Reflection"))) return;
+        if (cache.TryGetValue(sourceFile, out var cppInfo))
+        {
+            cppInfo.Classes.Add(cppClass);
+        }
+        else
+        {
+            FileCppInfo newCppInfo = new()
+            {
+                FilePath = sourceFile,
+            };
+            newCppInfo.Classes.Add(cppClass);
+            cache.Add(sourceFile, newCppInfo);
+        }
+    }
+
+    static void ProcessEnum(Dictionary<string, FileCppInfo> cache, CppEnum cppEnum, List<string> processingFiles)
+    {
+        string? sourceFile = cppEnum.SourceFile?.Replace("\\", "/");
+        if (sourceFile == null) return;
+        if (!processingFiles.Contains(sourceFile)) return;
+        if (!cppEnum.Attributes.Any(x => x.Arguments.Contains("Reflection"))) return;
+        if (cache.TryGetValue(sourceFile, out var cppInfo))
+        {
+            cppInfo.Enums.Add(cppEnum);
+        }
+        else
+        {
+            FileCppInfo newEnumInfo = new()
+            {
+                FilePath = sourceFile,
+            };
+            newEnumInfo.Enums.Add(cppEnum);
+            cache.Add(sourceFile, newEnumInfo);
+        }
+    }
+
+    static void ProcessNameSpace(Dictionary<string, FileCppInfo> cache, CppNamespace cppNamespace,
+        List<string> processingFiles)
+    {
+        string? sourceFile = cppNamespace
+            .SourceFile?.Replace("\\", "/");
+        if (sourceFile == null) return;
+        if (!processingFiles.Contains(sourceFile)) return;
+        foreach (var cppClass in cppNamespace.Classes)
+        {
+            ProcessClass(cache, cppClass, processingFiles);
+        }
+
+        foreach (var cppEnum in cppNamespace.Enums)
+        {
+            ProcessEnum(cache, cppEnum, processingFiles);
+        }
+
+        foreach (var ns in cppNamespace.Namespaces)
+        {
+            ProcessNameSpace(cache, ns, processingFiles);
+        }
+    }
+
+    public static Dictionary<string, FileCppInfo> FindAllReflectedClasses(CppCompilation compilation,
+        List<string> processingFiles)
+    {
+        Dictionary<string, FileCppInfo> cache = new();
+        foreach (var cppClass in compilation.Classes)
+        {
+            ProcessClass(cache, cppClass, processingFiles);
+        }
+
+        foreach (var cppEnum in compilation.Enums)
+        {
+            ProcessEnum(cache, cppEnum, processingFiles);
+        }
+
+        foreach (var cppNamespace in compilation.Namespaces)
+        {
+            ProcessNameSpace(cache, cppNamespace, processingFiles);
+        }
+
+        return cache;
+    }
+}
 
 public class CodeGenerator
 {
@@ -29,21 +125,50 @@ public class CodeGenerator
         }
     }
 
-    private bool HasError = false;
+    private bool HasError;
 
-    private void GenerateFile(string path)
+    private void GenerateFile(FileCppInfo cppInfo, string outputPath)
     {
-        var oldFileName = Path.GetFileName(path);
-        if (!oldFileName.EndsWith(".h"))
+        string layer = "";
+        foreach (var layerName in _config.LayerDir)
         {
-            throw new Exception("Only support .h file");
+            if (cppInfo.FilePath.Contains(layerName.Key))
+            {
+                layer = layerName.Value;
+                break;
+            }
         }
 
+        string fileName = Path.GetFileNameWithoutExtension(cppInfo.FilePath);
+        string generatedCopyFileName = string.IsNullOrEmpty(layer)
+            ? $"{fileName}.generated.copy.h"
+            : $"{layer}.{fileName}.generated.copy.h";
+        string generatedFileName =
+            string.IsNullOrEmpty(layer) ? $"{fileName}.generated.h" : $"{layer}.{fileName}.generated.h";
+        generatedCopyFileName = Path.Combine(outputPath, generatedCopyFileName);
+        generatedFileName = Path.Combine(outputPath, generatedFileName);
+        using (var fs = new FileStream(generatedCopyFileName, FileMode.Create))
+        {
+            using var sw = new StreamWriter(fs, Encoding.UTF8);
+            // 生成文件头
+            GenerateHeader(sw, cppInfo);
+            sw.WriteLine();
+
+            // 生成类信息
+            GenerateClasses(sw, cppInfo);
+        }
+
+        File.Copy(generatedCopyFileName, generatedFileName, true);
+        File.Delete(generatedCopyFileName);
+    }
+
+    private void GenerateFiles(List<string> paths)
+    {
         var options = new CppParserOptions();
         options.IncludeFolders.AddRange(AbsoluteIncludeDirs);
         options.Defines.AddRange(_config.Macros);
         options.AdditionalArguments.AddRange(_config.Arguments);
-        var compilation = CppParser.ParseFile(path, options);
+        var compilation = CppParser.ParseFiles(paths, options);
         if (compilation.HasErrors)
         {
             foreach (var diagnostic in compilation.Diagnostics.Messages)
@@ -56,41 +181,24 @@ public class CodeGenerator
             return;
         }
 
+        for (int i = 0; i < paths.Count; i++)
+        {
+            var path = paths[i];
+            paths[i] = path.Replace("\\", "/");
+        }
+
+        Dictionary<string, FileCppInfo> all = CodeGeneratorHelper.FindAllReflectedClasses(compilation, paths);
+
         var outputAbsPath = Path.Combine(_config.WorkDir, _config.OutputDir);
-
-        string layer = "";
-        foreach (var layerName in _config.LayerDir)
+        List<Task> tasks = new();
+        foreach (var value in all.Values)
         {
-            if (path.Contains(layerName.Key))
-            {
-                layer = layerName.Value;
-                break;
-            }
+            tasks.Add(
+                Task.Run(() => { GenerateFile(value, outputAbsPath); })
+            );
         }
 
-        var info = new FileCppInfo(compilation, path);
-        if (!info.HasAnyReflectedEntity) return;
-        string fileName = Path.GetFileNameWithoutExtension(path);
-        string generatedCopyFileName = string.IsNullOrEmpty(layer)
-            ? $"{fileName}.generated.copy.h"
-            : $"{layer}.{fileName}.generated.copy.h";
-        string generatedFileName =
-            string.IsNullOrEmpty(layer) ? $"{fileName}.generated.h" : $"{layer}.{fileName}.generated.h";
-        generatedCopyFileName = Path.Combine(outputAbsPath, generatedCopyFileName);
-        generatedFileName = Path.Combine(outputAbsPath, generatedFileName);
-        using (var fs = new FileStream(generatedCopyFileName, FileMode.Create))
-        {
-            using var sw = new StreamWriter(fs, Encoding.UTF8);
-            // 生成文件头
-            GenerateHeader(sw, info);
-            sw.WriteLine();
-
-            // 生成类信息
-            GenerateClasses(sw, info);
-        }
-
-        File.Copy(generatedCopyFileName, generatedFileName, true);
-        File.Delete(generatedCopyFileName);
+        Task.WaitAll(tasks.ToArray());
     }
 
     private void GenerateEnums(StreamWriter sw, FileCppInfo info)
@@ -134,8 +242,10 @@ public class CodeGenerator
                 sw.Write($"->SetAttribute(Type::FlagAttribute::{attribute.Key})");
                 continue;
             }
+
             throw new Exception($"Unknown attribute: {attribute.Key}");
         }
+
         sw.WriteLine("; \\");
         sw.WriteLine($"using enum {validEnum.FullName}; \\");
         GenerateEnumFields(sw, validEnum.Items);
@@ -171,12 +281,13 @@ public class CodeGenerator
                     sw.Write($"->SetAttribute(FieldInfo::FlagAttribute::{attribute.Key})");
                     continue;
                 }
-                
+
                 if (_config.EnumValueAttrs.Contains(attribute.Key))
                 {
                     sw.Write($"->SetAttribute(FieldInfo::ValueAttribute::{attribute.Key}, \"{attribute.Value}\")");
                     continue;
                 }
+
                 throw new Exception("Unknown attribute: " + attribute.Key);
             }
 
@@ -418,6 +529,8 @@ public class CodeGenerator
 
         // 获取文件夹及其子文件夹中所有 .h 文件
         List<Task> tasks = new();
+        List<string> files = new();
+        object lockObj = new();
         foreach (var sourceDir in AbsoluteSourceDirs)
         {
             var hFiles = Directory.GetFiles(sourceDir, "*.h", SearchOption.AllDirectories);
@@ -435,13 +548,18 @@ public class CodeGenerator
                         }
                     }
 
-                    if (!dirty) return;
-                    if (ExcludedFiles.Contains(hFile)) return;
-                    GenerateFile(hFile);
                     cache[hFile] = newHash;
+                    if (!dirty) return;
+                    lock (lockObj)
+                    {
+                        files.Add(hFile);
+                    }
                 }));
             }
         }
+
+        Task.WaitAll(tasks.ToArray());
+        GenerateFiles(files);
 
         if (!HasError)
         {
