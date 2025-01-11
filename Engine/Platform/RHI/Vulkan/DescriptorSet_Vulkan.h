@@ -23,4 +23,13 @@ private:
     VkDescriptorSetLayout handle_ = VK_NULL_HANDLE;
 };
 
+class DescriptorSet_Vulkan : public DescriptorSet
+{
+public:
+    [[nodiscard]] void* GetNativeHandle() const override { return handle_; }
+
+private:
+    VkDescriptorSet handle_ = VK_NULL_HANDLE;
+};
+
 }   // namespace platform::rhi::vulkan

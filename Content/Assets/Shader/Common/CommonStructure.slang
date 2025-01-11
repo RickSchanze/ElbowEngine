@@ -7,9 +7,10 @@ public struct Vertex {
 };
 
 public struct Camera {
-    float4x4 data;
     float4x4 view;
     float4x4 projection;
+    float4x4 data1;
+    float4x4 data2;
 
     public float4x4 GetView() {
         return view;
@@ -20,6 +21,14 @@ public struct Camera {
     }
 
     public float3 GetPosition() {
-        return data[0].xyz;
+        return data1[0].xyz;
     }
 };
+
+public struct Model {
+    float4x4 model;
+
+    public float4x4 GetModel() {
+        return model;
+    }
+}

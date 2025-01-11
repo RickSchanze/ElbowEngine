@@ -276,7 +276,8 @@ core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, S
             if (field->GetType()->IsBoolean())
             {
                 const int64_t value = query.getColumn(i).getInt64();
-                field->SetValue(result.AsAny(), value != 0);
+                bool v = value != 0;
+                field->SetValue(result.AsAny(), v);
                 continue;
             }
             if (field->GetType()->IsString())

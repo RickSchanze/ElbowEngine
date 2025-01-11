@@ -61,6 +61,20 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
     }
 }
 
+static bool IsDefinedAttribute(slang::VariableReflection* refl, StringView name)
+{
+    Int32 cnt = refl->getUserAttributeCount();
+    for (Int32 i = 0; i < cnt; ++i)
+    {
+        auto attr = refl->getUserAttributeByIndex(i);
+        if (name == attr->getName())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const Shader* shader)
 {
     const auto& linked_program = shader->_GetLinkedProgram();
@@ -78,14 +92,24 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
         {
             DescriptorSetLayoutBinding binding{};
 
-            const auto field         = scope_type_layout->getFieldByIndex(i);
+            const auto field    = scope_type_layout->getFieldByIndex(i);
+            auto       variable = field->getVariable();
+
             binding.binding          = field->getBindingIndex();
             binding.stage_flags      = Vertex | Fragment;
             binding.descriptor_count = 1;
             switch (field->getCategory())
             {
             case slang::DescriptorTableSlot: {
-                binding.descriptor_type = DescriptorType::UniformBuffer;
+                if (IsDefinedAttribute(variable, "DynamicUniform"))
+                {
+                    binding.descriptor_type = DescriptorType::UniformBufferDynamic;
+                    break;
+                }
+                else
+                {
+                    binding.descriptor_type = DescriptorType::UniformBuffer;
+                }
                 break;
             default: break;
             }

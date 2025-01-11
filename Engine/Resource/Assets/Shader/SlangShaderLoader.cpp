@@ -7,6 +7,7 @@
 #include "Core/Config/ConfigManager.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Platform/FileSystem/Path.h"
+#include "Platform/RHI/GfxContext.h"
 #include "Resource/Config/ResourceConfig.h"
 #include "Resource/Logcat.h"
 #include "Shader.h"
@@ -138,6 +139,15 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
 
     target_desc[1].format  = SLANG_GLSL;
     target_desc[1].profile = global_session_->findProfile("glsl_460");
+
+    CompilerOptionEntry option_entry;
+    if (GetGfxContextRef().GetAPI() == GraphicsAPI::Vulkan)
+    {
+        option_entry.name = CompilerOptionName::EmitSpirvViaGLSL;
+        option_entry.value.intValue0 = 1;
+        target_desc[0].compilerOptionEntryCount = 1;
+        target_desc[0].compilerOptionEntries = &option_entry;
+    }
 
     session_desc.targets     = target_desc;
     session_desc.targetCount = 2;
