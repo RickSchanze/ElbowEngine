@@ -21,6 +21,7 @@ public class CodeGenConfig
         @"Engine\Core",
         @"Engine\Platform",
         @"Engine\Resource",
+        @"Engine\Func",
     ];
 
     public List<string> ExcludedFiles { get; } =
@@ -34,6 +35,7 @@ public class CodeGenConfig
         { @"Engine/Test", "Test" },
         { @"Engine/Platform", "Platform" },
         { @"Engine/Resource", "Resource" },
+        { @"Engine/Func", "Func" },
     };
 
     public List<string> Macros { get; } = ["REFLECTION", "REFL_GEN"];

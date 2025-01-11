@@ -56,8 +56,8 @@ void Shader::Compile(bool output_glsl)
         if (output_glsl)
         {
             String                      output_code = "Vertex: \n";
-            Slang::ComPtr<slang::IBlob> diagnostics;
-            Slang::ComPtr<slang::IBlob> vert_code;
+            Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
+            Slang::ComPtr<slang::IBlob> vert_code = nullptr;
             linked_program_->getEntryPointCode(stage_to_entry_point_index_[VERTEX_STAGE_IDX], 1, vert_code.writeRef(), diagnostics.writeRef());
             if (diagnostics)
             {

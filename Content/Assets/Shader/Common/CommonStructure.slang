@@ -6,17 +6,18 @@ public struct Vertex {
     public float2 uv0;
 };
 
-public struct VP {
-    public float4x4 view;
-    public float4x4 projection;
-};
-
-public struct M {
-    public float4x4 model;
-};
-
 public struct Camera {
     float4x4 data;
+    float4x4 view;
+    float4x4 projection;
+
+    public float4x4 GetView() {
+        return view;
+    }
+
+    public float4x4 GetProjection() {
+        return projection;
+    }
 
     public float3 GetPosition() {
         return data[0].xyz;

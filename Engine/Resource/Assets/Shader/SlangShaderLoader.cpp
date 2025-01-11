@@ -161,11 +161,11 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
     SlangResult                                result;
     core::Array<Slang::ComPtr<IComponentType>> linking_programs;
     Array<Format>                              output_formats;
+    Slang::ComPtr<IEntryPoint>                 vert;
+    Slang::ComPtr<IEntryPoint>                 frag;
+    Slang::ComPtr<IEntryPoint>                 compute;
     if (pipeline == 1)   // Graphics
     {
-        Slang::ComPtr<IEntryPoint> vert;
-        Slang::ComPtr<IEntryPoint> frag;
-
         result = module->findAndCheckEntryPoint("vert", SLANG_STAGE_VERTEX, vert.writeRef(), diagnostics.writeRef());
         DiagnosticsIfNeeded(diagnostics);
         VERIFY_SLANG_RESULT(result);
@@ -179,8 +179,6 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
     }
     else if (pipeline == 2)   // Compute
     {
-        Slang::ComPtr<IEntryPoint> compute;
-
         result = module->findAndCheckEntryPoint("compute", SLANG_STAGE_COMPUTE, compute.writeRef(), diagnostics.writeRef());
         DiagnosticsIfNeeded(diagnostics);
         VERIFY_SLANG_RESULT(result);
@@ -194,7 +192,7 @@ void SlangShaderLoader::Load(core::StringView path, Shader& shader)
 
     const Array<IComponentType*> components =
         linking_programs | ranges::views::transform([](const Slang::ComPtr<IComponentType>& component) { return component.get(); }) |
-        ranges::to<core::Array<IComponentType*>>();
+        ranges::to<Array<IComponentType*>>();
 
     Slang::ComPtr<IComponentType> composed;
     result = session->createCompositeComponentType(

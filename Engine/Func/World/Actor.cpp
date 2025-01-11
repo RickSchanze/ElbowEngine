@@ -3,3 +3,15 @@
 //
 
 #include "Actor.h"
+#include "Core/Core.h"
+
+#include GEN_HEADER("Func.Actor.generated.h")
+
+GENERATED_SOURCE()
+
+using namespace func;
+
+void Actor::SetTransform(const Transform& transform)
+{
+    transform_ = transform;
+}

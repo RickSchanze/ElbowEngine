@@ -11,9 +11,10 @@
 #include "Core/Reflection/ITypeGetter.h"
 #include "Core/Reflection/MetaInfoMacro.h"
 #include "Core/Reflection/MetaInfoManager.h"
+#include "Core/Async/Execution/StartAsync.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
-#include "Core/Async/Execution/StartAsync.h"
+
 
 namespace core
 {

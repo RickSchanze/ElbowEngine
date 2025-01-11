@@ -22,6 +22,10 @@ add_library(${PROJECT_NAME}
         Render/Misc.h
         Render/FixedBasicTestRenderPipeline.cpp
         Render/FixedBasicTestRenderPipeline.h
+        World/Camera.cpp
+        World/Camera.h
+        World/Transform.cpp
+        World/Transform.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

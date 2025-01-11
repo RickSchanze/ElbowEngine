@@ -4,9 +4,9 @@
  */
 
 import CommonStructure;
-#include "Common/InputUniform.slang"
+import Utility;
 
-    import CommonStructure;
+uniform ConstantBuffer<Camera> camera;
 
 struct VertexOutput {
     float4 position: SV_Position;
@@ -19,7 +19,8 @@ struct FragOutput {
 [shader("vertex")]
 VertexOutput vert(Vertex vert) {
     VertexOutput output;
-    output.position = float4(vert.position, 1);
+    float4 pos_vec4 = float4(vert.position, 1);
+    output.position = PerformMVP(pos_vec4, GetFloat4x4Identity(), camera.GetView(), camera.GetProjection());
     return output;
 }
 

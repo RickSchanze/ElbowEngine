@@ -51,6 +51,8 @@ core::Optional<int64_t> core::Any::AsInt64() const
     if (GetType() == TypeOf<uint32_t>()) return *static_cast<uint32_t*>(ptr_->GetData());
     if (GetType() == TypeOf<uint64_t>()) return *static_cast<uint64_t*>(ptr_->GetData());
     if (GetType() == TypeOf<bool>()) return *static_cast<bool*>(ptr_->GetData());
+    const Type* type = GetType();
+    DEBUG_BREAK();
     return {};
 }
 
