@@ -9,9 +9,6 @@ import Annotations;
 
 uniform ConstantBuffer<Camera> camera;
 
-[DynamicUniform]
-uniform ConstantBuffer<Model> model;
-
 struct VertexOutput {
     float4 position: SV_Position;
 }
@@ -24,7 +21,7 @@ struct FragOutput {
 VertexOutput vert(Vertex vert) {
     VertexOutput output;
     float4 pos_vec4 = float4(vert.position, 1);
-    output.position = PerformMVP(pos_vec4, model.GetModel(), camera.GetView(), camera.GetProjection());
+    output.position = PerformMVP(pos_vec4, vert.GetModelFloat4x4(), camera.GetView(), camera.GetProjection());
     return output;
 }
 

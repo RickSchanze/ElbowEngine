@@ -40,6 +40,14 @@ public:
      */
     static Matrix4x4 Translate(const Matrix4x4& m, const Vector3& v);
 
+    /**
+     * 将m的位置加上v
+     * @param m
+     * @param v
+     * @return
+     */
+    static Vector3 Translate(const Vector3& m, const Vector3& v);
+
     static Matrix4x4 Rotate(const Matrix4x4& m, const Rotator& v);
     static Matrix4x4 Rotate(const Matrix4x4& m, const Quaternion& v);
     static Matrix4x4 Rotate(const Matrix4x4& m, float angle, const Vector3& axis);
@@ -113,5 +121,21 @@ public:
      * @return
      */
     static int32_t RandomInt(int32_t min, int32_t max);
+
+    /**
+     * 将四元数转换为欧拉角
+     * @param q
+     * @return
+     */
+    static Vector3 ToEuler(Quaternion q);
+
+    static Matrix4x4 ToMatrix4x4(Quaternion q);
+
+    /**
+     * 四元数的共轭
+     * @param q
+     * @return
+     */
+    static Quaternion Conjugate(Quaternion q);
 };
 }

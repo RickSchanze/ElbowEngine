@@ -611,3 +611,23 @@ PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeli
     if (pipeline_stage & VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT) flags |= PSFB_BottomOfPipe;
     return flags;
 }
+
+VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(platform::rhi::VertexInputRate rate)
+{
+    switch (rate)
+    {
+    case platform::rhi::VertexInputRate::Vertex: return VK_VERTEX_INPUT_RATE_VERTEX;
+    case platform::rhi::VertexInputRate::Instance: return VK_VERTEX_INPUT_RATE_INSTANCE;
+    default: return VK_VERTEX_INPUT_RATE_MAX_ENUM;
+    }
+}
+
+platform::rhi::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInputRate rate)
+{
+    switch (rate)
+    {
+    case VK_VERTEX_INPUT_RATE_VERTEX: return platform::rhi::VertexInputRate::Vertex;
+    case VK_VERTEX_INPUT_RATE_INSTANCE: return platform::rhi::VertexInputRate::Instance;
+    default: return platform::rhi::VertexInputRate::Count;
+    }
+}

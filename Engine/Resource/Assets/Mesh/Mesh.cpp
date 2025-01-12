@@ -83,13 +83,13 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     {
         // vertex buffer
         size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex1);
-        platform::rhi::BufferCreateInfo vertex_buffer_info{
+        platform::rhi::BufferDesc vertex_buffer_info{
             vertex_buffer_size, platform::rhi::BUB_VertexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
         };
         out->vertex_count  = vertices.size();
         out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info);
 
-        platform::rhi::BufferCreateInfo staging_buffer_info{
+        platform::rhi::BufferDesc staging_buffer_info{
             vertex_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
         };
         auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
@@ -104,12 +104,12 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     {
         // index buffer
         size_t                          index_buffer_size = indices.size() * sizeof(uint32_t);
-        platform::rhi::BufferCreateInfo index_buffer_info{
+        platform::rhi::BufferDesc index_buffer_info{
             index_buffer_size, platform::rhi::BUB_IndexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
         };
         out->index_count  = indices.size();
         out->index_buffer = ctx.CreateBuffer(index_buffer_info);
-        platform::rhi::BufferCreateInfo staging_buffer_info{
+        platform::rhi::BufferDesc staging_buffer_info{
             index_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
         };
         auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);

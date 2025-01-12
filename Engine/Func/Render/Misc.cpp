@@ -27,34 +27,60 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
     PROFILE_SCOPE_AUTO;
     switch (index)
     {
-    case 1:   // Vertex1
+    case 1:   // Vertex1 with InstancedData1
     {
         VertexInputDesc vertex_input_desc{};
         vertex_input_desc.binding = 0;
         vertex_input_desc.stride  = sizeof(Vertex1);
         desc.vertex_inputs.push_back(vertex_input_desc);
 
-        VertexAttributeDesc location{};
-        location.location = 0;
-        location.binding  = 0;
-        location.format   = Format::R32G32B32_Float;
-        location.offset   = offsetof(Vertex1, position);
+        VertexInputDesc instanced_data{};
+        instanced_data.binding = 1;
+        instanced_data.stride  = sizeof(InstancedData1);
+        desc.vertex_inputs.push_back(instanced_data);
+
+        VertexAttributeDesc position{};
+        position.location = 0;
+        position.binding  = 0;
+        position.format   = Format::R32G32B32_Float;
+        position.offset   = offsetof(Vertex1, position);
+        desc.vertex_attributes.push_back(position);
 
         VertexAttributeDesc normal{};
         normal.location = 1;
         normal.binding  = 0;
         normal.format   = Format::R32G32B32_Float;
         normal.offset   = offsetof(Vertex1, normal);
+        desc.vertex_attributes.push_back(normal);
 
         VertexAttributeDesc texcoord{};
         texcoord.location = 2;
         texcoord.binding  = 0;
         texcoord.format   = Format::R32G32_SFloat;
         texcoord.offset   = offsetof(Vertex1, texcoord);
-
-        desc.vertex_attributes.push_back(location);
-        desc.vertex_attributes.push_back(normal);
         desc.vertex_attributes.push_back(texcoord);
+
+        // Instanced数据
+        VertexAttributeDesc location{};
+        location.location = 3;
+        location.binding  = 1;
+        location.format   = Format::R32G32B32_Float;
+        location.offset   = offsetof(InstancedData1, location);
+        desc.vertex_attributes.push_back(location);
+
+        VertexAttributeDesc rotation{};
+        rotation.location = 4;
+        location.binding  = 1;
+        location.format   = Format::R32G32B32_Float;
+        location.offset   = offsetof(InstancedData1, rotation);
+        desc.vertex_attributes.push_back(rotation);
+
+        VertexAttributeDesc scale{};
+        scale.location = 5;
+        scale.binding  = 1;
+        scale.format   = Format::R32G32B32_Float;
+        scale.offset   = offsetof(InstancedData1, scale);
+        desc.vertex_attributes.push_back(scale);
     }
     break;
     default: throw ArgumentException(NAMEOF(index), "超出范围");

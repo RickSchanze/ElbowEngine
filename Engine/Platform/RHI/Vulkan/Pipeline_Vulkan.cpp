@@ -33,10 +33,10 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& des
     input_bindings.resize(desc.vertex_inputs.size());
     for (size_t i = 0; i < desc.vertex_inputs.size(); ++i)
     {
-        const auto& input         = desc.vertex_inputs[i];
-        input_bindings[i].binding = input.binding;
-        input_bindings[i].stride  = input.stride;
-        // input_bindings[i].inputRate = RHIVertexInputRateToVkVertexInputRate(input.input_rate);
+        const auto& input           = desc.vertex_inputs[i];
+        input_bindings[i].binding   = input.binding;
+        input_bindings[i].stride    = input.stride;
+        input_bindings[i].inputRate = RHIVertexInputRateToVkVertexInputRate(input.rate);
     }
 
     Array<VkVertexInputAttributeDescription> input_attributes;
@@ -145,7 +145,7 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& des
     pipeline_info.pDynamicState       = &dynamic_state_info;
     pipeline_info.layout              = pipeline_layout_;
     // TODO: PSO Cache
-    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+    pipeline_info.basePipelineHandle  = VK_NULL_HANDLE;
     if (render_pass == nullptr)
     {
         dynamic_rendering_ = true;

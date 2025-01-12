@@ -94,7 +94,7 @@ public:
 
     core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
 
-    [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) override;
+    [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info) override;
 
     [[nodiscard]] core::SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo& create_info) override;
 

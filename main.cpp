@@ -9,6 +9,7 @@
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "cpptrace/cpptrace.hpp"
+#include "Func/Camera/Camera.h"
 #include "Func/Render/FixedBasicTestRenderPipeline.h"
 #include "Func/Render/RenderContext.h"
 #include "Func/World/WorldClock.h"
@@ -63,6 +64,7 @@ int main()
         {
             PROFILE_SCOPE("Other Initialize");
             core::ThreadManager::Get();
+            Camera::Get();
         }
         LOGGER.Info(logcat::Engine, "Engine initialized.");
         SetRuntimeStage(RuntimeStage::Running);

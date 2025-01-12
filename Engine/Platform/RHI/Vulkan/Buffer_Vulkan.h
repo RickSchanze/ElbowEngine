@@ -13,7 +13,7 @@ namespace platform::rhi::vulkan
 class Buffer_Vulkan final : public Buffer
 {
 public:
-    Buffer_Vulkan(const BufferCreateInfo& info);
+    Buffer_Vulkan(const BufferDesc& info);
 
     ~Buffer_Vulkan() override;
 

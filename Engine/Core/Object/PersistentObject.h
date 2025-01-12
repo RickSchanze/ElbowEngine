@@ -10,7 +10,7 @@ namespace core
 class PersistentObject : public Object
 {
 public:
-    PersistentObject() : Object(Persistent) {}
+    PersistentObject() : Object(OFT_Persistent) {}
 
     /**
      * 调用此函数时, handle_已经设置,

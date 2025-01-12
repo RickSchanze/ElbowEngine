@@ -15,4 +15,11 @@ struct Vertex1
     core::Vector2 texcoord;
 };
 
+struct InstancedData1
+{
+    core::Vector3 location;
+    core::Vector3 rotation;
+    core::Vector3 scale;
+};
+
 }   // namespace platform::rhi

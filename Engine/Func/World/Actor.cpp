@@ -10,8 +10,14 @@
 GENERATED_SOURCE()
 
 using namespace func;
+using namespace core;
 
 void Actor::SetTransform(const Transform& transform)
 {
     transform_ = transform;
+}
+
+Vector3 Actor::GetWorldLocation() const
+{
+    return GetLocation();
 }

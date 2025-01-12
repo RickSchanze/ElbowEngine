@@ -7,11 +7,11 @@
 
 #pragma once
 
+#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Base/EString.h"
 #include "Core/Reflection/ITypeGetter.h"
 #include "Core/Reflection/MetaInfoMacro.h"
 #include "Core/Reflection/MetaInfoManager.h"
-#include "Core/Async/Execution/StartAsync.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
 
@@ -25,7 +25,9 @@ constexpr inline ObjectHandle INVALID_OBJECT_HANDLE = 0;
 
 enum ENUM(Flag) ObjectFlagType
 {
-    Persistent = 1 << 1,   // 此对象需要持久化存储
+    OFT_Persistent = 1 << 1,   // 此对象需要持久化存储
+    OFT_Actor      = 1 << 2,
+    OFT_Component  = 1 << 3,
 };
 using ObjectFlag = int32_t;
 
@@ -33,10 +35,12 @@ enum ENUM(Flag) ObjectStateFlagType
 {
     PendingKill,
 };
+
 using ObjectStateFlag = int32_t;
 
 /**
  * Object不自动生成默认构造函数
+ * TODO: Destroy
  */
 class CLASS() Object : public ITypeGetter
 {
@@ -47,7 +51,9 @@ public:
     explicit Object(ObjectFlag flag) : flags_(flag) {}
     Object() : flags_(0) {}
 
-private:
+    void SetDisplayName(StringView display_name);
+
+protected:
     PROPERTY()
     ObjectHandle handle_ = 0;
 
@@ -57,9 +63,13 @@ private:
     PROPERTY()
     ObjectStateFlag state_ = 0;
 
-protected:
     PROPERTY()
-    String name_;
+    String name_{};
+
+#if WITH_EDITOR
+    PROPERTY()
+    String display_name_{"空对象"};
+#endif
 
 private:
     // 此Object正在引用的对象, 用Array是因为可能会被同一个Object多次引用
@@ -99,7 +109,7 @@ public:
 
     [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
 
-    [[nodiscard]] bool IsPersistent() const { return flags_ & Persistent; }
+    [[nodiscard]] bool IsPersistent() const { return flags_ & OFT_Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
 
@@ -115,6 +125,15 @@ T* Cast(Object* obj)
         return reinterpret_cast<T*>(obj);
     }
     return nullptr;
+}
+
+template <typename T, typename... Args>
+    requires std::is_base_of_v<Object, T>
+T* NewObject(Args&&... args)
+{
+    T* obj = New<T>(Forward<Args>(args)...);
+    obj->OnCreated();
+    return obj;
 }
 
 }   // namespace core

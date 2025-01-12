@@ -8,7 +8,7 @@
 #include "GfxContext_Vulkan.h"
 #include "Platform/PlatformLogcat.h"
 
-platform::rhi::vulkan::Buffer_Vulkan::Buffer_Vulkan(const BufferCreateInfo& info) : Buffer(info)
+platform::rhi::vulkan::Buffer_Vulkan::Buffer_Vulkan(const BufferDesc& info) : Buffer(info)
 {
     auto& ctx = *GetVulkanGfxContext();
     buffer_  = ctx.CreateBuffer_VK(create_info_.size, RHIBufferUsageToVkBufferUsage(create_info_.usage));
@@ -19,6 +19,10 @@ platform::rhi::vulkan::Buffer_Vulkan::Buffer_Vulkan(const BufferCreateInfo& info
 platform::rhi::vulkan::Buffer_Vulkan::~Buffer_Vulkan()
 {
     auto& ctx = *GetVulkanGfxContext();
+    if (memory_ == nullptr)
+    {
+        EndWrite();
+    }
     ctx.FreeBufferMemory_VK(memory_);
     ctx.DestroyBuffer_VK(buffer_);
 }

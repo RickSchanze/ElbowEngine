@@ -54,11 +54,30 @@ protected:
  * @tparam T
  */
 template <typename T>
-    requires std::is_base_of_v<Object, T>
 class ObjectPtr : public ObjectPtrBase
 {
 public:
+    ObjectPtr() : ObjectPtr(nullptr) {}
+
+    ObjectPtr(T* obj)
+    {
+        if (obj == nullptr)
+        {
+            SetObject(INVALID_OBJECT_HANDLE);
+        }
+        else
+        {
+            SetObject(obj->GetHandle());
+        }
+    }
+
     operator T*()
+    {
+        Object* obj = ObjectManager::GetObjectByHandle(object_);
+        return static_cast<T*>(obj);
+    }
+
+    operator T*() const
     {
         Object* obj = ObjectManager::GetObjectByHandle(object_);
         return static_cast<T*>(obj);
@@ -69,6 +88,7 @@ public:
     T& operator*() { return *static_cast<T*>(this); }
 
     operator bool() { return static_cast<T*>(this) != nullptr; }
+    operator bool() const { return static_cast<T*>(this) != nullptr; }
 
     ObjectPtr& operator=(const ObjectPtr& other)
     {

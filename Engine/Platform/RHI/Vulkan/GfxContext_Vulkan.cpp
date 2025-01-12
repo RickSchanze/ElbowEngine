@@ -353,7 +353,7 @@ AsyncResultHandle<> GfxContext_Vulkan::Submit(core::SharedPtr<CommandBuffer> buf
     }
 }
 
-core::SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferCreateInfo& create_info)
+core::SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferDesc& create_info)
 {
     return core::MakeShared<Buffer_Vulkan>(create_info);
 }

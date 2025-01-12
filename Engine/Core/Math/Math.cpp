@@ -52,6 +52,11 @@ Matrix4x4 Math::Translate(const Matrix4x4& m, const Vector3& v)
     return translate(m, v);
 }
 
+Vector3 Math::Translate(const Vector3& m, const Vector3& v)
+{
+    return m + v;
+}
+
 Matrix4x4 Math::Rotate(const Matrix4x4& m, const Rotator& v)
 {
     const Vector3 eluer_angle = v.ToRotatorRadian().ToVector3();
@@ -157,12 +162,26 @@ Vector2 Math::Multiply(Vector2 a, float num)
 int32_t Math::RandomInt(int32_t min, int32_t max)
 {
     // 使用静态局部变量来保持生成器和分布的状态
-    static std::random_device rd;  // 获得一个随机种子
-    static std::mt19937 gen(rd()); // 使用Mersenne Twister引擎
+    static std::random_device rd;          // 获得一个随机种子
+    static std::mt19937       gen(rd());   // 使用Mersenne Twister引擎
 
     // 每次调用时创建一个新的分布对象
     std::uniform_int_distribution<> distrib(min, max - 1);
 
-    return distrib(gen); // 返回生成的随机数
+    return distrib(gen);   // 返回生成的随机数
+}
+
+Vector3 Math::ToEuler(Quaternion q)
+{
+    return eulerAngles(q);
+}
+
+Matrix4x4 Math::ToMatrix4x4(Quaternion q)
+{
+    return mat4_cast(q);
+}
+
+Quaternion Math::Conjugate(Quaternion q){
+    return conjugate(q);
 }
 }

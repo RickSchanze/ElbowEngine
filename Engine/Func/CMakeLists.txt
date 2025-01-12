@@ -7,7 +7,7 @@ if (MSVC)
     add_compile_options("/wd4244")
 endif ()
 add_library(${PROJECT_NAME}
-    Logcat.h
+        Logcat.h
         World/Actor.cpp
         World/Actor.h
         World/ITick.cpp
@@ -22,10 +22,16 @@ add_library(${PROJECT_NAME}
         Render/Misc.h
         Render/FixedBasicTestRenderPipeline.cpp
         Render/FixedBasicTestRenderPipeline.h
-        World/Camera.cpp
-        World/Camera.h
         World/Transform.cpp
         World/Transform.h
+        World/Component.cpp
+        World/Component.h
+        World/SceneComponent.cpp
+        World/SceneComponent.h
+        Camera/CameraComponent.cpp
+        Camera/CameraComponent.h
+        Camera/Camear.cpp
+        Camera/Camear.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

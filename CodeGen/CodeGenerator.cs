@@ -60,10 +60,6 @@ public class CodeGeneratorHelper
     static void ProcessNameSpace(Dictionary<string, FileCppInfo> cache, CppNamespace cppNamespace,
         List<string> processingFiles)
     {
-        string? sourceFile = cppNamespace
-            .SourceFile?.Replace("\\", "/");
-        if (sourceFile == null) return;
-        if (!processingFiles.Contains(sourceFile)) return;
         foreach (var cppClass in cppNamespace.Classes)
         {
             ProcessClass(cache, cppClass, processingFiles);

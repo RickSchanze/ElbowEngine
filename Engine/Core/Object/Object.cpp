@@ -16,41 +16,51 @@
 #include "PersistentObject.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
+
 GENERATED_SOURCE()
 
-using namespace core::exec;
+using namespace core;
 
-void core::Object::AddReferencing(ObjectHandle handle)
+void Object::SetDisplayName(StringView display_name)
+{
+#if WITH_EDITOR
+    display_name_ = display_name;
+#endif
+}
+
+using namespace exec;
+
+void Object::AddReferencing(ObjectHandle handle)
 {
     referencing_.push_back(handle);
 }
 
-void core::Object::RemoveReferencing(ObjectHandle handle)
+void Object::RemoveReferencing(ObjectHandle handle)
 {
     erase(referencing_, handle);
 }
 
-void core::Object::AddReferenced(ObjectHandle handle)
+void Object::AddReferenced(ObjectHandle handle)
 {
     referenced_.push_back(handle);
 }
 
-void core::Object::RemoveReferenced(ObjectHandle handle)
+void Object::RemoveReferenced(ObjectHandle handle)
 {
     erase(referenced_, handle);
 }
 
-void core::Object::GenerateInstanceHandle()
+void Object::GenerateInstanceHandle()
 {
     handle_ = ObjectManager::GetRegistry().NextInstanceHandle();
 }
 
-void core::Object::RegisterSelf()
+void Object::RegisterSelf()
 {
     ObjectManager::GetRegistry().RegisterObject(this);
 }
 
-void core::Object::ResolveObjectPtr()
+void Object::ResolveObjectPtr()
 {
     const auto type   = GetType();
     const auto fields = type->GetFields();
@@ -64,7 +74,7 @@ void core::Object::ResolveObjectPtr()
     }
 }
 
-AsyncResultHandle<core::ObjectHandle> core::Object::PerformPersistentObjectLoad()
+AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoad()
 {
     if (!IsPersistent()) return NULL_ASYNC_RESULT_HANDLE;
 
@@ -84,23 +94,23 @@ AsyncResultHandle<core::ObjectHandle> core::Object::PerformPersistentObjectLoad(
     }
 }
 
-void core::Object::PostSerialized() {}
+void Object::PostSerialized() {}
 
-void core::Object::PostDeserialized()
+void Object::PostDeserialized()
 {
     RegisterSelf();
     ResolveObjectPtr();
     PerformPersistentObjectLoad();
 }
 
-void core::Object::OnCreated()
+void Object::OnCreated()
 {
     GenerateInstanceHandle();
     RegisterSelf();
     ResolveObjectPtr();
 }
 
-void core::Object::InternalSetAssetHandle(ObjectHandle handle)
+void Object::InternalSetAssetHandle(ObjectHandle handle)
 {
     handle_ = handle;
     RegisterSelf();

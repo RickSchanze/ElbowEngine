@@ -1,9 +1,32 @@
 module CommonStructure;
 
+import Utility;
+
 public struct Vertex {
     public float3 position;
     public float3 normal;
     public float2 uv0;
+
+    // 实例化数据: 整个模型的位置, 旋转, 缩放
+    public float3 location;
+    public float3 rotation;
+    public float3 scale;
+
+    public float4x4 GetModelFloat4x4() {
+        float4x4 scale = float4x4(
+            scale.x, 0, 0, 0,
+            0, scale.y, 0, 0,
+            0, 0, scale.z, 0,
+            0, 0, 0, 1
+        );
+        float4x4 rot = GetFloat4x4Identity();
+        rot = RotateX(rotation[0], rot);
+        rot = RotateY(rotation[1], rot);
+        rot = RotateZ(rotation[2], rot);
+        float4x4 trans = GetFloat4x4Identity();
+        trans = Translate(location, trans);
+        return mul(scale, mul(rot, trans));
+    }
 };
 
 public struct Camera {

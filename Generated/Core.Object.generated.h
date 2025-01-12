@@ -7,7 +7,9 @@ core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Object>(),
 { \
 Type* type = Type::Create<core::ObjectFlagType>("core.ObjectFlagType")->SetAttribute(Type::FlagAttribute::Flag); \
 using enum core::ObjectFlagType; \
-type->Internal_RegisterEnumValue(Persistent ,"Persistent")->SetComment("此对象需要持久化存储"); \
+type->Internal_RegisterEnumValue(OFT_Persistent ,"OFT_Persistent")->SetComment("此对象需要持久化存储"); \
+type->Internal_RegisterEnumValue(OFT_Actor ,"OFT_Actor"); \
+type->Internal_RegisterEnumValue(OFT_Component ,"OFT_Component"); \
 core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<core::ObjectFlagType>(), type); \
 } \
 { \
@@ -32,6 +34,7 @@ type->Internal_RegisterField("handle_", &core::Object::handle_, offsetof(core::O
 type->Internal_RegisterField("flags_", &core::Object::flags_, offsetof(core::Object, flags_)); \
 type->Internal_RegisterField("state_", &core::Object::state_, offsetof(core::Object, state_)); \
 type->Internal_RegisterField("name_", &core::Object::name_, offsetof(core::Object, name_)); \
+type->Internal_RegisterField("display_name_", &core::Object::display_name_, offsetof(core::Object, display_name_)); \
 return type; \
 } \
 

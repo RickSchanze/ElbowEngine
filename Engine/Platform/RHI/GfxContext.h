@@ -155,7 +155,7 @@ public:
      * @param create_info
      * @return
      */
-    [[nodiscard]] virtual core::SharedPtr<Buffer> CreateBuffer(const BufferCreateInfo& create_info) = 0;
+    [[nodiscard]] virtual core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info) = 0;
 
     /**
      * 创建一个CommandPool

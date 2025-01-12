@@ -78,3 +78,5 @@ platform::rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag
 VkPipelineStageFlags              RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineStageFlags pipeline_stage);
 platform::rhi::PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage);
 
+VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(platform::rhi::VertexInputRate rate);
+platform::rhi::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInputRate rate);

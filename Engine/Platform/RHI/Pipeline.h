@@ -3,10 +3,10 @@
 //
 
 #pragma once
+#include "DescriptorSet.h"
 #include "Enums.h"
 #include "IResource.h"
 #include "LowShader.h"
-#include "DescriptorSet.h"
 
 namespace platform::rhi
 {
@@ -55,9 +55,9 @@ struct ShaderDesc
 
 struct VertexInputDesc
 {
-    uint32_t binding;
-    uint32_t stride;
-    // VkVertexInputRate for instance drawing
+    uint32_t        binding{};
+    uint32_t        stride{};
+    VertexInputRate rate = VertexInputRate::Vertex;
 };
 
 struct VertexAttributeDesc

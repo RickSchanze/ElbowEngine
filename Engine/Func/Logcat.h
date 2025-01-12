@@ -9,4 +9,6 @@ namespace logcat
 constexpr auto Func        = "Func";
 constexpr auto Func_Render = "Func.Render";
 constexpr auto Func_Tick   = "Func.Tick";
+constexpr auto Func_Actor  = "Func.Actor";
+constexpr auto Func_Comp   = "Func.Comp";
 }   // namespace logcat

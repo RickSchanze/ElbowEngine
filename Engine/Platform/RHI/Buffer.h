@@ -10,13 +10,13 @@
 namespace platform::rhi
 {
 
-struct BufferCreateInfo
+struct BufferDesc
 {
     size_t               size{};
     BufferUsage          usage{};
     BufferMemoryProperty memory_property{};
 
-    BufferCreateInfo(const size_t size_, const BufferUsage usage_, const BufferMemoryProperty memory_property_) :
+    BufferDesc(const size_t size_, const BufferUsage usage_, const BufferMemoryProperty memory_property_) :
         size(size_), usage(usage_), memory_property(memory_property_)
     {
     }
@@ -25,7 +25,7 @@ struct BufferCreateInfo
 class Buffer : public IResource
 {
 public:
-    explicit Buffer(const BufferCreateInfo& create_info) : create_info_(create_info) {}
+    explicit Buffer(const BufferDesc& create_info) : create_info_(create_info) {}
 
     [[nodiscard]] size_t      GetSize() const { return create_info_.size; }
     [[nodiscard]] BufferUsage GetUsage() const { return create_info_.usage; }
@@ -35,6 +35,6 @@ public:
     virtual void EndWrite()                           = 0;
 
 protected:
-    BufferCreateInfo create_info_;
+    BufferDesc create_info_;
 };
 }   // namespace platform::rhi

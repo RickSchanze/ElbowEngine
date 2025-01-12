@@ -255,4 +255,11 @@ enum PipelineStageFlagBits
     PSFB_BottomOfPipe = 1 << 2,
 };
 using PipelineStageFlags = uint32_t;
+
+enum class VertexInputRate
+{
+    Vertex,
+    Instance,
+    Count,
+};
 }
