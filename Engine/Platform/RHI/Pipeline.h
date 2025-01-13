@@ -114,6 +114,7 @@ struct GraphicsPipelineDesc
 
 class GraphicsPipeline : public IResource
 {
+public:
 };
 
 }   // namespace platform::rhi

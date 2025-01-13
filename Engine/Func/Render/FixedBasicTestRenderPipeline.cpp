@@ -5,15 +5,19 @@
 #include "FixedBasicTestRenderPipeline.h"
 
 #include "Core/Profiler/ProfileMacro.h"
+#include "Func/Camera/CameraComponent.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Pipeline.h"
 #include "Platform/Window/WindowManager.h"
+#include "RenderContext.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 #include "Resource/Assets/Shader/Shader.h"
+
+#include <Func/Camera/Camera.h>
 
 using namespace resource;
 using namespace core;
@@ -26,7 +30,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     auto image = GetBackBuffer(params.current_image_index);
     cmd.Begin();
 
-    auto         w = platform::GetWindowManager().GetMainWindow();
+    auto   w = platform::GetWindowManager().GetMainWindow();
     Rect2D rect{};
     rect.size = {w->GetWidth(), w->GetHeight()};
     cmd.Enqueue<Cmd_SetScissor>(rect);
@@ -50,13 +54,14 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
         PSFB_ColorAttachmentOutput
     );
     RenderAttachment attachment{};
-    attachment.clear_color  = Color::Green();
-    attachment.target       = view;
-    attachment.layout       = ImageLayout::ColorAttachment;
+    attachment.clear_color                    = Color::Green();
+    attachment.target                         = view;
+    attachment.layout                         = ImageLayout::ColorAttachment;
     PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
     attachments.push_back(attachment);
     cmd.Enqueue<Cmd_BeginRender>(attachments);
     cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
+    cmd.Enqueue<Cmd_BindDescriptorSet>(pipeline_.Get(), descriptor_set_.get());
     BindAndDrawMesh(cmd, mesh_);
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(
@@ -83,7 +88,14 @@ void func::FixedBasicTestRenderPipeline::Build()
         {
             desc.attachments.depth_format = Format::Count;
             desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());
-            pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
+            pipeline_       = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
+            descriptor_set_ = RenderContext::AllocateDescriptorSet(desc.descriptor_set_layouts[0]);
+            // TODO: Update 描述符集的操作本应交给材质来做
+            DescriptorBufferUpdateInfo info{};
+            info.buffer = Camera::GetViewBuffer();
+            info.range  = sizeof(CameraShaderData);
+            info.offset = 0;
+            descriptor_set_->Update(0, info);
         }
     }
     mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");

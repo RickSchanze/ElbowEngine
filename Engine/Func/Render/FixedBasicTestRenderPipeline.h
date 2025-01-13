@@ -6,6 +6,10 @@
 #include "Core/Base/UniquePtr.h"
 #include "RenderPipeline.h"
 
+namespace platform::rhi
+{
+class DescriptorSet;
+}
 namespace resource
 {
 class Mesh;
@@ -29,6 +33,7 @@ public:
 
 private:
     core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
+    core::SharedPtr<platform::rhi::DescriptorSet>    descriptor_set_;
     resource::Mesh*                                  mesh_ = nullptr;
 };
 

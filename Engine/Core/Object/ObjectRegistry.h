@@ -23,6 +23,8 @@ public:
 
     void RemoveObject(Object* object);
 
+    void RemoveAllObjects();
+
     void RegisterObject(Object* object);
 
 private:
@@ -47,7 +49,7 @@ private:
     ObjectRegistry registry_;
 
 public:
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::First; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L8; }
     [[nodiscard]] StringView   GetName() const override { return "ObjectManager"; }
 
     void Startup() override;

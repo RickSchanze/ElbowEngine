@@ -160,7 +160,7 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     }
     if (type_->IsString())
     {
-        *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = *value.AsCopy<String>();
+        *static_cast<String*>(GetFieldPtr(obj.GetRawPtr())) = *static_cast<String*>(value.GetRawPtr());
         return;
     }
     if (value.GetType() != type_)

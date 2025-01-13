@@ -12,6 +12,7 @@
 #include "Core/Profiler/ProfileMacro.h"
 #include "Enums_Vulkan.h"
 #include "GfxContext_Vulkan.h"
+#include "Pipeline_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/Commands.h"
@@ -154,7 +155,7 @@ static void ExecuteCmdBindVertexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_B
         return;
     }
     auto native_buffer = cmd_bind_vertex_buffer->buffer->GetNativeHandleT<VkBuffer>();
-    vkCmdBindVertexBuffers(cmd, 0, 1, &native_buffer, &cmd_bind_vertex_buffer->offset);
+    vkCmdBindVertexBuffers(cmd, cmd_bind_vertex_buffer->binding, 1, &native_buffer, &cmd_bind_vertex_buffer->offset);
 }
 
 static void ExecuteCmdBindIndexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_BindIndexBuffer* cmd_bind_index_buffer)
@@ -298,6 +299,18 @@ static void ExecuteCmdSetViewport(VkCommandBuffer cmd, platform::rhi::Cmd_SetVie
     vkCmdSetViewport(cmd, 0, 1, &viewport);
 }
 
+static void ExecuteCmdBindDescriptorSet(VkCommandBuffer cmd, platform::rhi::Cmd_BindDescriptorSet* cmd_bind_descriptor_set)
+{
+    if (cmd_bind_descriptor_set == nullptr || cmd_bind_descriptor_set->set == nullptr || !cmd_bind_descriptor_set->set->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令BindDescriptorSet错误, 传入的cmd_bind_descriptor_set无效");
+        return;
+    }
+    GraphicsPipeline_Vulkan* pipeline = static_cast<GraphicsPipeline_Vulkan*>(cmd_bind_descriptor_set->pipeline);
+    VkPipelineLayout         layout   = pipeline->GetPipelineLayout();
+    VkDescriptorSet          set      = cmd_bind_descriptor_set->set->GetNativeHandleT<VkDescriptorSet>();
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &set, 0, nullptr);
+}
 
 using namespace platform::rhi;
 
@@ -325,6 +338,7 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<platform::
         case RHICommandType::ImagePipelineBarrier: ExecuteCmdImagePipelineBarrier(buffer, static_cast<Cmd_ImagePipelineBarrier*>(command)); break;
         case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer, static_cast<Cmd_SetScissor*>(command)); break;
         case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer, static_cast<Cmd_SetViewport*>(command)); break;
+        case RHICommandType::BindDescriptorSet: ExecuteCmdBindDescriptorSet(buffer, static_cast<Cmd_BindDescriptorSet*>(command)); break;
         }
         std::destroy_at(command);
     }

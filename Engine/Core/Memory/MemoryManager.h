@@ -25,7 +25,7 @@ public:
     void Startup() override;
     void Shutdown() override;
 
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Fourth; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L1; }
     [[nodiscard]] StringView   GetName() const override { return "MemoryManager"; }
 
     static void RequestPool(Int32 id);

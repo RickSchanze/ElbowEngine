@@ -56,9 +56,10 @@ int main()
         }
         // 图形初始化
         {
-            PROFILE_SCOPE("Graphics Initialize")
+            PROFILE_SCOPE("Graphics Initialize");
             const auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
             UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
+            platform::rhi::GfxContextLifeTimeProxyManager::Get();
         }
         // 其他初始化
         {

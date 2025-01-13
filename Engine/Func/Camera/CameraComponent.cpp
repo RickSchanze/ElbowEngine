@@ -6,6 +6,7 @@
 
 #include "Camera.h"
 #include "Core/Math/Math.h"
+#include "Platform/RHI/GfxContext.h"
 
 using namespace func;
 using namespace core;
@@ -19,10 +20,6 @@ CameraComponent::CameraComponent() : SceneComponent()
     SetNearPlane(0.1f);
     SetFarPlane(1000.f);
     SetAspectRatio(16.f / 9.f);
-    BufferDesc buffer_desc{sizeof(camera_shader_data_), BUB_UniformBuffer, BMPB_HostCoherent | BMPB_HostVisible};
-    view_buffer_ = GetGfxContext()->CreateBuffer(buffer_desc);
-    view_buffer_->BeginWrite();
-    view_buffer_->Write(&camera_shader_data_, sizeof(camera_shader_data_));
     if (!Camera::Get()->GetActive())
     {
         Camera::Get()->SetActive(this);
@@ -44,15 +41,7 @@ void CameraComponent::UpdateViewBuffer()
     Float     far_plane      = GetFarPlane();
     Matrix4x4 projection     = Math::Perspective(fov, aspect_ratio, near_plane, far_plane);
     camera_shader_data_.proj = projection;
-    view_buffer_->Write(&camera_shader_data_, sizeof(camera_shader_data_));
-}
-
-void CameraComponent::Tick(Millisecond delta_time)
-{
-    if (IsDirty())
-    {
-        UpdateViewBuffer();
-    }
+    Camera::UpdateViewBuffer(camera_shader_data_);
 }
 
 Float CameraComponent::GetFOV() const

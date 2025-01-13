@@ -25,6 +25,8 @@ public:
 
     void* GetNativeHandle() const override { return pipeline_; }
 
+    VkPipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
+
     bool IsDynamicRendering() const { return dynamic_rendering_; }
 
 protected:

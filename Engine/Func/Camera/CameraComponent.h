@@ -3,9 +3,7 @@
 //
 
 #pragma once
-#include "Func/World/ITick.h"
 #include "Func/World/SceneComponent.h"
-#include "Platform/Config/PlatformConfig.h"
 
 namespace func
 {
@@ -38,15 +36,13 @@ public:
     void                SetAspectRatio(Float aspect);
 
     [[nodiscard]] bool IsActive() const;
-    void SetActive(bool active);
+    void               SetActive(bool active);
 
 protected:
     // 与Shader里的对应
-    CameraShaderData camera_shader_data_;
+    CameraShaderData camera_shader_data_{};
 
-    core::SharedPtr<platform::rhi::Buffer> view_buffer_;
-
-    bool active_;
+    bool active_ = false;
 };
 
 }   // namespace func

@@ -24,7 +24,7 @@ void SceneComponent::SetTransform(const Transform& transform)
 Vector3 SceneComponent::GetWorldLocation() const
 {
     const Actor* owner = static_cast<Actor*>(owner_);
-    if (owner_)
+    if (owner)
     {
         return Math::Translate(owner->GetWorldLocation(), GetLocation());
     }
@@ -41,7 +41,7 @@ void SceneComponent::SetLocation(const core::Vector3& location)
 Quaternion SceneComponent::GetWorldRotationQuaterion() const
 {
     const Actor* owner = static_cast<Actor*>(owner_);
-    if (owner_)
+    if (owner)
     {
         return owner->GetRotationQuaterion();
     }

@@ -26,10 +26,10 @@ class CtorManager : public Manager<CtorManager>
 public:
     CtorManager();
 
-    void RegisterCtorDtor(RTTITypeInfo info, InplaceCtor ctor, InplaceDtor dtor);
-    bool ConstructAt(const Type* info, void* ptr) const;
+    void                       RegisterCtorDtor(RTTITypeInfo info, InplaceCtor ctor, InplaceDtor dtor);
+    bool                       ConstructAt(const Type* info, void* ptr) const;
     bool                       DestroyAt(const Type* info, void* ptr) const;
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Second; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L3; }
     [[nodiscard]] StringView   GetName() const override { return "CtorManager"; }
 
 private:

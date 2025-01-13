@@ -82,6 +82,11 @@ void RenderContext::SetRenderPipeline(UniquePtr<RenderPipeline> render_pipeline)
     }
 }
 
+SharedPtr<DescriptorSet> RenderContext::AllocateDescriptorSet(const SharedPtr<DescriptorSetLayout>& layout)
+{
+    return GetByRef().descriptor_pool_->Allocate(layout);
+}
+
 bool RenderContext::ShouldRender() const
 {
     const bool render_pipeline_valid = render_pipeline_.IsSet();
@@ -117,6 +122,18 @@ void RenderContext::Startup()
         fence = ctx.CreateFence(true);
     }
     command_buffers_.resize(frames_in_flight_);
+    DescriptorSetPoolDesc desc{};
+    desc.max_sets = 1024;
+    DescriptorPoolSize uniform_buffer{};
+    uniform_buffer.type             = DescriptorType::UniformBuffer;
+    uniform_buffer.descriptor_count = 512;
+    desc.pool_sizes.push_back(uniform_buffer);
+    // TODO: Texture
+    // DescriptorPoolSize texture{};
+    // texture.type = DescriptorType::CombinedImageSampler;
+    // texture.descriptor_count = 512;
+    descriptor_pool_ = ctx.CreateDescriptorSetPool(desc);
+
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
     window_resized_evt_handle_ = WindowEvents::OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
 }

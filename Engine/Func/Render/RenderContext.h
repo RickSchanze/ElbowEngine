@@ -9,12 +9,18 @@
 #include "Core/Utils/TimeUtils.h"
 #include "RenderPipeline.h"
 
+namespace platform::rhi
+{
+class DescriptorSetLayout;
+class DescriptorSet;
+}   // namespace platform::rhi
 namespace platform
 {
 class Window;
 }
 namespace platform::rhi
 {
+class DescriptorSetPool;
 struct Fence;
 struct Semaphore;
 class CommandPool;
@@ -28,7 +34,7 @@ public:
 
     void SetRenderPipeline(core::UniquePtr<RenderPipeline> render_pipeline);
 
-    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::First; }
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::L4; }
     [[nodiscard]] core::StringView   GetName() const override { return "RenderContext"; }
 
     void Startup() override;
@@ -36,6 +42,8 @@ public:
 
     void               SetRenderEnable(bool enable);
     [[nodiscard]] bool IsRenderEnable() const { return should_render_; }
+
+    static core::SharedPtr<platform::rhi::DescriptorSet> AllocateDescriptorSet(const core::SharedPtr<platform::rhi::DescriptorSetLayout>& layout);
 
 private:
     [[nodiscard]] bool ShouldRender() const;
@@ -56,6 +64,9 @@ private:
     // 窗口
     core::DelegateID window_resized_evt_handle_{};
     bool             window_resized_{true};
+
+    // for descriptor
+    core::SharedPtr<platform::rhi::DescriptorSetPool> descriptor_pool_{};
 
     bool should_render_{true};
 

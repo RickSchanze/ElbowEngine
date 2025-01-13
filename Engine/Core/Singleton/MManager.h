@@ -18,12 +18,17 @@
 
 namespace core
 {
+// 销毁顺序:L8->L1
 enum class ManagerLevel
 {
-    First,
-    Second,
-    Third,
-    Fourth,
+    L8,
+    L7,
+    L6,
+    L5,
+    L4,
+    L3,
+    L2,
+    L1,
     Count,
 };
 

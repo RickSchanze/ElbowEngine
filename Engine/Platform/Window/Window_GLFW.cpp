@@ -158,6 +158,7 @@ rhi::Surface* Window_GLFW::CreateSurface(void* user_data, rhi::GraphicsAPI api)
 
 void Window_GLFW::DestroySurface(core::Ref<rhi::Surface*> surface)
 {
-    Delete(surface.GetPtr());
+    const auto surface_ptr = *surface;
+    Delete(surface_ptr);
     surface = nullptr;
 }

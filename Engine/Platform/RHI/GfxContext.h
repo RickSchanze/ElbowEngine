@@ -152,10 +152,9 @@ public:
 
     /**
      * 创建一个Buffer
-     * @param create_info
      * @return
      */
-    [[nodiscard]] virtual core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info) = 0;
+    [[nodiscard]] virtual core::SharedPtr<Buffer> CreateBuffer(const BufferDesc&, core::StringView debug_name = "") = 0;
 
     /**
      * 创建一个CommandPool
@@ -254,6 +253,13 @@ public:
      */
     virtual void ResizeSwapChain(Int32 width, Int32 height) = 0;
 
+    /**
+     * 创建一个DescriptorSetPool
+     * @param desc
+     * @return
+     */
+    virtual core::SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc) = 0;
+
     virtual void Update();
 
     core::FrameAllocator& GetCommandAllocator();
@@ -285,5 +291,17 @@ inline GfxContextPostDestroyedEvent   Event_GfxContextPostDestroyed;
  * 释放GfxContext
  */
 void ReleaseGfxContext();
+
+/**
+ * 用于代理GfxContext的Manager 只用于销毁
+ */
+class GfxContextLifeTimeProxyManager : public core::Manager<GfxContextLifeTimeProxyManager>
+{
+public:
+    core::ManagerLevel GetLevel() const override { return core::ManagerLevel::L4; }
+    core::StringView GetName() const override { return "GfxContextProxyManager"; }
+
+    void Shutdown() override {ReleaseGfxContext();}
+};
 
 }   // namespace platform::rhi

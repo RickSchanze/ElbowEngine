@@ -292,8 +292,7 @@ core::SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, siz
 
 static void InternalSubmit(const SharedPtr<CommandBuffer>& buffer, const SubmitParameter& parameter)
 {
-    auto*                 ctx           = GetVulkanGfxContext();
-    CommandBuffer_Vulkan& buffer_vulkan = static_cast<CommandBuffer_Vulkan&>(*buffer);
+    auto*        ctx = GetVulkanGfxContext();
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
@@ -353,9 +352,16 @@ AsyncResultHandle<> GfxContext_Vulkan::Submit(core::SharedPtr<CommandBuffer> buf
     }
 }
 
-core::SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferDesc& create_info)
+core::SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferDesc& create_info, StringView name)
 {
-    return core::MakeShared<Buffer_Vulkan>(create_info);
+    auto rtn = core::MakeShared<Buffer_Vulkan>(create_info);
+#if ELBOW_DEBUG
+    if (!name.IsEmpty())
+    {
+        SetObjectDebugName(VK_OBJECT_TYPE_BUFFER, rtn->GetNativeHandle(), *name);
+    }
+#endif
+    return rtn;
 }
 
 core::SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandPoolCreateInfo& create_info)
@@ -492,6 +498,7 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
 {
     auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
     vkDeviceWaitIdle(vulkan_ctx->device_);
+    vulkan_ctx->transfer_pool_ = nullptr;
     for (auto img: vulkan_ctx->swapchain_images_)
     {
         Delete(img);
@@ -503,7 +510,6 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
     vulkan_ctx->swapchain_images_.clear();
     vulkan_ctx->swapchain_image_views_.clear();
     vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
-    Event_GfxContextPreDestroyed.RemoveBind(vulkan_ctx->pre_vulkan_gfx_context_destroyed_);
 }
 
 void GfxContext_Vulkan::WaitForDeviceIdle()
@@ -998,12 +1004,16 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
         ranges::to_vector;
 }
 
+SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc)
+{
+    return MakeShared<DescriptorSetPool_Vulkan>(desc);
+}
 
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {
     DestroySwapChain(device_, swapchain_);
-    DestroyLogicalDevice(device_);
     DestroySurface(surface_);
+    DestroyLogicalDevice(device_);
     DestroyInstance(instance_);
 }
 }   // namespace platform::rhi::vulkan

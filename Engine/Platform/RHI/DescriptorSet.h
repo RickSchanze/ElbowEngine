@@ -11,6 +11,11 @@
 
 namespace platform::rhi
 {
+class ImageView;
+class Buffer;
+}   // namespace platform::rhi
+namespace platform::rhi
+{
 class GfxContext;
 }
 namespace platform::rhi
@@ -44,8 +49,35 @@ protected:
     size_t hash_ = 0;
 };
 
+struct DescriptorBufferUpdateInfo
+{
+    Buffer* buffer;
+    UInt32  offset;
+    UInt32  range;
+};
+
+struct DescriptorImageUpdateInfo
+{
+    ImageView*  image_view;
+    ImageLayout image_layout;
+};
+
+struct DescriptorSetUpdateInfo
+{
+    UInt32                                  binding       = 0;
+    UInt32                                  array_element = 0;
+    DescriptorType                          descriptor_type;
+    core::Array<DescriptorBufferUpdateInfo> buffers{};
+    core::Array<DescriptorImageUpdateInfo>  images{};
+};
+
 class DescriptorSet : public IResource
 {
+public:
+    virtual void Update(const core::Array<DescriptorSetUpdateInfo>& update_infos) = 0;
+
+    virtual void Update(UInt32 binding, const DescriptorBufferUpdateInfo& buffer);
+    virtual void Update(UInt32 binding, const DescriptorImageUpdateInfo& image);
 };
 }   // namespace platform::rhi
 
@@ -83,4 +115,31 @@ public:
 private:
     core::HashMap<size_t, core::SharedPtr<DescriptorSetLayout>> pool_;
 };
+
+struct DescriptorPoolSize
+{
+    DescriptorType type;
+    UInt32         descriptor_count;
+};
+
+struct DescriptorSetPoolDesc
+{
+    core::Array<DescriptorPoolSize> pool_sizes;
+    UInt32                          max_sets;
+};
+
+class DescriptorSetPool : public IResource
+{
+public:
+    ~DescriptorSetPool() override = default;
+
+    virtual core::SharedPtr<DescriptorSet>              Allocate(DescriptorSetLayout* layout)               = 0;
+    virtual core::Array<core::SharedPtr<DescriptorSet>> Allocates(const core::Array<DescriptorSetLayout*>&) = 0;
+
+    core::SharedPtr<DescriptorSet>              Allocate(const core::SharedPtr<DescriptorSetLayout> desc);
+    core::Array<core::SharedPtr<DescriptorSet>> Allocates(const core::Array<core::SharedPtr<DescriptorSetLayout>>&);
+
+    virtual void Reset() = 0;
+};
+
 }   // namespace platform::rhi

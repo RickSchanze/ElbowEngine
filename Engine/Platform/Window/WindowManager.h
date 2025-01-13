@@ -14,7 +14,7 @@ class Window;
 class WindowManager : public core::Manager<WindowManager>
 {
 public:
-    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::First; }
+    [[nodiscard]] core::ManagerLevel GetLevel() const override { return core::ManagerLevel::L4; }
     [[nodiscard]] core::StringView   GetName() const override { return "platform.WindowManager"; }
 
     void                  AddWindow(Window* window);

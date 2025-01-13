@@ -93,3 +93,4 @@ inline RuntimeStage GetRuntimeStage()
     return _run_time_stage;
 }
 inline void SetRuntimeStage(const RuntimeStage stage) {_run_time_stage = stage;}
+

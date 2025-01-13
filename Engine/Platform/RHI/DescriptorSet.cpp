@@ -6,9 +6,11 @@
 #include "Core/Base/Base.h"
 #include "GfxContext.h"
 
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/for_each.hpp>
 
 using namespace platform::rhi;
+using namespace core;
 
 size_t DescriptorSetLayoutDesc::GetHashCode() const
 {
@@ -26,6 +28,23 @@ size_t DescriptorSetLayoutDesc::GetHashCode() const
         hash ^= binding_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
     }
     return hash;
+}
+
+void DescriptorSet::Update(UInt32 binding, const DescriptorBufferUpdateInfo& buffer)
+{
+    DescriptorSetUpdateInfo update_info{};
+    update_info.binding         = binding;
+    update_info.buffers         = {buffer};
+    update_info.descriptor_type = DescriptorType::UniformBuffer;
+    Update({update_info});
+}
+
+void DescriptorSet::Update(UInt32 binding, const DescriptorImageUpdateInfo& image)
+{
+    DescriptorSetUpdateInfo update_info{};
+    update_info.binding = binding;
+    update_info.images  = {image};
+    Update({update_info});
 }
 
 DescriptorSetLayoutPool::DescriptorSetLayoutPool()
@@ -67,4 +86,15 @@ void DescriptorSetLayoutPool::Clear(GfxContext*)
 void DescriptorSetLayoutPool::Update()
 {
     std::erase_if(pool_, [](const auto& pair) { return pair.second.use_count() == 1; });
+}
+
+SharedPtr<DescriptorSet> DescriptorSetPool::Allocate(const SharedPtr<DescriptorSetLayout> layout)
+{
+    return Allocate(layout.get());
+}
+
+Array<SharedPtr<DescriptorSet>> DescriptorSetPool::Allocates(const Array<SharedPtr<DescriptorSetLayout>>& layouts)
+{
+    Array<DescriptorSetLayout*> layout_ptrs = layouts | ranges::views::transform([](const auto& layout) { return layout.get(); }) | ranges::to<Array>;
+    return Allocates(layout_ptrs);
 }

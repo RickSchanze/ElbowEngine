@@ -56,6 +56,14 @@ void core::ObjectRegistry::RemoveObject(Object* object)
     objects_.erase(handle);
 }
 
+void core::ObjectRegistry::RemoveAllObjects()
+{
+    while (!objects_.empty())
+    {
+        RemoveObject(objects_.begin()->second);
+    }
+}
+
 void core::ObjectRegistry::RegisterObject(Object* object)
 {
     if (object == nullptr) return;
@@ -85,6 +93,7 @@ void core::ObjectManager::Shutdown()
     String      serialized_str;
     archive.Serialize(registry_, serialized_str);
     Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
+    registry_.RemoveAllObjects();
 }
 
 core::ObjectRegistry& core::ObjectManager::GetRegistry()

@@ -54,7 +54,7 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     }
     const aiMesh* mesh = scene->mMeshes[0];
     out                = core::MakeUnique<resource::MeshStorage>();
-    core::Array<platform::rhi::Vertex1> vertices;
+    core::Array<Vertex1> vertices;
     core::Array<uint32_t>               indices;
     vertices.reserve(mesh->mNumVertices);
     indices.reserve(mesh->mNumFaces * 3);
@@ -79,45 +79,46 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
             indices.emplace_back(face.mIndices[j]);
         }
     }
-    auto& ctx = platform::rhi::GetGfxContextRef();
+    auto& ctx = GetGfxContextRef();
     {
         // vertex buffer
         size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex1);
-        platform::rhi::BufferDesc vertex_buffer_info{
-            vertex_buffer_size, platform::rhi::BUB_VertexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
+        BufferDesc vertex_buffer_info{
+            vertex_buffer_size, BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal
         };
         out->vertex_count  = vertices.size();
-        out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info);
-
-        platform::rhi::BufferDesc staging_buffer_info{
-            vertex_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
+        core::String name = core::String::Format("VertexBuffer_{}", path);
+        out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info, name);
+        BufferDesc staging_buffer_info{
+            vertex_buffer_size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent
         };
         auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
         staging_buffer->BeginWrite();
         staging_buffer->Write(vertices.data(), 0);
         staging_buffer->EndWrite();
         auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
-        cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->vertex_buffer.get());
+        cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), out->vertex_buffer.get());
         cmd->Execute("VertexBuffer");
         platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
     }
     {
         // index buffer
         size_t                          index_buffer_size = indices.size() * sizeof(uint32_t);
-        platform::rhi::BufferDesc index_buffer_info{
-            index_buffer_size, platform::rhi::BUB_IndexBuffer | platform::rhi::BUB_TransferDst, platform::rhi::BMPB_DeviceLocal
+        BufferDesc index_buffer_info{
+            index_buffer_size, BUB_IndexBuffer | BUB_TransferDst, BMPB_DeviceLocal
         };
         out->index_count  = indices.size();
-        out->index_buffer = ctx.CreateBuffer(index_buffer_info);
-        platform::rhi::BufferDesc staging_buffer_info{
-            index_buffer_size, platform::rhi::BUB_TransferSrc, platform::rhi::BMPB_HostVisible | platform::rhi::BMPB_HostCoherent
+        core::String name = core::String::Format("IndexBuffer_{}", path);
+        out->index_buffer = ctx.CreateBuffer(index_buffer_info, name);
+        BufferDesc staging_buffer_info{
+            index_buffer_size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent
         };
         auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
         staging_buffer->BeginWrite();
         staging_buffer->Write(indices.data(), 0);
         staging_buffer->EndWrite();
         auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
-        cmd->Enqueue<platform::rhi::Cmd_CopyBuffer>(staging_buffer.get(), out->index_buffer.get());
+        cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), out->index_buffer.get());
         cmd->Execute("IndexBuffer");
         platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
     }

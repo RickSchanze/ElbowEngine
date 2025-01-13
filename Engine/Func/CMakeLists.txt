@@ -30,8 +30,10 @@ add_library(${PROJECT_NAME}
         World/SceneComponent.h
         Camera/CameraComponent.cpp
         Camera/CameraComponent.h
-        Camera/Camear.cpp
-        Camera/Camear.h
+        Camera/Camera.cpp
+        Camera/Camera.h
+        Render/GlobalObjectInstancedDataBuffer.cpp
+        Render/GlobalObjectInstancedDataBuffer.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

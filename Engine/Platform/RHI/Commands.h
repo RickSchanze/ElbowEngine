@@ -10,8 +10,9 @@
 
 namespace platform::rhi
 {
+class DescriptorSet;
 class Image;
-}
+}   // namespace platform::rhi
 namespace platform::rhi
 {
 class ImageView;
@@ -35,6 +36,7 @@ enum class RHICommandType
     ImagePipelineBarrier,
     SetScissor,
     SetViewport,
+    BindDescriptorSet,
     Count,
 };
 
@@ -59,10 +61,14 @@ struct Cmd_BindVertexBuffer final : RHICommand
 {
     [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindVertexBuffer; }
 
-    explicit Cmd_BindVertexBuffer(Buffer* buffer_, UInt64 offset_ = 0) : buffer(buffer_), offset(offset_) {}
+    explicit Cmd_BindVertexBuffer(Buffer* buffer_, UInt64 offset_ = 0, UInt32 binding_ = 0) : binding(binding_), buffer(buffer_), offset(offset_) {}
 
-    explicit Cmd_BindVertexBuffer(const core::SharedPtr<Buffer>& buffer_, UInt64 offset_ = 0) : buffer(buffer_.get()), offset(offset_) {}
+    explicit Cmd_BindVertexBuffer(const core::SharedPtr<Buffer>& buffer_, UInt64 offset_ = 0, UInt32 binding_ = 0) :
+        binding(binding_), buffer(buffer_.get()), offset(offset_)
+    {
+    }
 
+    UInt32  binding;
     Buffer* buffer;
     UInt64  offset = 0;
 };
@@ -93,6 +99,14 @@ struct Cmd_BindPipeline final : RHICommand
     GraphicsPipeline* pipeline;
 
     explicit Cmd_BindPipeline(GraphicsPipeline* pipeline_) : pipeline(pipeline_) {}
+};
+
+struct Cmd_BindDescriptorSet final : RHICommand
+{
+    [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindDescriptorSet; }
+    GraphicsPipeline*            pipeline;
+    DescriptorSet*               set;
+    explicit Cmd_BindDescriptorSet(GraphicsPipeline* pipeline_, DescriptorSet* set_) : pipeline(pipeline_), set(set_) {}
 };
 
 struct RenderAttachment

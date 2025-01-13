@@ -94,7 +94,7 @@ public:
 
     core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
 
-    [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info) override;
+    [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info, core::StringView debug_name) override;
 
     [[nodiscard]] core::SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo& create_info) override;
 
@@ -144,6 +144,8 @@ public:
     void WaitForQueueExecution(QueueFamilyType type) override;
 
     void ResizeSwapChain(Int32 width, Int32 height) override;
+
+    core::SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc) override;
 
 private:
     VkInstance         instance_        = nullptr;

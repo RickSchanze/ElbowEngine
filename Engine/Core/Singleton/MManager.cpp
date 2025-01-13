@@ -8,9 +8,6 @@
 #include "MManager.h"
 
 #include "Core/Base/Base.h"
-#include "Core/CoreGlobal.h"
-#include "Core/Log/CoreLogCategory.h"
-#include "Core/Log/Logger.h"
 
 #include <range/v3/all.hpp>
 
@@ -41,24 +38,12 @@ void core::MManager::Startup()
 
 void core::MManager::Shutdown() const
 {
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::First)])
+    for (Int32 i = 0; i < GetEnumValue(ManagerLevel::Count); ++i)
     {
-        manager->Shutdown();
-        delete manager;
-    }
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Second)])
-    {
-        manager->Shutdown();
-        delete manager;
-    }
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Third)])
-    {
-        manager->Shutdown();
-        delete manager;
-    }
-    for (const auto manager: managers_[GetEnumValue(ManagerLevel::Fourth)])
-    {
-        manager->Shutdown();
-        delete manager;
+        for (const auto manager: managers_[i] | ranges::views::reverse)
+        {
+            manager->Shutdown();
+            delete manager;
+        }
     }
 }

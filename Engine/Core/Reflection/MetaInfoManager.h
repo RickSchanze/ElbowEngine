@@ -57,7 +57,7 @@ public:
 
     Type* GetType(const RTTITypeInfo& type_info);
 
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::Third; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L2; }
     [[nodiscard]] StringView   GetName() const override { return "MetaInfoManager"; }
 
 private:
