@@ -61,7 +61,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
     attachments.push_back(attachment);
     RenderAttachment depth_attachment{};
-    depth_attachment.clear_color.r = 0.0f;
+    depth_attachment.clear_color.r = 1.0f;
     depth_attachment.layout        = ImageLayout::DepthStencilAttachment;
     depth_attachment.target        = depth_target_->GetImageView();
     cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
@@ -93,7 +93,6 @@ void func::FixedBasicTestRenderPipeline::Build()
         {
             desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
             desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());
-            desc.depth_stencil.depth_compare_op = CompareOp::GreaterOrEqual;
             pipeline_       = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
             descriptor_set_ = RenderContext::AllocateDescriptorSet(desc.descriptor_set_layouts[0]);
             // TODO: Update 描述符集的操作本应交给材质来做
