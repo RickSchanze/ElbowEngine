@@ -18,6 +18,8 @@
 #include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Shader/Shader.h"
+#include "Func/Camera/CameraComponent.h"
+#include "Func/World/Actor.h"
 
 using namespace core::exec;
 using namespace func;
@@ -79,6 +81,8 @@ int main()
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(core::MakeUnique<FixedBasicTestRenderPipeline>());
+        Actor* a = core::NewObject<Actor>();
+        core::NewObject<CameraComponent>()->SetOwner(a);
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;

@@ -38,6 +38,7 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
         VertexInputDesc instanced_data{};
         instanced_data.binding = 1;
         instanced_data.stride  = sizeof(InstancedData1);
+        instanced_data.rate = VertexInputRate::Instance;
         desc.vertex_inputs.push_back(instanced_data);
 
         VertexAttributeDesc position{};
@@ -71,9 +72,9 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
 
         VertexAttributeDesc rotation{};
         rotation.location = 4;
-        location.binding  = 1;
-        location.format   = Format::R32G32B32_Float;
-        location.offset   = offsetof(InstancedData1, rotation);
+        rotation.binding  = 1;
+        rotation.format   = Format::R32G32B32_Float;
+        rotation.offset   = offsetof(InstancedData1, rotation);
         desc.vertex_attributes.push_back(rotation);
 
         VertexAttributeDesc scale{};
