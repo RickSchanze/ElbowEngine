@@ -17,7 +17,6 @@ core::ObjectPtrBase::~ObjectPtrBase()
 void core::ObjectPtrBase::SetOuter(const ObjectHandle outer)
 {
     // 调整引用
-    Assert::Require(logcat::Core_Object, outer_ == INVALID_OBJECT_HANDLE, "Outer只能设置一次");
     if (outer == INVALID_OBJECT_HANDLE) return;
     outer_ = outer;
     // object_ 可能有序列化修改而不是INVALID

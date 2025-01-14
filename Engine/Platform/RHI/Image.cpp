@@ -9,5 +9,5 @@
 
 platform::rhi::ImageDesc platform::rhi::ImageDesc::Default()
 {
-    return ImageDesc{"Invalid", 0, 0, IU_Max, Format::Count};
+    return ImageDesc{0, 0, IUB_Max, Format::Count};
 }

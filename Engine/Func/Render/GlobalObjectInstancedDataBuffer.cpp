@@ -22,6 +22,7 @@ void GlobalObjectInstancedDataBuffer::Startup()
     buffer_->BeginWrite();
     InstancedData1 data1{};
     data1.scale = {1, 1, 1};
+    data1.location = {0, 0, 0};
     buffer_->Write(&data1, sizeof(data1));
 }
 

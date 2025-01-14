@@ -17,6 +17,7 @@ class GfxContext_Vulkan;
 class Image_Vulkan final : public Image
 {
     friend class GfxContext_Vulkan;
+
 public:
     explicit Image_Vulkan(const ImageDesc& desc);
 
@@ -28,7 +29,10 @@ public:
 public:
     [[nodiscard]] void* GetNativeHandle() const override { return image_handle_; }
 
+    [[nodiscard]] VkDeviceMemory GetNativeMemory() const { return image_memory_; }
+
 protected:
-    VkImage image_handle_ = VK_NULL_HANDLE;
+    VkImage        image_handle_ = VK_NULL_HANDLE;
+    VkDeviceMemory image_memory_ = VK_NULL_HANDLE;
 };
 }   // namespace platform::rhi::vulkan

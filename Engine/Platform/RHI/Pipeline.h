@@ -70,7 +70,7 @@ struct VertexAttributeDesc
 
 struct MultiSampleDesc
 {
-    SampleCount count                 = SC_1;
+    SampleCount count                 = SampleCount::SC_1;
     bool        enable_sample_shading = false;
 };
 
@@ -78,7 +78,7 @@ struct DepthStencilDesc
 {
     bool      enable_depth_test   = true;
     bool      enable_depth_write  = true;
-    CompareOp depth_compare_op    = CompareOp::Less;
+    CompareOp depth_compare_op    = CompareOp::LessOrEqual;
     bool      enable_stencil_test = false;
 };
 

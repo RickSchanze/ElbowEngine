@@ -10,26 +10,26 @@
 #include "Image.h"
 #include "Platform/PlatformLogcat.h"
 platform::rhi::ImageViewDesc::ImageViewDesc(
-    const core::StringView name_, Image* image_, const ImageViewType type_, const Format format_, const ImageSubresourceRange& subresource_range_,
+    Image* image_, const ImageDimension type_, const Format format_, const ImageSubresourceRange& subresource_range_,
     const ComponentMapping component_mapping_
-) : image(image_), type(type_), format(format_), subresource_range(subresource_range_), component_mapping(component_mapping_), name(name_)
+) : image(image_), type(type_), format(format_), subresource_range(subresource_range_), component_mapping(component_mapping_)
 {
     if (image == nullptr)
     {
         LOGGER.Error(logcat::Platform_RHI, "Image cannot be nullptr when creating a ImageView.");
         return;
     }
-    if (type_ == ImageViewType::Count)
+    if (type_ == ImageDimension::Count)
     {
         switch (image->GetDimension())
         {
-        case ImageDimension::D1: type = ImageViewType::D1; break;
-        case ImageDimension::D2: type = ImageViewType::D2; break;
-        case ImageDimension::D3: type = ImageViewType::D3; break;
-        case ImageDimension::Cube: type = ImageViewType::Cube; break;
-        case ImageDimension::Array1D: type = ImageViewType::Array1D; break;
-        case ImageDimension::Array2D: type = ImageViewType::Array2D; break;
-        case ImageDimension::ArrayCube: type = ImageViewType::ArrayCube; break;
+        case ImageDimension::D1: type = ImageDimension::D1; break;
+        case ImageDimension::D2: type = ImageDimension::D2; break;
+        case ImageDimension::D3: type = ImageDimension::D3; break;
+        case ImageDimension::Cube: type = ImageDimension::Cube; break;
+        case ImageDimension::Array1D: type = ImageDimension::Array1D; break;
+        case ImageDimension::Array2D: type = ImageDimension::Array2D; break;
+        case ImageDimension::ArrayCube: type = ImageDimension::ArrayCube; break;
         default: {
             LOGGER.Error(logcat::Platform_RHI, "Unknown image view type.");
             return;
@@ -42,11 +42,11 @@ platform::rhi::ImageViewDesc::ImageViewDesc(
     }
     {
         // layer_count
-        if (type == ImageViewType::Cube)
+        if (type == ImageDimension::Cube)
         {
             if (subresource_range.layer_count != 6) subresource_range.layer_count = 6;
         }
-        else if (type == ImageViewType::Array1D || type == ImageViewType::Array2D || type == ImageViewType::ArrayCube)
+        else if (type == ImageDimension::Array1D || type == ImageDimension::Array2D || type == ImageDimension::ArrayCube)
         {
             if (subresource_range.layer_count == -1)
             {
@@ -70,7 +70,23 @@ platform::rhi::ImageViewDesc::ImageViewDesc(
     }
 }
 
-platform::rhi::ImageViewDesc::ImageViewDesc(const core::StringView name_, Image* image_, const int32_t aspect_mask) :
-    ImageViewDesc(name_, image_, ImageViewType::Count, Format::Count, ImageSubresourceRange{aspect_mask})
+platform::rhi::ImageViewDesc::ImageViewDesc(Image* image_)
 {
+    image              = image_;
+    type               = image->GetDimension();
+    format             = image->GetFormat();
+    ImageAspect aspect = 0;
+    ImageUsage  usage  = image->GetUsage();
+    if (usage & IUB_RenderTarget) aspect |= IA_Color;
+    if (usage & IUB_SwapChain) aspect |= IA_Color;
+    if (usage & IUB_DepthStencil) aspect |= IA_Depth;
+    subresource_range.aspect_mask      = aspect;
+    subresource_range.layer_count      = image->GetDepthOrLayers();
+    subresource_range.base_array_layer = 0;
+    subresource_range.level_count      = image->GetMipLevels();
+    subresource_range.base_mip_level   = 0;
+    component_mapping.a                = ComponentMappingElement::Identity;
+    component_mapping.b                = ComponentMappingElement::Identity;
+    component_mapping.g                = ComponentMappingElement::Identity;
+    component_mapping.r                = ComponentMappingElement::Identity;
 }

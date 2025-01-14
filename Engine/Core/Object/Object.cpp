@@ -68,8 +68,17 @@ void Object::ResolveObjectPtr()
     {
         if (field->GetType() == TypeOf<ObjectPtrBase>())
         {
-            auto ptr = field->GetFieldPtr(this);
-            static_cast<ObjectPtrBase*>(ptr)->SetOuter(handle_);
+            if (field->IsSequentialContainer())
+            {
+            }
+            else if (field->IsAssociativeContainer())
+            {
+            }
+            else
+            {
+                auto ptr = field->GetFieldPtr(this);
+                static_cast<ObjectPtrBase*>(ptr)->SetOuter(handle_);
+            }
         }
     }
 }

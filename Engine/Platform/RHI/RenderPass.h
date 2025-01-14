@@ -27,7 +27,7 @@ struct AttachmentDesc
         AttachmentLoadOperation  stencil_load_op  = AttachmentLoadOperation::DontCare,    //
         AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::DontCare,   //
         ImageLayout              initial_layout   = ImageLayout::Undefined,               //
-        SampleCount              sample_count     = SC_1                                  //
+        SampleCount              sample_count     = SampleCount::SC_1                     //
     ) :
         format(fmt), sample_count(sample_count), load_op(load_op), store_op(store_op), stencil_load_op(stencil_load_op),
         stencil_store_op(stencil_store_op), initial_layout(initial_layout), final_layout(final_layout)
@@ -40,7 +40,10 @@ struct AttachmentDescRef
     uint32_t    index;
     ImageLayout render_layout;   // 渲染时的Layout
 
-    explicit AttachmentDescRef(uint32_t index = UINT32_MAX, ImageLayout render_layout = ImageLayout::Undefined) : index(index), render_layout(render_layout) {}
+    explicit AttachmentDescRef(uint32_t index = UINT32_MAX, ImageLayout render_layout = ImageLayout::Undefined) :
+        index(index), render_layout(render_layout)
+    {
+    }
 };
 
 struct SubpassDesc

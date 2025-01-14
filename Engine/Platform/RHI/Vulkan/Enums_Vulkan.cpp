@@ -104,32 +104,32 @@ VkSampleCountFlagBits RHISampleCountToVkSampleCount(SampleCount sample_count)
 {
     switch (sample_count)
     {
-    case SampleCountBits::SC_1: return VK_SAMPLE_COUNT_1_BIT;
-    case SampleCountBits::SC_2: return VK_SAMPLE_COUNT_2_BIT;
-    case SampleCountBits::SC_4: return VK_SAMPLE_COUNT_4_BIT;
-    case SampleCountBits::SC_8: return VK_SAMPLE_COUNT_8_BIT;
-    case SampleCountBits::SC_16: return VK_SAMPLE_COUNT_16_BIT;
-    case SampleCountBits::SC_32: return VK_SAMPLE_COUNT_32_BIT;
-    case SampleCountBits::SC_64: return VK_SAMPLE_COUNT_64_BIT;
-    case SampleCountBits::SC_Count: return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+    case SampleCount::SC_1: return VK_SAMPLE_COUNT_1_BIT;
+    case SampleCount::SC_2: return VK_SAMPLE_COUNT_2_BIT;
+    case SampleCount::SC_4: return VK_SAMPLE_COUNT_4_BIT;
+    case SampleCount::SC_8: return VK_SAMPLE_COUNT_8_BIT;
+    case SampleCount::SC_16: return VK_SAMPLE_COUNT_16_BIT;
+    case SampleCount::SC_32: return VK_SAMPLE_COUNT_32_BIT;
+    case SampleCount::SC_64: return VK_SAMPLE_COUNT_64_BIT;
+    case SampleCount::SC_Count: return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+    default: return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
     }
-    return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 }
 
-SampleCountBits VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count)
+SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count)
 {
     switch (sample_count)
     {
-    case VK_SAMPLE_COUNT_1_BIT: return SampleCountBits::SC_1;
-    case VK_SAMPLE_COUNT_2_BIT: return SampleCountBits::SC_2;
-    case VK_SAMPLE_COUNT_4_BIT: return SampleCountBits::SC_4;
-    case VK_SAMPLE_COUNT_8_BIT: return SampleCountBits::SC_8;
-    case VK_SAMPLE_COUNT_16_BIT: return SampleCountBits::SC_16;
-    case VK_SAMPLE_COUNT_32_BIT: return SampleCountBits::SC_32;
-    case VK_SAMPLE_COUNT_64_BIT: return SampleCountBits::SC_64;
-    case VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM: return SampleCountBits::SC_Count;
+    case VK_SAMPLE_COUNT_1_BIT: return SampleCount::SC_1;
+    case VK_SAMPLE_COUNT_2_BIT: return SampleCount::SC_2;
+    case VK_SAMPLE_COUNT_4_BIT: return SampleCount::SC_4;
+    case VK_SAMPLE_COUNT_8_BIT: return SampleCount::SC_8;
+    case VK_SAMPLE_COUNT_16_BIT: return SampleCount::SC_16;
+    case VK_SAMPLE_COUNT_32_BIT: return SampleCount::SC_32;
+    case VK_SAMPLE_COUNT_64_BIT: return SampleCount::SC_64;
+    case VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM: return SampleCount::SC_Count;
     }
-    return SampleCountBits::SC_Count;
+    return SampleCount::SC_Count;
 }
 
 VkImageAspectFlags RHIImageAspectToVkImageAspect(int aspect)
@@ -200,36 +200,36 @@ VkComponentSwizzle RHIComponentMappingElementToVkComponentSwizzle(ComponentMappi
     return VK_COMPONENT_SWIZZLE_MAX_ENUM;
 }
 
-VkImageViewType RHIImageViewTypeToVkImageViewType(ImageViewType type)
+VkImageViewType RHIImageDimensionToVkImageViewType(ImageDimension type)
 {
     switch (type)
     {
-    case ImageViewType::D1: return VK_IMAGE_VIEW_TYPE_1D;
-    case ImageViewType::D2: return VK_IMAGE_VIEW_TYPE_2D;
-    case ImageViewType::D3: return VK_IMAGE_VIEW_TYPE_3D;
-    case ImageViewType::Cube: return VK_IMAGE_VIEW_TYPE_CUBE;
-    case ImageViewType::Array1D: return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
-    case ImageViewType::Array2D: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-    case ImageViewType::ArrayCube: return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
-    case ImageViewType::Count: return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
+    case ImageDimension::D1: return VK_IMAGE_VIEW_TYPE_1D;
+    case ImageDimension::D2: return VK_IMAGE_VIEW_TYPE_2D;
+    case ImageDimension::D3: return VK_IMAGE_VIEW_TYPE_3D;
+    case ImageDimension::Cube: return VK_IMAGE_VIEW_TYPE_CUBE;
+    case ImageDimension::Array1D: return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+    case ImageDimension::Array2D: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    case ImageDimension::ArrayCube: return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    case ImageDimension::Count: return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
     }
     return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
 }
 
-ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType type)
+ImageDimension VkImageViewTypeToRHIImageDimension(VkImageViewType type)
 {
     switch (type)
     {
-    case VK_IMAGE_VIEW_TYPE_1D: return ImageViewType::D1;
-    case VK_IMAGE_VIEW_TYPE_2D: return ImageViewType::D2;
-    case VK_IMAGE_VIEW_TYPE_3D: return ImageViewType::D3;
-    case VK_IMAGE_VIEW_TYPE_CUBE: return ImageViewType::Cube;
-    case VK_IMAGE_VIEW_TYPE_1D_ARRAY: return ImageViewType::Array1D;
-    case VK_IMAGE_VIEW_TYPE_2D_ARRAY: return ImageViewType::Array2D;
-    case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY: return ImageViewType::ArrayCube;
-    case VK_IMAGE_VIEW_TYPE_MAX_ENUM: return ImageViewType::Count;
+    case VK_IMAGE_VIEW_TYPE_1D: return ImageDimension::D1;
+    case VK_IMAGE_VIEW_TYPE_2D: return ImageDimension::D2;
+    case VK_IMAGE_VIEW_TYPE_3D: return ImageDimension::D3;
+    case VK_IMAGE_VIEW_TYPE_CUBE: return ImageDimension::Cube;
+    case VK_IMAGE_VIEW_TYPE_1D_ARRAY: return ImageDimension::Array1D;
+    case VK_IMAGE_VIEW_TYPE_2D_ARRAY: return ImageDimension::Array2D;
+    case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY: return ImageDimension::ArrayCube;
+    case VK_IMAGE_VIEW_TYPE_MAX_ENUM: return ImageDimension::Count;
     }
-    return ImageViewType::Count;
+    return ImageDimension::Count;
 }
 
 VkBufferUsageFlags RHIBufferUsageToVkBufferUsage(BufferUsage usage)
@@ -599,6 +599,7 @@ VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineSt
     if (pipeline_stage & PSFB_ColorAttachmentOutput) flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     if (pipeline_stage & PSFB_TopOfPipe) flags |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     if (pipeline_stage & PSFB_BottomOfPipe) flags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    if (pipeline_stage & PSFB_DepthStencilAttachment) flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     return flags;
 }
 
@@ -630,4 +631,50 @@ platform::rhi::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInp
     case VK_VERTEX_INPUT_RATE_INSTANCE: return platform::rhi::VertexInputRate::Instance;
     default: return platform::rhi::VertexInputRate::Count;
     }
+}
+
+VkImageType RHIImageDimensionToVkImageType(platform::rhi::ImageDimension dimension)
+{
+    switch (dimension)
+    {
+    case ImageDimension::D1: return VK_IMAGE_TYPE_1D;
+    case ImageDimension::D2: return VK_IMAGE_TYPE_2D;
+    case ImageDimension::D3: return VK_IMAGE_TYPE_3D;
+    default: return VK_IMAGE_TYPE_MAX_ENUM;
+    }
+}
+
+platform::rhi::ImageDimension VkImageTypeToRHIImageDimension(VkImageType type)
+{
+    switch (type)
+    {
+    case VK_IMAGE_TYPE_1D: return ImageDimension::D1;
+    case VK_IMAGE_TYPE_2D: return ImageDimension::D2;
+    case VK_IMAGE_TYPE_3D: return ImageDimension::D3;
+    default: return ImageDimension::Count;
+    }
+}
+
+VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(ImageUsage usage_flag)
+{
+    VkImageUsageFlags flags = 0;
+    if (usage_flag & IUB_TransferSrc) flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    if (usage_flag & IUB_TransferDst) flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    if (usage_flag & IUB_DepthStencil) flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (usage_flag & IUB_Transient) flags |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+    if (usage_flag & IUB_RenderTarget) flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    if (usage_flag & IUB_ShaderRead) flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    return flags;
+}
+
+ImageUsage VkImageUsageToRHIImageUsageFlags(VkImageUsageFlags usage_flag)
+{
+    ImageUsage flags = 0;
+    if (usage_flag & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) flags |= IUB_TransferSrc;
+    if (usage_flag & VK_IMAGE_USAGE_TRANSFER_DST_BIT) flags |= IUB_TransferDst;
+    if (usage_flag & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) flags |= IUB_DepthStencil;
+    if (usage_flag & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) flags |= IUB_Transient;
+    if (usage_flag & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) flags |= IUB_RenderTarget;
+    if (usage_flag & VK_IMAGE_USAGE_SAMPLED_BIT) flags |= IUB_ShaderRead;
+    return flags;
 }

@@ -19,8 +19,8 @@ platform::rhi::ColorSpace VkColorSpaceToRHIColorSpace(VkColorSpaceKHR color_spac
 VkPresentModeKHR           RHIPresentModeToVkPresentMode(platform::rhi::PresentMode present_mode);
 platform::rhi::PresentMode VkPresentModeToRHIPresentMode(VkPresentModeKHR present_mode);
 
-VkSampleCountFlagBits          RHISampleCountToVkSampleCount(platform::rhi::SampleCount sample_count);
-platform::rhi::SampleCountBits VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
+VkSampleCountFlagBits      RHISampleCountToVkSampleCount(platform::rhi::SampleCount sample_count);
+platform::rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
 
 /**
  * @param aspect 由ImageAspect组成的bitmask, 类型int
@@ -36,8 +36,8 @@ int                VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect);
 platform::rhi::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle);
 VkComponentSwizzle                     RHIComponentMappingElementToVkComponentSwizzle(platform::rhi::ComponentMappingElement swizzle);
 
-VkImageViewType              RHIImageViewTypeToVkImageViewType(platform::rhi::ImageViewType type);
-platform::rhi::ImageViewType VkImageViewTypeToRHIImageViewType(VkImageViewType type);
+VkImageViewType               RHIImageDimensionToVkImageViewType(platform::rhi::ImageDimension type);
+platform::rhi::ImageDimension VkImageViewTypeToRHIImageDimension(VkImageViewType type);
 
 VkBufferUsageFlags         RHIBufferUsageToVkBufferUsage(platform::rhi::BufferUsage usage);
 platform::rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usage);
@@ -78,5 +78,11 @@ platform::rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag
 VkPipelineStageFlags              RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineStageFlags pipeline_stage);
 platform::rhi::PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage);
 
-VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(platform::rhi::VertexInputRate rate);
+VkVertexInputRate              RHIVertexInputRateToVkVertexInputRate(platform::rhi::VertexInputRate rate);
 platform::rhi::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInputRate rate);
+
+VkImageType                   RHIImageDimensionToVkImageType(platform::rhi::ImageDimension dimension);
+platform::rhi::ImageDimension VkImageTypeToRHIImageDimension(VkImageType type);
+
+VkImageUsageFlags         RHIImageUsageToVkImageUsageFlags(platform::rhi::ImageUsage usage_flag);
+platform::rhi::ImageUsage VkImageUsageFlagsToRHIImageUsage(VkImageUsageFlags usage_flag);

@@ -453,7 +453,15 @@ struct Type
 #define REGISTER_FIELD_IMPL(name)                                                                                                 \
     else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name)                                                 \
     {                                                                                                                             \
-        info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();                                         \
+        using ValueType = typename ContainerTypeTrait<T>::ValueType;                                                              \
+        if constexpr (IsObjectPtr<ValueType>::value)                                                                              \
+        {                                                                                                                         \
+            info.type_ = TypeOf<ObjectPtrBase>();                                                                                 \
+        }                                                                                                                         \
+        else                                                                                                                      \
+        {                                                                                                                         \
+            info.type_ = TypeOf<ValueType>();                                                                                     \
+        }                                                                                                                         \
         info.container_identifier_ = ContainerIdentifier::name;                                                                   \
         info.container_view_       = New<DynamicArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, name>>(field, this); \
     }
@@ -487,7 +495,15 @@ struct Type
         REGISTER_FIELD_IMPL(HashSet)
         else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
         {
-            info.type_                 = TypeOf<typename ContainerTypeTrait<T>::ValueType>();
+            using ValueType = typename ContainerTypeTrait<T>::ValueType;
+            if constexpr (IsObjectPtr<ValueType>::value)
+            {
+                info.type_ = TypeOf<ObjectPtrBase>();
+            }
+            else
+            {
+                info.type_ = TypeOf<ValueType>();
+            }
             info.container_identifier_ = ContainerIdentifier::StaticArray;
             info.container_view_ =
                 New<StaticArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, ContainerTypeTrait<T>::ConstantSize>>(field, this);

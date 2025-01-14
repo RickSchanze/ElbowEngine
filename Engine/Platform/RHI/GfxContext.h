@@ -20,8 +20,10 @@
 
 namespace platform::rhi
 {
+struct ImageViewDesc;
+struct ImageDesc;
 class Image;
-}
+}   // namespace platform::rhi
 namespace platform::rhi
 {
 class ImageView;
@@ -259,6 +261,16 @@ public:
      * @return
      */
     virtual core::SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc) = 0;
+
+    /**
+     * 创建一个Image
+     * @param desc
+     * @param debug_name
+     * @return
+     */
+    virtual core::SharedPtr<Image> CreateImage(const ImageDesc& desc, core::StringView debug_name = "") = 0;
+
+    virtual core::SharedPtr<ImageView> CreateImageView(const ImageViewDesc& desc, core::StringView debug_name = "") = 0;
 
     virtual void Update();
 

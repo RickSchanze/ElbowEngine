@@ -15,7 +15,8 @@ static void DestroyAt(void* ptr) { static_cast<func::SceneComponent*>(ptr)->~Sce
 #define GENERATED_IMPLEMENTATION \
 core::Type* func::SceneComponent::REFLECTION_Register_SceneComponent_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<func::SceneComponent>("func.SceneComponent")->Internal_AddParent(TypeOf<func::Component>())->SetComment("Object不自动生成默认构造函数"); \
+Type* type = Type::Create<func::SceneComponent>("func.SceneComponent")->Internal_AddParent(TypeOf<func::Component>())->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
+type->Internal_RegisterField("transform_", &func::SceneComponent::transform_, offsetof(func::SceneComponent, transform_)); \
 return type; \
 } \
 

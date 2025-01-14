@@ -29,7 +29,7 @@ static void DestroyAt(void* ptr) { static_cast<core::Object*>(ptr)->~Object(); }
 #define GENERATED_IMPLEMENTATION \
 core::Type* core::Object::REFLECTION_Register_Object_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::Object>("core.Object")->SetComment("Object不自动生成默认构造函数"); \
+Type* type = Type::Create<core::Object>("core.Object")->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
 type->Internal_RegisterField("handle_", &core::Object::handle_, offsetof(core::Object, handle_)); \
 type->Internal_RegisterField("flags_", &core::Object::flags_, offsetof(core::Object, flags_)); \
 type->Internal_RegisterField("state_", &core::Object::state_, offsetof(core::Object, state_)); \

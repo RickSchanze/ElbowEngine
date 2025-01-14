@@ -29,11 +29,7 @@ CameraComponent::CameraComponent() : SceneComponent()
 void CameraComponent::UpdateViewBuffer()
 {
     // 计算view和projection
-    const auto      self_loc = GetWorldLocation();
-    const auto      self_rot = GetWorldRotationQuaterion();
-    const Matrix4x4 trans    = Math::Translate(Matrix4x4(1.0f), -self_loc);
-    const Matrix4x4 rot      = Math::ToMatrix4x4(Math::Conjugate(self_rot));
-    camera_shader_data_.view = rot * trans;
+    camera_shader_data_.view = Math::LookAt({0, 0, -10}, Vector3(0, 0, 0), Vector3(0, 1, 0));
 
     Float     fov            = Math::Radians(GetFOV());
     Float     aspect_ratio   = GetAspectRatio();

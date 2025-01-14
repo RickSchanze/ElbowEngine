@@ -1,5 +1,5 @@
 /**
- * @file RHIEnums.h
+ * @file Enums.h
  * @author Echo 
  * @Date 24-11-23
  * @brief 
@@ -65,9 +65,8 @@ enum class QueueFamilyType
 
 /**
  * MSAA采样次数
- * Vulkan API指示这里是个Flag Enum, Follow it.
  */
-enum ENUM(Flag) SampleCountBits
+enum class ENUM(Flag) SampleCount
 {
     SC_1  = 0b0000001,   // 1次
     SC_2  = 0b0000010,   // 2次
@@ -78,7 +77,6 @@ enum ENUM(Flag) SampleCountBits
     SC_64 = 0b1000000,   // 64次
     SC_Count,            // 超出范围
 };
-typedef uint32_t SampleCount;
 
 // 指示要访问图像的哪些"方面"
 enum ImageAspectBits
@@ -128,18 +126,6 @@ struct ImageSubresourceRange
         layer_count(layer_count_)
     {
     }
-};
-
-enum class ImageViewType
-{
-    D1,
-    D2,
-    D3,
-    Cube,
-    Array1D,
-    Array2D,
-    ArrayCube,
-    Count,
 };
 
 enum class ComponentMappingElement
@@ -240,19 +226,20 @@ enum AccessFlagBits
     AFB_None                        = 0,
     AFB_ColorAttachmentRead         = 1,
     AFB_ColorAttachmentWrite        = 1 << 1,
-    AFB_DepthStencilAttachmentRead = 1 << 2,
+    AFB_DepthStencilAttachmentRead  = 1 << 2,
     AFB_DepthStencilAttachmentWrite = 1 << 3,
-    AFB_TransferRead = 1 << 4,
-    AFB_TransferWrite = 1 << 5,
+    AFB_TransferRead                = 1 << 4,
+    AFB_TransferWrite               = 1 << 5,
 };
 using AccessFlags = uint32_t;
 
 enum PipelineStageFlagBits
 {
-    PSFB_None = 0,
-    PSFB_TopOfPipe = 1,
-    PSFB_ColorAttachmentOutput = 1 << 1,
-    PSFB_BottomOfPipe = 1 << 2,
+    PSFB_None                   = 0,
+    PSFB_TopOfPipe              = 1,
+    PSFB_ColorAttachmentOutput  = 1 << 1,
+    PSFB_BottomOfPipe           = 1 << 2,
+    PSFB_DepthStencilAttachment = 1 << 3,
 };
 using PipelineStageFlags = uint32_t;
 
@@ -260,6 +247,31 @@ enum class VertexInputRate
 {
     Vertex,
     Instance,
+    Count,
+};
+
+enum ImageUsageBits
+{
+    IUB_TransferSrc  = 0b0000001,   // VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+    IUB_TransferDst  = 0b0000010,   // VK_IMAGE_USAGE_TRANSFER_DST_BIT
+    IUB_RenderTarget = 0b0000100,   // VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    IUB_DepthStencil = 0b0001000,   // VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+    IUB_ShaderRead   = 0b0010000,   // VK_IMAGE_USAGE_SAMPLED_BIT
+    IUB_Transient    = 0b0100000,   // VK_IMAGE_USAGE_STORAGE_BIT
+    IUB_SwapChain    = 0b1000000,   // For swapchain use
+    IUB_Max,                        // VK_IMAGE_USAGE_MAX_ENUM
+};
+using ImageUsage = UInt32;
+
+enum class ImageDimension
+{
+    D1,   // 一维图像
+    D2,   // 二维图像
+    D3,   // 三维图像
+    Cube,
+    Array1D,
+    Array2D,
+    ArrayCube,
     Count,
 };
 }

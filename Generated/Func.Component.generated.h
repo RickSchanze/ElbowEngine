@@ -15,7 +15,7 @@ static void DestroyAt(void* ptr) { static_cast<func::Component*>(ptr)->~Componen
 #define GENERATED_IMPLEMENTATION \
 core::Type* func::Component::REFLECTION_Register_Component_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<func::Component>("func.Component")->Internal_AddParent(TypeOf<core::Object>())->SetComment("Object不自动生成默认构造函数"); \
+Type* type = Type::Create<func::Component>("func.Component")->Internal_AddParent(TypeOf<core::Object>())->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
 type->Internal_RegisterField("owner_", &func::Component::owner_, offsetof(func::Component, owner_)); \
 return type; \
 } \

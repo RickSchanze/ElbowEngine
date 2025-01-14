@@ -6,6 +6,10 @@
 #include "Core/Base/UniquePtr.h"
 #include "RenderPipeline.h"
 
+namespace func
+{
+class RenderTexture;
+}
 namespace platform::rhi
 {
 class DescriptorSet;
@@ -34,6 +38,7 @@ public:
 private:
     core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
     core::SharedPtr<platform::rhi::DescriptorSet>    descriptor_set_;
+    core::SharedPtr<RenderTexture>                   depth_target_;
     resource::Mesh*                                  mesh_ = nullptr;
 };
 

@@ -111,6 +111,10 @@ public:
 
     [[nodiscard]] VkQueue GetQueue(QueueFamilyType type) const;
 
+    core::SharedPtr<Image> CreateImage(const ImageDesc& desc, core::StringView debug_name) override;
+
+    core::SharedPtr<ImageView> CreateImageView(const ImageViewDesc& desc, core::StringView debug_name) override;
+
 private:
     [[nodiscard]] Format FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 

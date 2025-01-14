@@ -34,6 +34,8 @@ add_library(${PROJECT_NAME}
         Camera/Camera.h
         Render/GlobalObjectInstancedDataBuffer.cpp
         Render/GlobalObjectInstancedDataBuffer.h
+        Render/RenderTexture.cpp
+        Render/RenderTexture.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

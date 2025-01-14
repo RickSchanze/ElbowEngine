@@ -188,14 +188,13 @@ VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc& desc) con
     view_info.subresourceRange.levelCount     = desc.subresource_range.level_count;
     view_info.subresourceRange.baseArrayLayer = desc.subresource_range.base_array_layer;
     view_info.subresourceRange.layerCount     = desc.subresource_range.layer_count;
-    view_info.viewType                        = RHIImageViewTypeToVkImageViewType(desc.type);
+    view_info.viewType                        = RHIImageDimensionToVkImageViewType(desc.type);
     view_info.pNext                           = nullptr;
     VkImageView view_handle                   = VK_NULL_HANDLE;
     if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS)
     {
         LOGGER.Error(logcat::Platform_RHI_Vulkan, "Failed to create ImageView: {}", VulkanErrorToString(result));
     }
-    SetObjectDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, view_handle, desc.name);
     return view_handle;
 }
 
@@ -423,6 +422,30 @@ VkQueue GfxContext_Vulkan::GetQueue(QueueFamilyType type) const
     return VK_NULL_HANDLE;
 }
 
+core::SharedPtr<Image> GfxContext_Vulkan::CreateImage(const ImageDesc& desc, core::StringView debug_name)
+{
+    auto rtn = core::MakeShared<Image_Vulkan>(desc);
+#if ELBOW_DEBUG
+    if (!debug_name.IsEmpty())
+    {
+        SetObjectDebugName(VK_OBJECT_TYPE_IMAGE, rtn->GetNativeHandle(), debug_name);
+    }
+#endif
+    return rtn;
+}
+
+SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc, StringView debug_name)
+{
+    auto rtn = core::MakeShared<ImageView_Vulkan>(desc);
+#if ELBOW_DEBUG
+    if (!debug_name.IsEmpty())
+    {
+        SetObjectDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, rtn->GetNativeHandle(), debug_name);
+    }
+#endif
+    return rtn;
+}
+
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (const core::Array<VkFormat> fmts = candidates | transform([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | ranges::to_vector;
@@ -484,7 +507,7 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
     vulkan_ctx->swapchain_image_views_ =   //
         vulkan_ctx->swapchain_images_ | enumerate | transform([](const auto& pair) {
             const auto& [idx, img] = pair;
-            ImageViewDesc desc{swapchain_image_view_names_[idx], img, IA_Color};
+            ImageViewDesc desc(img);
             return New<ImageView_Vulkan>(desc);
         }) |
         ranges::to_vector;
@@ -998,7 +1021,7 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
     swapchain_image_views_ =   //
         swapchain_images_ | enumerate | transform([](const auto& pair) {
             const auto& [idx, img] = pair;
-            ImageViewDesc desc{swapchain_image_view_names_[idx], img, IA_Color};
+            ImageViewDesc desc{img};
             return New<ImageView_Vulkan>(desc);
         }) |
         ranges::to_vector;
