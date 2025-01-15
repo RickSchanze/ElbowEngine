@@ -21,9 +21,11 @@ public:
 
     void SetOwner(const Actor* owner);
 
+    Actor* GetOwner() const { return owner_; }
+
     void SetDirty();
 
-    bool IsDirty() const { return dirty_; }
+    [[nodiscard]] bool IsDirty() const { return dirty_; }
 
 protected:
     PROPERTY()

@@ -77,6 +77,7 @@ struct STRUCT() Vector2
 typedef glm::vec3 Vector3;
 typedef glm::vec4 Vector4;
 typedef glm::mat4 Matrix4x4;
+typedef glm::mat3 Matrix3x3;
 typedef glm::quat Quaternion;
 
 namespace Constant
@@ -184,6 +185,7 @@ public:
     static Color Error() { return {1, 0, 0, 1}; }
     static Color Info() { return {0, 1, 1, 1}; }
     static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
+    static Color DefaultClear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
     static Color Invalid() { return {-1, -1, -1, -1}; }
 
     /** 讲一个0-1的表示颜色的值转换为0-255的值 */

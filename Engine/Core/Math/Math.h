@@ -131,11 +131,15 @@ public:
 
     static Matrix4x4 ToMatrix4x4(Quaternion q);
 
+    static Matrix3x3 ToMatrix3x3(Quaternion q);
+
     /**
      * 四元数的共轭
      * @param q
      * @return
      */
     static Quaternion Conjugate(Quaternion q);
+
+    static Matrix3x3 Transpose(Matrix3x3 m);
 };
 }

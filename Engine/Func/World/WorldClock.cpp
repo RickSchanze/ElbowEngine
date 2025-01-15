@@ -35,7 +35,6 @@ void WorldClock::TickAll()
                 PROFILE_SCOPE("PreTick Tickable Object");
                 for (int i = 0; i < ticks_.size(); ++i)
                 {
-
                     auto& tick = *ticks_[i];
                     deltas[i]  = duration * (tick.GetTickScale()) * (tick.IsGlobalTimeScaleInfluenced() ? global_time_scale_ : 1.f);
                     ticks_[i]->PreTick(deltas[i]);

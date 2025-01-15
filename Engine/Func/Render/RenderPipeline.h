@@ -5,6 +5,10 @@
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
 
+namespace platform
+{
+class Window;
+}
 namespace platform::rhi
 {
 class Image;
@@ -35,6 +39,8 @@ public:
     virtual void Clean() {}
     virtual void Rebuild() {}
     virtual bool IsReady() const { return false; }
+
+    virtual void OnWindowResized(platform::Window* window, Int32 width, Int32 height) = 0;
 
 protected:
     platform::rhi::ImageView* GetBackBufferView(UInt32 current_image_index);

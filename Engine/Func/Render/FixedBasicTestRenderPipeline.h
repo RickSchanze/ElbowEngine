@@ -35,6 +35,8 @@ public:
 
     [[nodiscard]] bool IsReady() const override;
 
+    void OnWindowResized(platform::Window* window, Int32 width, Int32 height) override;
+
 private:
     core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
     core::SharedPtr<platform::rhi::DescriptorSet>    descriptor_set_;

@@ -29,11 +29,18 @@ public:
     [[nodiscard]] core::Quaternion GetRotationQuaterion() const { return transform_.rotation; }
     void                           SetRotation(const core::Quaternion& rotation) { transform_.rotation = rotation; }
 
+protected:
+    template <typename T>
+        requires std::derived_from<T, Component>
+    T* CreateComponent()
+    {
+        T* comp = core::NewObject<T>();
+        comp->SetOwner(this);
+        return comp;
+    }
+
 private:
     PROPERTY()
     Transform transform_;
-
-    PROPERTY()
-    core::Array<core::ObjectPtr<Component>> components_;
 };
 }   // namespace func

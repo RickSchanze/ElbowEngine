@@ -40,6 +40,9 @@ public:
      */
     void SetObject(const ObjectHandle handle);
 
+    ObjectHandle GetOuter() const { return outer_; }
+    ObjectHandle GetHandle() const { return object_; }
+
 protected:
     ObjectHandle outer_ = INVALID_OBJECT_HANDLE;   // 即包含此成员的父对象
 
@@ -74,13 +77,13 @@ public:
     operator T*()
     {
         Object* obj = ObjectManager::GetObjectByHandle(object_);
-        return static_cast<T*>(obj);
+        return reinterpret_cast<T*>(obj);
     }
 
     operator T*() const
     {
         Object* obj = ObjectManager::GetObjectByHandle(object_);
-        return static_cast<T*>(obj);
+        return reinterpret_cast<T*>(obj);
     }
 
     T* operator->() { return static_cast<T*>(this); }

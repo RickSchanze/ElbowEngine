@@ -46,6 +46,8 @@ void core::ObjectPtrBase::SetObject(const ObjectHandle handle)
                 const auto obj       = ObjectManager::GetObjectByHandle(object_);
                 if (outer_obj && obj)
                 {
+                    // TODO: 这里应该RemoveReferencing吗？因为不Remove可以知道这里曾经引用了一个东西然后Fallback
+                    // TODO: 或者给个选项决定是否要RemoveReferencing
                     outer_obj->RemoveReferencing(object_);
                     obj->RemoveReferenced(outer_);
                 }

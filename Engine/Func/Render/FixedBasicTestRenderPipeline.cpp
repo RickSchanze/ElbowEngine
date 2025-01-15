@@ -55,7 +55,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
         PSFB_ColorAttachmentOutput
     );
     RenderAttachment attachment{};
-    attachment.clear_color                    = Color::Green();
+    attachment.clear_color                    = Color::DefaultClear();
     attachment.target                         = view;
     attachment.layout                         = ImageLayout::ColorAttachment;
     PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
@@ -115,4 +115,10 @@ void func::FixedBasicTestRenderPipeline::Clean()
 bool func::FixedBasicTestRenderPipeline::IsReady() const
 {
     return pipeline_.IsSet();
+}
+
+void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window* window, Int32 width, Int32 height)
+{
+    if (width == 0 || height == 0) return;
+    depth_target_->Resize(width, height);
 }

@@ -17,7 +17,6 @@ core::Type* func::Actor::REFLECTION_Register_Actor_Registerer() { \
 using namespace core; \
 Type* type = Type::Create<func::Actor>("func.Actor")->Internal_AddParent(TypeOf<core::Object>())->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
 type->Internal_RegisterField("transform_", &func::Actor::transform_, offsetof(func::Actor, transform_)); \
-type->Internal_RegisterField("components_", &func::Actor::components_, offsetof(func::Actor, components_)); \
 return type; \
 } \
 

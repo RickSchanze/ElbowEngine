@@ -98,6 +98,10 @@ void RenderContext::OnWindowResized(Window* window, Int32 width, Int32 height)
 {
     SetRenderEnable(false);
     window_resized_ = true;
+    if (render_pipeline_)
+    {
+        render_pipeline_->OnWindowResized(window, width, height);
+    }
 }
 
 void RenderContext::Startup()

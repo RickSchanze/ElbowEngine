@@ -49,9 +49,17 @@ class CLASS() Object : public ITypeGetter
 
 public:
     explicit Object(ObjectFlag flag) : flags_(flag) {}
-    Object() : flags_(0) {}
+
+    Object();
+
+    ~Object() override;
 
     void SetDisplayName(StringView display_name);
+
+    void SetName(StringView name);
+
+    [[nodiscard]] StringView GetName() const { return name_; }
+    [[nodiscard]] StringView GetDisplayName() const { return display_name_; }
 
 protected:
     PROPERTY()

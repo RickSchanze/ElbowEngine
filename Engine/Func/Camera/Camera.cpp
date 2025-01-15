@@ -21,10 +21,7 @@ void Camera::Tick(Millisecond delta_time)
     auto* active = GetActive();
     if (active != nullptr)
     {
-        if (active->IsDirty())
-        {
-            active->UpdateViewBuffer();
-        }
+        active->UpdateViewBuffer();
     }
 }
 

@@ -3,9 +3,9 @@
 //
 
 #include "Component.h"
+#include "Actor.h"
 #include "Core/Reflection/CtorManager.h"
 #include "Core/Reflection/Reflection.h"
-#include "Actor.h"
 #include GEN_HEADER("Func.Component.generated.h")
 
 using namespace func;

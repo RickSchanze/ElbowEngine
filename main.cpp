@@ -9,17 +9,18 @@
 #include "Core/Reflection/Reflection.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "cpptrace/cpptrace.hpp"
+#include "Func/Camera/ACameraHolder.h"
 #include "Func/Camera/Camera.h"
+#include "Func/Camera/CameraComponent.h"
 #include "Func/Render/FixedBasicTestRenderPipeline.h"
 #include "Func/Render/RenderContext.h"
+#include "Func/World/Actor.h"
 #include "Func/World/WorldClock.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Shader/Shader.h"
-#include "Func/Camera/CameraComponent.h"
-#include "Func/World/Actor.h"
 
 using namespace core::exec;
 using namespace func;
@@ -81,8 +82,7 @@ int main()
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(core::MakeUnique<FixedBasicTestRenderPipeline>());
-        Actor* a = core::NewObject<Actor>();
-        core::NewObject<CameraComponent>()->SetOwner(a);
+        Actor* a = core::NewObject<ACameraHolder>();
         while (GetRuntimeStage() != RuntimeStage::Shutdown)
         {
             MARK_FRAME_AUTO;

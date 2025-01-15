@@ -181,7 +181,18 @@ Matrix4x4 Math::ToMatrix4x4(Quaternion q)
     return mat4_cast(q);
 }
 
-Quaternion Math::Conjugate(Quaternion q){
+Matrix3x3 Math::ToMatrix3x3(Quaternion q)
+{
+    return mat3_cast(q);
+}
+
+Quaternion Math::Conjugate(Quaternion q)
+{
     return conjugate(q);
+}
+
+Matrix3x3 Math::Transpose(Matrix3x3 m)
+{
+    return transpose(m);
 }
 }

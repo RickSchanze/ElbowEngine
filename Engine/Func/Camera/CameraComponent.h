@@ -39,6 +39,8 @@ public:
     void               SetActive(bool active);
 
 protected:
+    void ReCalcProj();
+
     // 与Shader里的对应
     CameraShaderData camera_shader_data_{};
 

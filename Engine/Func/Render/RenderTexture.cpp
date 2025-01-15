@@ -72,7 +72,7 @@ void RenderTexture::SetHeight(UInt32 height)
     native_handle_ = GetGfxContextRef().CreateImage(desc_);
 }
 
-void RenderTexture::SetWidthHeight(UInt32 width, UInt32 height)
+void RenderTexture::Resize(UInt32 width, UInt32 height)
 {
     image_view_    = nullptr;
     native_handle_ = nullptr;

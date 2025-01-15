@@ -5,6 +5,7 @@
 #include "Actor.h"
 #include "Core/Core.h"
 
+#include "Component.h"
 #include GEN_HEADER("Func.Actor.generated.h")
 
 GENERATED_SOURCE()

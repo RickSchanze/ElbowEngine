@@ -20,6 +20,33 @@
 GENERATED_SOURCE()
 
 using namespace core;
+using namespace exec;
+
+Object::Object()
+{
+    if (!IsPersistent())
+    {
+        GenerateInstanceHandle();
+    }
+}
+
+Object::~Object()
+{
+    if (referenced_.empty()) return;
+    LOGGER.Warn(logcat::Core_Object, "对象{}被销毁时仍有{}个对象引用它", name_, referenced_.size());
+    for (const auto& handle: referenced_)
+    {
+        Object* obj = ObjectManager::GetRegistry().GetObjectByHandle(handle);
+        if (obj)
+        {
+            LOGGER.WarnFast(logcat::Core_Object, "{}: {}", handle, obj->name_);
+        }
+        else
+        {
+            LOGGER.WarnFast(logcat::Core_Object, "{}: {}", handle, "已失效");
+        }
+    }
+}
 
 void Object::SetDisplayName(StringView display_name)
 {
@@ -28,7 +55,10 @@ void Object::SetDisplayName(StringView display_name)
 #endif
 }
 
-using namespace exec;
+void Object::SetName(StringView name)
+{
+    name_ = name;
+}
 
 void Object::AddReferencing(ObjectHandle handle)
 {
@@ -114,7 +144,6 @@ void Object::PostDeserialized()
 
 void Object::OnCreated()
 {
-    GenerateInstanceHandle();
     RegisterSelf();
     ResolveObjectPtr();
 }

@@ -52,7 +52,7 @@ public:
     // 因为是销毁后重建, 所以尽量不要频繁调用
     void SetWidth(UInt32 width);
     void SetHeight(UInt32 height);
-    void SetWidthHeight(UInt32 width, UInt32 height);
+    void Resize(UInt32 width, UInt32 height);
 
 private:
     core::SharedPtr<platform::rhi::Image>     native_handle_ = nullptr;
