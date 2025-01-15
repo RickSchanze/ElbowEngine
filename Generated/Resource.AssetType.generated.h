@@ -7,7 +7,7 @@ Type* type = Type::Create<resource::AssetType>("resource.AssetType"); \
 using enum resource::AssetType; \
 type->Internal_RegisterEnumValue(Mesh ,"Mesh")->SetAttribute(FieldInfo::ValueAttribute::Label, "网格"); \
 type->Internal_RegisterEnumValue(Shader ,"Shader")->SetAttribute(FieldInfo::ValueAttribute::Label, "着色器"); \
-type->Internal_RegisterEnumValue(Texture ,"Texture")->SetAttribute(FieldInfo::ValueAttribute::Label, "纹理"); \
+type->Internal_RegisterEnumValue(Texture2D ,"Texture2D")->SetAttribute(FieldInfo::ValueAttribute::Label, "2D纹理"); \
 type->Internal_RegisterEnumValue(Material ,"Material")->SetAttribute(FieldInfo::ValueAttribute::Label, "材质"); \
 type->Internal_RegisterEnumValue(Animation ,"Animation")->SetAttribute(FieldInfo::ValueAttribute::Label, "动画"); \
 type->Internal_RegisterEnumValue(Audio ,"Audio")->SetAttribute(FieldInfo::ValueAttribute::Label, "音频"); \

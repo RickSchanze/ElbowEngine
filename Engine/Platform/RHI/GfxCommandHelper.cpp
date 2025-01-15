@@ -7,6 +7,7 @@
 #include "CommandBuffer.h"
 #include "Commands.h"
 #include "GfxContext.h"
+#include "Image.h"
 #include "SyncPrimitives.h"
 
 using namespace platform;
@@ -34,12 +35,56 @@ void GfxCommandHelper::EndSingleTransferCommand(const core::SharedPtr<CommandBuf
 }
 
 void GfxCommandHelper::PipelineBarrier(
-    rhi::ImageLayout old, rhi::ImageLayout new_, rhi::Image* target, rhi::ImageSubresourceRange range, rhi::AccessFlags src_mask,
-    rhi::AccessFlags dst_mask, rhi::PipelineStageFlags src_stage, rhi::PipelineStageFlags dst_stage
+    ImageLayout old, ImageLayout new_, Image* target, ImageSubresourceRange range, AccessFlags src_mask, AccessFlags dst_mask,
+    PipelineStageFlags src_stage, PipelineStageFlags dst_stage
 )
 {
     auto cmd = BeginSingleTransferCommand();
     cmd->Enqueue<Cmd_ImagePipelineBarrier>(old, new_, target, range, src_mask, dst_mask, src_stage, dst_stage);
     cmd->Execute("");
     EndSingleTransferCommand(cmd);
+}
+
+void GfxCommandHelper::CopyDataToBuffer(const void* data, Buffer* target, uint32_t size, uint32_t offset)
+{
+    auto&      ctx = GetGfxContextRef();
+    BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
+    auto       staging_buffer = ctx.CreateBuffer(staging_buffer_info);
+    staging_buffer->BeginWrite();
+    staging_buffer->Write(data, size);
+    staging_buffer->EndWrite();
+    auto cmd = BeginSingleTransferCommand();
+    cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), target);
+    cmd->Execute("CopyBuffer");
+    EndSingleTransferCommand(cmd);
+}
+
+void GfxCommandHelper::CopyDataToImage2D(const void* data, Image* target, UInt32 size)
+{
+    auto&      ctx = GetGfxContextRef();
+    BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
+    auto       staging_buffer = ctx.CreateBuffer(staging_buffer_info);
+    staging_buffer->BeginWrite();
+    staging_buffer->Write(data, size);
+    staging_buffer->EndWrite();
+    // 执行图像布局变换
+    ImageSubresourceRange range{};
+    range.aspect_mask      = IA_Color;
+    range.base_mip_level   = 0;
+    range.level_count      = 1;
+    range.base_array_layer = 0;
+    range.layer_count      = 1;
+
+    PipelineBarrier(ImageLayout::Undefined, ImageLayout::TransferDst, target, range, 0, AFB_TransferWrite, PSFB_TopOfPipe, PSFB_Transfer);
+    auto           cmd = BeginSingleTransferCommand();
+    core::Vector3i img_size{};
+    img_size.x = target->GetWidth();
+    img_size.y = target->GetHeight();
+    img_size.z = 1;
+    cmd->Enqueue<Cmd_CopyBufferToImage>(staging_buffer.get(), target, range, core::Vector3i{}, img_size);
+    cmd->Execute("CopyBufferToImage2D");
+    EndSingleTransferCommand(cmd);
+    PipelineBarrier(
+        ImageLayout::TransferDst, ImageLayout::ShaderReadOnly, target, range, AFB_TransferWrite, AFB_ShaderRead, PSFB_Transfer, PSFB_FragmentShader
+    );
 }

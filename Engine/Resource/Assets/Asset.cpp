@@ -3,3 +3,13 @@
 //
 
 #include "Asset.h"
+
+void resource::Asset::PerformLoad()
+{
+    PersistentObject::PerformLoad();
+}
+
+void resource::Asset::PerformUnload()
+{
+    PersistentObject::PerformUnload();
+}

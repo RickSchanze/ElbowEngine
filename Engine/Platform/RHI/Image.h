@@ -19,7 +19,7 @@ struct ImageDesc
 {
     size_t         width;
     size_t         height;
-    ImageUsageBits usage;
+    ImageUsage     usage;
     ImageDimension dimension;
     uint16_t       depth_or_layers;   // 对于2D图像, 代表layerCount, 对于3D图像, 代表depth
     uint16_t       mip_levels;
@@ -28,7 +28,7 @@ struct ImageDesc
     ImageLayout    initial_state;   // 初始图像状态
 
     ImageDesc(
-        const size_t width_, const size_t height_, const ImageUsageBits usage_, const Format format_,
+        const size_t width_, const size_t height_, const ImageUsage usage_, const Format format_,
         const ImageDimension dimension_ = ImageDimension::D2, const uint16_t depth_or_layers_ = 1, const uint16_t mip_levels_ = 1,
         const SampleCount samples_ = SampleCount::SC_1, const ImageLayout initial_state_ = ImageLayout::Undefined
     ) :
@@ -53,13 +53,15 @@ public:
 
     [[nodiscard]] size_t         GetWidth() const { return desc_.width; }
     [[nodiscard]] size_t         GetHeight() const { return desc_.height; }
-    [[nodiscard]] ImageUsageBits GetUsage() const { return desc_.usage; }
+    [[nodiscard]] ImageUsage     GetUsage() const { return desc_.usage; }
     [[nodiscard]] ImageDimension GetDimension() const { return desc_.dimension; }
     [[nodiscard]] uint16_t       GetDepthOrLayers() const { return desc_.depth_or_layers; }
     [[nodiscard]] uint16_t       GetMipLevels() const { return desc_.mip_levels; }
     [[nodiscard]] Format         GetFormat() const { return desc_.format; }
     [[nodiscard]] SampleCount    GetSampleCount() const { return desc_.samples; }
     [[nodiscard]] ImageLayout    GetState() const { return desc_.initial_state; }
+
+    virtual void UploadData(const void* data, const size_t size) = 0;
 
 protected:
     explicit Image() : desc_(0, 0, IUB_Max, Format::Count) {}

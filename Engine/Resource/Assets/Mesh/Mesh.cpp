@@ -16,9 +16,11 @@
 #include "Resource/AssetDataBase.h"
 #include "Resource/Logcat.h"
 
-using namespace platform::rhi;
+using namespace platform;
+using namespace rhi;
+using namespace resource;
 
-static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core::UniquePtr<resource::MeshStorage>& out)
+static bool LoadMesh(core::StringView path, const MeshMeta& meta, core::UniquePtr<MeshStorage>& out)
 {
     Assimp::Importer importer;
     uint32_t         import_flag = 0;
@@ -53,9 +55,9 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
         LOGGER.Warn(logcat::Resource, "Mesh {} 包含多个子Mesh(未支持), 当前只使用第一个", path);
     }
     const aiMesh* mesh = scene->mMeshes[0];
-    out                = core::MakeUnique<resource::MeshStorage>();
-    core::Array<Vertex1> vertices;
-    core::Array<uint32_t>               indices;
+    out                = core::MakeUnique<MeshStorage>();
+    core::Array<Vertex1>  vertices;
+    core::Array<uint32_t> indices;
     vertices.reserve(mesh->mNumVertices);
     indices.reserve(mesh->mNumFaces * 3);
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
@@ -82,50 +84,26 @@ static bool LoadMesh(core::StringView path, const resource::MeshMeta& meta, core
     auto& ctx = GetGfxContextRef();
     {
         // vertex buffer
-        size_t                          vertex_buffer_size = vertices.size() * sizeof(Vertex1);
-        BufferDesc vertex_buffer_info{
-            vertex_buffer_size, BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal
-        };
+        size_t     vertex_buffer_size = vertices.size() * sizeof(Vertex1);
+        BufferDesc vertex_buffer_info{vertex_buffer_size, BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
         out->vertex_count  = vertices.size();
-        core::String name = core::String::Format("VertexBuffer_{}", path);
+        core::String name  = core::String::Format("VertexBuffer_{}", path);
         out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info, name);
-        BufferDesc staging_buffer_info{
-            vertex_buffer_size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent
-        };
-        auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
-        staging_buffer->BeginWrite();
-        staging_buffer->Write(vertices.data(), 0);
-        staging_buffer->EndWrite();
-        auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
-        cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), out->vertex_buffer.get());
-        cmd->Execute("VertexBuffer");
-        platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
+        GfxCommandHelper::CopyDataToBuffer(vertices.data(), out->vertex_buffer.get(), vertex_buffer_size, 0);
     }
     {
         // index buffer
-        size_t                          index_buffer_size = indices.size() * sizeof(uint32_t);
-        BufferDesc index_buffer_info{
-            index_buffer_size, BUB_IndexBuffer | BUB_TransferDst, BMPB_DeviceLocal
-        };
+        size_t     index_buffer_size = indices.size() * sizeof(uint32_t);
+        BufferDesc index_buffer_info{index_buffer_size, BUB_IndexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
         out->index_count  = indices.size();
         core::String name = core::String::Format("IndexBuffer_{}", path);
         out->index_buffer = ctx.CreateBuffer(index_buffer_info, name);
-        BufferDesc staging_buffer_info{
-            index_buffer_size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent
-        };
-        auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
-        staging_buffer->BeginWrite();
-        staging_buffer->Write(indices.data(), 0);
-        staging_buffer->EndWrite();
-        auto cmd = platform::GfxCommandHelper::BeginSingleTransferCommand();
-        cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), out->index_buffer.get());
-        cmd->Execute("IndexBuffer");
-        platform::GfxCommandHelper::EndSingleTransferCommand(cmd);
+        GfxCommandHelper::CopyDataToBuffer(indices.data(), out->index_buffer.get(), index_buffer_size, 0);
     }
     return true;
 }
 
-void resource::Mesh::PerformLoad()
+void Mesh::PerformLoad()
 {
     auto op_meta = AssetDataBase::QueryMeta<MeshMeta>(GetHandle());
     if (!op_meta)
@@ -135,7 +113,7 @@ void resource::Mesh::PerformLoad()
     }
     auto& meta      = *op_meta;
     auto  file_path = meta.GetPath();
-    if (!platform::Path::IsExist(file_path))
+    if (!Path::IsExist(file_path))
     {
         LOGGER.Error(logcat::Resource, "加载失败, 文件不存在, path = {}", file_path);
         return;
@@ -143,11 +121,11 @@ void resource::Mesh::PerformLoad()
     loaded_ = LoadMesh(file_path, meta, storage_);
     if (loaded_)
     {
-        name_ = platform::Path::GetFileNameWithoutExt(file_path);
+        name_ = Path::GetFileNameWithoutExt(file_path);
     }
 }
 
-bool resource::Mesh::IsLoaded() const
+bool Mesh::IsLoaded() const
 {
     return loaded_;
 }

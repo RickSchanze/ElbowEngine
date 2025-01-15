@@ -15,5 +15,8 @@ class Asset : public core::PersistentObject
 public:
     virtual AssetType GetAssetType() const = 0;
 
+    void PerformLoad() override;
+    void PerformUnload() override;
+
 };
 }   // namespace resource

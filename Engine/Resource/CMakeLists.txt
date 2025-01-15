@@ -33,6 +33,10 @@ add_library(Resource
         Assets/Shader/SlangShaderLoader.h
         Config/ResourceConfig.cpp
         Config/ResourceConfig.h
+        Assets/Texture/Texture2D.cpp
+        Assets/Texture/Texture2D.h
+        Assets/Texture/Texture2DMeta.cpp
+        Assets/Texture/Texture2DMeta.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

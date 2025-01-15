@@ -14,7 +14,7 @@ enum class ENUM() AssetType
 {
     Mesh      VALUE(Label = "网格"),
     Shader    VALUE(Label = "着色器"),
-    Texture   VALUE(Label = "纹理"),
+    Texture2D VALUE(Label = "2D纹理"),
     Material  VALUE(Label = "材质"),
     Animation VALUE(Label = "动画"),
     Audio     VALUE(Label = "音频"),

@@ -37,6 +37,7 @@ enum class RHICommandType
     SetScissor,
     SetViewport,
     BindDescriptorSet,
+    CopyBufferToImage,
     Count,
 };
 
@@ -193,6 +194,22 @@ struct Cmd_SetViewport final : RHICommand
     explicit Cmd_SetViewport(const core::Rect2D& viewport_) : viewport(viewport_) {}
 
     core::Rect2D viewport;
+};
+
+struct Cmd_CopyBufferToImage final : RHICommand
+{
+    [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::CopyBufferToImage; }
+    explicit Cmd_CopyBufferToImage(
+        Buffer* src_, Image* dst_, ImageSubresourceRange subresource_range_, core::Vector3i offset_, core::Vector3i size_
+    ) : src(src_), dst(dst_), subresource_range(subresource_range_), offset(offset_), size(size_)
+    {
+    }
+
+    Buffer*               src = nullptr;
+    Image*                dst = nullptr;
+    ImageSubresourceRange subresource_range{};
+    core::Vector3i        offset{};
+    core::Vector3i        size{};
 };
 
 }   // namespace platform::rhi

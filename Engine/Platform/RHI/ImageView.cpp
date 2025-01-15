@@ -80,6 +80,7 @@ platform::rhi::ImageViewDesc::ImageViewDesc(Image* image_)
     if (usage & IUB_RenderTarget) aspect |= IA_Color;
     if (usage & IUB_SwapChain) aspect |= IA_Color;
     if (usage & IUB_DepthStencil) aspect |= IA_Depth;
+    if (usage & IUB_ShaderRead) aspect |= IA_Color;
     subresource_range.aspect_mask      = aspect;
     subresource_range.layer_count      = image->GetDepthOrLayers();
     subresource_range.base_array_layer = 0;

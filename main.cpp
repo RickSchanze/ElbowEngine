@@ -74,6 +74,7 @@ int main()
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
         resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
+        resource::AssetDataBase::Import("Assets/Texture/Test.png");
         if (auto op = resource::AssetDataBase::Import("Assets/Shader/Error.slang")->Wait().GetValue())
         {
             const auto& [handle] = *op;

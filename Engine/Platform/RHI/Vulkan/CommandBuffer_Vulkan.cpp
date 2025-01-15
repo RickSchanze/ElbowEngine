@@ -26,6 +26,7 @@ using namespace core::exec;
 using namespace platform::rhi::vulkan;
 using namespace ranges::views;
 using namespace ranges;
+using namespace platform::rhi;
 
 CommandPool_Vulkan::CommandPool_Vulkan(CommandPoolCreateInfo info) : CommandPool(info)
 {
@@ -53,7 +54,7 @@ CommandPool_Vulkan::~CommandPool_Vulkan()
     ctx.DestroyCommandPool_VK(command_pool_);
 }
 
-core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer(bool self_managed)
+core::SharedPtr<CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer(bool self_managed)
 {
     VkCommandBufferAllocateInfo alloc_info = {};
     alloc_info.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -66,7 +67,7 @@ core::SharedPtr<platform::rhi::CommandBuffer> CommandPool_Vulkan::CreateCommandB
     return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, command_pool_, self_managed);
 }
 
-core::Array<core::SharedPtr<platform::rhi::CommandBuffer>> CommandPool_Vulkan::CreateCommandBuffers(uint32_t count, bool self_managed)
+core::Array<core::SharedPtr<CommandBuffer>> CommandPool_Vulkan::CreateCommandBuffers(uint32_t count, bool self_managed)
 {
     core::Array<VkCommandBuffer> command_buffers;
     command_buffers.resize(count);
@@ -103,7 +104,7 @@ void CommandBuffer_Vulkan::Reset()
     vkResetCommandBuffer(buffer_, 0);
 }
 
-static void ExecuteCmdCopyBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuffer* cmd_copy_buffer)
+static void ExecuteCmdCopyBuffer(VkCommandBuffer cmd, Cmd_CopyBuffer* cmd_copy_buffer)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_copy_buffer->src && cmd_copy_buffer->dst)
@@ -134,7 +135,7 @@ static void ExecuteCmdCopyBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_CopyBuf
     }
 }
 
-static void ExecuteCmdBindPipeline(VkCommandBuffer cmd, platform::rhi::Cmd_BindPipeline* cmd_bind_pipeline)
+static void ExecuteCmdBindPipeline(VkCommandBuffer cmd, Cmd_BindPipeline* cmd_bind_pipeline)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_bind_pipeline == nullptr || cmd_bind_pipeline->pipeline == nullptr || !cmd_bind_pipeline->pipeline->IsValid())
@@ -146,7 +147,7 @@ static void ExecuteCmdBindPipeline(VkCommandBuffer cmd, platform::rhi::Cmd_BindP
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, native_pipeline);
 }
 
-static void ExecuteCmdBindVertexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_BindVertexBuffer* cmd_bind_vertex_buffer)
+static void ExecuteCmdBindVertexBuffer(VkCommandBuffer cmd, Cmd_BindVertexBuffer* cmd_bind_vertex_buffer)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_bind_vertex_buffer == nullptr || cmd_bind_vertex_buffer->buffer == nullptr || !cmd_bind_vertex_buffer->buffer->IsValid())
@@ -158,7 +159,7 @@ static void ExecuteCmdBindVertexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_B
     vkCmdBindVertexBuffers(cmd, cmd_bind_vertex_buffer->binding, 1, &native_buffer, &cmd_bind_vertex_buffer->offset);
 }
 
-static void ExecuteCmdBindIndexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_BindIndexBuffer* cmd_bind_index_buffer)
+static void ExecuteCmdBindIndexBuffer(VkCommandBuffer cmd, Cmd_BindIndexBuffer* cmd_bind_index_buffer)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_bind_index_buffer == nullptr || cmd_bind_index_buffer->buffer == nullptr || !cmd_bind_index_buffer->buffer->IsValid())
@@ -170,7 +171,7 @@ static void ExecuteCmdBindIndexBuffer(VkCommandBuffer cmd, platform::rhi::Cmd_Bi
     vkCmdBindIndexBuffer(cmd, native_buffer, cmd_bind_index_buffer->offset, VK_INDEX_TYPE_UINT32);
 }
 
-static void ExecuteCmdDrawIndexed(VkCommandBuffer cmd, platform::rhi::Cmd_DrawIndexed* cmd_draw_indexed)
+static void ExecuteCmdDrawIndexed(VkCommandBuffer cmd, Cmd_DrawIndexed* cmd_draw_indexed)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_draw_indexed == nullptr)
@@ -181,7 +182,7 @@ static void ExecuteCmdDrawIndexed(VkCommandBuffer cmd, platform::rhi::Cmd_DrawIn
     vkCmdDrawIndexed(cmd, cmd_draw_indexed->index_count, 1, 0, 0, 0);
 }
 
-static void ExecuteCmdBeginRender(VkCommandBuffer& cmd, platform::rhi::Cmd_BeginRender* cmd_begin_render_pass)
+static void ExecuteCmdBeginRender(VkCommandBuffer& cmd, Cmd_BeginRender* cmd_begin_render_pass)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_begin_render_pass == nullptr)
@@ -241,7 +242,7 @@ static void ExecuteCmdEndRender(VkCommandBuffer& cmd)
     vkCmdEndRendering(cmd);
 }
 
-static void ExecuteCmdImagePipelineBarrier(VkCommandBuffer cmd, platform::rhi::Cmd_ImagePipelineBarrier* cmd_image_pipeline_barrier)
+static void ExecuteCmdImagePipelineBarrier(VkCommandBuffer cmd, Cmd_ImagePipelineBarrier* cmd_image_pipeline_barrier)
 {
     PROFILE_SCOPE_AUTO;
     if (cmd_image_pipeline_barrier == nullptr || cmd_image_pipeline_barrier->target == nullptr || !cmd_image_pipeline_barrier->target->IsValid())
@@ -267,7 +268,7 @@ static void ExecuteCmdImagePipelineBarrier(VkCommandBuffer cmd, platform::rhi::C
     vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-static void ExecuteCmdSetScissor(VkCommandBuffer cmd, platform::rhi::Cmd_SetScissor* cmd_set_scissor)
+static void ExecuteCmdSetScissor(VkCommandBuffer cmd, Cmd_SetScissor* cmd_set_scissor)
 {
     if (cmd_set_scissor == nullptr || core::Math::ApproximatelyEqual(cmd_set_scissor->scissor.Area(), 0))
     {
@@ -282,7 +283,7 @@ static void ExecuteCmdSetScissor(VkCommandBuffer cmd, platform::rhi::Cmd_SetScis
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
-static void ExecuteCmdSetViewport(VkCommandBuffer cmd, platform::rhi::Cmd_SetViewport* cmd_set_viewport)
+static void ExecuteCmdSetViewport(VkCommandBuffer cmd, Cmd_SetViewport* cmd_set_viewport)
 {
     if (cmd_set_viewport == nullptr || core::Math::ApproximatelyEqual(cmd_set_viewport->viewport.Area(), 0))
     {
@@ -299,7 +300,7 @@ static void ExecuteCmdSetViewport(VkCommandBuffer cmd, platform::rhi::Cmd_SetVie
     vkCmdSetViewport(cmd, 0, 1, &viewport);
 }
 
-static void ExecuteCmdBindDescriptorSet(VkCommandBuffer cmd, platform::rhi::Cmd_BindDescriptorSet* cmd_bind_descriptor_set)
+static void ExecuteCmdBindDescriptorSet(VkCommandBuffer cmd, Cmd_BindDescriptorSet* cmd_bind_descriptor_set)
 {
     if (cmd_bind_descriptor_set == nullptr || cmd_bind_descriptor_set->set == nullptr || !cmd_bind_descriptor_set->set->IsValid())
     {
@@ -312,9 +313,35 @@ static void ExecuteCmdBindDescriptorSet(VkCommandBuffer cmd, platform::rhi::Cmd_
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &set, 0, nullptr);
 }
 
-using namespace platform::rhi;
+static void ExecuteCmdCopyBufferToImage(VkCommandBuffer cmd, Cmd_CopyBufferToImage* cmd_copy_buffer_to_image)
+{
+    if (cmd_copy_buffer_to_image == nullptr || cmd_copy_buffer_to_image->src == nullptr || !cmd_copy_buffer_to_image->src->IsValid() ||
+        cmd_copy_buffer_to_image->dst == nullptr || !cmd_copy_buffer_to_image->dst->IsValid())
+    {
+        LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令CopyBufferToImage错误, 传入的cmd_copy_buffer_to_image无效");
+        return;
+    }
+    VkBufferImageCopy copy_region               = {};
+    copy_region.bufferOffset                    = 0;
+    copy_region.bufferRowLength                 = 0;
+    copy_region.bufferImageHeight               = 0;
+    copy_region.imageSubresource.aspectMask     = RHIImageAspectToVkImageAspect(cmd_copy_buffer_to_image->subresource_range.aspect_mask);
+    copy_region.imageSubresource.mipLevel       = cmd_copy_buffer_to_image->subresource_range.base_mip_level;
+    copy_region.imageSubresource.baseArrayLayer = cmd_copy_buffer_to_image->subresource_range.base_array_layer;
+    copy_region.imageSubresource.layerCount     = cmd_copy_buffer_to_image->subresource_range.layer_count;
+    copy_region.imageOffset = {cmd_copy_buffer_to_image->offset.x, cmd_copy_buffer_to_image->offset.y, cmd_copy_buffer_to_image->offset.z};
+    VkExtent3D extent{};
+    extent.width            = cmd_copy_buffer_to_image->size.x;
+    extent.height           = cmd_copy_buffer_to_image->size.y;
+    extent.depth            = cmd_copy_buffer_to_image->size.z;
+    copy_region.imageExtent = extent;
+    VkBuffer src            = cmd_copy_buffer_to_image->src->GetNativeHandleT<VkBuffer>();
+    VkImage  dst            = cmd_copy_buffer_to_image->dst->GetNativeHandleT<VkImage>();
+    vkCmdCopyBufferToImage(cmd, src, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
+}
 
-static void InternalExecute(VkCommandBuffer buffer, const core::Array<platform::rhi::RHICommand*>& commands, core::StringView label)
+
+static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand*>& commands, core::StringView label)
 {
     PROFILE_SCOPE_AUTO;
     auto&                ctx        = *GetVulkanGfxContext();
@@ -339,6 +366,7 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<platform::
         case RHICommandType::SetScissor: ExecuteCmdSetScissor(buffer, static_cast<Cmd_SetScissor*>(command)); break;
         case RHICommandType::SetViewport: ExecuteCmdSetViewport(buffer, static_cast<Cmd_SetViewport*>(command)); break;
         case RHICommandType::BindDescriptorSet: ExecuteCmdBindDescriptorSet(buffer, static_cast<Cmd_BindDescriptorSet*>(command)); break;
+        case RHICommandType::CopyBufferToImage: ExecuteCmdCopyBufferToImage(buffer, static_cast<Cmd_CopyBufferToImage*>(command)); break;
         }
         std::destroy_at(command);
     }

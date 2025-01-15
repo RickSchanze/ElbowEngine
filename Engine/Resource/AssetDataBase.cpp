@@ -11,6 +11,8 @@
 #include "Assets/Mesh/MeshMeta.h"
 #include "Assets/Shader/Shader.h"
 #include "Assets/Shader/ShaderMeta.h"
+#include "Assets/Texture/Texture2D.h"
+#include "Assets/Texture/Texture2DMeta.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Logcat.h"
 #include "Platform/FileSystem/Folder.h"
@@ -31,10 +33,10 @@ void AssetDataBase::Startup()
     {
         platform::Folder::CreateFolder(db_path);
     }
-    core::Assert::Require(logcat::Resource, platform::Path::IsFolder(db_path), "DataBasePath in project must be a valid folder path.");
+    Assert::Require(logcat::Resource, platform::Path::IsFolder(db_path), "DataBasePath in project must be a valid folder path.");
     const auto db_file = platform::Path::Combine(db_path, "AssetDataBase.db");
     db_                = New<SQLite::Database>(db_file.Data(), SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE);
-    core::resource::SQLHelper::InitializeDataBase(*db_);
+    SQLHelper::InitializeDataBase(*db_);
     CreateAssetTables();
 }
 
@@ -86,6 +88,10 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path)
     if (path.EndsWith(".slang"))
     {
         return InternalImport<Shader, ShaderMeta>(query, path, registry);
+    }
+    if (path.EndsWith(".png"))
+    {
+        return InternalImport<Texture2D, Texture2DMeta>(query, path, registry);
     }
     return MakeAsyncResult(0);
 }
@@ -143,17 +149,22 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
     {
         return InternalLoadAsync<Mesh, MeshMeta>(path);
     }
+    if (path.EndsWith(".png"))
+    {
+        return InternalLoadAsync<Texture2D, Texture2DMeta>(path);
+    }
     return NULL_ASYNC_RESULT_HANDLE;
 }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                          \
     {                                                                                           \
         const core::Type* type = core::TypeOf<asset_type>();                                    \
-        tables_[type]          = std::move(core::resource::SQLHelper::CreateTable(*db_, type)); \
+        tables_[type]          = std::move(resource::SQLHelper::CreateTable(*db_, type)); \
     }
 
 void AssetDataBase::CreateAssetTables()
 {
     CREATE_ASSET_TABLE(::resource::MeshMeta);
     CREATE_ASSET_TABLE(::resource::ShaderMeta);
+    CREATE_ASSET_TABLE(::resource::Texture2DMeta);
 }

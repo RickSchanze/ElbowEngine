@@ -74,6 +74,19 @@ struct STRUCT() Vector2
     float y;
 };
 
+struct STRUCT() Vector3i
+{
+    GENERATED_STRUCT(Vector3i)
+public:
+    PROPERTY()
+    Int32 x = 0;
+    PROPERTY()
+    Int32 y = 0;
+    PROPERTY()
+    Int32 z    = 0;
+    Vector3i() = default;
+};
+
 typedef glm::vec3 Vector3;
 typedef glm::vec4 Vector4;
 typedef glm::mat4 Matrix4x4;

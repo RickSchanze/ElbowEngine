@@ -9,23 +9,26 @@
 #include "Logcat.h"
 
 #include "SQLiteCpp/SQLiteCpp.h"
+using namespace core;
+using namespace resource;
 
-static core::String MapTypeToSqlType(const core::Type* type)
+
+static String MapTypeToSqlType(const Type* type)
 {
-    core::Assert::Require(logcat::Resource_AssetDataBase, type->IsPrimitive(), "type必须为Primitive类型");
-    core::Assert::Require(logcat::Resource_AssetDataBase, type != core::TypeOf<core::StringView>(), "StringView为视图类型, 不可用作表字段类型");
-    if (type == core::TypeOf<core::String>())
+    Assert::Require(logcat::Resource_AssetDataBase, type->IsPrimitive(), "type必须为Primitive类型");
+    Assert::Require(logcat::Resource_AssetDataBase, type != TypeOf<StringView>(), "StringView为视图类型, 不可用作表字段类型");
+    if (type == TypeOf<String>())
     {
         return "TEXT";
     }
-    if (type == core::TypeOf<float>() || type == core::TypeOf<double>())
+    if (type == TypeOf<float>() || type == TypeOf<double>())
     {
         return "REAL";
     }
     return "INTEGER";
 }
 
-static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Database& db, core::StringView name, const core::Type* type)
+static UniquePtr<SQLTable> CreateTypeTable(SQLite::Database& db, StringView name, const Type* type)
 {
     PROFILE_SCOPE_AUTO;
     // 第一步, 验证type字段是否合法
@@ -33,29 +36,29 @@ static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Databas
     {
         if (!field_info->GetType()->IsPrimitive())
         {
-            const auto msg = core::String::Format(
+            const auto msg = String::Format(
                 "表类型{}的所有字段必须都为Primitive, 但字段{}的类型为{}", name, field_info->GetName(), field_info->GetType()->GetName()
             );
-            throw core::resource::SQLException(msg);
+            throw SQLException(msg);
         }
     }
     // 第二步, 构建SQL语句
-    core::String sql_execute;
+    String sql_execute;
     struct FieldWithAttr
     {
-        core::Ref<const core::FieldInfo> field_info;
+        Ref<const FieldInfo> field_info;
         nlohmann::json                   attr;
     };
-    core::Array<FieldWithAttr> collected_fields;
+    Array<FieldWithAttr> collected_fields;
     // 1. 找主键
     {
         bool has_primary_key{};
         for (const auto fields = type->GetFields(); auto& field_info: fields)
         {
             nlohmann::json sql_attr = {};
-            if (field_info->IsDefined(core::FieldInfo::ValueAttribute::SQLAttr))
+            if (field_info->IsDefined(FieldInfo::ValueAttribute::SQLAttr))
             {
-                const auto sql_attr_str = field_info->GetAttribute(core::FieldInfo::ValueAttribute::SQLAttr);
+                const auto sql_attr_str = field_info->GetAttribute(FieldInfo::ValueAttribute::SQLAttr);
                 sql_attr                = ParseSubAttr(sql_attr_str);
                 if (sql_attr.contains("PrimaryKey"))
                 {
@@ -66,15 +69,15 @@ static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Databas
         }
         if (!has_primary_key)
         {
-            throw core::resource::SQLException(core::String::Format("表类型{}没有指定PrimaryKey", name));
+            throw SQLException(String::Format("表类型{}没有指定PrimaryKey", name));
         }
     }
     // 2. 构建所有字段的SQL语句
-    core::String new_sql = "(";
+    String new_sql = "(";
     for (size_t i = 0; i < collected_fields.size(); ++i)
     {
         auto& [field_info, attr] = collected_fields[i];
-        new_sql += core::String::Format("{} {} ", field_info->GetName(), MapTypeToSqlType(field_info->GetType()));
+        new_sql += String::Format("{} {} ", field_info->GetName(), MapTypeToSqlType(field_info->GetType()));
         if (!attr.contains("Nullable"))
         {
             new_sql += "NOT NULL ";
@@ -93,12 +96,12 @@ static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Databas
         }
     }
     new_sql += ");";
-    sql_execute = core::String::Format("CREATE TABLE IF NOT EXISTS {} {}", name, new_sql);
+    sql_execute = String::Format("CREATE TABLE IF NOT EXISTS {} {}", name, new_sql);
     // 第三歩 执行
     db.exec(sql_execute);
     // 第四歩, 向TypeMeta中插入数据
-    core::String sql_insert = core::String::Format(
-        "INSERT INTO {} (table_name, type_name, type_hash) VALUES (?, ?, ?);", core::resource::SQLHelper::GetTypeMetaTableName()
+    String sql_insert = String::Format(
+        "INSERT INTO {} (table_name, type_name, type_hash) VALUES (?, ?, ?);", SQLHelper::GetTypeMetaTableName()
     );
     SQLite::Statement insert(db, sql_insert);
     insert.bind(1, name.Data());
@@ -106,10 +109,10 @@ static core::UniquePtr<core::resource::SQLTable> CreateTypeTable(SQLite::Databas
     // 这里插入
     insert.bind(3, static_cast<int64_t>(type->GetTypeHash()));
     insert.exec();
-    return core::MakeUnique<core::resource::SQLTable>(type, &db, name);
+    return MakeUnique<SQLTable>(type, &db, name);
 }
 
-void core::resource::SQLTable::Insert(const Any& data)
+void SQLTable::Insert(const Any& data)
 {
     PROFILE_SCOPE_AUTO;
     std::lock_guard lock(mutex_);
@@ -118,8 +121,8 @@ void core::resource::SQLTable::Insert(const Any& data)
     {
         throw ArgumentException(NAMEOF(data), "输入类型不符");
     }
-    core::String position_argument    = "(";
-    core::String placeholder_argument = "(";
+    String position_argument    = "(";
+    String placeholder_argument = "(";
     const auto   fields               = type->GetFields();
     for (size_t i = 0; i < fields.size(); ++i)
     {
@@ -134,7 +137,7 @@ void core::resource::SQLTable::Insert(const Any& data)
     }
     position_argument += ")";
     placeholder_argument += ")";
-    SQLite::Statement insert(*db_, core::String::Format("INSERT INTO {} {} VALUES {};", table_name_, position_argument, placeholder_argument));
+    SQLite::Statement insert(*db_, String::Format("INSERT INTO {} {} VALUES {};", table_name_, position_argument, placeholder_argument));
     for (size_t i = 0; i < fields.size(); ++i)
     {
         const auto& field_info = fields[i];
@@ -161,7 +164,7 @@ void core::resource::SQLTable::Insert(const Any& data)
         }
         else if (field_type == TypeOf<String>())
         {
-            const auto value = field_info->GetValue(data).As<core::String>();
+            const auto value = field_info->GetValue(data).As<String>();
             if (value == nullptr)
             {
                 throw SQLException("存储类型错误");
@@ -183,7 +186,7 @@ void core::resource::SQLTable::Insert(const Any& data)
     }
 }
 
-core::UniquePtr<core::resource::SQLTable> core::resource::SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
+UniquePtr<SQLTable> SQLHelper::CreateTable(Ref<SQLite::Database> db, const Type* type, bool allow_exist)
 {
     PROFILE_SCOPE_AUTO;
     if (type == nullptr)
@@ -194,7 +197,7 @@ core::UniquePtr<core::resource::SQLTable> core::resource::SQLHelper::CreateTable
     {
         throw ArgumentException(NAMEOF(type), "输入type必须被SQLTable标记");
     }
-    core::StringView table_name = type->GetName();
+    StringView table_name = type->GetName();
     if (!type->IsAttributeValueNull(Type::ValueAttribute::SQLTable))
     {
         table_name = type->GetAttributeValue(Type::ValueAttribute::SQLTable);
@@ -211,7 +214,7 @@ core::UniquePtr<core::resource::SQLTable> core::resource::SQLHelper::CreateTable
     return CreateTypeTable(db, table_name, type);
 }
 
-void core::resource::SQLHelper::InitializeDataBase(SQLite::Database& db)
+void SQLHelper::InitializeDataBase(SQLite::Database& db)
 {
     auto sql_str = String::Format(
         R"(CREATE TABLE IF NOT EXISTS {} (
@@ -225,12 +228,12 @@ void core::resource::SQLHelper::InitializeDataBase(SQLite::Database& db)
     db.exec(sql_str.Data());
 }
 
-core::StringView core::resource::SQLHelper::GetTypeMetaTableName()
+StringView SQLHelper::GetTypeMetaTableName()
 {
     return "__TYPE_META__";
 }
 
-core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, StringView where)
+Array<SharedAny> SQLTable::Query(const Type* type, StringView where)
 {
     std::shared_lock lock(mutex_);
     if (type_ != type)
@@ -239,7 +242,7 @@ core::Array<core::SharedAny> core::resource::SQLTable::Query(const Type* type, S
     }
     Array<SharedAny> results;
     // 1. 构建字段语句
-    core::String     field_stat;
+    String     field_stat;
     const auto       fields = type->GetFields();
     for (int i = 0; i < fields.size(); ++i)
     {

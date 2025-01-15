@@ -31,6 +31,8 @@ public:
 
     [[nodiscard]] VkDeviceMemory GetNativeMemory() const { return image_memory_; }
 
+    void UploadData(const void* data, const size_t size) override;
+
 protected:
     VkImage        image_handle_ = VK_NULL_HANDLE;
     VkDeviceMemory image_memory_ = VK_NULL_HANDLE;

@@ -230,6 +230,7 @@ enum AccessFlagBits
     AFB_DepthStencilAttachmentWrite = 1 << 3,
     AFB_TransferRead                = 1 << 4,
     AFB_TransferWrite               = 1 << 5,
+    AFB_ShaderRead                  = 1 << 6,
 };
 using AccessFlags = uint32_t;
 
@@ -240,6 +241,8 @@ enum PipelineStageFlagBits
     PSFB_ColorAttachmentOutput  = 1 << 1,
     PSFB_BottomOfPipe           = 1 << 2,
     PSFB_DepthStencilAttachment = 1 << 3,
+    PSFB_Transfer               = 1 << 4,
+    PSFB_FragmentShader         = 1 << 5,
 };
 using PipelineStageFlags = uint32_t;
 

@@ -45,8 +45,12 @@ public:
      */
     static core::Object* Load(core::StringView path);
 
-    template <typename T> requires std::derived_from<T, core::Object>
-    static T* Load(core::StringView path) { return static_cast<T*>(Load(path)); }
+    template <typename T>
+        requires std::derived_from<T, core::Object>
+    static T* Load(core::StringView path)
+    {
+        return static_cast<T*>(Load(path));
+    }
 
     static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
 
@@ -62,8 +66,8 @@ public:
 protected:
     void CreateAssetTables();
 
-    SQLite::Database*                                                           db_ = nullptr;
-    core::HashMap<const core::Type*, core::UniquePtr<core::resource::SQLTable>> tables_;
+    SQLite::Database*                                           db_ = nullptr;
+    core::HashMap<const core::Type*, core::UniquePtr<SQLTable>> tables_;
 };
 
 template <typename T>

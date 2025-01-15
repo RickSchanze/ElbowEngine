@@ -94,3 +94,8 @@ platform::rhi::vulkan::Image_Vulkan::~Image_Vulkan()
         image_memory_ = VK_NULL_HANDLE;
     }
 }
+
+void platform::rhi::vulkan::Image_Vulkan::UploadData(const void* data, const size_t size)
+{
+
+}

@@ -576,6 +576,7 @@ VkAccessFlags RHIAccessFlagToVkAccessFlag(platform::rhi::AccessFlags access_flag
     if (access_flag & AFB_DepthStencilAttachmentWrite) flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     if (access_flag & AFB_TransferRead) flags |= VK_ACCESS_TRANSFER_READ_BIT;
     if (access_flag & AFB_TransferWrite) flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    if (access_flag & AFB_ShaderRead) flags |= VK_ACCESS_SHADER_READ_BIT;
     return flags;
 }
 
@@ -589,6 +590,7 @@ platform::rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag
     if (access_flag & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT) flags |= AFB_DepthStencilAttachmentWrite;
     if (access_flag & VK_ACCESS_TRANSFER_READ_BIT) flags |= AFB_TransferRead;
     if (access_flag & VK_ACCESS_TRANSFER_WRITE_BIT) flags |= AFB_TransferWrite;
+    if (access_flag & VK_ACCESS_SHADER_READ_BIT) flags |= AFB_ShaderRead;
     return flags;
 }
 
@@ -600,6 +602,8 @@ VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(platform::rhi::PipelineSt
     if (pipeline_stage & PSFB_TopOfPipe) flags |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     if (pipeline_stage & PSFB_BottomOfPipe) flags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     if (pipeline_stage & PSFB_DepthStencilAttachment) flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    if (pipeline_stage & PSFB_Transfer) flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+    if (pipeline_stage & PSFB_FragmentShader) flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     return flags;
 }
 
@@ -610,6 +614,9 @@ PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeli
     if (pipeline_stage & VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) flags |= PSFB_ColorAttachmentOutput;
     if (pipeline_stage & VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) flags |= PSFB_TopOfPipe;
     if (pipeline_stage & VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT) flags |= PSFB_BottomOfPipe;
+    if (pipeline_stage & VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) flags |= PSFB_DepthStencilAttachment;
+    if (pipeline_stage & VK_PIPELINE_STAGE_TRANSFER_BIT) flags |= PSFB_Transfer;
+    if (pipeline_stage & VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT) flags |= PSFB_FragmentShader;
     return flags;
 }
 
