@@ -142,7 +142,7 @@ void FieldInfo::SetValue(const Any& obj, const Any& value) const
     {
         if (value.GetType()->IsBoolean())
         {
-            memcpy(GetFieldPtr(obj.GetRawPtr()), value.GetRawPtr(), type_->GetSize());
+            *static_cast<bool*>(GetFieldPtr(obj.GetRawPtr())) = *static_cast<bool*>(value.GetRawPtr());
             return;
         }
         if (value.GetType()->IsNumericInteger())

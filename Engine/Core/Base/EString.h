@@ -57,6 +57,7 @@ public:
     [[nodiscard]] StringView        TrimLeft(StringView s = "", bool utf8_mode = false) const;
     [[nodiscard]] StringView        TrimRight(StringView s = "", bool utf8_mode = false) const;
     [[nodiscard]] StringView        Trim(StringView s = "", bool utf8_mode = false) const;
+    [[nodiscard]] StringView        TrimQuotes() const;
 
     const char* operator*() const { return str_; }
 

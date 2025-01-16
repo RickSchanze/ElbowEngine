@@ -65,20 +65,20 @@ static void FindAllConstantBufferParams(
             param.binding          = binding;
             param.size             = 0;
             auto field_type_layout = element_type_layout->getFieldByIndex(i);
-            auto field_type        = element_type->getFieldByIndex(i);
+            auto field_variable        = element_type->getFieldByIndex(i);
             param.offset           = field_type_layout->getOffset();
-            param.name             = String::Format("{}.{}", variable_name, field_type->getName());
-            auto attr_cnt          = field_type->getUserAttributeCount();
+            param.name             = String::Format("{}.{}", variable_name, field_variable->getName());
+            auto attr_cnt          = field_variable->getUserAttributeCount();
             for (UInt32 j = 0; j < attr_cnt; j++)
             {
-                auto attr = field_type->getUserAttributeByIndex(j);
+                auto attr = field_variable->getUserAttributeByIndex(j);
 #if WITH_EDITOR
                 if (std::strcmp(attr->getName(), "Label") == 0)
                 {
                     size_t           len   = 0;
                     const char*      label = attr->getArgumentValueString(0, &len);
                     const StringView label_view(label, static_cast<Int32>(len));
-                    param.label = label_view;
+                    param.label = label_view.TrimQuotes();
                 }
 #endif
             }

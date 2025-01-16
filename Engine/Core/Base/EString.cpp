@@ -305,4 +305,8 @@ StringView StringView::Trim(const StringView s, const bool utf8_mode) const
     return TrimLeft(s, utf8_mode).TrimRight(s, utf8_mode);
 }
 
+StringView StringView::TrimQuotes() const{
+    return Trim("\"");
+}
+
 }   // namespace core

@@ -8,8 +8,10 @@ import Utility;
 import Annotations;
 
 struct TestParam {
-    [Label("测试参数")]
+    [Label("test1")]
     float3 test_param;
+    [Label("参数2")]
+    float3 test_param1;
 };
 
 uniform ConstantBuffer<Camera> camera;
