@@ -27,7 +27,25 @@ enum class ShaderParamType
 {
     Float3,
     Float4,
+    Float,
     Texture2D,
+    SamplerState,
+    Count,
+};
+
+struct ShaderParam
+{
+    ShaderParamType type;
+    UInt32          binding;   // binding
+    UInt32          size;      // 整个结构的大小, 等于零表示这个是结构体成员
+    UInt32          offset;    // 在整个结构中的偏移量
+    core::String    name;      // 名字
+
+#if WITH_EDITOR
+    core::String label;
+#endif
+
+    [[nodiscard]] bool IsStructMember() const { return size == 0; }
 };
 
 /**
@@ -47,7 +65,7 @@ public:
 
     void PerformLoad() override;
 
-    core::HashMap<core::String, ShaderParamType> GetParams();
+    void GetParams(core::HashMap<core::String, ShaderParam>& out);
 
     [[nodiscard]] bool IsLoaded() const override;
 

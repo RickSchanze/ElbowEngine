@@ -55,3 +55,12 @@ public struct Model {
         return model;
     }
 }
+
+public struct Texture2DSampler {
+    Texture2D texture;
+    SamplerState sampler;
+
+    public float4 Sample(float2 uv) {
+        return texture.Sample(sampler, uv);
+    }
+}

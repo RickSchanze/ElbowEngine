@@ -41,21 +41,53 @@ void Shader::PerformLoad()
     SlangShaderLoader::Load(shader_path, *this);
 }
 
-static bool IsDefinedAttribute(slang::VariableReflection* refl, StringView name)
+static void FindAllConstantBufferParams(
+    slang::TypeLayoutReflection* constant_buffer_type_layout, HashMap<String, ShaderParam>& output, UInt32 binding, StringView variable_name
+)
 {
-    Int32 cnt = refl->getUserAttributeCount();
-    for (Int32 i = 0; i < cnt; ++i)
+    auto element_type        = constant_buffer_type_layout->getType()->getElementType();
+    auto element_type_name   = element_type->getName();
+    auto element_type_layout = constant_buffer_type_layout->getElementTypeLayout();
+    if (std::strcmp(element_type_name, "Camera") == 0)
     {
-        auto attr = refl->getUserAttributeByIndex(i);
-        if (name == attr->getName())
+        // 摄像机非常特殊直接跳过
+        return;
+    }
+    UInt32 field_cnt = element_type_layout->getFieldCount();
+    if (field_cnt == 0)
+    {
+    }
+    else
+    {
+        for (UInt32 i = 0; i < field_cnt; ++i)
         {
-            return true;
+            ShaderParam param{};
+            param.binding          = binding;
+            param.size             = 0;
+            auto field_type_layout = element_type_layout->getFieldByIndex(i);
+            auto field_type        = element_type->getFieldByIndex(i);
+            param.offset           = field_type_layout->getOffset();
+            param.name             = String::Format("{}.{}", variable_name, field_type->getName());
+            auto attr_cnt          = field_type->getUserAttributeCount();
+            for (UInt32 j = 0; j < attr_cnt; j++)
+            {
+                auto attr = field_type->getUserAttributeByIndex(j);
+#if WITH_EDITOR
+                if (std::strcmp(attr->getName(), "Label") == 0)
+                {
+                    size_t           len   = 0;
+                    const char*      label = attr->getArgumentValueString(0, &len);
+                    const StringView label_view(label, static_cast<Int32>(len));
+                    param.label = label_view;
+                }
+#endif
+            }
+            output[param.name] = param;
         }
     }
-    return false;
 }
 
-HashMap<String, ShaderParamType> Shader::GetParams()
+void Shader::GetParams(core::HashMap<core::String, ShaderParam>& out)
 {
     if (!IsLoaded())
     {
@@ -63,48 +95,37 @@ HashMap<String, ShaderParamType> Shader::GetParams()
     }
     if (!IsLoaded())
     {
-        return {};
+        return;
     }
     HashMap<String, ShaderParamType> rtn;
-    const auto&                      linked_program    = _GetLinkedProgram();
-    auto                             prog_layout       = linked_program->getLayout();
-    auto                             global            = prog_layout->getGlobalParamsVarLayout();
-    auto                             scope_type_layout = global->getTypeLayout();
-    switch (scope_type_layout->getKind())
+    const auto&                      linked_program         = _GetLinkedProgram();
+    auto                             prog_layout            = linked_program->getLayout();
+    auto                             global                 = prog_layout->getGlobalParamsVarLayout();
+    auto                             type_layout_reflection = global->getTypeLayout();
+    auto                             type_kind              = type_layout_reflection->getKind();
+    if (type_kind == slang::TypeReflection::Kind::Struct)
     {
-    case slang::TypeReflection::Kind::Struct: {
-        int param_cnt = scope_type_layout->getFieldCount();
+        UInt32 param_cnt = type_layout_reflection->getFieldCount();
         for (int i = 0; i < param_cnt; ++i)
         {
-
-            const auto field       = scope_type_layout->getFieldByIndex(i);
-            auto       variable    = field->getVariable();
-            auto       name        = field->getName();
-            auto       category    = field->getCategory();
-            auto       type        = field->getType();
-            auto       type_name   = type->getName();
-            auto       type_layout = field->getTypeLayout();
-            auto       type_kind   = type_layout->getKind();
-            auto type_layout_name = type_layout->getName();
-            switch (category)
+            const auto field                = type_layout_reflection->getFieldByIndex(i);
+            auto       variable_binding     = field->getBindingIndex();
+            auto       category             = field->getCategory();
+            auto       variable_type        = field->getType();
+            auto       variable_type_layout = field->getTypeLayout();
+            auto       variable_kind        = variable_type->getKind();
+            if (category == slang::DescriptorTableSlot)
             {
-            case slang::DescriptorTableSlot: {
-                if (IsDefinedAttribute(variable, "DynamicUniform"))
+                if (variable_kind == slang::TypeReflection::Kind::ConstantBuffer)
                 {
-                    break;
+                    FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field->getName());
                 }
-                else
-                {
-                }
-                break;
-            default: break;
-            }
             }
         }
+        return;
     }
-    default: break;
-    }
-    return rtn;
+    out.clear();
+    LOGGER.Error(logcat::Resource, "Shader::GetParams: 解析参数错误, 是否有非Texture和Sampler参数未被ConstantBuffer包围?");
 }
 
 bool Shader::IsLoaded() const

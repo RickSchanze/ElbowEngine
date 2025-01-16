@@ -7,9 +7,16 @@ import CommonStructure;
 import Utility;
 import Annotations;
 
+struct TestParam {
+    [Label("测试参数")]
+    float3 test_param;
+};
+
 uniform ConstantBuffer<Camera> camera;
 
-uniform Sampler2DArray tex;
+uniform Texture2D tex;
+uniform SamplerState common_sampler;
+uniform ConstantBuffer<TestParam> other_param;
 
 struct VertexOutput {
     float4 position : SV_Position;
@@ -31,6 +38,6 @@ VertexOutput vert(Vertex vert) {
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
     FragOutput output;
-    output.color = tex.Sample(float3(1, 1, 1));
+    output.color = tex.Sample(common_sampler, input.uv);
     return output;
 }

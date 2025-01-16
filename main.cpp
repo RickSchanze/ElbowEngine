@@ -86,7 +86,8 @@ int main()
         {
             const auto& [handle] = *op2->GetValue();
             auto s = static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle));
-            s->GetParams();
+            core::HashMap<core::String, resource::ShaderParam> params;
+            s->GetParams(params);
         }
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
