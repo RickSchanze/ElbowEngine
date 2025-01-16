@@ -95,9 +95,9 @@ public:
 
     ObjectPtr& operator=(const ObjectPtr& other)
     {
-        if (this == &other) return this;
+        if (this == &other) return *this;
         SetObject(other.object_);
-        return this;
+        return *this;
     }
 
     ObjectPtr& operator=(const T* other)

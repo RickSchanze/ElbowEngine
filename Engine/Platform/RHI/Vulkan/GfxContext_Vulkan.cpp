@@ -1032,6 +1032,18 @@ SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const De
     return MakeShared<DescriptorSetPool_Vulkan>(desc);
 }
 
+SharedPtr<Sampler> GfxContext_Vulkan::CreateSampler(const SamplerDesc& desc, StringView debug_name)
+{
+    auto rtn = MakeShared<Sampler_Vulkan>(desc);
+#if ELBOW_DEBUG
+    if (!debug_name.IsEmpty())
+    {
+        SetObjectDebugName(VK_OBJECT_TYPE_SAMPLER, rtn->GetNativeHandle(), debug_name);
+    }
+#endif
+    return rtn;
+}
+
 GfxContext_Vulkan::~GfxContext_Vulkan()
 {
     DestroySwapChain(device_, swapchain_);

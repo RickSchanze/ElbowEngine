@@ -11,7 +11,10 @@
 #include "GfxContext_Vulkan.h"
 #include "Platform/PlatformLogcat.h"
 #include "Platform/RHI/GfxContext.h"
-platform::rhi::vulkan::Image_Vulkan::Image_Vulkan(const ImageDesc& desc) : Image(desc)
+
+using namespace platform::rhi;
+
+vulkan::Image_Vulkan::Image_Vulkan(const ImageDesc& desc) : Image(desc)
 {
     auto              ctx    = static_cast<GfxContext_Vulkan*>(GetGfxContext());
     auto              device = ctx->GetDevice();
@@ -55,9 +58,7 @@ const char* swapchain_image_names[] = {
     "SwapChainImage8",   // 开发设备最多支持八个
 };
 
-platform::rhi::vulkan::Image_Vulkan::Image_Vulkan(
-    const VkImage handle_, const int32_t index, const uint32_t width_, const uint32_t height_, const Format format_
-)
+vulkan::Image_Vulkan::Image_Vulkan(const VkImage handle_, const int32_t index, const uint32_t width_, const uint32_t height_, const Format format_)
 {
     image_handle_         = handle_;
     desc_.width           = width_;
@@ -72,7 +73,7 @@ platform::rhi::vulkan::Image_Vulkan::Image_Vulkan(
     desc_.dimension       = ImageDimension::D2;
 }
 
-platform::rhi::vulkan::Image_Vulkan::~Image_Vulkan()
+vulkan::Image_Vulkan::~Image_Vulkan()
 {
     if (desc_.usage & IUB_SwapChain)
     {
@@ -95,7 +96,31 @@ platform::rhi::vulkan::Image_Vulkan::~Image_Vulkan()
     }
 }
 
-void platform::rhi::vulkan::Image_Vulkan::UploadData(const void* data, const size_t size)
-{
+void vulkan::Image_Vulkan::UploadData(const void* data, const size_t size) {}
 
+vulkan::Sampler_Vulkan::Sampler_Vulkan(const SamplerDesc& desc)
+{
+    VkSamplerCreateInfo sampler_info{};
+    sampler_info.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_info.magFilter               = RHIFilterToVkFilter(desc.mag);
+    sampler_info.minFilter               = RHIFilterToVkFilter(desc.min);
+    sampler_info.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    sampler_info.addressModeU            = RHISamplerAddressModeToVkSamplerAddressMode(desc.u);
+    sampler_info.addressModeV            = RHISamplerAddressModeToVkSamplerAddressMode(desc.v);
+    sampler_info.addressModeW            = RHISamplerAddressModeToVkSamplerAddressMode(desc.w);
+    sampler_info.anisotropyEnable        = desc.enable_anisotropy;
+    sampler_info.maxAnisotropy           = desc.max_anisotropy;
+    sampler_info.unnormalizedCoordinates = desc.unnormalized_coordinates;
+    sampler_info.compareEnable           = VK_FALSE;
+    sampler_info.compareOp               = VK_COMPARE_OP_ALWAYS;
+    sampler_info.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler_info.mipLodBias              = 0.0f;
+    sampler_info.minLod                  = 0.0f;
+    sampler_info.maxLod                  = 0.0f;
+    VERIFY_VULKAN_RESULT(vkCreateSampler(GetVulkanGfxContext()->GetDevice(), &sampler_info, nullptr, &sampler_handle_));
+}
+
+vulkan::Sampler_Vulkan::~Sampler_Vulkan()
+{
+    vkDestroySampler(GetVulkanGfxContext()->GetDevice(), sampler_handle_, nullptr);
 }

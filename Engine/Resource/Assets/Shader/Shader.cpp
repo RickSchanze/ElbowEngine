@@ -41,6 +41,72 @@ void Shader::PerformLoad()
     SlangShaderLoader::Load(shader_path, *this);
 }
 
+static bool IsDefinedAttribute(slang::VariableReflection* refl, StringView name)
+{
+    Int32 cnt = refl->getUserAttributeCount();
+    for (Int32 i = 0; i < cnt; ++i)
+    {
+        auto attr = refl->getUserAttributeByIndex(i);
+        if (name == attr->getName())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+HashMap<String, ShaderParamType> Shader::GetParams()
+{
+    if (!IsLoaded())
+    {
+        PerformLoad();
+    }
+    if (!IsLoaded())
+    {
+        return {};
+    }
+    HashMap<String, ShaderParamType> rtn;
+    const auto&                      linked_program    = _GetLinkedProgram();
+    auto                             prog_layout       = linked_program->getLayout();
+    auto                             global            = prog_layout->getGlobalParamsVarLayout();
+    auto                             scope_type_layout = global->getTypeLayout();
+    switch (scope_type_layout->getKind())
+    {
+    case slang::TypeReflection::Kind::Struct: {
+        int param_cnt = scope_type_layout->getFieldCount();
+        for (int i = 0; i < param_cnt; ++i)
+        {
+
+            const auto field       = scope_type_layout->getFieldByIndex(i);
+            auto       variable    = field->getVariable();
+            auto       name        = field->getName();
+            auto       category    = field->getCategory();
+            auto       type        = field->getType();
+            auto       type_name   = type->getName();
+            auto       type_layout = field->getTypeLayout();
+            auto       type_kind   = type_layout->getKind();
+            auto type_layout_name = type_layout->getName();
+            switch (category)
+            {
+            case slang::DescriptorTableSlot: {
+                if (IsDefinedAttribute(variable, "DynamicUniform"))
+                {
+                    break;
+                }
+                else
+                {
+                }
+                break;
+            default: break;
+            }
+            }
+        }
+    }
+    default: break;
+    }
+    return rtn;
+}
+
 bool Shader::IsLoaded() const
 {
     return linked_program_;
@@ -57,7 +123,7 @@ void Shader::Compile(bool output_glsl)
         {
             String                      output_code = "Vertex: \n";
             Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
-            Slang::ComPtr<slang::IBlob> vert_code = nullptr;
+            Slang::ComPtr<slang::IBlob> vert_code   = nullptr;
             linked_program_->getEntryPointCode(stage_to_entry_point_index_[VERTEX_STAGE_IDX], 1, vert_code.writeRef(), diagnostics.writeRef());
             if (diagnostics)
             {

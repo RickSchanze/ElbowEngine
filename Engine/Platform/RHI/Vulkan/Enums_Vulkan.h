@@ -86,3 +86,9 @@ platform::rhi::ImageDimension VkImageTypeToRHIImageDimension(VkImageType type);
 
 VkImageUsageFlags         RHIImageUsageToVkImageUsageFlags(platform::rhi::ImageUsage usage_flag);
 platform::rhi::ImageUsage VkImageUsageFlagsToRHIImageUsage(VkImageUsageFlags usage_flag);
+
+VkFilter                  RHIFilterToVkFilter(platform::rhi::FilterMode filter);
+platform::rhi::FilterMode VkFilterToRHIFilter(VkFilter filter);
+
+VkSamplerAddressMode              RHISamplerAddressModeToVkSamplerAddressMode(platform::rhi::SamplerAddressMode address_mode);
+platform::rhi::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(VkSamplerAddressMode address_mode);

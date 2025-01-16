@@ -277,4 +277,19 @@ enum class ImageDimension
     ArrayCube,
     Count,
 };
+
+enum class ENUM() FilterMode
+{
+    Linear VALUE(Label = "线性过滤"),
+    Nearest VALUE(Label = "最近邻过滤"),
+    Count,
+};
+
+enum class SamplerAddressMode
+{
+    Repeat VALUE(Label = "重复"),
+    MirroredRepeat VALUE(Label = "镜像重复"),
+    ClampToEdge VALUE(Label = "边缘环绕"),
+    Count,
+};
 }

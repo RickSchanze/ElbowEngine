@@ -75,10 +75,18 @@ int main()
         LOGGER.Info(logcat::Engine, "Engine running...");
         resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
         resource::AssetDataBase::Import("Assets/Texture/Test.png");
-        if (auto op = resource::AssetDataBase::Import("Assets/Shader/Error.slang")->Wait().GetValue())
+        auto op1 = resource::AssetDataBase::Import("Assets/Shader/Error.slang");
+        auto op2 = resource::AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang");
+        if (op1->Wait().GetValue())
         {
-            const auto& [handle] = *op;
+            const auto& [handle] = *op1->GetValue();
             static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle))->Compile(true);
+        }
+        if (op2->Wait().GetValue())
+        {
+            const auto& [handle] = *op2->GetValue();
+            auto s = static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle));
+            s->GetParams();
         }
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);

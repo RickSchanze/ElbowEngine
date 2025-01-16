@@ -151,6 +151,9 @@ public:
 
     core::SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc) override;
 
+protected:
+    core::SharedPtr<Sampler> CreateSampler(const SamplerDesc& desc, core::StringView debug_name) override;
+
 private:
     VkInstance         instance_        = nullptr;
     Surface*           surface_         = nullptr;

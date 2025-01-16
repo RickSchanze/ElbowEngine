@@ -37,6 +37,10 @@ add_library(Resource
         Assets/Texture/Texture2D.h
         Assets/Texture/Texture2DMeta.cpp
         Assets/Texture/Texture2DMeta.h
+        Assets/Material/MaterialMeta.cpp
+        Assets/Material/MaterialMeta.h
+        Assets/Material/Material.cpp
+        Assets/Material/Material.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

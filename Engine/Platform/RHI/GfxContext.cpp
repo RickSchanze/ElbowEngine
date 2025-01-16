@@ -21,12 +21,36 @@ static GfxContext* ctx;
 GfxContext::GfxContext()
 {
     core::MemoryManager::RequestPool(MEMORY_POOL_ID_CMD);
+    Event_GfxContextPreDestroyed.AddBind(&GfxContext::PreDestroyed);
 }
 
 uint8_t GfxContext::GetSwapchainImageCount() const
 {
     const auto cfg = core::GetConfig<PlatformConfig>();
     return cfg->GetSwapchainImageCount();
+}
+
+core::SharedPtr<Sampler> GfxContext::GetSampler(const SamplerDesc& desc)
+{
+    UInt64                   hash = desc.GetHashCode();
+    core::SharedPtr<Sampler> rtn;
+    if (const auto it = sampler_pool_.find(hash); it != sampler_pool_.end())
+    {
+        rtn = it->second;
+    }
+    if (rtn == nullptr)
+    {
+        rtn                 = CreateSampler(desc);
+        sampler_pool_[hash] = rtn;
+    }
+    for (auto& sampler: sampler_pool_)
+    {
+        if (sampler.second.use_count() == 1)
+        {
+            sampler_pool_.erase(sampler.first);
+        }
+    }
+    return rtn;
 }
 
 void GfxContext::Update()
@@ -48,6 +72,11 @@ core::FrameAllocator& GfxContext::GetCommandAllocator()
         cmd_allocator_ = new core::FrameAllocator(2);
     }
     return *cmd_allocator_;
+}
+
+void GfxContext::PreDestroyed(GfxContext* self)
+{
+    self->sampler_pool_.clear();
 }
 
 GfxContext* GetGfxContext()

@@ -7,6 +7,7 @@
 
 #include "AssetDataBase.h"
 
+#include "Assets/Material/MaterialMeta.h"
 #include "Assets/Mesh/Mesh.h"
 #include "Assets/Mesh/MeshMeta.h"
 #include "Assets/Shader/Shader.h"
@@ -156,9 +157,9 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
     return NULL_ASYNC_RESULT_HANDLE;
 }
 
-#define CREATE_ASSET_TABLE(asset_type)                                                          \
-    {                                                                                           \
-        const core::Type* type = core::TypeOf<asset_type>();                                    \
+#define CREATE_ASSET_TABLE(asset_type)                                                    \
+    {                                                                                     \
+        const core::Type* type = core::TypeOf<asset_type>();                              \
         tables_[type]          = std::move(resource::SQLHelper::CreateTable(*db_, type)); \
     }
 
@@ -167,4 +168,5 @@ void AssetDataBase::CreateAssetTables()
     CREATE_ASSET_TABLE(::resource::MeshMeta);
     CREATE_ASSET_TABLE(::resource::ShaderMeta);
     CREATE_ASSET_TABLE(::resource::Texture2DMeta);
+    CREATE_ASSET_TABLE(::resource::MaterialMeta);
 }

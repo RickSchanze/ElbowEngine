@@ -37,4 +37,17 @@ protected:
     VkImage        image_handle_ = VK_NULL_HANDLE;
     VkDeviceMemory image_memory_ = VK_NULL_HANDLE;
 };
+
+class Sampler_Vulkan final : public Sampler
+{
+public:
+    explicit Sampler_Vulkan(const SamplerDesc& desc);
+
+    ~Sampler_Vulkan() override;
+
+    [[nodiscard]] void* GetNativeHandle() const override { return sampler_handle_; }
+
+private:
+    VkSampler sampler_handle_ = VK_NULL_HANDLE;
+};
 }   // namespace platform::rhi::vulkan

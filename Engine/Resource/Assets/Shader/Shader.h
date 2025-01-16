@@ -23,6 +23,13 @@ enum class ShaderAnnotation
     Count,
 };
 
+enum class ShaderParamType
+{
+    Float3,
+    Float4,
+    Texture2D,
+};
+
 /**
  * 对应一个slang文件
  * 一个slang可以通过[shader]语法声明多个shader
@@ -39,6 +46,8 @@ public:
     friend class SlangShaderLoader;
 
     void PerformLoad() override;
+
+    core::HashMap<core::String, ShaderParamType> GetParams();
 
     [[nodiscard]] bool IsLoaded() const override;
 

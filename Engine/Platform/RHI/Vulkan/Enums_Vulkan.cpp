@@ -674,6 +674,47 @@ VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(ImageUsage usage_flag)
     return flags;
 }
 
+VkFilter RHIFilterToVkFilter(platform::rhi::FilterMode filter)
+{
+    switch (filter)
+    {
+    case platform::rhi::FilterMode::Linear: return VK_FILTER_LINEAR;
+    case platform::rhi::FilterMode::Nearest: return VK_FILTER_NEAREST;
+    default: return VK_FILTER_MAX_ENUM;
+    }
+}
+
+platform::rhi::FilterMode VkFilterToRHIFilter(VkFilter filter)
+{
+    switch (filter)
+    {
+    case VK_FILTER_LINEAR: return platform::rhi::FilterMode::Linear;
+    case VK_FILTER_NEAREST: return platform::rhi::FilterMode::Nearest;
+    default: return platform::rhi::FilterMode::Count;
+    }
+}
+VkSamplerAddressMode RHISamplerAddressModeToVkSamplerAddressMode(platform::rhi::SamplerAddressMode address_mode)
+{
+    switch (address_mode)
+    {
+    case platform::rhi::SamplerAddressMode::Repeat: return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    case platform::rhi::SamplerAddressMode::MirroredRepeat: return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+    case platform::rhi::SamplerAddressMode::ClampToEdge: return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    default: return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
+    }
+}
+
+platform::rhi::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(VkSamplerAddressMode address_mode)
+{
+    switch (address_mode)
+    {
+    case VK_SAMPLER_ADDRESS_MODE_REPEAT: return platform::rhi::SamplerAddressMode::Repeat;
+    case VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT: return platform::rhi::SamplerAddressMode::MirroredRepeat;
+    case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE: return platform::rhi::SamplerAddressMode::ClampToEdge;
+    default: return platform::rhi::SamplerAddressMode::Count;
+    }
+}
+
 ImageUsage VkImageUsageToRHIImageUsageFlags(VkImageUsageFlags usage_flag)
 {
     ImageUsage flags = 0;

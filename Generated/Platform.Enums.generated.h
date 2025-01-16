@@ -64,6 +64,14 @@ type->Internal_RegisterEnumValue(SC_64 ,"SC_64")->SetComment("64次"); \
 type->Internal_RegisterEnumValue(SC_Count ,"SC_Count")->SetComment("超出范围"); \
 core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::SampleCount>(), type); \
 } \
+{ \
+Type* type = Type::Create<platform::rhi::FilterMode>("platform.rhi.FilterMode"); \
+using enum platform::rhi::FilterMode; \
+type->Internal_RegisterEnumValue(Linear ,"Linear")->SetAttribute(FieldInfo::ValueAttribute::Label, "线性过滤"); \
+type->Internal_RegisterEnumValue(Nearest ,"Nearest")->SetAttribute(FieldInfo::ValueAttribute::Label, "最近邻过滤"); \
+type->Internal_RegisterEnumValue(Count ,"Count"); \
+core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::FilterMode>(), type); \
+} \
 
 
 #undef GENERATED_IMPLEMENTATION

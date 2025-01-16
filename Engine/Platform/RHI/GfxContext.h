@@ -20,6 +20,11 @@
 
 namespace platform::rhi
 {
+struct SamplerDesc;
+class Sampler;
+}   // namespace platform::rhi
+namespace platform::rhi
+{
 struct ImageViewDesc;
 struct ImageDesc;
 class Image;
@@ -272,12 +277,21 @@ public:
 
     virtual core::SharedPtr<ImageView> CreateImageView(const ImageViewDesc& desc, core::StringView debug_name = "") = 0;
 
+    core::SharedPtr<Sampler> GetSampler(const SamplerDesc &desc);
+
     virtual void Update();
 
     core::FrameAllocator& GetCommandAllocator();
 
+protected:
+    virtual core::SharedPtr<Sampler> CreateSampler(const SamplerDesc& desc, core::StringView debug_name = "") = 0;
+
 private:
+    static void PreDestroyed(GfxContext* self);
+
     core::FrameAllocator* cmd_allocator_ = nullptr;
+
+    core::HashMap<UInt64, core::SharedPtr<Sampler>> sampler_pool_;
 };
 
 GfxContext* GetGfxContext();
