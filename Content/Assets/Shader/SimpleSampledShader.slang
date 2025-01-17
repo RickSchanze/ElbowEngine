@@ -7,19 +7,10 @@ import CommonStructure;
 import Utility;
 import Annotations;
 
-struct TestParam {
-    [Label("test1")]
-    float3 test_param;
-    [Label("参数2")]
-    float3 test_param1;
-};
-
 uniform ConstantBuffer<Camera> camera;
 
 uniform Texture2D tex;
 uniform SamplerState common_sampler;
-uniform ConstantBuffer<TestParam> other_param;
-uniform ConstantBuffer<float3> single;
 
 struct VertexOutput {
     float4 position : SV_Position;
