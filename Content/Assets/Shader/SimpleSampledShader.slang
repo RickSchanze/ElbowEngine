@@ -19,6 +19,7 @@ uniform ConstantBuffer<Camera> camera;
 uniform Texture2D tex;
 uniform SamplerState common_sampler;
 uniform ConstantBuffer<TestParam> other_param;
+uniform ConstantBuffer<float3> single;
 
 struct VertexOutput {
     float4 position : SV_Position;
