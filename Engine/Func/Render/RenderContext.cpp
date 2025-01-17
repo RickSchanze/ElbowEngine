@@ -11,6 +11,7 @@
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/Window/WindowManager.h"
+#include "Resource/Assets/Material/Material.h"
 
 using namespace platform::rhi;
 using namespace func;
@@ -140,6 +141,7 @@ void RenderContext::Startup()
 
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
     window_resized_evt_handle_ = WindowEvents::OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
+    resource::AllocateDescriptorSetFunc = &RenderContext::AllocateDescriptorSet;
 }
 
 void RenderContext::Shutdown()

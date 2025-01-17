@@ -62,7 +62,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
         }
         auto* asset = New<T>();
         asset->InternalSetAssetHandle(handle);
-        return asset->InternalPerformPersistentObjectLoad();
+        return asset->PerformPersistentObjectLoadAsync();
     }
     else
     {
@@ -72,7 +72,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
         AssetDataBase::InsertMeta(new_meta);
         auto* asset = New<T>();
         asset->InternalSetAssetHandle(new_meta.object_handle);
-        return asset->InternalPerformPersistentObjectLoad();
+        return asset->PerformPersistentObjectLoadAsync();
     }
 }
 
@@ -134,7 +134,7 @@ AsyncResultHandle<ObjectHandle> InternalLoadAsync(StringView path)
         {
             auto* asset = New<T>();
             asset->InternalSetAssetHandle(handle);
-            return asset->InternalPerformPersistentObjectLoad();
+            return asset->PerformPersistentObjectLoadAsync();
         }
     }
 }

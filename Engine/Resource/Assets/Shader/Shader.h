@@ -8,6 +8,7 @@
 
 #include "Core/Base/Base.h"
 #include "Platform/RHI/LowShader.h"
+#include "Platform/RHI/Pipeline.h"
 #include "slang-com-ptr.h"
 
 namespace resource
@@ -35,16 +36,15 @@ enum class ShaderParamType
 struct ShaderParam
 {
     ShaderParamType type;
-    UInt32          binding;      // binding
-    UInt32          size   = 0;   // 整个结构的大小, 等于零表示这个是结构体成员
-    UInt32          offset = 0;   // 在整个结构中的偏移量
-    core::String    name;         // 名字
+    UInt32          binding;                    // binding
+    UInt32          size             = 0;       // 整个结构的大小, 等于零表示这个是结构体成员
+    Bool            is_struct_member = false;   // 是否是结构体成员
+    UInt32          offset           = 0;       // 在整个结构中的偏移量
+    core::String    name;                       // 名字
 
 #if WITH_EDITOR
     core::String label;
 #endif
-
-    [[nodiscard]] bool IsStructMember() const { return size == 0; }
 };
 
 /**
@@ -94,6 +94,8 @@ public:
     [[nodiscard]] const Slang::ComPtr<slang::IComponentType>& _GetLinkedProgram() const { return linked_program_; }
 
     [[nodiscard]] core::StringView GetPath();
+
+    bool FillGraphicsPSODescFromShader(platform::rhi::GraphicsPipelineDesc& desc, bool output_glsl = true);
 
 protected:
     core::StaticArray<int, 3> stage_to_entry_point_index_;

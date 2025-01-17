@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#include "Core/Base/UniquePtr.h"
-#include "Platform/RHI/Pipeline.h"
 
 namespace platform::rhi
 {
@@ -20,6 +18,5 @@ class Mesh;
 
 namespace func
 {
-bool FillGraphicsPSODescFromShader(resource::Shader* shader, platform::rhi::GraphicsPipelineDesc& desc, bool output_glsl = true);
 void BindAndDrawMesh(platform::rhi::CommandBuffer& cmd, resource::Mesh* mesh);
 }   // namespace func

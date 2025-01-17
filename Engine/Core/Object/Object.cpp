@@ -113,24 +113,26 @@ void Object::ResolveObjectPtr()
     }
 }
 
-AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoad()
+AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoadAsync()
 {
     if (!IsPersistent()) return NULL_ASYNC_RESULT_HANDLE;
-
     auto* persistent = static_cast<PersistentObject*>(this);
-    if (GetConfig<CoreConfig>()->IsMultiThreadPersistentLoadEnabled())
-    {
-        auto& scheduler = ThreadManager::GetScheduler();
-        return StartAsync(Schedule(scheduler, ThreadSlot::Resource) | Then([this, persistent] {
-                              persistent->PerformLoad();
-                              return handle_;
-                          }));
-    }
-    else
-    {
-        persistent->PerformLoad();
-        return MakeAsyncResult(GetHandle());
-    }
+    auto& scheduler  = ThreadManager::GetScheduler();
+    return StartAsync(
+        Schedule(scheduler, ThreadSlot::Resource)   //
+        | Then([this, persistent] {
+              persistent->PerformLoad();
+              return handle_;
+          })
+    );
+}
+
+ObjectHandle Object::PerformPersistentObjectLoad()
+{
+    if (!IsPersistent()) return INVALID_OBJECT_HANDLE;
+    auto* persistent = static_cast<PersistentObject*>(this);
+    persistent->PerformLoad();
+    return GetHandle();
 }
 
 void Object::PostSerialized() {}

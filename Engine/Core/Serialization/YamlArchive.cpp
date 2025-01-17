@@ -574,7 +574,6 @@ bool YamlArchive::Deserialize(StringView source, void* out, const Type* type)
     }
 
     return DeserializeNode(node["Data"], out, type);
-
 }
 
 }   // namespace core

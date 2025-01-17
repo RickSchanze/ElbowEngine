@@ -89,7 +89,7 @@ void func::FixedBasicTestRenderPipeline::Build()
     if (shader)
     {
         auto desc = GraphicsPipelineDesc{};
-        if (FillGraphicsPSODescFromShader(shader, desc))
+        if (shader->FillGraphicsPSODescFromShader(desc))
         {
             desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
             desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());

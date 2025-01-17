@@ -10,6 +10,11 @@
 
 #include GEN_HEADER("Resource.Material.generated.h")
 
+namespace platform::rhi
+{
+class DescriptorSetLayout;
+class DescriptorSet;
+}
 namespace resource
 {
 class Texture2D;
@@ -21,6 +26,8 @@ class Shader;
 namespace resource
 {
 
+inline core::SharedPtr<platform::rhi::DescriptorSet> (*AllocateDescriptorSetFunc)(const core::SharedPtr<platform::rhi::DescriptorSetLayout>& layout);
+
 class CLASS() Material : public Asset
 {
     GENERATED_CLASS(Material)
@@ -28,7 +35,7 @@ public:
     void PerformLoad() override;
     void PerformUnload() override;
 
-    AssetType GetAssetType() const override { return AssetType::Material; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Material; }
 
 protected:
     PROPERTY()
@@ -41,7 +48,14 @@ protected:
     core::HashMap<core::String, core::ObjectPtr<Texture2D>> texture_params_;
 
     // 当前使用的pipeline
-    core::SharedPtr<platform::rhi::GraphicsPipeline> active_pipeline_;
+    core::UniquePtr<platform::rhi::GraphicsPipeline> active_pipeline_;
+
+    // 所有UniformBuffer都使用这一个Buffer
+    // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
+    core::SharedPtr<platform::rhi::Buffer> buffer_;
+
+    core::SharedPtr<platform::rhi::DescriptorSetLayout> descriptor_set_layout_;
+    core::SharedPtr<platform::rhi::DescriptorSet>       descriptor_set_;
 };
 
 }   // namespace resource

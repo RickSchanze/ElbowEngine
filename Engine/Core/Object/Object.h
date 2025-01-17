@@ -94,7 +94,9 @@ private:
     void RegisterSelf();
     void ResolveObjectPtr();
 
-    exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoad();
+    exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoadAsync();
+
+    ObjectHandle PerformPersistentObjectLoad();
 
 public:
     virtual void PostSerialized();
@@ -120,8 +122,6 @@ public:
     [[nodiscard]] bool IsPersistent() const { return flags_ & OFT_Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
-
-    exec::AsyncResultHandle<ObjectHandle> InternalPerformPersistentObjectLoad() { return PerformPersistentObjectLoad(); }
 };
 
 template <typename T>
