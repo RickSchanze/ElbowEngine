@@ -154,8 +154,22 @@ void DescriptorSet_Vulkan::Update(const core::Array<DescriptorSetUpdateInfo>& up
             {
                 VkDescriptorImageInfo image_info{};
                 image_info.imageLayout = RHIImageLayoutToVkImageLayout(image.image_layout);
-                image_info.imageView   = image.image_view->GetNativeHandleT<VkImageView>();
-                // TODO: image_info.sampler     = image.sampler->GetNativeHandleT<VkSampler>();
+                if (image.image_view == nullptr)
+                {
+                    image_info.imageView = nullptr;
+                }
+                else
+                {
+                    image_info.imageView = image.image_view->GetNativeHandleT<VkImageView>();
+                }
+                if (image.sampler == nullptr)
+                {
+                    image_info.sampler = nullptr;
+                }
+                else
+                {
+                    image_info.sampler = image.sampler->GetNativeHandleT<VkSampler>();
+                }
                 image_infos.push_back(image_info);
             }
             write.descriptorType  = RHIDescriptorTypeToVkDescriptorType(update_info.descriptor_type);

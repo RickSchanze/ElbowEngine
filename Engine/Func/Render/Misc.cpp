@@ -4,18 +4,14 @@
 
 #include "Misc.h"
 
-#include "Core/Profiler/ProfileMacro.h"
 #include "Func/Logcat.h"
 #include "GlobalObjectInstancedDataBuffer.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/DescriptorSet.h"
 #include "Platform/RHI/Pipeline.h"
-#include "Platform/RHI/VertexLayout.h"
-#include "Platform/Window/Window.h"
-#include "Platform/Window/WindowManager.h"
+#include "Resource/Assets/Material/Material.h"
 #include "Resource/Assets/Mesh/Mesh.h"
-#include "Resource/Assets/Shader/Shader.h"
 
 using namespace platform::rhi;
 using namespace platform;
@@ -32,4 +28,16 @@ void func::BindAndDrawMesh(CommandBuffer& cmd, Mesh* mesh)
     cmd.Enqueue<Cmd_BindVertexBuffer>(GlobalObjectInstancedDataBuffer::GetBuffer(), 0, 1);
     cmd.Enqueue<Cmd_BindIndexBuffer>(storage.index_buffer);
     cmd.Enqueue<Cmd_DrawIndexed>(storage.index_count);
+}
+
+void func::BindMaterial(platform::rhi::CommandBuffer& cmd, resource::Material* mat)
+{
+    if (mat == nullptr)
+    {
+        LOGGER.Error(logcat::Func_Render, "材质无效");
+    }
+    auto pipeline = mat->GetActivePipeline();
+    cmd.Enqueue<Cmd_BindPipeline>(pipeline);
+    auto descriptor_set = mat->GetDescriptorSet();
+    cmd.Enqueue<Cmd_BindDescriptorSet>(pipeline, descriptor_set);
 }

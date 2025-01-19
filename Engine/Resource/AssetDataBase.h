@@ -53,6 +53,7 @@ public:
     }
 
     static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
+    static core::exec::AsyncResultHandle<core::ObjectHandle> LoadOrImport(core::StringView path);
 
     template <typename T>
     static core::Optional<T> QueryMeta(core::ObjectHandle handle);
@@ -62,6 +63,8 @@ public:
 
     template <typename T>
     static void InsertMeta(const T& meta);
+
+    static void Save();
 
 protected:
     void CreateAssetTables();

@@ -81,7 +81,7 @@ struct SamplerDesc
     Float              max_anisotropy           = 1.0f;
     Bool               unnormalized_coordinates = false;
 
-    size_t GetHashCode() const noexcept;
+    [[nodiscard]] size_t GetHashCode() const noexcept;
 };
 
 class Sampler : public IResource
@@ -89,7 +89,7 @@ class Sampler : public IResource
 };
 
 }   // namespace platform::rhi
-template<>
+template <>
 struct std::hash<platform::rhi::SamplerDesc>
 {
     size_t operator()(const platform::rhi::SamplerDesc& desc) const noexcept;

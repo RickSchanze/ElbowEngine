@@ -58,9 +58,36 @@ void core::ObjectRegistry::RemoveObject(Object* object)
 
 void core::ObjectRegistry::RemoveAllObjects()
 {
+    for (Int32 i = 0; i < 10; i++)
+    {
+        RemoveAllObjectLayered();
+    }
     while (!objects_.empty())
     {
         RemoveObject(objects_.begin()->second);
+    }
+}
+
+void core::ObjectRegistry::RemoveAllObjectLayered()
+{
+    Int32 skip = 0;
+    while (!objects_.empty())
+    {
+        auto begin = objects_.begin();
+        std::advance(begin, skip);
+        if (begin == objects_.end())
+        {
+            return;
+        }
+        Object* obj = begin->second;
+        if (obj->referenced_.empty())
+        {
+            RemoveObject(obj);
+        }
+        else
+        {
+            skip++;
+        }
     }
 }
 
@@ -89,12 +116,21 @@ void core::ObjectManager::Startup()
 
 void core::ObjectManager::Shutdown()
 {
-    YamlArchive archive;
-    String      serialized_str;
-    archive.Serialize(registry_, serialized_str);
-    Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
+#if WITH_EDITOR
+    SaveObjectRegistry();
+#endif
     registry_.RemoveAllObjects();
 }
+
+#if WITH_EDITOR
+void core::ObjectManager::SaveObjectRegistry()
+{
+    YamlArchive archive;
+    String      serialized_str;
+    archive.Serialize(GetRegistry(), serialized_str);
+    Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
+}
+#endif
 
 core::ObjectRegistry& core::ObjectManager::GetRegistry()
 {

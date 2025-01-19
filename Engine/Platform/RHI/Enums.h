@@ -217,7 +217,7 @@ enum class DescriptorType
 {
     Sampler,
     UniformBuffer,
-    UniformBufferDynamic,
+    SampledImage,
     Count,
 };
 

@@ -11,6 +11,10 @@
 
 namespace platform::rhi
 {
+class Sampler;
+}
+namespace platform::rhi
+{
 class ImageView;
 class Buffer;
 }   // namespace platform::rhi
@@ -49,17 +53,18 @@ protected:
     size_t hash_ = 0;
 };
 
-struct DescriptorBufferUpdateInfo
+struct DescriptorBufferUpdateDesc
 {
     Buffer* buffer;
     UInt32  offset;
     UInt32  range;
 };
 
-struct DescriptorImageUpdateInfo
+struct DescriptorImageUpdateDesc
 {
-    ImageView*  image_view;
-    ImageLayout image_layout;
+    ImageView*  image_view   = nullptr;
+    ImageLayout image_layout = ImageLayout::Undefined;
+    Sampler*    sampler      = nullptr;
 };
 
 struct DescriptorSetUpdateInfo
@@ -67,8 +72,8 @@ struct DescriptorSetUpdateInfo
     UInt32                                  binding       = 0;
     UInt32                                  array_element = 0;
     DescriptorType                          descriptor_type;
-    core::Array<DescriptorBufferUpdateInfo> buffers{};
-    core::Array<DescriptorImageUpdateInfo>  images{};
+    core::Array<DescriptorBufferUpdateDesc> buffers{};
+    core::Array<DescriptorImageUpdateDesc>  images{};
 };
 
 class DescriptorSet : public IResource
@@ -76,8 +81,8 @@ class DescriptorSet : public IResource
 public:
     virtual void Update(const core::Array<DescriptorSetUpdateInfo>& update_infos) = 0;
 
-    virtual void Update(UInt32 binding, const DescriptorBufferUpdateInfo& buffer);
-    virtual void Update(UInt32 binding, const DescriptorImageUpdateInfo& image);
+    virtual void Update(UInt32 binding, const DescriptorBufferUpdateDesc& buffer);
+    virtual void Update(UInt32 binding, const DescriptorImageUpdateDesc& image);
 };
 }   // namespace platform::rhi
 

@@ -30,7 +30,7 @@ size_t DescriptorSetLayoutDesc::GetHashCode() const
     return hash;
 }
 
-void DescriptorSet::Update(UInt32 binding, const DescriptorBufferUpdateInfo& buffer)
+void DescriptorSet::Update(UInt32 binding, const DescriptorBufferUpdateDesc& buffer)
 {
     DescriptorSetUpdateInfo update_info{};
     update_info.binding         = binding;
@@ -39,11 +39,19 @@ void DescriptorSet::Update(UInt32 binding, const DescriptorBufferUpdateInfo& buf
     Update({update_info});
 }
 
-void DescriptorSet::Update(UInt32 binding, const DescriptorImageUpdateInfo& image)
+void DescriptorSet::Update(UInt32 binding, const DescriptorImageUpdateDesc& image)
 {
     DescriptorSetUpdateInfo update_info{};
     update_info.binding = binding;
-    update_info.images  = {image};
+    if (image.image_view)
+    {
+        update_info.descriptor_type = DescriptorType::SampledImage;
+    }
+    else if (image.sampler)
+    {
+        update_info.descriptor_type = DescriptorType::Sampler;
+    }
+    update_info.images = {image};
     Update({update_info});
 }
 

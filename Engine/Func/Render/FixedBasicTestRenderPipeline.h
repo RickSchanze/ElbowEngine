@@ -5,6 +5,7 @@
 #pragma once
 #include "Core/Base/UniquePtr.h"
 #include "RenderPipeline.h"
+#include "Resource/Assets/Material/Material.h"
 
 namespace func
 {
@@ -38,10 +39,9 @@ public:
     void OnWindowResized(platform::Window* window, Int32 width, Int32 height) override;
 
 private:
-    core::UniquePtr<platform::rhi::GraphicsPipeline> pipeline_;
-    core::SharedPtr<platform::rhi::DescriptorSet>    descriptor_set_;
-    core::SharedPtr<RenderTexture>                   depth_target_;
-    resource::Mesh*                                  mesh_ = nullptr;
+    resource::Material*            material = nullptr;
+    core::SharedPtr<RenderTexture> depth_target_;
+    resource::Mesh*                mesh_ = nullptr;
 };
 
 }   // namespace func

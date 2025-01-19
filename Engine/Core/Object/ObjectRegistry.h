@@ -25,6 +25,8 @@ public:
 
     void RemoveAllObjects();
 
+    void RemoveAllObjectLayered();
+
     void RegisterObject(Object* object);
 
 private:
@@ -54,6 +56,10 @@ public:
 
     void Startup() override;
     void Shutdown() override;
+
+#if WITH_EDITOR
+    static void SaveObjectRegistry();
+#endif
 
     static ObjectRegistry& GetRegistry();
     static Object*         GetObjectByHandle(ObjectHandle handle);

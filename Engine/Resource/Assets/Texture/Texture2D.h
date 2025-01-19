@@ -18,15 +18,19 @@ namespace resource
 class Texture2D : public Asset
 {
 public:
-    AssetType GetAssetType() const override { return AssetType::Texture2D; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Texture2D; }
 
     void PerformLoad() override;
     void PerformUnload() override;
 
-    bool IsLoaded() const override { return native_image_ != nullptr; }
+    [[nodiscard]] bool IsLoaded() const override { return native_image_ != nullptr; }
 
-    UInt32 GetWidth() const;
-    UInt32 GetHeight() const;
+    [[nodiscard]] UInt32 GetWidth() const;
+    [[nodiscard]] UInt32 GetHeight() const;
+
+    static Texture2D* GetDefault();
+
+    [[nodiscard]] platform::rhi::ImageView* GetNativeImageView() const { return native_image_view_.get(); }
 
 private:
     core::SharedPtr<platform::rhi::Image>     native_image_      = nullptr;

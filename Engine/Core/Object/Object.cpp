@@ -22,12 +22,14 @@ GENERATED_SOURCE()
 using namespace core;
 using namespace exec;
 
+Object::Object(ObjectFlag flag) : flags_(flag)
+{
+    GenerateInstanceHandle();
+}
+
 Object::Object()
 {
-    if (!IsPersistent())
-    {
-        GenerateInstanceHandle();
-    }
+    GenerateInstanceHandle();
 }
 
 Object::~Object()

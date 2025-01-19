@@ -10,15 +10,12 @@
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxContext.h"
-#include "Platform/RHI/Pipeline.h"
 #include "Platform/Window/WindowManager.h"
 #include "RenderContext.h"
 #include "RenderTexture.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 #include "Resource/Assets/Shader/Shader.h"
-
-#include <Func/Camera/Camera.h>
 
 using namespace resource;
 using namespace core;
@@ -65,8 +62,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
     depth_attachment.layout        = ImageLayout::DepthStencilAttachment;
     depth_attachment.target        = depth_target_->GetImageView();
     cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
-    cmd.Enqueue<Cmd_BindPipeline>(pipeline_.Get());
-    cmd.Enqueue<Cmd_BindDescriptorSet>(pipeline_.Get(), descriptor_set_.get());
+    BindMaterial(cmd, material);
     BindAndDrawMesh(cmd, mesh_);
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(
@@ -85,36 +81,25 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const Render
 
 void func::FixedBasicTestRenderPipeline::Build()
 {
-    const auto shader = AssetDataBase::Load<Shader>("Assets/Shader/Error.slang");
+    const auto shader = AssetDataBase::Load<Shader>("Assets/Shader/SimpleSampledShader.slang");
     if (shader)
     {
-        auto desc = GraphicsPipelineDesc{};
-        if (shader->FillGraphicsPSODescFromShader(desc))
-        {
-            desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
-            desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());
-            pipeline_       = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
-            descriptor_set_ = RenderContext::AllocateDescriptorSet(desc.descriptor_set_layouts[0]);
-            // TODO: Update 描述符集的操作本应交给材质来做
-            DescriptorBufferUpdateInfo info{};
-            info.buffer = Camera::GetViewBuffer();
-            info.range  = sizeof(CameraShaderData);
-            info.offset = 0;
-            descriptor_set_->Update(0, info);
-            depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
-        }
+        material = NewObject<Material>();
+        material->SetName("Test");
+        material->SetShader(shader);
+        depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
     }
     mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
 }
 
 void func::FixedBasicTestRenderPipeline::Clean()
 {
-    pipeline_ = nullptr;
+    depth_target_ = nullptr;
 }
 
 bool func::FixedBasicTestRenderPipeline::IsReady() const
 {
-    return pipeline_.IsSet();
+    return material != nullptr && depth_target_ != nullptr;
 }
 
 void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window* window, Int32 width, Int32 height)

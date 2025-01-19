@@ -46,9 +46,10 @@ class CLASS() Object : public ITypeGetter
 {
     GENERATED_CLASS(Object)
     friend class ObjectPtrBase;
+    friend class ObjectRegistry;
 
 public:
-    explicit Object(ObjectFlag flag) : flags_(flag) {}
+    explicit Object(ObjectFlag flag);
 
     Object();
 
@@ -60,6 +61,8 @@ public:
 
     [[nodiscard]] StringView GetName() const { return name_; }
     [[nodiscard]] StringView GetDisplayName() const { return display_name_; }
+
+    void _SetObjectHandle(ObjectHandle handle) { handle_ = handle; }
 
 protected:
     PROPERTY()
@@ -94,10 +97,6 @@ private:
     void RegisterSelf();
     void ResolveObjectPtr();
 
-    exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoadAsync();
-
-    ObjectHandle PerformPersistentObjectLoad();
-
 public:
     virtual void PostSerialized();
     virtual void PreSerialized() {}
@@ -122,6 +121,10 @@ public:
     [[nodiscard]] bool IsPersistent() const { return flags_ & OFT_Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
+
+    exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoadAsync();
+
+    ObjectHandle PerformPersistentObjectLoad();
 };
 
 template <typename T>

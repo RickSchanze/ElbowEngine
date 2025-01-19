@@ -64,7 +64,7 @@ void Texture2D::PerformLoad()
 void Texture2D::PerformUnload()
 {
     native_image_view_ = nullptr;
-    native_image_ = nullptr;
+    native_image_      = nullptr;
 }
 
 UInt32 Texture2D::GetWidth() const
@@ -77,4 +77,11 @@ UInt32 Texture2D::GetHeight() const
 {
     if (!native_image_) return 0;
     return native_image_->GetHeight();
+}
+
+Texture2D* Texture2D::GetDefault()
+{
+    auto rtn = AssetDataBase::Load<Texture2D>("Assets/Texture/Default.png");
+    Assert::Require(logcat::Resource, rtn != nullptr, "Default.png不存在");
+    return rtn;
 }

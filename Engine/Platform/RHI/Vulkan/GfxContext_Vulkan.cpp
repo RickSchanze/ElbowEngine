@@ -155,7 +155,6 @@ const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
     info.limits.framebuffer_color_sample_count = static_cast<int32_t>(properties.limits.framebufferColorSampleCounts);
     info.limits.framebuffer_depth_sample_count = static_cast<int32_t>(properties.limits.framebufferDepthSampleCounts);
     device_info_                               = info;
-    LOGGER.Info(logcat::Test, "Uniform alignment: {}", properties.limits.minUniformBufferOffsetAlignment);
     return *device_info_;
 }
 

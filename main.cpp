@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 
+#include "Core/Async/Execution/WhenAll.h"
 #include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/CoreDef.h"
@@ -11,7 +12,6 @@
 #include "cpptrace/cpptrace.hpp"
 #include "Func/Camera/ACameraHolder.h"
 #include "Func/Camera/Camera.h"
-#include "Func/Camera/CameraComponent.h"
 #include "Func/Render/FixedBasicTestRenderPipeline.h"
 #include "Func/Render/RenderContext.h"
 #include "Func/World/Actor.h"
@@ -47,11 +47,6 @@ int main()
         {
             core::MemoryManager::Get();
         }
-        // 资产数据库初始化
-        {
-            PROFILE_SCOPE("AssetDataBase Initialize");
-            resource::AssetDataBase::Get();
-        }
         // 窗口初始化
         {
             PROFILE_SCOPE("Window Initialize");
@@ -64,6 +59,24 @@ int main()
             UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
             platform::rhi::GfxContextLifeTimeProxyManager::Get();
         }
+        // 资产数据库初始化
+        {
+            PROFILE_SCOPE("AssetDataBase Initialize");
+            resource::AssetDataBase::Get();
+            core::Array results = {
+                resource::AssetDataBase::Import("Assets/Shader/Error.slang"),
+                resource::AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
+                resource::AssetDataBase::Import("Assets/Texture/Default.png"),
+                resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
+            };
+            for (const auto& result: results)
+            {
+                result->Wait();
+            }
+#if WITH_EDITOR
+            core::ObjectManager::SaveObjectRegistry();
+#endif
+        }
         // 其他初始化
         {
             PROFILE_SCOPE("Other Initialize");
@@ -73,22 +86,6 @@ int main()
         LOGGER.Info(logcat::Engine, "Engine initialized.");
         SetRuntimeStage(RuntimeStage::Running);
         LOGGER.Info(logcat::Engine, "Engine running...");
-        resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx");
-        resource::AssetDataBase::Import("Assets/Texture/Test.png");
-        auto op1 = resource::AssetDataBase::Import("Assets/Shader/Error.slang");
-        auto op2 = resource::AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang");
-        if (op1->Wait().GetValue())
-        {
-            const auto& [handle] = *op1->GetValue();
-            static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle))->Compile(true);
-        }
-        if (op2->Wait().GetValue())
-        {
-            const auto& [handle] = *op2->GetValue();
-            auto s = static_cast<resource::Shader*>(core::ObjectManager::GetObjectByHandle(handle));
-            core::HashMap<core::String, resource::ShaderParam> params;
-            s->GetParams(params);
-        }
         platform::Window* main_window = platform::WindowManager::Get()->GetMainWindow();
         TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(core::MakeUnique<FixedBasicTestRenderPipeline>());

@@ -4,6 +4,10 @@
 
 #pragma once
 
+namespace resource
+{
+class Material;
+}
 namespace platform::rhi
 {
 class CommandBuffer;
@@ -19,4 +23,5 @@ class Mesh;
 namespace func
 {
 void BindAndDrawMesh(platform::rhi::CommandBuffer& cmd, resource::Mesh* mesh);
+void BindMaterial(platform::rhi::CommandBuffer& cmd, resource::Material* mat);
 }   // namespace func

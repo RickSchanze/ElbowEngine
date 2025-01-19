@@ -163,6 +163,11 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
         tables_[type]          = std::move(resource::SQLHelper::CreateTable(*db_, type)); \
     }
 
+void AssetDataBase::Save()
+{
+
+}
+
 void AssetDataBase::CreateAssetTables()
 {
     CREATE_ASSET_TABLE(::resource::MeshMeta);

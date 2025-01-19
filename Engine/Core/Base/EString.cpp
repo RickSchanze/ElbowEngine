@@ -67,6 +67,11 @@ uint32_t String::AtUnicode(int32_t i) const
     return str.char32At(i);
 }
 
+UInt64 String::GetHashCode() const
+{
+    return std::hash<std::string>{}(str_);
+}
+
 ::std::ostream& operator<<(::std::ostream& os, const String& str)
 {
     os << str.GetStdString();

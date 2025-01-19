@@ -6,6 +6,8 @@
 
 #include "Core/Config/ConfigManager.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Func/Camera/Camera.h"
+#include "Func/Camera/CameraComponent.h"
 #include "Func/World/WorldClock.h"
 #include "Platform/Config/PlatformConfig.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -88,6 +90,15 @@ SharedPtr<DescriptorSet> RenderContext::AllocateDescriptorSet(const SharedPtr<De
     return GetByRef().descriptor_pool_->Allocate(layout);
 }
 
+void RenderContext::UpdateCameraDescriptorSet(DescriptorSet& desc_set)
+{
+    DescriptorBufferUpdateDesc info{};
+    info.buffer = Camera::GetViewBuffer();
+    info.range  = sizeof(CameraShaderData);
+    info.offset = 0;
+    desc_set.Update(0, info);
+}
+
 bool RenderContext::ShouldRender() const
 {
     const bool render_pipeline_valid = render_pipeline_.IsSet();
@@ -133,15 +144,22 @@ void RenderContext::Startup()
     uniform_buffer.type             = DescriptorType::UniformBuffer;
     uniform_buffer.descriptor_count = 512;
     desc.pool_sizes.push_back(uniform_buffer);
-    // TODO: Texture
-    // DescriptorPoolSize texture{};
-    // texture.type = DescriptorType::CombinedImageSampler;
-    // texture.descriptor_count = 512;
+
+    DescriptorPoolSize texture{};
+    texture.type             = DescriptorType::SampledImage;
+    texture.descriptor_count = 300;
+    desc.pool_sizes.push_back(texture);
+
+    DescriptorPoolSize sampler{};
+    sampler.type             = DescriptorType::Sampler;
+    sampler.descriptor_count = 100;
+    desc.pool_sizes.push_back(sampler);
     descriptor_pool_ = ctx.CreateDescriptorSetPool(desc);
 
     TickEvents::RenderTickEvent.Bind(this, &RenderContext::Render);
-    window_resized_evt_handle_ = WindowEvents::OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
-    resource::AllocateDescriptorSetFunc = &RenderContext::AllocateDescriptorSet;
+    window_resized_evt_handle_              = WindowEvents::OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
+    resource::AllocateDescriptorSetFunc     = &RenderContext::AllocateDescriptorSet;
+    resource::UpdateCameraDescriptorSetFunc = &RenderContext::UpdateCameraDescriptorSet;
 }
 
 void RenderContext::Shutdown()

@@ -136,6 +136,8 @@ public:
 
     [[nodiscard]] core::StringView ToStringView() const { return {str_}; }
 
+    UInt64 GetHashCode()const;
+
 private:
     std::string str_;
 };

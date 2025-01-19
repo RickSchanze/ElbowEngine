@@ -44,6 +44,7 @@ public:
     [[nodiscard]] bool IsRenderEnable() const { return should_render_; }
 
     static core::SharedPtr<platform::rhi::DescriptorSet> AllocateDescriptorSet(const core::SharedPtr<platform::rhi::DescriptorSetLayout>& layout);
+    static void UpdateCameraDescriptorSet(platform::rhi::DescriptorSet& desc_set);
 
 private:
     [[nodiscard]] bool ShouldRender() const;

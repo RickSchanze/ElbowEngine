@@ -47,17 +47,14 @@ void Shader::PerformLoad()
 
 static ShaderParamType FindParamType(StringView path, StringView name, slang::TypeLayoutReflection* variable)
 {
-    auto var_type = variable->getType();
-    auto kind     = var_type->getKind();
-    switch (kind)
+    switch (const auto var_type = variable->getType(); var_type->getKind())
     {
     case slang::TypeReflection::Kind::Struct:
         LOGGER.Error(logcat::Resource, "{}:{} Shader参数只允许一层嵌套", path, name);
         return ShaderParamType::Count;
     case slang::TypeReflection::Kind::Vector: {
-        auto column_count = var_type->getColumnCount();
-        auto element_type = var_type->getElementType()->getScalarType();
-        if (element_type == slang::TypeReflection::Float32)
+        const auto column_count = var_type->getColumnCount();
+        if (const auto element_type = var_type->getElementType()->getScalarType(); element_type == slang::TypeReflection::Float32)
         {
             if (column_count == 3)
             {
@@ -105,12 +102,12 @@ static ShaderParamType FindParamType(StringView path, StringView name, slang::Ty
     return ShaderParamType::Count;
 }
 
-static void GetLabel(slang::VariableReflection* vaiable, core::String& out)
+static void GetLabel(slang::VariableReflection* variable, core::String& out)
 {
-    auto attr_cnt = vaiable->getUserAttributeCount();
+    auto attr_cnt = variable->getUserAttributeCount();
     for (UInt32 j = 0; j < attr_cnt; j++)
     {
-        auto attr = vaiable->getUserAttributeByIndex(j);
+        auto attr = variable->getUserAttributeByIndex(j);
 #if WITH_EDITOR
         if (std::strcmp(attr->getName(), "Label") == 0)
         {
@@ -124,7 +121,7 @@ static void GetLabel(slang::VariableReflection* vaiable, core::String& out)
 }
 
 static bool FindAllConstantBufferParams(
-    slang::TypeLayoutReflection* constant_buffer_type_layout, HashMap<String, ShaderParam>& output, UInt32 binding, StringView variable_name,
+    slang::TypeLayoutReflection* constant_buffer_type_layout, Array<ShaderParam>& output, UInt32 binding, StringView variable_name,
     core::StringView path, slang::VariableReflection* variable
 )
 {
@@ -152,17 +149,25 @@ static bool FindAllConstantBufferParams(
         }
         param.type = type;
         GetLabel(variable, param.label);
-        output[param.name] = param;
+        output.push_back(param);
     }
     else
     {
+        ShaderParam param1{};
+        param1.binding = binding;
+        param1.size    = element_type_layout->getSize();
+        param1.offset  = 0;
+        param1.name    = variable_name;
+        param1.type    = ShaderParamType::Struct;
+        output.push_back(param1);
         for (UInt32 i = 0; i < field_cnt; ++i)
         {
             ShaderParam param{};
             param.binding          = binding;
-            param.size             = element_type_layout->getSize();
+            param.is_struct_member = true;
             auto field_type_layout = element_type_layout->getFieldByIndex(i);
             auto field_variable    = element_type->getFieldByIndex(i);
+            param.size             = field_type_layout->getTypeLayout()->getSize();
             param.offset           = field_type_layout->getOffset();
             param.name             = String::Format("{}.{}", variable_name, field_variable->getName());
             auto param_type        = FindParamType(path, variable_name, field_type_layout->getTypeLayout());
@@ -182,13 +187,13 @@ static bool FindAllConstantBufferParams(
                 param.type = param_type;
             }
             GetLabel(field_variable, param.label);
-            output[param.name] = param;
+            output.push_back(param);
         }
     }
     return true;
 }
 
-void Shader::GetParams(core::HashMap<core::String, ShaderParam>& out)
+void Shader::GetParams(Array<ShaderParam>& out)
 {
     if (!IsLoaded())
     {
@@ -198,12 +203,12 @@ void Shader::GetParams(core::HashMap<core::String, ShaderParam>& out)
     {
         return;
     }
-    HashMap<String, ShaderParamType> rtn;
-    const auto&                      linked_program         = _GetLinkedProgram();
-    auto                             prog_layout            = linked_program->getLayout();
-    auto                             global                 = prog_layout->getGlobalParamsVarLayout();
-    auto                             type_layout_reflection = global->getTypeLayout();
-    auto                             type_kind              = type_layout_reflection->getKind();
+
+    const auto& linked_program         = _GetLinkedProgram();
+    auto        prog_layout            = linked_program->getLayout();
+    auto        global                 = prog_layout->getGlobalParamsVarLayout();
+    auto        type_layout_reflection = global->getTypeLayout();
+    auto        type_kind              = type_layout_reflection->getKind();
 
     bool success = true;
     if (type_kind == slang::TypeReflection::Kind::Struct)
@@ -231,7 +236,7 @@ void Shader::GetParams(core::HashMap<core::String, ShaderParam>& out)
                     param.name    = field_layout->getName();
                     param.type    = ShaderParamType::SamplerState;
                     GetLabel(field, param.label);
-                    out[param.name] = param;
+                    out.push_back(param);
                 }
                 if (variable_kind == slang::TypeReflection::Kind::Resource)
                 {
@@ -245,8 +250,8 @@ void Shader::GetParams(core::HashMap<core::String, ShaderParam>& out)
                     }
                     else
                     {
-                        param.type      = type;
-                        out[param.name] = param;
+                        param.type = type;
+                        out.push_back(param);
                     }
                 }
             }
@@ -359,7 +364,7 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
         VertexInputDesc instanced_data{};
         instanced_data.binding = 1;
         instanced_data.stride  = sizeof(InstancedData1);
-        instanced_data.rate = VertexInputRate::Instance;
+        instanced_data.rate    = VertexInputRate::Instance;
         desc.vertex_inputs.push_back(instanced_data);
 
         VertexAttributeDesc position{};
@@ -410,20 +415,6 @@ static void FillInputLayout(GraphicsPipelineDesc& desc, uint32_t index)
     }
 }
 
-static bool IsDefinedAttribute(slang::VariableReflection* refl, StringView name)
-{
-    Int32 cnt = refl->getUserAttributeCount();
-    for (Int32 i = 0; i < cnt; ++i)
-    {
-        auto attr = refl->getUserAttributeByIndex(i);
-        if (name == attr->getName())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const Shader* shader)
 {
     const auto& linked_program = shader->_GetLinkedProgram();
@@ -442,26 +433,30 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
             DescriptorSetLayoutBinding binding{};
 
             const auto field    = scope_type_layout->getFieldByIndex(i);
-            auto       variable = field->getVariable();
+            const auto variable = field->getVariable();
 
             binding.binding          = field->getBindingIndex();
             binding.stage_flags      = Vertex | Fragment;
             binding.descriptor_count = 1;
-            switch (field->getCategory())
+            if (field->getCategory() == slang::DescriptorTableSlot)
             {
-            case slang::DescriptorTableSlot: {
-                if (IsDefinedAttribute(variable, "DynamicUniform"))
-                {
-                    binding.descriptor_type = DescriptorType::UniformBufferDynamic;
-                    break;
-                }
-                else
+                auto kind = variable->getType()->getKind();
+                if (kind == slang::TypeReflection::Kind::ConstantBuffer)
                 {
                     binding.descriptor_type = DescriptorType::UniformBuffer;
                 }
-                break;
-            default: break;
-            }
+                else if (kind == slang::TypeReflection::Kind::SamplerState)
+                {
+                    binding.descriptor_type = DescriptorType::Sampler;
+                }
+                else if (kind == slang::TypeReflection::Kind::Resource)
+                {
+                    auto shape = variable->getType()->getResourceShape();
+                    if (shape == SLANG_TEXTURE_2D)
+                    {
+                        binding.descriptor_type = DescriptorType::SampledImage;
+                    }
+                }
             }
             layout_desc.bindings.push_back(binding);
         }
@@ -513,17 +508,17 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc& pso_desc, bool 
     Array<ShaderDesc> shader_descs;
     {
         const auto& shader_stages = GetShaderHandles();
-        if (shader_stages.at(Shader::VERTEX_STAGE_IDX))
+        if (shader_stages.at(VERTEX_STAGE_IDX))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(Shader::VERTEX_STAGE_IDX).get();
+            desc.shader = shader_stages.at(VERTEX_STAGE_IDX).get();
             desc.stage  = Vertex;
             shader_descs.push_back(desc);
         }
-        if (shader_stages.at(Shader::FRAGMENT_STAGE_IDX))
+        if (shader_stages.at(FRAGMENT_STAGE_IDX))
         {
             ShaderDesc desc{};
-            desc.shader = shader_stages.at(Shader::FRAGMENT_STAGE_IDX).get();
+            desc.shader = shader_stages.at(FRAGMENT_STAGE_IDX).get();
             desc.stage  = Fragment;
             shader_descs.push_back(desc);
         }

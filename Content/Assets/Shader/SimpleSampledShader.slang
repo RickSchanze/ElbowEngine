@@ -26,6 +26,7 @@ VertexOutput vert(Vertex vert) {
     VertexOutput output;
     float4 pos_vec4 = float4(vert.position, 1);
     output.position = PerformMVP(pos_vec4, vert.GetModelFloat4x4(), camera.GetView(), camera.GetProjection());
+    output.uv = vert.uv0;
     return output;
 }
 

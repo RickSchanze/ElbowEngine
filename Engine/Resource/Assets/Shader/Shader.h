@@ -30,6 +30,7 @@ enum class ShaderParamType
     Float,
     Texture2D,
     SamplerState,
+    Struct,
     Count,
 };
 
@@ -64,7 +65,7 @@ public:
 
     void PerformLoad() override;
 
-    void GetParams(core::HashMap<core::String, ShaderParam>& out);
+    void GetParams(core::Array<ShaderParam>& out);
 
     [[nodiscard]] bool IsLoaded() const override;
 
