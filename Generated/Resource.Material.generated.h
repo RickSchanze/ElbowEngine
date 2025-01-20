@@ -15,10 +15,11 @@ static void DestroyAt(void* ptr) { static_cast<resource::Material*>(ptr)->~Mater
 #define GENERATED_IMPLEMENTATION \
 core::Type* resource::Material::REFLECTION_Register_Material_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<resource::Material>("resource.Material")->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
+Type* type = Type::Create<resource::Material>("resource.Material")->Internal_AddParent(TypeOf<resource::Asset>())->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
 type->Internal_RegisterField("shader_", &resource::Material::shader_, offsetof(resource::Material, shader_)); \
 type->Internal_RegisterField("float3_params_", &resource::Material::float3_params_, offsetof(resource::Material, float3_params_)); \
 type->Internal_RegisterField("texture_params_", &resource::Material::texture_params_, offsetof(resource::Material, texture_params_)); \
+type->Internal_RegisterField("depth_test_", &resource::Material::depth_test_, offsetof(resource::Material, depth_test_)); \
 return type; \
 } \
 

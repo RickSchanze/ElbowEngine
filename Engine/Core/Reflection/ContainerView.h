@@ -41,7 +41,7 @@ public:
     virtual void              SetInstance(void*) = 0;
     virtual ContainerViewType GetContainerType() = 0;
     virtual const Type*       GetOuterType()     = 0;
-    virtual int32_t           Size()             = 0;
+    virtual UInt64            GetSize()          = 0;
     virtual void              Clear()            = 0;
 };
 
@@ -142,7 +142,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        Assert::Require(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Assert::Require(logcat::Reflection, index >= 0 && index < GetSize(), "Index out of range: index: {}, size: {}", index, GetSize());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {
@@ -151,7 +151,7 @@ public:
         return MakeRef(*it);
     }
 
-    int32_t Size() override
+    UInt64 GetSize() override
     {
         if (!instance_)
         {
@@ -267,7 +267,7 @@ public:
 
     Any GetElementAt(int32_t index) override
     {
-        Assert::Ensure(logcat::Reflection, index >= 0 && index < Size(), "Index out of range: index: {}, size: {}", index, Size());
+        Assert::Ensure(logcat::Reflection, index >= 0 && index < GetSize(), "Index out of range: index: {}, size: {}", index, GetSize());
         Iterator it = (instance_->*container_).begin();
         for (int32_t i = 0; i < index; ++i)
         {
@@ -276,7 +276,7 @@ public:
         return {std::addressof(*it), element_type_};
     }
 
-    int32_t Size() override
+    UInt64 GetSize() override
     {
         if (!instance_)
         {
@@ -323,8 +323,7 @@ class MapView : public AssociativeContainerView
     static_assert(!IsObjectPtr<K>::value, "Key type must not be ObjectPtr");
 
 public:
-    MapView(Container<K, V> ClassT::* container, const Type* outer) :
-        container_(container), key_type_(TypeOf<K>()), outer_(outer)
+    MapView(Container<K, V> ClassT::* container, const Type* outer) : container_(container), key_type_(TypeOf<K>()), outer_(outer)
     {
         if constexpr (IsObjectPtr<V>::value)
         {
@@ -343,8 +342,8 @@ public:
             LOGGER.Error(logcat::Reflection, "未设置Instance");
             return false;
         }
-        if (Size() <= 0) return false;
-        size_     = Size();
+        if (GetSize() <= 0) return false;
+        size_     = GetSize();
         iter_     = (instance_->*container_).begin();
         iter_cnt_ = 1;
         return true;
@@ -371,7 +370,7 @@ public:
 
     void SetInstance(void* instance) override { instance_ = static_cast<ClassT*>(instance); }
 
-    int32_t Size() override
+    UInt64 GetSize() override
     {
         if (!instance_)
         {
@@ -380,6 +379,7 @@ public:
         }
         return (instance_->*container_).size();
     }
+
     ContainerViewType GetContainerType() override { return ContainerViewType::Associative; }
     const Type*       GetOuterType() override { return outer_; }
     const Type*       GetKeyType() override { return key_type_; }

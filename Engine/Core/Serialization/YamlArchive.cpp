@@ -82,7 +82,7 @@ static bool SerializePrimitive(YAML::Emitter& emitter, const Any& value)
 static bool SerializeEmitterSequentialContainerView(YAML::Emitter& emitter, SequentialContainerView* view)
 {
     if (view == nullptr) return false;
-    if (view->Size() == 0) return true;
+    if (view->GetSize() == 0) return true;
     bool success = false;
     view->ForEach([&emitter, &success](const Any& value) {
         if (value.IsPrimitive())
@@ -100,6 +100,7 @@ static bool SerializeEmitterSequentialContainerView(YAML::Emitter& emitter, Sequ
 static bool SerializeEmitterAssociativeContainerView(YAML::Emitter& emitter, AssociativeContainerView* view)
 {
     if (view == nullptr) return false;
+    if (view->GetSize() == 0) return true;
     bool success = false;
     view->ForEach([&emitter, &success](const Any& key, const Any& value) {
         emitter << YAML::Key;

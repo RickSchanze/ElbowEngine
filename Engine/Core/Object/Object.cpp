@@ -87,6 +87,11 @@ void Object::GenerateInstanceHandle()
     handle_ = ObjectManager::GetRegistry().NextInstanceHandle();
 }
 
+void Object::UnregisterSelf() const
+{
+    ObjectManager::GetRegistry().UnregisterHandle(GetHandle());
+}
+
 void Object::RegisterSelf()
 {
     ObjectManager::GetRegistry().RegisterObject(this);
@@ -132,6 +137,7 @@ AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoadAsync()
 ObjectHandle Object::PerformPersistentObjectLoad()
 {
     if (!IsPersistent()) return INVALID_OBJECT_HANDLE;
+    auto handle = GetHandle();
     auto* persistent = static_cast<PersistentObject*>(this);
     persistent->PerformLoad();
     return GetHandle();
@@ -141,7 +147,6 @@ void Object::PostSerialized() {}
 
 void Object::PostDeserialized()
 {
-    RegisterSelf();
     ResolveObjectPtr();
     PerformPersistentObjectLoad();
 }
@@ -154,6 +159,18 @@ void Object::OnCreated()
 
 void Object::InternalSetAssetHandle(ObjectHandle handle)
 {
+    // 此时自己的Object Handle 需要通知所有的ObjectPtr
+    auto       type   = GetType();
+    const auto fields = type->GetFields();
+    for (const auto& field: fields)
+    {
+        if (field->GetType() == TypeOf<ObjectPtrBase>())
+        {
+            auto ptr = static_cast<ObjectPtrBase*>(field->GetFieldPtr(this));
+            ptr->ModifyOuter(handle);
+        }
+    }
+    UnregisterSelf();
     handle_ = handle;
     RegisterSelf();
 }

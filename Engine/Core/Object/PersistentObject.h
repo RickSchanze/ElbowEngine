@@ -5,10 +5,13 @@
 #pragma once
 #include "Object.h"
 
+#include GEN_HEADER("Core.PersistentObject.generated.h")
+
 namespace core
 {
-class PersistentObject : public Object
+class CLASS() PersistentObject : public Object
 {
+    GENERATED_CLASS(PersistentObject)
 public:
     PersistentObject() : Object(OFT_Persistent) {}
 

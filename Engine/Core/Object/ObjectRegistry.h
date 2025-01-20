@@ -5,13 +5,15 @@
 #pragma once
 
 #include "Core/Base/FlatMap.h"
-#include "Core/Reflection/MetaInfoMacro.h"
 #include "Core/Object/Object.h"
+#include "Core/Reflection/MetaInfoMacro.h"
 
 #include GEN_HEADER("Core.ObjectRegistry.generated.h")
+#include "Core/Profiler/ProfileMacro.h"
 
 namespace core
 {
+// TODO: 多线程安全
 class CLASS() ObjectRegistry
 {
     GENERATED_CLASS(ObjectRegistry)
@@ -28,6 +30,9 @@ public:
     void RemoveAllObjectLayered();
 
     void RegisterObject(Object* object);
+    void UnregisterHandle(ObjectHandle handle);
+
+    void Save();
 
 private:
     // 所有的Object
@@ -35,10 +40,10 @@ private:
 
     // 下一个可用的持久化对象的handle
     PROPERTY()
-    int32_t next_handle_persistent_ = 1;
+    Int32 next_handle_persistent_ = 1;
 
     // 下一个可用的临时对象的handle
-    int32_t next_handle_instanced_ = -1;
+    Int32 next_handle_instanced_ = -1;
 
     // 可用的, 由于删除造成的handle(persistent only)
     PROPERTY()

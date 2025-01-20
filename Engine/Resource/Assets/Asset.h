@@ -3,20 +3,22 @@
 //
 
 #pragma once
-#include "Core/Event/Event.h"
+
 #include "Core/Object/PersistentObject.h"
 #include "Resource/AssetType.h"
+
+#include GEN_HEADER("Resource.Asset.generated.h")
 
 namespace resource
 {
 
-class Asset : public core::PersistentObject
+class CLASS() Asset : public core::PersistentObject
 {
+    GENERATED_CLASS(Asset)
 public:
-    virtual AssetType GetAssetType() const = 0;
+    virtual AssetType GetAssetType() const { return AssetType::Count; }
 
     void PerformLoad() override;
     void PerformUnload() override;
-
 };
 }   // namespace resource

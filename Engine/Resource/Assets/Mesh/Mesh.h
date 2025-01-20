@@ -7,6 +7,8 @@
 #include "Platform/Config/PlatformConfig.h"
 #include "Resource/Assets/Asset.h"
 
+#include GEN_HEADER("Resource.Mesh.generated.h")
+
 namespace resource
 {
 
@@ -20,8 +22,9 @@ struct MeshStorage
     [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
-class Mesh : public Asset
+class CLASS() Mesh : public Asset
 {
+    GENERATED_CLASS(Mesh)
 public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 

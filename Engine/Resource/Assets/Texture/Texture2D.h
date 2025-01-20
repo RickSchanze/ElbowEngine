@@ -5,6 +5,8 @@
 #pragma once
 #include "Resource/Assets/Asset.h"
 
+#include GEN_HEADER("Resource.Texture2D.generated.h")
+
 namespace platform::rhi
 {
 class ImageView;
@@ -15,8 +17,9 @@ class Image;
 }
 namespace resource
 {
-class Texture2D : public Asset
+class CLASS() Texture2D : public Asset
 {
+    GENERATED_CLASS(Texture2D)
 public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Texture2D; }
 

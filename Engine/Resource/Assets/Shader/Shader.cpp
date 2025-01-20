@@ -16,6 +16,10 @@
 #include "ShaderMeta.h"
 #include "SlangShaderLoader.h"
 
+#include GEN_HEADER("Resource.Shader.generated.h")
+
+GENERATED_SOURCE()
+
 using namespace resource;
 using namespace platform::rhi;
 using namespace platform;

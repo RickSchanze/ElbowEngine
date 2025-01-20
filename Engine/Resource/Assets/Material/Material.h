@@ -40,6 +40,7 @@ class CLASS() Material : public Asset
 {
     GENERATED_CLASS(Material)
 
+
 public:
     void PerformLoad() override;
     void PerformUnload() override;

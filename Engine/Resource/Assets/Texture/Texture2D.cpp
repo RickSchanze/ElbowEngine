@@ -16,6 +16,10 @@
 #include "Platform/RHI/ImageView.h"
 #include "stb_image.h"
 
+#include GEN_HEADER("Resource.Texture2D.generated.h")
+
+GENERATED_SOURCE()
+
 using namespace core;
 using namespace resource;
 using namespace platform;

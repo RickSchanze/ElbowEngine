@@ -261,32 +261,33 @@ Array<SharedAny> SQLTable::Query(const Type* type, StringView where)
     while (query.executeStep())
     {
         SharedAny result(type);
+        Any temp = result.AsAny();
         for (int i = 0; i < fields.size(); ++i)
         {
             auto& field = fields[i];
             if (field->GetType()->IsNumericInteger())
             {
                 const int64_t value = query.getColumn(i).getInt64();
-                field->SetValue(result.AsAny(), value);
+                field->SetValue(temp, value);
                 continue;
             }
             if (field->GetType()->IsNumericFloat())
             {
                 const double value = query.getColumn(i).getDouble();
-                field->SetValue(result.AsAny(), value);
+                field->SetValue(temp, value);
                 continue;
             }
             if (field->GetType()->IsBoolean())
             {
                 const int64_t value = query.getColumn(i).getInt64();
                 bool v = value != 0;
-                field->SetValue(result.AsAny(), v);
+                field->SetValue(temp, v);
                 continue;
             }
             if (field->GetType()->IsString())
             {
                 const String value = query.getColumn(i).getString();
-                field->SetValue(result.AsAny(), value);
+                field->SetValue(temp, value);
                 continue;
             }
             throw SQLException("查询类型错误");

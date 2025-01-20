@@ -6,10 +6,19 @@
  */
 
 #pragma once
+#include "Assets/Asset.h"
 #include "Core/Base/Base.h"
 #include "Core/Singleton/MManager.h"
 #include "SQLHelper.h"
 
+namespace core
+{
+class PersistentObject;
+}
+namespace resource
+{
+class Material;
+}
 namespace SQLite
 {
 class Database;
@@ -53,7 +62,6 @@ public:
     }
 
     static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
-    static core::exec::AsyncResultHandle<core::ObjectHandle> LoadOrImport(core::StringView path);
 
     template <typename T>
     static core::Optional<T> QueryMeta(core::ObjectHandle handle);
@@ -64,7 +72,13 @@ public:
     template <typename T>
     static void InsertMeta(const T& meta);
 
-    static void Save();
+    /**
+     * 创建一个资产并保存
+     * 此函数不会进行重复性校验 注意！！！
+     * @param asset
+     * @param path
+     */
+    static void CreateAsset(Asset* asset, core::StringView path);
 
 protected:
     void CreateAssetTables();

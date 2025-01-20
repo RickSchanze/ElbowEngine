@@ -7,6 +7,7 @@
 
 #include "AssetDataBase.h"
 
+#include "Assets/Material/Material.h"
 #include "Assets/Material/MaterialMeta.h"
 #include "Assets/Mesh/Mesh.h"
 #include "Assets/Mesh/MeshMeta.h"
@@ -15,6 +16,7 @@
 #include "Assets/Texture/Texture2D.h"
 #include "Assets/Texture/Texture2DMeta.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Core/Serialization/YamlArchive.h"
 #include "Logcat.h"
 #include "Platform/FileSystem/Folder.h"
 #include "Platform/FileSystem/Path.h"
@@ -163,9 +165,32 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path)
         tables_[type]          = std::move(resource::SQLHelper::CreateTable(*db_, type)); \
     }
 
-void AssetDataBase::Save()
+void AssetDataBase::CreateAsset(Asset* asset, StringView path)
 {
-
+    const Type* type = asset->GetType();
+    if (type == TypeOf<Texture2D>() || type == TypeOf<Mesh>() || type == TypeOf<Shader>())
+    {
+        LOGGER.Error(logcat::Resource, "{}只支持导入而不支持创建.", type->GetName());
+        return;
+    }
+    if (type == TypeOf<Material>())
+    {
+        auto handle = ObjectManager::GetRegistry().NextPersistentHandle();
+        asset->InternalSetAssetHandle(handle);
+        YamlArchive archive;
+        String      serialized_str;
+        Material&   material = *static_cast<Material*>(asset);
+        if (!archive.Serialize(material, serialized_str))
+        {
+            LOGGER.Error(logcat::Resource, "无法序列化Material.");
+            return;
+        }
+        platform::File::WriteAllText(path, serialized_str);
+        MaterialMeta meta;
+        meta.object_handle = handle;
+        meta.path          = path;
+        InsertMeta(meta);
+    }
 }
 
 void AssetDataBase::CreateAssetTables()

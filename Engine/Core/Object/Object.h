@@ -94,6 +94,10 @@ private:
     void RemoveReferenced(ObjectHandle handle);
 
     void GenerateInstanceHandle();
+    /**
+     * 只是从ObjectArray中移除自身而不销毁
+     */
+    void UnregisterSelf()const;
     void RegisterSelf();
     void ResolveObjectPtr();
 

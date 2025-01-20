@@ -36,9 +36,18 @@ public:
     /**
      * 设置object_
      * 如果此时outer_为空, 那么可能是局部变量, 此时不调整引用关系
+     * 此函数应该永远只调用一次
      * @param handle
      */
     void SetObject(const ObjectHandle handle);
+
+#if WITH_EDITOR
+    /**
+     * 将Outer从原来的变成现在的 同时修正引用关系
+     * @param handle
+     */
+    void ModifyOuter(ObjectHandle handle);
+#endif
 
     ObjectHandle GetOuter() const { return outer_; }
     ObjectHandle GetHandle() const { return object_; }

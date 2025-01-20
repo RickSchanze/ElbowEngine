@@ -98,6 +98,23 @@ void core::ObjectRegistry::RegisterObject(Object* object)
     objects_[object->GetHandle()] = object;
 }
 
+void core::ObjectRegistry::UnregisterHandle(ObjectHandle handle)
+{
+    if (handle == INVALID_OBJECT_HANDLE) return;
+    if (!objects_.contains(handle)) return;
+    objects_.erase(handle);
+}
+
+void core::ObjectRegistry::Save()
+{
+#if WITH_EDITOR
+    YamlArchive     archive;
+    String          serialized_str;
+    archive.Serialize(*this, serialized_str);
+    Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
+#endif
+}
+
 void core::ObjectManager::Startup()
 {
     if (auto text = Event_OnRequireReadFileText.Invoke(REGISTRY_PATH))
@@ -125,10 +142,7 @@ void core::ObjectManager::Shutdown()
 #if WITH_EDITOR
 void core::ObjectManager::SaveObjectRegistry()
 {
-    YamlArchive archive;
-    String      serialized_str;
-    archive.Serialize(GetRegistry(), serialized_str);
-    Event_OnWriteFileText.Invoke(REGISTRY_PATH, serialized_str);
+    GetRegistry().Save();
 }
 #endif
 

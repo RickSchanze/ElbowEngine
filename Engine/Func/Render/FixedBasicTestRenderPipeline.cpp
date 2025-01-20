@@ -88,6 +88,7 @@ void func::FixedBasicTestRenderPipeline::Build()
         material->SetName("Test");
         material->SetShader(shader);
         depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
+        AssetDataBase::CreateAsset(material, "Assets/Material/Test.mat");
     }
     mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
 }

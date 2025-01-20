@@ -16,7 +16,6 @@ core::ObjectPtrBase::~ObjectPtrBase()
 
 void core::ObjectPtrBase::SetOuter(const ObjectHandle outer)
 {
-    // 调整引用
     if (outer == INVALID_OBJECT_HANDLE) return;
     outer_ = outer;
     // object_ 可能有序列化修改而不是INVALID
@@ -89,5 +88,21 @@ void core::ObjectPtrBase::SetObject(const ObjectHandle handle)
     else
     {
         object_ = handle;
+    }
+}
+
+void core::ObjectPtrBase::ModifyOuter(ObjectHandle handle)
+{
+    if (handle == INVALID_OBJECT_HANDLE) return;
+    if (outer_ == handle) return;
+    Object* outer_obj = ObjectManager::GetObjectByHandle(outer_);
+    Object* obj       = ObjectManager::GetObjectByHandle(object_);
+    if (outer_obj && obj)
+    {
+        outer_obj->RemoveReferencing(object_);
+        obj->RemoveReferenced(outer_);
+        outer_ = handle;
+        outer_obj->AddReferencing(object_);
+        obj->AddReferenced(outer_);
     }
 }

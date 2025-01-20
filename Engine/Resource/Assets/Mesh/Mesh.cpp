@@ -16,6 +16,10 @@
 #include "Resource/AssetDataBase.h"
 #include "Resource/Logcat.h"
 
+#include GEN_HEADER("Resource.Mesh.generated.h")
+
+GENERATED_SOURCE()
+
 using namespace platform;
 using namespace rhi;
 using namespace resource;

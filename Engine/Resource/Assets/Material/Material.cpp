@@ -14,6 +14,7 @@
 #include "Platform/RHI/Image.h"
 
 #include GEN_HEADER("Resource.Material.generated.h")
+
 GENERATED_SOURCE()
 
 using namespace resource;
@@ -100,37 +101,6 @@ static UInt64 RearrangeShaderParams(
 
 void Material::PerformLoad()
 {
-    YamlArchive archive;
-    auto        op_meta = AssetDataBase::QueryMeta<MaterialMeta>(GetHandle());
-    if (!op_meta)
-    {
-        LOGGER.Error(logcat::Resource, "加载失败: handle为{}的Shader不在资产数据库", GetHandle());
-        return;
-    }
-    auto&      meta     = *op_meta;
-    StringView mat_path = meta.path;
-    if (!Path::IsExist(mat_path))
-    {
-        LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Shader文件不存在", mat_path);
-        return;
-    }
-    if (!mat_path.EndsWith(".mat"))
-    {
-        LOGGER.Error(logcat::Resource, "加载失败: Shader必须以.mat: {}", mat_path);
-        return;
-    }
-    auto op_content = File::ReadAllText(mat_path);
-    if (!op_content)
-    {
-        LOGGER.Error(logcat::Resource, "加载失败: 无法读取路径为{}的Shader文件", mat_path);
-        return;
-    }
-    auto& content = *op_content;
-    if (!archive.Deserialize(*content, this, GetType()))
-    {
-        LOGGER.Error(logcat::Resource, "加载失败: 无法反序列化路径为{}的Shader文件", mat_path);
-        return;
-    }
     Build();
 }
 

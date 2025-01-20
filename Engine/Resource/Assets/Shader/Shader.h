@@ -11,6 +11,8 @@
 #include "Platform/RHI/Pipeline.h"
 #include "slang-com-ptr.h"
 
+#include GEN_HEADER("Resource.Shader.generated.h")
+
 namespace resource
 {
 
@@ -53,8 +55,9 @@ struct ShaderParam
  * 一个slang可以通过[shader]语法声明多个shader
  * 不能有相同的stage
  */
-class Shader : public Asset
+class CLASS() Shader : public Asset
 {
+    GENERATED_CLASS(Shader)
 public:
     constexpr static auto SHADER_STAGE_COUNT = 3;
     constexpr static auto VERTEX_STAGE_IDX   = 0;
