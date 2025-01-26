@@ -1,80 +1,57 @@
 {
-  "name": "elbowengine",
-  "version-string": "1.0.0",
-  "builtin-baseline": "37c3e63a1306562f7f59c4c3c8892ddd50fdf992",
-  "dependencies": [
-    {
-      "name": "spdlog",
-      "version>=": "1.13.0"
-    },
-    {
-      "name": "yaml-cpp",
-      "version>=": "0.8.0#1"
-    },
-    {
-      "name": "cpptrace",
-      "version>=": "0.4.0"
-    },
-    {
-      "name": "glfw3",
-      "version>=": "3.3.9"
-    },
-    {
-      "name": "stb",
-      "version>=": "2023-04-11#1"
-    },
-    {
-      "name": "glm",
-      "version>=": "1.0.0#1"
-    },
-    {
-      "name": "imgui",
-      "version>=": "1.90.2",
-      "features": [
-        "docking-experimental",
-        "glfw-binding",
-        "vulkan-binding"
-      ]
-    },
-    {
-      "name": "assimp",
-      "version>=": "5.3.1#4"
-    },
-    {
-      "name": "tinyexr",
-      "version>=": "1.0.8"
-    },
-    {
-      "name": "nlohmann-json",
-      "version>=": "3.11.3"
-    },
-    {
-      "name": "icu",
-      "version>=": "74.2#4"
-    },
-    {
-      "name": "gtest",
-      "version>=": "1.15.2"
-    },
-    {
-      "name": "xxhash",
-      "version>=": "0.8.2"
-    },
-    {
-      "name": "tl-expected",
-      "version>=": "1.1.0"
-    },
-    {
-      "name": "range-v3",
-      "version>=": "0.12.0#3"
-    },
-    {
-      "name": "sqlitecpp",
-      "version>=": "3.3.2"
-    },
-    {
-      "name": "shader-slang",
-      "version>=": "2024.15"
-    }
-  ]
+  "name" : "elbowengine",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "37c3e63a1306562f7f59c4c3c8892ddd50fdf992",
+  "dependencies" : [ {
+    "name" : "spdlog",
+    "version>=" : "1.13.0"
+  }, {
+    "name" : "yaml-cpp",
+    "version>=" : "0.8.0#1"
+  }, {
+    "name" : "cpptrace",
+    "version>=" : "0.4.0"
+  }, {
+    "name" : "glfw3",
+    "version>=" : "3.3.9"
+  }, {
+    "name" : "stb",
+    "version>=" : "2023-04-11#1"
+  }, {
+    "name" : "glm",
+    "version>=" : "1.0.0#1"
+  }, {
+    "name" : "assimp",
+    "version>=" : "5.3.1#4"
+  }, {
+    "name" : "tinyexr",
+    "version>=" : "1.0.8"
+  }, {
+    "name" : "nlohmann-json",
+    "version>=" : "3.11.3"
+  }, {
+    "name" : "icu",
+    "version>=" : "74.2#4"
+  }, {
+    "name" : "gtest",
+    "version>=" : "1.15.2"
+  }, {
+    "name" : "xxhash",
+    "version>=" : "0.8.2"
+  }, {
+    "name" : "tl-expected",
+    "version>=" : "1.1.0"
+  }, {
+    "name" : "range-v3",
+    "version>=" : "0.12.0#3"
+  }, {
+    "name" : "sqlitecpp",
+    "version>=" : "3.3.2"
+  }, {
+    "name" : "shader-slang",
+    "version>=" : "2024.15"
+  }, {
+    "name" : "mimalloc",
+    "version>=" : "2.1.7#1"
+  } ]
 }

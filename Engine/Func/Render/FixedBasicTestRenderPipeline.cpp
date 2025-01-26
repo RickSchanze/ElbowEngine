@@ -20,91 +20,68 @@
 using namespace resource;
 using namespace core;
 using namespace platform::rhi;
+using namespace exec;
 
-void func::FixedBasicTestRenderPipeline::Render(CommandBuffer& cmd, const RenderParams& params)
-{
-    PROFILE_SCOPE_AUTO;
-    auto view  = GetBackBufferView(params.current_image_index);
-    auto image = GetBackBuffer(params.current_image_index);
-    cmd.Begin();
+void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
+  PROFILE_SCOPE_AUTO;
+  auto view = GetBackBufferView(params.current_image_index);
+  auto image = GetBackBuffer(params.current_image_index);
+  cmd.Begin();
 
-    auto   w = platform::GetWindowManager().GetMainWindow();
-    Rect2D rect{};
-    rect.size = {w->GetWidth(), w->GetHeight()};
-    cmd.Enqueue<Cmd_SetScissor>(rect);
-    cmd.Enqueue<Cmd_SetViewport>(rect);
-    cmd.Execute("WindowResize");
+  auto w = platform::GetWindowManager().GetMainWindow();
+  Rect2D rect{};
+  rect.size = {w->GetWidth(), w->GetHeight()};
+  cmd.Enqueue<Cmd_SetScissor>(rect);
+  cmd.Enqueue<Cmd_SetViewport>(rect);
+  cmd.Execute("WindowResize");
 
-    ImageSubresourceRange range{};
-    range.aspect_mask      = IA_Color;
-    range.base_array_layer = 0;
-    range.base_mip_level   = 0;
-    range.layer_count      = 1;
-    range.level_count      = 1;
-    cmd.Enqueue<Cmd_ImagePipelineBarrier>(
-        ImageLayout::Undefined,
-        ImageLayout::ColorAttachment,
-        image,
-        range,
-        0,
-        AFB_ColorAttachmentWrite,
-        PSFB_ColorAttachmentOutput,
-        PSFB_ColorAttachmentOutput
-    );
-    RenderAttachment attachment{};
-    attachment.clear_color                    = Color::DefaultClear();
-    attachment.target                         = view;
-    attachment.layout                         = ImageLayout::ColorAttachment;
-    PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
-    attachments.push_back(attachment);
-    RenderAttachment depth_attachment{};
-    depth_attachment.clear_color.r = 1.0f;
-    depth_attachment.layout        = ImageLayout::DepthStencilAttachment;
-    depth_attachment.target        = depth_target_->GetImageView();
-    cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
-    BindMaterial(cmd, material);
-    BindAndDrawMesh(cmd, mesh_);
-    cmd.Enqueue<Cmd_EndRender>();
-    cmd.Enqueue<Cmd_ImagePipelineBarrier>(
-        ImageLayout::ColorAttachment,
-        ImageLayout::PresentSrc,
-        image,
-        range,
-        AFB_ColorAttachmentWrite,
-        0,
-        PSFB_ColorAttachmentOutput,
-        PSFB_BottomOfPipe
-    );
-    cmd.Execute("Draw Cube Mesh");
-    cmd.End();
+  ImageSubresourceRange range{};
+  range.aspect_mask = IA_Color;
+  range.base_array_layer = 0;
+  range.base_mip_level = 0;
+  range.layer_count = 1;
+  range.level_count = 1;
+  cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0,
+                                        AFB_ColorAttachmentWrite, PSFB_ColorAttachmentOutput,
+                                        PSFB_ColorAttachmentOutput);
+  RenderAttachment attachment{};
+  attachment.clear_color = Color::DefaultClear();
+  attachment.target = view;
+  attachment.layout = ImageLayout::ColorAttachment;
+  PooledArray<RenderAttachment> attachments = MakePooledArray<RenderAttachment>(MEMORY_POOL_ID_CMD);
+  attachments.push_back(attachment);
+  RenderAttachment depth_attachment{};
+  depth_attachment.clear_color.r = 1.0f;
+  depth_attachment.layout = ImageLayout::DepthStencilAttachment;
+  depth_attachment.target = depth_target_->GetImageView();
+  cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
+  BindMaterial(cmd, material);
+  BindAndDrawMesh(cmd, mesh_);
+  cmd.Enqueue<Cmd_EndRender>();
+  cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range,
+                                        AFB_ColorAttachmentWrite, 0, PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
+  cmd.Execute("Draw Cube Mesh");
+  cmd.End();
 }
 
-void func::FixedBasicTestRenderPipeline::Build()
-{
-    const auto shader = AssetDataBase::Load<Shader>("Assets/Shader/SimpleSampledShader.slang");
-    if (shader)
-    {
-        material = NewObject<Material>();
-        material->SetName("Test");
-        material->SetShader(shader);
-        depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
-        AssetDataBase::CreateAsset(material, "Assets/Material/Test.mat");
-    }
-    mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
+void func::FixedBasicTestRenderPipeline::Build() {
+  const auto shader = AssetDataBase::Load<Shader>("Assets/Shader/SimpleSampledShader.slang");
+  if (shader) {
+    material = NewObject<Material>();
+    material->SetName("Test");
+    material->SetShader(shader);
+    depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
+    AssetDataBase::CreateAsset(material, "Assets/Material/Test.mat");
+  }
+  mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
 }
 
-void func::FixedBasicTestRenderPipeline::Clean()
-{
-    depth_target_ = nullptr;
-}
+void func::FixedBasicTestRenderPipeline::Clean() { depth_target_ = nullptr; }
 
-bool func::FixedBasicTestRenderPipeline::IsReady() const
-{
-    return material != nullptr && depth_target_ != nullptr;
-}
+bool func::FixedBasicTestRenderPipeline::IsReady() const { return material != nullptr && depth_target_ != nullptr; }
 
-void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window* window, Int32 width, Int32 height)
-{
-    if (width == 0 || height == 0) return;
-    depth_target_->Resize(width, height);
+void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window *window, Int32 width, Int32 height) {
+  if (width == 0 || height == 0)
+    return;
+  depth_target_->Resize(width, height);
 }

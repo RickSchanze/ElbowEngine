@@ -9,64 +9,80 @@
 #include "Core/Reflection/MetaInfoMacro.h"
 
 #include GEN_HEADER("Core.ObjectRegistry.generated.h")
-#include "Core/Profiler/ProfileMacro.h"
+#include "Core/Async/Execution/Then.h"
+#include "Core/Async/ThreadManager.h"
 
-namespace core
-{
+namespace core {
+class ThreadCluster;
+}
+core::ThreadScheduler& _GetScheduler();
+
+namespace core {
 // TODO: 多线程安全
-class CLASS() ObjectRegistry
-{
-    GENERATED_CLASS(ObjectRegistry)
+class CLASS() ObjectRegistry {
+  GENERATED_CLASS(ObjectRegistry)
 public:
-    ObjectHandle NextInstanceHandle();
-    ObjectHandle NextPersistentHandle();
+  ObjectHandle NextInstanceHandle();
 
-    Object* GetObjectByHandle(ObjectHandle handle);
+  exec::AsyncResultHandle<ObjectHandle> NextPersistentHandle();
 
-    void RemoveObject(Object* object);
+  Object *GetObjectByHandle(ObjectHandle handle);
 
-    void RemoveAllObjects();
+  void RemoveObject(Object *object);
 
-    void RemoveAllObjectLayered();
+  void RemoveAllObjects();
 
-    void RegisterObject(Object* object);
-    void UnregisterHandle(ObjectHandle handle);
+  void RemoveAllObjectLayered();
 
-    void Save();
+  void RegisterObject(Object *object);
+  void UnregisterHandle(ObjectHandle handle);
+
+  void Save();
+
+  template <typename T, typename... Args>
+    requires std::derived_from<T, Object>
+  exec::AsyncResultHandle<T *> CreateNewObject(Args &&...args) {
+
+    if (ThreadUtils::IsCurrentMainThread()) {
+      return exec::MakeAsyncResult(NewObject<T>(Forward<Args>(args)...));
+    }
+    auto &scheduler = _GetScheduler();
+    return exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Game) |
+                            exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }));
+  }
 
 private:
-    // 所有的Object
-    FlatMap<ObjectHandle, Object*> objects_;
+  // 所有的Object
+  FlatMap<ObjectHandle, Object *> objects_;
 
-    // 下一个可用的持久化对象的handle
-    PROPERTY()
-    Int32 next_handle_persistent_ = 1;
+  // 下一个可用的持久化对象的handle
+  PROPERTY()
+  Int32 next_handle_persistent_ = 1;
 
-    // 下一个可用的临时对象的handle
-    Int32 next_handle_instanced_ = -1;
+  // 下一个可用的临时对象的handle
+  Int32 next_handle_instanced_ = -1;
 
-    // 可用的, 由于删除造成的handle(persistent only)
-    PROPERTY()
-    Array<ObjectHandle> free_handles_;
+  // 可用的, 由于删除造成的handle(persistent only)
+  PROPERTY()
+  Array<ObjectHandle> free_handles_;
 };
 
-class ObjectManager : public Manager<ObjectManager>
-{
+class ObjectManager : public Manager<ObjectManager> {
 private:
-    ObjectRegistry registry_;
+  ObjectRegistry registry_;
 
 public:
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L8; }
-    [[nodiscard]] StringView   GetName() const override { return "ObjectManager"; }
+  [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L8; }
+  [[nodiscard]] StringView GetName() const override { return "ObjectManager"; }
 
-    void Startup() override;
-    void Shutdown() override;
+  void Startup() override;
+  void Shutdown() override;
 
 #if WITH_EDITOR
-    static void SaveObjectRegistry();
+  static void SaveObjectRegistry();
 #endif
 
-    static ObjectRegistry& GetRegistry();
-    static Object*         GetObjectByHandle(ObjectHandle handle);
+  static ObjectRegistry &GetRegistry();
+  static Object *GetObjectByHandle(ObjectHandle handle);
 };
 }   // namespace core

@@ -5,10 +5,10 @@
 #pragma once
 #include "Core/Reflection/MetaInfoManager.h"
 #include "Object.h"
-#include "ObjectRegistry.h"
 
 #include GEN_HEADER("Core.ObjectPtr.generated.h")
 
+core::Object* _ObjectManagerGetObjectByHandle(core::ObjectHandle handle);
 
 namespace core
 {
@@ -85,13 +85,13 @@ public:
 
     operator T*()
     {
-        Object* obj = ObjectManager::GetObjectByHandle(object_);
+        Object* obj = _ObjectManagerGetObjectByHandle(object_);
         return reinterpret_cast<T*>(obj);
     }
 
     operator T*() const
     {
-        Object* obj = ObjectManager::GetObjectByHandle(object_);
+        Object* obj = _ObjectManagerGetObjectByHandle(object_);
         return reinterpret_cast<T*>(obj);
     }
 

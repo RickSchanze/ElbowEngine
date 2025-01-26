@@ -40,6 +40,6 @@ public:
 
     ~ThreadCluster();
 
-    void AddTask(SharedPtr<ITask> task);
+    void AddTask(const SharedPtr<ITask> &task);
 };
 }   // namespace core

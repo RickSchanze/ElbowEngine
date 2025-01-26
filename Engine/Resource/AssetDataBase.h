@@ -7,7 +7,6 @@
 
 #pragma once
 #include "Assets/Asset.h"
-#include "Core/Base/Base.h"
 #include "Core/Singleton/MManager.h"
 #include "SQLHelper.h"
 
