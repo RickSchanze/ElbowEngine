@@ -17,19 +17,21 @@
 #endif
 #define GLFW_INCLUDE_VULKAN
 #include "Core/Base/Base.h"
+#include "Core/Base/Ranges.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Surface.h"
-#include "vulkan/vulkan.h"
 #include "WindowManager.h"
+#include "vulkan/vulkan.h"
 
 #include <range/v3/all.hpp>
 
-using namespace ranges::views;
-using namespace ranges;
 using namespace platform;
+using namespace core::range;
+using namespace view;
+using namespace action;
 
 static bool glfw_callback_registered = false;
 
@@ -56,7 +58,7 @@ static core::Array<core::String> GLFWGetVulkanExtensions(const core::Array<core:
     {
         result[i] = glfw_extensions[i];
     }
-    return concat(result, extensions) | to_vector | actions::unique;
+    return Concat(result, extensions) | ToArray | Unique;
 }
 
 Window_GLFW::Window_GLFW(core::StringView title, int width, int height, int flags) : Window(title, width, height, flags)

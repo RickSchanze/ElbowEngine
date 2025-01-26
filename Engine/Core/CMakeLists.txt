@@ -114,6 +114,8 @@ add_library(${PROJECT_NAME}
         Memory/MemoryManager.h
         Memory/FrameAllocator.cpp
         Memory/FrameAllocator.h
+        Base/Ranges.cpp
+        Base/Ranges.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
@@ -145,3 +147,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected)
 
 find_package(range-v3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE range-v3::meta range-v3::concepts range-v3::range-v3)
+
+find_package(mimalloc CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)

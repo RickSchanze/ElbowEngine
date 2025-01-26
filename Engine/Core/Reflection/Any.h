@@ -12,6 +12,7 @@
 #include "Core/Base/Optional.h"
 #include "Core/CoreGlobal.h"
 #include "MetaInfoManager.h"
+#include "Core/Base/TypeTraits.h"
 
 namespace core
 {

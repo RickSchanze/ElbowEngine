@@ -12,13 +12,14 @@
 #include "Core/Async/Execution/StartAsync.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Base/EString.h"
+#include "Core/Base/Ranges.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "DescriptorSet_Vulkan.h"
 #include "Enums_Vulkan.h"
-#include "Image_Vulkan.h"
 #include "ImageView_Vulkan.h"
+#include "Image_Vulkan.h"
 #include "LowShader_Vulkan.h"
 #include "Pipeline_Vulkan.h"
 #include "Platform/Config/PlatformConfig.h"
@@ -26,8 +27,8 @@
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Surface.h"
 #include "Platform/Window/WindowManager.h"
-#include "range/v3/all.hpp"
 #include "SyncPrimitives_Vulkan.h"
+#include "range/v3/all.hpp"
 
 static core::Array<VkLayerProperties> available_layers;
 static core::Array<VkPhysicalDevice>  physical_devices;
@@ -36,6 +37,8 @@ static core::Array<core::String>      required_instance_extensions;
 using namespace ranges::views;
 using namespace core::exec;
 using namespace core;
+using namespace range;
+using namespace view;
 
 static core::Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance)
 {
@@ -112,10 +115,10 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
         core::Array<VkSurfaceFormatKHR> formats(format_count);
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, formats.data());
         info.formats =
-            formats | transform([](const VkSurfaceFormatKHR& format) {
+            formats | Transform([](const VkSurfaceFormatKHR& format) {
                 return SurfaceFormat{.format = VkFormatToRHIFormat(format.format), .color_space = VkColorSpaceToRHIColorSpace(format.colorSpace)};
             }) |
-            ranges::to_vector;
+            ToArray;
     }
 
     uint32_t present_mode_count;
@@ -124,7 +127,7 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
     {
         core::Array<VkPresentModeKHR> present_modes(present_mode_count);
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, present_modes.data());
-        info.present_modes = present_modes | transform([](VkPresentModeKHR mode) { return VkPresentModeToRHIPresentMode(mode); }) | ranges::to_vector;
+        info.present_modes = present_modes | Transform([](VkPresentModeKHR mode) { return VkPresentModeToRHIPresentMode(mode); }) | ToArray;
     }
     return info;
 }
@@ -448,7 +451,7 @@ SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc& des
 
 Format GfxContext_Vulkan::FindSupportedFormat(const core::Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
-    for (const core::Array<VkFormat> fmts = candidates | transform([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | ranges::to_vector;
+    for (const core::Array<VkFormat> fmts = candidates | Transform([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | ToArray;
          const auto                  fmt: fmts)
     {
         VkFormatProperties props;
@@ -498,19 +501,19 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         LOGGER.Critical(logcat::Platform_RHI_Vulkan, "创建交换链获取失败");
     }
     vulkan_ctx->swapchain_images_ =   //
-        vk_imgs | enumerate | transform([vulkan_ctx](const auto& pair) {
+        vk_imgs | Enumerate | Transform([vulkan_ctx](const auto& pair) {
             auto& desc             = vulkan_ctx->swapchain_image_desc_;
             const auto& [idx, img] = pair;
             return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
         }) |
-        ranges::to_vector;
+        ToArray;
     vulkan_ctx->swapchain_image_views_ =   //
-        vulkan_ctx->swapchain_images_ | enumerate | transform([](const auto& pair) {
+        vulkan_ctx->swapchain_images_ | Enumerate | Transform([](const auto& pair) {
             const auto& [idx, img] = pair;
             ImageViewDesc desc(img);
             return New<ImageView_Vulkan>(desc);
         }) |
-        ranges::to_vector;
+        ToArray;
 
     Event_GfxContextPostInitialized.RemoveBind(vulkan_ctx->post_vulkan_gfx_context_init_);
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
@@ -710,7 +713,7 @@ static void CreateInstance(core::Ref<VkInstance> instance)
     instance_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_info.pApplicationInfo = &app_info;
     const auto required_extension_cstr =
-        required_instance_extensions | transform([](const core::String& str) { return str.Data(); }) | ranges::to_vector;
+        required_instance_extensions | Transform([](const core::String& str) { return str.Data(); }) | ToArray;
     instance_info.enabledExtensionCount   = required_extension_cstr.size();
     instance_info.ppEnabledExtensionNames = required_extension_cstr.data();
 
@@ -1012,19 +1015,19 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
         LOGGER.Critical(logcat::Platform_RHI_Vulkan, "创建交换链获取失败");
     }
     swapchain_images_ =   //
-        vk_imgs | enumerate | transform([this](const auto& pair) {
+        vk_imgs | Enumerate | Transform([this](const auto& pair) {
             auto& desc             = swapchain_image_desc_;
             const auto& [idx, img] = pair;
             return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
         }) |
-        ranges::to_vector;
+        ToArray;
     swapchain_image_views_ =   //
-        swapchain_images_ | enumerate | transform([](const auto& pair) {
+        swapchain_images_ | Enumerate | Transform([](const auto& pair) {
             const auto& [idx, img] = pair;
             ImageViewDesc desc{img};
             return New<ImageView_Vulkan>(desc);
         }) |
-        ranges::to_vector;
+        ToArray;
 }
 
 SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc)

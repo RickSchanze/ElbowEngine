@@ -3,6 +3,6 @@ Meta:
     Name: core.ObjectRegistry
     HashCode: 11928224780895813169
 Data:
-  next_handle_persistent_: 17
+  next_handle_persistent_: 20
   free_handles_:
     []
