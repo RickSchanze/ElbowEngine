@@ -15,7 +15,7 @@
 namespace core {
 class ThreadCluster;
 }
-core::ThreadScheduler& _GetScheduler();
+core::ThreadScheduler &_GetScheduler();
 
 namespace core {
 // TODO: 多线程安全
@@ -77,6 +77,8 @@ public:
 
   void Startup() override;
   void Shutdown() override;
+
+  static bool IsObjectExist(ObjectHandle handle) { return GetRegistry().GetObjectByHandle(handle) != nullptr; }
 
 #if WITH_EDITOR
   static void SaveObjectRegistry();

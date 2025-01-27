@@ -16,6 +16,7 @@ template <typename T> struct AsyncResult {
   std::atomic<bool> ready = false;
   std::exception_ptr exception{};
   Optional<T> data{};
+  Function<void(const T &)> on_completed{};
 
   void SetException(const std::exception_ptr &_exception) { exception = _exception; }
 
@@ -30,6 +31,9 @@ template <typename T> struct AsyncResult {
   void SetData(const T &_data) {
     data = _data;
     ready.store(true);
+    if (on_completed) {
+      on_completed(_data);
+    }
   }
 
   Optional<T> GetValue() {
@@ -43,6 +47,15 @@ template <typename T> struct AsyncResult {
   AsyncResult &Wait() {
     while (!IsDone()) {
       ThreadUtils::YieldThread();
+    }
+    return *this;
+  }
+
+  AsyncResult &OnCompleted(Function<void(const T &)> callback) {
+    if (IsDone()) {
+      callback(*GetValue());
+    } else {
+      on_completed = callback;
     }
     return *this;
   }

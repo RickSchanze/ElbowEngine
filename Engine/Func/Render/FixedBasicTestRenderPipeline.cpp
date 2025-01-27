@@ -4,6 +4,7 @@
 
 #include "FixedBasicTestRenderPipeline.h"
 
+#include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/Camera/CameraComponent.h"
 #include "Misc.h"
@@ -65,20 +66,14 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
 }
 
 void func::FixedBasicTestRenderPipeline::Build() {
-  const auto shader = AssetDataBase::Load<Shader>("Assets/Shader/SimpleSampledShader.slang");
-  if (shader) {
-    material = NewObject<Material>();
-    material->SetName("Test");
-    material->SetShader(shader);
-    depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
-    AssetDataBase::CreateAsset(material, "Assets/Material/Test.mat");
-  }
-  mesh_ = AssetDataBase::Load<Mesh>("Assets/Mesh/Cube.fbx");
+  auto a1 = AssetDataBase::LoadAsync("Assets/Material/Test.mat");
+  auto a2 = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
+  auto group = MakeSyncGroup(Move(a1), Move(a2));
 }
 
 void func::FixedBasicTestRenderPipeline::Clean() { depth_target_ = nullptr; }
 
-bool func::FixedBasicTestRenderPipeline::IsReady() const { return material != nullptr && depth_target_ != nullptr; }
+bool func::FixedBasicTestRenderPipeline::IsReady() const { return ready_; }
 
 void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window *window, Int32 width, Int32 height) {
   if (width == 0 || height == 0)

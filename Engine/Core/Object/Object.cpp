@@ -102,8 +102,7 @@ ObjectHandle Object::PerformPersistentObjectLoad() {
 void Object::PostSerialized() {}
 
 void Object::PostDeserialized() {
-  ResolveObjectPtr();
-  PerformPersistentObjectLoad();
+  RegisterSelf();
 }
 
 void Object::OnCreated() {

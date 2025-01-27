@@ -54,7 +54,7 @@ template <typename T, typename... Args> SharedPtr<T> MakeShared(Args &&...args) 
 #if ENABLE_PROFILING
   return std::allocate_shared<T>(MemoryTraceAllocator<T>(), std::forward<Args>(args)...);
 #else
-  return std::make_shared<T>(std::forward<Args>(args)...);
+  return std::allocate_shared<T>(mi_stl_allocator<T>(), std::forward<Args>(args)...);
 #endif
 }
 

@@ -116,6 +116,8 @@ add_library(${PROJECT_NAME}
         Memory/FrameAllocator.h
         Base/Ranges.cpp
         Base/Ranges.h
+        Async/Execution/SyncGroup.cpp
+        Async/Execution/SyncGroup.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

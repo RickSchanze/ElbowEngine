@@ -28,6 +28,7 @@
 using namespace resource;
 using namespace core;
 using namespace core::exec;
+using namespace platform;
 
 void AssetDataBase::Startup() {
   const auto &proj = Project::GetCurrentProject();
@@ -133,7 +134,63 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
   if (path.EndsWith(".png")) {
     return InternalLoadAsync<Texture2D, Texture2DMeta>(path);
   }
+  if (path.EndsWith(".mat")) {
+    // 查看资产数据库是否存在
+    auto meta_op = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", path));
+    if (meta_op) {
+      auto &meta = *meta_op;
+      ObjectHandle handle = meta.object_handle;
+      ObjectRegistry &registry = ObjectManager::GetRegistry();
+      Object *obj = registry.GetObjectByHandle(handle);
+      if (obj != nullptr) {
+        return MakeAsyncResult(handle);
+      } else {
+        auto [asset] = *ObjectManager::GetRegistry().CreateNewObject<Material>()->GetValue();
+        asset->InternalSetAssetHandle(handle);
+        YamlArchive archive;
+        auto content = File::ReadAllText(path);
+        if (content) {
+          if (archive.Deserialize(*content, asset, TypeOf<Material>())) {
+            return asset->PerformPersistentObjectLoadAsync();
+          }
+        }
+        return MakeAsyncResult(0);
+      }
+    }
+  }
   return NULL_ASYNC_RESULT_HANDLE;
+}
+
+template <typename T> static core::String QueryPath(core::ObjectHandle handle) {
+  if constexpr (std::is_same_v<T, Shader>) {
+    auto meta_op = AssetDataBase::QueryMeta<ShaderMeta>(handle);
+    if (!meta_op) {
+      LOGGER.Warn(logcat::Resource_Load, "资产{}未在资产数据库中找到.", handle);
+      return "";
+    }
+    auto &meta = *meta_op;
+    return meta.path;
+  }
+}
+
+AsyncResultHandle<Object *> AssetDataBase::LoadAsync(ObjectHandle handle, const core::Type *asset_type) {
+  if (asset_type == nullptr)
+    return MakeAsyncResult<Object *>(nullptr);
+  if (ObjectManager::IsObjectExist(handle)) {
+    return MakeAsyncResult(ObjectManager::GetObjectByHandle(handle));
+  }
+  core::String path;
+  if (asset_type == TypeOf<Shader>()) {
+    path = QueryPath<Shader>(handle);
+  }
+  if (path.IsEmpty())
+    return MakeAsyncResult<Object *>(nullptr);
+  auto op_handle = LoadAsync(path)->GetValue();
+  if (!op_handle) {
+    return MakeAsyncResult<Object *>(nullptr);
+  }
+  auto [obj] = *op_handle;
+  return MakeAsyncResult<Object *>(ObjectManager::GetObjectByHandle(obj));
 }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                                                 \
