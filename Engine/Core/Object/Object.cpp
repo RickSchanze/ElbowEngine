@@ -57,7 +57,9 @@ void Object::AddReferenced(ObjectHandle handle) { referenced_.push_back(handle);
 
 void Object::RemoveReferenced(ObjectHandle handle) { erase(referenced_, handle); }
 
-void Object::GenerateInstanceHandle() { handle_ = ObjectManager::GetRegistry().NextInstanceHandle(); }
+void Object::GenerateInstanceHandle() {
+  handle_ = ObjectManager::GetRegistry().NextInstanceHandle();
+}
 
 void Object::UnregisterSelf() const { ObjectManager::GetRegistry().UnregisterHandle(GetHandle()); }
 
@@ -122,5 +124,5 @@ void Object::InternalSetAssetHandle(ObjectHandle handle) {
   }
   UnregisterSelf();
   handle_ = handle;
-    RegisterSelf();
+  RegisterSelf();
 }

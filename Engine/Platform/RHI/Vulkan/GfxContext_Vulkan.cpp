@@ -233,8 +233,17 @@ void GfxContext_Vulkan::DestroyCommandPool_VK(VkCommandPool pool) const {
 
 void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo &alloc_info,
                                                 VkCommandBuffer *command_buffers) const {
-  const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
-  VERIFY_VULKAN_RESULT(result);
+  auto *cfg = core::GetConfig<PlatformConfig>();
+  if (cfg->GetEnableMultithreadRender()) {
+    auto scheduler = core::ThreadManager::GetScheduler();
+    auto task = Schedule(scheduler, core::ThreadSlot::Render) | Then([alloc_info, command_buffers, this] {
+                  vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
+                });
+    StartAsync(task)->Wait();
+  } else {
+    const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
+    VERIFY_VULKAN_RESULT(result);
+  }
 }
 
 core::UniquePtr<Fence> GfxContext_Vulkan::CreateFence(bool signaled) {

@@ -88,6 +88,8 @@ void ObjectRegistry::RemoveAllObjectLayered() {
 }
 
 void ObjectRegistry::RegisterObject(Object *object) {
+  PROFILE_SCOPE_AUTO;
+  std::lock_guard lock(mutex_);
   if (object == nullptr)
     return;
   Assert::Require(logcat::Core_Object, !objects_.contains(object->GetHandle()), "ObjectHandle的重复注册");
@@ -95,6 +97,8 @@ void ObjectRegistry::RegisterObject(Object *object) {
 }
 
 void ObjectRegistry::UnregisterHandle(ObjectHandle handle) {
+  PROFILE_SCOPE_AUTO;
+  std::lock_guard lock(mutex_);
   if (handle == INVALID_OBJECT_HANDLE)
     return;
   if (!objects_.contains(handle))

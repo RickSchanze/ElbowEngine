@@ -25,7 +25,7 @@ class ConfigManager : public Manager<ConfigManager>
 {
 public:
     IConfig*                   GetConfig(const Type* type);
-    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L8; }
+    [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L4; }
     [[nodiscard]] StringView   GetName() const override { return "core.ConfigManager"; }
 
     void Shutdown() override;

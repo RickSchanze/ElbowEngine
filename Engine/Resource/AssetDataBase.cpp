@@ -139,18 +139,25 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
     auto meta_op = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", path));
     if (meta_op) {
       auto &meta = *meta_op;
-      ObjectHandle handle = meta.object_handle;
+      ObjectHandle database_handle = meta.object_handle;
       ObjectRegistry &registry = ObjectManager::GetRegistry();
-      Object *obj = registry.GetObjectByHandle(handle);
+      Object *obj = registry.GetObjectByHandle(database_handle);
       if (obj != nullptr) {
-        return MakeAsyncResult(handle);
+        return MakeAsyncResult(database_handle);
       } else {
+        // 创建一个instanced asset作为临时载入, 此时它被注册入registry
         auto [asset] = *ObjectManager::GetRegistry().CreateNewObject<Material>()->GetValue();
-        asset->InternalSetAssetHandle(handle);
         YamlArchive archive;
         auto content = File::ReadAllText(path);
+        auto old_instanced_handle = asset->GetHandle();
         if (content) {
+          // 序列化一个object 如果成功那么这个persistent handle也会被入册到registry
+          // 此时registry有两个一样的对象, 一是之前作为临时instanced object注册的, 在一个就是序列化时注册
           if (archive.Deserialize(*content, asset, TypeOf<Material>())) {
+            auto file_handle = asset->GetHandle();
+            Assert::Require(logcat::Resource_Load, file_handle == database_handle, "file_handle != database_handle");
+            // 校验通过则将临时注册的取消注册
+            ObjectManager::GetRegistry().UnregisterHandle(old_instanced_handle);
             return asset->PerformPersistentObjectLoadAsync();
           }
         }

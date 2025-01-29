@@ -116,7 +116,7 @@ struct MulticastEvent
     template <typename Class>
     DelegateID AddBind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
     {
-        DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args); });
+        DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args...); });
         return AddBind(Move(delegate));
     }
 

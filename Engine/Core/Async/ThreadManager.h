@@ -78,7 +78,7 @@ public:
 
   static MemoryPool *GetTaskMemoryPool();
 
-  [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L8; }
+  [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L4; }
   [[nodiscard]] StringView GetName() const override { return "ThreadManager"; }
 
   void Startup() override;

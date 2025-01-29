@@ -65,6 +65,8 @@ private:
   // 可用的, 由于删除造成的handle(persistent only)
   PROPERTY()
   Array<ObjectHandle> free_handles_;
+
+  DECLARE_TRACEABLE_MUTEX(std::mutex, mutex_, "mutex to register/unregister object in multi thread");
 };
 
 class ObjectManager : public Manager<ObjectManager> {

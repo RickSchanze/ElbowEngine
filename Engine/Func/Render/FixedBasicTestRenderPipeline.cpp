@@ -56,7 +56,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
   depth_attachment.layout = ImageLayout::DepthStencilAttachment;
   depth_attachment.target = depth_target_->GetImageView();
   cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
-  BindMaterial(cmd, material);
+  BindMaterial(cmd, material_);
   BindAndDrawMesh(cmd, mesh_);
   cmd.Enqueue<Cmd_EndRender>();
   cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range,
@@ -68,10 +68,23 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
 void func::FixedBasicTestRenderPipeline::Build() {
   auto a1 = AssetDataBase::LoadAsync("Assets/Material/Test.mat");
   auto a2 = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
-  auto group = MakeSyncGroup(Move(a1), Move(a2));
+  MakeSyncGroup(Move(a1), Move(a2))->OnCompleted([this](const auto &res) {
+    auto &[mat_handle, mesh_handle] = res;
+    mesh_ = static_cast<Mesh *>(ObjectManager::GetObjectByHandle(mesh_handle));
+    material_ = static_cast<Material *>(ObjectManager::GetObjectByHandle(mat_handle));
+    if (mesh_ && material_) {
+      ready_ = true;
+    }
+  });
+  depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }
 
-void func::FixedBasicTestRenderPipeline::Clean() { depth_target_ = nullptr; }
+void func::FixedBasicTestRenderPipeline::Clean() {
+  depth_target_ = nullptr;
+  ready_ = false;
+  mesh_ = nullptr;
+  material_ = nullptr;
+}
 
 bool func::FixedBasicTestRenderPipeline::IsReady() const { return ready_; }
 

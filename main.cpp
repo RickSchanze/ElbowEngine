@@ -35,7 +35,6 @@ int main() {
     // 让std::wcout 顺利运行
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
-
     SetConsoleOutputCP(65001);
     if (!platform::Path::SetProjectPath("C:/Users/Echo/Documents/Projects/ElbowEngine/Content")) {
       LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
@@ -63,7 +62,6 @@ int main() {
       resource::AssetDataBase::Get();
       core::Array results = {
           resource::AssetDataBase::Import("Assets/Shader/Error.slang"),
-          // resource::AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
           resource::AssetDataBase::Import("Assets/Texture/Default.png"),
           resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
       };

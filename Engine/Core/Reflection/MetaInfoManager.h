@@ -51,7 +51,7 @@ public:
     void Startup() override;
     void Shutdown() override;
 
-    void RegisterType(RTTITypeInfo type_info);
+    void RegisterType(const RTTITypeInfo &type_info);
     void RegisterTypeRegisterer(RTTITypeInfo type_info, MetaDataRegisterer registerer);
     void RegisterType(RTTITypeInfo type_info, Type* type);
 

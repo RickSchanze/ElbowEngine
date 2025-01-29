@@ -33,7 +33,7 @@ public:
   void OnWindowResized(platform::Window *window, Int32 width, Int32 height) override;
 
 private:
-  resource::Material *material = nullptr;
+  resource::Material *material_ = nullptr;
   core::SharedPtr<RenderTexture> depth_target_;
   resource::Mesh *mesh_ = nullptr;
   bool ready_ = false;
