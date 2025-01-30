@@ -41,6 +41,10 @@ add_library(Resource
         Assets/Material/MaterialMeta.h
         Assets/Material/Material.cpp
         Assets/Material/Material.h
+        Assets/Font/FontMeta.cpp
+        Assets/Font/FontMeta.h
+        Assets/Font/Font.cpp
+        Assets/Font/Font.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
@@ -81,3 +85,6 @@ endif()
 
 # 链接 shader-slang 库
 target_link_libraries(${PROJECT_NAME} PRIVATE slang)
+
+find_package(Freetype REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Freetype::Freetype) # since CMake 3.10

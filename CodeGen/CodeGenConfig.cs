@@ -12,7 +12,8 @@ public class CodeGenConfig
         @"Engine\ThirdParty\IconFontCppHeaders",
         @"cmake-build-debug\vcpkg_installed\x64-windows\include",
         @"Generated",
-        @"Engine\ThirdParty\tracy\public"
+        @"Engine\ThirdParty\tracy\public",
+        @"C:\VulkanSDK\1.3.296.0\Include"
     ];
 
     public List<string> SourceDirs { get; } =
@@ -27,6 +28,7 @@ public class CodeGenConfig
     public List<string> ExcludedFiles { get; } =
     [
         @"Engine\Core\Math\Math.h",
+        @"Engine\Core\Base\Ranges.h",
     ];
 
     public Dictionary<string, string> LayerDir { get; } = new()

@@ -15,7 +15,7 @@ static void DestroyAt(void* ptr) { static_cast<core::ObjectRegistry*>(ptr)->~Obj
 #define GENERATED_IMPLEMENTATION \
 core::Type* core::ObjectRegistry::REFLECTION_Register_ObjectRegistry_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::ObjectRegistry>("core.ObjectRegistry"); \
+Type* type = Type::Create<core::ObjectRegistry>("core.ObjectRegistry")->SetComment("TODO: 多线程安全"); \
 type->Internal_RegisterField("next_handle_persistent_", &core::ObjectRegistry::next_handle_persistent_, offsetof(core::ObjectRegistry, next_handle_persistent_))->SetComment("下一个可用的持久化对象的handle"); \
 type->Internal_RegisterField("free_handles_", &core::ObjectRegistry::free_handles_, offsetof(core::ObjectRegistry, free_handles_))->SetComment("可用的, 由于删除造成的handle(persistent only)"); \
 return type; \

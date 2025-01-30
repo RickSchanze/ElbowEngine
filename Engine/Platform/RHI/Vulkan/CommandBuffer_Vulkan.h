@@ -3,10 +3,9 @@
 //
 
 #pragma once
-#include "Core/Profiler/ProfileMacro.h"
-#include "Platform/RHI/CommandBuffer.h"
 
-#include <vulkan/vulkan_core.h>
+#include "Platform/RHI/CommandBuffer.h"
+#include "vulkan/vulkan.h"
 
 namespace platform::rhi::vulkan {
 

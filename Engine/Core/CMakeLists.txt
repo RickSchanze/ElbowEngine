@@ -144,11 +144,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ICU::uc ICU::i18n)
 find_package(xxHash CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE xxHash::xxhash)
 
-find_package(tl-expected CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected)
-
 find_package(range-v3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE range-v3::meta range-v3::concepts range-v3::range-v3)
 
 find_package(mimalloc CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)
+target_link_libraries(${PROJECT_NAME} PUBLIC $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)

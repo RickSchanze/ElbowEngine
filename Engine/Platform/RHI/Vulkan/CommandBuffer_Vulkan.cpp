@@ -7,6 +7,7 @@
 #include "Core/Async/Execution/StartAsync.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Async/ThreadManager.h"
+#include "Core/Base/Ranges.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Math/Math.h"
 #include "Core/Profiler/ProfileMacro.h"
@@ -18,15 +19,11 @@
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/ImageView.h"
 
-#include <meta/meta.hpp>
-#include <range/v3/range/conversion.hpp>
-#include <range/v3/view/transform.hpp>
-
 using namespace core::exec;
 using namespace platform::rhi::vulkan;
-using namespace ranges::views;
-using namespace ranges;
 using namespace platform::rhi;
+using namespace core::range;
+using namespace view;
 
 CommandPool_Vulkan::CommandPool_Vulkan(CommandPoolCreateInfo info) : CommandPool(info) {
   const auto &ctx = *GetVulkanGfxContext();
@@ -80,10 +77,11 @@ core::Array<core::SharedPtr<CommandBuffer>> CommandPool_Vulkan::CreateCommandBuf
   alloc_info.commandBufferCount = count;
   const auto &ctx = *GetVulkanGfxContext();
   ctx.CreateCommandBuffers_VK(alloc_info, command_buffers.data());
-  return command_buffers | transform([this, self_managed](auto &command_buffer) {
-           return core::MakeShared<CommandBuffer_Vulkan>(command_buffer, this, self_managed);
-         }) |
-         to<core::Array<core::SharedPtr<CommandBuffer>>>();
+  core::Array<core::SharedPtr<CommandBuffer>> rtn;
+  for (auto &command_buffer : command_buffers) {
+    rtn.push_back(core::MakeShared<CommandBuffer_Vulkan>(command_buffer, this, self_managed));
+  }
+  return rtn;
 }
 
 void CommandPool_Vulkan::FreeCommandBuffer(VkCommandBuffer buffer) {

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "mimalloc.h"
 #include <array>
 #include <chrono>
 #include <functional>
@@ -18,7 +19,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "mimalloc.h"
 
 namespace core {
 // std::function -> Function
