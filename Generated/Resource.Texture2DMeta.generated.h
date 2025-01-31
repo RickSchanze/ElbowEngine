@@ -19,6 +19,7 @@ Type* type = Type::Create<resource::Texture2DMeta>("resource.Texture2DMeta")->Se
 type->Internal_RegisterField("id", &resource::Texture2DMeta::id, offsetof(resource::Texture2DMeta, id))->SetAttribute(core::FieldInfo::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)"); \
 type->Internal_RegisterField("object_handle", &resource::Texture2DMeta::object_handle, offsetof(resource::Texture2DMeta, object_handle)); \
 type->Internal_RegisterField("path", &resource::Texture2DMeta::path, offsetof(resource::Texture2DMeta, path)); \
+type->Internal_RegisterField("format", &resource::Texture2DMeta::format, offsetof(resource::Texture2DMeta, format)); \
 return type; \
 } \
 

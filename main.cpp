@@ -20,18 +20,22 @@
 #include "Platform/FileSystem/Path.h"
 #include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
+#include "Resource/Assets/Font/Font.h"
+#include "Resource/Assets/Font/FontMeta.h"
 #include "Resource/Assets/Shader/Shader.h"
 #include "cpptrace/cpptrace.hpp"
 
-using namespace core::exec;
+using namespace core;
+using namespace exec;
 using namespace func;
+using namespace resource;
 
 int main() {
   try {
     cpptrace::generate_trace(); // 这里需要先调用一次generate_trace 否则后面的无法生成trace
     SetRuntimeStage(RuntimeStage::Startup);
     LOGGER.Info(logcat::Engine, "Initializing Engine...");
-    core::Assert::Require(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
+    Assert::Require(logcat::Engine, ValidateFeatureState(), "Feature validation failed, abort program.");
     // 让std::wcout 顺利运行
     setlocale(LC_ALL, "zh_CN");
     // 让spdlog不产生乱码
@@ -40,9 +44,12 @@ int main() {
       LOGGER.Critical(logcat::Core, "Set project path failed, abort program.");
       return -1;
     }
+    {
+      ThreadManager::Get();
+    }
     // 初始化内存
     {
-      core::MemoryManager::Get();
+      MemoryManager::Get();
     }
     // 窗口初始化
     {
@@ -52,31 +59,35 @@ int main() {
     // 图形初始化
     {
       PROFILE_SCOPE("Graphics Initialize");
-      const auto rhi_cfg = core::GetConfig<platform::PlatformConfig>();
+      const auto rhi_cfg = GetConfig<platform::PlatformConfig>();
       UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
       platform::rhi::GfxContextLifeTimeProxyManager::Get();
     }
     // 资产数据库初始化
     {
       PROFILE_SCOPE("AssetDataBase Initialize");
-      resource::AssetDataBase::Get();
-      core::Array results = {
-          resource::AssetDataBase::Import("Assets/Shader/Error.slang"),
-          resource::AssetDataBase::Import("Assets/Texture/Default.png"),
-          resource::AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
+      AssetDataBase::Get();
+      Array results = {
+          AssetDataBase::Import("Assets/Shader/Error.slang"),
+          AssetDataBase::Import("Assets/Texture/Default.png"),
+          AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
       };
-      core::ThreadManager::Poll(INT_MAX);
+      ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
         result->Wait();
       }
 #if WITH_EDITOR
-      core::ObjectManager::SaveObjectRegistry();
+      ObjectManager::SaveObjectRegistry();
 #endif
+      Font *f = ObjectManager::CreateNewObject<Font>()->GetValue().GetValue() | First;
+      FontMeta meta{};
+      meta.path = "Assets/Font/MapleMono.ttf";
+      f->Load(meta);
     }
     // 其他初始化
     {
       PROFILE_SCOPE("Other Initialize");
-      core::ThreadManager::Get();
+      ThreadManager::Get();
       Camera::Get();
     }
     LOGGER.Info(logcat::Engine, "Engine initialized.");
@@ -84,8 +95,8 @@ int main() {
     LOGGER.Info(logcat::Engine, "Engine running...");
     platform::Window *main_window = platform::WindowManager::Get()->GetMainWindow();
     TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
-    RenderContext::GetByRef().SetRenderPipeline(core::MakeUnique<FixedBasicTestRenderPipeline>());
-    Actor *a = core::NewObject<ACameraHolder>();
+    RenderContext::GetByRef().SetRenderPipeline(MakeUnique<FixedBasicTestRenderPipeline>());
+    Actor *a = NewObject<ACameraHolder>();
     while (GetRuntimeStage() != RuntimeStage::Shutdown) {
       MARK_FRAME_AUTO;
       GetWorldClock().TickAll();
@@ -97,9 +108,9 @@ int main() {
     TickEvents::InputTickEvent.Unbind();
     LOGGER.Info(logcat::Engine, "Engine shutdown...");
     SetRuntimeStage(RuntimeStage::Shutdown);
-    core::MManager::Get()->Shutdown();
-  } catch (const core::Exception &e) {
+    MManager::Get()->Shutdown();
+  } catch (const Exception &e) {
     LOGGER.ErrorFast(logcat::Exception, "程序因为异常崩溃了!\n{}", e.what());
         return -1;
-    }
+  }
 }

@@ -65,7 +65,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
   } else {
     TMeta new_meta = {};
     new_meta.path = path;
-    auto &[asset] = *(registry.CreateNewObject<T>()->GetValue());
+    auto &[asset] = *(ObjectManager::CreateNewObject<T>()->GetValue());
     new_meta.object_handle = std::get<0>(*registry.NextPersistentHandle()->GetValue());
     AssetDataBase::InsertMeta(new_meta);
     asset->InternalSetAssetHandle(new_meta.object_handle);
@@ -116,7 +116,7 @@ template <typename T, typename TMeta> AsyncResultHandle<ObjectHandle> InternalLo
     if (obj != nullptr) {
       return MakeAsyncResult(handle);
     } else {
-      auto [asset] = *ObjectManager::GetRegistry().CreateNewObject<T>()->GetValue();
+      auto [asset] = *ObjectManager::CreateNewObject<T>()->GetValue();
       asset->InternalSetAssetHandle(handle);
       return asset->PerformPersistentObjectLoadAsync();
     }
@@ -146,7 +146,7 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
         return MakeAsyncResult(database_handle);
       } else {
         // 创建一个instanced asset作为临时载入, 此时它被注册入registry
-        auto [asset] = *ObjectManager::GetRegistry().CreateNewObject<Material>()->GetValue();
+        auto [asset] = *ObjectManager::CreateNewObject<Material>()->GetValue();
         YamlArchive archive;
         auto content = File::ReadAllText(path);
         auto old_instanced_handle = asset->GetHandle();
@@ -222,12 +222,22 @@ void AssetDataBase::CreateAsset(Asset *asset, StringView path) {
       LOGGER.Error(logcat::Resource, "无法序列化Material.");
       return;
     }
-    platform::File::WriteAllText(path, serialized_str);
+    File::WriteAllText(path, serialized_str);
     MaterialMeta meta;
     meta.object_handle = handle;
     meta.path = path;
     InsertMeta(meta);
   }
+}
+
+bool AssetDataBase::CreateAsset(Texture2DMeta &meta) {
+  if (auto existed = QueryMeta<Texture2DMeta>(meta.path)) {
+    LOGGER.Error("Resource.Asset", "Texture2D已存在: {}", meta.path);
+    return false;
+  }
+  // 为新meta分配新的ObjectHandle
+  InsertMeta(meta);
+  return true;
 }
 
 void AssetDataBase::CreateAssetTables() {

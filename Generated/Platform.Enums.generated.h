@@ -21,6 +21,7 @@ type->Internal_RegisterEnumValue(B8G8R8A8_UNorm ,"B8G8R8A8_UNorm")->SetComment("
 type->Internal_RegisterEnumValue(R16G16B16A16_Float ,"R16G16B16A16_Float")->SetComment("每个元素由4个16位float分量构成"); \
 type->Internal_RegisterEnumValue(A2B10G10R10_UNorm ,"A2B10G10R10_UNorm")->SetComment("a: 2位 b: 10位 g: 10位 r: 10位"); \
 type->Internal_RegisterEnumValue(R32G32_SFloat ,"R32G32_SFloat")->SetComment("每个元素由2个32位float分量构成"); \
+type->Internal_RegisterEnumValue(R8_UNorm ,"R8_UNorm"); \
 type->Internal_RegisterEnumValue(Count ,"Count")->SetComment("超出范围(Undefined)"); \
 core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<platform::rhi::Format>(), type); \
 } \

@@ -7,29 +7,25 @@
 #include "EString.h"
 #include <exception>
 
-namespace core
-{
-class Exception : std::exception
-{
+namespace core {
+class Exception : std::exception {
 public:
-    explicit Exception(const core::String& msg);
+  explicit Exception(const core::String &msg);
 
-    [[nodiscard]] char const* what() const override { return message_.Data(); }
+  [[nodiscard]] char const *what() const override { return message_.Data(); }
 
 protected:
-    String message_;
+  String message_;
 };
 
-class ArgumentException : public Exception
-{
+class ArgumentException : public Exception {
 public:
-    explicit ArgumentException(core::StringView arg_name, core::StringView msg);
-    explicit ArgumentException(core::StringView msg) : Exception(msg) {}
+  explicit ArgumentException(core::StringView arg_name, core::StringView msg);
+  explicit ArgumentException(core::StringView msg) : Exception(msg) {}
 };
 
-class NotSupportException : public Exception
-{
+class NotSupportException : public Exception {
 public:
-    explicit NotSupportException(core::StringView msg) : Exception(msg) {}
+  explicit NotSupportException(core::StringView msg) : Exception(msg) {}
 };
-}   // namespace core
+} // namespace core

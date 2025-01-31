@@ -8,55 +8,53 @@
 
 #include GEN_HEADER("Core.ObjectPtr.generated.h")
 
-core::Object* _ObjectManagerGetObjectByHandle(core::ObjectHandle handle);
+core::Object *_ObjectManagerGetObjectByHandle(core::ObjectHandle handle);
 
-namespace core
-{
+namespace core {
 
-class CLASS() ObjectPtrBase
-{
-    GENERATED_CLASS(ObjectPtrBase)
+class CLASS() ObjectPtrBase {
+  GENERATED_CLASS(ObjectPtrBase)
 public:
-    ~ObjectPtrBase();
+  ~ObjectPtrBase();
 
-    /**
-     * 设置"Outer"
-     * class A : Object {
-     *   ObjectPtr<B> b;
-     * };
-     * A a;
-     * B b;
-     * a.b = b;
-     * 此时对于A.b来说, 其Outer为a
-     * 因此Outer通常只由对象生成时设置一次, 之后不再修改
-     * @param outer
-     */
-    void SetOuter(const ObjectHandle outer);
+  /**
+   * 设置"Outer"
+   * class A : Object {
+   *   ObjectPtr<B> b;
+   * };
+   * A a;
+   * B b;
+   * a.b = b;
+   * 此时对于A.b来说, 其Outer为a
+   * 因此Outer通常只由对象生成时设置一次, 之后不再修改
+   * @param outer
+   */
+  void SetOuter(const ObjectHandle outer);
 
-    /**
-     * 设置object_
-     * 如果此时outer_为空, 那么可能是局部变量, 此时不调整引用关系
-     * 此函数应该永远只调用一次
-     * @param handle
-     */
-    void SetObject(const ObjectHandle handle);
+  /**
+   * 设置object_
+   * 如果此时outer_为空, 那么可能是局部变量, 此时不调整引用关系
+   * 此函数应该永远只调用一次
+   * @param handle
+   */
+  void SetObject(const ObjectHandle handle);
 
 #if WITH_EDITOR
-    /**
-     * 将Outer从原来的变成现在的 同时修正引用关系
-     * @param handle
-     */
-    void ModifyOuter(ObjectHandle handle);
+  /**
+   * 将Outer从原来的变成现在的 同时修正引用关系
+   * @param handle
+   */
+  void ModifyOuter(ObjectHandle handle);
 #endif
 
-    ObjectHandle GetOuter() const { return outer_; }
-    ObjectHandle GetHandle() const { return object_; }
+  ObjectHandle GetOuter() const { return outer_; }
+  ObjectHandle GetHandle() const { return object_; }
 
 protected:
-    ObjectHandle outer_ = INVALID_OBJECT_HANDLE;   // 即包含此成员的父对象
+  ObjectHandle outer_ = INVALID_OBJECT_HANDLE; // 即包含此成员的父对象
 
-    PROPERTY()
-    ObjectHandle object_ = INVALID_OBJECT_HANDLE;   // 引用的Object
+  PROPERTY()
+  ObjectHandle object_ = INVALID_OBJECT_HANDLE; // 引用的Object
 };
 
 /**
@@ -65,65 +63,53 @@ protected:
  * 但是支持容器操作 即Array<ObjectPtr<>>
  * @tparam T
  */
-template <typename T>
-class ObjectPtr : public ObjectPtrBase
-{
+template <typename T> class ObjectPtr : public ObjectPtrBase {
 public:
-    ObjectPtr() : ObjectPtr(nullptr) {}
+  ObjectPtr() : ObjectPtr(nullptr) {}
 
-    ObjectPtr(T* obj)
-    {
-        if (obj == nullptr)
-        {
-            SetObject(INVALID_OBJECT_HANDLE);
-        }
-        else
-        {
-            SetObject(obj->GetHandle());
-        }
+  ObjectPtr(T *obj) {
+    if (obj == nullptr) {
+      SetObject(INVALID_OBJECT_HANDLE);
+    } else {
+      SetObject(obj->GetHandle());
     }
+  }
 
-    operator T*()
-    {
-        Object* obj = _ObjectManagerGetObjectByHandle(object_);
-        return reinterpret_cast<T*>(obj);
-    }
+  operator T *() {
+    Object *obj = _ObjectManagerGetObjectByHandle(object_);
+    return reinterpret_cast<T *>(obj);
+  }
 
-    operator T*() const
-    {
-        Object* obj = _ObjectManagerGetObjectByHandle(object_);
-        return reinterpret_cast<T*>(obj);
-    }
+  operator T *() const {
+    Object *obj = _ObjectManagerGetObjectByHandle(object_);
+    return reinterpret_cast<T *>(obj);
+  }
 
-    T* operator->() { return static_cast<T*>(this); }
+  T *operator->() { return static_cast<T *>(*this); }
 
-    T& operator*() { return *static_cast<T*>(this); }
+  T &operator*() { return *static_cast<T *>(*this); }
 
-    operator bool() { return static_cast<T*>(this) != nullptr; }
-    operator bool() const { return static_cast<T*>(this) != nullptr; }
+  operator bool() { return static_cast<T *>(*this) != nullptr; }
+  operator bool() const { return static_cast<T *>(*this) != nullptr; }
 
-    ObjectPtr& operator=(const ObjectPtr& other)
-    {
-        if (this == &other) return *this;
-        SetObject(other.object_);
-        return *this;
-    }
+  ObjectPtr &operator=(const ObjectPtr &other) {
+    if (this == &other)
+      return *this;
+    SetObject(other.object_);
+    return *this;
+  }
 
-    ObjectPtr& operator=(const T* other)
-    {
-        if (other == nullptr) return *this;
-        SetObject(other->GetHandle());
-        return *this;
-    }
+  ObjectPtr &operator=(const T *other) {
+    if (other == nullptr)
+      return *this;
+    SetObject(other->GetHandle());
+    return *this;
+  }
 };
 
-template <typename T>
-struct IsObjectPtr : std::false_type
-{
-};
+template <typename T> struct IsObjectPtr : std::false_type {};
 
-template <typename T>
-struct IsObjectPtr<ObjectPtr<T>> : std::true_type
+template <typename T> struct IsObjectPtr<ObjectPtr<T>> : std::true_type
 {
 };
 

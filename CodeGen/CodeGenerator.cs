@@ -164,6 +164,7 @@ public class CodeGenerator
         options.IncludeFolders.AddRange(AbsoluteIncludeDirs);
         options.Defines.AddRange(_config.Macros);
         options.AdditionalArguments.AddRange(_config.Arguments);
+        paths = paths.Where(p => !ExcludedFiles.Contains(p)).ToList();
         var compilation = CppParser.ParseFiles(paths, options);
         if (compilation.HasErrors)
         {

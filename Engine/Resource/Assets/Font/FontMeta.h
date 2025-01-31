@@ -21,5 +21,17 @@ public:
 
   PROPERTY()
   core::String path;
+
+  PROPERTY()
+  Int32 font_atlas_width_ = 1024;
+
+  PROPERTY()
+  Int32 font_atlas_height = 1024;
+
+  PROPERTY()
+  Int32 font_size = 16;
+
+  PROPERTY()
+  core::String font_charset_file = "Assets/Font/Charset.txt";
 };
 } // namespace resource

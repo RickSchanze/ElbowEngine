@@ -39,18 +39,6 @@ public:
 
   void Save();
 
-  template <typename T, typename... Args>
-    requires std::derived_from<T, Object>
-  exec::AsyncResultHandle<T *> CreateNewObject(Args &&...args) {
-
-    if (ThreadUtils::IsCurrentMainThread()) {
-      return exec::MakeAsyncResult(NewObject<T>(Forward<Args>(args)...));
-    }
-    auto &scheduler = _GetScheduler();
-    return exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Game) |
-                            exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }));
-  }
-
 private:
   // 所有的Object
   FlatMap<ObjectHandle, Object *> objects_;
@@ -79,6 +67,17 @@ public:
 
   void Startup() override;
   void Shutdown() override;
+
+  template <typename T, typename... Args>
+    requires std::derived_from<T, Object>
+  static exec::AsyncResultHandle<T *> CreateNewObject(Args &&...args) {
+    if (ThreadUtils::IsCurrentMainThread()) {
+      return exec::MakeAsyncResult(NewObject<T>(Forward<Args>(args)...));
+    }
+    auto &scheduler = _GetScheduler();
+    return exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Game) |
+                            exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }));
+  }
 
   static bool IsObjectExist(ObjectHandle handle) { return GetRegistry().GetObjectByHandle(handle) != nullptr; }
 

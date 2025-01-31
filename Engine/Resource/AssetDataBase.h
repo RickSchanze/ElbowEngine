@@ -15,6 +15,7 @@ namespace core {
 class PersistentObject;
 }
 namespace resource {
+class Texture2DMeta;
 class Material;
 }
 namespace SQLite {
@@ -82,6 +83,8 @@ public:
    * @param path
    */
   static void CreateAsset(Asset *asset, core::StringView path);
+
+  static bool CreateAsset(Texture2DMeta& meta);
 
 protected:
   void CreateAssetTables();

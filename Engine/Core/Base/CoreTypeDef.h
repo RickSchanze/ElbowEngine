@@ -87,6 +87,28 @@ template <typename T, typename U> SharedPtr<T> StaticPointerCast(const SharedPtr
 }
 
 template <typename... T> using Tuple = std::tuple<T...>;
+
+// 定义 Get 模板结构，用于获取 std::tuple 中的第 N 个元素
+template <size_t N> struct Get {
+  // 重载 () 操作符，用于从 tuple 中提取第 N 个元素
+  template <typename... Args> auto operator()(const std::tuple<Args...> &t) const -> decltype(std::get<N>(t)) {
+    return std::get<N>(t);
+  }
+};
+template <typename T> struct _IsTuple : std::false_type {};
+template <typename... Args> struct _IsTuple<Tuple<Args...>> : std::true_type {};
+
+// 重载 | 操作符，用于链式调用
+template <typename Tuple, typename Getter>
+  requires _IsTuple<Tuple>::value
+auto operator|(const Tuple &t, const Getter &getter) -> decltype(getter(t)) {
+  return getter(t);
+}
+
+// 一些常用的
+inline constexpr auto First = Get<0>{};
+inline constexpr auto Second = Get<1>{};
+inline constexpr auto Third = Get<2>{};
 } // namespace core
 using Int8 = int8_t;
 using Int16 = int16_t;
@@ -99,3 +121,5 @@ using UInt64 = uint64_t;
 using Float = float;
 using Double = double;
 using Bool = bool;
+
+

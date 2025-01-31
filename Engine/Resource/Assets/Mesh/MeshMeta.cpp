@@ -6,5 +6,4 @@
 
 #include GEN_HEADER("Resource.MeshMeta.generated.h")
 
-
 GENERATED_SOURCE()
