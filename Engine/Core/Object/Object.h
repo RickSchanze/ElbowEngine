@@ -25,6 +25,7 @@ enum ENUM(Flag) ObjectFlagType {
   OFT_Persistent = 1 << 1, // 此对象需要持久化存储
   OFT_Actor = 1 << 2,
   OFT_Component = 1 << 3,
+  OFT_Widget = 1 << 4,
 };
 using ObjectFlag = int32_t;
 

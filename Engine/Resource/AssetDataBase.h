@@ -84,8 +84,6 @@ public:
    */
   static void CreateAsset(Asset *asset, core::StringView path);
 
-  static bool CreateAsset(Texture2DMeta& meta);
-
 protected:
   void CreateAssetTables();
 

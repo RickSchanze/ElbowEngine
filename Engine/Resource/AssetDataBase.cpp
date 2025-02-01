@@ -7,6 +7,8 @@
 
 #include "AssetDataBase.h"
 
+#include "Assets/Font/Font.h"
+#include "Assets/Font/FontMeta.h"
 #include "Assets/Material/Material.h"
 #include "Assets/Material/MaterialMeta.h"
 #include "Assets/Mesh/Mesh.h"
@@ -87,6 +89,9 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path) {
   if (path.EndsWith(".png")) {
     return InternalImport<Texture2D, Texture2DMeta>(query, path, registry);
   }
+  if (path.EndsWith(".ttf")) {
+    return InternalImport<Font, FontMeta>(query, path, registry);
+  }
   return MakeAsyncResult(0);
 }
 
@@ -165,7 +170,7 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
       }
     }
   }
-  return NULL_ASYNC_RESULT_HANDLE;
+  return MakeAsyncResult(0);
 }
 
 template <typename T> static core::String QueryPath(core::ObjectHandle handle) {
@@ -230,19 +235,10 @@ void AssetDataBase::CreateAsset(Asset *asset, StringView path) {
   }
 }
 
-bool AssetDataBase::CreateAsset(Texture2DMeta &meta) {
-  if (auto existed = QueryMeta<Texture2DMeta>(meta.path)) {
-    LOGGER.Error("Resource.Asset", "Texture2D已存在: {}", meta.path);
-    return false;
-  }
-  // 为新meta分配新的ObjectHandle
-  InsertMeta(meta);
-  return true;
-}
-
 void AssetDataBase::CreateAssetTables() {
   CREATE_ASSET_TABLE(::resource::MeshMeta);
   CREATE_ASSET_TABLE(::resource::ShaderMeta);
   CREATE_ASSET_TABLE(::resource::Texture2DMeta);
   CREATE_ASSET_TABLE(::resource::MaterialMeta);
+  CREATE_ASSET_TABLE(::resource::FontMeta);
 }

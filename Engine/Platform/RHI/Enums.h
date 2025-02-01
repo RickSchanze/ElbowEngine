@@ -25,7 +25,7 @@ enum class ENUM() Format {
   B8G8R8A8_UNorm,       // 每个元素由4个8位分量构成, 被映射到[0, 1]
   R16G16B16A16_Float,   // 每个元素由4个16位float分量构成
   A2B10G10R10_UNorm,    // a: 2位 b: 10位 g: 10位 r: 10位
-  R32G32_SFloat,        // 每个元素由2个32位float分量构成
+  R32G32_Float,        // 每个元素由2个32位float分量构成
   R8_UNorm,
   Count, // 超出范围(Undefined)
 };
@@ -240,25 +240,36 @@ enum class ImageDimension {
   D1, // 一维图像
   D2, // 二维图像
   D3, // 三维图像
-    Cube,
-    Array1D,
-    Array2D,
-    ArrayCube,
-    Count,
+  Cube,
+  Array1D,
+  Array2D,
+  ArrayCube,
+  Count,
 };
 
-enum class ENUM() FilterMode
-{
-    Linear VALUE(Label = "线性过滤"),
-    Nearest VALUE(Label = "最近邻过滤"),
-    Count,
+enum class ENUM() FilterMode {
+  Linear VALUE(Label = "线性过滤"),
+  Nearest VALUE(Label = "最近邻过滤"),
+  Count,
 };
 
-enum class SamplerAddressMode
-{
-    Repeat VALUE(Label = "重复"),
-    MirroredRepeat VALUE(Label = "镜像重复"),
-    ClampToEdge VALUE(Label = "边缘环绕"),
-    Count,
+enum class SamplerAddressMode {
+  Repeat VALUE(Label = "重复"),
+  MirroredRepeat VALUE(Label = "镜像重复"),
+  ClampToEdge VALUE(Label = "边缘环绕"),
+  Count,
 };
-}
+
+enum class BlendFactor {
+  Zero,
+  One,
+  SrcAlpha,
+  OneMinusSrcAlpha,
+  Count,
+};
+
+enum class BlendOp {
+  Add,
+  Count,
+};
+} // namespace platform::rhi

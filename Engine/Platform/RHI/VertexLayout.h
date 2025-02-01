@@ -5,21 +5,23 @@
 #pragma once
 #include "Core/Math/MathTypes.h"
 
-namespace platform::rhi
-{
+namespace platform::rhi {
 
-struct Vertex1
-{
-    core::Vector3 position;
-    core::Vector3 normal;
-    core::Vector2 texcoord;
+struct Vertex1 {
+  core::Vector3 position;
+  core::Vector3 normal;
+  core::Vector2 texcoord;
 };
 
-struct InstancedData1
-{
-    core::Vector3 location;
-    core::Vector3 rotation;
-    core::Vector3 scale;
+struct InstancedData1 {
+  core::Vector3 location;
+  core::Vector3 rotation;
+  core::Vector3 scale;
 };
 
-}   // namespace platform::rhi
+struct Vertex_UI {
+  core::Vector3 position;
+  core::Vector2 uv;
+};
+
+} // namespace platform::rhi

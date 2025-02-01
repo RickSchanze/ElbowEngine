@@ -22,7 +22,8 @@ enum class FontRenderMethod {
 
 struct GlyphInfo {
   Float uv_x_lt, uv_y_lt, uv_x_rb, uv_y_rb;
-  Float bearing_x, bearing_y; // 字符的偏移
+  UInt32 bearing_x, bearing_y; // 字符的偏移
+  UInt32 width, height;
   Float advance_x;
 };
 
@@ -34,7 +35,7 @@ public:
   void PerformLoad() override;
   void PerformUnload() override;
 
-  bool Load(const FontMeta& meta);
+  bool Load(const FontMeta &meta);
 
   Int16 GetFontSize() const { return font_size_; }
   /**
@@ -44,6 +45,9 @@ public:
 
   FontRenderMethod GetRenderMethod() const { return render_method_; }
   core::StringView GetAssetPath() const { return path_; }
+
+  const GlyphInfo &GetGlyphInfo(UInt32 unicode) const { return glyphs_.at(unicode); }
+  bool HasGlyph(UInt32 unicode) const { return glyphs_.contains(unicode); }
 
 private:
   Int16 font_size_ = 16;                                       // 静态字体大小
@@ -56,4 +60,4 @@ private:
   core::String charset_file_;
   core::HashMap<UInt32, GlyphInfo> glyphs_; // 记录每个字符对应font atlas的信息
 };
-}
+} // namespace resource

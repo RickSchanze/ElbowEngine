@@ -72,7 +72,9 @@ private:
     (handles->OnCompleted([this](const typename AsyncResultTrait<AsyncResultHandleTypes>::Type &result) {
       std::get<I>(result_) = result;
       if (--count_ == 0) {
-        callback_(FlattenTuple(result_));
+        if (callback_) {
+          callback_(FlattenTuple(result_));
+        }
         SyncGroupManager::RemoveGroup(this);
       }
     }),

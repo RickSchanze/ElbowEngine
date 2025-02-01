@@ -68,9 +68,9 @@ int main() {
       PROFILE_SCOPE("AssetDataBase Initialize");
       AssetDataBase::Get();
       Array results = {
-          AssetDataBase::Import("Assets/Shader/Error.slang"),
-          AssetDataBase::Import("Assets/Texture/Default.png"),
-          AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
+          AssetDataBase::Import("Assets/Shader/Error.slang"), AssetDataBase::Import("Assets/Texture/Default.png"),
+          AssetDataBase::Import("Assets/Mesh/Cube.fbx"),      AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
+          AssetDataBase::Import("Assets/Shader/Text.slang"),
       };
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
@@ -79,10 +79,6 @@ int main() {
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif
-      Font *f = ObjectManager::CreateNewObject<Font>()->GetValue().GetValue() | First;
-      FontMeta meta{};
-      meta.path = "Assets/Font/MapleMono.ttf";
-      f->Load(meta);
     }
     // 其他初始化
     {
@@ -111,6 +107,6 @@ int main() {
     MManager::Get()->Shutdown();
   } catch (const Exception &e) {
     LOGGER.ErrorFast(logcat::Exception, "程序因为异常崩溃了!\n{}", e.what());
-        return -1;
+    return -1;
   }
 }

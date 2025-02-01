@@ -95,5 +95,6 @@ public:
 
 #define implements virtual public
 #define extends public
+#define ELBOW_INTERFACE
 
 #define STRUCT(...) CLASS(Trivial, __VA_ARGS__)

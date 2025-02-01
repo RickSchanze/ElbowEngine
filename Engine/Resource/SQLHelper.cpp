@@ -13,7 +13,7 @@ using namespace core;
 using namespace resource;
 
 static String MapTypeToSqlType(const Type *type) {
-  Assert::Require(logcat::Resource_AssetDataBase, type->IsPrimitive(), "type必须为Primitive类型");
+  Assert::Require(logcat::Resource_AssetDataBase, type->IsPrimitive() || type->IsEnum(), "type必须为Primitive类型");
   Assert::Require(logcat::Resource_AssetDataBase, type != TypeOf<StringView>(),
                   "StringView为视图类型, 不可用作表字段类型");
   if (type == TypeOf<String>()) {

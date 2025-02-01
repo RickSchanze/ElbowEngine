@@ -6,7 +6,6 @@
 
 #include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
-#include "Func/Camera/CameraComponent.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -16,7 +15,6 @@
 #include "RenderTexture.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Mesh/Mesh.h"
-#include "Resource/Assets/Shader/Shader.h"
 
 using namespace resource;
 using namespace core;

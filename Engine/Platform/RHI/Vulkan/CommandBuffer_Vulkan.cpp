@@ -180,7 +180,8 @@ static void ExecuteCmdDrawIndexed(VkCommandBuffer cmd, Cmd_DrawIndexed *cmd_draw
     LOGGER.Error(logcat::Platform_RHI_Vulkan, "命令DrawIndexed错误, 传入的cmd_draw_indexed无效");
     return;
   }
-  vkCmdDrawIndexed(cmd, cmd_draw_indexed->index_count, 1, 0, 0, 0);
+  vkCmdDrawIndexed(cmd, cmd_draw_indexed->index_count, cmd_draw_indexed->instance_count, cmd_draw_indexed->first_index,
+                   0, 0);
 }
 
 static void ExecuteCmdBeginRender(VkCommandBuffer &cmd, Cmd_BeginRender *cmd_begin_render_pass) {
@@ -428,11 +429,8 @@ void CommandBuffer_Vulkan::End() {
     auto scheduler = core::ThreadManager::GetScheduler();
     auto task =
         Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
-        StartAsync(task);
-    }
-    else
-    {
-        vkEndCommandBuffer(buffer_);
-    }
+    StartAsync(task);
+  } else {
+    vkEndCommandBuffer(buffer_);
+  }
 }
-

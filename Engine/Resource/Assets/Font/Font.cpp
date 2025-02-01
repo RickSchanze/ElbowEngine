@@ -43,9 +43,7 @@ public:
     return errcode;
   }
 
-  static Int32 SetCharMapUnicode(FT_Face face) {
-    return FT_Select_Charmap(face, FT_ENCODING_UNICODE);
-  }
+  static Int32 SetCharMapUnicode(FT_Face face) { return FT_Select_Charmap(face, FT_ENCODING_UNICODE); }
 
 private:
   FT_Library library_;
@@ -74,6 +72,7 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
 
   Int32 pen_x = 0, pen_y = 0; // 当前写入x, y左边
   UInt32 row_height = 0;
+  // TODO: Rect packing 更高效利用空间
   const UnicodeString unicode_charset = charset.AsUnicode();
   const UInt64 unicode_size = unicode_charset.Size();
   for (Int32 i = 0; i < unicode_size; i++) {
@@ -109,6 +108,11 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
     info.uv_y_lt = static_cast<Float>(pen_y) / atlas_h;
     info.uv_x_rb = static_cast<Float>(pen_x + bitmap.width) / atlas_w;
     info.uv_y_rb = static_cast<Float>(pen_y + bitmap.rows) / atlas_h;
+    info.advance_x = glyph_slot->advance.x >> 6;
+    info.bearing_x = glyph_slot->metrics.horiBearingX >> 6;
+    info.bearing_y = glyph_slot->metrics.horiBearingY >> 6;
+    info.width = bitmap.width;
+    info.height = bitmap.rows;
     glyphs[unicode] = info;
     pen_x += bitmap.width;
     row_height = std::max(row_height, bitmap.rows);

@@ -38,6 +38,12 @@ add_library(${PROJECT_NAME}
         Render/RenderTexture.h
         Camera/ACameraHolder.cpp
         Camera/ACameraHolder.h
+        UI/Widget/Text.cpp
+        UI/Widget/Text.h
+        UI/Widget/Widget.cpp
+        UI/Widget/Widget.h
+        UI/Overlay.cpp
+        UI/Overlay.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

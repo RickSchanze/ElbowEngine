@@ -41,7 +41,7 @@ VkFormat RHIFormatToVkFormat(const Format format) {
     return VK_FORMAT_B8G8R8A8_UNORM;
   case Format::R16G16B16A16_Float:
     return VK_FORMAT_R16G16B16A16_SFLOAT;
-  case Format::R32G32_SFloat:
+  case Format::R32G32_Float:
     return VK_FORMAT_R32G32_SFLOAT;
   case Format::R8_UNorm:
     return VK_FORMAT_R8_UNORM;
@@ -83,7 +83,7 @@ Format VkFormatToRHIFormat(VkFormat format) {
   case VK_FORMAT_R16G16B16A16_SFLOAT:
     return Format::R16G16B16A16_Float;
   case VK_FORMAT_R32G32_SFLOAT:
-    return Format::R32G32_SFloat;
+    return Format::R32G32_Float;
   case VK_FORMAT_R8_UNORM:
     return Format::R8_UNorm;
   default:
@@ -849,6 +849,36 @@ platform::rhi::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(Vk
   }
 }
 
+VkBlendFactor RHIBlendFactorToVkBlendFactor(platform::rhi::BlendFactor blend_factor) {
+  switch (blend_factor) {
+  case BlendFactor::Zero:
+    return VK_BLEND_FACTOR_ZERO;
+  case BlendFactor::One:
+    return VK_BLEND_FACTOR_ONE;
+  case BlendFactor::SrcAlpha:
+    return VK_BLEND_FACTOR_SRC_ALPHA;
+  case BlendFactor::OneMinusSrcAlpha:
+    return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  default:
+    return VK_BLEND_FACTOR_MAX_ENUM;
+  }
+}
+
+platform::rhi::BlendFactor VkBlendFactorToRHIBlendFactor(VkBlendFactor blend_factor) {
+  switch (blend_factor) {
+  case VK_BLEND_FACTOR_ZERO:
+    return BlendFactor::Zero;
+  case VK_BLEND_FACTOR_ONE:
+    return BlendFactor::One;
+  case VK_BLEND_FACTOR_SRC_ALPHA:
+    return BlendFactor::SrcAlpha;
+  case VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:
+    return BlendFactor::OneMinusSrcAlpha;
+  default:
+    return BlendFactor::Count;
+  }
+}
+
 ImageUsage VkImageUsageToRHIImageUsageFlags(VkImageUsageFlags usage_flag) {
   ImageUsage flags = 0;
   if (usage_flag & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
@@ -864,4 +894,22 @@ ImageUsage VkImageUsageToRHIImageUsageFlags(VkImageUsageFlags usage_flag) {
   if (usage_flag & VK_IMAGE_USAGE_SAMPLED_BIT)
     flags |= IUB_ShaderRead;
   return flags;
+}
+
+VkBlendOp RHIBlendOpToVkBlendOp(platform::rhi::BlendOp op) {
+  switch (op) {
+  case BlendOp::Add:
+    return VK_BLEND_OP_ADD;
+  default:
+    return VK_BLEND_OP_MAX_ENUM;
+  }
+}
+
+platform::rhi::BlendOp VKBlendOpToRHIBlendOp(VkBlendOp op) {
+  switch (op) {
+  case VK_BLEND_OP_ADD:
+    return BlendOp::Add;
+  default:
+    return BlendOp::Count;
+  }
 }
