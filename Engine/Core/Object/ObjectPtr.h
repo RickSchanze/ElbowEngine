@@ -71,7 +71,7 @@ public:
     if (obj == nullptr) {
       SetObject(INVALID_OBJECT_HANDLE);
     } else {
-      SetObject(obj->GetHandle());
+      SetObject(((Object*)obj)->GetHandle());
     }
   }
 

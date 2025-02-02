@@ -154,11 +154,14 @@ void Material::Build() {
   active_pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
   descriptor_set_ = AllocateDescriptorSetFunc(desc.descriptor_set_layouts[0]);
   // TODO: Update DescriptorSet
-  // 1. 更新永远binding = 0的摄像机数据的UniformBuffer
-  UpdateCameraDescriptorSetFunc(*descriptor_set_);
-  // 2. 解析Shader参数 创建UniformBuffer和Texture
+  // 1. 解析Shader参数 创建UniformBuffer和Texture
   Array<ShaderParam> params;
-  shader_ptr->GetParams(params);
+  bool has_camera = false;
+  shader_ptr->GetParams(params, has_camera);
+  // 2. 看情况更新永远binding = 0的摄像机数据的UniformBuffer
+  if (has_camera) {
+    UpdateCameraDescriptorSetFunc(*descriptor_set_);
+  }
   // 3. 根据参数计算总UniformBuffer的大小, 以及每个binding UniformBuffer的偏移和大小
   HashMap<UInt64, MaterialParamBlock> struct_only_offsets;
   UInt64 size =
@@ -203,9 +206,8 @@ void Material::Build() {
   // TODO: Sampler的更新
 }
 
-void Material::Clean()
-{
-    buffer_ = nullptr;
-    descriptor_set_ = nullptr;
-    active_pipeline_ = nullptr;
+void Material::Clean() {
+  buffer_ = nullptr;
+  descriptor_set_ = nullptr;
+  active_pipeline_ = nullptr;
 }

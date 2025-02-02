@@ -107,11 +107,12 @@ static void GetLabel(slang::VariableReflection *variable, core::String &out) {
 
 static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_buffer_type_layout,
                                         Array<ShaderParam> &output, UInt32 binding, StringView variable_name,
-                                        core::StringView path, slang::VariableReflection *variable) {
+                                        core::StringView path, slang::VariableReflection *variable, bool &has_camera) {
   auto element_type = constant_buffer_type_layout->getType()->getElementType();
   auto element_type_name = element_type->getName();
   auto element_type_layout = constant_buffer_type_layout->getElementTypeLayout();
   if (std::strcmp(element_type_name, "Camera") == 0) {
+    has_camera = true;
     // 摄像机非常特殊直接跳过
     return true;
   }
@@ -165,7 +166,7 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
   return true;
 }
 
-void Shader::GetParams(Array<ShaderParam> &out) {
+void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera) {
   if (!IsLoaded()) {
     PerformLoad();
   }
@@ -193,7 +194,7 @@ void Shader::GetParams(Array<ShaderParam> &out) {
       if (category == slang::DescriptorTableSlot) {
         if (variable_kind == slang::TypeReflection::Kind::ConstantBuffer) {
           FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(), path_,
-                                      field);
+                                      field, has_camera);
         }
         if (variable_kind == slang::TypeReflection::Kind::SamplerState) {
           ShaderParam param{};
@@ -360,19 +361,21 @@ static void FillInputLayout(GraphicsPipelineDesc &desc, uint32_t index) {
     vert_input_desc.binding = 0;
     vert_input_desc.stride = sizeof(Vertex_UI);
     desc.vertex_inputs.push_back(vert_input_desc);
+
     VertexAttributeDesc position{};
     position.location = 0;
     position.binding = 0;
     position.format = Format::R32G32B32_Float;
     position.offset = offsetof(Vertex_UI, position);
     desc.vertex_attributes.push_back(position);
+
     VertexAttributeDesc uv{};
-    uv.location = 0;
+    uv.location = 1;
     uv.binding = 0;
     uv.format = Format::R32G32_Float;
     uv.offset = offsetof(Vertex_UI, uv);
     desc.vertex_attributes.push_back(uv);
-  }
+  } break;
   default:
     throw ArgumentException(NAMEOF(index), "超出范围");
   }
@@ -386,6 +389,7 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
   DescriptorSetLayoutDesc layout_desc{};
   Array<SharedPtr<DescriptorSetLayout>> layouts;
   auto scope_type_layout = global->getTypeLayout();
+  auto kind = scope_type_layout->getKind();
   switch (scope_type_layout->getKind()) {
   case slang::TypeReflection::Kind::Struct: {
     int param_cnt = scope_type_layout->getFieldCount();

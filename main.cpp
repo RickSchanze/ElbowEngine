@@ -68,9 +68,12 @@ int main() {
       PROFILE_SCOPE("AssetDataBase Initialize");
       AssetDataBase::Get();
       Array results = {
-          AssetDataBase::Import("Assets/Shader/Error.slang"), AssetDataBase::Import("Assets/Texture/Default.png"),
-          AssetDataBase::Import("Assets/Mesh/Cube.fbx"),      AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
+          AssetDataBase::Import("Assets/Shader/Error.slang"),
+          AssetDataBase::Import("Assets/Texture/Default.png"),
+          AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
+          AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
           AssetDataBase::Import("Assets/Shader/Text.slang"),
+          AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
       };
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {

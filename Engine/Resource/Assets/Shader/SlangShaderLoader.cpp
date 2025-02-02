@@ -35,6 +35,11 @@ using namespace platform;
 static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValue(ShaderAnnotation::Count)> &output,
                              String &name) {
   PROFILE_SCOPE_AUTO;
+  // 一些默认值
+  output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
+  output[GetEnumValue(ShaderAnnotation::EnableDepth)] = 1;
+  output[GetEnumValue(ShaderAnnotation::Blend)] = 0;
+
   std::ifstream input(*path);
   if (!input.is_open()) {
     return;
@@ -66,12 +71,7 @@ static void ParseAnnotations(const StringView path, StaticArray<int, GetEnumValu
         if (key == "Name") {
           name = value;
         }
-        {
-          // 一些默认值
-          output[GetEnumValue(ShaderAnnotation::InputLayout)] = 1;
-          output[GetEnumValue(ShaderAnnotation::EnableDepth)] = 1;
-          output[GetEnumValue(ShaderAnnotation::Blend)] = 0;
-        }
+
         if (key == "Pipeline") {
           if (value == "Graphics") {
             output[GetEnumValue(ShaderAnnotation::Pipeline)] = 1;

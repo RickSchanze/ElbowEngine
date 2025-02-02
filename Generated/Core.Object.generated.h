@@ -10,6 +10,7 @@ using enum core::ObjectFlagType; \
 type->Internal_RegisterEnumValue(OFT_Persistent ,"OFT_Persistent")->SetComment("此对象需要持久化存储"); \
 type->Internal_RegisterEnumValue(OFT_Actor ,"OFT_Actor"); \
 type->Internal_RegisterEnumValue(OFT_Component ,"OFT_Component"); \
+type->Internal_RegisterEnumValue(OFT_Widget ,"OFT_Widget"); \
 core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<core::ObjectFlagType>(), type); \
 } \
 { \

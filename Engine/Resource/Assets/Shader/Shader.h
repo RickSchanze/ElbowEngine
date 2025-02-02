@@ -69,7 +69,7 @@ public:
 
   void PerformLoad() override;
 
-  void GetParams(core::Array<ShaderParam> &out);
+  void GetParams(core::Array<ShaderParam> &out, bool &has_camera);
 
   [[nodiscard]] bool IsLoaded() const override;
 

@@ -21,7 +21,10 @@ using namespace rhi;
 void Text::SetText(StringView text) {
   if (text == text_)
     return;
+  text_ = text;
+  SetDirty();
 }
+
 void Text::SetSpacing(Int32 space) {
   if (spacing_ == space) {
     return;
@@ -63,7 +66,7 @@ Rect2D Text::GetFontRect() {
   return rect;
 }
 
-void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer &index_buffer) {
+void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
   // 左下角
   auto bl = target_rect.BottomLeft();
   auto rt = target_rect.TopRight();
@@ -83,28 +86,28 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
       continue;
     }
     auto &glyph = font_->GetGlyphInfo(unicode);
-    Vertex_UI left_top;
+    Vertex_UI left_top{};
     left_top.position.x = cur_pos_x + glyph.bearing_x;
     left_top.position.y = cur_pos_y + glyph.bearing_y;
     left_top.uv.x = glyph.uv_x_lt;
     left_top.uv.y = glyph.uv_y_lt;
     vertex_buffer.push_back(left_top);
 
-    Vertex_UI left_bottom;
+    Vertex_UI left_bottom{};
     left_bottom.position.x = cur_pos_x + glyph.bearing_x;
     left_bottom.position.y = cur_pos_y - glyph.height + glyph.bearing_y;
     left_bottom.uv.x = glyph.uv_x_lt;
     left_bottom.uv.y = glyph.uv_y_rb;
     vertex_buffer.push_back(left_bottom);
 
-    Vertex_UI right_top;
+    Vertex_UI right_top{};
     right_top.position.x = cur_pos_x + glyph.bearing_x + glyph.width;
     right_top.position.y = cur_pos_y + glyph.bearing_y;
     right_top.uv.x = glyph.uv_x_rb;
     right_top.uv.y = glyph.uv_y_lt;
     vertex_buffer.push_back(right_top);
 
-    Vertex_UI right_bottom;
+    Vertex_UI right_bottom{};
     right_bottom.position.x = cur_pos_x + glyph.bearing_x + glyph.width;
     right_bottom.position.y = cur_pos_y - glyph.height + glyph.bearing_y;
     right_bottom.uv.x = glyph.uv_x_rb;
@@ -122,6 +125,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     index_range_ += 6;
 
     cur_pos_x += glyph.advance_x + spacing_;
+    SetDirty(false);
   }
 }
 

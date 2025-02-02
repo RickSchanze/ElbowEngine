@@ -28,7 +28,17 @@ public:
 
   void Draw(platform::rhi::CommandBuffer &cmd);
 
+  void SetPosition(core::Vector3 position);
+  void SetSize(core::Vector2 size);
+
+  core::Vector3 GetPosition() const { return position_; }
+  core::Vector2 GetSize() const { return size_; }
+
+  void SetDirty(bool dirty = true) { dirty_ = dirty; }
+
 private:
+  bool dirty_ = false;
+
   core::Vector3 position_{};
   core::Vector2 size_{};
 

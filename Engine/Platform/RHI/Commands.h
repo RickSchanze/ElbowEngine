@@ -82,7 +82,7 @@ struct Cmd_DrawIndexed final : RHICommand {
   uint32_t index_count = 0;
   uint32_t instance_count = 0;
   UInt32 first_index = 0;
-  explicit Cmd_DrawIndexed(uint32_t index_count_, uint32_t instance_count_ = 1, UInt32 first_index_)
+  explicit Cmd_DrawIndexed(uint32_t index_count_, uint32_t instance_count_ = 1, UInt32 first_index_ = 0)
       : index_count(index_count_), instance_count(instance_count_), first_index(first_index_) {}
 };
 

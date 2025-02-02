@@ -5,6 +5,8 @@
 #include "Overlay.h"
 
 #include "Platform/RHI/Buffer.h"
+#include "Platform/RHI/CommandBuffer.h"
+#include "Platform/RHI/Commands.h"
 #include "Platform/RHI/GfxCommandHelper.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/VertexLayout.h"
@@ -29,7 +31,7 @@ Overlay &Overlay::SetSlot(Widget *widget) {
 void Overlay::Draw(CommandBuffer &cmd) {
   if (!slot_)
     return;
-  if (slot_->IsDirty()) {
+  if (slot_->IsDirty() || dirty_) {
     core::Array<Vertex_UI> vertexs;
     core::Array<UInt32> indices;
     vertexs.reserve(500);
@@ -52,7 +54,18 @@ void Overlay::Draw(CommandBuffer &cmd) {
       index_buffer_ = GetGfxContext()->CreateBuffer(buffer_desc, "OverlayIndexBuffer");
     }
     GfxCommandHelper::CopyDataToBuffer(indices.data(), index_buffer_.get(), index_buffer_size);
-    slot_->SetDirty(false);
   }
+  cmd.Enqueue<Cmd_BindVertexBuffer>(vertex_buffer_.get());
+  cmd.Enqueue<Cmd_BindIndexBuffer>(index_buffer_.get());
+  slot_->Draw(cmd);
+}
 
+void Overlay::SetPosition(core::Vector3 position) {
+  position_ = position;
+  SetDirty();
+}
+
+void Overlay::SetSize(core::Vector2 size) {
+  size_ = size;
+  SetDirty();
 }

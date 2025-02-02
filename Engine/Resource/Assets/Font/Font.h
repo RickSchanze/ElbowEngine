@@ -24,7 +24,7 @@ struct GlyphInfo {
   Float uv_x_lt, uv_y_lt, uv_x_rb, uv_y_rb;
   UInt32 bearing_x, bearing_y; // 字符的偏移
   UInt32 width, height;
-  Float advance_x;
+  UInt32 advance_x;
 };
 
 class CLASS() Font : public Asset {

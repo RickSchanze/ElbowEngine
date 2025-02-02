@@ -6,6 +6,7 @@
 
 #include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
+#include "Func/UI/Overlay.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -14,6 +15,7 @@
 #include "RenderContext.h"
 #include "RenderTexture.h"
 #include "Resource/AssetDataBase.h"
+#include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 
 using namespace resource;
@@ -56,6 +58,7 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
   cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
   BindMaterial(cmd, material_);
   BindAndDrawMesh(cmd, mesh_);
+  test_text_->Draw(cmd);
   cmd.Enqueue<Cmd_EndRender>();
   cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range,
                                         AFB_ColorAttachmentWrite, 0, PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
@@ -64,14 +67,27 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
 }
 
 void func::FixedBasicTestRenderPipeline::Build() {
-  auto a1 = AssetDataBase::LoadAsync("Assets/Material/Test.mat");
   auto a2 = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
-  MakeSyncGroup(Move(a1), Move(a2))->OnCompleted([this](const auto &res) {
-    auto &[mat_handle, mesh_handle] = res;
+  auto s1 = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
+  auto s2 = AssetDataBase::LoadAsync("Assets/Shader/Text.slang");
+  MakeSyncGroup(Move(a2), Move(s1), Move(s2))->OnCompleted([this](const auto &res) {
+    auto &[mesh_handle, s1, s2] = res;
     mesh_ = static_cast<Mesh *>(ObjectManager::GetObjectByHandle(mesh_handle));
-    material_ = static_cast<Material *>(ObjectManager::GetObjectByHandle(mat_handle));
-    if (mesh_ && material_) {
-      ready_ = true;
+    material_ = New<Material>();
+    font_material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    auto *s2_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s2));
+    font_material->SetShader(s2_obj);
+    auto *s1_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s1));
+    material_->SetShader(s1_obj);
+
+    test_text_ = New<ui::Overlay>();
+    test_text_->SetPosition({0, 0, 0});
+    test_text_->SetSize({1920, 1080});
+    auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
+    test_text_->SetSlot(text_wdg);
+    text_wdg->SetText("Hello World");
+    if (mesh_) {
+      ready_ = font_material && material_;
     }
   });
   depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());

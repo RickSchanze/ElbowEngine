@@ -3,10 +3,13 @@
 //
 
 #pragma once
-#include "Core/Base/UniquePtr.h"
+#include "Func/UI/Widget/Text.h"
 #include "RenderPipeline.h"
 #include "Resource/Assets/Material/Material.h"
 
+namespace func::ui {
+class Overlay;
+}
 namespace func {
 class RenderTexture;
 }
@@ -34,8 +37,10 @@ public:
 
 private:
   resource::Material *material_ = nullptr;
+  resource::Material *font_material = nullptr;
   core::SharedPtr<RenderTexture> depth_target_;
   resource::Mesh *mesh_ = nullptr;
+  ui::Overlay *test_text_ = nullptr;
   bool ready_ = false;
 };
 
