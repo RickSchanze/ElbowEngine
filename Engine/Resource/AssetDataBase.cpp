@@ -139,6 +139,9 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
   if (path.EndsWith(".png")) {
     return InternalLoadAsync<Texture2D, Texture2DMeta>(path);
   }
+  if (path.EndsWith(".ttf")) {
+    return InternalLoadAsync<Font, FontMeta>(path);
+  }
   if (path.EndsWith(".mat")) {
     // 查看资产数据库是否存在
     auto meta_op = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", path));

@@ -75,8 +75,10 @@ int main() {
           AssetDataBase::Import("Assets/Shader/Text.slang"),
           AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
       };
+      auto & mgt =ThreadManager::GetByRef();
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
+        ThreadManager::Poll(INT_MAX);
         result->Wait();
       }
 #if WITH_EDITOR
@@ -104,6 +106,7 @@ int main() {
         break;
       }
     }
+    platform::rhi::GetGfxContext()->WaitForDeviceIdle();
     TickEvents::InputTickEvent.Unbind();
     LOGGER.Info(logcat::Engine, "Engine shutdown...");
     SetRuntimeStage(RuntimeStage::Shutdown);

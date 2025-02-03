@@ -9,6 +9,7 @@
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/VertexLayout.h"
 #include "Resource/Assets/Font/Font.h"
+#include "Resource/Assets/Material/Material.h"
 
 using namespace func;
 using namespace ui;
@@ -18,19 +19,47 @@ using namespace resource;
 using namespace platform;
 using namespace rhi;
 
-void Text::SetText(StringView text) {
+Text &Text::SetText(StringView text) {
   if (text == text_)
-    return;
+    return *this;
   text_ = text;
   SetDirty();
+  return *this;
 }
 
-void Text::SetSpacing(Int32 space) {
+Text &Text::SetSpacing(Int32 space) {
   if (spacing_ == space) {
-    return;
+    return *this;
   }
   spacing_ = space;
   SetDirty();
+  return *this;
+}
+
+Text &Text::SetFont(Font *font) {
+  if (font == nullptr)
+    return *this;
+  if (font_ == font)
+    return *this;
+  font_ = font;
+  if (font_material_) {
+    font_material_->SetTexture2D("font_atlas", font_->GetFontAtlas());
+  }
+  SetDirty();
+  return *this;
+}
+
+Text &Text::SetFontMaterial(resource::Material *mat) {
+  if (mat == nullptr)
+    return *this;
+  if (font_material_ == mat)
+    return *this;
+  font_material_ = mat;
+  if (const Font *font = font_) {
+    font_material_->SetTexture2D("font_atlas", font->GetFontAtlas());
+  }
+  SetDirty();
+  return *this;
 }
 
 Rect2D Text::GetBoundingRect() { return GetFontRect(); }
@@ -76,13 +105,18 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   index_offset_ = index_buffer.size();
   Int32 cur_pos_x = bl.x + padding.x;
   Int32 cur_pos_y = base_line_;
+  Font* font = font_;
+  if (font == nullptr) {
+    LOGGER.Error("Func.UI.Text", "字体未设置");
+    return;
+  }
   for (UInt64 i = 0; i < size; ++i) {
     if (cur_pos_x >= rt.x || cur_pos_y >= rt.y) {
       break;
     }
     UInt32 unicode = str.At(i);
     if (!font_->HasGlyph(unicode)) {
-      LOGGER.Error("Func.UI.Text", "字体{}不存在字符{}", font_->GetAssetPath(), unicode);
+      LOGGER.Error("Func.UI.Text", "字体{}不存在字符{:x}", font_->GetAssetPath(), unicode);
       continue;
     }
     auto &glyph = font_->GetGlyphInfo(unicode);

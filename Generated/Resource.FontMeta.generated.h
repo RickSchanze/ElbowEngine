@@ -19,7 +19,7 @@ Type* type = Type::Create<resource::FontMeta>("resource.FontMeta")->SetAttribute
 type->Internal_RegisterField("id", &resource::FontMeta::id, offsetof(resource::FontMeta, id))->SetAttribute(core::FieldInfo::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)"); \
 type->Internal_RegisterField("object_handle", &resource::FontMeta::object_handle, offsetof(resource::FontMeta, object_handle)); \
 type->Internal_RegisterField("path", &resource::FontMeta::path, offsetof(resource::FontMeta, path)); \
-type->Internal_RegisterField("font_atlas_width_", &resource::FontMeta::font_atlas_width_, offsetof(resource::FontMeta, font_atlas_width_)); \
+type->Internal_RegisterField("font_atlas_width", &resource::FontMeta::font_atlas_width, offsetof(resource::FontMeta, font_atlas_width)); \
 type->Internal_RegisterField("font_atlas_height", &resource::FontMeta::font_atlas_height, offsetof(resource::FontMeta, font_atlas_height)); \
 type->Internal_RegisterField("font_size", &resource::FontMeta::font_size, offsetof(resource::FontMeta, font_size)); \
 type->Internal_RegisterField("font_charset_file", &resource::FontMeta::font_charset_file, offsetof(resource::FontMeta, font_charset_file)); \

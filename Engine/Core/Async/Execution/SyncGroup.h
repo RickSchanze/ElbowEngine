@@ -86,7 +86,7 @@ private:
   UInt64 count_ = sizeof...(AsyncResultHandleTypes);
 };
 
-template <typename... AsyncResultHandleTypes> auto MakeSyncGroup(AsyncResultHandleTypes &&...args) {
+template <typename... AsyncResultHandleTypes> auto MakeSyncGroup(AsyncResultHandleTypes &...args) {
   auto *new_group = New<SyncGroup<AsyncResultHandleTypes...>>(std::forward<AsyncResultHandleTypes>(args)...);
   SyncGroupManager::AddGroup(new_group);
   return new_group;

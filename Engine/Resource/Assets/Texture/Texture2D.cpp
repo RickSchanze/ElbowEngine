@@ -64,7 +64,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
   ImageViewDesc view_desc{native_image_.get()};
   debug_name = String::Format("Texture2DView_{}", path);
   native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
-  GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * 4);
+  GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * channels);
   stbi_image_free(pixels);
 }
 

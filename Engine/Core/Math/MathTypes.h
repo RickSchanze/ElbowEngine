@@ -1,8 +1,8 @@
 /**
  * @file MathTypes.h
- * @author Echo 
+ * @author Echo
  * @Date 24-5-9
- * @brief 
+ * @brief
  */
 
 #pragma once
@@ -20,71 +20,66 @@
 #include GEN_HEADER("Core.MathTypes.generated.h")
 #include "Core/Reflection/MetaInfoManager.h"
 
-namespace core
-{
+namespace core {
 class Archive;
 
-struct STRUCT() Size2D
-{
-    GENERATED_STRUCT(Size2D)
+struct STRUCT() Size2D {
+  GENERATED_STRUCT(Size2D)
 
-    PROPERTY()
-    uint32_t width;
+  PROPERTY()
+  uint32_t width;
 
-    PROPERTY()
-    uint32_t height;
+  PROPERTY()
+  uint32_t height;
 
-    Size2D(const uint32_t w, const uint32_t h) : width(w), height(h) {}
-    Size2D(const Int32 w, const Int32 h) : width(w), height(h) {}
-    Size2D(const Float w, const Float h) : width(w), height(h) {}
+  Size2D(const uint32_t w, const uint32_t h) : width(w), height(h) {}
+  Size2D(const Int32 w, const Int32 h) : width(w), height(h) {}
+  Size2D(const Float w, const Float h) : width(w), height(h) {}
 
-    Size2D() = default;
+  Size2D() = default;
 
-    [[nodiscard]] core::String ToString() const;
+  [[nodiscard]] core::String ToString() const;
 
-    bool operator==(const Size2D& other) const { return width == other.width && height == other.height; }
+  bool operator==(const Size2D &other) const { return width == other.width && height == other.height; }
 };
 
+struct STRUCT() Vector2 {
+  GENERATED_STRUCT(Vector2)
 
-struct STRUCT() Vector2
-{
-    GENERATED_STRUCT(Vector2)
+  Vector2() = default;
+  Vector2(float x, float y) : x(x), y(y) {}
+  Vector2(Int32 x, Int32 y) : x(x), y(y) {}
 
-    Vector2() = default;
-    Vector2(float x, float y) : x(x), y(y) {}
-    Vector2(Int32 x, Int32 y) : x(x), y(y) {}
-
-    operator glm::vec2() const;
-    operator glm::vec3() const { return {x, y, 0}; }
-    operator glm::vec4() const { return {x, y, 0, 0}; }
+  operator glm::vec2() const;
+  operator glm::vec3() const { return {x, y, 0}; }
+  operator glm::vec4() const { return {x, y, 0, 0}; }
 
 #ifdef USE_IMGUI
-    operator ImVec2() const;
+  operator ImVec2() const;
 #endif
 
-    Vector2 operator+(const Vector2& other) const;
+  Vector2 operator+(const Vector2 &other) const;
 
-    Vector2 operator*=(float scalar) const;
-    Vector2 operator*(float x) const;
+  Vector2 operator*=(float scalar) const;
+  Vector2 operator*(float x) const;
 
-    PROPERTY()
-    float x;
+  PROPERTY()
+  float x;
 
-    PROPERTY()
-    float y;
+  PROPERTY()
+  float y;
 };
 
-struct STRUCT() Vector3i
-{
-    GENERATED_STRUCT(Vector3i)
+struct STRUCT() Vector3i {
+  GENERATED_STRUCT(Vector3i)
 public:
-    PROPERTY()
-    Int32 x = 0;
-    PROPERTY()
-    Int32 y = 0;
-    PROPERTY()
-    Int32 z    = 0;
-    Vector3i() = default;
+  PROPERTY()
+  Int32 x = 0;
+  PROPERTY()
+  Int32 y = 0;
+  PROPERTY()
+  Int32 z = 0;
+  Vector3i() = default;
 };
 
 typedef glm::vec3 Vector3;
@@ -93,142 +88,137 @@ typedef glm::mat4 Matrix4x4;
 typedef glm::mat3 Matrix3x3;
 typedef glm::quat Quaternion;
 
-namespace Constant
-{
-constexpr Vector3 ZeroVector    = {0, 0, 0};
-constexpr Vector3 OneVector     = {1, 1, 1};
+namespace Constant {
+constexpr Vector3 ZeroVector = {0, 0, 0};
+constexpr Vector3 OneVector = {1, 1, 1};
 constexpr Vector3 ForwardVector = {0, 0, 1};
-constexpr Vector3 BackVector    = {0, 0, -1};
-constexpr Vector3 RightVector   = {1, 0, 0};
-constexpr Vector3 LeftVector    = {-1, 0, 0};
-constexpr Vector3 UpVector      = {0, 1, 0};
-constexpr Vector3 DownVector    = {0, -1, 0};
+constexpr Vector3 BackVector = {0, 0, -1};
+constexpr Vector3 RightVector = {1, 0, 0};
+constexpr Vector3 LeftVector = {-1, 0, 0};
+constexpr Vector3 UpVector = {0, 1, 0};
+constexpr Vector3 DownVector = {0, -1, 0};
 
 constexpr float PI = 3.14159265358979323846f;
-}   // namespace Constant
+} // namespace Constant
 
-struct STRUCT() Rotator
-{
-    GENERATED_STRUCT(Rotator)
+struct STRUCT() Rotator {
+  GENERATED_STRUCT(Rotator)
 public:
-    PROPERTY()
-    float yaw = 0;
+  PROPERTY()
+  float yaw = 0;
 
-    PROPERTY()
-    float roll = 0;
+  PROPERTY()
+  float roll = 0;
 
-    PROPERTY()
-    float pitch = 0;
+  PROPERTY()
+  float pitch = 0;
 
-    Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
-    Rotator(const Vector3 v) : yaw(v.x), roll(v.y), pitch(v.z) {}
+  Rotator(float yaw = 0, float roll = 0, float pitch = 0) : yaw(yaw), roll(roll), pitch(pitch) {}
+  Rotator(const Vector3 v) : yaw(v.x), roll(v.y), pitch(v.z) {}
 
-    [[nodiscard]] Vector3      GetForwardVector() const;
-    [[nodiscard]] Vector3      GetUpVector() const;
-    [[nodiscard]] Vector3      GetRightVector() const;
-    [[nodiscard]] core::String ToString() const;
+  [[nodiscard]] Vector3 GetForwardVector() const;
+  [[nodiscard]] Vector3 GetUpVector() const;
+  [[nodiscard]] Vector3 GetRightVector() const;
+  [[nodiscard]] core::String ToString() const;
 
-    bool operator==(const Rotator&) const;
-    bool operator!=(const Rotator&) const;
+  bool operator==(const Rotator &) const;
+  bool operator!=(const Rotator &) const;
 
-    Rotator& operator=(const Vector3& v);
-    Rotator  operator-(const Rotator& other) const;
-    Rotator  operator+(const Rotator& other) const;
+  Rotator &operator=(const Vector3 &v);
+  Rotator operator-(const Rotator &other) const;
+  Rotator operator+(const Rotator &other) const;
 
-    [[nodiscard]] Vector3 ToVector3() const { return {pitch, yaw, roll}; }
+  [[nodiscard]] Vector3 ToVector3() const { return {pitch, yaw, roll}; }
 
-    Rotator& operator+=(const Rotator& other);
-    Rotator& operator-=(const Rotator& other);
+  Rotator &operator+=(const Rotator &other);
+  Rotator &operator-=(const Rotator &other);
 
-    /**
-     * 将角度表示的自己转变为弧度表示
-     * @return
-     */
-    [[nodiscard]] Rotator ToRotatorRadian() const;
+  /**
+   * 将角度表示的自己转变为弧度表示
+   * @return
+   */
+  [[nodiscard]] Rotator ToRotatorRadian() const;
 };
 
-struct STRUCT() Rect2D
-{
-    GENERATED_STRUCT(Rect2D)
+struct STRUCT() Rect2D {
+  GENERATED_STRUCT(Rect2D)
 public:
-    PROPERTY()
-    Vector2 position = {};
+  PROPERTY()
+  Vector2 position = {};
 
-    PROPERTY()
-    Vector2 size = {};
+  PROPERTY()
+  Vector2 size = {};
 
-    [[nodiscard]] String ToString() const;
+  [[nodiscard]] String ToString() const;
 
-    [[nodiscard]] Vector2 Center() const;
-    [[nodiscard]] Vector2 TopLeft() const;
-    [[nodiscard]] Vector2 TopRight() const;
-    [[nodiscard]] Vector2 BottomLeft() const;
-    [[nodiscard]] Vector2 BottomRight() const;
-    /**
-     * 注意！！！返回的Size2D其存储的类型是Int
-     * @return
-     */
-    [[nodiscard]] Size2D  Size() const;
-    [[nodiscard]] Float   Area() const;
+  [[nodiscard]] Vector2 Center() const;
+  [[nodiscard]] Vector2 TopLeft() const;
+  [[nodiscard]] Vector2 TopRight() const;
+  [[nodiscard]] Vector2 BottomLeft() const;
+  [[nodiscard]] Vector2 BottomRight() const;
+  /**
+   * 注意！！！返回的Size2D其存储的类型是Int
+   * @return
+   */
+  [[nodiscard]] Size2D Size() const;
+  [[nodiscard]] Float Area() const;
 };
 
-struct STRUCT() Color
-{
-    GENERATED_STRUCT(Color)
+struct STRUCT() Color {
+  GENERATED_STRUCT(Color)
 public:
-    PROPERTY()
-    float r = 0;
+  PROPERTY()
+  float r = 0;
 
-    PROPERTY()
-    float g = 0;
+  PROPERTY()
+  float g = 0;
 
-    PROPERTY()
-    float b = 0;
+  PROPERTY()
+  float b = 0;
 
-    PROPERTY()
-    float a = 1.f;
+  PROPERTY()
+  float a = 1.f;
 
-    static Color Black() { return {0, 0, 0, 1}; }
-    static Color White() { return {1, 1, 1, 1}; }
-    static Color Red() { return {1, 0, 0, 1}; }
-    static Color Green() { return {0, 1, 0, 1}; }
-    static Color Blue() { return {0, 0, 1, 1}; }
-    static Color Yellow() { return {1, 1, 0, 1}; }
-    static Color Warning() { return {1, 1, 0, 1}; }
-    static Color Error() { return {1, 0, 0, 1}; }
-    static Color Info() { return {0, 1, 1, 1}; }
-    static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
-    static Color DefaultClear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
-    static Color Invalid() { return {-1, -1, -1, -1}; }
+  static Color Black() { return {0, 0, 0, 1}; }
+  static Color White() { return {1, 1, 1, 1}; }
+  static Color Red() { return {1, 0, 0, 1}; }
+  static Color Green() { return {0, 1, 0, 1}; }
+  static Color Blue() { return {0, 0, 1, 1}; }
+  static Color Yellow() { return {1, 1, 0, 1}; }
+  static Color Warning() { return {1, 1, 0, 1}; }
+  static Color Error() { return {1, 0, 0, 1}; }
+  static Color Info() { return {0, 1, 1, 1}; }
+  static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
+  static Color DefaultClear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
+  static Color Invalid() { return {-1, -1, -1, -1}; }
 
-    /** 讲一个0-1的表示颜色的值转换为0-255的值 */
-    static uint8_t FloatToByte(float value);
+  /** 讲一个0-1的表示颜色的值转换为0-255的值 */
+  static uint8_t FloatToByte(float value);
 
-    [[nodiscard]] bool IsValid() const;
+  [[nodiscard]] bool IsValid() const;
 
-    Color operator*(const Color& other) const;
-    Color operator*(float scalar) const;
+  Color operator*(const Color &other) const;
+  Color operator*(float scalar) const;
 
-    /** 转换Int带alpha通道 */
-    [[nodiscard]] uint32_t ToUInt() const;
-    /** 转换为没有alpha通道的Int */
-    [[nodiscard]] uint32_t ToUIntNoAlpha() const;
+  /** 转换Int带alpha通道 */
+  [[nodiscard]] uint32_t ToUInt() const;
+  /** 转换为没有alpha通道的Int */
+  [[nodiscard]] uint32_t ToUIntNoAlpha() const;
 
 #ifdef USE_IMGUI
-    Color() = default;
-    Color(const ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
-    Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}
-    operator ImVec4() const { return {r, g, b, a}; }
-    explicit operator ImU32() const { return ImGui::GetColorU32((ImVec4)(*this)); }
+  Color() = default;
+  Color(const ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
+  Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}
+  operator ImVec4() const { return {r, g, b, a}; }
+  explicit operator ImU32() const { return ImGui::GetColorU32((ImVec4)(*this)); }
 #endif
 
-    bool operator==(const Color& other) const;
-    bool operator!=(const Color& other) const;
+  bool operator==(const Color &other) const;
+  bool operator!=(const Color &other) const;
 };
 
-inline Matrix4x4 GetMatrix4x4Identity()
-{
-    static auto identity = glm::mat4(1.0f);
-    return identity;
+inline Matrix4x4 GetMatrix4x4Identity() {
+  static auto identity = glm::mat4(1.0f);
+  return identity;
 }
-}
+} // namespace core

@@ -95,11 +95,13 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
       LOGGER.Warn("Resource.Load.Font", "Font Atlas已满! {}/{}", i, unicode_size);
       break;
     }
-    // 拷贝数据
-    for (Int32 y = 0; y < bitmap.rows; y++) {
-      for (Int32 x = 0; x < bitmap.width; x++) {
-        Int32 target_index = (pen_y + y) * atlas_w + pen_x + x;
-        target_buffer[target_index] = bitmap.buffer[y * bitmap.pitch + x];
+    if (target_buffer != nullptr) {
+      // 拷贝数据
+      for (Int32 y = 0; y < bitmap.rows; y++) {
+        for (Int32 x = 0; x < bitmap.width; x++) {
+          Int32 target_index = (pen_y + y) * atlas_w + pen_x + x;
+          target_buffer[target_index] = bitmap.buffer[y * bitmap.pitch + x];
+        }
       }
     }
     // 保存此字符的信息
@@ -128,6 +130,7 @@ void Font::PerformLoad() {
     return;
   }
   auto &meta = *op_meta;
+  Load(meta);
 }
 
 void Font::PerformUnload() { font_atlas_ = nullptr; }
@@ -145,7 +148,7 @@ static Texture2D *LoadFontAtlasTexture(StringView atlas_path) {
 
 bool Font::Load(const FontMeta &meta) {
   path_ = meta.path;
-  font_atlas_width_ = meta.font_atlas_width_;
+  font_atlas_width_ = meta.font_atlas_width;
   font_atlas_height_ = meta.font_atlas_height;
   font_size_ = meta.font_size;
   if (Math::WillMultiplyOverflow(font_atlas_width_, font_atlas_height_)) {
@@ -157,11 +160,14 @@ bool Font::Load(const FontMeta &meta) {
   String temp_font_atlas_path = Path::Combine("Intermediate", String::Format("FontAtlas_{}.png", temp_font_atlas_name));
   if (File::IsExist(temp_font_atlas_path)) {
     font_atlas_ = LoadFontAtlasTexture(temp_font_atlas_path);
-    return font_atlas_;
   }
-  UInt8 *buffer = static_cast<UInt8 *>(Malloc(font_atlas_size));
+  UInt8 *buffer = nullptr;
+  if (!font_atlas_) {
+    buffer = static_cast<UInt8 *>(Malloc(font_atlas_size));
+  }
   if (LoadFont(path_, font_size_, meta.font_charset_file, buffer, font_atlas_width_, font_atlas_height_,
-               this->glyphs_)) {
+               this->glyphs_) &&
+      !font_atlas_) {
     // 写入字体贴图中, 然后通过Texture2D的接口加载这张图片
     Int32 write_errcode =
         stbi_write_png(*temp_font_atlas_path, font_atlas_width_, font_atlas_height_, 1, buffer, font_atlas_width_);
@@ -171,7 +177,9 @@ bool Font::Load(const FontMeta &meta) {
       font_atlas_ = LoadFontAtlasTexture(temp_font_atlas_path);
     }
   }
-  Free(buffer);
+  if (buffer != nullptr) {
+    Free(buffer);
+  }
   return font_atlas_;
 }
 

@@ -37,20 +37,22 @@ public:
 
   bool Load(const FontMeta &meta);
 
-  Int16 GetFontSize() const { return font_size_; }
+  [[nodiscard]] Int16 GetFontSize() const { return font_size_; }
   /**
    * 设置字体大小, 这会生成新的FontAtlas
    */
   void SetFontSize(Int16 new_size);
 
-  FontRenderMethod GetRenderMethod() const { return render_method_; }
-  core::StringView GetAssetPath() const { return path_; }
+  [[nodiscard]] Texture2D* GetFontAtlas() const { return font_atlas_; }
 
-  const GlyphInfo &GetGlyphInfo(UInt32 unicode) const { return glyphs_.at(unicode); }
-  bool HasGlyph(UInt32 unicode) const { return glyphs_.contains(unicode); }
+  [[nodiscard]] FontRenderMethod GetRenderMethod() const { return render_method_; }
+  [[nodiscard]] core::StringView GetAssetPath() const { return path_; }
+
+  [[nodiscard]] const GlyphInfo &GetGlyphInfo(UInt32 unicode) const { return glyphs_.at(unicode); }
+  [[nodiscard]] bool HasGlyph(UInt32 unicode) const { return glyphs_.contains(unicode); }
 
 private:
-  Int16 font_size_ = 16;                                       // 静态字体大小
+  Int32 font_size_ = 16;                                       // 静态字体大小
   FontRenderMethod render_method_ = FontRenderMethod::Texture; // 默认不使用SDF
   core::String path_;                                          // 资源路径
   Int32 font_atlas_width_ = 0;                                 // 字体图集的宽度

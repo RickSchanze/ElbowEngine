@@ -23,5 +23,5 @@ void SyncGroupManager::RemoveGroup(SyncGroupBase *group) {
     return;
   auto &mgr = GetByRef();
   mgr.groups_.remove(group);
-  Delete(group);
+  // Delete(group);
 }

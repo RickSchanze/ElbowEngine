@@ -341,7 +341,8 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand
   ctx.BeginDebugLabel(buffer, label_info);
   // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
   // 如果调用了Delete会崩溃
-  for (auto &command : commands) {
+  for (Int32 i = 0; i < commands.size(); i++) {
+    auto& command = commands[i];
     switch (command->GetType()) {
     case RHICommandType::CopyBuffer:
       ExecuteCmdCopyBuffer(buffer, static_cast<Cmd_CopyBuffer *>(command));

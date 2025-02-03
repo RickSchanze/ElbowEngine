@@ -16,8 +16,10 @@ namespace func::ui::widget {
 
 class CLASS() Text : public Widget {
 public:
-  void SetText(core::StringView text);
-  void SetSpacing(Int32 space);
+  Text &SetText(core::StringView text);
+  Text &SetSpacing(Int32 space);
+  Text &SetFont(resource::Font *font);
+  Text &SetFontMaterial(resource::Material *mat);
   core::Rect2D GetBoundingRect() override;
 
   /**

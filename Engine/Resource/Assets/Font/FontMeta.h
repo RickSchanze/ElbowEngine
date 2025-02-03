@@ -23,7 +23,7 @@ public:
   core::String path;
 
   PROPERTY()
-  Int32 font_atlas_width_ = 1024;
+  Int32 font_atlas_width = 1024;
 
   PROPERTY()
   Int32 font_atlas_height = 1024;

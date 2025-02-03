@@ -7,9 +7,11 @@
 #include "Core/CoreEvents.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "PersistentObject.h"
+#include "Core/Async/ThreadManager.h"
+#include "Platform/RHI/GfxContext.h"
 
 #include GEN_HEADER("Core.ObjectRegistry.generated.h")
-#include "Core/Async/ThreadManager.h"
+
 
 GENERATED_SOURCE()
 

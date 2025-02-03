@@ -28,6 +28,8 @@ Overlay &Overlay::SetSlot(Widget *widget) {
   }
 }
 
+Overlay::~Overlay() {}
+
 void Overlay::Draw(CommandBuffer &cmd) {
   if (!slot_)
     return;
@@ -54,6 +56,7 @@ void Overlay::Draw(CommandBuffer &cmd) {
       index_buffer_ = GetGfxContext()->CreateBuffer(buffer_desc, "OverlayIndexBuffer");
     }
     GfxCommandHelper::CopyDataToBuffer(indices.data(), index_buffer_.get(), index_buffer_size);
+    dirty_ = false;
   }
   cmd.Enqueue<Cmd_BindVertexBuffer>(vertex_buffer_.get());
   cmd.Enqueue<Cmd_BindIndexBuffer>(index_buffer_.get());
