@@ -148,7 +148,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     right_bottom.uv.y = glyph.uv_y_rb;
     vertex_buffer.push_back(right_bottom);
 
-    UInt64 index_size = index_buffer.size();
+    UInt64 index_size = vertex_buffer.size();
     index_buffer.push_back(index_size - 4);
     index_buffer.push_back(index_size - 2);
     index_buffer.push_back(index_size - 1);
@@ -159,8 +159,8 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     index_range_ += 6;
 
     cur_pos_x += glyph.advance_x + spacing_;
-    SetDirty(false);
   }
+  SetDirty(false);
 }
 
 void Text::Draw(CommandBuffer &cmd) {

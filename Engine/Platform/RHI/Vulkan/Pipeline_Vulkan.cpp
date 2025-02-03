@@ -101,6 +101,7 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &des
   VkPipelineColorBlendAttachmentState color_blend_attachment{};
   color_blend_attachment.colorWriteMask =
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment.blendEnable = VK_FALSE;
   if (desc.color_blend.enable_blend) {
     color_blend_attachment.blendEnable = VK_TRUE;
     color_blend_attachment.srcColorBlendFactor = RHIBlendFactorToVkBlendFactor(desc.color_blend.src_color_blend_factor);
@@ -110,7 +111,6 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &des
     color_blend_attachment.dstAlphaBlendFactor = RHIBlendFactorToVkBlendFactor(desc.color_blend.dst_alpha_blend_factor);
     color_blend_attachment.alphaBlendOp = RHIBlendOpToVkBlendOp(desc.color_blend.alpha_blend_op);
   }
-  color_blend_attachment.blendEnable = VK_FALSE;
 
   VkPipelineColorBlendStateCreateInfo color_blend_info{};
   color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

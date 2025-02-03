@@ -7,6 +7,11 @@ public float4 PerformMVP(float4 pos, float4x4 m, float4x4 v, float4x4 p) {
     return p1;
 }
 
+public float4 PerformP(float4 pos, float4x4 p) {
+    float4 result = mul(pos, p);
+    return result;
+}
+
 /**
  * Returns a float4x4 identity matrix.
  */

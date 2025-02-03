@@ -18,6 +18,7 @@ uniform SamplerState common_sampler;
 uniform ConstantBuffer<FontParams> font_params;
 
 struct VertexOutput {
+  float4 position : SV_Position;
   float2 uv : TEXCOORD0;
 }
 
@@ -29,13 +30,14 @@ struct FragOutput {
 VertexOutput vert(VertexUI vert) {
   VertexOutput output;
   output.uv = vert.uv;
+  output.position = PerformP(float4(vert.position, 1), camera.GetProjection());
   return output;
 }
 
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
   FragOutput output;
-  float4 sampled_color = font_atlas.Sample(common_sampler, input.uv);
-  output.color = float4(font_params.color.rgb * sampled_color.rgb, font_params.color.a * sampled_color.a);
+  float sampled_color = font_atlas.Sample(common_sampler, input.uv).r;
+  output.color = float4(1, 1, 1, sampled_color);
   return output;
 }
