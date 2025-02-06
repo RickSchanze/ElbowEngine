@@ -54,14 +54,13 @@ struct STRUCT() Vector2 {
   operator glm::vec3() const { return {x, y, 0}; }
   operator glm::vec4() const { return {x, y, 0, 0}; }
 
-#ifdef USE_IMGUI
-  operator ImVec2() const;
-#endif
 
   Vector2 operator+(const Vector2 &other) const;
 
   Vector2 operator*=(float scalar) const;
   Vector2 operator*(float x) const;
+  Vector2 operator/(float scalar) const;
+  Vector2 operator-(const Float other) const;
 
   PROPERTY()
   float x;
@@ -69,6 +68,8 @@ struct STRUCT() Vector2 {
   PROPERTY()
   float y;
 };
+
+Vector2 operator-(Float s, Vector2 v);
 
 struct STRUCT() Vector3i {
   GENERATED_STRUCT(Vector3i)
@@ -162,6 +163,8 @@ public:
    */
   [[nodiscard]] Size2D Size() const;
   [[nodiscard]] Float Area() const;
+
+  Rect2D operator/(const Float scalar) const;
 };
 
 struct STRUCT() Color {

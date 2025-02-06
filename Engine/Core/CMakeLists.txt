@@ -118,6 +118,8 @@ add_library(${PROJECT_NAME}
         Base/Ranges.h
         Async/Execution/SyncGroup.cpp
         Async/Execution/SyncGroup.h
+        Math/MathFunctional.cpp
+        Math/MathFunctional.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

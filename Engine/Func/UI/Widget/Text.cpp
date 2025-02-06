@@ -4,7 +4,10 @@
 
 #include "Text.h"
 
+#include "Core/Math/Math.h"
+#include "Core/Math/MathFunctional.h"
 #include "Func/Render/Misc.h"
+#include "Func/UI/CoordConversion.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/VertexLayout.h"
@@ -27,8 +30,8 @@ Text &Text::SetText(StringView text) {
   return *this;
 }
 
-Text &Text::SetSpacing(Int32 space) {
-  if (spacing_ == space) {
+Text &Text::SetSpacing(Float space) {
+  if (Math::ApproximatelyEqual(space, spacing_)) {
     return *this;
   }
   spacing_ = space;
@@ -62,7 +65,20 @@ Text &Text::SetFontMaterial(resource::Material *mat) {
   return *this;
 }
 
+Text &Text::SetSizeBase(Float base) {
+  if (Math::ApproximatelyEqual(base, size_base_))
+    return *this;
+  size_base_ = base;
+  SetDirty();
+  return *this;
+}
+
 Rect2D Text::GetBoundingRect() { return GetFontRect(); }
+
+Float Text::GetSizeBase() const {
+  // TODO: 1000设为项目默认值
+  return size_base_ == 0 ? 500.f : size_base_;
+}
 
 Rect2D Text::GetFontRect() {
   UnicodeString str = text_.AsUnicode();
@@ -72,9 +88,9 @@ Rect2D Text::GetFontRect() {
     LOGGER.Error("Func.UI.Text", "字体未设置");
     return Rect2D{};
   }
-  UInt32 bearing_height_top = 0;
-  UInt32 bearing_height_bottom = 0;
-  UInt32 width = 0;
+  Float bearing_height_top = 0;
+  Float bearing_height_bottom = 0;
+  Float width = 0;
   for (UInt64 i = 0; i < size; ++i) {
     UInt32 unicode = str.At(i);
     if (!font->HasGlyph(unicode)) {
@@ -92,7 +108,7 @@ Rect2D Text::GetFontRect() {
   auto padding = GetPadding();
   rect.size.x = width + padding.x + padding.z + (size - 1) * spacing_;
   rect.size.y = bearing_height_top + bearing_height_bottom + padding.y + padding.w;
-  return rect;
+  return rect / GetSizeBase();
 }
 
 void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
@@ -101,15 +117,17 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   auto rt = target_rect.TopRight();
   UnicodeString str = text_.AsUnicode();
   UInt64 size = str.Size();
-  auto padding = GetPadding();
+  auto padding = GetPadding() / GetSizeBase();
   index_offset_ = index_buffer.size();
-  Int32 cur_pos_x = bl.x + padding.x;
-  Int32 cur_pos_y = base_line_;
-  Font* font = font_;
+  Float cur_pos_x = bl.x + padding.x;
+  Float cur_pos_y = base_line_ / GetSizeBase() + padding.w;
+  Font *font = font_;
   if (font == nullptr) {
     LOGGER.Error("Func.UI.Text", "字体未设置");
     return;
   }
+  auto size_base = GetSizeBase();
+  auto spacing = spacing_ / GetSizeBase();
   for (UInt64 i = 0; i < size; ++i) {
     if (cur_pos_x >= rt.x || cur_pos_y >= rt.y) {
       break;
@@ -120,45 +138,51 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
       continue;
     }
     auto &glyph = font_->GetGlyphInfo(unicode);
+
     Vertex_UI left_top{};
-    left_top.position.x = cur_pos_x + glyph.bearing_x;
-    left_top.position.y = cur_pos_y + glyph.bearing_y;
+    left_top.position.x = cur_pos_x + glyph.bearing_x / size_base;
+    left_top.position.y = cur_pos_y + glyph.bearing_y / size_base;
+    left_top.position = left_top.position | ToVector2 | UIPos2NDC;
     left_top.uv.x = glyph.uv_x_lt;
     left_top.uv.y = glyph.uv_y_lt;
-    vertex_buffer.push_back(left_top);
 
     Vertex_UI left_bottom{};
-    left_bottom.position.x = cur_pos_x + glyph.bearing_x;
-    left_bottom.position.y = cur_pos_y - glyph.height + glyph.bearing_y;
+    left_bottom.position.x = cur_pos_x + glyph.bearing_x / size_base;
+    left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) / size_base;
+    left_bottom.position = left_bottom.position | ToVector2 | UIPos2NDC;
     left_bottom.uv.x = glyph.uv_x_lt;
     left_bottom.uv.y = glyph.uv_y_rb;
-    vertex_buffer.push_back(left_bottom);
 
     Vertex_UI right_top{};
-    right_top.position.x = cur_pos_x + glyph.bearing_x + glyph.width;
-    right_top.position.y = cur_pos_y + glyph.bearing_y;
+    right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) / size_base;
+    right_top.position.y = cur_pos_y + glyph.bearing_y / size_base;
+    right_top.position = right_top.position | ToVector2 | UIPos2NDC;
     right_top.uv.x = glyph.uv_x_rb;
     right_top.uv.y = glyph.uv_y_lt;
-    vertex_buffer.push_back(right_top);
 
     Vertex_UI right_bottom{};
-    right_bottom.position.x = cur_pos_x + glyph.bearing_x + glyph.width;
-    right_bottom.position.y = cur_pos_y - glyph.height + glyph.bearing_y;
+    right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) / size_base;
+    right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) / size_base;
+    right_bottom.position = right_bottom.position | ToVector2 | UIPos2NDC;
     right_bottom.uv.x = glyph.uv_x_rb;
     right_bottom.uv.y = glyph.uv_y_rb;
+
+    vertex_buffer.push_back(left_top);
+    vertex_buffer.push_back(left_bottom);
+    vertex_buffer.push_back(right_top);
     vertex_buffer.push_back(right_bottom);
 
     UInt64 index_size = vertex_buffer.size();
-    index_buffer.push_back(index_size - 4);
-    index_buffer.push_back(index_size - 2);
-    index_buffer.push_back(index_size - 1);
-
-    index_buffer.push_back(index_size - 4);
-    index_buffer.push_back(index_size - 1);
     index_buffer.push_back(index_size - 3);
+    index_buffer.push_back(index_size - 1);
+    index_buffer.push_back(index_size - 2);
+
+    index_buffer.push_back(index_size - 3);
+    index_buffer.push_back(index_size - 2);
+    index_buffer.push_back(index_size - 4);
     index_range_ += 6;
 
-    cur_pos_x += glyph.advance_x + spacing_;
+    cur_pos_x += ((glyph.bearing_x + glyph.width) / size_base + spacing);
   }
   SetDirty(false);
 }

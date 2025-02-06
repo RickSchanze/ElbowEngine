@@ -30,7 +30,7 @@ struct FragOutput {
 VertexOutput vert(VertexUI vert) {
   VertexOutput output;
   output.uv = vert.uv;
-  output.position = PerformP(float4(vert.position, 1), camera.GetProjection());
+  output.position = float4(vert.position, 1);
   return output;
 }
 

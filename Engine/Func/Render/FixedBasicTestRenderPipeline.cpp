@@ -71,7 +71,7 @@ void func::FixedBasicTestRenderPipeline::Build() {
   auto s1 = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
   auto s2 = AssetDataBase::LoadAsync("Assets/Shader/Text.slang");
   auto f1 = AssetDataBase::LoadAsync("Assets/Font/MapleMono.ttf");
-  auto* material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+  auto *material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
   MakeSyncGroup(a2, s1, s2, f1)->OnCompleted([this, material](const auto &res) {
     auto &[mesh_handle, s1, s2, f1] = res;
     this->mesh_ = static_cast<Mesh *>(ObjectManager::GetObjectByHandle(mesh_handle));
@@ -79,25 +79,23 @@ void func::FixedBasicTestRenderPipeline::Build() {
     auto *s2_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s2));
     auto *s1_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s1));
 
-    auto& mgrt =ObjectManager::GetByRef();
-
     material->SetShader(s1_obj);
 
     auto *font_material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
     font_material->SetShader(s2_obj);
     test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
     test_text_->SetPosition({0, 0, 0});
-    test_text_->SetSize({1920, 1080});
+    test_text_->SetSize({1, 1});
+
     auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
     test_text_->SetSlot(text_wdg);
     auto *font = static_cast<Font *>(ObjectManager::GetObjectByHandle(f1));
-    text_wdg->SetText("Hello World").SetFont(font).SetFontMaterial(font_material);
+    text_wdg->SetText("Hello World, p").SetFont(font).SetFontMaterial(font_material).SetPadding({2, 2, 2, 2});
     this->material_ = material;
     if (this->mesh_) {
       this->ready_ = material_;
     }
   });
-  auto& mgrt =ObjectManager::GetByRef();
   depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }
 

@@ -49,8 +49,8 @@ void Texture2D::Load(const Texture2DMeta &meta) {
     LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件不存在", path);
     return;
   }
-  Int32 width, height, channels;
-  stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, 4);
+  Int32 width = 0, height = 0, channels = 0;
+  stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, channels);
   if (!pixels) {
     LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件无法加载", path);
     stbi_image_free(pixels);

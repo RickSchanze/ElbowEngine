@@ -75,11 +75,11 @@ int main() {
           AssetDataBase::Import("Assets/Shader/Text.slang"),
           AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
       };
-      auto & mgt =ThreadManager::GetByRef();
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
         ThreadManager::Poll(INT_MAX);
         result->Wait();
+        ThreadManager::Poll(INT_MAX);
       }
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();

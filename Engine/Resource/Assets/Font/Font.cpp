@@ -164,6 +164,7 @@ bool Font::Load(const FontMeta &meta) {
   UInt8 *buffer = nullptr;
   if (!font_atlas_) {
     buffer = static_cast<UInt8 *>(Malloc(font_atlas_size));
+    memset(buffer, 0, font_atlas_size);
   }
   if (LoadFont(path_, font_size_, meta.font_charset_file, buffer, font_atlas_width_, font_atlas_height_,
                this->glyphs_) &&

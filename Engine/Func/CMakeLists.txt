@@ -44,6 +44,8 @@ add_library(${PROJECT_NAME}
         UI/Widget/Widget.h
         UI/Overlay.cpp
         UI/Overlay.h
+        UI/CoordConversion.cpp
+        UI/CoordConversion.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

@@ -86,15 +86,19 @@ core::String Size2D::ToString() const { return std::format("Width: {}, Height:{}
 
 Vector2::operator glm::vec<2, float>() const { return {x, y}; }
 
-#ifdef USE_IMGUI
-Vector2::operator ImVec2() const { return {x, y}; }
-#endif
-
 Vector2 Vector2::operator+(const Vector2 &other) const { return {x + other.x, y + other.y}; }
 
 Vector2 Vector2::operator*=(const float scalar) const { return Vector2(x * scalar, y * scalar); }
 
 Vector2 Vector2::operator*(float x) const { return {this->x * x, y * x}; }
+
+Vector2 Vector2::operator/(float scalar) const { return {x / scalar, y / scalar}; }
+
+Vector2 Vector2::operator-(const Float other) const { return {x - other, y - other}; }
+
+Vector2 operator-(Float s, Vector2 v) {
+  return {s - v.x, s - v.y};
+}
 
 Vector3 Rotator::GetForwardVector() const {
   Vector3 Forward;
@@ -200,4 +204,6 @@ Vector2 Rect2D::BottomRight() const { return {position.x + size.x, position.y}; 
 Size2D Rect2D::Size() const { return Size2D(size.x, size.y); }
 
 Float Rect2D::Area() const { return size.x * size.y; }
+
+Rect2D Rect2D::operator/(const Float scalar) const { return {position / scalar, size / scalar}; }
 } // namespace core
