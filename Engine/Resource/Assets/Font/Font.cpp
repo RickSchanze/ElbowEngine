@@ -58,6 +58,7 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
     FT_Done_Face(face);
     return false;
   }
+  font_size = font_size - 1;
   FontLib::SetFontSize(face, font_size);
   auto op_charset = File::ReadAllText(charset_path);
   if (!op_charset) {
@@ -88,7 +89,7 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
     const FT_Bitmap &bitmap = glyph_slot->bitmap;
     if (pen_x + bitmap.width >= atlas_w) { // 这一行放不下了
       pen_x = 0;
-      pen_y += row_height; // 转下一行
+      pen_y += row_height + 1; // 转下一行
       row_height = 0;
     }
     if (pen_y + bitmap.rows >= atlas_h) {
@@ -116,7 +117,7 @@ static bool LoadFont(StringView path, Int32 font_size, StringView charset_path, 
     info.width = bitmap.width;
     info.height = bitmap.rows;
     glyphs[unicode] = info;
-    pen_x += bitmap.width;
+    pen_x += bitmap.width + 1;
     row_height = std::max(row_height, bitmap.rows);
   }
   FT_Done_Face(face);

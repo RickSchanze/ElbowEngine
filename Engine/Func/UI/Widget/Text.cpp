@@ -52,6 +52,13 @@ Text &Text::SetFont(Font *font) {
   return *this;
 }
 
+Text &Text::SetFontSize(Float size) {
+  if (Math::ApproximatelyEqual(size, size_)) return *this;
+  size_ = size;
+  SetDirty();
+  return *this;
+}
+
 Text &Text::SetFontMaterial(resource::Material *mat) {
   if (mat == nullptr)
     return *this;
@@ -77,7 +84,7 @@ Rect2D Text::GetBoundingRect() { return GetFontRect(); }
 
 Float Text::GetSizeBase() const {
   // TODO: 1000设为项目默认值
-  return size_base_ == 0 ? 500.f : size_base_;
+  return size_base_ == 0 ? 1920.f : size_base_;
 }
 
 Rect2D Text::GetFontRect() {
@@ -121,11 +128,13 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   index_offset_ = index_buffer.size();
   Float cur_pos_x = bl.x + padding.x;
   Float cur_pos_y = base_line_ / GetSizeBase() + padding.w;
+
   Font *font = font_;
   if (font == nullptr) {
     LOGGER.Error("Func.UI.Text", "字体未设置");
     return;
   }
+  Float font_scale = size_ / font->GetFontSize();
   auto size_base = GetSizeBase();
   auto spacing = spacing_ / GetSizeBase();
   for (UInt64 i = 0; i < size; ++i) {
@@ -140,29 +149,29 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     auto &glyph = font_->GetGlyphInfo(unicode);
 
     Vertex_UI left_top{};
-    left_top.position.x = cur_pos_x + glyph.bearing_x / size_base;
-    left_top.position.y = cur_pos_y + glyph.bearing_y / size_base;
+    left_top.position.x = cur_pos_x + glyph.bearing_x * font_scale / size_base;
+    left_top.position.y = cur_pos_y + glyph.bearing_y * font_scale / size_base;
     left_top.position = left_top.position | ToVector2 | UIPos2NDC;
     left_top.uv.x = glyph.uv_x_lt;
     left_top.uv.y = glyph.uv_y_lt;
 
     Vertex_UI left_bottom{};
-    left_bottom.position.x = cur_pos_x + glyph.bearing_x / size_base;
-    left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) / size_base;
+    left_bottom.position.x = cur_pos_x + glyph.bearing_x * font_scale / size_base;
+    left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale / size_base;
     left_bottom.position = left_bottom.position | ToVector2 | UIPos2NDC;
     left_bottom.uv.x = glyph.uv_x_lt;
     left_bottom.uv.y = glyph.uv_y_rb;
 
     Vertex_UI right_top{};
-    right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) / size_base;
-    right_top.position.y = cur_pos_y + glyph.bearing_y / size_base;
+    right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale / size_base;
+    right_top.position.y = cur_pos_y + glyph.bearing_y * font_scale / size_base;
     right_top.position = right_top.position | ToVector2 | UIPos2NDC;
     right_top.uv.x = glyph.uv_x_rb;
     right_top.uv.y = glyph.uv_y_lt;
 
     Vertex_UI right_bottom{};
-    right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) / size_base;
-    right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) / size_base;
+    right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale / size_base;
+    right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale / size_base;
     right_bottom.position = right_bottom.position | ToVector2 | UIPos2NDC;
     right_bottom.uv.x = glyph.uv_x_rb;
     right_bottom.uv.y = glyph.uv_y_rb;
@@ -182,7 +191,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     index_buffer.push_back(index_size - 4);
     index_range_ += 6;
 
-    cur_pos_x += ((glyph.bearing_x + glyph.width) / size_base + spacing);
+    cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale / size_base + spacing);
   }
   SetDirty(false);
 }

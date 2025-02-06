@@ -90,7 +90,7 @@ void func::FixedBasicTestRenderPipeline::Build() {
     auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
     test_text_->SetSlot(text_wdg);
     auto *font = static_cast<Font *>(ObjectManager::GetObjectByHandle(f1));
-    text_wdg->SetText("Hello World, p").SetFont(font).SetFontMaterial(font_material).SetPadding({2, 2, 2, 2});
+    text_wdg->SetText("你好，世界！").SetFont(font).SetFontMaterial(font_material).SetSpacing(5).SetFontSize(108.f).SetPadding({2, 2, 2, 20});
     this->material_ = material;
     if (this->mesh_) {
       this->ready_ = material_;

@@ -19,6 +19,7 @@ public:
   Text &SetText(core::StringView text);
   Text &SetSpacing(Float space);
   Text &SetFont(resource::Font *font);
+  Text &SetFontSize(Float size);
   Text &SetFontMaterial(resource::Material *mat);
   Text &SetSizeBase(Float base);
   core::Rect2D GetBoundingRect() override;
@@ -43,7 +44,7 @@ private:
   Float spacing_ = 0;
 
   PROPERTY(Label = "大小")
-  Float size_ = 16;
+  Float size_ = 32;
 
   PROPERTY(Label = "基线位置")
   Float base_line_ = 0;
