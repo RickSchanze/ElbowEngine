@@ -85,12 +85,17 @@ void func::FixedBasicTestRenderPipeline::Build() {
     font_material->SetShader(s2_obj);
     test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
     test_text_->SetPosition({0, 0, 0});
-    test_text_->SetSize({1, 1});
+    test_text_->SetSize({1920, 1080});
 
     auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
     test_text_->SetSlot(text_wdg);
     auto *font = static_cast<Font *>(ObjectManager::GetObjectByHandle(f1));
-    text_wdg->SetText("你好，世界！").SetFont(font).SetFontMaterial(font_material).SetSpacing(5).SetFontSize(108.f).SetPadding({2, 2, 2, 20});
+    text_wdg->SetText("你好，世界！")
+        .SetFont(font)
+        .SetFontMaterial(font_material)
+        .SetSpacing(0)
+        .SetFontSize(36.f)
+        .SetPadding({2, 2, 2, 20});
     this->material_ = material;
     if (this->mesh_) {
       this->ready_ = material_;

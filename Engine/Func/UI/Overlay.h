@@ -26,7 +26,7 @@ class CLASS() Overlay : public core::Object {
 public:
   Overlay &SetSlot(widget::Widget *widget);
 
-  ~Overlay();
+  ~Overlay() override;
 
   void Draw(platform::rhi::CommandBuffer &cmd);
 

@@ -21,9 +21,7 @@ public:
   Text &SetFont(resource::Font *font);
   Text &SetFontSize(Float size);
   Text &SetFontMaterial(resource::Material *mat);
-  Text &SetSizeBase(Float base);
   core::Rect2D GetBoundingRect() override;
-  Float GetSizeBase() const;
 
   /**
    * 计算可以容纳文字的矩形框大小
@@ -54,9 +52,6 @@ private:
 
   PROPERTY(Label = "字体材质")
   core::ObjectPtr<resource::Material> font_material_;
-
-  PROPERTY(Label = "大小基准", Category = "Advance")
-  Float size_base_ = 0;
 
   UInt64 index_offset_ = 0;
   UInt64 index_range_ = 0;

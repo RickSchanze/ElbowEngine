@@ -73,20 +73,7 @@ Text &Text::SetFontMaterial(resource::Material *mat) {
   return *this;
 }
 
-Text &Text::SetSizeBase(Float base) {
-  if (Math::ApproximatelyEqual(base, size_base_))
-    return *this;
-  size_base_ = base;
-  SetDirty();
-  return *this;
-}
-
 Rect2D Text::GetBoundingRect() { return GetFontRect(); }
-
-Float Text::GetSizeBase() const {
-  // TODO: 1000设为项目默认值
-  return size_base_ == 0 ? 1920.f : size_base_;
-}
 
 Rect2D Text::GetFontRect() {
   UnicodeString str = text_.AsUnicode();
@@ -116,7 +103,7 @@ Rect2D Text::GetFontRect() {
   auto padding = GetPadding();
   rect.size.x = width + padding.x + padding.z + (size - 1) * spacing_;
   rect.size.y = bearing_height_top + bearing_height_bottom + padding.y + padding.w;
-  return rect / GetSizeBase();
+  return rect;
 }
 
 void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
@@ -125,10 +112,10 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   auto rt = target_rect.TopRight();
   UnicodeString str = text_.AsUnicode();
   UInt64 size = str.Size();
-  auto padding = GetPadding() / GetSizeBase();
+  auto padding = GetPadding();
   index_offset_ = index_buffer.size();
   Float cur_pos_x = bl.x + padding.x;
-  Float cur_pos_y = base_line_ / GetSizeBase() + padding.w;
+  Float cur_pos_y = base_line_ + padding.w;
 
   Font *font = font_;
   if (font == nullptr) {
@@ -137,8 +124,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   }
   font->RequestLoadGlyphs(str);
   Float font_scale = size_ / font->GetFontSize();
-  auto size_base = GetSizeBase();
-  auto spacing = spacing_ / GetSizeBase();
+  auto spacing = spacing_;
   for (UInt64 i = 0; i < size; ++i) {
     if (cur_pos_x >= rt.x || cur_pos_y >= rt.y) {
       break;
@@ -147,30 +133,26 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     auto &glyph = font_->GetGlyphInfo(unicode);
 
     Vertex_UI left_top{};
-    left_top.position.x = cur_pos_x + glyph.bearing_x * font_scale / size_base;
-    left_top.position.y = cur_pos_y + glyph.bearing_y * font_scale / size_base;
-    left_top.position = left_top.position | ToVector2 | UIPos2NDC;
+    left_top.position.x = cur_pos_x + glyph.bearing_x * font_scale;
+    left_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
     left_top.uv.x = glyph.uv_x_lt;
     left_top.uv.y = glyph.uv_y_lt;
 
     Vertex_UI left_bottom{};
-    left_bottom.position.x = cur_pos_x + glyph.bearing_x * font_scale / size_base;
-    left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale / size_base;
-    left_bottom.position = left_bottom.position | ToVector2 | UIPos2NDC;
+    left_bottom.position.x = cur_pos_x + glyph.bearing_x * font_scale;
+    left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
     left_bottom.uv.x = glyph.uv_x_lt;
     left_bottom.uv.y = glyph.uv_y_rb;
 
     Vertex_UI right_top{};
-    right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale / size_base;
-    right_top.position.y = cur_pos_y + glyph.bearing_y * font_scale / size_base;
-    right_top.position = right_top.position | ToVector2 | UIPos2NDC;
+    right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
+    right_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
     right_top.uv.x = glyph.uv_x_rb;
     right_top.uv.y = glyph.uv_y_lt;
 
     Vertex_UI right_bottom{};
-    right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale / size_base;
-    right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale / size_base;
-    right_bottom.position = right_bottom.position | ToVector2 | UIPos2NDC;
+    right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
+    right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
     right_bottom.uv.x = glyph.uv_x_rb;
     right_bottom.uv.y = glyph.uv_y_rb;
 
@@ -189,7 +171,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     index_buffer.push_back(index_size - 4);
     index_range_ += 6;
 
-    cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale / size_base + spacing);
+    cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);
   }
   SetDirty(false);
 }

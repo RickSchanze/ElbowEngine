@@ -4,6 +4,8 @@
 
 #include "Overlay.h"
 
+#include "CoordConversion.h"
+#include "Core/Math/MathFunctional.h"
 #include "Platform/RHI/Buffer.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -17,6 +19,7 @@ using namespace ui;
 using namespace widget;
 using namespace platform;
 using namespace rhi;
+using namespace core;
 
 Overlay &Overlay::SetSlot(Widget *widget) {
   if (widget == nullptr) {
@@ -44,6 +47,11 @@ void Overlay::Draw(CommandBuffer &cmd) {
     target.size.x = size_.x;
     target.size.y = size_.y;
     slot_->Rebuild(target, vertexs, indices);
+    // 将所有顶点转移至NDC Space
+    // TODO: 并行For
+    for (auto &vertex : vertexs) {
+      vertex.position = vertex.position | Divide({size_.x, size_.y, 1}) | ToVector2 | UIPos2NDC;
+    }
     UInt64 vertex_buffer_size = sizeof(Vertex_UI) * vertexs.size();
     if (vertex_buffer_ == nullptr || vertex_buffer_->GetSize() < vertex_buffer_size) {
       BufferDesc buffer_desc{vertex_buffer_size, BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
