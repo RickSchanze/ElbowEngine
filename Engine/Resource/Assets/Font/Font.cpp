@@ -51,7 +51,7 @@ private:
 
 Font::~Font() {
   font_atlas_ = nullptr;
-  Free(dynamic_font_handle_);
+  Delete(dynamic_font_handle_);
   dynamic_font_handle_ = nullptr;
 }
 

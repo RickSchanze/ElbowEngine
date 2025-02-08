@@ -23,6 +23,7 @@
 #include "Core/Base/Exception.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
+#include "mimalloc.h"
 
 #include <sstream>
 
@@ -54,7 +55,7 @@ MemoryPool::~MemoryPool()
     while (block_iterator != nullptr)
     {
         SMemoryBlockHeader* next_iterator = block_iterator->next;
-        std::free(block_iterator);
+        mi_free(block_iterator);
         block_iterator = next_iterator;
     }
 }
@@ -62,7 +63,7 @@ MemoryPool::~MemoryPool()
 void MemoryPool::CreateMemoryBlock(size_t block_size)
 {
     // Create the block
-    auto* block = static_cast<SMemoryBlockHeader*>(std::malloc(sizeof(SMemoryBlockHeader) + block_size));
+    auto* block = static_cast<SMemoryBlockHeader*>(mi_malloc(sizeof(SMemoryBlockHeader) + block_size));
     if (block == nullptr) throw Exception("MemoryPool: 创建新内存块失败");
 
     // Initialize block data
@@ -171,7 +172,7 @@ void MemoryPool::Free(void* unit_pointer_start)
             block->prev->next = block->next;
             block->next->prev = block->prev;
         }
-        std::free(block);
+        mi_free(block);
     }
 }
 
@@ -242,7 +243,7 @@ void MemoryPool::EndScope()
     while (this->current_block != this->current_scope->first_scope_block)
     {
         this->current_block = this->current_block->prev;
-        std::free(this->current_block->next);
+        mi_free(this->current_block->next);
         this->current_block->next = nullptr;
     }
 
