@@ -38,6 +38,6 @@ VertexOutput vert(VertexUI vert) {
 FragOutput frag(VertexOutput input) {
   FragOutput output;
   float sampled_color = font_atlas.Sample(common_sampler, input.uv).r;
-  output.color = float4(1, 0, 0, sampled_color);
+  output.color = float4(1, 1, 1, sampled_color);
   return output;
 }

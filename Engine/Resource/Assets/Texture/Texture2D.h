@@ -26,7 +26,7 @@ public:
   void PerformUnload() override;
 
   // TODO: 返回bool 错误处理
-  void Load(const Texture2DMeta& meta);
+  void Load(const Texture2DMeta &meta);
 
   [[nodiscard]] bool IsLoaded() const override { return native_image_ != nullptr; }
 
@@ -36,6 +36,7 @@ public:
   static Texture2D *GetDefault();
 
   [[nodiscard]] platform::rhi::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
+  [[nodiscard]] platform::rhi::Image *GetNativeImage() const { return native_image_.get(); }
 
 private:
   core::SharedPtr<platform::rhi::Image> native_image_ = nullptr;

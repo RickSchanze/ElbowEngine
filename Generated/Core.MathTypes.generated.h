@@ -6,8 +6,6 @@ core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Size2D>(), &core::Size2D::ConstructAt, &core::Size2D::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Vector2>(), &core::Vector2::REFLECTION_Register_Vector2_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Vector2>(), &core::Vector2::ConstructAt, &core::Vector2::DestroyAt); \
-core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Vector3i>(), &core::Vector3i::REFLECTION_Register_Vector3i_Registerer); \
-core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Vector3i>(), &core::Vector3i::ConstructAt, &core::Vector3i::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rotator>(), &core::Rotator::REFLECTION_Register_Rotator_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rotator>(), &core::Rotator::ConstructAt, &core::Rotator::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rect2D>(), &core::Rect2D::REFLECTION_Register_Rect2D_Registerer); \
@@ -24,11 +22,6 @@ static void DestroyAt(void* ptr) { static_cast<core::Size2D*>(ptr)->~Size2D(); }
 #define GENERATED_BODY_IMPL_Vector2 \
 static void ConstructAt(void* ptr) { new (ptr) core::Vector2(); } \
 static void DestroyAt(void* ptr) { static_cast<core::Vector2*>(ptr)->~Vector2(); } \
-
-#undef GENERATED_BODY_IMPL_Vector3i
-#define GENERATED_BODY_IMPL_Vector3i \
-static void ConstructAt(void* ptr) { new (ptr) core::Vector3i(); } \
-static void DestroyAt(void* ptr) { static_cast<core::Vector3i*>(ptr)->~Vector3i(); } \
 
 #undef GENERATED_BODY_IMPL_Rotator
 #define GENERATED_BODY_IMPL_Rotator \
@@ -60,14 +53,6 @@ using namespace core; \
 Type* type = Type::Create<core::Vector2>("core.Vector2")->SetAttribute(Type::Trivial); \
 type->Internal_RegisterField("x", &core::Vector2::x, offsetof(core::Vector2, x)); \
 type->Internal_RegisterField("y", &core::Vector2::y, offsetof(core::Vector2, y)); \
-return type; \
-} \
-core::Type* core::Vector3i::REFLECTION_Register_Vector3i_Registerer() { \
-using namespace core; \
-Type* type = Type::Create<core::Vector3i>("core.Vector3i")->SetAttribute(Type::Trivial); \
-type->Internal_RegisterField("x", &core::Vector3i::x, offsetof(core::Vector3i, x)); \
-type->Internal_RegisterField("y", &core::Vector3i::y, offsetof(core::Vector3i, y)); \
-type->Internal_RegisterField("z", &core::Vector3i::z, offsetof(core::Vector3i, z)); \
 return type; \
 } \
 core::Type* core::Rotator::REFLECTION_Register_Rotator_Registerer() { \

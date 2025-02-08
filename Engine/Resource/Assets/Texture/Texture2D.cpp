@@ -40,32 +40,46 @@ void Texture2D::PerformUnload() {
 }
 
 void Texture2D::Load(const Texture2DMeta &meta) {
-  StringView path = meta.path;
-  if (!path.EndsWith(".png")) {
-    LOGGER.Error(logcat::Resource, "加载失败: Texture2D必须以.png结尾: {}", path);
-    return;
-  }
-  if (!Path::IsExist(path)) {
-    LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件不存在", path);
-    return;
-  }
-  Int32 width = 0, height = 0, channels = 0;
-  stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, channels);
-  if (!pixels) {
-    LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件无法加载", path);
+  if (!meta.dynamic) {
+    StringView path = meta.path;
+    if (!path.EndsWith(".png")) {
+      LOGGER.Error(logcat::Resource, "加载失败: Texture2D必须以.png结尾: {}", path);
+      return;
+    }
+    if (!Path::IsExist(path)) {
+      LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件不存在", path);
+      return;
+    }
+    Int32 width = 0, height = 0, channels = 0;
+    stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, channels);
+    if (!pixels) {
+      LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件无法加载", path);
+      stbi_image_free(pixels);
+      return;
+    }
+    Format format = meta.format;
+    ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format,
+                   ImageDimension::D2};
+    String debug_name = String::Format("Texture2D_{}", path);
+    native_image_ = GetGfxContextRef().CreateImage(desc, debug_name);
+    ImageViewDesc view_desc{native_image_.get()};
+    debug_name = String::Format("Texture2DView_{}", path);
+    native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
+    GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * channels);
     stbi_image_free(pixels);
-    return;
+  } else {
+    if (meta.width == 0 || meta.height == 0) {
+      LOGGER.Error(logcat::Resource, "加载失败: Texture2D的宽度和高度必须大于0");
+      return;
+    }
+    Format format = meta.format;
+    ImageDesc desc{meta.width, meta.height, IUB_TransferDst | IUB_ShaderRead, format, ImageDimension::D2};
+    String debug_name = String::Format("Texture2D_{}", name_);
+    native_image_ = GetGfxContextRef().CreateImage(desc, debug_name);
+    ImageViewDesc view_desc{native_image_.get()};
+    debug_name = String::Format("Texture2DView_{}", name_);
+    native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
   }
-  Format format = meta.format;
-  ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format,
-                 ImageDimension::D2};
-  String debug_name = String::Format("Texture2D_{}", path);
-  native_image_ = GetGfxContextRef().CreateImage(desc, debug_name);
-  ImageViewDesc view_desc{native_image_.get()};
-  debug_name = String::Format("Texture2DView_{}", path);
-  native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
-  GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * channels);
-  stbi_image_free(pixels);
 }
 
 UInt32 Texture2D::GetWidth() const {
@@ -83,5 +97,5 @@ UInt32 Texture2D::GetHeight() const {
 Texture2D *Texture2D::GetDefault() {
   auto rtn = AssetDataBase::Load<Texture2D>("Assets/Texture/Default.png");
   Assert::Require(logcat::Resource, rtn != nullptr, "Default.png不存在");
-    return rtn;
+  return rtn;
 }

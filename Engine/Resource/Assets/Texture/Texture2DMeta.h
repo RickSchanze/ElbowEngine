@@ -25,5 +25,10 @@ public:
 
   PROPERTY()
   platform::rhi::Format format = platform::rhi::Format::R8G8B8A8_UNorm;
+
+  // 动态创建的Texture2D的参数
+  bool dynamic = false;
+  UInt32 width = 0;
+  UInt32 height = 0;
 };
 } // namespace resource

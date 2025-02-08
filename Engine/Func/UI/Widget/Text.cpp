@@ -53,7 +53,8 @@ Text &Text::SetFont(Font *font) {
 }
 
 Text &Text::SetFontSize(Float size) {
-  if (Math::ApproximatelyEqual(size, size_)) return *this;
+  if (Math::ApproximatelyEqual(size, size_))
+    return *this;
   size_ = size;
   SetDirty();
   return *this;
@@ -134,6 +135,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     LOGGER.Error("Func.UI.Text", "字体未设置");
     return;
   }
+  font->RequestLoadGlyphs(str);
   Float font_scale = size_ / font->GetFontSize();
   auto size_base = GetSizeBase();
   auto spacing = spacing_ / GetSizeBase();
@@ -142,10 +144,6 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
       break;
     }
     UInt32 unicode = str.At(i);
-    if (!font_->HasGlyph(unicode)) {
-      LOGGER.Error("Func.UI.Text", "字体{}不存在字符{:x}", font_->GetAssetPath(), unicode);
-      continue;
-    }
     auto &glyph = font_->GetGlyphInfo(unicode);
 
     Vertex_UI left_top{};
