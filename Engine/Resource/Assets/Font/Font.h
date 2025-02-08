@@ -17,6 +17,7 @@ class Texture2D;
 namespace resource {
 
 enum class FontRenderMethod {
+  // TODO: 实现SDF Font
   SDF,
   Bitmap,
 };

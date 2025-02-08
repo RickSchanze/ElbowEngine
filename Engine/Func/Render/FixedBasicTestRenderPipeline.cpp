@@ -94,8 +94,8 @@ void func::FixedBasicTestRenderPipeline::Build() {
         .SetFont(font)
         .SetFontMaterial(font_material)
         .SetSpacing(0)
-        .SetFontSize(36.f)
-        .SetPadding({2, 2, 2, 20});
+        .SetFontSize(20.f)
+        .SetPadding({2, 2, 2, 5});
     this->material_ = material;
     if (this->mesh_) {
       this->ready_ = material_;
