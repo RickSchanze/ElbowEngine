@@ -105,6 +105,20 @@ void Material::SetFloat3(UInt64 name_hash, const core::Vector3 &value) {
   buffer_->WriteType(value, offset);
 }
 
+void Material::SetFloat4(const core::String &name, const core::Vector4 &value) {
+  UInt64 name_hash = name.GetHashCode();
+  SetFloat4(name_hash, value);
+}
+
+void Material::SetFloat4(UInt64 name_hash, const core::Vector4 &value) {
+  if (!uniform_offsets_.contains(name_hash)) {
+    LOGGER.Error(logcat::Resource_Material, "材质{}中没有参数{}", GetHandle(), name_hash);
+    return;
+  }
+  UInt32 offset = uniform_offsets_[name_hash].offset;
+  buffer_->WriteType(value, offset);
+}
+
 void Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) {
   if (texture == nullptr || !texture->IsLoaded()) {
     LOGGER.Error(logcat::Resource_Material, "传入无效texture");
@@ -204,9 +218,15 @@ void Material::Build() {
     SetTexture2D(name_hash, tex);
   }
   // TODO: Sampler的更新
+  if (buffer_) {
+    buffer_->BeginWrite();
+  }
 }
 
 void Material::Clean() {
+  if (buffer_) {
+    buffer_->EndWrite();
+  }
   buffer_ = nullptr;
   descriptor_set_ = nullptr;
   active_pipeline_ = nullptr;

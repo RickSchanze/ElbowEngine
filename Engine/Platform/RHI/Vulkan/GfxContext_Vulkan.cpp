@@ -622,7 +622,6 @@ static void CreateInstance(core::Ref<VkInstance> instance) {
     core::Assert::Require(logcat::Platform_RHI_Vulkan, SupportValidationLayer("VK_LAYER_KHRONOS_validation"),
                           "Validation layer is not supported!");
     const char *validation_layer_names = "VK_LAYER_KHRONOS_validation";
-    LOGGER.Info(logcat::Test, "Validation layer: {}", validation_layer_names);
     debug_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     debug_info.messageSeverity =
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;

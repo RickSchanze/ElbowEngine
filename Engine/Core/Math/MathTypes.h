@@ -198,13 +198,7 @@ public:
   /** 转换为没有alpha通道的Int */
   [[nodiscard]] uint32_t ToUIntNoAlpha() const;
 
-#ifdef USE_IMGUI
-  Color() = default;
-  Color(const ImVec4 color) : r(color.x), g(color.y), b(color.z), a(color.w) {}
-  Color(float r, float g, float b, float a = 1.f) : r(r), g(g), b(b), a(a) {}
-  operator ImVec4() const { return {r, g, b, a}; }
-  explicit operator ImU32() const { return ImGui::GetColorU32((ImVec4)(*this)); }
-#endif
+  [[nodiscard]] Vector4 ToVector4() const { return {r, g, b, a}; }
 
   bool operator==(const Color &other) const;
   bool operator!=(const Color &other) const;

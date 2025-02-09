@@ -22,13 +22,29 @@
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Font/FontMeta.h"
+#include "Resource/Assets/Material/MaterialMeta.h"
 #include "Resource/Assets/Shader/Shader.h"
 #include "cpptrace/cpptrace.hpp"
 
+namespace resource {
+class MaterialMeta;
+}
 using namespace core;
 using namespace exec;
 using namespace func;
 using namespace resource;
+
+static void LoadMaterial(const StringView mat_path, const StringView shader_path) {
+  if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
+    AssetDataBase::Load(meta.GetValue().path);
+  } else {
+    auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
+    auto *font_material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    Assert::Require("Resource.Initialize", text_shader && font_material, "资产数据库初始化失败");
+    font_material->SetShader(text_shader);
+    AssetDataBase::CreateAsset(font_material, mat_path);
+  }
+}
 
 int main() {
   try {
@@ -62,6 +78,8 @@ int main() {
       const auto rhi_cfg = GetConfig<platform::PlatformConfig>();
       UseGraphicsAPI(rhi_cfg->GetGraphicsAPI());
       platform::rhi::GfxContextLifeTimeProxyManager::Get();
+      RenderContext::GetByRef();
+      Camera::GetByRef();
     }
     // 资产数据库初始化
     {
@@ -74,6 +92,7 @@ int main() {
           AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
           AssetDataBase::Import("Assets/Shader/Text.slang"),
           AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
+          AssetDataBase::Import("Assets/Shader/UIPanel.slang"),
       };
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
@@ -81,6 +100,9 @@ int main() {
         result->Wait();
         ThreadManager::Poll(INT_MAX);
       }
+      // 创建/加载必须的材质
+      LoadMaterial("Assets/Material/Text.mat", "Assets/Shader/Text.slang");
+      LoadMaterial("Assets/Material/UIPanel.mat", "Assets/Shader/UIPanel.slang");
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif

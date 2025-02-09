@@ -21,6 +21,7 @@ public:
   Text &SetFont(resource::Font *font);
   Text &SetFontSize(Float size);
   Text &SetFontMaterial(resource::Material *mat);
+  Text &SetColor(core::Color color);
   core::Rect2D GetBoundingRect() override;
 
   /**
@@ -28,6 +29,8 @@ public:
    * @return
    */
   core::Rect2D GetFontRect();
+
+  [[nodiscard]] core::Color GetFontColor() const { return font_color_; }
 
   void Rebuild(core::Rect2D target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
                core::Array<UInt32> &index_buffer) override;
@@ -49,6 +52,9 @@ private:
 
   PROPERTY(Label = "字体")
   core::ObjectPtr<resource::Font> font_;
+
+  PROPERTY(Label = "字体颜色")
+  core::Color font_color_ = core::Color::White();
 
   PROPERTY(Label = "字体材质")
   core::ObjectPtr<resource::Material> font_material_;

@@ -73,6 +73,14 @@ Text &Text::SetFontMaterial(resource::Material *mat) {
   return *this;
 }
 
+Text &Text::SetColor(core::Color color) {
+  Material *mat = font_material_;
+  if (mat) {
+    mat->SetFloat4("font_params.color", color.ToVector4());
+  }
+  return *this;
+}
+
 Rect2D Text::GetBoundingRect() { return GetFontRect(); }
 
 Rect2D Text::GetFontRect() {

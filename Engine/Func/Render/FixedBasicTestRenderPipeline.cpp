@@ -69,32 +69,28 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
 void func::FixedBasicTestRenderPipeline::Build() {
   auto a2 = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
   auto s1 = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
-  auto s2 = AssetDataBase::LoadAsync("Assets/Shader/Text.slang");
+  auto m1 = AssetDataBase::LoadAsync("Assets/Material/Text.mat");
   auto f1 = AssetDataBase::LoadAsync("Assets/Font/MapleMono.ttf");
   auto *material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
-  MakeSyncGroup(a2, s1, s2, f1)->OnCompleted([this, material](const auto &res) {
-    auto &[mesh_handle, s1, s2, f1] = res;
+  MakeSyncGroup(a2, s1, m1, f1)->OnCompleted([this, material](const auto &res) {
+    auto &[mesh_handle, s1, m1, f1] = res;
     this->mesh_ = static_cast<Mesh *>(ObjectManager::GetObjectByHandle(mesh_handle));
 
-    auto *s2_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s2));
+    auto *m1_obj = static_cast<Material *>(ObjectManager::GetObjectByHandle(m1));
     auto *s1_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s1));
-
     material->SetShader(s1_obj);
-
-    auto *font_material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
-    font_material->SetShader(s2_obj);
     test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
     test_text_->SetPosition({0, 0, 0});
     test_text_->SetSize({1920, 1080});
-
     auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
     test_text_->SetSlot(text_wdg);
     auto *font = static_cast<Font *>(ObjectManager::GetObjectByHandle(f1));
     text_wdg->SetText("你好，世界！")
         .SetFont(font)
-        .SetFontMaterial(font_material)
+        .SetFontMaterial(m1_obj)
         .SetSpacing(0)
         .SetFontSize(20.f)
+        .SetColor(Color::SkyBlue())
         .SetPadding({2, 2, 2, 5});
     this->material_ = material;
     if (this->mesh_) {

@@ -232,7 +232,7 @@ void AssetDataBase::CreateAsset(Asset *asset, StringView path) {
     }
     File::WriteAllText(path, serialized_str);
     MaterialMeta meta;
-    meta.object_handle = handle;
+    meta.object_handle = *handle | First;
     meta.path = path;
     InsertMeta(meta);
   }

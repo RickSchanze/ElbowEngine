@@ -43,6 +43,8 @@ public:
 
   void SetFloat3(const core::String &name, const core::Vector3 &value);
   void SetFloat3(UInt64 name_hash, const core::Vector3 &value);
+  void SetFloat4(const core::String &name, const core::Vector4& value);
+  void SetFloat4(UInt64 name_hash, const core::Vector4& value);
   void SetTexture2D(UInt64 name_hash, const Texture2D *texture);
   void SetTexture2D(const core::String &name, const Texture2D *texture);
   void SetShader(Shader *shader);

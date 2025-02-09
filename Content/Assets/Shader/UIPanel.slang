@@ -8,14 +8,14 @@ import CommonStructure;
 import Utility;
 import Annotations;
 
-public struct FontParams {
-  public float4 color;
+struct PanelParams {
+  float4 background_color;
 }
 
 uniform ConstantBuffer<Camera> camera;
-uniform Texture2D font_atlas;
+uniform Texture2D background_img;
 uniform SamplerState common_sampler;
-uniform ConstantBuffer<FontParams> font_params;
+uniform ConstantBuffer<PanelParams> panel_params;
 
 struct VertexOutput {
   float4 position : SV_Position;
@@ -37,8 +37,7 @@ VertexOutput vert(VertexUI vert) {
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
   FragOutput output;
-  float sampled_color = font_atlas.Sample(common_sampler, input.uv).r;
-  output.color = float4(1, 1, 1, sampled_color);
-  output.color *= font_params.color;
+  float4 background = background_img.Sample(common_sampler, input.uv);
+  output.color = background * panel_params.background_color;  
   return output;
 }
