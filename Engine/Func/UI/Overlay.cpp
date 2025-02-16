@@ -5,7 +5,7 @@
 #include "Overlay.h"
 
 #include "CoordConversion.h"
-#include "Core/Math/MathFunctional.h"
+#include "Core/Math/MathPipe.h"
 #include "Platform/RHI/Buffer.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"

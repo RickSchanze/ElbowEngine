@@ -21,8 +21,8 @@ type->Internal_RegisterField("spacing_", &func::ui::widget::Text::spacing_, offs
 type->Internal_RegisterField("size_", &func::ui::widget::Text::size_, offsetof(func::ui::widget::Text, size_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "大小"); \
 type->Internal_RegisterField("base_line_", &func::ui::widget::Text::base_line_, offsetof(func::ui::widget::Text, base_line_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "基线位置"); \
 type->Internal_RegisterField("font_", &func::ui::widget::Text::font_, offsetof(func::ui::widget::Text, font_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体"); \
+type->Internal_RegisterField("font_color_", &func::ui::widget::Text::font_color_, offsetof(func::ui::widget::Text, font_color_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体颜色"); \
 type->Internal_RegisterField("font_material_", &func::ui::widget::Text::font_material_, offsetof(func::ui::widget::Text, font_material_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体材质"); \
-type->Internal_RegisterField("size_base_", &func::ui::widget::Text::size_base_, offsetof(func::ui::widget::Text, size_base_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "大小基准")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Advance"); \
 return type; \
 } \
 

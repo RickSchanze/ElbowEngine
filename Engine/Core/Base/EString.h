@@ -74,6 +74,8 @@ public:
 
   const char *operator*() const { return str_; }
 
+  [[nodiscard]] UInt64 GetHashCode() const { return std::hash<std::string_view>{}(GetStdStringView()); }
+
 private:
   const char *str_;
   int32_t length_;

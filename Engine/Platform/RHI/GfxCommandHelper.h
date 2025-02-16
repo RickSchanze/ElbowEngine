@@ -35,8 +35,8 @@ public:
    */
   static void CopyDataToBuffer(const void *data, rhi::Buffer *target, uint32_t size = 0, uint32_t offset = 0);
 
-  static void CopyDataToImage2D(const void *data, rhi::Image *target, UInt32 size, core::Vector3i offset = {},
-                                core::Vector3i copy_range = {});
+  static void CopyDataToImage2D(const void *data, rhi::Image *target, UInt32 size, core::Vector3I offset = {},
+                                core::Vector3I copy_range = {});
 };
 
 } // namespace platform

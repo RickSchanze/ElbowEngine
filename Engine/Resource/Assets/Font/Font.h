@@ -71,7 +71,7 @@ private:
 
   struct FontHandle;
   FontHandle *dynamic_font_handle_ = nullptr; // 当字体是dynamic时有用
-  core::Vector2u cursor_ = {0, 0};
+  core::Vector2U cursor_ = {0, 0};
 };
 
 } // namespace resource

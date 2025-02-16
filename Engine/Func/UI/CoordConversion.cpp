@@ -4,7 +4,7 @@
 
 #include "CoordConversion.h"
 
-#include "Core/Math/MathFunctional.h"
+#include "Core/Math/MathPipe.h"
 #include "Platform/RHI/GfxContext.h"
 
 using namespace func;

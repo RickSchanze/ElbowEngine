@@ -10,6 +10,8 @@ core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rotator>(), &core::Rotator::ConstructAt, &core::Rotator::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rect2D>(), &core::Rect2D::REFLECTION_Register_Rect2D_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rect2D>(), &core::Rect2D::ConstructAt, &core::Rect2D::DestroyAt); \
+core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Rect2DI>(), &core::Rect2DI::REFLECTION_Register_Rect2DI_Registerer); \
+core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Rect2DI>(), &core::Rect2DI::ConstructAt, &core::Rect2DI::DestroyAt); \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<core::Color>(), &core::Color::REFLECTION_Register_Color_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<core::Color>(), &core::Color::ConstructAt, &core::Color::DestroyAt); \
 
@@ -32,6 +34,11 @@ static void DestroyAt(void* ptr) { static_cast<core::Rotator*>(ptr)->~Rotator();
 #define GENERATED_BODY_IMPL_Rect2D \
 static void ConstructAt(void* ptr) { new (ptr) core::Rect2D(); } \
 static void DestroyAt(void* ptr) { static_cast<core::Rect2D*>(ptr)->~Rect2D(); } \
+
+#undef GENERATED_BODY_IMPL_Rect2DI
+#define GENERATED_BODY_IMPL_Rect2DI \
+static void ConstructAt(void* ptr) { new (ptr) core::Rect2DI(); } \
+static void DestroyAt(void* ptr) { static_cast<core::Rect2DI*>(ptr)->~Rect2DI(); } \
 
 #undef GENERATED_BODY_IMPL_Color
 #define GENERATED_BODY_IMPL_Color \
@@ -68,6 +75,13 @@ using namespace core; \
 Type* type = Type::Create<core::Rect2D>("core.Rect2D")->SetAttribute(Type::Trivial); \
 type->Internal_RegisterField("position", &core::Rect2D::position, offsetof(core::Rect2D, position)); \
 type->Internal_RegisterField("size", &core::Rect2D::size, offsetof(core::Rect2D, size)); \
+return type; \
+} \
+core::Type* core::Rect2DI::REFLECTION_Register_Rect2DI_Registerer() { \
+using namespace core; \
+Type* type = Type::Create<core::Rect2DI>("core.Rect2DI")->SetAttribute(Type::Trivial); \
+type->Internal_RegisterField("position", &core::Rect2DI::position, offsetof(core::Rect2DI, position)); \
+type->Internal_RegisterField("size", &core::Rect2DI::size, offsetof(core::Rect2DI, size)); \
 return type; \
 } \
 core::Type* core::Color::REFLECTION_Register_Color_Registerer() { \

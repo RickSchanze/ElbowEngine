@@ -9,6 +9,7 @@
 
 namespace core::range {
 inline constexpr auto AnyOf = ranges::any_of;
+inline constexpr auto Contains = ranges::contains;
 }
 
 namespace core::range::view {

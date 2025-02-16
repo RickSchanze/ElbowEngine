@@ -180,14 +180,14 @@ struct Cmd_SetViewport final : RHICommand {
 struct Cmd_CopyBufferToImage final : RHICommand {
   [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::CopyBufferToImage; }
   explicit Cmd_CopyBufferToImage(Buffer *src_, Image *dst_, ImageSubresourceRange subresource_range_,
-                                 core::Vector3i offset_, core::Vector3i size_)
+                                 core::Vector3I offset_, core::Vector3I size_)
       : src(src_), dst(dst_), subresource_range(subresource_range_), offset(offset_), size(size_) {}
 
   Buffer *src = nullptr;
   Image *dst = nullptr;
   ImageSubresourceRange subresource_range{};
-  core::Vector3i offset{};
-  core::Vector3i size{};
+  core::Vector3I offset{};
+  core::Vector3I size{};
 };
 
 } // namespace platform::rhi

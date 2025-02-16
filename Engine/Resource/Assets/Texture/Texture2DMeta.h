@@ -26,6 +26,10 @@ public:
   PROPERTY()
   platform::rhi::Format format = platform::rhi::Format::R8G8B8A8_UNorm;
 
+  // 这个Texture2D包含的所有Sprite
+  PROPERTY()
+  core::String sprites_string;
+
   // 动态创建的Texture2D的参数
   bool dynamic = false;
   UInt32 width = 0;

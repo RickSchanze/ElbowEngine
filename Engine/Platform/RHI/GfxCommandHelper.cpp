@@ -54,8 +54,8 @@ void GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, uint32
   EndSingleTransferCommand(cmd);
 }
 
-void GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32 size, core::Vector3i offset,
-                                         core::Vector3i copy_range) {
+void GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32 size, core::Vector3I offset,
+                                         core::Vector3I copy_range) {
   auto &ctx = GetGfxContextRef();
   BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
   auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
@@ -73,7 +73,7 @@ void GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32
   PipelineBarrier(ImageLayout::Undefined, ImageLayout::TransferDst, target, range, 0, AFB_TransferWrite, PSFB_TopOfPipe,
                   PSFB_Transfer);
   auto cmd = BeginSingleTransferCommand();
-  core::Vector3i img_size{};
+  core::Vector3I img_size{};
   img_size.x = copy_range.x == 0 ? target->GetWidth() : copy_range.x;
   img_size.y = copy_range.y == 0 ? target->GetHeight() : copy_range.y;
   img_size.z = copy_range.z == 0 ? 1 : copy_range.z;

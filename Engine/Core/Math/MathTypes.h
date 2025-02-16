@@ -75,9 +75,9 @@ typedef glm::vec4 Vector4;
 typedef glm::mat4 Matrix4x4;
 typedef glm::mat3 Matrix3x3;
 typedef glm::quat Quaternion;
-typedef glm::ivec2 Vector2i;
-typedef glm::uvec2 Vector2u;
-typedef glm::ivec3 Vector3i;
+typedef glm::ivec2 Vector2I;
+typedef glm::uvec2 Vector2U;
+typedef glm::ivec3 Vector3I;
 
 namespace Constant {
 constexpr Vector3 ZeroVector = {0, 0, 0};
@@ -155,6 +155,18 @@ public:
   [[nodiscard]] Float Area() const;
 
   Rect2D operator/(const Float scalar) const;
+};
+
+struct STRUCT() Rect2DI {
+  GENERATED_STRUCT(Rect2DI)
+public:
+  PROPERTY()
+  Vector2I position = {};
+
+  PROPERTY()
+  Vector2I size = {};
+
+  UInt64 Area() const { return size.x * size.y; }
 };
 
 struct STRUCT() Color {

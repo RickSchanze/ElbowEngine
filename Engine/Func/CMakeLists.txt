@@ -48,6 +48,8 @@ add_library(${PROJECT_NAME}
         UI/CoordConversion.h
         UI/Widget/Panel.cpp
         UI/Widget/Panel.h
+        Algo/RectPacking.cpp
+        Algo/RectPacking.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

@@ -120,6 +120,8 @@ add_library(${PROJECT_NAME}
         Async/Execution/SyncGroup.h
         Math/MathFunctional.cpp
         Math/MathFunctional.h
+        Base/Tree.cpp
+        Base/Tree.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

@@ -5,7 +5,7 @@
 #include "Text.h"
 
 #include "Core/Math/Math.h"
-#include "Core/Math/MathFunctional.h"
+#include "Core/Math/MathPipe.h"
 #include "Func/Render/Misc.h"
 #include "Func/UI/CoordConversion.h"
 #include "Platform/RHI/CommandBuffer.h"
