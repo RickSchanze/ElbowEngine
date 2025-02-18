@@ -84,7 +84,7 @@ Text &Text::SetColor(core::Color color) {
 Rect2D Text::GetBoundingRect() { return GetFontRect(); }
 
 Rect2D Text::GetFontRect() {
-  UnicodeString str = text_.AsUnicode();
+  UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   Font *font = font_;
   if (font == nullptr) {
@@ -118,7 +118,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
   // 左下角
   auto bl = target_rect.BottomLeft();
   auto rt = target_rect.TopRight();
-  UnicodeString str = text_.AsUnicode();
+  UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   auto padding = GetPadding();
   index_offset_ = index_buffer.size();

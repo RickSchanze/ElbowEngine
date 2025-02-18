@@ -34,6 +34,7 @@ enum class RHICommandType {
   SetViewport,
   BindDescriptorSet,
   CopyBufferToImage,
+  CopyImageToBuffer,
   Count,
 };
 
@@ -185,6 +186,20 @@ struct Cmd_CopyBufferToImage final : RHICommand {
 
   Buffer *src = nullptr;
   Image *dst = nullptr;
+  ImageSubresourceRange subresource_range{};
+  core::Vector3I offset{};
+  core::Vector3I size{};
+};
+
+struct Cmd_CopyImageToBuffer final : RHICommand {
+  RHICommandType GetType() const override { return RHICommandType::CopyImageToBuffer; }
+
+  explicit Cmd_CopyImageToBuffer(Image *src_, Buffer *dst_, ImageSubresourceRange subresource_range_,
+                                 core::Vector3I offset_, core::Vector3I size_)
+      : src(src_), dst(dst_), subresource_range(subresource_range_), offset(offset_), size(size_) {}
+
+  Image *src = nullptr;
+  Buffer *dst = nullptr;
   ImageSubresourceRange subresource_range{};
   core::Vector3I offset{};
   core::Vector3I size{};

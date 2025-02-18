@@ -13,7 +13,7 @@
 void core::ThreadUtils::SetThreadName(std::thread &thread, core::StringView name) {
 #ifdef PLATFORM_WINDOWS
   HANDLE handle = static_cast<HANDLE>(thread.native_handle());
-  std::wstring w_name = {name.GetStdStringView().begin(), name.GetStdStringView().end()};
+  std::wstring w_name = {name.ToStdStringView().begin(), name.ToStdStringView().end()};
   SetThreadDescription(handle, w_name.c_str());
 #endif
 }

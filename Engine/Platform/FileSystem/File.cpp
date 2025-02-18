@@ -16,6 +16,7 @@
 #include <fstream>
 
 using namespace core;
+namespace fs = std::filesystem;
 
 bool platform::File::Create_File(StringView path, FileCreateMode mode, bool create_folder, bool overwrite) {
   if (Path::IsExist(path)) {
@@ -47,30 +48,32 @@ bool platform::File::Create_File(StringView path, FileCreateMode mode, bool crea
   return true;
 }
 
-core::String platform::File::GetFolder() const {
-  return std::filesystem::path(path_.GetStdString()).parent_path().string();
+String platform::File::GetFolder() const { return std::filesystem::path(path_.ToStdString()).parent_path().string(); }
+
+String platform::File::GetFileName() const { return std::filesystem::path(path_.ToStdString()).filename().string(); }
+
+String platform::File::GetFileNameWithoutExtension() const {
+  return std::filesystem::path(path_.ToStdString()).stem().string();
 }
 
-core::String platform::File::GetFileName() const {
-  return std::filesystem::path(path_.GetStdString()).filename().string();
+String platform::File::GetAbsolutePath() const {
+  // 看看是不是已经是绝对路径了
+  fs::path p = path_.ToStdString();
+  if (p.is_absolute())
+    return path_;
+  return Path::GetProjectPath() + "/" + path_;
 }
 
-core::String platform::File::GetFileNameWithoutExtension() const {
-  return std::filesystem::path(path_.GetStdString()).stem().string();
-}
-
-core::String platform::File::GetAbsolutePath() const { return Path::GetProjectPath() + "/" + path_; }
-
-core::String platform::File::GetRelativePath() const { return path_; }
+String platform::File::GetRelativePath() const { return path_; }
 
 bool platform::File::IsExist() const {
   const auto s = GetAbsolutePath();
   return Path::IsExist(s);
 }
 
-bool platform::File::IsExist(core::StringView path) { return File(path).IsExist(); }
+bool platform::File::IsExist(StringView path) { return File(path).IsExist(); }
 
-bool platform::File::TryReadAllText(core::String &out) const {
+bool platform::File::TryReadAllText(String &out) const {
   if (!IsExist()) {
     LOGGER.Error(logcat::Platform_FileSystem, "File not exist: {}", path_);
     return false;
@@ -112,7 +115,7 @@ bool platform::File::WriteAllText(StringView text) const {
   }
 }
 
-bool platform::File::WriteAllText(const core::String &path, core::StringView text) {
+bool platform::File::WriteAllText(const String &path, StringView text) {
   const File file = path;
   return file.WriteAllText(text);
 }

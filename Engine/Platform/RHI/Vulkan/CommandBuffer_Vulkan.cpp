@@ -332,6 +332,35 @@ static void ExecuteCmdCopyBufferToImage(VkCommandBuffer cmd, Cmd_CopyBufferToIma
   vkCmdCopyBufferToImage(cmd, src, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
 }
 
+static void ExecuteCmdCopyImageToBuffer(VkCommandBuffer cmd, Cmd_CopyImageToBuffer *cmd_copy_image_to_buffer) {
+  if (cmd_copy_image_to_buffer == nullptr || cmd_copy_image_to_buffer->src == nullptr ||
+      !cmd_copy_image_to_buffer->src->IsValid() || cmd_copy_image_to_buffer->dst == nullptr ||
+      !cmd_copy_image_to_buffer->dst->IsValid()) {
+    LOGGER.Error(logcat::Platform_RHI_Vulkan,
+                 "命令CopyBufferToImage错误, 传入的传入的cmd_copy_buffer_to_image无效无效");
+    return;
+  }
+  VkBufferImageCopy copy_region = {};
+  copy_region.bufferOffset = 0;
+  copy_region.bufferRowLength = 0;
+  copy_region.bufferImageHeight = 0;
+  copy_region.imageSubresource.aspectMask =
+      RHIImageAspectToVkImageAspect(cmd_copy_image_to_buffer->subresource_range.aspect_mask);
+  copy_region.imageSubresource.mipLevel = cmd_copy_image_to_buffer->subresource_range.base_mip_level;
+  copy_region.imageSubresource.baseArrayLayer = cmd_copy_image_to_buffer->subresource_range.base_array_layer;
+  copy_region.imageSubresource.layerCount = cmd_copy_image_to_buffer->subresource_range.layer_count;
+  copy_region.imageOffset = {cmd_copy_image_to_buffer->offset.x, cmd_copy_image_to_buffer->offset.y,
+                             cmd_copy_image_to_buffer->offset.z};
+  VkExtent3D extent{};
+  extent.width = cmd_copy_image_to_buffer->size.x;
+  extent.height = cmd_copy_image_to_buffer->size.y;
+  extent.depth = cmd_copy_image_to_buffer->size.z;
+  copy_region.imageExtent = extent;
+  VkImage src = cmd_copy_image_to_buffer->src->GetNativeHandleT<VkImage>();
+  VkBuffer dst = cmd_copy_image_to_buffer->dst->GetNativeHandleT<VkBuffer>();
+  vkCmdCopyImageToBuffer(cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, 1, &copy_region);
+}
+
 static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand *> &commands, core::StringView label) {
   PROFILE_SCOPE_AUTO;
   auto &ctx = *GetVulkanGfxContext();
@@ -342,7 +371,7 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand
   // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
   // 如果调用了Delete会崩溃
   for (Int32 i = 0; i < commands.size(); i++) {
-    auto& command = commands[i];
+    auto &command = commands[i];
     switch (command->GetType()) {
     case RHICommandType::CopyBuffer:
       ExecuteCmdCopyBuffer(buffer, static_cast<Cmd_CopyBuffer *>(command));
@@ -379,6 +408,9 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand
       break;
     case RHICommandType::CopyBufferToImage:
       ExecuteCmdCopyBufferToImage(buffer, static_cast<Cmd_CopyBufferToImage *>(command));
+      break;
+    case RHICommandType::CopyImageToBuffer:
+      ExecuteCmdCopyImageToBuffer(buffer, static_cast<Cmd_CopyImageToBuffer *>(command));
       break;
     }
     std::destroy_at(command);

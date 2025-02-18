@@ -111,5 +111,7 @@ core::Rect2DI RectPacking::GetNextAvailableRect(core::Vector2I bound, std::span<
   if (rect.size.x < required_size.x || rect.size.y < required_size.y) {
     return core::Rect2DI{};
   }
+  // 这时候rect已经是一个合适的矩形了, 选择required_size合适的位置和大小
+  rect.size = required_size;
   return rect;
 }

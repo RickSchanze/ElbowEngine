@@ -370,12 +370,12 @@ nlohmann::json ParseSubAttr(const StringView attr) {
     if (const auto step5 = step4.Split("="); step5.size() == 2) {
       const auto key = step5[0].Trim();
       const auto val = step5[1].Trim();
-      const auto key_storage = key.GetStdStringView();
-      const auto val_storage = val.GetStdStringView();
+      const auto key_storage = key.ToStdStringView();
+      const auto val_storage = val.ToStdStringView();
       result[key_storage] = val_storage;
     } else if (step5.size() == 1) {
       const auto key = step5[0].Trim();
-      const auto key_storage = key.GetStdStringView();
+      const auto key_storage = key.ToStdStringView();
       result[key_storage] = true;
     } else {
       throw ArgumentException(NAMEOF(attr), "嵌套SubAttr尚不支持");

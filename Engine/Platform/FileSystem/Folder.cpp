@@ -24,7 +24,7 @@ bool platform::Folder::IsFolderEmpty(core::StringView path)
     {
         return false;
     }
-    const auto path_view = path.GetStdStringView();
+    const auto path_view = path.ToStdStringView();
     const auto path1     = std::filesystem::path(path_view);
     const auto it        = std::filesystem::directory_iterator(path1);
     return it == std::filesystem::directory_iterator();
@@ -82,7 +82,7 @@ bool platform::Folder::TryListFiles(core::StringView path, core::Array<core::Str
     {
         return false;
     }
-    ListFilesImpl(path.GetStdStringView(), files, recursive);
+    ListFilesImpl(path.ToStdStringView(), files, recursive);
     return true;
 }
 
@@ -110,7 +110,7 @@ bool platform::Folder::TryListFilesRegex(core::StringView path, core::Array<core
     {
         return false;
     }
-    ListFilesImplRegex(path.GetStdStringView(), files, regex, recursive);
+    ListFilesImplRegex(path.ToStdStringView(), files, regex, recursive);
     return true;
 }
 
@@ -142,7 +142,7 @@ bool platform::Folder::TryListFilesLambda(
     {
         return false;
     }
-    ListFilesImplLambda(path.GetStdStringView(), files, Func_Filter, recursive);
+    ListFilesImplLambda(path.ToStdStringView(), files, Func_Filter, recursive);
     return true;
 }
 
@@ -156,7 +156,7 @@ static bool FindFileImpl(const std::filesystem::path& path, core::StringView nam
         }
         else
         {
-            if (entry.path().filename().string() == name.GetStdStringView())
+            if (entry.path().filename().string() == name.ToStdStringView())
             {
                 found = entry.path().string();
                 return true;
@@ -169,12 +169,12 @@ static bool FindFileImpl(const std::filesystem::path& path, core::StringView nam
 bool platform::Folder::ContainsFile(core::StringView path, core::StringView name, bool recursive)
 {
     core::String found;
-    return FindFileImpl(path.GetStdStringView(), name, recursive, found);
+    return FindFileImpl(path.ToStdStringView(), name, recursive, found);
 }
 
 bool platform::Folder::CreateFolder(core::StringView path)
 {
-    auto v = path.GetStdStringView();
+    auto v = path.ToStdStringView();
     try
     {
         return std::filesystem::create_directories(v);

@@ -60,16 +60,18 @@ uint32_t String::AtUnicode(int32_t i) const {
 
 UInt64 String::GetHashCode() const { return std::hash<std::string>{}(str_); }
 
-UnicodeString String::AsUnicode() const { return UnicodeString(*this); }
+UnicodeString String::ToUnicodeString() const { return UnicodeString(*this); }
 
 ::std::ostream &operator<<(::std::ostream &os, const String &str) {
-  os << str.GetStdString();
+  os << str.ToStdString();
   return os;
 }
 
+bool Equals(const core::String &a, const core::StringView &b) { return a.ToStringView() == b; }
+
 struct UnicodeString::Impl {
   UInt64 Size() const { return str_.length(); }
-  UInt32 At(UInt64 index) { return str_.charAt(index); }
+  UInt32 At(UInt64 index) const { return str_.charAt(index); }
 
   icu::UnicodeString str_;
   Impl(const String &str) { str_ = icu::UnicodeString::fromUTF8(*str); }
@@ -105,11 +107,11 @@ StringView StringView::SubString(int32_t begin, int32_t end) const {
 }
 
 int32_t StringView::IndexOf(const StringView &o) const {
-  return static_cast<int32_t>(GetStdStringView().find(o.GetStdStringView()));
+  return static_cast<int32_t>(ToStdStringView().find(o.ToStdStringView()));
 }
 
 int32_t StringView::LastIndexOf(const StringView &o) const {
-  return static_cast<int32_t>(GetStdStringView().rfind(o.GetStdStringView()));
+  return static_cast<int32_t>(ToStdStringView().rfind(o.ToStdStringView()));
 }
 
 bool StringView::operator==(const StringView &o) const {
@@ -124,7 +126,7 @@ bool StringView::operator==(const StringView &o) const {
   return true;
 }
 
-bool StringView::operator==(const char *str) const { return GetStdStringView() == ::std::string_view(str); }
+bool StringView::operator==(const char *str) const { return ToStdStringView() == ::std::string_view(str); }
 
 bool StringView::ContainsAny(const StringView &o, bool use_utf8) const {
   if (use_utf8) {
@@ -148,7 +150,7 @@ bool StringView::ContainsAny(const StringView &o, bool use_utf8) const {
 
 bool StringView::EndsWith(const StringView &o, bool use_utf8) const {
   if (!use_utf8) {
-    return Length() >= o.Length() && GetStdStringView().ends_with(o.GetStdStringView());
+    return Length() >= o.Length() && ToStdStringView().ends_with(o.ToStdStringView());
   }
   // TODO: 实现utf8 ends with
   throw core::NotSupportException("UTF8版本尚未支持");
@@ -156,7 +158,7 @@ bool StringView::EndsWith(const StringView &o, bool use_utf8) const {
 
 bool StringView::StartsWith(const StringView &o, bool use_utf8) const {
   if (!use_utf8) {
-    return Length() >= o.Length() && GetStdStringView().starts_with(o.GetStdStringView());
+    return Length() >= o.Length() && ToStdStringView().starts_with(o.ToStdStringView());
   }
   // TODO: 实现utf8 starts with
   throw core::NotSupportException("UTF8版本尚未支持");
@@ -169,7 +171,7 @@ Array<StringView> StringView::Split(const StringView s, const bool utf8_mode) co
   if (!utf8_mode) {
     if (s.IsEmpty() || s == " ") {
       size_t start = 0;
-      const auto str = GetStdStringView();
+      const auto str = ToStdStringView();
       while (start < str.size()) {
         // 跳过前导空白
         while (start < str.size() && std::isspace(static_cast<unsigned char>(str[start]))) {
@@ -194,7 +196,7 @@ Array<StringView> StringView::Split(const StringView s, const bool utf8_mode) co
         LOGGER.Warn(logcat::Core, "Split string view only support single char now. use first char.");
       }
       const auto ch = s[0];
-      auto str = GetStdStringView();
+      auto str = ToStdStringView();
       size_t start = 0;
       size_t end;
       // 循环查找分隔符并截取子字符串
@@ -213,8 +215,8 @@ Array<StringView> StringView::Split(const StringView s, const bool utf8_mode) co
 }
 
 StringView StringView::TrimLeft(const StringView s, const bool utf8_mode) const {
-  const auto view = s.GetStdStringView();
-  auto str = GetStdStringView();
+  const auto view = s.ToStdStringView();
+  auto str = ToStdStringView();
   if (!utf8_mode) {
     if (s.IsEmpty()) // trim 空格
     {
@@ -239,8 +241,8 @@ StringView StringView::TrimLeft(const StringView s, const bool utf8_mode) const 
 }
 
 StringView StringView::TrimRight(const StringView s, const bool utf8_mode) const {
-  const auto view = s.GetStdStringView();
-  const auto str = GetStdStringView();
+  const auto view = s.ToStdStringView();
+  const auto str = ToStdStringView();
   if (!utf8_mode) {
     if (s.IsEmpty()) {
       size_t end = str.size();

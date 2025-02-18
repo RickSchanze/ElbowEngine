@@ -118,8 +118,8 @@ add_library(${PROJECT_NAME}
         Base/Ranges.h
         Async/Execution/SyncGroup.cpp
         Async/Execution/SyncGroup.h
-        Math/MathFunctional.cpp
-        Math/MathFunctional.h
+        Math/MathPipe.cpp
+        Math/MathPipe.h
         Base/Tree.cpp
         Base/Tree.h
 )

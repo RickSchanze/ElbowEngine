@@ -214,13 +214,20 @@ AsyncResultHandle<Object *> AssetDataBase::LoadAsync(ObjectHandle handle, const 
     tables_[type] = std::move(resource::SQLHelper::CreateTable(*db_, type));                                           \
   }
 
-void AssetDataBase::CreateAsset(Asset *asset, StringView path) {
+bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
+  if (asset == nullptr) {
+    LOGGER.Error("Resource", "CreateAsset: 传入asset为空");
+  }
   const Type *type = asset->GetType();
-  if (type == TypeOf<Texture2D>() || type == TypeOf<Mesh>() || type == TypeOf<Shader>()) {
+  if (type == TypeOf<Mesh>() || type == TypeOf<Shader>()) {
     LOGGER.Error(logcat::Resource, "{}只支持导入而不支持创建.", type->GetName());
-    return;
+    return false;
   }
   if (type == TypeOf<Material>()) {
+    if (auto exist_meta = QueryMeta<MaterialMeta>(String::Format("path = '{}'", path))) {
+      LOGGER.Error("Resource", "CreateAsset: {}已存在", path);
+      return false;
+    }
     auto handle = ObjectManager::GetRegistry().NextPersistentHandle()->GetValue();
     asset->InternalSetAssetHandle(std::get<0>(*handle));
     YamlArchive archive;
@@ -228,14 +235,36 @@ void AssetDataBase::CreateAsset(Asset *asset, StringView path) {
     Material &material = *static_cast<Material *>(asset);
     if (!archive.Serialize(material, serialized_str)) {
       LOGGER.Error(logcat::Resource, "无法序列化Material.");
-      return;
+      return false;
     }
     File::WriteAllText(path, serialized_str);
     MaterialMeta meta;
     meta.object_handle = *handle | First;
     meta.path = path;
     InsertMeta(meta);
+    return true;
   }
+  if (type == TypeOf<Texture2D>()) {
+    if (auto exist_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", path))) {
+      LOGGER.Error("Resource", "CreateAsset: {}已存在", path);
+      return false;
+    }
+    auto handle = ObjectManager::GetRegistry().NextPersistentHandle()->GetValue();
+    asset->InternalSetAssetHandle(std::get<0>(*handle));
+    auto tex = static_cast<Texture2D *>(asset);
+    Assert::Require("Resource", Equals(tex->GetAssetPath(), path), "创建纹理资源失败: 路径不匹配");
+    Texture2DMeta meta;
+    meta.object_handle = *handle | First;
+    meta.path = path;
+    meta.dynamic = false;
+    meta.height = tex->GetHeight();
+    meta.width = tex->GetWidth();
+    meta.format = tex->GetFormat();
+    meta.sprites_string = tex->GetSpriteRangeString();
+    InsertMeta(meta);
+    return true;
+  }
+  return false;
 }
 
 void AssetDataBase::CreateAssetTables() {

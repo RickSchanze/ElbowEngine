@@ -66,18 +66,18 @@ bool platform::Path::SetProjectPath(core::StringView path)
 
 bool platform::Path::IsExist(core::StringView path)
 {
-    return std::filesystem::exists(path.GetStdStringView());
+    return std::filesystem::exists(path.ToStdStringView());
 }
 
 bool platform::Path::IsFolder(core::StringView path)
 {
     if (!IsExist(path)) return false;
-    return std::filesystem::is_directory(path.GetStdStringView());
+    return std::filesystem::is_directory(path.ToStdStringView());
 }
 
 core::String platform::Path::GetParent(core::StringView path)
 {
-    auto parent = std::filesystem::path(path.GetStdStringView()).parent_path().string();
+    auto parent = std::filesystem::path(path.ToStdStringView()).parent_path().string();
     if (parent.empty())
     {
         return GetProjectPath();
@@ -87,7 +87,7 @@ core::String platform::Path::GetParent(core::StringView path)
 
 core::StringView platform::Path::GetFileName(const core::StringView file_path)
 {
-    const auto   p              = file_path.GetStdStringView();
+    const auto   p              = file_path.ToStdStringView();
     const size_t last_slash_pos = p.find_last_of("\\/");
     const size_t start          = last_slash_pos == std::string::npos ? 0 : last_slash_pos + 1;
     return p.substr(start);
@@ -95,7 +95,7 @@ core::StringView platform::Path::GetFileName(const core::StringView file_path)
 
 core::StringView platform::Path::GetFileNameWithoutExt(const core::StringView file_path)
 {
-    const auto p   = GetFileName(file_path).GetStdStringView();
+    const auto p   = GetFileName(file_path).ToStdStringView();
     const auto pos = p.find_last_of('.');
     if (pos == std::string::npos) return p;
     return p.substr(0, pos);

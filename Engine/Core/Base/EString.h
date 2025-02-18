@@ -21,13 +21,12 @@ public:
   UInt64 Size() const;
   UInt32 At(UInt64 index) const;
 
-  UnicodeString(const String& str);
+  UnicodeString(const String &str);
   ~UnicodeString();
 
 private:
   std::unique_ptr<Impl> impl_;
 };
-
 
 class StringView {
 public:
@@ -62,7 +61,7 @@ public:
   [[nodiscard]] bool EndsWith(const StringView &o, bool use_utf8 = false) const;
   [[nodiscard]] bool StartsWith(const StringView &o, bool use_utf8 = false) const;
 
-  [[nodiscard]] std::string_view GetStdStringView() const { return {str_, static_cast<size_t>(length_)}; }
+  [[nodiscard]] std::string_view ToStdStringView() const { return {str_, static_cast<size_t>(length_)}; }
 
   String operator+(const StringView &o) const;
 
@@ -74,7 +73,7 @@ public:
 
   const char *operator*() const { return str_; }
 
-  [[nodiscard]] UInt64 GetHashCode() const { return std::hash<std::string_view>{}(GetStdStringView()); }
+  [[nodiscard]] UInt64 GetHashCode() const { return std::hash<std::string_view>{}(ToStdStringView()); }
 
 private:
   const char *str_;
@@ -112,7 +111,7 @@ public:
 
   [[nodiscard]] const char *Data() const { return str_.c_str(); }
   [[nodiscard]] char *Data() { return str_.data(); }
-  [[nodiscard]] const std::string &GetStdString() const { return str_; }
+  [[nodiscard]] const std::string &ToStdString() const { return str_; }
 
   String operator+(const String &str) const { return {str_ + str.str_}; }
   String operator+(const char *str) const { return {str_ + str}; }
@@ -155,13 +154,15 @@ public:
    * 会进行复制
    * @return
    */
-  UnicodeString AsUnicode() const;
+  UnicodeString ToUnicodeString() const;
 
 private:
   std::string str_;
 };
 
 std::ostream &operator<<(std::ostream &os, const String &str);
+
+bool Equals(const core::String &a, const core::StringView &b);
 
 } // namespace core
 
@@ -194,9 +195,5 @@ template <> struct ::std::hash<core::StringView> {
 };
 
 template <> struct ::std::hash<core::String> {
-  size_t operator()(const core::String& str) const noexcept
-    {
-        return ::std::hash<std::string>{}(str.GetStdString());
-    }
+  size_t operator()(const core::String &str) const noexcept { return ::std::hash<std::string>{}(str.ToStdString()); }
 };
-

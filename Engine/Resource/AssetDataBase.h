@@ -78,11 +78,10 @@ public:
 
   /**
    * 创建一个资产并保存
-   * 此函数不会进行重复性校验 注意！！！
    * @param asset
    * @param path
    */
-  static void CreateAsset(Asset *asset, core::StringView path);
+  static bool CreateAsset(Asset *asset, core::StringView path);
 
 protected:
   void CreateAssetTables();

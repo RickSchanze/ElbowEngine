@@ -55,25 +55,67 @@ public:
   [[nodiscard]] SpriteRange GetSpriteRange(UInt64 id) const;
   [[nodiscard]] SpriteRange GetSpriteRange(core::StringView name) const;
 
+  [[nodiscard]] core::String GetAssetPath() const { return asset_path_; }
+
 #if WITH_EDITOR
+
+  /**
+   * 这个函数设置asset_path, 你仅应在下面的场景调用此函数:
+   * 1. 需要引擎内生成一个Texture2D作为磁盘上的资产时
+   *    例如TextureAtlas是完全动态生成的
+   * 2. 待补充
+   * 当asset_path被设置时, 调用此函数会触发Assert
+   */
+  void SetAssetPath(core::StringView new_path);
+
   /**
    * 增加一个sprite 在指定的target_rect处
    * @param data
    * @param target_rect
-   * @param channel
    * @return
    */
-  bool AppendSprite(UInt64 id,char* data, core::Rect2DI target_rect);
+  bool AppendSprite(UInt64 id, char *data, core::Rect2DI target_rect);
 
   /**
    * 增加一个Sprite 自动计算应该在哪
    * @param data
    * @param width
    * @param height
-   * @param channel
    * @return
    */
-  bool AppendSprite(char* data, UInt32 width, UInt32 height);
+  bool AppendSprite(UInt64 id, char *data, UInt32 width, UInt32 height);
+
+  bool AppendSprite(core::StringView name, char *data, UInt32 width, UInt32 height);
+
+  /**
+   * 将位于path的图片添加到Texture2D 以name为命名
+   * path可以是绝对路径
+   * @param name
+   * @param path
+   * @return
+   */
+  bool AppendSprite(core::StringView name, core::StringView path);
+
+  /**
+   * 拉取GPU图像保存到当前的GetAssetPath()中
+   */
+  void Download() const;
+
+  /**
+   * 将data数据通道转换
+   * @param data 传入, 如果src_channels == dst_channels 直接返回data, 否则Malloc返回新内存
+   * @param width
+   * @param height
+   * @param src_channels
+   * @param dst_channels
+   * @note 传入data不会被释放, 返回的新的也需要手动释放
+   * @return
+   */
+  static UInt8* ConvertChannels(UInt8* data, UInt32 width, UInt32 height, UInt32 src_channels, UInt32 dst_channels);
+
+  [[nodiscard]] core::String GetSpriteRangeString() const;
+
+  void SetSpriteRangeString(core::StringView str);
 #endif
 
 private:
@@ -82,5 +124,7 @@ private:
 
   // 这个Texture2D包含的sprites
   core::Array<SpriteRange> sprite_ranges_;
+
+  core::String asset_path_;
 };
 } // namespace resource

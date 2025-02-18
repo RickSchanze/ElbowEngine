@@ -21,9 +21,9 @@
 #include "Platform/Window/WindowManager.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Font/Font.h"
-#include "Resource/Assets/Font/FontMeta.h"
 #include "Resource/Assets/Material/MaterialMeta.h"
 #include "Resource/Assets/Shader/Shader.h"
+#include "Resource/Assets/Texture/Texture2DMeta.h"
 #include "cpptrace/cpptrace.hpp"
 
 namespace resource {
@@ -103,6 +103,20 @@ int main() {
       // 创建/加载必须的材质
       LoadMaterial("Assets/Material/Text.mat", "Assets/Shader/Text.slang");
       LoadMaterial("Assets/Material/UIPanel.mat", "Assets/Shader/UIPanel.slang");
+      // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
+      Texture2DMeta new_meta;
+      new_meta.dynamic = true;
+      new_meta.width = 1024;
+      new_meta.height = 1024;
+      new_meta.format = platform::rhi::Format::R8G8B8A8_UNorm;
+      Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
+      new_tex->SetName("UIAtlas");
+      new_tex->Load(new_meta);
+      new_tex->AppendSprite("White", R"(C:\Users\Echo\Downloads\White.png)");
+      new_tex->AppendSprite("Black", R"(C:\Users\Echo\Downloads\Black.png)");
+      new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
+      new_tex->Download();
+      AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif
