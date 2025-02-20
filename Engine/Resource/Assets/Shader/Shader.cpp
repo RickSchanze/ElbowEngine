@@ -421,7 +421,7 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
   default:
     break;
   }
-  layouts.push_back(GetGfxContextRef().CreateDescriptorSetLayout(layout_desc));
+  layouts.push_back(DescriptorSetLayoutPool::GetByRef().GetOrCreate(layout_desc));
   return layouts;
 }
 

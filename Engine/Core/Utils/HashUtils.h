@@ -1,18 +1,18 @@
 /**
  * @file HashUtils.h
- * @author Echo 
+ * @author Echo
  * @Date 24-11-9
- * @brief 
+ * @brief
  */
 
 #pragma once
 #include "Core/Base/EString.h"
 
-namespace core
-{
+namespace core {
 class HashUtils {
 public:
-    static uint64_t GetHash(StringView str);
-    static UInt64 CombineHash(UInt64 a, UInt64 b);
+  static uint64_t GetHash(StringView str);
+  static UInt64 CombineHash(UInt64 a, UInt64 b);
+  static UInt64 GetPtrHash(void* ptr);
 };
-}
+} // namespace core

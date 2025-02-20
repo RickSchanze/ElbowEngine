@@ -13,9 +13,7 @@
 static void Z_MetaInfo_Registration_Func();
 namespace {
 struct Z_MetaInfo_Registration {
-  Z_MetaInfo_Registration() {
-    Z_MetaInfo_Registration_Func();
-  }
+  Z_MetaInfo_Registration() { Z_MetaInfo_Registration_Func(); }
 };
 
 static const Z_MetaInfo_Registration Z_meta_info_registration1;
@@ -66,6 +64,6 @@ bool core::CoreConfig::IsMultiThreadPersistentLoadEnabled() const {
   auto find = thread_map.find(ThreadSlot::Resource);
   if (find != thread_map.end()) {
     return find->second >= 1 && GetEnablePersistentLoadMultiThread();
-    }
-    return false;
+  }
+  return false;
 }

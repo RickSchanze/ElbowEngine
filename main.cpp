@@ -3,6 +3,7 @@
 #include "Core/Async/Execution/WhenAll.h"
 #include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
+#include "Core/Config/CoreConfig.h"
 #include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Memory/MemoryManager.h"
@@ -22,8 +23,8 @@
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/MaterialMeta.h"
+#include "Resource/Assets/Material/SharedMaterial.h"
 #include "Resource/Assets/Shader/Shader.h"
-#include "Resource/Assets/Texture/Texture2DMeta.h"
 #include "cpptrace/cpptrace.hpp"
 
 namespace resource {
@@ -43,6 +44,17 @@ static void LoadMaterial(const StringView mat_path, const StringView shader_path
     Assert::Require("Resource.Initialize", text_shader && font_material, "资产数据库初始化失败");
     font_material->SetShader(text_shader);
     AssetDataBase::CreateAsset(font_material, mat_path);
+  }
+}
+
+static void TickManagerUpdate(const Millisecond &sec) {
+  static UInt32 interval = GetConfig<CoreConfig>()->GetTickFrameInterval();
+  static UInt32 cnt = 0;
+  cnt++;
+  if (cnt >= interval) {
+    SharedMaterialManager::GetByRef().UpdateSharedMaterialSet();
+    platform::rhi::DescriptorSetLayoutPool::GetByRef().Update();
+    cnt = 0;
   }
 }
 
@@ -133,6 +145,7 @@ int main() {
     TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
     RenderContext::GetByRef().SetRenderPipeline(MakeUnique<FixedBasicTestRenderPipeline>());
     Actor *a = NewObject<ACameraHolder>();
+    auto handle = TickEvents::WorldPostTickEvent.AddBind(&TickManagerUpdate);
     while (GetRuntimeStage() != RuntimeStage::Shutdown) {
       MARK_FRAME_AUTO;
       GetWorldClock().TickAll();
@@ -141,6 +154,7 @@ int main() {
         break;
       }
     }
+    TickEvents::WorldPostTickEvent.RemoveBind(handle);
     platform::rhi::GetGfxContext()->WaitForDeviceIdle();
     TickEvents::InputTickEvent.Unbind();
     LOGGER.Info(logcat::Engine, "Engine shutdown...");

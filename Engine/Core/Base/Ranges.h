@@ -5,12 +5,14 @@
 #pragma once
 
 #include "CoreTypeDef.h"
-#include "range/v3/all.hpp"
 
+#ifndef REFLECTION
+#include "range/v3/all.hpp"
 namespace core::range {
 inline constexpr auto AnyOf = ranges::any_of;
 inline constexpr auto Contains = ranges::contains;
-}
+inline constexpr auto Remove = ranges::remove;
+} // namespace core::range
 
 namespace core::range::view {
 inline constexpr auto Concat = ranges::views::concat;
@@ -18,8 +20,21 @@ inline constexpr ranges::detail::to_container_fn<ranges::detail::from_range<Arra
 inline constexpr auto Transform = ranges::views::transform;
 inline constexpr auto Enumerate = ranges::views::enumerate;
 inline constexpr auto RemoveIf = ranges::views::remove_if;
+inline constexpr auto Keys = ranges::views::keys;
 } // namespace core::range::view
 
 namespace core::range::action {
 constexpr auto Unique = ranges::actions::unique;
 }
+#endif
+
+namespace core::range {
+template <typename T> void RemoveAt(Array<T> &container, UInt64 index, bool fast = true) {
+  if (fast) {
+    std::swap(container[index], container.back());
+    container.pop_back();
+  } else {
+    container.erase(container.begin() + index);
+  }
+}
+} // namespace core::range

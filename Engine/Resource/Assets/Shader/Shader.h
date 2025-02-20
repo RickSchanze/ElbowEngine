@@ -24,7 +24,7 @@ enum class ShaderAnnotation {
   Pipeline,
   InputLayout, // 输入布局: VertexNormal, Vertex
   EnableDepth, // 是否启用深度测试 默认为true
-  Blend,  // 混合状态
+  Blend,       // 混合状态
   Name,
   Count,
 };
@@ -91,10 +91,13 @@ public:
   [[nodiscard]] int GetEntryPointIndex(int stage_index) const { return stage_to_entry_point_index_[stage_index]; }
 
   using ShaderHandles = core::StaticArray<core::SharedPtr<platform::rhi::LowShader>, SHADER_STAGE_COUNT>;
-  using ShaderAnnotationMap = core::StaticArray<int, GetEnumValue(ShaderAnnotation::Count)>;
+  using ShaderAnnotationMap = core::StaticArray<Int32, GetEnumValue(ShaderAnnotation::Count)>;
 
   [[nodiscard]] ShaderHandles &GetShaderHandles() { return shader_handles_; }
   [[nodiscard]] const ShaderAnnotationMap &GetAnnotations() const { return annotations_; }
+  [[nodiscard]] Int32 GetAnnotation(ShaderAnnotation annotation) const {
+    return annotations_[GetEnumValue(annotation)];
+  }
 
   [[nodiscard]] const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
 

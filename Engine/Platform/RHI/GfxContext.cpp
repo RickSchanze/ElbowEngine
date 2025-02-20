@@ -22,6 +22,8 @@ GfxContext::GfxContext() {
   Event_GfxContextPreDestroyed.AddBind(&GfxContext::PreDestroyed);
 }
 
+GfxContext::~GfxContext() { Delete(cmd_allocator_); }
+
 uint8_t GfxContext::GetSwapchainImageCount() const {
   const auto cfg = core::GetConfig<PlatformConfig>();
   return cfg->GetSwapchainImageCount();
@@ -49,13 +51,13 @@ void GfxContext::Update() {
   if (cmd_allocator_) {
     cmd_allocator_->Refresh();
   } else {
-    cmd_allocator_ = new core::FrameAllocator(2);
+    cmd_allocator_ = New<core::FrameAllocator>(2);
   }
 }
 
 core::FrameAllocator &GfxContext::GetCommandAllocator() {
   if (!cmd_allocator_) {
-    cmd_allocator_ = new core::FrameAllocator(2);
+    cmd_allocator_ = New<core::FrameAllocator>(2);
   }
   return *cmd_allocator_;
 }

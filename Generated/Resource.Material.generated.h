@@ -19,7 +19,6 @@ Type* type = Type::Create<resource::Material>("resource.Material")->Internal_Add
 type->Internal_RegisterField("shader_", &resource::Material::shader_, offsetof(resource::Material, shader_)); \
 type->Internal_RegisterField("float3_params_", &resource::Material::float3_params_, offsetof(resource::Material, float3_params_)); \
 type->Internal_RegisterField("texture_params_", &resource::Material::texture_params_, offsetof(resource::Material, texture_params_)); \
-type->Internal_RegisterField("depth_test_", &resource::Material::depth_test_, offsetof(resource::Material, depth_test_)); \
 return type; \
 } \
 

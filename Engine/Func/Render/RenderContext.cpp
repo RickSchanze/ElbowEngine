@@ -14,6 +14,7 @@
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/Window/WindowManager.h"
 #include "Resource/Assets/Material/Material.h"
+#include "Resource/Assets/Material/SharedMaterial.h"
 
 using namespace platform::rhi;
 using namespace func;

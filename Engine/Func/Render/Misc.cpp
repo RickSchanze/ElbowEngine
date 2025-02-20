@@ -9,8 +9,8 @@
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/DescriptorSet.h"
-#include "Platform/RHI/Pipeline.h"
 #include "Resource/Assets/Material/Material.h"
+#include "Resource/Assets/Material/SharedMaterial.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 
 using namespace platform::rhi;
@@ -29,12 +29,16 @@ void func::BindAndDrawMesh(CommandBuffer &cmd, Mesh *mesh) {
   cmd.Enqueue<Cmd_DrawIndexed>(storage.index_count);
 }
 
-void func::BindMaterial(platform::rhi::CommandBuffer &cmd, resource::Material *mat) {
+void func::BindMaterial(CommandBuffer &cmd, Material *mat) {
   if (mat == nullptr) {
     LOGGER.Error(logcat::Func_Render, "材质无效");
   }
-  auto pipeline = mat->GetActivePipeline();
-  cmd.Enqueue<Cmd_BindPipeline>(pipeline);
+  auto shared_mat = mat->GetSharedMaterial();
+  auto &mgr = SharedMaterialManager::GetByRef();
+  if (mgr.GetCurrentBindingSharedMaterial() != shared_mat) {
+    mgr.SetCurrentBindingSharedMaterial(shared_mat);
+    cmd.Enqueue<Cmd_BindPipeline>(shared_mat->GetPipeline());
+  }
   auto descriptor_set = mat->GetDescriptorSet();
-  cmd.Enqueue<Cmd_BindDescriptorSet>(pipeline, descriptor_set);
+  cmd.Enqueue<Cmd_BindDescriptorSet>(shared_mat->GetPipeline(), descriptor_set);
 }

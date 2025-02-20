@@ -122,6 +122,8 @@ add_library(${PROJECT_NAME}
         Math/MathPipe.h
         Base/Tree.cpp
         Base/Tree.h
+        Base/ArrayMap.cpp
+        Base/ArrayMap.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
