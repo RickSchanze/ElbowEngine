@@ -7,6 +7,8 @@
 #include "Core/Object/Object.h"
 #include "Core/Object/ObjectPtr.h"
 
+#include GEN_HEADER("Func.Overlay.generated.h")
+
 namespace core {
 struct Vector2;
 }
@@ -23,6 +25,7 @@ namespace func::ui {
 
 // 理想情况下 一个Overlay一个DrawCall
 class CLASS() Overlay : public core::Object {
+  GENERATED_CLASS(Overlay)
 public:
   Overlay &SetSlot(widget::Widget *widget);
 

@@ -206,4 +206,14 @@ Size2D Rect2D::Size() const { return Size2D(size.x, size.y); }
 Float Rect2D::Area() const { return size.x * size.y; }
 
 Rect2D Rect2D::operator/(const Float scalar) const { return {position / scalar, size / scalar}; }
+
+core::Rect2D operator/(core::Rect2DI rect, core::Vector2I size) {
+  core::Rect2D rtn;
+  rtn.position.x = (Float)rect.position.x / size.x;
+  rtn.position.y = (Float)rect.position.y / size.y;
+  rtn.size.x = (Float)rect.size.x / size.x;
+  rtn.size.y = (Float)rect.size.y / size.y;
+  return rtn;
+}
+
 } // namespace core

@@ -18,9 +18,9 @@
 
 #include "Core/Base/Ranges.h"
 #include "Func/Algo/RectPacking.h"
-#include GEN_HEADER("Resource.Texture2D.generated.h")
-
 #include <stb_image_write.h>
+
+#include GEN_HEADER("Resource.Texture2D.generated.h")
 
 GENERATED_SOURCE()
 
@@ -28,6 +28,8 @@ using namespace core;
 using namespace resource;
 using namespace platform;
 using namespace rhi;
+
+bool SpriteRange::IsValid() const { return range.size.x != 0 && range.size.y != 0; }
 
 void Texture2D::PerformLoad() {
   PROFILE_SCOPE_AUTO;
@@ -153,7 +155,7 @@ void Texture2D::SetAssetPath(core::StringView new_path) {
   asset_path_ = new_path;
 }
 
-bool Texture2D::AppendSprite(UInt64 id, char *data, Rect2DI target_rect) {
+bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2DI target_rect) {
   PROFILE_SCOPE_AUTO;
   if (target_rect.position.x + target_rect.size.x > GetWidth() ||
       target_rect.position.y + target_rect.size.y > GetHeight()) {

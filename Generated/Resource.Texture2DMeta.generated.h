@@ -20,6 +20,7 @@ type->Internal_RegisterField("id", &resource::Texture2DMeta::id, offsetof(resour
 type->Internal_RegisterField("object_handle", &resource::Texture2DMeta::object_handle, offsetof(resource::Texture2DMeta, object_handle)); \
 type->Internal_RegisterField("path", &resource::Texture2DMeta::path, offsetof(resource::Texture2DMeta, path)); \
 type->Internal_RegisterField("format", &resource::Texture2DMeta::format, offsetof(resource::Texture2DMeta, format)); \
+type->Internal_RegisterField("sprites_string", &resource::Texture2DMeta::sprites_string, offsetof(resource::Texture2DMeta, sprites_string))->SetComment("这个Texture2D包含的所有Sprite"); \
 return type; \
 } \
 

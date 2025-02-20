@@ -72,6 +72,7 @@ Vector2 operator-(Float s, Vector2 v);
 
 typedef glm::vec3 Vector3;
 typedef glm::vec4 Vector4;
+typedef glm::ivec4 Vector4I;
 typedef glm::mat4 Matrix4x4;
 typedef glm::mat3 Matrix3x3;
 typedef glm::quat Quaternion;
@@ -166,8 +167,10 @@ public:
   PROPERTY()
   Vector2I size = {};
 
-  UInt64 Area() const { return size.x * size.y; }
+  [[nodiscard]] UInt64 Area() const { return size.x * size.y; }
 };
+
+Rect2D operator/(core::Rect2DI rect, core::Vector2I size);
 
 struct STRUCT() Color {
   GENERATED_STRUCT(Color)
@@ -220,4 +223,8 @@ inline Matrix4x4 GetMatrix4x4Identity() {
   static auto identity = glm::mat4(1.0f);
   return identity;
 }
+
+inline Vector2I BottomLeft(const Rect2DI rect) { return rect.position; }
+inline Vector2I TopRight(const Rect2DI rect) { return rect.position + rect.size; }
+
 } // namespace core

@@ -90,9 +90,8 @@ int main() {
           AssetDataBase::Import("Assets/Texture/Default.png"),
           AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
           AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
-          AssetDataBase::Import("Assets/Shader/Text.slang"),
+          AssetDataBase::Import("Assets/Shader/UIDefault.slang"),
           AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
-          AssetDataBase::Import("Assets/Shader/UIPanel.slang"),
       };
       ThreadManager::Poll(INT_MAX);
       for (const auto &result : results) {
@@ -101,22 +100,22 @@ int main() {
         ThreadManager::Poll(INT_MAX);
       }
       // 创建/加载必须的材质
-      LoadMaterial("Assets/Material/Text.mat", "Assets/Shader/Text.slang");
-      LoadMaterial("Assets/Material/UIPanel.mat", "Assets/Shader/UIPanel.slang");
-      // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
-      Texture2DMeta new_meta;
-      new_meta.dynamic = true;
-      new_meta.width = 1024;
-      new_meta.height = 1024;
-      new_meta.format = platform::rhi::Format::R8G8B8A8_UNorm;
-      Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
-      new_tex->SetName("UIAtlas");
-      new_tex->Load(new_meta);
-      new_tex->AppendSprite("White", R"(C:\Users\Echo\Downloads\White.png)");
-      new_tex->AppendSprite("Black", R"(C:\Users\Echo\Downloads\Black.png)");
-      new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
-      new_tex->Download();
-      AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
+      LoadMaterial("Assets/Material/Text.mat", "Assets/Shader/UIDefault.slang");
+      LoadMaterial("Assets/Material/UIPanel.mat", "Assets/Shader/UIDefault.slang");
+      // // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
+      // Texture2DMeta new_meta;
+      // new_meta.dynamic = true;
+      // new_meta.width = 1024;
+      // new_meta.height = 1024;
+      // new_meta.format = platform::rhi::Format::R8G8B8A8_UNorm;
+      // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
+      // new_tex->SetName("UIAtlas");
+      // new_tex->Load(new_meta);
+      // new_tex->AppendSprite("White", R"(C:\Users\Echo\Downloads\White.png)");
+      // new_tex->AppendSprite("Black", R"(C:\Users\Echo\Downloads\Black.png)");
+      // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
+      // new_tex->Download();
+      // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif

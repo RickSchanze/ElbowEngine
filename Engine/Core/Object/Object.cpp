@@ -57,9 +57,7 @@ void Object::AddReferenced(ObjectHandle handle) { referenced_.push_back(handle);
 
 void Object::RemoveReferenced(ObjectHandle handle) { erase(referenced_, handle); }
 
-void Object::GenerateInstanceHandle() {
-  handle_ = ObjectManager::GetRegistry().NextInstanceHandle();
-}
+void Object::GenerateInstanceHandle() { handle_ = ObjectManager::GetRegistry().NextInstanceHandle(); }
 
 void Object::UnregisterSelf() const { ObjectManager::GetRegistry().UnregisterHandle(GetHandle()); }
 
@@ -103,25 +101,31 @@ ObjectHandle Object::PerformPersistentObjectLoad() {
 
 void Object::PostSerialized() {}
 
-void Object::PostDeserialized() {
-  RegisterSelf();
-}
+void Object::PostDeserialized() { RegisterSelf(); }
 
 void Object::OnCreated() {
   RegisterSelf();
   ResolveObjectPtr();
 }
 
+static void FindObjPtr(const Type *t, void *field_ptr, ObjectHandle handle) {
+  if (t == nullptr)
+    return;
+  const auto fields = t->GetFields();
+  for (const auto &field : fields) {
+    if (field->GetType() == TypeOf<ObjectPtrBase>()) {
+      auto ptr = static_cast<ObjectPtrBase *>(field->GetFieldPtr(field_ptr));
+      ptr->ModifyOuter(handle);
+    } else {
+      FindObjPtr(field->GetType(), field->GetFieldPtr(field_ptr), handle);
+    }
+  }
+}
+
 void Object::InternalSetAssetHandle(ObjectHandle handle) {
   // 此时自己的Object Handle 需要通知所有的ObjectPtr
   auto type = GetType();
-  const auto fields = type->GetFields();
-  for (const auto &field : fields) {
-    if (field->GetType() == TypeOf<ObjectPtrBase>()) {
-      auto ptr = static_cast<ObjectPtrBase *>(field->GetFieldPtr(this));
-      ptr->ModifyOuter(handle);
-    }
-  }
+  FindObjPtr(type, this, handle);
   UnregisterSelf();
   handle_ = handle;
   RegisterSelf();

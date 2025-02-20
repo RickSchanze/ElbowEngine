@@ -6,6 +6,7 @@
 
 #include "Core/Math/MathTypes.h"
 #include "Core/Object/Object.h"
+#include "Func/Camera/ACameraHolder.h"
 
 namespace platform::rhi {
 class CommandBuffer;
@@ -28,7 +29,7 @@ public:
   /**
    * 重建此Widget的顶点和索引缓冲数据
    */
-  virtual void Rebuild(core::Rect2D target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
+  virtual void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
                        core::Array<UInt32> &index_buffer) = 0;
 
   /**
@@ -37,19 +38,19 @@ public:
    */
   virtual void Draw(platform::rhi::CommandBuffer &cmd) = 0;
 
-  virtual core::Rect2D GetBoundingRect() = 0;
+  virtual core::Rect2DI GetBoundingRect() = 0;
 
   void SetDirty(bool dirty = true);
-  bool IsDirty() const { return dirty_; }
+  [[nodiscard]] bool IsDirty() const { return dirty_; }
   void SetVisible(bool visible = true);
-  bool IsVisible() const { return visible_; }
+  [[nodiscard]] bool IsVisible() const { return visible_; }
 
-  core::Vector4 GetPadding() const { return padding_; }
-  void SetPadding(core::Vector4 padding);
+  [[nodiscard]] core::Vector4I GetPadding() const { return padding_; }
+  void SetPadding(core::Vector4I padding);
 
 protected:
   // x: left, y: top, z: right, w: bottom
-  core::Vector4 padding_{};
+  core::Vector4I padding_{};
 
   bool dirty_ = true;
   bool visible_ = true;

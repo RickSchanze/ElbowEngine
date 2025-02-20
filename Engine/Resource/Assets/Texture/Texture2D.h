@@ -26,6 +26,8 @@ struct SpriteRange {
   core::Rect2DI range{};
   // 表示ID, 是使用字符串的hash值
   UInt64 id{};
+
+  bool IsValid() const;
 };
 
 class CLASS() Texture2D : public Asset {
@@ -74,7 +76,7 @@ public:
    * @param target_rect
    * @return
    */
-  bool AppendSprite(UInt64 id, char *data, core::Rect2DI target_rect);
+  bool AppendSprite(UInt64 id, const char *data, core::Rect2DI target_rect);
 
   /**
    * 增加一个Sprite 自动计算应该在哪

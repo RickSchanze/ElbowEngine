@@ -19,7 +19,7 @@ void Widget::SetVisible(bool visible) {
   }
 }
 
-void Widget::SetPadding(core::Vector4 padding) {
+void Widget::SetPadding(core::Vector4I padding) {
   if (padding != padding_) {
     padding_ = padding;
     SetDirty();

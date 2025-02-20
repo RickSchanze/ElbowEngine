@@ -5,9 +5,7 @@
 #include "Text.h"
 
 #include "Core/Math/Math.h"
-#include "Core/Math/MathPipe.h"
 #include "Func/Render/Misc.h"
-#include "Func/UI/CoordConversion.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/VertexLayout.h"
@@ -39,7 +37,7 @@ Text &Text::SetSpacing(Float space) {
   return *this;
 }
 
-Text &Text::SetFont(Font *font) {
+Text &Text::SetFont(const Font *font) {
   if (font == nullptr)
     return *this;
   if (font_ == font)
@@ -60,40 +58,39 @@ Text &Text::SetFontSize(Float size) {
   return *this;
 }
 
-Text &Text::SetFontMaterial(resource::Material *mat) {
+Text &Text::SetFontMaterial(const Material *mat) {
   if (mat == nullptr)
     return *this;
   if (font_material_ == mat)
     return *this;
   font_material_ = mat;
   if (const Font *font = font_) {
-    font_material_->SetTexture2D("font_atlas", font->GetFontAtlas());
+    font_material_->SetTexture2D("atlas", font->GetFontAtlas());
   }
   SetDirty();
   return *this;
 }
 
 Text &Text::SetColor(core::Color color) {
-  Material *mat = font_material_;
-  if (mat) {
-    mat->SetFloat4("font_params.color", color.ToVector4());
+  if (Material *mat = font_material_) {
+    mat->SetFloat4("params.color", color.ToVector4());
   }
   return *this;
 }
 
-Rect2D Text::GetBoundingRect() { return GetFontRect(); }
+Rect2DI Text::GetBoundingRect() { return GetFontRect(); }
 
-Rect2D Text::GetFontRect() {
+Rect2DI Text::GetFontRect() {
   UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   Font *font = font_;
   if (font == nullptr) {
     LOGGER.Error("Func.UI.Text", "字体未设置");
-    return Rect2D{};
+    return Rect2DI{};
   }
-  Float bearing_height_top = 0;
-  Float bearing_height_bottom = 0;
-  Float width = 0;
+  UInt32 bearing_height_top = 0;
+  UInt32 bearing_height_bottom = 0;
+  UInt32 width = 0;
   for (UInt64 i = 0; i < size; ++i) {
     UInt32 unicode = str.At(i);
     if (!font->HasGlyph(unicode)) {
@@ -105,7 +102,7 @@ Rect2D Text::GetFontRect() {
     bearing_height_top = std::max(bearing_height_top, glyph.bearing_y + base_line_);
     bearing_height_bottom = std::max(bearing_height_bottom, glyph.height - glyph.bearing_y + base_line_);
   }
-  Rect2D rect{};
+  Rect2DI rect{};
   rect.position.x = 0;
   rect.position.y = 0;
   auto padding = GetPadding();
@@ -114,16 +111,16 @@ Rect2D Text::GetFontRect() {
   return rect;
 }
 
-void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
+void Text::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
   // 左下角
-  auto bl = target_rect.BottomLeft();
-  auto rt = target_rect.TopRight();
+  Vector2I bl = BottomLeft(target_rect);
+  Vector2I rt = TopRight(target_rect);
   UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
-  auto padding = GetPadding();
+  Vector4I padding = GetPadding();
   index_offset_ = index_buffer.size();
-  Float cur_pos_x = bl.x + padding.x;
-  Float cur_pos_y = base_line_ + padding.w;
+  UInt32 cur_pos_x = bl.x + padding.x;
+  UInt32 cur_pos_y = base_line_ + padding.w;
 
   Font *font = font_;
   if (font == nullptr) {
@@ -131,7 +128,7 @@ void Text::Rebuild(Rect2D target_rect, Array<Vertex_UI> &vertex_buffer, Array<UI
     return;
   }
   font->RequestLoadGlyphs(str);
-  Float font_scale = size_ / font->GetFontSize();
+  Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   auto spacing = spacing_;
   for (UInt64 i = 0; i < size; ++i) {
     if (cur_pos_x >= rt.x || cur_pos_y >= rt.y) {

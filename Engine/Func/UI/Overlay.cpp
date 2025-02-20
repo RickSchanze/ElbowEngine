@@ -4,7 +4,6 @@
 
 #include "Overlay.h"
 
-#include "CoordConversion.h"
 #include "Core/Math/MathPipe.h"
 #include "Platform/RHI/Buffer.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -12,7 +11,12 @@
 #include "Platform/RHI/GfxCommandHelper.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/VertexLayout.h"
+#include "UIMath.h"
 #include "Widget/Widget.h"
+
+#include GEN_HEADER("Func.Overlay.generated.h")
+
+GENERATED_SOURCE()
 
 using namespace func;
 using namespace ui;
@@ -41,7 +45,7 @@ void Overlay::Draw(CommandBuffer &cmd) {
     core::Array<UInt32> indices;
     vertexs.reserve(500);
     indices.reserve(500);
-    core::Rect2D target{};
+    core::Rect2DI target{};
     target.position.x = position_.x;
     target.position.y = position_.y;
     target.size.x = size_.x;

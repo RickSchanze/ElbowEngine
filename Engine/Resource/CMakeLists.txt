@@ -45,6 +45,8 @@ add_library(Resource
         Assets/Font/FontMeta.h
         Assets/Font/Font.cpp
         Assets/Font/Font.h
+        Assets/Texture/Sprite.cpp
+        Assets/Texture/Sprite.h
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")

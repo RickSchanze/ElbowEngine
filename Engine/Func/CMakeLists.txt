@@ -44,10 +44,10 @@ add_library(${PROJECT_NAME}
         UI/Widget/Widget.h
         UI/Overlay.cpp
         UI/Overlay.h
-        UI/CoordConversion.cpp
-        UI/CoordConversion.h
         UI/Widget/Panel.cpp
         UI/Widget/Panel.h
+        UI/UIMath.h
+        UI/UIMath.cpp
         Algo/RectPacking.cpp
         Algo/RectPacking.h
 )
