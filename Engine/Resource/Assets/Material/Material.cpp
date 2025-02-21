@@ -64,17 +64,17 @@ void Material::SetFloat4(UInt64 name_hash, const core::Vector4 &value) const {
   buffer_->WriteType(value, offset);
 }
 
-void Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
+bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
   if (texture == nullptr || !texture->IsLoaded()) {
     LOGGER.Error(logcat::Resource_Material, "传入无效texture");
-    return;
+    return false;
   }
   if (shared_material_ == nullptr)
-    return;
+    return false;
   auto &texture_bindings = shared_material_->GetTextureBindings();
   if (!texture_bindings.contains(name_hash)) {
     LOGGER.Error(logcat::Resource_Material, "材质{}中没有参数{}", GetHandle(), name_hash);
-    return;
+    return false;
   }
   UInt32 binding = texture_bindings.at(name_hash).binding;
   DescriptorImageUpdateDesc update_info{};
@@ -82,10 +82,15 @@ void Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
   update_info.image_view = texture->GetNativeImageView();
   update_info.sampler = nullptr;
   descriptor_set_->Update(binding, update_info);
+  return true;
 }
 
-void Material::SetTexture2D(const core::String &name, const Texture2D *texture) const {
-  SetTexture2D(name.GetHashCode(), texture);
+bool Material::SetTexture2D(const core::String &name, const Texture2D *texture) {
+  if (SetTexture2D(name.GetHashCode(), texture)) {
+    texture_params_[name] = texture;
+    return true;
+  }
+  return false;
 }
 
 void Material::SetShader(const Shader *shader) {
@@ -96,6 +101,17 @@ void Material::SetShader(const Shader *shader) {
   shader_ = shader;
   Clean();
   Build();
+}
+
+ObjectHandle Material::GetParam_Texture2DHandle(const core::String &name) const {
+  if (texture_params_.contains(name)) {
+    return texture_params_.at(name).GetHandle();
+  }
+  return 0;
+}
+
+Texture2D *Material::GetParam_Texture2D(const core::String &name) const {
+  return ObjectManager::GetObjectByHandle<Texture2D>(GetParam_Texture2DHandle(name));
 }
 
 void Material::Build() {

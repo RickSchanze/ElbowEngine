@@ -32,6 +32,9 @@ public:
   void Draw(platform::rhi::CommandBuffer &cmd) override;
   core::Rect2DI GetBoundingRect() override;
 
+  Panel& SetMaterial(resource::Material* mat);
+  resource::Material* GetMaterial();
+
 protected:
   /// 背景图像, 应是一个TextureAtlas里的一部分
   PROPERTY()

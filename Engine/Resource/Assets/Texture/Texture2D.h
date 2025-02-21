@@ -98,6 +98,8 @@ public:
    */
   bool AppendSprite(core::StringView name, core::StringView path);
 
+  bool AppendSprite(UInt64 id, core::StringView path);
+
   /**
    * 拉取GPU图像保存到当前的GetAssetPath()中
    */

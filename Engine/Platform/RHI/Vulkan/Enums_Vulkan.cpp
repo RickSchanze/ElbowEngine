@@ -45,6 +45,10 @@ VkFormat RHIFormatToVkFormat(const Format format) {
     return VK_FORMAT_R32G32_SFLOAT;
   case Format::R8_UNorm:
     return VK_FORMAT_R8_UNORM;
+  case Format::R8G8B8A8_SRGB:
+    return VK_FORMAT_R8G8B8A8_SRGB;
+  case Format::R8_SRGB:
+    return VK_FORMAT_R8_SRGB;
   default:
     return VK_FORMAT_UNDEFINED;
   }
@@ -86,6 +90,10 @@ Format VkFormatToRHIFormat(VkFormat format) {
     return Format::R32G32_Float;
   case VK_FORMAT_R8_UNORM:
     return Format::R8_UNorm;
+  case VK_FORMAT_R8G8B8A8_SRGB:
+    return Format::R8G8B8A8_SRGB;
+  case VK_FORMAT_R8_SRGB:
+    return Format::R8_SRGB;
   default:
     return Format::Count;
   }

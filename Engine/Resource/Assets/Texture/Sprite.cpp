@@ -27,7 +27,7 @@ void Sprite::SetTexture(Texture2D *tex) {
     LOGGER.Error("Resource.Sprite", "SetTexture: 纹理为空!");
     return;
   }
-  if (!tex->GetSpriteRange(id_).IsValid()) {
+  if (id_ != 0 && !tex->GetSpriteRange(id_).IsValid()) {
     LOGGER.Error("Resource.Sprite", "SetTexture: 纹理{}中不存在ID为{}的Sprite!", tex->GetName(), id_);
     return;
   }

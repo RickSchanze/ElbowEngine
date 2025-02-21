@@ -35,6 +35,7 @@ type->Internal_RegisterField("app_name", &core::CoreConfig::app_name, offsetof(c
 type->Internal_RegisterField("app_version", &core::CoreConfig::app_version, offsetof(core::CoreConfig, app_version))->SetComment("应用版本号"); \
 type->Internal_RegisterField("thread_slot_count", &core::CoreConfig::thread_slot_count, offsetof(core::CoreConfig, thread_slot_count))->SetComment("各ThreadSlot对应的线程数")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Thread"); \
 type->Internal_RegisterField("enable_persistent_load_multithread", &core::CoreConfig::enable_persistent_load_multithread, offsetof(core::CoreConfig, enable_persistent_load_multithread))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "启用多线程持久化对象加载"); \
+type->Internal_RegisterField("tick_frame_interval", &core::CoreConfig::tick_frame_interval, offsetof(core::CoreConfig, tick_frame_interval))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "需要Tick的Manager进行Tick的帧间隔"); \
 return type; \
 } \
 

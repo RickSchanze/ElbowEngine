@@ -24,6 +24,7 @@ struct STRUCT() Sprite {
   void SetTexture(Texture2D *tex);
   [[nodiscard]] SpriteRange GetSpriteRange() const;
   core::Rect2D GetUVRange();
+  core::ObjectHandle GetTextureHandle() const { return target_texture_.GetHandle(); }
 
 private:
 #if WITH_EDITOR || ELBOW_DEBUG

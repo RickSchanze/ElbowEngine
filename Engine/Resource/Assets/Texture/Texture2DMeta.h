@@ -24,7 +24,7 @@ public:
   core::String path;
 
   PROPERTY()
-  platform::rhi::Format format = platform::rhi::Format::R8G8B8A8_UNorm;
+  platform::rhi::Format format = platform::rhi::Format::R8G8B8A8_SRGB;
 
   // 这个Texture2D包含的所有Sprite
   PROPERTY()

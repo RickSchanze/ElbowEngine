@@ -24,7 +24,7 @@ class GraphicsPipeline;
 }
 namespace func {
 
-class FixedBasicTestRenderPipeline : public RenderPipeline {
+class ElbowRenderPipeline : public RenderPipeline {
 public:
   void Render(platform::rhi::CommandBuffer &cmd, const RenderParams &params) override;
 

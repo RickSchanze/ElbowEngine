@@ -17,6 +17,7 @@ enum class ENUM() Format {
   R8G8B8A8_SNorm,       // 每个元素由4个8位有符号数构成, 被映射到[-1, 1]
   R8G8B8A8_UInt,        // 每个元素由4个8位无符号数构成, 被映射到[0, 255]
   R8G8B8A8_SInt,        // 每个元素由4个8位有符号数构成, 被映射到[-128, 127]
+  R8G8B8A8_SRGB,        // 每个元素由4个8位分量构成, 被映射到sRGB
   D32_Float_S8X24_UInt, // 深度/模版: 64位 32位给深度, 8位给模版([0, 255]), 24位用作对齐
   D32_Float,            // 深度: 32位浮点数
   D24_UNorm_S8_UInt,    // 深度/模版: 24位给深度([0, 1]), 8位给模版([0, 255])
@@ -25,8 +26,9 @@ enum class ENUM() Format {
   B8G8R8A8_UNorm,       // 每个元素由4个8位分量构成, 被映射到[0, 1]
   R16G16B16A16_Float,   // 每个元素由4个16位float分量构成
   A2B10G10R10_UNorm,    // a: 2位 b: 10位 g: 10位 r: 10位
-  R32G32_Float,        // 每个元素由2个32位float分量构成
+  R32G32_Float,         // 每个元素由2个32位float分量构成
   R8_UNorm,
+  R8_SRGB,
   Count, // 超出范围(Undefined)
 };
 

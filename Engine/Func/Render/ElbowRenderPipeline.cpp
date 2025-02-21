@@ -2,11 +2,12 @@
 // Created by Echo on 25-1-4.
 //
 
-#include "FixedBasicTestRenderPipeline.h"
+#include "ElbowRenderPipeline.h"
 
 #include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/UI/Overlay.h"
+#include "Func/UI/Widget/Panel.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -23,7 +24,7 @@ using namespace core;
 using namespace platform::rhi;
 using namespace exec;
 
-void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
+void func::ElbowRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
   PROFILE_SCOPE_AUTO;
   auto view = GetBackBufferView(params.current_image_index);
   auto image = GetBackBuffer(params.current_image_index);
@@ -66,50 +67,43 @@ void func::FixedBasicTestRenderPipeline::Render(CommandBuffer &cmd, const Render
   cmd.End();
 }
 
-void func::FixedBasicTestRenderPipeline::Build() {
-  auto a2 = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
-  auto s1 = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
-  auto m1 = AssetDataBase::LoadAsync("Assets/Material/Text.mat");
-  auto f1 = AssetDataBase::LoadAsync("Assets/Font/MapleMono.ttf");
-  auto *material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
-  MakeSyncGroup(a2, s1, m1, f1)->OnCompleted([this, material](const auto &res) {
-    auto &[mesh_handle, s1, m1, f1] = res;
-    this->mesh_ = static_cast<Mesh *>(ObjectManager::GetObjectByHandle(mesh_handle));
-
-    auto *m1_obj = static_cast<Material *>(ObjectManager::GetObjectByHandle(m1));
-    auto *s1_obj = static_cast<Shader *>(ObjectManager::GetObjectByHandle(s1));
-    material->SetShader(s1_obj);
-    test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
-    test_text_->SetPosition({0, 0, 0});
-    test_text_->SetSize({1920, 1080});
-    auto text_wdg = ObjectManager::CreateNewObject<ui::widget::Text>()->GetValue().GetValue() | First;
-    test_text_->SetSlot(text_wdg);
-    auto *font = static_cast<Font *>(ObjectManager::GetObjectByHandle(f1));
-    text_wdg->SetText("你好，世界！")
-        .SetFont(font)
-        .SetFontMaterial(m1_obj)
-        .SetSpacing(0)
-        .SetFontSize(20.f)
-        .SetColor(Color::SkyBlue())
-        .SetPadding({2, 2, 2, 5});
-    this->material_ = material;
-    if (this->mesh_) {
-      this->ready_ = material_;
-    }
+void func::ElbowRenderPipeline::Build() {
+  auto obj_shader = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
+  auto fbx = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
+  auto ui_shader = AssetDataBase::LoadAsync("Assets/Shader/UIPanel.slang");
+  auto ui_atlas = AssetDataBase::LoadAsync("Assets/Texture/UIAtlas.png");
+  MakeSyncGroup(obj_shader, fbx, ui_shader, ui_atlas)->OnCompleted([this](const auto &res) {
+    auto &[obj_shader_handle, fbx_handle, ui_shader_handle, ui_atlas_panel] = res;
+    this->mesh_ = ObjectManager::GetObjectByHandle<Mesh>(fbx_handle);
+    auto ui_shader_obj = ObjectManager::GetObjectByHandle<Shader>(ui_shader_handle);
+    auto obj_shader_obj = ObjectManager::GetObjectByHandle<Shader>(obj_shader_handle);
+    auto obj_mat = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    obj_mat->SetShader(obj_shader_obj);
+    this->material_ = obj_mat;
+    this->test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
+    auto panel_widget = ObjectManager::CreateNewObject<ui::widget::Panel>()->GetValue().GetValue() | First;
+    auto panel_mat = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
+    panel_mat->SetShader(ui_shader_obj);
+    panel_mat->SetTexture2D("atlas", ui_atlas_png);
+    panel_mat->SetFloat4("params.color", Color::White());
+    panel_widget->SetMaterial(panel_mat);
+    this->test_text_->SetSlot(panel_widget).SetSize(core::Vector2(1920, 1080));
+    this->ready_ = material_ && mesh_ && test_text_;
   });
   depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }
 
-void func::FixedBasicTestRenderPipeline::Clean() {
+void func::ElbowRenderPipeline::Clean() {
   depth_target_ = nullptr;
   ready_ = false;
   mesh_ = nullptr;
   material_ = nullptr;
 }
 
-bool func::FixedBasicTestRenderPipeline::IsReady() const { return ready_; }
+bool func::ElbowRenderPipeline::IsReady() const { return ready_; }
 
-void func::FixedBasicTestRenderPipeline::OnWindowResized(platform::Window *window, Int32 width, Int32 height) {
+void func::ElbowRenderPipeline::OnWindowResized(platform::Window *window, Int32 width, Int32 height) {
   if (width == 0 || height == 0)
     return;
   depth_target_->Resize(width, height);

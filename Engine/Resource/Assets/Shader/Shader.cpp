@@ -16,6 +16,7 @@
 #include "ShaderMeta.h"
 #include "SlangShaderLoader.h"
 
+#include "Platform/FileSystem/File.h"
 #include GEN_HEADER("Resource.Shader.generated.h")
 
 GENERATED_SOURCE()

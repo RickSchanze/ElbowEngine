@@ -60,6 +60,8 @@ public:
   [[nodiscard]] bool ContainsAny(const StringView &o, bool use_utf8 = false) const;
   [[nodiscard]] bool EndsWith(const StringView &o, bool use_utf8 = false) const;
   [[nodiscard]] bool StartsWith(const StringView &o, bool use_utf8 = false) const;
+  [[nodiscard]] std::wstring ToWideString() const;
+  [[nodiscard]] String ToString() const;
 
   [[nodiscard]] std::string_view ToStdStringView() const { return {str_, static_cast<size_t>(length_)}; }
 
@@ -96,6 +98,7 @@ public:
   constexpr const char *operator*() const { return str_.c_str(); }
 
   static String FromInt(const int32_t i) { return std::to_string(i); }
+  static String FromWideChar(const std::wstring& wstr);
 
   /**
    * 返回Unicode字符串长度
@@ -151,10 +154,12 @@ public:
 
   /**
    * 返回一个unicode string
-   * 会进行复制
+   * 会进行复制 用于字体, 一般你不需要调用
    * @return
    */
   UnicodeString ToUnicodeString() const;
+
+  std::wstring ToWideString() const;
 
 private:
   std::string str_;

@@ -20,9 +20,24 @@
 #include "Func/Algo/RectPacking.h"
 #include <stb_image_write.h>
 
+#include "Platform/FileSystem/File.h"
 #include GEN_HEADER("Resource.Texture2D.generated.h")
 
 GENERATED_SOURCE()
+
+static stbi_uc *LoadImageStb(core::StringView path, int *width, int *height, int *channels) {
+#ifdef PLATFORM_WINDOWS
+  auto str = path.ToWideString();
+  FILE *f = _wfopen(str.c_str(), L"rb");
+  if (!f)
+    return nullptr;
+  stbi_uc *pixels = stbi_load_from_file(f, width, height, channels, 0);
+  fclose(f);
+  return pixels;
+#else
+  return nullptr;
+#endif
+}
 
 using namespace core;
 using namespace resource;
@@ -202,18 +217,23 @@ bool Texture2D::AppendSprite(core::StringView name, char *data, UInt32 width, UI
 
 bool Texture2D::AppendSprite(core::StringView name, core::StringView path) {
   PROFILE_SCOPE_AUTO;
+  return AppendSprite(name.GetHashCode(), path);
+}
+
+bool Texture2D::AppendSprite(UInt64 id, StringView path) {
+  PROFILE_SCOPE_AUTO;
   if (!File::IsExist(path)) {
     LOGGER.Error("Resource.Texture2D", "AppendSprite: 文件{}不存在", path);
     return false;
   }
   Int32 width = 0, height = 0, channels = 0;
-  stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, channels);
+  stbi_uc *pixels = LoadImageStb(path, &width, &height, &channels);
   auto num_channel = GetNumChannels();
   if (channels != num_channel) {
     if (num_channel == 4 && channels == 3) {
       auto new_pixels = ConvertChannels(pixels, width, height, channels, num_channel);
       stbi_image_free(pixels);
-      bool success = AppendSprite(name, reinterpret_cast<char *>(new_pixels), width, height);
+      bool success = AppendSprite(id, reinterpret_cast<char *>(new_pixels), width, height);
       Free(new_pixels);
       return success;
     }
@@ -221,7 +241,7 @@ bool Texture2D::AppendSprite(core::StringView name, core::StringView path) {
                  GetNumChannels());
     return false;
   }
-  bool success = AppendSprite(name, reinterpret_cast<char *>(pixels), width, height);
+  bool success = AppendSprite(id, reinterpret_cast<char *>(pixels), width, height);
   stbi_image_free(pixels);
   return success;
 }
@@ -291,7 +311,7 @@ void Texture2D::SetSpriteRangeString(core::StringView str) {
     }
     for (int i = 0; i < 4; i++) {
       Int32 element = 0;
-      auto range_result = std::from_chars(range_str[i].Data(), range_str[i].Data() + range_str[i].Length(), id);
+      auto range_result = std::from_chars(range_str[i].Data(), range_str[i].Data() + range_str[i].Length(), element);
       if (range_result.ec != std::errc()) {
         LOGGER.Warn("Resource.Texture2D", "SetSpriteRangeString: sprite range line {} range {}解析失败!",
                     sprite_range_line, i);

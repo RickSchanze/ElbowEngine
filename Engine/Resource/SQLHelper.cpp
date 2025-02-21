@@ -219,28 +219,33 @@ Array<SharedAny> SQLTable::Query(const Type *type, StringView where) {
         auto &field = fields[i];
         if (field->GetType()->IsNumericInteger()) {
           const int64_t value = query.getColumn(i).getInt64();
-          field->SetValue(temp, value);
+          Any any_value = Any{&value, TypeOf<Int64>()};
+          field->SetValue(temp, any_value);
           continue;
         }
         if (field->GetType()->IsNumericFloat()) {
           const double value = query.getColumn(i).getDouble();
-          field->SetValue(temp, value);
+          Any any_value = Any{&value, TypeOf<Double>()};
+          field->SetValue(temp, any_value);
           continue;
         }
         if (field->GetType()->IsBoolean()) {
           const int64_t value = query.getColumn(i).getInt64();
           bool v = value != 0;
-          field->SetValue(temp, v);
+          Any any_value = Any{&v, TypeOf<Bool>()};
+          field->SetValue(temp, any_value);
           continue;
         }
         if (field->GetType()->IsString()) {
           const String value = query.getColumn(i).getString();
-          field->SetValue(temp, value);
+          Any any_value = Any{&value, TypeOf<String>()};
+          field->SetValue(temp, any_value);
           continue;
         }
         if (field->GetType()->IsEnum()) {
           const Int32 value = query.getColumn(i).getInt64();
-          field->SetValue(temp, value);
+          Any any_value = Any{&value, TypeOf<Int32>()};
+          field->SetValue(temp, any_value);
           continue;
         }
         throw SQLException("查询类型错误");

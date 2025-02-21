@@ -58,4 +58,6 @@
 
 bool ValidateFeatureState();
 
+void NoEntry();
+
 #define NAMEOF(x) #x

@@ -22,8 +22,10 @@
 
 GENERATED_SOURCE()
 
+using namespace core;
+
 // 注册glm::vec3 glm::vec4 glm::quat
-static core::Type *REFL_Register_Vec3() {
+static Type *REFL_Register_Vec3() {
   using namespace core;
   Type *type = Type::Create<glm::vec3>("core.Vector3")->SetAttribute(Type::Trivial);
   type->Internal_RegisterField("x", &glm::vec3::x, offsetof(glm::vec3, x));
@@ -32,7 +34,7 @@ static core::Type *REFL_Register_Vec3() {
   return type;
 }
 
-static core::Type *REFL_Register_Vec4() {
+static Type *REFL_Register_Vec4() {
   using namespace core;
   Type *type = Type::Create<glm::vec4>("core.Vector4")->SetAttribute(Type::Trivial);
   type->Internal_RegisterField("x", &glm::vec4::x, offsetof(glm::vec4, x));
@@ -42,7 +44,7 @@ static core::Type *REFL_Register_Vec4() {
   return type;
 }
 
-static core::Type *REFL_Register_Quat() {
+static Type *REFL_Register_Quat() {
   using namespace core;
   Type *type = Type::Create<glm::quat>("core.Quaternion")->SetAttribute(Type::Trivial);
   type->Internal_RegisterField("x", &glm::quat::x, offsetof(glm::quat, x));
@@ -52,25 +54,37 @@ static core::Type *REFL_Register_Quat() {
   return type;
 }
 
+static Type *REFL_Register_Vec2I() {
+  using namespace core;
+  Type *type = Type::Create<Vector2I>("core.Vector2I")->SetAttribute(Type::Trivial);
+  type->Internal_RegisterField("x", &Vector2I::x, offsetof(Vector2I, x));
+  type->Internal_RegisterField("y", &Vector2I::y, offsetof(Vector2I, y));
+  return type;
+}
+
 static void REFL_ConstructVec3(void *ptr) { new (ptr) glm::vec3(); }
 
 static void REFL_ConstructVec4(void *ptr) { new (ptr) glm::vec4(); }
 
 static void REFL_ConstructQuat(void *ptr) { new (ptr) glm::quat(); }
 
+static void REFL_ConstructVec2I(void *ptr) { new (ptr) Vector2I(); }
+
 static void REFL_DestroyDummy(void *ptr) {}
 
 void Z_MetaInfo_Registration_Func1() {
   using namespace core;
-  core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec3>(), &REFL_Register_Vec3);
-  core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec3>(), &REFL_ConstructVec3,
-                                             &REFL_DestroyDummy);
-  core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::vec4>(), &REFL_Register_Vec4);
-  core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec4>(), &REFL_ConstructVec4,
-                                             &REFL_DestroyDummy);
-  core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<glm::quat>(), &REFL_Register_Quat);
-  core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::quat>(), &REFL_ConstructQuat,
-                                             &REFL_DestroyDummy);
+  MetaInfoManager::Get()->RegisterTypeRegisterer(RTTITypeInfo::Create<glm::vec3>(), &REFL_Register_Vec3);
+  CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec3>(), &REFL_ConstructVec3, &REFL_DestroyDummy);
+
+  MetaInfoManager::Get()->RegisterTypeRegisterer(RTTITypeInfo::Create<glm::vec4>(), &REFL_Register_Vec4);
+  CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::vec4>(), &REFL_ConstructVec4, &REFL_DestroyDummy);
+
+  MetaInfoManager::Get()->RegisterTypeRegisterer(RTTITypeInfo::Create<glm::quat>(), &REFL_Register_Quat);
+  CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<glm::quat>(), &REFL_ConstructQuat, &REFL_DestroyDummy);
+
+  MetaInfoManager::Get()->RegisterTypeRegisterer(RTTITypeInfo::Create<Vector2I>(), &REFL_Register_Vec2I);
+  CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<Vector2I>(), &REFL_ConstructVec2I, &REFL_DestroyDummy);
 }
 
 namespace {
@@ -82,7 +96,7 @@ static const Z_MetaInfo_Registration1 Z_meta_info_registration1;
 
 namespace core {
 
-core::String Size2D::ToString() const { return std::format("Width: {}, Height:{}", width, height); }
+String Size2D::ToString() const { return std::format("Width: {}, Height:{}", width, height); }
 
 Vector2::operator glm::vec<2, float>() const { return {x, y}; }
 
@@ -96,9 +110,7 @@ Vector2 Vector2::operator/(float scalar) const { return {x / scalar, y / scalar}
 
 Vector2 Vector2::operator-(const Float other) const { return {x - other, y - other}; }
 
-Vector2 operator-(Float s, Vector2 v) {
-  return {s - v.x, s - v.y};
-}
+Vector2 operator-(Float s, Vector2 v) { return {s - v.x, s - v.y}; }
 
 Vector3 Rotator::GetForwardVector() const {
   Vector3 Forward;
@@ -112,7 +124,7 @@ Vector3 Rotator::GetUpVector() const { return cross(GetRightVector(), GetForward
 
 Vector3 Rotator::GetRightVector() const { return cross(GetForwardVector(), Constant::UpVector); }
 
-core::String Rotator::ToString() const { return std::format("Yaw: {}, Pitch: {}, Roll: {}", yaw, pitch, roll); }
+String Rotator::ToString() const { return std::format("Yaw: {}, Pitch: {}, Roll: {}", yaw, pitch, roll); }
 
 bool Rotator::operator==(const Rotator &other) const {
   return Math::ApproximatelyEqual(yaw, other.yaw) && Math::ApproximatelyEqual(pitch, other.pitch) &&
@@ -207,8 +219,8 @@ Float Rect2D::Area() const { return size.x * size.y; }
 
 Rect2D Rect2D::operator/(const Float scalar) const { return {position / scalar, size / scalar}; }
 
-core::Rect2D operator/(core::Rect2DI rect, core::Vector2I size) {
-  core::Rect2D rtn;
+Rect2D operator/(Rect2DI rect, Vector2I size) {
+  Rect2D rtn;
   rtn.position.x = (Float)rect.position.x / size.x;
   rtn.position.y = (Float)rect.position.y / size.y;
   rtn.size.x = (Float)rect.size.x / size.x;

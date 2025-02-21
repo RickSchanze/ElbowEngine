@@ -38,16 +38,19 @@ public:
   void SetFloat3(UInt64 name_hash, const core::Vector3 &value) const;
   void SetFloat4(const core::String &name, const core::Vector4 &value) const;
   void SetFloat4(UInt64 name_hash, const core::Vector4 &value) const;
-  void SetTexture2D(UInt64 name_hash, const Texture2D *texture) const;
-  void SetTexture2D(const core::String &name, const Texture2D *texture) const;
+  bool SetTexture2D(UInt64 name_hash, const Texture2D *texture) const;
+  bool SetTexture2D(const core::String &name, const Texture2D *texture);
   void SetShader(const Shader *shader);
+
+  [[nodiscard]] core::ObjectHandle GetParam_Texture2DHandle(const core::String &name) const;
+  [[nodiscard]] Texture2D *GetParam_Texture2D(const core::String &name) const;
 
   [[nodiscard]] platform::rhi::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
 
   void Build();
   void Clean();
 
-  SharedMaterial* GetSharedMaterial() const { return shared_material_.get(); }
+  [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
 
 protected:
   PROPERTY()

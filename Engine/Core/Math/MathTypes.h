@@ -215,6 +215,8 @@ public:
 
   [[nodiscard]] Vector4 ToVector4() const { return {r, g, b, a}; }
 
+  operator Vector4() const { return ToVector4(); }
+
   bool operator==(const Color &other) const;
   bool operator!=(const Color &other) const;
 };

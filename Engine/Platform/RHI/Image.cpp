@@ -23,11 +23,14 @@ UInt32 Image::GetNumChannels() const {
     return 0;
   switch (f) {
   case Format::D32_Float:
+  case Format::R8_SRGB:
+  case Format::R8_UNorm:
     return 1;
   case Format::R32G32B32_Float:
     return 3;
   case Format::R8G8B8A8_UNorm:
   case Format::B8G8R8A8_UNorm:
+  case Format::R8G8B8A8_SRGB:
     return 4;
   default:
     return 0;

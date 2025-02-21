@@ -12,6 +12,7 @@
 #include "Logcat.h"
 #include "Platform/FileSystem/Path.h"
 
+#include "Platform/FileSystem/File.h"
 #include GEN_HEADER("Resource.Project.generated.h")
 
 GENERATED_SOURCE()

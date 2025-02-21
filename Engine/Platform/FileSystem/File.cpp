@@ -68,6 +68,7 @@ String platform::File::GetRelativePath() const { return path_; }
 
 bool platform::File::IsExist() const {
   const auto s = GetAbsolutePath();
+
   return Path::IsExist(s);
 }
 

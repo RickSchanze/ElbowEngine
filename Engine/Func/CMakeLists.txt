@@ -20,8 +20,8 @@ add_library(${PROJECT_NAME}
         Render/RenderContext.h
         Render/Misc.cpp
         Render/Misc.h
-        Render/FixedBasicTestRenderPipeline.cpp
-        Render/FixedBasicTestRenderPipeline.h
+        Render/ElbowRenderPipeline.cpp
+        Render/ElbowRenderPipeline.h
         World/Transform.cpp
         World/Transform.h
         World/Component.cpp

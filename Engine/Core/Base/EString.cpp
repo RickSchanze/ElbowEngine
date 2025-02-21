@@ -20,6 +20,15 @@ namespace core {
 
 String::String(const StringView &view) : str_(view.Data(), view.Length()) {}
 
+String String::FromWideChar(const std::wstring &wstr) {
+  if (wstr.empty())
+    return "";
+  int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), nullptr, 0, nullptr, nullptr);
+  std::string utf8_str(size_needed, 0);
+  WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), &utf8_str[0], size_needed, nullptr, nullptr);
+  return utf8_str;
+}
+
 int32_t String::Size() const {
   const icu::UnicodeString str(this->str_.c_str());
   return str.length();
@@ -61,6 +70,19 @@ uint32_t String::AtUnicode(int32_t i) const {
 UInt64 String::GetHashCode() const { return std::hash<std::string>{}(str_); }
 
 UnicodeString String::ToUnicodeString() const { return UnicodeString(*this); }
+
+std::wstring String::ToWideString() const {
+#ifdef PLATFORM_WINDOWS
+  if (str_.empty())
+    return L"";
+  UInt32 size_needed = MultiByteToWideChar(CP_UTF8, 0, str_.c_str(), str_.size(), nullptr, 0);
+  std::wstring utf16_str(size_needed, 0);
+  MultiByteToWideChar(CP_UTF8, 0, str_.c_str(), static_cast<int>(str_.size()), &utf16_str[0], size_needed);
+  return utf16_str;
+#else
+  return {};
+#endif
+}
 
 ::std::ostream &operator<<(::std::ostream &os, const String &str) {
   os << str.ToStdString();
@@ -163,6 +185,13 @@ bool StringView::StartsWith(const StringView &o, bool use_utf8) const {
   // TODO: 实现utf8 starts with
   throw core::NotSupportException("UTF8版本尚未支持");
 }
+
+std::wstring StringView::ToWideString() const {
+  String str = ToString();
+  return str.ToWideString();
+}
+
+String StringView::ToString() const { return String(str_, length_); }
 
 String StringView::operator+(const StringView &o) const { return String(str_) + o; }
 

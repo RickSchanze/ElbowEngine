@@ -12,6 +12,7 @@ type->Internal_RegisterEnumValue(R8G8B8A8_UNorm ,"R8G8B8A8_UNorm")->SetComment("
 type->Internal_RegisterEnumValue(R8G8B8A8_SNorm ,"R8G8B8A8_SNorm")->SetComment("每个元素由4个8位有符号数构成, 被映射到[-1, 1]"); \
 type->Internal_RegisterEnumValue(R8G8B8A8_UInt ,"R8G8B8A8_UInt")->SetComment("每个元素由4个8位无符号数构成, 被映射到[0, 255]"); \
 type->Internal_RegisterEnumValue(R8G8B8A8_SInt ,"R8G8B8A8_SInt")->SetComment("每个元素由4个8位有符号数构成, 被映射到[-128, 127]"); \
+type->Internal_RegisterEnumValue(R8G8B8A8_SRGB ,"R8G8B8A8_SRGB")->SetComment("每个元素由4个8位分量构成, 被映射到sRGB"); \
 type->Internal_RegisterEnumValue(D32_Float_S8X24_UInt ,"D32_Float_S8X24_UInt")->SetComment("深度/模版: 64位 32位给深度, 8位给模版([0, 255]), 24位用作对齐"); \
 type->Internal_RegisterEnumValue(D32_Float ,"D32_Float")->SetComment("深度: 32位浮点数"); \
 type->Internal_RegisterEnumValue(D24_UNorm_S8_UInt ,"D24_UNorm_S8_UInt")->SetComment("深度/模版: 24位给深度([0, 1]), 8位给模版([0, 255])"); \

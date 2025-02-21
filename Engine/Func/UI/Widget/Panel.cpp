@@ -27,6 +27,7 @@ UInt64 Panel::GetPanelBackgroundColorSpriteID() {
   static UInt64 id = core::StringView{"PanelBackgroundColor"}.GetHashCode();
   return id;
 }
+
 Panel::Panel() {
   SetName("Panel");
   Texture2D *ui_atlas = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
@@ -39,7 +40,7 @@ void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<
   index_offset_ = index_buffer.size();
   Vertex_UI left_top{};
   left_top.position.x = target_rect.position.x + position_.x + GetPaddingLeft(padding);
-  left_top.position.y = target_rect.position.y + position_.y + target_rect.size.y + GetPaddingTop(padding);
+  left_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
   left_top.uv.x = uv_range.position.x;
   left_top.uv.y = uv_range.position.y;
 
@@ -50,13 +51,13 @@ void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<
   left_bottom.uv.y = uv_range.position.y + uv_range.size.y;
 
   Vertex_UI right_top{};
-  right_top.position.x = target_rect.position.x + position_.x + target_rect.size.x + GetPaddingRight(padding);
-  right_top.position.y = target_rect.position.y + position_.y + target_rect.size.y + GetPaddingTop(padding);
+  right_top.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
+  right_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
   right_top.uv.x = uv_range.position.x + uv_range.size.x;
   right_top.uv.y = uv_range.position.y;
 
   Vertex_UI right_bottom{};
-  right_bottom.position.x = target_rect.position.x + position_.x + target_rect.size.x + GetPaddingRight(padding);
+  right_bottom.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
   right_bottom.position.y = target_rect.position.y + position_.y + GetPaddingBottom(padding);
   right_bottom.uv.x = uv_range.position.x + uv_range.size.x;
   right_bottom.uv.y = uv_range.position.y + uv_range.size.y;
@@ -74,6 +75,7 @@ void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<
   index_buffer.push_back(index_size - 3);
   index_buffer.push_back(index_size - 2);
   index_buffer.push_back(index_size - 4);
+  dirty_ = false;
 }
 
 void Panel::Draw(CommandBuffer &cmd) {
@@ -96,3 +98,17 @@ Rect2DI Panel::GetBoundingRect() {
   rtn.size = size_;
   return rtn;
 }
+
+Panel &Panel::SetMaterial(Material *mat) {
+  if (mat == material_)
+    return *this;
+  ObjectHandle atlas_handle = mat->GetParam_Texture2DHandle("atlas");
+  if (atlas_handle != sprite_.GetTextureHandle() || atlas_handle == 0) {
+    LOGGER.Error("Func.UI.Panel", "SetMaterial: Material中的atlas和Panel中的不匹配");
+    return *this;
+  }
+  material_ = mat;
+  return *this;
+}
+
+Material *Panel::GetMaterial() { return material_; }

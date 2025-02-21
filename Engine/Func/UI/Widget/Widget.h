@@ -6,7 +6,8 @@
 
 #include "Core/Math/MathTypes.h"
 #include "Core/Object/Object.h"
-#include "Func/Camera/ACameraHolder.h"
+
+#include GEN_HEADER("Func.Widget.generated.h")
 
 namespace platform::rhi {
 class CommandBuffer;
@@ -23,6 +24,7 @@ class Buffer;
 namespace func::ui::widget {
 
 class CLASS() Widget : public core::Object {
+  GENERATED_CLASS(Widget)
 public:
   Widget() : Object(core::ObjectFlagType::OFT_Widget) {}
 
@@ -30,15 +32,20 @@ public:
    * 重建此Widget的顶点和索引缓冲数据
    */
   virtual void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
-                       core::Array<UInt32> &index_buffer) = 0;
+                       core::Array<UInt32> &index_buffer) {
+    NoEntry();
+  }
 
   /**
    * 调用绘制命令, 此时已经完成了顶点和索引缓冲数据的填充
    * @param cmd
    */
-  virtual void Draw(platform::rhi::CommandBuffer &cmd) = 0;
+  virtual void Draw(platform::rhi::CommandBuffer &cmd) { NoEntry(); }
 
-  virtual core::Rect2DI GetBoundingRect() = 0;
+  virtual core::Rect2DI GetBoundingRect() {
+    NoEntry();
+    return {};
+  }
 
   void SetDirty(bool dirty = true);
   [[nodiscard]] bool IsDirty() const { return dirty_; }

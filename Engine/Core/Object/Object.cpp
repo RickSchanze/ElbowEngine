@@ -83,6 +83,9 @@ AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoadAsync() {
     return NULL_ASYNC_RESULT_HANDLE;
   auto *persistent = static_cast<PersistentObject *>(this);
   auto &scheduler = ThreadManager::GetScheduler();
+  persistent->PerformLoad();
+  return MakeAsyncResult(GetHandle());
+
   return StartAsync(Schedule(scheduler, ThreadSlot::Resource) //
                     | Then([this, persistent] {
                         persistent->PerformLoad();

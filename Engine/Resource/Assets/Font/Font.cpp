@@ -97,7 +97,7 @@ bool Font::Load(const FontMeta &meta) {
   atlas_meta.width = font_atlas_width_;
   atlas_meta.height = font_atlas_height_;
   atlas_meta.dynamic = true;
-  atlas_meta.format = Format::R8_UNorm;
+  atlas_meta.format = Format::R8_SRGB;
   Texture2D *font_atlas = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
   font_atlas->SetName(String::Format("Font Atlas for {}", path_));
   font_atlas->Load(atlas_meta);

@@ -87,5 +87,11 @@ public:
 
   static ObjectRegistry &GetRegistry();
   static Object *GetObjectByHandle(ObjectHandle handle);
+
+  template <typename T>
+    requires std::is_base_of_v<Object, T>
+  static T *GetObjectByHandle(ObjectHandle handle) {
+    return static_cast<T *>(GetObjectByHandle(handle));
+  }
 };
-}   // namespace core
+} // namespace core

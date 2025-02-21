@@ -21,6 +21,7 @@
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "Logcat.h"
+#include "Platform/FileSystem/File.h"
 #include "Platform/FileSystem/Folder.h"
 #include "Platform/FileSystem/Path.h"
 #include "Project.h"
