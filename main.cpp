@@ -114,20 +114,20 @@ int main() {
         ThreadManager::Poll(INT_MAX);
       }
       // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
-      Texture2DMeta new_meta;
-      new_meta.dynamic = true;
-      new_meta.width = 1024;
-      new_meta.height = 1024;
-      new_meta.format = platform::rhi::Format::R8G8B8A8_SRGB;
-      Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
-      new_tex->SetName("UIAtlas");
-      new_tex->Load(new_meta);
-      new_tex->AppendSprite("Close", R"(C:\Users\Echo\Downloads\关闭.png)");
-      new_tex->AppendSprite(ui::widget::Panel::GetPanelBackgroundColorSpriteID(), R"(C:\Users\Echo\Downloads\Panel背景.png)");
-      new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
-      new_tex->Download();
-      AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
-      // AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+      // Texture2DMeta new_meta;
+      // new_meta.dynamic = true;
+      // new_meta.width = 1024;
+      // new_meta.height = 1024;
+      // new_meta.format = platform::rhi::Format::R8G8B8A8_SRGB;
+      // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
+      // new_tex->SetName("UIAtlas");
+      // new_tex->Load(new_meta);
+      // new_tex->AppendSprite("Close", R"(C:\Users\Echo\Downloads\关闭.png)");
+      // new_tex->AppendSprite(ui::widget::Panel::GetPanelBackgroundColorSpriteID(), R"(C:\Users\Echo\Downloads\Panel背景.png)");
+      // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
+      // new_tex->Download();
+      // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
+      AssetDataBase::Import("Assets/Texture/UIAtlas.png");
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif

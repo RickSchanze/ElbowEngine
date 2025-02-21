@@ -32,7 +32,6 @@ public:
   core::Array<core::SharedAny> Query(const core::Type *type, core::StringView where = "");
 
 private:
-  std::shared_mutex mutex_;
   const core::Type *type_ = nullptr;
   SQLite::Database *db_ = nullptr;
   core::StringView table_name_;
@@ -60,8 +59,8 @@ public:
    * 初始化db 创建一个Meta表用于存储表名和类型的关系
    * @param db
    */
-  static void InitializeDataBase(SQLite::Database& db);
+  static void InitializeDataBase(SQLite::Database &db);
 
-    static core::StringView GetTypeMetaTableName();
+  static core::StringView GetTypeMetaTableName();
 };
-}
+} // namespace resource

@@ -96,7 +96,6 @@ static UniquePtr<SQLTable> CreateTypeTable(SQLite::Database &db, StringView name
 
 void SQLTable::Insert(const Any &data) {
   PROFILE_SCOPE_AUTO;
-  std::lock_guard lock(mutex_);
   const auto type = data.GetType();
   if (type != type_) {
     throw ArgumentException(NAMEOF(data), "输入类型不符");
@@ -192,7 +191,6 @@ void SQLHelper::InitializeDataBase(SQLite::Database &db) {
 StringView SQLHelper::GetTypeMetaTableName() { return "__TYPE_META__"; }
 
 Array<SharedAny> SQLTable::Query(const Type *type, StringView where) {
-  std::shared_lock lock(mutex_);
   if (type_ != type) {
     throw ArgumentException(NAMEOF(type), "输入类型不符");
   }

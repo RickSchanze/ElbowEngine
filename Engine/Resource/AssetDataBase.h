@@ -17,7 +17,7 @@ class PersistentObject;
 namespace resource {
 class Texture2DMeta;
 class Material;
-}
+} // namespace resource
 namespace SQLite {
 class Database;
 }
@@ -88,6 +88,7 @@ protected:
 
   SQLite::Database *db_ = nullptr;
   core::HashMap<const core::Type *, core::UniquePtr<SQLTable>> tables_;
+  DECLARE_TRACEABLE_MUTEX(std::mutex, database_query_mutex_, "Mutex to protect database query");
 };
 
 template <typename T> core::Optional<T> AssetDataBase::QueryMeta(core::ObjectHandle handle) {
@@ -96,6 +97,8 @@ template <typename T> core::Optional<T> AssetDataBase::QueryMeta(core::ObjectHan
 }
 
 template <typename T> core::Optional<T> AssetDataBase::QueryMeta(core::StringView where) {
+  // 如果不加锁访问数据库,就会崩溃
+  std::lock_guard query_meta_lock(Get()->database_query_mutex_);
   auto &self = GetByRef();
   const core::Type *meta_type = core::TypeOf<T>();
   if (!self.tables_.contains(meta_type))
@@ -116,4 +119,4 @@ template <typename T> void AssetDataBase::InsertMeta(const T &meta) {
   table->Insert(meta);
 }
 
-}   // namespace resource
+} // namespace resource
