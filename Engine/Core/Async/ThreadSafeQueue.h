@@ -22,7 +22,7 @@ template <typename T> class ThreadSafeQueue<T, true> {};
 template <typename T> class ThreadSafeQueue<T, false> {
 private:
   std::queue<T> queue_;
-  mutable DECLARE_TRACEABLE_MUTEX(std::mutex, mutex_, "队列锁");
+  mutable std::mutex mutex_;
   std::condition_variable not_empty_;
 
 public:

@@ -7,39 +7,36 @@
 #include "ITask.h"
 #include "ThreadSafeQueue.h"
 
-namespace core
-{
+namespace core {
 
-enum class SlotType
-{
-    Game,
-    Resource,
-    Render,
-    Audio,
-    Other,
-    Count,
+enum class SlotType {
+  Game,
+  Resource,
+  Render,
+  Audio,
+  Other,
+  Count,
 };
 
-class ThreadCluster
-{
+class ThreadCluster {
 private:
-    ThreadSafeQueue<SharedPtr<ITask>> task_queue_;
-    Array<std::thread>      threads_;
-    std::mutex              mutex_;
-    bool                    stopping_ = false;
+  ThreadSafeQueue<SharedPtr<ITask>> task_queue_;
+  Array<std::thread> threads_;
+  std::mutex mutex_;
+  bool stopping_ = false;
 
-    void Work();
+  void Work();
 
 public:
-    explicit ThreadCluster(size_t num_threads);
+  explicit ThreadCluster(size_t num_threads);
 
-    void SetClusterName(core::StringView name);
+  void SetClusterName(core::StringView name);
 
-    ThreadCluster(const ThreadCluster&)            = delete;
-    ThreadCluster& operator=(const ThreadCluster&) = delete;
+  ThreadCluster(const ThreadCluster &) = delete;
+  ThreadCluster &operator=(const ThreadCluster &) = delete;
 
-    ~ThreadCluster();
+  ~ThreadCluster();
 
-    void AddTask(const SharedPtr<ITask> &task);
+  void AddTask(const SharedPtr<ITask> &task);
 };
-}   // namespace core
+} // namespace core
