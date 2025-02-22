@@ -70,13 +70,19 @@ public:
 
   template <typename T, typename... Args>
     requires std::derived_from<T, Object>
-  static exec::AsyncResultHandle<T *> CreateNewObject(Args &&...args) {
+  static exec::AsyncResultHandle<T *> CreateNewObjectAsync(Args &&...args) {
     if (ThreadUtils::IsCurrentMainThread()) {
       return exec::MakeAsyncResult(NewObject<T>(Forward<Args>(args)...));
     }
     auto &scheduler = _GetScheduler();
     return exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Game) |
                             exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }));
+  }
+
+  template <typename T, typename... Args>
+    requires std::derived_from<T, Object>
+  static T *CreateNewObject(Args &&...args) {
+    return CreateNewObjectAsync<T>(Forward<Args>(args)...)->GetValue().GetValue() | First;
   }
 
   static bool IsObjectExist(ObjectHandle handle) { return GetRegistry().GetObjectByHandle(handle) != nullptr; }
@@ -94,4 +100,5 @@ public:
     return static_cast<T *>(GetObjectByHandle(handle));
   }
 };
+
 } // namespace core

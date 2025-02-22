@@ -17,6 +17,7 @@
 #include "Assets/Shader/ShaderMeta.h"
 #include "Assets/Texture/Texture2D.h"
 #include "Assets/Texture/Texture2DMeta.h"
+#include "Core/Base/Ranges.h"
 #include "Core/Object/ObjectRegistry.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Core/Serialization/YamlArchive.h"
@@ -68,7 +69,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
   } else {
     TMeta new_meta = {};
     new_meta.path = path;
-    auto &[asset] = *(ObjectManager::CreateNewObject<T>()->GetValue());
+    auto &[asset] = *(ObjectManager::CreateNewObjectAsync<T>()->GetValue());
     new_meta.object_handle = std::get<0>(*registry.NextPersistentHandle()->GetValue());
     AssetDataBase::InsertMeta(new_meta);
     asset->InternalSetAssetHandle(new_meta.object_handle);
@@ -78,6 +79,7 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
 
 AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path) {
   PROFILE_SCOPE_AUTO;
+  Assert::Require("Resource.Import", ThreadUtils::IsCurrentMainThread(), "Import只能在主线程调用");
   // 先查一下是否存在, 存在的话按现有配置重新导入
   auto query = String::Format("path = '{}'", path);
   auto &registry = ObjectManager::GetRegistry();
@@ -122,7 +124,7 @@ template <typename T, typename TMeta> AsyncResultHandle<ObjectHandle> InternalLo
     if (obj != nullptr) {
       return MakeAsyncResult(handle);
     } else {
-      auto [asset] = *ObjectManager::CreateNewObject<T>()->GetValue();
+      auto [asset] = *ObjectManager::CreateNewObjectAsync<T>()->GetValue();
       asset->InternalSetAssetHandle(handle);
       return asset->PerformPersistentObjectLoadAsync();
     }
@@ -131,6 +133,13 @@ template <typename T, typename TMeta> AsyncResultHandle<ObjectHandle> InternalLo
 
 AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
   PROFILE_SCOPE_AUTO;
+  auto &self = GetByRef();
+  {
+    std::lock_guard m{self.loading_assets_mutex_};
+    if (self.loading_assets_.contains(path)) {
+      return self.loading_assets_.at(path);
+    }
+  }
   if (path.EndsWith(".slang")) {
     return InternalLoadAsync<Shader, ShaderMeta>(path);
   }
@@ -155,7 +164,7 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
         return MakeAsyncResult(database_handle);
       } else {
         // 创建一个instanced asset作为临时载入, 此时它被注册入registry
-        auto [asset] = *ObjectManager::CreateNewObject<Material>()->GetValue();
+        auto [asset] = *ObjectManager::CreateNewObjectAsync<Material>()->GetValue();
         YamlArchive archive;
         auto content = File::ReadAllText(path);
         auto old_instanced_handle = asset->GetHandle();
@@ -167,7 +176,16 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
             Assert::Require(logcat::Resource_Load, file_handle == database_handle, "file_handle != database_handle");
             // 校验通过则将临时注册的取消注册
             ObjectManager::GetRegistry().UnregisterHandle(old_instanced_handle);
-            return asset->PerformPersistentObjectLoadAsync();
+            auto rtn = asset->PerformPersistentObjectLoadAsync();
+            {
+              std::lock_guard m{self.loading_assets_mutex_};
+              self.loading_assets_[path] = rtn;
+              rtn->OnCompleted([rtn, &self](const auto &result) {
+                std::lock_guard m{self.loading_assets_mutex_};
+                core::range::RemoveByValue(self.loading_assets_, rtn);
+              });
+              return rtn;
+            }
           }
         }
         return MakeAsyncResult(0);

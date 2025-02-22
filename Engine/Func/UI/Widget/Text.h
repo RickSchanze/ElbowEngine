@@ -23,6 +23,7 @@ public:
   Text &SetFontMaterial(const resource::Material *mat);
   Text &SetColor(core::Color color);
   core::Rect2DI GetBoundingRect() override;
+  core::StringView GetText() const { return text_; }
 
   /**
    * 计算可以容纳文字的矩形框大小

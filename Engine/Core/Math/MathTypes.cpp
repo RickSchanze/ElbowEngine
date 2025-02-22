@@ -205,19 +205,24 @@ String Rect2D::ToString() const {
 
 Vector2 Rect2D::Center() const { return Vector2(position.x + size.x / 2.0f, position.y + size.y / 2.0f); }
 
-Vector2 Rect2D::TopLeft() const { return {position.x, position.y + size.y}; }
+Vector2 Rect2D::LeftTop() const { return {position.x, position.y + size.y}; }
 
-Vector2 Rect2D::TopRight() const { return position + size; }
+Vector2 Rect2D::RightTop() const { return position + size; }
 
-Vector2 Rect2D::BottomLeft() const { return position; }
+Vector2 Rect2D::LeftBottom() const { return position; }
 
-Vector2 Rect2D::BottomRight() const { return {position.x + size.x, position.y}; }
+Vector2 Rect2D::RightBottom() const { return {position.x + size.x, position.y}; }
 
 Size2D Rect2D::Size() const { return Size2D(size.x, size.y); }
 
 Float Rect2D::Area() const { return size.x * size.y; }
 
 Rect2D Rect2D::operator/(const Float scalar) const { return {position / scalar, size / scalar}; }
+
+Vector2I Rect2DI::LeftTop() const { return Vector2I(position.x, position.y + size.y); }
+Vector2I Rect2DI::RightTop() const { return Vector2I(position.x + size.x, position.y + size.y); }
+Vector2I Rect2DI::LeftBottom() const { return Vector2I(position.x, position.y); }
+Vector2I Rect2DI::RightBottom() const { return Vector2I(position.x + size.x, position.y); }
 
 Rect2D operator/(Rect2DI rect, Vector2I size) {
   Rect2D rtn;

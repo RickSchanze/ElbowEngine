@@ -33,7 +33,12 @@ public:
   Panel& SetMaterial(resource::Material* mat);
   resource::Material* GetMaterial();
 
+  void SetWidth(UInt32 w);
+  void SetHeight(UInt32 h);
+
 protected:
+  [[nodiscard]] core::Rect2DI GetDrawRect(const core::Rect2DI& target) const;
+
   /// 背景图像, 应是一个TextureAtlas里的一部分
   PROPERTY()
   resource::Sprite sprite_;

@@ -37,32 +37,32 @@ void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<
   auto uv_range = sprite_.GetUVRange();
   index_offset_ = index_buffer.size();
   Vertex_UI left_top{};
-  left_top.position.x = target_rect.position.x + position_.x + GetPaddingLeft(padding);
-  left_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
+  left_top.position.x = target_rect.position.x + position_.x + ExtractPaddingLeft(padding);
+  left_top.position.y = target_rect.position.y + position_.y + size_.y + ExtractPaddingTop(padding);
   left_top.uv.x = uv_range.position.x;
   left_top.uv.y = uv_range.position.y;
-  left_top.color = Style::Color::PanelBackground();
+  left_top.color = Style::Colors::PanelBackground();
 
   Vertex_UI left_bottom{};
-  left_bottom.position.x = target_rect.position.x + position_.x + GetPaddingLeft(padding);
-  left_bottom.position.y = target_rect.position.y + position_.y + GetPaddingBottom(padding);
+  left_bottom.position.x = target_rect.position.x + position_.x + ExtractPaddingLeft(padding);
+  left_bottom.position.y = target_rect.position.y + position_.y + ExtractPaddingBottom(padding);
   left_bottom.uv.x = uv_range.position.x;
   left_bottom.uv.y = uv_range.position.y + uv_range.size.y;
-  left_bottom.color = Style::Color::PanelBackground();
+  left_bottom.color = Style::Colors::PanelBackground();
 
   Vertex_UI right_top{};
-  right_top.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
-  right_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
+  right_top.position.x = target_rect.position.x + position_.x + size_.x + ExtractPaddingRight(padding);
+  right_top.position.y = target_rect.position.y + position_.y + size_.y + ExtractPaddingTop(padding);
   right_top.uv.x = uv_range.position.x + uv_range.size.x;
   right_top.uv.y = uv_range.position.y;
-  right_top.color = Style::Color::PanelBackground();
+  right_top.color = Style::Colors::PanelBackground();
 
   Vertex_UI right_bottom{};
-  right_bottom.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
-  right_bottom.position.y = target_rect.position.y + position_.y + GetPaddingBottom(padding);
+  right_bottom.position.x = target_rect.position.x + position_.x + size_.x + ExtractPaddingRight(padding);
+  right_bottom.position.y = target_rect.position.y + position_.y + ExtractPaddingBottom(padding);
   right_bottom.uv.x = uv_range.position.x + uv_range.size.x;
   right_bottom.uv.y = uv_range.position.y + uv_range.size.y;
-  right_bottom.color = Style::Color::PanelBackground();
+  right_bottom.color = Style::Colors::PanelBackground();
 
   vertex_buffer.push_back(left_top);
   vertex_buffer.push_back(left_bottom);
@@ -114,3 +114,34 @@ Panel &Panel::SetMaterial(Material *mat) {
 }
 
 Material *Panel::GetMaterial() { return material_; }
+
+void Panel::SetWidth(UInt32 w) {
+  if (size_.x != w && w != 0) {
+    SetDirty();
+    size_.x = w;
+  }
+}
+
+void Panel::SetHeight(UInt32 h) {
+  if (size_.y != h && h != 0) {
+    SetDirty();
+    size_.y = h;
+  }
+}
+
+Rect2DI Panel::GetDrawRect(const Rect2DI &target) const {
+  // TODO: 考虑一下溢出了怎么办
+  Vector4I padding = GetPadding();
+  Rect2DI rect;
+  Vector2I pos;
+  pos.x = target.position.x + position_.x + ExtractPaddingLeft(padding);
+  pos.y = target.position.y + position_.y + ExtractPaddingBottom(padding);
+  rect.position = pos;
+  Vector2I size;
+  const UInt32 x = size_.x - ExtractPaddingLeft(padding) - ExtractPaddingRight(padding);
+  const UInt32 y = size_.y - ExtractPaddingTop(padding) - ExtractPaddingBottom(padding);
+  size.x = x;
+  size.y = y;
+  rect.size = size;
+  return rect;
+}

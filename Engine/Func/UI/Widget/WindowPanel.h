@@ -13,16 +13,25 @@ class Text;
 namespace func::ui::widget {
 class CLASS() WindowPanel : public Panel {
   GENERATED_CLASS(WindowPanel)
+public:
+  WindowPanel();
 
   void Draw(platform::rhi::CommandBuffer &cmd) override;
   void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
                core::Array<UInt32> &index_buffer) override;
 
-private:
+  void SetTitle(const core::StringView &new_t);
+  core::StringView GetTitle() const;
+
+protected:
   PROPERTY()
   core::ObjectPtr<Text> title_;
 
-protected:
+  PROPERTY()
+  Int32 title_height_ = 32;
+
+  Bool expanded = true;
+
   UInt64 index_size_ = 0;
 };
 } // namespace func::ui::widget

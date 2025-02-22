@@ -5,7 +5,12 @@
 #include "Sprite.h"
 #include "Texture2D.h"
 
-#include "Resource.Sprite.generated.h"
+#include "Func/UI/IconID.h"
+
+#include "Resource/AssetDataBase.h"
+
+#include GEN_HEADER("Resource.Sprite.generated.h")
+
 using namespace resource;
 GENERATED_SOURCE()
 
@@ -51,4 +56,10 @@ core::Rect2D Sprite::GetUVRange() {
     return {};
   }
   return tex->GetSpriteRange(id_).range / core::Vector2I{tex->GetWidth(), tex->GetHeight()};
+}
+
+Sprite Sprite::GetUIWhiteSprite() {
+  Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
+  Sprite range = {tex, func::ui::IconID::Name_White()};
+  return range;
 }

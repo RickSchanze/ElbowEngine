@@ -18,8 +18,12 @@
 #include "stb_image_write.h"
 
 #include "Platform/RHI/GfxCommandHelper.h"
-#include GEN_HEADER("Resource.Font.generated.h")
 
+#include "Resource/Assets/Material/Material.h"
+#include "Resource/Assets/Material/MaterialMeta.h"
+#include "Resource/Assets/Shader/Shader.h"
+
+#include GEN_HEADER("Resource.Font.generated.h")
 using namespace resource;
 using namespace core;
 using namespace platform;
@@ -34,7 +38,7 @@ public:
     Assert::Require("Resource.Load.Font", errcode == 0, "初始化FreeType失败, 错误码={}.", errcode);
   }
 
-  static Int32 Load(core::StringView path, FT_Face &face) { return FT_New_Face(GetByRef().library_, *path, 0, &face); }
+  static Int32 Load(StringView path, FT_Face &face) { return FT_New_Face(GetByRef().library_, *path, 0, &face); }
 
   static void SetFontSize(FT_Face face, Int32 size) { FT_Set_Pixel_Sizes(face, size, size); }
 
@@ -48,6 +52,24 @@ public:
 private:
   FT_Library library_ = nullptr;
 };
+
+Font *Font::GetDefaultFont() {
+  return AssetDataBase::Load<Font>("Assets/Font/MapleMono.ttf");
+}
+
+Material *Font::GetDefaultFontMaterial() {
+  auto mat_path = "Assets/Material/DefaultFont.mat";
+  auto shader_path = "Assets/Shader/Text.slang";
+  if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
+    return AssetDataBase::Load<Material>(meta.GetValue().path);
+  } else {
+    auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
+    auto *font_material = ObjectManager::CreateNewObject<Material>();
+    font_material->SetShader(text_shader);
+    AssetDataBase::CreateAsset(font_material, mat_path);
+    return font_material;
+  }
+}
 
 Font::~Font() {
   font_atlas_ = nullptr;
@@ -98,7 +120,7 @@ bool Font::Load(const FontMeta &meta) {
   atlas_meta.height = font_atlas_height_;
   atlas_meta.dynamic = true;
   atlas_meta.format = Format::R8_SRGB;
-  Texture2D *font_atlas = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
+  Texture2D *font_atlas = ObjectManager::CreateNewObjectAsync<Texture2D>()->GetValue().GetValue() | First;
   font_atlas->SetName(String::Format("Font Atlas for {}", path_));
   font_atlas->Load(atlas_meta);
   font_atlas_ = font_atlas;

@@ -44,7 +44,7 @@ Text &Text::SetFont(const Font *font) {
     return *this;
   font_ = font;
   if (font_material_) {
-    font_material_->SetTexture2D("font_atlas", font_->GetFontAtlas());
+    font_material_->SetTexture2D("atlas", font_->GetFontAtlas());
   }
   SetDirty();
   return *this;
@@ -120,7 +120,7 @@ void Text::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<U
   Vector4I padding = GetPadding();
   index_offset_ = index_buffer.size();
   UInt32 cur_pos_x = bl.x + padding.x;
-  UInt32 cur_pos_y = base_line_ + padding.w;
+  UInt32 cur_pos_y = bl.y + base_line_ + padding.w;
 
   Font *font = font_;
   if (font == nullptr) {

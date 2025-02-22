@@ -26,6 +26,8 @@ struct STRUCT() Sprite {
   core::Rect2D GetUVRange();
   core::ObjectHandle GetTextureHandle() const { return target_texture_.GetHandle(); }
 
+  static Sprite GetUIWhiteSprite();
+
 private:
 #if WITH_EDITOR || ELBOW_DEBUG
   core::String sprite_name_;

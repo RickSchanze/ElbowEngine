@@ -804,8 +804,8 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
   swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapchain_create_info.surface = surface_handle;
   swapchain_create_info.minImageCount = image_count;
-  swapchain_create_info.imageFormat = RHIFormatToVkFormat(available_format.format);
-  swapchain_create_info.imageColorSpace = RHIColorSpaceToVkColorSpace(available_format.color_space);
+  swapchain_create_info.imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
+  swapchain_create_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
   swapchain_create_info.imageExtent = VkExtent2D{.width = size.width, .height = size.height};
   swapchain_create_info.imageArrayLayers = 1;
   swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;

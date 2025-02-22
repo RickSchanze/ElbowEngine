@@ -8,6 +8,7 @@
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/UI/Overlay.h"
 #include "Func/UI/Widget/Panel.h"
+#include "Func/UI/Widget/WindowPanel.h"
 #include "Misc.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -77,12 +78,12 @@ void func::ElbowRenderPipeline::Build() {
     this->mesh_ = ObjectManager::GetObjectByHandle<Mesh>(fbx_handle);
     auto ui_shader_obj = ObjectManager::GetObjectByHandle<Shader>(ui_shader_handle);
     auto obj_shader_obj = ObjectManager::GetObjectByHandle<Shader>(obj_shader_handle);
-    auto obj_mat = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    auto obj_mat = ObjectManager::CreateNewObjectAsync<Material>()->GetValue().GetValue() | First;
     obj_mat->SetShader(obj_shader_obj);
     this->material_ = obj_mat;
-    this->test_text_ = ObjectManager::CreateNewObject<ui::Overlay>()->GetValue().GetValue() | First;
-    auto panel_widget = ObjectManager::CreateNewObject<ui::widget::Panel>()->GetValue().GetValue() | First;
-    auto panel_mat = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
+    this->test_text_ = ObjectManager::CreateNewObject<ui::Overlay>();
+    auto panel_widget = ObjectManager::CreateNewObject<ui::widget::WindowPanel>();
+    auto panel_mat = ObjectManager::CreateNewObject<Material>();
     auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
     panel_mat->SetShader(ui_shader_obj);
     panel_mat->SetTexture2D("atlas", ui_atlas_png);

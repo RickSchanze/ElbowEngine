@@ -88,6 +88,10 @@ protected:
 
   SQLite::Database *db_ = nullptr;
   core::HashMap<const core::Type *, core::UniquePtr<SQLTable>> tables_;
+  // TODO: 资产加载管理分离至ResourceManager
+  // TODO: 并发HashMap
+  core::HashMap<core::String, core::exec::AsyncResultHandle<core::ObjectHandle>> loading_assets_;
+  std::mutex loading_assets_mutex_;
   DECLARE_TRACEABLE_MUTEX(std::mutex, database_query_mutex_, "Mutex to protect database query");
 };
 

@@ -56,6 +56,8 @@ add_library(${PROJECT_NAME}
         UI/IconID.h
         UI/Style.cpp
         UI/Style.h
+        UI/VertexHelper.cpp
+        UI/VertexHelper.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

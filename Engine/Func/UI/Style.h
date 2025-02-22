@@ -6,8 +6,9 @@
 #include "Core/Math/MathTypes.h"
 
 namespace func::ui::Style {
-class Color {
+class Colors {
 public:
   static core::Color PanelBackground();
+  static core::Color TitleBackgroundColor();
 };
 }

@@ -144,10 +144,10 @@ public:
   [[nodiscard]] String ToString() const;
 
   [[nodiscard]] Vector2 Center() const;
-  [[nodiscard]] Vector2 TopLeft() const;
-  [[nodiscard]] Vector2 TopRight() const;
-  [[nodiscard]] Vector2 BottomLeft() const;
-  [[nodiscard]] Vector2 BottomRight() const;
+  [[nodiscard]] Vector2 LeftTop() const;
+  [[nodiscard]] Vector2 RightTop() const;
+  [[nodiscard]] Vector2 LeftBottom() const;
+  [[nodiscard]] Vector2 RightBottom() const;
   /**
    * 注意！！！返回的Size2D其存储的类型是Int
    * @return
@@ -166,6 +166,15 @@ public:
 
   PROPERTY()
   Vector2I size = {};
+
+  Vector2I LeftTop() const;
+  Vector2I RightTop() const;
+  Vector2I LeftBottom() const;
+  Vector2I RightBottom() const;
+  Int32 Left() const { return position.x; }
+  Int32 Right() const { return position.x + size.x; }
+  Int32 Top() const { return position.y + size.y; }
+  Int32 Bottom() const { return position.y; }
 
   [[nodiscard]] UInt64 Area() const { return size.x * size.y; }
 };

@@ -71,7 +71,7 @@ public:
     if (obj == nullptr) {
       SetObject(INVALID_OBJECT_HANDLE);
     } else {
-      SetObject(((Object*)obj)->GetHandle());
+      SetObject(((Object *)obj)->GetHandle());
     }
   }
 
@@ -86,6 +86,7 @@ public:
   }
 
   T *operator->() { return static_cast<T *>(*this); }
+  const T *operator->() const { return static_cast<T *>(*this); }
 
   T &operator*() { return *static_cast<T *>(*this); }
 
@@ -109,13 +110,9 @@ public:
 
 template <typename T> struct IsObjectPtr : std::false_type {};
 
-template <typename T> struct IsObjectPtr<ObjectPtr<T>> : std::true_type
-{
-};
+template <typename T> struct IsObjectPtr<ObjectPtr<T>> : std::true_type {};
 
-template <typename T>
-struct ObjPtrTraits
-{
-    using Type = typename T::Type;
+template <typename T> struct ObjPtrTraits {
+  using Type = typename T::Type;
 };
-}
+} // namespace core

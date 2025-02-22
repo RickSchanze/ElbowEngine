@@ -37,4 +37,15 @@ template <typename T> void RemoveAt(Array<T> &container, UInt64 index, bool fast
     container.erase(container.begin() + index);
   }
 }
+
+template <typename T, typename V> void RemoveByValue(HashMap<T, V> &container, const V &value) {
+  auto it = container.begin();
+  while (it != container.end()) {
+    if (it->second == value) {
+      it = container.erase(it);
+      break;
+    }
+    ++it;
+  }
+}
 } // namespace core::range

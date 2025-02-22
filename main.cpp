@@ -39,18 +39,6 @@ using namespace exec;
 using namespace func;
 using namespace resource;
 
-static void LoadMaterial(const StringView mat_path, const StringView shader_path) {
-  if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
-    AssetDataBase::Load(meta.GetValue().path);
-  } else {
-    auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
-    auto *font_material = ObjectManager::CreateNewObject<Material>()->GetValue().GetValue() | First;
-    Assert::Require("Resource.Initialize", text_shader && font_material, "资产数据库初始化失败");
-    font_material->SetShader(text_shader);
-    AssetDataBase::CreateAsset(font_material, mat_path);
-  }
-}
-
 static void TickManagerUpdate(const Millisecond &sec) {
   static UInt32 interval = GetConfig<CoreConfig>()->GetTickFrameInterval();
   static UInt32 cnt = 0;
@@ -107,6 +95,7 @@ int main() {
           AssetDataBase::Import("Assets/Mesh/Cube.fbx"),
           AssetDataBase::Import("Assets/Font/MapleMono.ttf"),
           AssetDataBase::Import("Assets/Shader/UIPanel.slang"),
+          AssetDataBase::Import("Assets/Shader/Text.slang"),
           AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"),
       };
       ThreadManager::Poll(INT_MAX);
@@ -121,7 +110,7 @@ int main() {
       // new_meta.width = 1024;
       // new_meta.height = 1024;
       // new_meta.format = platform::rhi::Format::R8G8B8A8_SRGB;
-      // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
+      // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
       // new_tex->SetName("UIAtlas");
       // new_tex->Load(new_meta);
       // new_tex->AppendSprite(ui::IconID::Close(), R"(C:\Users\Echo\Documents\Temp\Icons\关闭.png)");

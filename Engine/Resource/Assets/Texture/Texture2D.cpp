@@ -23,6 +23,8 @@
 #include "Platform/FileSystem/File.h"
 #include GEN_HEADER("Resource.Texture2D.generated.h")
 
+#include <fstream>
+
 GENERATED_SOURCE()
 
 static stbi_uc *LoadImageStb(core::StringView path, int *width, int *height, int *channels) {
@@ -31,7 +33,7 @@ static stbi_uc *LoadImageStb(core::StringView path, int *width, int *height, int
   FILE *f = _wfopen(str.c_str(), L"rb");
   if (!f)
     return nullptr;
-  stbi_uc *pixels = stbi_load_from_file(f, width, height, channels, 0);
+  stbi_uc *pixels = stbi_load_from_file(f, width, height, channels, 4);
   fclose(f);
   return pixels;
 #else
@@ -74,13 +76,13 @@ void Texture2D::Load(const Texture2DMeta &meta) {
       return;
     }
     Int32 width = 0, height = 0, channels = 0;
-    stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, channels);
+    stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, STBI_rgb_alpha);
     if (!pixels) {
       LOGGER.Error(logcat::Resource, "加载失败: 路径为{}的Texture2D文件无法加载", path);
       stbi_image_free(pixels);
       return;
     }
-    Format format = meta.format;
+    Format format = Format::R8G8B8A8_UNorm;
     ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format,
                    ImageDimension::D2};
     String debug_name = String::Format("Texture2D_{}", path);

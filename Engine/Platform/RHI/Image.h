@@ -75,8 +75,8 @@ protected:
 struct SamplerDesc {
   FilterMode mag = FilterMode::Linear; // 纹理被放大时的过滤模式
   FilterMode min = FilterMode::Linear; // 纹理被缩小时的过滤模式
-  SamplerAddressMode u = SamplerAddressMode::Repeat;
-  SamplerAddressMode v = SamplerAddressMode::Repeat;
+  SamplerAddressMode u = SamplerAddressMode::ClampToEdge;
+  SamplerAddressMode v = SamplerAddressMode::ClampToEdge;
   SamplerAddressMode w = SamplerAddressMode::Repeat;
   Bool enable_anisotropy = false;
   Float max_anisotropy = 1.0f;

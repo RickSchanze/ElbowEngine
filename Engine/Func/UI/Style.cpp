@@ -7,4 +7,5 @@
 using namespace func::ui;
 using namespace core;
 
-Color Style::Color::PanelBackground() { return core::Color::FromUInt(23, 23, 26); }
+Color Style::Colors::PanelBackground() { return Color::FromUInt(255, 255, 255); }
+Color Style::Colors::TitleBackgroundColor() { return Color::FromUInt(255, 255, 255); }

@@ -9,6 +9,9 @@
 #include GEN_HEADER("Resource.Font.generated.h")
 
 namespace resource {
+class Material;
+}
+namespace resource {
 class FontMeta;
 }
 namespace resource {
@@ -32,7 +35,9 @@ struct GlyphInfo {
 class CLASS() Font : public Asset {
   GENERATED_CLASS(Font)
 public:
-  ~Font();
+  static Font* GetDefaultFont();
+  static Material* GetDefaultFontMaterial();
+  ~Font() override;
 
   [[nodiscard]] AssetType GetAssetType() const override { return resource::AssetType::Font; }
 

@@ -19,14 +19,14 @@ namespace core {
 
 static void LogErrorStack(core::Log &log) {
   if (log.level == LogLevel::Error) {
-#if ELBOW_DEBUG
-    DEBUG_BREAK();
-#endif
     String outStack = "Call Stack: \n";
     for (auto element : log.call_stack) {
       outStack += fmt::format("  {}:{} {}\n", element.file, element.line, element.function);
     }
     LOGGER.ErrorFast(log.category, "{}", outStack);
+#if ELBOW_DEBUG
+    DEBUG_BREAK();
+#endif
   }
 }
 

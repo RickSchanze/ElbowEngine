@@ -10,6 +10,7 @@ namespace core {
 namespace impl {
 struct ToVector2_Impl {};
 inline Vector2 operator|(Vector3 v, ToVector2_Impl) { return {v.x, v.y}; }
+inline Vector2 operator|(Vector2I v, ToVector2_Impl) { return {v.x, v.y}; }
 
 struct DivideNum_Impl {
   Float num;
