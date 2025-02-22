@@ -23,8 +23,6 @@ namespace func::ui::widget {
 class CLASS() Panel : public Widget {
   GENERATED_CLASS(Panel)
 public:
-  static UInt64 GetPanelBackgroundColorSpriteID();
-
   Panel();
 
   void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,

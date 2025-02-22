@@ -32,14 +32,12 @@ public:
   ThreadSafeQueue &operator=(const ThreadSafeQueue &) = delete;
 
   void Push(const T &element) {
-    PROFILE_SCOPE_AUTO;
     std::lock_guard lock(mutex_);
     queue_.push(element);
     not_empty_.notify_one(); // 通知等待的线程
   }
 
   T Pop() {
-    PROFILE_SCOPE_AUTO;
     std::unique_lock lock(mutex_);
     not_empty_.wait(lock, [this] { return !queue_.empty(); });
     T element = std::move(queue_.front());
@@ -54,7 +52,6 @@ public:
    * @return
    */
   bool TryPop(T &element, std::chrono::milliseconds timeout = 0ms) {
-    PROFILE_SCOPE_AUTO;
     std::unique_lock lock(mutex_);
     if (timeout == 0ms) {
       not_empty_.wait(lock, [this] { return !queue_.empty(); });
@@ -67,13 +64,11 @@ public:
   }
 
   bool Empty() const {
-    PROFILE_SCOPE_AUTO;
     std::unique_lock lock(mutex_);
     return queue_.empty();
   }
 
   UInt64 Count() const {
-    PROFILE_SCOPE_AUTO;
     std::unique_lock lock(mutex_);
     return queue_.size();
   }

@@ -13,6 +13,8 @@ VkFormat RHIFormatToVkFormat(const Format format) {
   switch (format) {
   case Format::R32G32B32_Float:
     return VK_FORMAT_R32G32B32_SFLOAT;
+  case Format::R32G32B32A32_Float:
+    return VK_FORMAT_R32G32B32A32_SFLOAT;
   case Format::R16G16B16A16_UNorm:
     return VK_FORMAT_R16G16B16A16_UNORM;
   case Format::R32G32_UInt:
@@ -58,6 +60,8 @@ Format VkFormatToRHIFormat(VkFormat format) {
   switch (format) {
   case VK_FORMAT_R32G32B32_SFLOAT:
     return Format::R32G32B32_Float;
+  case VK_FORMAT_R32G32B32A32_SFLOAT:
+    return Format::R32G32B32A32_Float;
   case VK_FORMAT_R16G16B16A16_UNORM:
     return Format::R16G16B16A16_UNorm;
   case VK_FORMAT_R32G32_UINT:

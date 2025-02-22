@@ -12,8 +12,11 @@
 
 #include "Func.Panel.generated.h"
 #include "Func/Render/Misc.h"
+#include "Func/UI/IconID.h"
+#include "Func/UI/Style.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
+
 GENERATED_SOURCE()
 
 using namespace func;
@@ -23,15 +26,10 @@ using namespace core;
 using namespace platform::rhi;
 using namespace resource;
 
-UInt64 Panel::GetPanelBackgroundColorSpriteID() {
-  static UInt64 id = core::StringView{"PanelBackgroundColor"}.GetHashCode();
-  return id;
-}
-
 Panel::Panel() {
   SetName("Panel");
   Texture2D *ui_atlas = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
-  sprite_ = Sprite{ui_atlas, "PanelBackgroundColor"};
+  sprite_ = Sprite{ui_atlas, IconID::Name_White()};
 }
 
 void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
@@ -43,24 +41,28 @@ void Panel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<
   left_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
   left_top.uv.x = uv_range.position.x;
   left_top.uv.y = uv_range.position.y;
+  left_top.color = Style::Color::PanelBackground();
 
   Vertex_UI left_bottom{};
   left_bottom.position.x = target_rect.position.x + position_.x + GetPaddingLeft(padding);
   left_bottom.position.y = target_rect.position.y + position_.y + GetPaddingBottom(padding);
   left_bottom.uv.x = uv_range.position.x;
   left_bottom.uv.y = uv_range.position.y + uv_range.size.y;
+  left_bottom.color = Style::Color::PanelBackground();
 
   Vertex_UI right_top{};
   right_top.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
   right_top.position.y = target_rect.position.y + position_.y + size_.y + GetPaddingTop(padding);
   right_top.uv.x = uv_range.position.x + uv_range.size.x;
   right_top.uv.y = uv_range.position.y;
+  right_top.color = Style::Color::PanelBackground();
 
   Vertex_UI right_bottom{};
   right_bottom.position.x = target_rect.position.x + position_.x + size_.x + GetPaddingRight(padding);
   right_bottom.position.y = target_rect.position.y + position_.y + GetPaddingBottom(padding);
   right_bottom.uv.x = uv_range.position.x + uv_range.size.x;
   right_bottom.uv.y = uv_range.position.y + uv_range.size.y;
+  right_bottom.color = Style::Color::PanelBackground();
 
   vertex_buffer.push_back(left_top);
   vertex_buffer.push_back(left_bottom);

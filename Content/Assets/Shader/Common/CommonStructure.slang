@@ -27,6 +27,7 @@ public struct Vertex {
 public struct VertexUI {
   public float3 position;
   public float2 uv;
+  public float4 color;
 }
 
 public struct Camera {

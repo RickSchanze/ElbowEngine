@@ -15,7 +15,9 @@
 #include "Func/Camera/Camera.h"
 #include "Func/Render/ElbowRenderPipeline.h"
 #include "Func/Render/RenderContext.h"
+#include "Func/UI/IconID.h"
 #include "Func/UI/Widget/Panel.h"
+#include "Func/UI/Widget/WindowPanel.h"
 #include "Func/World/Actor.h"
 #include "Func/World/WorldClock.h"
 #include "Platform/Config/PlatformConfig.h"
@@ -122,8 +124,10 @@ int main() {
       // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>()->GetValue().GetValue() | First;
       // new_tex->SetName("UIAtlas");
       // new_tex->Load(new_meta);
-      // new_tex->AppendSprite("Close", R"(C:\Users\Echo\Downloads\关闭.png)");
-      // new_tex->AppendSprite(ui::widget::Panel::GetPanelBackgroundColorSpriteID(), R"(C:\Users\Echo\Downloads\Panel背景.png)");
+      // new_tex->AppendSprite(ui::IconID::Close(), R"(C:\Users\Echo\Documents\Temp\Icons\关闭.png)");
+      // new_tex->AppendSprite(ui::IconID::White(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
+      // new_tex->AppendSprite(ui::IconID::Folded(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
+      // new_tex->AppendSprite(ui::IconID::Expanded(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
       // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
       // new_tex->Download();
       // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());

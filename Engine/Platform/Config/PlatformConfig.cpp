@@ -1,8 +1,8 @@
 /**
  * @file PlatformConfig.cpp
- * @author Echo 
+ * @author Echo
  * @Date 24-11-19
- * @brief 
+ * @brief
  */
 
 #include "PlatformConfig.h"
@@ -14,16 +14,14 @@ using namespace platform;
 
 GENERATED_SOURCE()
 
-
-uint8_t PlatformConfig::GetValidFrameCountInFlight() const
-{
-    return std::clamp(GetFrameCountInFlight(), static_cast<uint8_t>(1), static_cast<uint8_t>(8));
+uint8_t PlatformConfig::GetValidFrameCountInFlight() const {
+  return std::clamp(GetFrameCountInFlight(), static_cast<uint8_t>(1), static_cast<uint8_t>(8));
 }
 
-bool PlatformConfig::GetValidEnableValidationLayer() const
-{
-#ifndef ELBOW_DEBUG
-    return false;
+bool PlatformConfig::GetValidEnableValidationLayer() const {
+#ifdef ELBOW_DEBUG
+  return GetEnableValidationLayer();
+#else
+  return false;
 #endif
-    return GetEnableValidationLayer();
 }

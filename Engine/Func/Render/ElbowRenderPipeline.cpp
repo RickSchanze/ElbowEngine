@@ -86,7 +86,6 @@ void func::ElbowRenderPipeline::Build() {
     auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
     panel_mat->SetShader(ui_shader_obj);
     panel_mat->SetTexture2D("atlas", ui_atlas_png);
-    panel_mat->SetFloat4("params.color", Color::White());
     panel_widget->SetMaterial(panel_mat);
     this->test_text_->SetSlot(panel_widget).SetSize(core::Vector2(1920, 1080));
     this->ready_ = material_ && mesh_ && test_text_;

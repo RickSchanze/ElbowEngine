@@ -376,6 +376,13 @@ static void FillInputLayout(GraphicsPipelineDesc &desc, uint32_t index) {
     uv.format = Format::R32G32_Float;
     uv.offset = offsetof(Vertex_UI, uv);
     desc.vertex_attributes.push_back(uv);
+
+    VertexAttributeDesc color{};
+    color.location = 2;
+    color.binding = 0;
+    color.offset = offsetof(Vertex_UI, color);
+    color.format = Format::R32G32B32A32_Float;
+    desc.vertex_attributes.push_back(color);
   } break;
   default:
     throw ArgumentException(NAMEOF(index), "超出范围");
@@ -487,6 +494,10 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     pso_desc.color_blend.src_alpha_blend_factor = BlendFactor::One;
     pso_desc.color_blend.dst_alpha_blend_factor = BlendFactor::Zero;
     pso_desc.color_blend.alpha_blend_op = BlendOp::Add;
+  }
+  if (!IsDepthEnabled()) {
+    pso_desc.depth_stencil.enable_depth_test = false;
+    pso_desc.depth_stencil.enable_depth_write = false;
   }
   pso_desc.descriptor_set_layouts = layout;
   return true;

@@ -199,6 +199,9 @@ public:
   static Color SkyBlue() { return {0.4f, 0.6f, 1.f, 1.f}; }
   static Color DefaultClear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
   static Color Invalid() { return {-1, -1, -1, -1}; }
+  static Color FromUInt(UInt8 r, UInt8 g, UInt8 b, UInt8 a = 255) {
+    return {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
+  }
 
   /** 讲一个0-1的表示颜色的值转换为0-255的值 */
   static uint8_t FloatToByte(float value);

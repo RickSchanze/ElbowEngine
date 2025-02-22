@@ -50,6 +50,12 @@ add_library(${PROJECT_NAME}
         UI/UIMath.cpp
         Algo/RectPacking.cpp
         Algo/RectPacking.h
+        UI/Widget/WindowPanel.cpp
+        UI/Widget/WindowPanel.h
+        UI/IconID.cpp
+        UI/IconID.h
+        UI/Style.cpp
+        UI/Style.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

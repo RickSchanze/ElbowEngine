@@ -22,6 +22,7 @@ struct InstancedData1 {
 struct Vertex_UI {
   core::Vector3 position;
   core::Vector2 uv;
+  core::Color color;
 };
 
 } // namespace platform::rhi

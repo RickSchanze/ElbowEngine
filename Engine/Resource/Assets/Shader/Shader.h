@@ -22,9 +22,9 @@ enum class BlendState {
 
 enum class ShaderAnnotation {
   Pipeline,
-  InputLayout, // 输入布局: VertexNormal, Vertex
-  EnableDepth, // 是否启用深度测试 默认为true
-  Blend,       // 混合状态
+  InputLayout, // 输入布局: VertexNormal, Vertex, Vertex_UI
+  EnableDepth, // 是否启用深度测试 默认为true: true false
+  Blend,       // 混合状态: On Off
   Name,
   Count,
 };

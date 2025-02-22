@@ -87,9 +87,7 @@ SharedMaterial::SharedMaterial(Shader *shader) {
     LOGGER.Error("Resource.SharedMaterial", "CreateSharedMaterial: 加载失败: 无法填充GraphicsPipelineDesc");
     return;
   }
-  if (shader->IsDepthEnabled()) {
-    desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
-  }
+  desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
   desc.attachments.color_formats.push_back(GetGfxContextRef().GetDefaultColorFormat());
   pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
   set_layouts_ = desc.descriptor_set_layouts;

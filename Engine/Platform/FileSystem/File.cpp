@@ -58,7 +58,7 @@ String platform::File::GetFileNameWithoutExtension() const {
 
 String platform::File::GetAbsolutePath() const {
   // 看看是不是已经是绝对路径了
-  fs::path p = path_.ToStdString();
+  fs::path p = path_.ToWideString();
   if (p.is_absolute())
     return path_;
   return Path::GetProjectPath() + "/" + path_;
