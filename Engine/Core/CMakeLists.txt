@@ -124,6 +124,8 @@ add_library(${PROJECT_NAME}
         Base/Tree.h
         Base/ArrayMap.cpp
         Base/ArrayMap.h
+        Base/ArrayProxy.cpp
+        Base/ArrayProxy.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

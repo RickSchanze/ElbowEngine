@@ -112,14 +112,26 @@ Rect2DI Text::GetFontRect() {
   return rect;
 }
 
-void Text::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
+void Text::Draw(CommandBuffer &cmd) {
+  Material *mat = font_material_;
+  if (mat == nullptr) {
+    return;
+  }
+  BindMaterial(cmd, mat);
+  cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_);
+}
+
+void Text::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProxy<UInt32> &indices) {
+  if (!IsDirty()) {
+    return;
+  }
   // 左下角
-  Vector2I bl = BottomLeft(target_rect);
-  Vector2I rt = TopRight(target_rect);
+  Vector2I bl = BottomLeft(draw_rect);
+  Vector2I rt = TopRight(draw_rect);
   UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   Vector4I padding = GetPadding();
-  index_offset_ = index_buffer.size();
+  index_offset_ = indices.Size();
   UInt32 cur_pos_x = bl.x + padding.x;
   UInt32 cur_pos_y = bl.y + base_line_ + padding.w;
 
@@ -166,31 +178,21 @@ void Text::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<U
     right_bottom.uv.y = glyph.uv_y_rb;
     right_bottom.color = font_color_;
 
-    vertex_buffer.push_back(left_top);
-    vertex_buffer.push_back(left_bottom);
-    vertex_buffer.push_back(right_top);
-    vertex_buffer.push_back(right_bottom);
+    vertices.Add(left_top);
+    vertices.Add(left_bottom);
+    vertices.Add(right_top);
+    vertices.Add(right_bottom);
 
-    UInt64 index_size = vertex_buffer.size();
-    index_buffer.push_back(index_size - 3);
-    index_buffer.push_back(index_size - 1);
-    index_buffer.push_back(index_size - 2);
-
-    index_buffer.push_back(index_size - 3);
-    index_buffer.push_back(index_size - 2);
-    index_buffer.push_back(index_size - 4);
-    index_range_ += 6;
+    UInt64 index_size = vertices.Size();
+    indices.Add(index_size - 3);
+    indices.Add(index_size - 1);
+    indices.Add(index_size - 2);
+    indices.Add(index_size - 3);
+    indices.Add(index_size - 2);
+    indices.Add(index_size - 4);
+    index_size_ += 6;
 
     cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);
   }
   SetDirty(false);
-}
-
-void Text::Draw(CommandBuffer &cmd) {
-  Material *mat = font_material_;
-  if (mat == nullptr) {
-    return;
-  }
-  BindMaterial(cmd, mat);
-  cmd.Enqueue<Cmd_DrawIndexed>(index_range_, 1, index_offset_);
 }

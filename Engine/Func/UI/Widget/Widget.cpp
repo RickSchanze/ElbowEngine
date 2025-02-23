@@ -15,6 +15,10 @@ using namespace func;
 using namespace ui;
 using namespace widget;
 
+void Widget::Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
+                       core::ArrayProxy<UInt32> &indices) {
+  NoEntry();
+}
 void Widget::SetDirty(bool dirty) { dirty_ = dirty; }
 
 void Widget::SetVisible(bool visible) {

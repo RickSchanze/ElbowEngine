@@ -22,7 +22,7 @@ public:
   Text &SetFontSize(Float size);
   Text &SetFontMaterial(const resource::Material *mat);
   Text &SetColor(core::Color color);
-  core::Rect2DI GetBoundingRect() override;
+  core::Rect2DI GetBoundingRect();
   core::StringView GetText() const { return text_; }
 
   /**
@@ -33,10 +33,10 @@ public:
 
   [[nodiscard]] core::Color GetFontColor() const { return font_color_; }
 
-  void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
-               core::Array<UInt32> &index_buffer) override;
-
   void Draw(platform::rhi::CommandBuffer &cmd) override;
+
+  void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
+               core::ArrayProxy<UInt32> &indices) override;
 
 private:
   PROPERTY(Label = "文本")
@@ -59,10 +59,6 @@ private:
 
   PROPERTY(Label = "字体材质")
   core::ObjectPtr<resource::Material> font_material_;
-
-protected:
-  UInt64 index_offset_ = 0;
-  UInt64 index_range_ = 0;
 };
 
 } // namespace func::ui::widget

@@ -42,8 +42,6 @@ add_library(${PROJECT_NAME}
         UI/Widget/Text.h
         UI/Widget/Widget.cpp
         UI/Widget/Widget.h
-        UI/Overlay.cpp
-        UI/Overlay.h
         UI/Widget/Panel.cpp
         UI/Widget/Panel.h
         UI/UIMath.h
@@ -58,6 +56,8 @@ add_library(${PROJECT_NAME}
         UI/Style.h
         UI/VertexHelper.cpp
         UI/VertexHelper.h
+        UI/UIManager.cpp
+        UI/UIManager.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

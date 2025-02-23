@@ -16,12 +16,11 @@ class CLASS() WindowPanel : public Panel {
 public:
   WindowPanel();
 
-  void Draw(platform::rhi::CommandBuffer &cmd) override;
-  void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
-               core::Array<UInt32> &index_buffer) override;
-
   void SetTitle(const core::StringView &new_t);
   core::StringView GetTitle() const;
+  void Draw(platform::rhi::CommandBuffer &cmd) override;
+  void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
+               core::ArrayProxy<UInt32> &indices) override;
 
 protected:
   PROPERTY()

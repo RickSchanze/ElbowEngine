@@ -7,8 +7,8 @@
 #include "Core/Math/MathPipe.h"
 
 #include "Func/Render/Misc.h"
+#include "Func/UI/IconID.h"
 #include "Func/UI/Style.h"
-#include "Func/UI/UIMath.h"
 #include "Func/UI/VertexHelper.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -18,7 +18,6 @@
 #include "Text.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
-#include "Func/UI/IconID.h"
 GENERATED_SOURCE()
 
 using namespace func;
@@ -59,24 +58,28 @@ void WindowPanel::Draw(CommandBuffer &cmd) {
   title_->Draw(cmd);
 }
 
-void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
+void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProxy<UInt32> &indices) {
+  if (!IsDirty()) {
+    return;
+  }
+  Panel::Rebuild(draw_rect, vertices, indices);
   Texture2D *ui_atlas = material_->GetParam_Texture2D("atlas");
   if (ui_atlas == nullptr) {
     index_size_ = 0;
     LOGGER.Error("Func.UI.WindowPanel", "Rebuild: 窗口材质中没有atlas");
     return;
   }
-  UInt64 index_buffer_size = index_buffer.size();
+  UInt64 index_buffer_size = indices.Size();
   // 分两部分, 标题和内容
   // 绘制标题, 其大小根据内容调整
-  Rect2DI draw_rect = GetDrawRect(target_rect);
+  Rect2DI draw_rect_ = GetDrawRect(draw_rect);
   Text *text_title_ = title_;
   Sprite white_range = Sprite::GetUIWhiteSprite();
   Rect2D white_uv_range = white_range.GetUVRange();
   // 标题栏的四个顶点
   Rect2DI title_rect{};
-  title_rect.position = {draw_rect.position.x, draw_rect.size.y - title_height_};
-  title_rect.size.x = draw_rect.size.x;
+  title_rect.position = {draw_rect_.position.x, draw_rect_.size.y - title_height_};
+  title_rect.size.x = draw_rect_.size.x;
   title_rect.size.y = title_height_;
   Vertex_UI left_top{};
   left_top.position = title_rect.LeftTop() | ToVector2;
@@ -92,7 +95,7 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
 
   VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
 
   // 展开Icon的四个顶点, 以及关闭Icon的四个顶点
   core::Rect2D expanded_range = Sprite::GetUVRange(ui_atlas, expanded_ ? IconID::Expanded() : IconID::Folded());
@@ -110,7 +113,7 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
 
   VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
 
   // 关闭图标的四个顶点
   core::Rect2D close_range = Sprite::GetUVRange(ui_atlas, IconID::Close());
@@ -127,13 +130,13 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
   right_bottom.position.y = title_rect.position.y + 1;
 
   VertexHelper::FillQuadUV(close_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
 
   // 内容的四个顶点
   Rect2DI context_rect{};
-  context_rect.position = draw_rect.LeftBottom();
-  context_rect.size.x = draw_rect.size.x;
-  context_rect.size.y = draw_rect.size.y - title_rect.size.y;
+  context_rect.position = draw_rect_.LeftBottom();
+  context_rect.size.x = draw_rect_.size.x;
+  context_rect.size.y = draw_rect_.size.y - title_rect.size.y;
 
   left_top.position = context_rect.LeftTop() | ToVector2;
   left_bottom.position = context_rect.LeftBottom() | ToVector2;
@@ -142,8 +145,8 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
 
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
-  index_size_ = index_buffer.size() - index_buffer_size;
+  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
+  index_size_ = indices.Size() - index_buffer_size;
 
   Rect2DI title_text_rect;
   title_text_rect.position.x = title_rect.position.x + title_height_ + 1;
@@ -151,7 +154,7 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
   title_text_rect.size.x = title_rect.size.x - title_height_ * 2 - 2;
   title_text_rect.size.y = title_rect.size.y;
 
-  text_title_->Rebuild(title_text_rect, vertex_buffer, index_buffer);
+  text_title_->Rebuild(title_text_rect, vertices, indices);
 
   SetDirty(false);
 }

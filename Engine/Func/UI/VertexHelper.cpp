@@ -6,21 +6,21 @@
 
 using namespace func::ui;
 
-void VertexHelper::AppendQuad(core::Array<platform::rhi::Vertex_UI> &vertex, core::Array<UInt32> &index,
+void VertexHelper::AppendQuad(core::ArrayProxy<platform::rhi::Vertex_UI> &vertex, core::ArrayProxy<UInt32> &index,
                               const platform::rhi::Vertex_UI &left_top, const platform::rhi::Vertex_UI &left_bottom,
                               const platform::rhi::Vertex_UI &right_top, const platform::rhi::Vertex_UI &right_bottom) {
-  vertex.push_back(left_top);
-  vertex.push_back(left_bottom);
-  vertex.push_back(right_top);
-  vertex.push_back(right_bottom);
+  vertex.Add(left_top);
+  vertex.Add(left_bottom);
+  vertex.Add(right_top);
+  vertex.Add(right_bottom);
 
-  UInt64 index_size = vertex.size();
-  index.push_back(index_size - 3);
-  index.push_back(index_size - 1);
-  index.push_back(index_size - 2);
-  index.push_back(index_size - 3);
-  index.push_back(index_size - 2);
-  index.push_back(index_size - 4);
+  UInt64 index_size = vertex.Size();
+  index.Add(index_size - 3);
+  index.Add(index_size - 1);
+  index.Add(index_size - 2);
+  index.Add(index_size - 3);
+  index.Add(index_size - 2);
+  index.Add(index_size - 4);
 }
 
 void VertexHelper::FillQuadUV(const core::Rect2D &uv_range, platform::rhi::Vertex_UI &left_top,

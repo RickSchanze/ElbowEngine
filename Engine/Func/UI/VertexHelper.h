@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Core/Base/ArrayProxy.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Platform/RHI/VertexLayout.h"
 
@@ -10,7 +11,7 @@ namespace func::ui {
 
 class VertexHelper {
 public:
-  static void AppendQuad(core::Array<platform::rhi::Vertex_UI> &vertex, core::Array<UInt32> &index,
+  static void AppendQuad(core::ArrayProxy<platform::rhi::Vertex_UI> &vertex, core::ArrayProxy<UInt32> &index,
                          const platform::rhi::Vertex_UI &left_top, const platform::rhi::Vertex_UI &left_bottom,
                          const platform::rhi::Vertex_UI &right_top, const platform::rhi::Vertex_UI &right_bottom);
 

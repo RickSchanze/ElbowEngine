@@ -6,7 +6,6 @@
 
 #include "Enums_Vulkan.h"
 #include "GfxContext_Vulkan.h"
-#include "Platform/PlatformLogcat.h"
 
 using namespace platform::rhi::vulkan;
 
@@ -20,37 +19,22 @@ Buffer_Vulkan::Buffer_Vulkan(const BufferDesc &info) : Buffer(info) {
 Buffer_Vulkan::~Buffer_Vulkan() {
   auto &ctx = *GetVulkanGfxContext();
   if (memory_ == nullptr) {
-    EndWrite();
+    EndWrite(nullptr);
   }
   ctx.FreeBufferMemory_VK(memory_);
   ctx.DestroyBuffer_VK(buffer_);
 }
 
-void Buffer_Vulkan::BeginWrite() {
+void *Buffer_Vulkan::BeginWrite() {
   auto &ctx = *GetVulkanGfxContext();
-  ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory_);
+  void *mapped_memory;
+  ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory);
+  return mapped_memory;
 }
 
-void Buffer_Vulkan::Write(const void *data, UInt64 size, UInt64 offset) {
-  if (mapped_memory_ == nullptr) {
-    LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "未映射内存, 请先调用BeginWrite");
-    return;
-  }
-  if (data == nullptr) {
-    LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "写入数据为空");
-    return;
-  }
-  if (offset + size > GetSize()) {
-    LOGGER.Error(logcat::Platform_RHI_Vulkan_Resource, "写入数据超出范围");
-    return;
-  }
-  memcpy((char *)mapped_memory_ + offset, data, size);
-}
-
-void Buffer_Vulkan::EndWrite() {
+void Buffer_Vulkan::EndWrite(void *a) {
   auto &ctx = *GetVulkanGfxContext();
   ctx.UnmapMemory_VK(memory_);
-  mapped_memory_ = nullptr;
 }
 
 void *Buffer_Vulkan::BeginRead() {
@@ -60,7 +44,7 @@ void *Buffer_Vulkan::BeginRead() {
   return data_mapped;
 }
 
-void Buffer_Vulkan::EndRead(void *) {
+void Buffer_Vulkan::EndRead() {
   auto &ctx = *GetVulkanGfxContext();
   ctx.UnmapMemory_VK(memory_);
 }

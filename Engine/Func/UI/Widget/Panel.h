@@ -25,20 +25,20 @@ class CLASS() Panel : public Widget {
 public:
   Panel();
 
-  void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
-               core::Array<UInt32> &index_buffer) override;
-  void Draw(platform::rhi::CommandBuffer &cmd) override;
-  core::Rect2DI GetBoundingRect() override;
-
-  Panel& SetMaterial(resource::Material* mat);
-  resource::Material* GetMaterial();
+  Panel &SetMaterial(resource::Material *mat);
+  resource::Material *GetMaterial();
 
   void SetWidth(UInt32 w);
   void SetHeight(UInt32 h);
+  core::Rect2DI GetBoundingRect() const;
+  void Draw(platform::rhi::CommandBuffer &cmd) override;
+  void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
+               core::ArrayProxy<UInt32> &indices) override;
 
 protected:
-  [[nodiscard]] core::Rect2DI GetDrawRect(const core::Rect2DI& target) const;
+  [[nodiscard]] core::Rect2DI GetDrawRect(const core::Rect2DI &target) const;
 
+protected:
   /// 背景图像, 应是一个TextureAtlas里的一部分
   PROPERTY()
   resource::Sprite sprite_;
@@ -56,7 +56,5 @@ protected:
 
   PROPERTY()
   core::Vector2I size_ = {100, 100};
-
-  UInt64 index_offset_ = 0;
 };
 } // namespace func::ui::widget

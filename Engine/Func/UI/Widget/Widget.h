@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "Core/Base/ArrayProxy.h"
 #include "Core/Math/MathTypes.h"
 #include "Core/Object/Object.h"
+#include "Platform/RHI/VertexLayout.h"
 
 #include GEN_HEADER("Func.Widget.generated.h")
 
@@ -18,9 +20,6 @@ namespace func::ui {
 class ISlotContainer;
 }
 namespace platform::rhi {
-struct Vertex_UI;
-}
-namespace platform::rhi {
 class Buffer;
 }
 namespace func::ui::widget {
@@ -31,23 +30,13 @@ public:
   Widget() : Object(core::ObjectFlagType::OFT_Widget) {}
 
   /**
-   * 重建此Widget的顶点和索引缓冲数据
-   */
-  virtual void Rebuild(core::Rect2DI target_rect, core::Array<platform::rhi::Vertex_UI> &vertex_buffer,
-                       core::Array<UInt32> &index_buffer) {
-    NoEntry();
-  }
-
-  /**
    * 调用绘制命令, 此时已经完成了顶点和索引缓冲数据的填充
    * @param cmd
    */
   virtual void Draw(platform::rhi::CommandBuffer &cmd) { NoEntry(); }
 
-  virtual core::Rect2DI GetBoundingRect() {
-    NoEntry();
-    return {};
-  }
+  virtual void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
+                       core::ArrayProxy<UInt32> &indices);
 
   void SetDirty(bool dirty = true);
   [[nodiscard]] bool IsDirty() const { return dirty_; }
@@ -58,8 +47,14 @@ public:
   void SetPadding(core::Vector4I padding);
 
 protected:
+  UInt64 GetIndexOffset() const { return index_offset_; }
+  UInt64 GetIndexSize() const { return index_size_; }
+
   // x: left, y: top, z: right, w: bottom
   core::Vector4I padding_{};
+
+  UInt64 index_offset_ = 0;
+  UInt64 index_size_ = 0;
 
   bool dirty_ = true;
   bool visible_ = true;

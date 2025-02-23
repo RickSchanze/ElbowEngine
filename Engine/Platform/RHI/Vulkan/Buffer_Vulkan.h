@@ -17,16 +17,14 @@ public:
 
   [[nodiscard]] void *GetNativeHandle() const override { return buffer_; }
 
-  void BeginWrite() override;
-  void Write(const void *data, UInt64 size, UInt64 offset) override;
+  void* BeginWrite() override;
   void EndWrite() override;
 
   void *BeginRead() override;
-  void EndRead(void *) override;
+  void EndRead() override;
 
 private:
   VkBuffer buffer_ = VK_NULL_HANDLE;
   VkDeviceMemory memory_ = VK_NULL_HANDLE;
-  void *mapped_memory_ = nullptr;
 };
 } // namespace platform::rhi::vulkan
