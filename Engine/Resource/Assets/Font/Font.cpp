@@ -157,7 +157,7 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
   FT_Bitmap &bitmap = slot->bitmap;
   if (cursor_.x + bitmap.width >= font_atlas_width_) {
     cursor_.x = 0;
-    cursor_.y += bitmap.rows;
+    cursor_.y += bitmap.rows + 1;
   }
   if (cursor_.y + bitmap.rows >= font_atlas_height_) {
     LOGGER.Error("Resource.Load.Font", "字体{}的字体图集不够大.", path_);
@@ -174,17 +174,16 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
                                       {cursor_.x, cursor_.y, 0}, {bitmap.width, bitmap.rows, 1});
   // 保存此字符的信息
   GlyphInfo info{};
-  // 半像素校正UV
-  info.uv_x_lt = static_cast<Float>(cursor_.x + 0.5) / static_cast<Float>(font_atlas_width_);
-  info.uv_y_lt = static_cast<Float>(cursor_.y + 0.5) / static_cast<Float>(font_atlas_height_);
-  info.uv_x_rb = static_cast<Float>(cursor_.x + bitmap.width - 1) / static_cast<Float>(font_atlas_width_);
-  info.uv_y_rb = static_cast<Float>(cursor_.y + bitmap.rows - 1) / static_cast<Float>(font_atlas_height_);
+  info.uv_x_lt = static_cast<Float>(cursor_.x) / static_cast<Float>(font_atlas_width_);
+  info.uv_y_lt = static_cast<Float>(cursor_.y) / static_cast<Float>(font_atlas_height_);
+  info.uv_x_rb = static_cast<Float>(cursor_.x + bitmap.width) / static_cast<Float>(font_atlas_width_);
+  info.uv_y_rb = static_cast<Float>(cursor_.y + bitmap.rows) / static_cast<Float>(font_atlas_height_);
   info.advance_x = slot->advance.x >> 6;
   info.bearing_x = slot->metrics.horiBearingX >> 6;
   info.bearing_y = slot->metrics.horiBearingY >> 6;
   info.width = bitmap.width;
   info.height = bitmap.rows;
-  cursor_.x += bitmap.width;
+  cursor_.x += bitmap.width + 1;
   glyphs_[code_point] = info;
 }
 
