@@ -9,7 +9,6 @@
 #include "Core/Math/Math.h"
 #include "FontMeta.h"
 #include "Platform/FileSystem/File.h"
-#include "Platform/RHI/Image.h"
 #include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Texture/Texture2D.h"
 #include "Resource/Assets/Texture/Texture2DMeta.h"

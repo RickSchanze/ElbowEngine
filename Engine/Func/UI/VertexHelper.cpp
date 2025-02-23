@@ -38,3 +38,12 @@ void VertexHelper::FillQuadUV(const core::Rect2D &uv_range, platform::rhi::Verte
   right_bottom.uv.x = uv_range.position.x + uv_range.size.x;
   right_bottom.uv.y = uv_range.position.y + uv_range.size.y;
 }
+
+void VertexHelper::SetQuadColor(const core::Color &color, platform::rhi::Vertex_UI &left_top,
+                                platform::rhi::Vertex_UI &left_bottom, platform::rhi::Vertex_UI &right_top,
+                                platform::rhi::Vertex_UI &right_bottom) {
+  left_top.color = color;
+  left_bottom.color = color;
+  right_top.color = color;
+  right_bottom.color = color;
+}

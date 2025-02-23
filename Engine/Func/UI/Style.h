@@ -10,5 +10,9 @@ class Colors {
 public:
   static core::Color PanelBackground();
   static core::Color TitleBackground();
+  static core::Color UIIconColor();
 };
-}
+
+Float GetGlobalScale();
+void SetGlobalScale(Float scale);
+} // namespace func::ui::Style

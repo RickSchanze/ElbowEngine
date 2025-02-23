@@ -55,10 +55,22 @@ core::Rect2D Sprite::GetUVRange() {
     LOGGER.Error("Resource.Sprite", "GetUVRange: 纹理获取失败!");
     return {};
   }
+  return GetUVRange(tex, id_);
+}
+
+Sprite Sprite::GetUIWhiteSprite() {
+  Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
+  Sprite range = {tex, func::ui::IconID::Name_White()};
+  return range;
+}
+
+core::Rect2D Sprite::GetUVRange(Texture2D *tex, UInt64 id) {
+  if (!tex)
+    return {};
   // 半像素校正:
   // https://learn.microsoft.com/zh-cn/windows/win32/direct3d9/directly-mapping-texels-to-pixels?redirectedfrom=MSDN
   // https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas?newreg=0dbdf79fa0214a718ac7cd38488c56df
-  core::Rect2D rect = tex->GetSpriteRange(id_).range;
+  core::Rect2D rect = tex->GetSpriteRange(id).range;
   rect.position += 0.5;
   rect.size.x -= 1;
   rect.size.y -= 1;
@@ -71,8 +83,4 @@ core::Rect2D Sprite::GetUVRange() {
   return rect;
 }
 
-Sprite Sprite::GetUIWhiteSprite() {
-  Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
-  Sprite range = {tex, func::ui::IconID::Name_White()};
-  return range;
-}
+core::Rect2D Sprite::GetUVRange(Texture2D *tex, core::StringView name) { return GetUVRange(tex, name.GetHashCode()); }

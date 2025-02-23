@@ -9,6 +9,8 @@
 
 #include GEN_HEADER("Func.Widget.generated.h")
 
+#define APPLY_SCALE(x) (x) * ::func::ui::Style::GetGlobalScale()
+
 namespace platform::rhi {
 class CommandBuffer;
 }

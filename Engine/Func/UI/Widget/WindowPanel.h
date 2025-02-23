@@ -28,9 +28,9 @@ protected:
   core::ObjectPtr<Text> title_;
 
   PROPERTY()
-  Int32 title_height_ = 32;
+  Int32 title_height_ = 20;
 
-  Bool expanded = true;
+  Bool expanded_ = true;
 
   UInt64 index_size_ = 0;
 };

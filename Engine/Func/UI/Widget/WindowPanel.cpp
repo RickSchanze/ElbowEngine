@@ -18,6 +18,7 @@
 #include "Text.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
+#include "Func/UI/IconID.h"
 GENERATED_SOURCE()
 
 using namespace func;
@@ -34,14 +35,16 @@ WindowPanel::WindowPanel() {
   title_->SetText("新窗口");
   title_->SetFont(Font::GetDefaultFont());
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
-  title_->SetFontSize(28);
+  title_->SetFontSize(APPLY_SCALE(title_height_));
   title_->SetColor(Color::White());
-  SetWidth(800);
-  SetHeight(600);
+  SetWidth(APPLY_SCALE(800));
+  SetHeight(APPLY_SCALE(600));
   SetName("窗口");
 }
 
 void WindowPanel::Draw(CommandBuffer &cmd) {
+  if (index_size_ == 0)
+    return;
   Material *mat = material_;
   if (mat == nullptr) {
     LOGGER.Error("Func.UI.Panel", "Draw: Panel材质不存在, 使用默认");
@@ -57,6 +60,12 @@ void WindowPanel::Draw(CommandBuffer &cmd) {
 }
 
 void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<UInt32> &index_buffer) {
+  Texture2D *ui_atlas = material_->GetParam_Texture2D("atlas");
+  if (ui_atlas == nullptr) {
+    index_size_ = 0;
+    LOGGER.Error("Func.UI.WindowPanel", "Rebuild: 窗口材质中没有atlas");
+    return;
+  }
   UInt64 index_buffer_size = index_buffer.size();
   // 分两部分, 标题和内容
   // 绘制标题, 其大小根据内容调整
@@ -69,49 +78,80 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
   title_rect.position = {draw_rect.position.x, draw_rect.size.y - title_height_};
   title_rect.size.x = draw_rect.size.x;
   title_rect.size.y = title_height_;
-  Color title_bg_color = Style::Colors::TitleBackground();
   Vertex_UI left_top{};
   left_top.position = title_rect.LeftTop() | ToVector2;
-  left_top.color = title_bg_color;
 
   Vertex_UI left_bottom{};
   left_bottom.position = title_rect.LeftBottom() | ToVector2;
-  left_bottom.color = title_bg_color;
 
   Vertex_UI right_top{};
   right_top.position = title_rect.RightTop() | ToVector2;
-  right_top.color = title_bg_color;
 
   Vertex_UI right_bottom{};
   right_bottom.position = title_rect.RightBottom() | ToVector2;
-  right_bottom.color = title_bg_color;
 
+  VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
 
+  // 展开Icon的四个顶点, 以及关闭Icon的四个顶点
+  core::Rect2D expanded_range = Sprite::GetUVRange(ui_atlas, expanded_ ? IconID::Expanded() : IconID::Folded());
+  left_top.position.x = title_rect.position.x + 1;
+  left_top.position.y = title_rect.position.y + title_height_ - 1;
+
+  left_bottom.position.x = title_rect.position.x + 1;
+  left_bottom.position.y = title_rect.position.y + 1;
+
+  right_top.position.x = title_rect.position.x + title_height_ - 1;
+  right_top.position.y = title_rect.position.y + title_height_ - 1;
+
+  right_bottom.position.x = title_rect.position.x + title_height_ - 1;
+  right_bottom.position.y = title_rect.position.y + 1;
+
+  VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
+
+  // 关闭图标的四个顶点
+  core::Rect2D close_range = Sprite::GetUVRange(ui_atlas, IconID::Close());
+  left_top.position.x = title_rect.size.x - title_height_ + 1;
+  left_top.position.y = title_rect.position.y + title_height_ - 1;
+
+  left_bottom.position.x = title_rect.size.x - title_height_ + 1;
+  left_bottom.position.y = title_rect.position.y + 1;
+
+  right_top.position.x = title_rect.size.x - 1;
+  right_top.position.y = title_rect.position.y + title_height_ - 1;
+
+  right_bottom.position.x = title_rect.size.x - 1;
+  right_bottom.position.y = title_rect.position.y + 1;
+
+  VertexHelper::FillQuadUV(close_range, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
+
   // 内容的四个顶点
-  Color content_bg_color = Style::Colors::PanelBackground();
   Rect2DI context_rect{};
   context_rect.position = draw_rect.LeftBottom();
   context_rect.size.x = draw_rect.size.x;
   context_rect.size.y = draw_rect.size.y - title_rect.size.y;
 
   left_top.position = context_rect.LeftTop() | ToVector2;
-  left_top.color = content_bg_color;
-
   left_bottom.position = context_rect.LeftBottom() | ToVector2;
-  left_bottom.color = content_bg_color;
-
   right_top.position = context_rect.RightTop() | ToVector2;
-  right_top.color = content_bg_color;
-
   right_bottom.position = context_rect.RightBottom() | ToVector2;
-  right_bottom.color = content_bg_color;
 
+  VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::AppendQuad(vertex_buffer, index_buffer, left_top, left_bottom, right_top, right_bottom);
   index_size_ = index_buffer.size() - index_buffer_size;
 
-  text_title_->Rebuild(title_rect, vertex_buffer, index_buffer);
+  Rect2DI title_text_rect;
+  title_text_rect.position.x = title_rect.position.x + title_height_ + 1;
+  title_text_rect.position.y = title_rect.position.y;
+  title_text_rect.size.x = title_rect.size.x - title_height_ * 2 - 2;
+  title_text_rect.size.y = title_rect.size.y;
+
+  text_title_->Rebuild(title_text_rect, vertex_buffer, index_buffer);
 
   SetDirty(false);
 }
