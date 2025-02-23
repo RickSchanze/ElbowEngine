@@ -72,8 +72,9 @@ Text &Text::SetFontMaterial(const Material *mat) {
 }
 
 Text &Text::SetColor(core::Color color) {
-  if (Material *mat = font_material_) {
-    mat->SetFloat4("params.color", color.ToVector4());
+  if (font_color_ != color) {
+    font_color_ = color;
+    SetDirty();
   }
   return *this;
 }
@@ -142,24 +143,28 @@ void Text::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, Array<U
     left_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
     left_top.uv.x = glyph.uv_x_lt;
     left_top.uv.y = glyph.uv_y_lt;
+    left_top.color = font_color_;
 
     Vertex_UI left_bottom{};
     left_bottom.position.x = cur_pos_x + glyph.bearing_x * font_scale;
     left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
     left_bottom.uv.x = glyph.uv_x_lt;
     left_bottom.uv.y = glyph.uv_y_rb;
+    left_bottom.color = font_color_;
 
     Vertex_UI right_top{};
     right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
     right_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
     right_top.uv.x = glyph.uv_x_rb;
     right_top.uv.y = glyph.uv_y_lt;
+    right_top.color = font_color_;
 
     Vertex_UI right_bottom{};
     right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
     right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
     right_bottom.uv.x = glyph.uv_x_rb;
     right_bottom.uv.y = glyph.uv_y_rb;
+    right_bottom.color = font_color_;
 
     vertex_buffer.push_back(left_top);
     vertex_buffer.push_back(left_bottom);

@@ -8,6 +8,7 @@
 import CommonStructure;
 import Utility;
 import Annotations;
+import ColorCorrection;
 
 uniform Texture2D atlas;
 uniform SamplerState common_sampler;
@@ -31,27 +32,13 @@ VertexOutput vert(VertexUI vert) {
   return output;
 }
 
-// 单个通道的反伽马校正
-float GammaToLinear(float srgb) {
-  const float cutoff = 0.04045;
-  const float a = 0.055;
 
-  return (srgb <= cutoff) ? (srgb / 12.92) : pow((srgb + a) / (1.0 + a), 2.4);
-}
-
-float3 GammaToLinear(float3 srgb) {
-  const float cutoff = 0.04045;
-  const float a = 0.055;
-
-  float3 linear = srgb / 12.92;
-  float3 exponent = pow((srgb + a) / (1.0 + a), 2.4);
-  return lerp(linear, exponent, step(cutoff, srgb));
-}
 
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
   FragOutput output;
   output.color = atlas.Sample(common_sampler, input.uv);
   output.color *= input.color;
+  output.color.rgb = GammaToLinear(output.color.rgb);
   return output;
 }

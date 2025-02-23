@@ -34,7 +34,8 @@ WindowPanel::WindowPanel() {
   title_->SetText("新窗口");
   title_->SetFont(Font::GetDefaultFont());
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
-  title_->SetFontSize(16);
+  title_->SetFontSize(28);
+  title_->SetColor(Color::White());
   SetWidth(800);
   SetHeight(600);
   SetName("窗口");
@@ -68,7 +69,7 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
   title_rect.position = {draw_rect.position.x, draw_rect.size.y - title_height_};
   title_rect.size.x = draw_rect.size.x;
   title_rect.size.y = title_height_;
-  Color title_bg_color = Style::Colors::TitleBackgroundColor();
+  Color title_bg_color = Style::Colors::TitleBackground();
   Vertex_UI left_top{};
   left_top.position = title_rect.LeftTop() | ToVector2;
   left_top.color = title_bg_color;

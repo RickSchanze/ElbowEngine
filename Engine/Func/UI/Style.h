@@ -9,6 +9,6 @@ namespace func::ui::Style {
 class Colors {
 public:
   static core::Color PanelBackground();
-  static core::Color TitleBackgroundColor();
+  static core::Color TitleBackground();
 };
 }
