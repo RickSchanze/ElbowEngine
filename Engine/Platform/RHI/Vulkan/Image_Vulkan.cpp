@@ -114,11 +114,12 @@ vulkan::Sampler_Vulkan::Sampler_Vulkan(const SamplerDesc &desc) {
   sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   sampler_info.magFilter = RHIFilterToVkFilter(desc.mag);
   sampler_info.minFilter = RHIFilterToVkFilter(desc.min);
+  sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
   sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
   sampler_info.addressModeU = RHISamplerAddressModeToVkSamplerAddressMode(desc.u);
   sampler_info.addressModeV = RHISamplerAddressModeToVkSamplerAddressMode(desc.v);
   sampler_info.addressModeW = RHISamplerAddressModeToVkSamplerAddressMode(desc.w);
-  sampler_info.anisotropyEnable = desc.enable_anisotropy;
+  sampler_info.anisotropyEnable = false;
   sampler_info.maxAnisotropy = desc.max_anisotropy;
   sampler_info.unnormalizedCoordinates = desc.unnormalized_coordinates;
   sampler_info.compareEnable = VK_FALSE;

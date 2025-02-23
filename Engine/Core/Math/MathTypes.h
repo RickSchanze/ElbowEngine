@@ -60,6 +60,7 @@ struct STRUCT() Vector2 {
   Vector2 operator*(float x) const;
   Vector2 operator/(float scalar) const;
   Vector2 operator-(const Float other) const;
+  Vector2 &operator+=(const Float other);
 
   PROPERTY()
   float x;
@@ -166,6 +167,8 @@ public:
 
   PROPERTY()
   Vector2I size = {};
+
+  operator Rect2D() const { return {{position.x, position.y}, {size.x, size.y}}; }
 
   Vector2I LeftTop() const;
   Vector2I RightTop() const;

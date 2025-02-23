@@ -55,7 +55,20 @@ core::Rect2D Sprite::GetUVRange() {
     LOGGER.Error("Resource.Sprite", "GetUVRange: 纹理获取失败!");
     return {};
   }
-  return tex->GetSpriteRange(id_).range / core::Vector2I{tex->GetWidth(), tex->GetHeight()};
+  // 半像素校正:
+  // https://learn.microsoft.com/zh-cn/windows/win32/direct3d9/directly-mapping-texels-to-pixels?redirectedfrom=MSDN
+  // https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas?newreg=0dbdf79fa0214a718ac7cd38488c56df
+  core::Rect2D rect = tex->GetSpriteRange(id_).range;
+  rect.position += 0.5;
+  rect.size.x -= 1;
+  rect.size.y -= 1;
+  Float w = (Float)tex->GetWidth();
+  Float h = (Float)tex->GetHeight();
+  rect.position.x /= w;
+  rect.position.y /= h;
+  rect.size.x /= w;
+  rect.size.y /= h;
+  return rect;
 }
 
 Sprite Sprite::GetUIWhiteSprite() {

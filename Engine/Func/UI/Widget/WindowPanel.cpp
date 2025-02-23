@@ -63,10 +63,6 @@ void WindowPanel::Rebuild(Rect2DI target_rect, Array<Vertex_UI> &vertex_buffer, 
   Text *text_title_ = title_;
   Sprite white_range = Sprite::GetUIWhiteSprite();
   Rect2D white_uv_range = white_range.GetUVRange();
-  white_uv_range.position.x = 0.03126;
-  white_uv_range.position.y = 0;
-  white_uv_range.size.x = 0.0001;
-  white_uv_range.size.y = 0.0001;
   // 标题栏的四个顶点
   Rect2DI title_rect{};
   title_rect.position = {draw_rect.position.x, draw_rect.size.y - title_height_};

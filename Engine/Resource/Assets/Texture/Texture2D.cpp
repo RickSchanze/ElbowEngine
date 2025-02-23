@@ -82,7 +82,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
       stbi_image_free(pixels);
       return;
     }
-    Format format = Format::R8G8B8A8_UNorm;
+    Format format = meta.format;
     ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format,
                    ImageDimension::D2};
     String debug_name = String::Format("Texture2D_{}", path);
