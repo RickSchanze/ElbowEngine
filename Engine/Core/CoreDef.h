@@ -1,6 +1,6 @@
 /**
-* 一些重要的定义
-*/
+ * 一些重要的定义
+ */
 #pragma once
 #include "Core/Base/CoreTypeDef.h"
 #include "Features.h"
@@ -15,22 +15,19 @@
 #define OUT
 
 // 这个宏表示这个方法必须由子类实现
-#define INTERFACE_METHOD \
-    {                    \
-    }
+#define INTERFACE_METHOD                                                                                               \
+  {                                                                                                                    \
+  }
 
 #define _CRT_SECURE_NO_WARNINGS
 
 // 项目Debug宏
 #define ELBOW_DEBUG _DEBUG || RELWITHDEBINFO
 
-#define U8(Text) (const char*)u8##Text
+#define U8(Text) (const char *)u8##Text
 
-#define INTERFACE_IMPL(type)                                     \
-    RTTR_REGISTRATION                                            \
-    {                                                            \
-        rttr::registration::class_<type>(#type).constructor<>(); \
-    }
+#define INTERFACE_IMPL(type)                                                                                           \
+  RTTR_REGISTRATION { rttr::registration::class_<type>(#type).constructor<>(); }
 
 #define DEBUG_BREAK() __debugbreak()
 
@@ -54,6 +51,17 @@
 #define PLATFORM_ANDROID
 #else
 #error "Unknown platform"
+#endif
+
+#define BREAKABLE_SCOPE                                                                                                \
+  for (int BREAKABLE_SCOPE_VARIABLE__ = 0; BREAKABLE_SCOPE_VARIABLE__ < 1; BREAKABLE_SCOPE_VARIABLE__++)
+
+#if ELBOW_DEBUG
+#define DEBUG_ONLY(x) x
+#define DEBUG_ONLY_PARAM(x) , x
+#else
+#define DEBUG_ONLY(x)
+#define DEBUG_ONLY_PARAM(x)
 #endif
 
 bool ValidateFeatureState();

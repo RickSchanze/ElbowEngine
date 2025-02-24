@@ -12,6 +12,7 @@ namespace core::range {
 inline constexpr auto AnyOf = ranges::any_of;
 inline constexpr auto Contains = ranges::contains;
 inline constexpr auto Remove = ranges::remove;
+inline constexpr auto Sort = ranges::sort;
 } // namespace core::range
 
 namespace core::range::view {
@@ -21,6 +22,7 @@ inline constexpr auto Transform = ranges::views::transform;
 inline constexpr auto Enumerate = ranges::views::enumerate;
 inline constexpr auto RemoveIf = ranges::views::remove_if;
 inline constexpr auto Keys = ranges::views::keys;
+inline constexpr auto Values = ranges::views::values;
 } // namespace core::range::view
 
 namespace core::range::action {

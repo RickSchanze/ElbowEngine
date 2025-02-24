@@ -26,7 +26,8 @@ void func::BindAndDrawMesh(CommandBuffer &cmd, Mesh *mesh) {
   cmd.Enqueue<Cmd_BindVertexBuffer>(storage.vertex_buffer);
   cmd.Enqueue<Cmd_BindVertexBuffer>(GlobalObjectInstancedDataBuffer::GetBuffer(), 0, 1);
   cmd.Enqueue<Cmd_BindIndexBuffer>(storage.index_buffer);
-  cmd.Enqueue<Cmd_DrawIndexed>(storage.index_count);
+  cmd.Enqueue<Cmd_DrawIndexed>(storage.index_count, 1,
+                               0 DEBUG_ONLY_PARAM(String::Format("MeshDraw: {}", mesh->GetName())));
 }
 
 void func::BindMaterial(CommandBuffer &cmd, Material *mat) {

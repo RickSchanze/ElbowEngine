@@ -32,8 +32,7 @@ public:
   void SetHeight(UInt32 h);
   core::Rect2DI GetBoundingRect() const;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
-  void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
-               core::ArrayProxy<UInt32> &indices) override;
+  void Rebuild(core::Rect2DI draw_rect) override;
 
 protected:
   [[nodiscard]] core::Rect2DI GetDrawRect(const core::Rect2DI &target) const;

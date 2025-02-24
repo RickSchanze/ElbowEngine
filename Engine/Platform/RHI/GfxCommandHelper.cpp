@@ -45,8 +45,8 @@ void GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, uint32
   auto &ctx = GetGfxContextRef();
   BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
   auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
-  staging_buffer->BeginWrite();
-  staging_buffer->Write(data, size);
+  void *mapped_data = staging_buffer->BeginWrite();
+  memcpy(mapped_data, data, size);
   staging_buffer->EndWrite();
   auto cmd = BeginSingleTransferCommand();
   cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), target);
@@ -59,8 +59,8 @@ void GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32
   auto &ctx = GetGfxContextRef();
   BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
   auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
-  staging_buffer->BeginWrite();
-  staging_buffer->Write(data, size);
+  void* mapped_data = staging_buffer->BeginWrite();
+  memcpy(mapped_data, data, size);
   staging_buffer->EndWrite();
   // 执行图像布局变换
   ImageSubresourceRange range{};

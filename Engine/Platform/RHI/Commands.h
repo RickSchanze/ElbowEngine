@@ -83,8 +83,13 @@ struct Cmd_DrawIndexed final : RHICommand {
   uint32_t index_count = 0;
   uint32_t instance_count = 0;
   UInt32 first_index = 0;
-  explicit Cmd_DrawIndexed(uint32_t index_count_, uint32_t instance_count_ = 1, UInt32 first_index_ = 0)
-      : index_count(index_count_), instance_count(instance_count_), first_index(first_index_) {}
+
+  DEBUG_ONLY(core::String debug_name_ = nullptr);
+
+  explicit Cmd_DrawIndexed(uint32_t index_count_, uint32_t instance_count_ = 1,
+                           UInt32 first_index_ = 0 DEBUG_ONLY_PARAM(const core::String &debug_name = ""))
+      : index_count(index_count_), instance_count(instance_count_),
+        first_index(first_index_) DEBUG_ONLY_PARAM(debug_name_(debug_name)) {}
 };
 
 struct Cmd_BindPipeline final : RHICommand {

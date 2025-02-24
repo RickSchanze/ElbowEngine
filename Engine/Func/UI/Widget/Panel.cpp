@@ -14,6 +14,7 @@
 #include "Func/Render/Misc.h"
 #include "Func/UI/IconID.h"
 #include "Func/UI/Style.h"
+#include "Func/UI/UIManager.h"
 #include "Func/UI/VertexHelper.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -47,13 +48,13 @@ void Panel::Draw(CommandBuffer &cmd) {
   cmd.Enqueue<Cmd_DrawIndexed>(6, 1, index_offset_);
 }
 
-void Panel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProxy<UInt32> &indices) {
+void Panel::Rebuild(Rect2DI draw_rect) {
   if (!IsDirty()) {
     return;
   }
+  VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), 4, 6);
   Vector4I padding = GetPadding();
   auto uv_range = sprite_.GetUVRange();
-  index_offset_ = indices.Size();
   Vertex_UI left_top{};
   left_top.position.x = draw_rect.position.x + position_.x + ExtractPaddingLeft(padding);
   left_top.position.y = draw_rect.position.y + position_.y + size_.y + ExtractPaddingTop(padding);
@@ -72,8 +73,10 @@ void Panel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayPro
 
   VertexHelper::FillQuadUV(uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
-  index_size_ = indices.Size() - index_offset_;
+  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  index_size_ = 6;
+  index_offset_ = data.index_offset;
+  VertexHelper::TransformPosToNDCSpace(data.vertices);
   SetDirty(false);
 }
 

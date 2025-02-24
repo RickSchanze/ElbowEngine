@@ -44,7 +44,7 @@ void Material::SetFloat3(UInt64 name_hash, const core::Vector3 &value) const {
     return;
   }
   UInt32 offset = uniform_offsets.at(name_hash).offset;
-  buffer_->WriteType(value, offset);
+  memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Vector3));
 }
 
 void Material::SetFloat4(const core::String &name, const core::Vector4 &value) const {
@@ -61,7 +61,7 @@ void Material::SetFloat4(UInt64 name_hash, const core::Vector4 &value) const {
     return;
   }
   UInt32 offset = uniform_offsets.at(name_hash).offset;
-  buffer_->WriteType(value, offset);
+  memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Vector3));
 }
 
 bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
@@ -172,13 +172,14 @@ void Material::Build() {
   }
   // TODO: Sampler的更新
   if (buffer_) {
-    buffer_->BeginWrite();
+    mapped_buffer_memory_ = (UInt8 *)buffer_->BeginWrite();
   }
 }
 
 void Material::Clean() {
   if (buffer_) {
     buffer_->EndWrite();
+    mapped_buffer_memory_ = nullptr;
   }
   buffer_ = nullptr;
   descriptor_set_ = nullptr;

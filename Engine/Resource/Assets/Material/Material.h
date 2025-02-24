@@ -66,6 +66,8 @@ protected:
   // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
   core::SharedPtr<platform::rhi::Buffer> buffer_;
 
+  UInt8* mapped_buffer_memory_ = nullptr;
+
   core::SharedPtr<platform::rhi::DescriptorSet> descriptor_set_;
 
   core::SharedPtr<SharedMaterial> shared_material_;

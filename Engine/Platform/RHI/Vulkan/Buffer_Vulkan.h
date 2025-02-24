@@ -17,10 +17,10 @@ public:
 
   [[nodiscard]] void *GetNativeHandle() const override { return buffer_; }
 
-  void* BeginWrite() override;
+  UInt8* BeginWrite() override;
   void EndWrite() override;
 
-  void *BeginRead() override;
+  UInt8 *BeginRead() override;
   void EndRead() override;
 
 private:

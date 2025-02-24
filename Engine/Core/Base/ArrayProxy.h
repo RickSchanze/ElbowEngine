@@ -15,6 +15,7 @@ template <typename T>
   requires std::is_trivially_copyable_v<T>
 class ArrayProxy {
 public:
+  ArrayProxy() : ptr_(0), preserved_size_(0), size_(0) {}
   ArrayProxy(T *ptr, UInt64 preserved_size, UInt64 size = 0)
       : ptr_(ptr), preserved_size_(preserved_size), size_(size) {}
 

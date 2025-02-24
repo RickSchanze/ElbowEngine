@@ -22,6 +22,8 @@ public:
   static void SetQuadColor(const core::Color &color, platform::rhi::Vertex_UI &left_top,
                            platform::rhi::Vertex_UI &left_bottom, platform::rhi::Vertex_UI &right_top,
                            platform::rhi::Vertex_UI &right_bottom);
+
+  static void TransformPosToNDCSpace(const core::ArrayProxy<platform::rhi::Vertex_UI>& target);
 };
 
 } // namespace func::ui

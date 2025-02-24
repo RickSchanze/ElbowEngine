@@ -39,7 +39,6 @@ private:
   resource::Material* material_ = nullptr;
   core::SharedPtr<RenderTexture> depth_target_;
   resource::Mesh *mesh_ = nullptr;
-  ui::Overlay *test_text_ = nullptr;
   bool ready_ = false;
 };
 

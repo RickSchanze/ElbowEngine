@@ -6,6 +6,8 @@
 
 #include "Core/Math/Math.h"
 #include "Func/Render/Misc.h"
+#include "Func/UI/UIManager.h"
+#include "Func/UI/VertexHelper.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/VertexLayout.h"
@@ -118,10 +120,11 @@ void Text::Draw(CommandBuffer &cmd) {
     return;
   }
   BindMaterial(cmd, mat);
-  cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_);
+  cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1,
+                               index_offset_ DEBUG_ONLY_PARAM(String::Format("Draw Text: {}", GetText())));
 }
 
-void Text::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProxy<UInt32> &indices) {
+void Text::Rebuild(Rect2DI draw_rect) {
   if (!IsDirty()) {
     return;
   }
@@ -130,8 +133,11 @@ void Text::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProx
   Vector2I rt = TopRight(draw_rect);
   UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
+  size_t vert_size = size * 4;
+  size_t index_size = size * 6;
+  VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), vert_size, index_size);
   Vector4I padding = GetPadding();
-  index_offset_ = indices.Size();
+  index_offset_ = data.index_offset;
   UInt32 cur_pos_x = bl.x + padding.x;
   UInt32 cur_pos_y = bl.y + base_line_ + padding.w;
 
@@ -178,21 +184,22 @@ void Text::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProx
     right_bottom.uv.y = glyph.uv_y_rb;
     right_bottom.color = font_color_;
 
-    vertices.Add(left_top);
-    vertices.Add(left_bottom);
-    vertices.Add(right_top);
-    vertices.Add(right_bottom);
+    data.vertices.Add(left_top);
+    data.vertices.Add(left_bottom);
+    data.vertices.Add(right_top);
+    data.vertices.Add(right_bottom);
 
-    UInt64 index_size = vertices.Size();
-    indices.Add(index_size - 3);
-    indices.Add(index_size - 1);
-    indices.Add(index_size - 2);
-    indices.Add(index_size - 3);
-    indices.Add(index_size - 2);
-    indices.Add(index_size - 4);
+    UInt64 index_size = data.vertices.Size();
+    data.indices.Add(index_size - 3);
+    data.indices.Add(index_size - 1);
+    data.indices.Add(index_size - 2);
+    data.indices.Add(index_size - 3);
+    data.indices.Add(index_size - 2);
+    data.indices.Add(index_size - 4);
     index_size_ += 6;
 
     cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);
   }
+  VertexHelper::TransformPosToNDCSpace(data.vertices);
   SetDirty(false);
 }

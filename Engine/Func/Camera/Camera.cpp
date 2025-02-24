@@ -22,15 +22,18 @@ void Camera::Tick(Millisecond delta_time) {
   }
 }
 
-void Camera::UpdateViewBuffer(const CameraShaderData &data) { view_buffer_->Write(&data, sizeof(data)); }
+void Camera::UpdateViewBuffer(const CameraShaderData &data) {
+  memcpy(GetByRef().mapped_view_buffer_memory_, &data, sizeof(CameraShaderData));
+}
 
 void Camera::Startup() {
   BufferDesc buffer_desc{sizeof(CameraShaderData), BUB_UniformBuffer, BMPB_HostCoherent | BMPB_HostVisible};
   view_buffer_ = GetGfxContext()->CreateBuffer(buffer_desc, "CameraViewBuffer");
-  view_buffer_->BeginWrite();
+  mapped_view_buffer_memory_ = view_buffer_->BeginWrite();
 }
 
 void Camera::Shutdown() {
   view_buffer_->EndWrite();
   view_buffer_ = nullptr;
+  mapped_view_buffer_memory_ = nullptr;
 }

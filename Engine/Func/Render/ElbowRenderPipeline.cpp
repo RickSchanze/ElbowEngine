@@ -6,7 +6,7 @@
 
 #include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
-#include "Func/UI/Overlay.h"
+#include "Func/UI/UIManager.h"
 #include "Func/UI/Widget/Panel.h"
 #include "Func/UI/Widget/WindowPanel.h"
 #include "Misc.h"
@@ -17,7 +17,6 @@
 #include "RenderContext.h"
 #include "RenderTexture.h"
 #include "Resource/AssetDataBase.h"
-#include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Mesh/Mesh.h"
 
 using namespace resource;
@@ -60,7 +59,7 @@ void func::ElbowRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
   cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
   BindMaterial(cmd, material_);
   BindAndDrawMesh(cmd, mesh_);
-  test_text_->Draw(cmd);
+  ui::UIManager::Draw(cmd);
   cmd.Enqueue<Cmd_EndRender>();
   cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range,
                                         AFB_ColorAttachmentWrite, 0, PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
@@ -81,15 +80,13 @@ void func::ElbowRenderPipeline::Build() {
     auto obj_mat = ObjectManager::CreateNewObjectAsync<Material>()->GetValue().GetValue() | First;
     obj_mat->SetShader(obj_shader_obj);
     this->material_ = obj_mat;
-    this->test_text_ = ObjectManager::CreateNewObject<ui::Overlay>();
     auto panel_widget = ObjectManager::CreateNewObject<ui::widget::WindowPanel>();
     auto panel_mat = ObjectManager::CreateNewObject<Material>();
     auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
     panel_mat->SetShader(ui_shader_obj);
     panel_mat->SetTexture2D("atlas", ui_atlas_png);
     panel_widget->SetMaterial(panel_mat);
-    this->test_text_->SetSlot(panel_widget).SetSize(core::Vector2(1920, 1080));
-    this->ready_ = material_ && mesh_ && test_text_;
+    this->ready_ = material_ && mesh_;
   });
   depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }

@@ -4,6 +4,10 @@
 
 #include "VertexHelper.h"
 
+#include "Core/Math/MathPipe.h"
+#include "UIManager.h"
+#include "UIMath.h"
+
 using namespace func::ui;
 
 void VertexHelper::AppendQuad(core::ArrayProxy<platform::rhi::Vertex_UI> &vertex, core::ArrayProxy<UInt32> &index,
@@ -46,4 +50,11 @@ void VertexHelper::SetQuadColor(const core::Color &color, platform::rhi::Vertex_
   left_bottom.color = color;
   right_top.color = color;
   right_bottom.color = color;
+}
+
+void VertexHelper::TransformPosToNDCSpace(const core::ArrayProxy<platform::rhi::Vertex_UI> &target) {
+  Int32 width = UIManager::GetGlobalUIWidth(), height = UIManager::GetGlobalUIHeight();
+  for (UInt64 i = 0; i < target.Size(); ++i) {
+    target[i].position = target[i].position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
+  }
 }

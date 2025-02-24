@@ -19,29 +19,29 @@ Buffer_Vulkan::Buffer_Vulkan(const BufferDesc &info) : Buffer(info) {
 Buffer_Vulkan::~Buffer_Vulkan() {
   auto &ctx = *GetVulkanGfxContext();
   if (memory_ == nullptr) {
-    EndWrite(nullptr);
+    EndWrite();
   }
   ctx.FreeBufferMemory_VK(memory_);
   ctx.DestroyBuffer_VK(buffer_);
 }
 
-void *Buffer_Vulkan::BeginWrite() {
+UInt8 *Buffer_Vulkan::BeginWrite() {
   auto &ctx = *GetVulkanGfxContext();
   void *mapped_memory;
   ctx.MapMemory_VK(memory_, GetSize(), &mapped_memory);
-  return mapped_memory;
+  return (UInt8 *)mapped_memory;
 }
 
-void Buffer_Vulkan::EndWrite(void *a) {
+void Buffer_Vulkan::EndWrite() {
   auto &ctx = *GetVulkanGfxContext();
   ctx.UnmapMemory_VK(memory_);
 }
 
-void *Buffer_Vulkan::BeginRead() {
+UInt8 *Buffer_Vulkan::BeginRead() {
   void *data_mapped;
   auto &ctx = *GetVulkanGfxContext();
   ctx.MapMemory_VK(memory_, GetSize(), &data_mapped);
-  return data_mapped;
+  return (UInt8 *)data_mapped;
 }
 
 void Buffer_Vulkan::EndRead() {

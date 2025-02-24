@@ -24,12 +24,10 @@ public:
   [[nodiscard]] size_t GetSize() const { return create_info_.size; }
   [[nodiscard]] BufferUsage GetUsage() const { return create_info_.usage; }
 
-  virtual void *BeginWrite() = 0;
+  virtual UInt8 *BeginWrite() = 0;
   virtual void EndWrite() = 0;
-  virtual void *BeginRead() = 0;
+  virtual UInt8 *BeginRead() = 0;
   virtual void EndRead() = 0;
-
-  template <typename T> void WriteType(const T &data, UInt64 offset = 0) { Write(&data, sizeof(T), offset); }
 
 protected:
   BufferDesc create_info_;

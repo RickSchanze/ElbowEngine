@@ -18,6 +18,7 @@
 #include "Text.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
+#include "Func/UI/UIManager.h"
 GENERATED_SOURCE()
 
 using namespace func;
@@ -39,6 +40,7 @@ WindowPanel::WindowPanel() {
   SetWidth(APPLY_SCALE(800));
   SetHeight(APPLY_SCALE(600));
   SetName("窗口");
+  UIManager::AddWindow(this);
 }
 
 void WindowPanel::Draw(CommandBuffer &cmd) {
@@ -53,23 +55,24 @@ void WindowPanel::Draw(CommandBuffer &cmd) {
   }
 
   BindMaterial(cmd, mat);
-  cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_);
+  cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_ DEBUG_ONLY_PARAM("WindowPanelDraw"));
 
   title_->Draw(cmd);
 }
 
-void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, ArrayProxy<UInt32> &indices) {
+void WindowPanel::Rebuild(Rect2DI draw_rect) {
   if (!IsDirty()) {
     return;
   }
-  Panel::Rebuild(draw_rect, vertices, indices);
+  Panel::Rebuild(draw_rect);
   Texture2D *ui_atlas = material_->GetParam_Texture2D("atlas");
   if (ui_atlas == nullptr) {
     index_size_ = 0;
     LOGGER.Error("Func.UI.WindowPanel", "Rebuild: 窗口材质中没有atlas");
     return;
   }
-  UInt64 index_buffer_size = indices.Size();
+  VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), 4 * 4, 4 * 6);
+  index_offset_ = data.index_offset;
   // 分两部分, 标题和内容
   // 绘制标题, 其大小根据内容调整
   Rect2DI draw_rect_ = GetDrawRect(draw_rect);
@@ -95,7 +98,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, Ar
 
   VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
 
   // 展开Icon的四个顶点, 以及关闭Icon的四个顶点
   core::Rect2D expanded_range = Sprite::GetUVRange(ui_atlas, expanded_ ? IconID::Expanded() : IconID::Folded());
@@ -113,7 +116,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, Ar
 
   VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
 
   // 关闭图标的四个顶点
   core::Rect2D close_range = Sprite::GetUVRange(ui_atlas, IconID::Close());
@@ -130,7 +133,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, Ar
   right_bottom.position.y = title_rect.position.y + 1;
 
   VertexHelper::FillQuadUV(close_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
 
   // 内容的四个顶点
   Rect2DI context_rect{};
@@ -145,16 +148,16 @@ void WindowPanel::Rebuild(Rect2DI draw_rect, ArrayProxy<Vertex_UI> &vertices, Ar
 
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(vertices, indices, left_top, left_bottom, right_top, right_bottom);
-  index_size_ = indices.Size() - index_buffer_size;
+  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  index_size_ = 4 * 6;
 
   Rect2DI title_text_rect;
   title_text_rect.position.x = title_rect.position.x + title_height_ + 1;
   title_text_rect.position.y = title_rect.position.y;
   title_text_rect.size.x = title_rect.size.x - title_height_ * 2 - 2;
   title_text_rect.size.y = title_rect.size.y;
-
-  text_title_->Rebuild(title_text_rect, vertices, indices);
+  VertexHelper::TransformPosToNDCSpace(data.vertices);
+  text_title_->Rebuild(title_text_rect);
 
   SetDirty(false);
 }

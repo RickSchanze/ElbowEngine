@@ -29,7 +29,7 @@ public:
   void Tick(Millisecond delta_time) override;
 
   static void UpdateViewBuffer(const CameraShaderData &data);
-  static platform::rhi::Buffer *GetViewBuffer() { return view_buffer_.get(); }
+  static platform::rhi::Buffer *GetViewBuffer() { return GetByRef().view_buffer_.get(); }
 
   void Startup() override;
   void Shutdown() override;
@@ -38,6 +38,7 @@ private:
   CameraComponent *active_ = nullptr;
 
   // 全局摄像机视图缓存
-  static inline core::SharedPtr<platform::rhi::Buffer> view_buffer_ = nullptr;
+  core::SharedPtr<platform::rhi::Buffer> view_buffer_ = nullptr;
+  UInt8* mapped_view_buffer_memory_ = nullptr;
 };
 } // namespace func

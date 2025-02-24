@@ -35,8 +35,7 @@ public:
    */
   virtual void Draw(platform::rhi::CommandBuffer &cmd) { NoEntry(); }
 
-  virtual void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
-                       core::ArrayProxy<UInt32> &indices);
+  virtual void Rebuild(core::Rect2DI draw_rect);
 
   void SetDirty(bool dirty = true);
   [[nodiscard]] bool IsDirty() const { return dirty_; }

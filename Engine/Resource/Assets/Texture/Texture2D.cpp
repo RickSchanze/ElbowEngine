@@ -261,7 +261,7 @@ void Texture2D::Download() const {
   auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
   void *data = cpu_buffer->BeginRead();
   stbi_write_png(*GetAssetPath(), w, h, num_channels, data, w * num_channels);
-  cpu_buffer->EndRead(data);
+  cpu_buffer->EndRead();
 }
 
 UInt8 *Texture2D::ConvertChannels(UInt8 *data, UInt32 width, UInt32 height, UInt32 src_channels, UInt32 dst_channels) {

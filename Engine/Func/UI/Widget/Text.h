@@ -35,8 +35,7 @@ public:
 
   void Draw(platform::rhi::CommandBuffer &cmd) override;
 
-  void Rebuild(core::Rect2DI draw_rect, core::ArrayProxy<platform::rhi::Vertex_UI> &vertices,
-               core::ArrayProxy<UInt32> &indices) override;
+  void Rebuild(core::Rect2DI draw_rect) override;
 
 private:
   PROPERTY(Label = "文本")
