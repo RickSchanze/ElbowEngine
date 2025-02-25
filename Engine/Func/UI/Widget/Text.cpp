@@ -159,43 +159,21 @@ void Text::Rebuild(Rect2DI draw_rect) {
     Vertex_UI left_top{};
     left_top.position.x = cur_pos_x + glyph.bearing_x * font_scale;
     left_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
-    left_top.uv.x = glyph.uv_x_lt;
-    left_top.uv.y = glyph.uv_y_lt;
-    left_top.color = font_color_;
 
     Vertex_UI left_bottom{};
     left_bottom.position.x = cur_pos_x + glyph.bearing_x * font_scale;
     left_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
-    left_bottom.uv.x = glyph.uv_x_lt;
-    left_bottom.uv.y = glyph.uv_y_rb;
-    left_bottom.color = font_color_;
 
     Vertex_UI right_top{};
     right_top.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
     right_top.position.y = cur_pos_y + glyph.bearing_y * font_scale;
-    right_top.uv.x = glyph.uv_x_rb;
-    right_top.uv.y = glyph.uv_y_lt;
-    right_top.color = font_color_;
 
     Vertex_UI right_bottom{};
     right_bottom.position.x = cur_pos_x + (glyph.bearing_x + glyph.width) * font_scale;
     right_bottom.position.y = cur_pos_y - (glyph.height - glyph.bearing_y) * font_scale;
-    right_bottom.uv.x = glyph.uv_x_rb;
-    right_bottom.uv.y = glyph.uv_y_rb;
-    right_bottom.color = font_color_;
-
-    data.vertices.Add(left_top);
-    data.vertices.Add(left_bottom);
-    data.vertices.Add(right_top);
-    data.vertices.Add(right_bottom);
-
-    UInt64 index_size = data.vertices.Size();
-    data.indices.Add(index_size - 3);
-    data.indices.Add(index_size - 1);
-    data.indices.Add(index_size - 2);
-    data.indices.Add(index_size - 3);
-    data.indices.Add(index_size - 2);
-    data.indices.Add(index_size - 4);
+    VertexHelper::FillQuadUV(glyph.uv, left_top, left_bottom, right_top, right_bottom);
+    VertexHelper::SetQuadColor(font_color_, left_top, left_bottom, right_top, right_bottom);
+    VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
     index_size_ += 6;
 
     cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);

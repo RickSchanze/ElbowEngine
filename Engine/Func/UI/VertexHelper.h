@@ -8,12 +8,15 @@
 #include "Platform/RHI/VertexLayout.h"
 
 namespace func::ui {
+struct VertexWriteData;
+}
+namespace func::ui {
 
 class VertexHelper {
 public:
-  static void AppendQuad(core::ArrayProxy<platform::rhi::Vertex_UI> &vertex, core::ArrayProxy<UInt32> &index,
-                         const platform::rhi::Vertex_UI &left_top, const platform::rhi::Vertex_UI &left_bottom,
-                         const platform::rhi::Vertex_UI &right_top, const platform::rhi::Vertex_UI &right_bottom);
+  static void AppendQuad(VertexWriteData &data, const platform::rhi::Vertex_UI &left_top,
+                         const platform::rhi::Vertex_UI &left_bottom, const platform::rhi::Vertex_UI &right_top,
+                         const platform::rhi::Vertex_UI &right_bottom);
 
   static void FillQuadUV(const core::Rect2D &uv_range, platform::rhi::Vertex_UI &left_top,
                          platform::rhi::Vertex_UI &left_bottom, platform::rhi::Vertex_UI &right_top,
@@ -23,7 +26,7 @@ public:
                            platform::rhi::Vertex_UI &left_bottom, platform::rhi::Vertex_UI &right_top,
                            platform::rhi::Vertex_UI &right_bottom);
 
-  static void TransformPosToNDCSpace(const core::ArrayProxy<platform::rhi::Vertex_UI>& target);
+  static void TransformPosToNDCSpace(const core::ArrayProxy<platform::rhi::Vertex_UI> &target);
 };
 
 } // namespace func::ui

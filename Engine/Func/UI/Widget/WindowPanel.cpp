@@ -98,7 +98,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
 
   VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
 
   // 展开Icon的四个顶点, 以及关闭Icon的四个顶点
   core::Rect2D expanded_range = Sprite::GetUVRange(ui_atlas, expanded_ ? IconID::Expanded() : IconID::Folded());
@@ -116,7 +116,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
 
   VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
 
   // 关闭图标的四个顶点
   core::Rect2D close_range = Sprite::GetUVRange(ui_atlas, IconID::Close());
@@ -133,7 +133,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   right_bottom.position.y = title_rect.position.y + 1;
 
   VertexHelper::FillQuadUV(close_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
 
   // 内容的四个顶点
   Rect2DI context_rect{};
@@ -148,7 +148,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
 
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
   index_size_ = 4 * 6;
 
   Rect2DI title_text_rect;

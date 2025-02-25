@@ -26,7 +26,7 @@ enum class FontRenderMethod {
 };
 
 struct GlyphInfo {
-  Float uv_x_lt, uv_y_lt, uv_x_rb, uv_y_rb;
+  core::Rect2D uv;
   UInt32 bearing_x, bearing_y; // 字符的偏移
   UInt32 width, height;
   UInt32 advance_x;
@@ -35,8 +35,8 @@ struct GlyphInfo {
 class CLASS() Font : public Asset {
   GENERATED_CLASS(Font)
 public:
-  static Font* GetDefaultFont();
-  static Material* GetDefaultFontMaterial();
+  static Font *GetDefaultFont();
+  static Material *GetDefaultFontMaterial();
   ~Font() override;
 
   [[nodiscard]] AssetType GetAssetType() const override { return resource::AssetType::Font; }

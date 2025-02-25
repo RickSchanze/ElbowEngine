@@ -73,7 +73,7 @@ void Panel::Rebuild(Rect2DI draw_rect) {
 
   VertexHelper::FillQuadUV(uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);
-  VertexHelper::AppendQuad(data.vertices, data.indices, left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
   index_size_ = 6;
   index_offset_ = data.index_offset;
   VertexHelper::TransformPosToNDCSpace(data.vertices);
