@@ -18,8 +18,8 @@ using namespace platform;
 
 ImageDesc func::GetDepthImageDesc(UInt32 width, UInt32 height)
 {
-    width  = width > 0 ? width : GetWindowManager().GetMainWindow()->GetWidth();
-    height = height > 0 ? height : GetWindowManager().GetMainWindow()->GetHeight();
+    width  = width > 0 ? width : WindowManager::GetMainWindow()->GetWidth();
+    height = height > 0 ? height : WindowManager::GetMainWindow()->GetHeight();
     return ImageDesc{width, height, IUB_DepthStencil, GetGfxContextRef().GetDefaultDepthStencilFormat()};
 }
 

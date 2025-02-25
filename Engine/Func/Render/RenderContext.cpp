@@ -29,7 +29,7 @@ void RenderContext::Render(const Millisecond &sec) {
   if (!ShouldRender()) {
     if (window_resized_) {
       // 调整交换链图像大小
-      Window *main = GetWindowManager().GetMainWindow();
+      Window *main = WindowManager::GetMainWindow();
       if (main->GetWidth() == 0 || main->GetHeight() == 0)
         return;
       ctx.ResizeSwapChain(main->GetWidth(), main->GetHeight());

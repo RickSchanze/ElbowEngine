@@ -134,7 +134,7 @@ int main() {
     LOGGER.Info(logcat::Engine, "Engine initialized.");
     SetRuntimeStage(RuntimeStage::Running);
     LOGGER.Info(logcat::Engine, "Engine running...");
-    platform::Window *main_window = platform::WindowManager::Get()->GetMainWindow();
+    platform::Window *main_window = platform::WindowManager::GetMainWindow();
     TickEvents::InputTickEvent.Bind(main_window, &platform::Window::PollInputs);
     RenderContext::GetByRef().SetRenderPipeline(MakeUnique<ElbowRenderPipeline>());
     Actor *a = NewObject<ACameraHolder>();

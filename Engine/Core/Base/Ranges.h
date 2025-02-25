@@ -13,6 +13,7 @@ inline constexpr auto AnyOf = ranges::any_of;
 inline constexpr auto Contains = ranges::contains;
 inline constexpr auto Remove = ranges::remove;
 inline constexpr auto Sort = ranges::sort;
+inline constexpr auto Fill = ranges::fill;
 } // namespace core::range
 
 namespace core::range::view {

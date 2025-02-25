@@ -15,8 +15,8 @@ Cmd_BeginRender::Cmd_BeginRender(const PooledArray<RenderAttachment> &colors_, c
                                  Size2D size_)
     : colors(colors_), depth(depth_) {
   if (size_.width <= 0 || size_.height <= 0) {
-    render_size.width = GetWindowManager().GetMainWindow()->GetWidth();
-    render_size.height = GetWindowManager().GetMainWindow()->GetHeight();
+    render_size.width = WindowManager::GetMainWindow()->GetWidth();
+    render_size.height = WindowManager::GetMainWindow()->GetHeight();
   } else {
     render_size = size_;
   }

@@ -19,9 +19,9 @@ namespace func::ui {
 
 struct VertexWriteData {
   core::ArrayProxy<platform::rhi::Vertex_UI> vertices;
-  UInt64 vertex_offset;
+  UInt64 vertex_offset{};
   core::ArrayProxy<UInt32> indices;
-  UInt64 index_offset;
+  UInt64 index_offset{};
 };
 
 struct OccupiedMemory {

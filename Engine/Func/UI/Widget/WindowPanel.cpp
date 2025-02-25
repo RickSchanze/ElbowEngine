@@ -16,9 +16,9 @@
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/Material.h"
 #include "Text.h"
+#include "Func/UI/UIManager.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
-#include "Func/UI/UIManager.h"
 GENERATED_SOURCE()
 
 using namespace func;

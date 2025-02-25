@@ -49,8 +49,8 @@ void UIManager::Shutdown() {
 void UIManager::Draw(CommandBuffer &cmd) { GetByRef().InternalDraw(cmd); }
 void UIManager::AddWindow(widget::WindowPanel *window) { GetByRef().InternalAddWindow(window); }
 
-Int32 UIManager::GetGlobalUIWidth() { return WindowManager::GetByRef().GetMainWindow()->GetWidth(); }
-Int32 UIManager::GetGlobalUIHeight() { return WindowManager::GetByRef().GetMainWindow()->GetHeight(); }
+Int32 UIManager::GetGlobalUIWidth() { return WindowManager::GetMainWindow()->GetWidth(); }
+Int32 UIManager::GetGlobalUIHeight() { return WindowManager::GetMainWindow()->GetHeight(); }
 
 void UIManager::InternalAddWindow(widget::WindowPanel *window) {
   if (!windows_.contains(window->GetHandle())) {

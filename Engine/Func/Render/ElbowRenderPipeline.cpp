@@ -30,7 +30,7 @@ void func::ElbowRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
   auto image = GetBackBuffer(params.current_image_index);
   cmd.Begin();
 
-  auto w = platform::GetWindowManager().GetMainWindow();
+  auto w = platform::WindowManager::GetMainWindow();
   Rect2D rect{};
   rect.size = {w->GetWidth(), w->GetHeight()};
   cmd.Enqueue<Cmd_SetScissor>(rect);

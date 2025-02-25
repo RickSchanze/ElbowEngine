@@ -645,14 +645,14 @@ static void DestroyInstance(core::Ref<VkInstance> instance) {
 }
 
 static void CreateSurface(Ref<Surface *> surface, const VkInstance instance) {
-  const auto window = WindowManager::Get()->GetMainWindow();
+  const auto window = WindowManager::GetMainWindow();
   core::Assert::Require(logcat::Platform_RHI_Vulkan, window != nullptr,
                         "Window must be initialized before create surface!");
   surface = window->CreateSurface(instance, GraphicsAPI::Vulkan);
 }
 
 static void DestroySurface(const core::Ref<Surface *> &surface) {
-  const auto window = WindowManager::Get()->GetMainWindow();
+  const auto window = WindowManager::GetMainWindow();
   core::Assert::Require(logcat::Platform_RHI_Vulkan, window != nullptr,
                         "Window must be destroyed after surface destroyed!");
   window->DestroySurface(surface);
