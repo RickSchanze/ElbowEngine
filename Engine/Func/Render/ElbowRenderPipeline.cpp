@@ -32,7 +32,7 @@ void func::ElbowRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
 
   auto w = platform::WindowManager::GetMainWindow();
   Rect2D rect{};
-  rect.size = {w->GetWidth(), w->GetHeight()};
+  rect.size = {(Float)w->GetWidth(), (Float)w->GetHeight()};
   cmd.Enqueue<Cmd_SetScissor>(rect);
   cmd.Enqueue<Cmd_SetViewport>(rect);
   cmd.Execute("WindowResize");

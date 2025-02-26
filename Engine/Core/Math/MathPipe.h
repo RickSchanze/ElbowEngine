@@ -10,7 +10,7 @@ namespace core {
 namespace impl {
 struct ToVector2_Impl {};
 inline Vector2 operator|(Vector3 v, ToVector2_Impl) { return {v.x, v.y}; }
-inline Vector2 operator|(Vector2I v, ToVector2_Impl) { return {v.x, v.y}; }
+inline Vector2 operator|(Vector2I v, ToVector2_Impl) { return {(Float)v.x, (Float)v.y}; }
 
 struct ToVector3_Impl {};
 inline Vector3 operator|(Vector2 v, ToVector3_Impl) { return {v.x, v.y, 0.f}; }

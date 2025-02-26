@@ -22,7 +22,10 @@ DECLARE_EVENT(OnTick, void, const Millisecond & /** 缩放后的 */);
 class TickEvents {
 public:
   static inline OnTick RenderTickEvent;
+  // InputTick: 用于给底层窗口库Tick, 例如GLFW就是glfwPollEvents
   static inline OnTick InputTickEvent;
+  // 底层库Poll完成后, 输入数据获取, 此时针对此帧的输入进行处理, 例如上一帧A键松下, 这一帧放开就在这里分发Release时间
+  static inline OnMulticastTick PostInputTickEvent;
   static inline OnMulticastTick WorldPreTickEvent;
   static inline OnMulticastTick WorldTickEvent;
   static inline OnMulticastTick WorldPostTickEvent;

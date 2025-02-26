@@ -38,6 +38,7 @@ AsyncResultHandle<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
 }
 
 Object *ObjectRegistry::GetObjectByHandle(const ObjectHandle handle) {
+  PROFILE_SCOPE_AUTO;
   if (handle == INVALID_OBJECT_HANDLE)
     return nullptr;
   if (!objects_.contains(handle))

@@ -109,13 +109,14 @@ Vector2 Vector2::operator*(float x) const { return {this->x * x, y * x}; }
 Vector2 Vector2::operator/(float scalar) const { return {x / scalar, y / scalar}; }
 
 Vector2 Vector2::operator-(const Float other) const { return {x - other, y - other}; }
-Vector2& Vector2::operator+=(const Float other) {
+Vector2 &Vector2::operator+=(const Float other) {
   x += other;
   y += other;
   return *this;
 }
 
 Vector2 operator-(Float s, Vector2 v) { return {s - v.x, s - v.y}; }
+Vector2 operator-(Vector2 v1, Vector2 v2) { return {v1.x - v2.x, v1.y - v2.y}; }
 
 Vector3 Rotator::GetForwardVector() const {
   Vector3 Forward;

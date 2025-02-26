@@ -37,6 +37,13 @@ public:
 
   virtual void Rebuild(core::Rect2DI draw_rect);
 
+  /**
+   * 这个Widget是否接受输入 如果返回false那么计算输入响应时将忽略此Widget
+   */
+  [[nodiscard]] bool ReceiveInput() const { return receive_input_; }
+
+  void SetReceiveInput(bool receive_input) { receive_input_ = receive_input; }
+
   void SetDirty(bool dirty = true);
   [[nodiscard]] bool IsDirty() const { return dirty_; }
   void SetVisible(bool visible = true);
@@ -57,6 +64,7 @@ protected:
 
   bool dirty_ = true;
   bool visible_ = true;
+  bool receive_input_ = false;
 };
 
 } // namespace func::ui::widget

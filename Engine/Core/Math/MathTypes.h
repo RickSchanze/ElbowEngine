@@ -48,7 +48,6 @@ struct STRUCT() Vector2 {
 
   Vector2() = default;
   Vector2(float x, float y) : x(x), y(y) {}
-  Vector2(Int32 x, Int32 y) : x(x), y(y) {}
 
   operator glm::vec2() const;
   operator glm::vec3() const { return {x, y, 0}; }
@@ -70,6 +69,7 @@ struct STRUCT() Vector2 {
 };
 
 Vector2 operator-(Float s, Vector2 v);
+Vector2 operator-(Vector2 v1, Vector2 v2);
 
 typedef glm::vec3 Vector3;
 typedef glm::vec4 Vector4;
@@ -168,7 +168,7 @@ public:
   PROPERTY()
   Vector2I size = {};
 
-  operator Rect2D() const { return {{position.x, position.y}, {size.x, size.y}}; }
+  operator Rect2D() const { return {{(Float)position.x, (Float)position.y}, {(Float)size.x, (Float)size.y}}; }
 
   Vector2I LeftTop() const;
   Vector2I RightTop() const;

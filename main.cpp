@@ -13,6 +13,7 @@
 #include "Core/Serialization/YamlArchive.h"
 #include "Func/Camera/ACameraHolder.h"
 #include "Func/Camera/Camera.h"
+#include "Func/Input/Input.h"
 #include "Func/Render/ElbowRenderPipeline.h"
 #include "Func/Render/RenderContext.h"
 #include "Func/UI/IconID.h"
@@ -75,6 +76,7 @@ int main() {
     {
       PROFILE_SCOPE("Window Initialize");
       CreateAWindow(platform::WindowLib::GLFW);
+      Input::GetByRef();
     }
     // 图形初始化
     {

@@ -9,6 +9,7 @@
 #include "Func/Render/Misc.h"
 #include "Func/UI/IconID.h"
 #include "Func/UI/Style.h"
+#include "Func/UI/UIManager.h"
 #include "Func/UI/VertexHelper.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -16,7 +17,6 @@
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/Material.h"
 #include "Text.h"
-#include "Func/UI/UIManager.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
 GENERATED_SOURCE()
@@ -40,6 +40,7 @@ WindowPanel::WindowPanel() {
   SetWidth(APPLY_SCALE(800));
   SetHeight(APPLY_SCALE(600));
   SetName("窗口");
+  SetReceiveInput(true);
   UIManager::AddWindow(this);
 }
 

@@ -20,6 +20,8 @@ public:
   core::StringView GetTitle() const;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
   void Rebuild(core::Rect2DI draw_rect) override;
+  void SetFocused(Bool f) { focused_ = f; }
+  bool IsFocused() const { return focused_; }
 
 protected:
   PROPERTY()
@@ -31,5 +33,7 @@ protected:
   Bool expanded_ = true;
 
   UInt64 index_size_ = 0;
+
+  Bool focused_ = false;
 };
 } // namespace func::ui::widget

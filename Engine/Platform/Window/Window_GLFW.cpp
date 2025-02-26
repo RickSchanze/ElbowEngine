@@ -75,7 +75,7 @@ static void GLFWKeyCallback(GLFWwindow *window, int key, int scancode, int actio
     case GLFW_KEY_Y: input_state.keyboard.keys_state[GetEnumValue(KeyboardKey::Y)] = cur_event; break;
     case GLFW_KEY_Z: input_state.keyboard.keys_state[GetEnumValue(KeyboardKey::Z)] = cur_event; break;
     case GLFW_KEY_SPACE: input_state.keyboard.keys_state[GetEnumValue(KeyboardKey::Space)] = cur_event; break;
-    default: NoEntry();
+    default:;
   }
   // clang-format on
 }

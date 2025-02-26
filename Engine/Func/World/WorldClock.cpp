@@ -28,6 +28,7 @@ void WorldClock::TickAll() {
   {
     PROFILE_SCOPE("TickInput");
     TickEvents::InputTickEvent.Invoke(duration);
+    TickEvents::PostInputTickEvent.Invoke(duration);
   }
   {
     PROFILE_SCOPE("TickLogic");

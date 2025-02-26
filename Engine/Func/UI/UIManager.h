@@ -6,7 +6,9 @@
 #include "Core/Base/ArrayProxy.h"
 #include "Core/Object/Object.h"
 #include "Core/Singleton/MManager.h"
+#include "Func/Input/Input.h"
 #include "Platform/RHI/VertexLayout.h"
+#include "Platform/Window/Window.h"
 
 namespace platform::rhi {
 class CommandBuffer;
@@ -50,8 +52,9 @@ private:
   void InternalRecycleVertexData(core::ObjectHandle handle);
   void InternalDraw(platform::rhi::CommandBuffer &cmd);
   void InternalAddWindow(widget::WindowPanel *window);
+  void InternalProcessInput(const InputEventParam& event);
 
-  core::HashSet<core::ObjectHandle> windows_;
+  core::HashSet<core::ObjectHandle> windows_handles_;
 
   core::SharedPtr<platform::rhi::Buffer> vertex_buffer_;
   core::SharedPtr<platform::rhi::Buffer> index_buffer_;
@@ -60,6 +63,8 @@ private:
 
   core::HashMap<core::ObjectHandle, OccupiedMemory> occupied_vertex_;
   core::HashMap<core::ObjectHandle, OccupiedMemory> occupied_index_;
+
+  core::DelegateID input_event_id_;
 };
 
 } // namespace func::ui

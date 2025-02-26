@@ -6,6 +6,7 @@
 
 #include "Core/Base/Ranges.h"
 #include "Core/Object/ObjectRegistry.h"
+#include "Func/Input/Input.h"
 #include "Platform/RHI/Buffer.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
@@ -19,6 +20,8 @@ using namespace func;
 using namespace ui;
 using namespace platform;
 using namespace rhi;
+using namespace core;
+using namespace widget;
 
 constexpr UInt64 PRESERVED_VERTEX_SIZE = 10000;
 constexpr UInt64 PRESERVED_INDEX_SIZE = 30000;
@@ -34,9 +37,12 @@ void UIManager::Startup() {
   BufferDesc index_desc{index_buffer_size, BUB_IndexBuffer, BMPB_HostVisible | BMPB_HostCoherent};
   index_buffer_ = GetGfxContextRef().CreateBuffer(index_desc, "UIIndexBuffer");
   index_buffer_data_ = reinterpret_cast<UInt32 *>(index_buffer_->BeginWrite());
+
+  input_event_id_ = Input::FrameInputEvent.AddBind(this, &UIManager::InternalProcessInput);
 }
 
 void UIManager::Shutdown() {
+  Input::FrameInputEvent.RemoveBind(input_event_id_);
   index_buffer_data_ = nullptr;
   index_buffer_->EndWrite();
   index_buffer_ = nullptr;
@@ -47,29 +53,36 @@ void UIManager::Shutdown() {
 }
 
 void UIManager::Draw(CommandBuffer &cmd) { GetByRef().InternalDraw(cmd); }
-void UIManager::AddWindow(widget::WindowPanel *window) { GetByRef().InternalAddWindow(window); }
+void UIManager::AddWindow(WindowPanel *window) { GetByRef().InternalAddWindow(window); }
 
 Int32 UIManager::GetGlobalUIWidth() { return WindowManager::GetMainWindow()->GetWidth(); }
 Int32 UIManager::GetGlobalUIHeight() { return WindowManager::GetMainWindow()->GetHeight(); }
 
-void UIManager::InternalAddWindow(widget::WindowPanel *window) {
-  if (!windows_.contains(window->GetHandle())) {
-    windows_.insert(window->GetHandle());
+void UIManager::InternalAddWindow(WindowPanel *window) {
+  if (!windows_handles_.contains(window->GetHandle())) {
+    windows_handles_.insert(window->GetHandle());
   }
 }
 
-static UInt64 FindAvailableOffset(core::HashMap<core::ObjectHandle, OccupiedMemory> &occupied_vertex_,
-                                  UInt64 vertex_count) {
+void UIManager::InternalProcessInput(const InputEventParam &event) {
+  PROFILE_SCOPE_AUTO;
+  for (auto &window_handle : windows_handles_) {
 
+    WindowPanel *panel = ObjectManager::GetObjectByHandle<WindowPanel>(window_handle);
+  }
+}
+
+static UInt64 FindAvailableOffset(HashMap<ObjectHandle, OccupiedMemory> &occupied_vertex_, UInt64 vertex_count) {
+  PROFILE_SCOPE_AUTO;
   if (occupied_vertex_.size() == 0) {
     return 0;
   }
-  core::Array<OccupiedMemory> vertex;
+  Array<OccupiedMemory> vertex;
   vertex.reserve(occupied_vertex_.size());
-  for (auto &occupied_vertex : occupied_vertex_ | core::range::view::Values) {
+  for (auto &occupied_vertex : occupied_vertex_ | range::view::Values) {
     vertex.push_back(occupied_vertex);
   }
-  core::range::Sort(vertex, [](const OccupiedMemory &a, const OccupiedMemory &b) { return a.offset < b.offset; });
+  range::Sort(vertex, [](const OccupiedMemory &a, const OccupiedMemory &b) { return a.offset < b.offset; });
   // 寻找不连续的空闲内存, 如果符合要求就那么分配
   UInt64 offset_mark = 0;
   for (Int32 i = 0; i < vertex.size(); i++) {
@@ -93,6 +106,7 @@ void UIManager::RecycleVertexData(core::ObjectHandle handle) { return GetByRef()
 
 VertexWriteData UIManager::InternalRequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count,
                                                           UInt64 index_count) {
+  PROFILE_SCOPE_AUTO;
   VertexWriteData rtn{};
   if (occupied_vertex_.contains(handle)) {
     if (occupied_vertex_[handle].size >= vertex_count) {
@@ -133,11 +147,12 @@ void UIManager::InternalRecycleVertexData(core::ObjectHandle handle) {
 }
 
 void UIManager::InternalDraw(CommandBuffer &cmd) {
+  PROFILE_SCOPE_AUTO;
   // TODO: 遮挡关系检查
   cmd.Enqueue<Cmd_BindVertexBuffer>(vertex_buffer_.get());
   cmd.Enqueue<Cmd_BindIndexBuffer>(index_buffer_.get());
-  for (auto &panel : windows_) {
-    widget::WindowPanel *p = core::ObjectManager::GetObjectByHandle<widget::WindowPanel>(panel);
+  for (auto &panel : windows_handles_) {
+    WindowPanel *p = core::ObjectManager::GetObjectByHandle<WindowPanel>(panel);
     if (p) {
       core::Rect2DI draw_rect = p->GetBoundingRect();
       p->Rebuild(draw_rect);

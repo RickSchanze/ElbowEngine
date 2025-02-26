@@ -58,6 +58,8 @@ add_library(${PROJECT_NAME}
         UI/VertexHelper.h
         UI/UIManager.cpp
         UI/UIManager.h
+        Input/Input.cpp
+        Input/Input.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})
