@@ -29,10 +29,13 @@ using namespace platform;
 using namespace rhi;
 using namespace resource;
 
+constexpr Int32 ICON_PADDING = 3;
+
 WindowPanel::WindowPanel() {
   title_ = ObjectManager::CreateNewObject<Text>();
   title_->SetName("Text_标题");
   title_->SetText("新窗口");
+  title_->SetFontSize(12);
   title_->SetFont(Font::GetDefaultFont());
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
   title_->SetFontSize(APPLY_SCALE(title_height_));
@@ -97,23 +100,24 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   Vertex_UI right_bottom{};
   right_bottom.position = title_rect.RightBottom() | ToVector2;
 
-  VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::SetQuadColor(IsFocused() ? Style::Colors::FocusedTitleBackground() : Style::Colors::TitleBackground(),
+                             left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(white_uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
 
   // 展开Icon的四个顶点, 以及关闭Icon的四个顶点
   core::Rect2D expanded_range = Sprite::GetUVRange(ui_atlas, expanded_ ? IconID::Expanded() : IconID::Folded());
-  left_top.position.x = title_rect.position.x + 1;
-  left_top.position.y = title_rect.position.y + title_height_ - 1;
+  left_top.position.x = title_rect.position.x + ICON_PADDING;
+  left_top.position.y = title_rect.position.y + title_height_ - ICON_PADDING;
 
-  left_bottom.position.x = title_rect.position.x + 1;
-  left_bottom.position.y = title_rect.position.y + 1;
+  left_bottom.position.x = title_rect.position.x + ICON_PADDING;
+  left_bottom.position.y = title_rect.position.y + ICON_PADDING;
 
-  right_top.position.x = title_rect.position.x + title_height_ - 1;
-  right_top.position.y = title_rect.position.y + title_height_ - 1;
+  right_top.position.x = title_rect.position.x + title_height_ - ICON_PADDING;
+  right_top.position.y = title_rect.position.y + title_height_ - ICON_PADDING;
 
-  right_bottom.position.x = title_rect.position.x + title_height_ - 1;
-  right_bottom.position.y = title_rect.position.y + 1;
+  right_bottom.position.x = title_rect.position.x + title_height_ - ICON_PADDING;
+  right_bottom.position.y = title_rect.position.y + ICON_PADDING;
 
   VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
@@ -121,17 +125,17 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
 
   // 关闭图标的四个顶点
   core::Rect2D close_range = Sprite::GetUVRange(ui_atlas, IconID::Close());
-  left_top.position.x = title_rect.size.x - title_height_ + 1;
-  left_top.position.y = title_rect.position.y + title_height_ - 1;
+  left_top.position.x = title_rect.size.x - title_height_ + ICON_PADDING;
+  left_top.position.y = title_rect.position.y + title_height_ - ICON_PADDING;
 
-  left_bottom.position.x = title_rect.size.x - title_height_ + 1;
-  left_bottom.position.y = title_rect.position.y + 1;
+  left_bottom.position.x = title_rect.size.x - title_height_ + ICON_PADDING;
+  left_bottom.position.y = title_rect.position.y + ICON_PADDING;
 
-  right_top.position.x = title_rect.size.x - 1;
-  right_top.position.y = title_rect.position.y + title_height_ - 1;
+  right_top.position.x = title_rect.size.x - ICON_PADDING;
+  right_top.position.y = title_rect.position.y + title_height_ - ICON_PADDING;
 
-  right_bottom.position.x = title_rect.size.x - 1;
-  right_bottom.position.y = title_rect.position.y + 1;
+  right_bottom.position.x = title_rect.size.x - ICON_PADDING;
+  right_bottom.position.y = title_rect.position.y + ICON_PADDING;
 
   VertexHelper::FillQuadUV(close_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
@@ -154,13 +158,44 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
 
   Rect2DI title_text_rect;
   title_text_rect.position.x = title_rect.position.x + title_height_ + 1;
-  title_text_rect.position.y = title_rect.position.y;
+  title_text_rect.position.y = title_rect.position.y + 1;
   title_text_rect.size.x = title_rect.size.x - title_height_ * 2 - 2;
   title_text_rect.size.y = title_rect.size.y;
   VertexHelper::TransformPosToNDCSpace(data.vertices);
   text_title_->Rebuild(title_text_rect);
 
   SetDirty(false);
+}
+void WindowPanel::SetFocused(Bool f) {
+  if (f == focused_)
+    return;
+  focused_ = f;
+  if (focused_) {
+    OnGetFocused();
+  } else {
+    OnLoseFocused();
+  }
+}
+
+void WindowPanel::OnGetFocused() {
+  // 获取焦点, 给标题栏颜色改一下
+  VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), 4 * 4, 4 * 6);
+  if (data.index_offset == index_offset_) {
+    VertexHelper::SetQuadColor(Style::Colors::FocusedTitleBackground(), data.vertices[0], data.vertices[1],
+                               data.vertices[2], data.vertices[3]);
+  } else {
+    SetDirty();
+  }
+}
+
+void WindowPanel::OnLoseFocused() {
+  VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), 4 * 4, 4 * 6);
+  if (data.index_offset == index_offset_) {
+    VertexHelper::SetQuadColor(Style::Colors::TitleBackground(), data.vertices[0], data.vertices[1], data.vertices[2],
+                               data.vertices[3]);
+  } else {
+    SetDirty();
+  }
 }
 
 void WindowPanel::SetTitle(const core::StringView &new_t) {

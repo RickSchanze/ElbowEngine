@@ -12,7 +12,7 @@ using namespace func;
 using namespace platform;
 using namespace core;
 
-bool InputEventParam::IsKeyPressed(platform::KeyboardKey key) const { return range::Contains(pressed_key, key); }
+bool InputEventParam::IsKeyPressed(platform::KeyboardKey key) const { return range::Contains(pressed_keys, key); }
 
 bool Input::IsKeyPress(KeyboardKey key) {
   return WindowManager::GetWindow(0)->InternalGetInputStateRef().keyboard.keys_state[(Int32)key] ==
@@ -45,7 +45,26 @@ Vector2 Input::GetMousePos() {
 void Input::DispatchInputEvent(const Millisecond &) {
   auto &self = GetByRef();
   InputEventParam event = self.CalculateInputEvent();
-  self.FrameInputEvent.Invoke(event);
+  FrameInputEvent.Invoke(event);
+}
+
+bool Input::IsKeyPressed(platform::KeyboardKey key, RespondKeys pressed_keys) {
+  return range::Contains(pressed_keys, key);
+}
+
+bool Input::IsMouseButtonReleased(platform::MouseButton button, RespondMouses mouse_buttons) {
+  return range::Contains(mouse_buttons, button);
+}
+bool Input::IsMouseButtonPressed(platform::MouseButton button, RespondMouses mouse_buttons) {
+  return range::Contains(mouse_buttons, button);
+}
+
+bool Input::HasKeyRespond(RespondKeys pressed_keys) {
+  return range::AnyOf(pressed_keys, [](const KeyboardKey &key) { return key != KeyboardKey::Count; });
+}
+
+bool Input::HasMouseButtonRespond(RespondMouses respond_mouses) {
+  return range::AnyOf(respond_mouses, [](const MouseButton &key) { return key != MouseButton::Count; });
 }
 
 ManagerLevel Input::GetLevel() const { return ManagerLevel::L8; }
@@ -57,7 +76,7 @@ void Input::Startup() { TickEvents::PostInputTickEvent.AddBind(&Input::DispatchI
 void Input::Shutdown() { FrameInputEvent.ClearBind(); }
 
 InputEventParam Input::CalculateInputEvent() {
-  InputEventParam rtn;
+  InputEventParam rtn{};
   // 键盘有两种响应: 按下和释放
   StaticArray<KeyboardKey, PROCESS_KEY_EVENT_COUNT> released_key_this_frame;
   range::Fill(released_key_this_frame, KeyboardKey::Count);
@@ -66,7 +85,7 @@ InputEventParam Input::CalculateInputEvent() {
 
   Int32 released_key_index = 0, pressed_key_index = 0;
   for (Int32 i = 0; i < (Int32)KeyboardKey::Count; i++) {
-    KeyboardKey key_i = (KeyboardKey)i;
+    const auto key_i = (KeyboardKey)i;
     if (Input::IsKeyPress(key_i) && previous_frame_state_.keyboard.keys_state[i] == KeyboardEvent::Release) { // 按下了
       if (released_key_index < PROCESS_KEY_EVENT_COUNT) {
         pressed_key_this_frame[released_key_index++] = key_i;
@@ -85,7 +104,7 @@ InputEventParam Input::CalculateInputEvent() {
   StaticArray<MouseButton, (Int32)MouseButton::Count> pressed_mouse_button_this_frame;
   range::Fill(pressed_mouse_button_this_frame, MouseButton::Count);
   for (Int32 i = 0; i < mouse_button_count; i++) {
-    MouseButton mouse_i = (MouseButton)i;
+    auto mouse_i = (MouseButton)i;
     if (Input::IsMouseButtonDown(mouse_i) &&
         previous_frame_state_.mouse.mouses_state[i] == MouseEvent::Release) { // 按下了
       pressed_mouse_button_this_frame[i] = mouse_i;
@@ -100,10 +119,11 @@ InputEventParam Input::CalculateInputEvent() {
   Vector2 mouse_move = Input::GetMousePos() - previous_mouse_pos;
   rtn.mouse_move = mouse_move;
   rtn.mouse_scroll = Input::GetMouseScroll();
-  rtn.pressed_key = pressed_key_this_frame;
-  rtn.released_key = released_key_this_frame;
+  rtn.pressed_keys = pressed_key_this_frame;
+  rtn.released_keys = released_key_this_frame;
   rtn.pressed_mouse = pressed_mouse_button_this_frame;
   rtn.released_mouse = released_mouse_button_this_frame;
+  rtn.mouse_pos = Input::GetMousePos();
   previous_frame_state_ = WindowManager::GetWindow(0)->InternalGetInputStateRef();
   return rtn;
 }

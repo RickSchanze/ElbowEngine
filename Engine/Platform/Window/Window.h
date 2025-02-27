@@ -32,8 +32,8 @@ enum class MouseButton { Left, Right, Middle, Count };
 enum class MouseEvent { Press, Release, Count };
 
 struct MouseState {
-  Double x, y;
-  Double scroll_dx, scroll_dy;
+  Float x, y;
+  Float scroll_dx, scroll_dy;
   core::StaticArray<MouseEvent, GetEnumValue(MouseButton::Count)> mouses_state{};
 
   MouseState();
@@ -50,7 +50,7 @@ enum class KeyboardKey {
 enum class KeyboardEvent { Press, Release, Count };
 
 struct KeyboardState {
-  core::StaticArray<KeyboardEvent, GetEnumValue(KeyboardKey::Count)> keys_state;
+  core::StaticArray<KeyboardEvent, GetEnumValue(KeyboardKey::Count)> keys_state{};
   KeyboardState();
 };
 

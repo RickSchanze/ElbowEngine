@@ -50,9 +50,9 @@ public:
 private:
   VertexWriteData InternalRequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
   void InternalRecycleVertexData(core::ObjectHandle handle);
-  void InternalDraw(platform::rhi::CommandBuffer &cmd);
+  void InternalDraw(platform::rhi::CommandBuffer &cmd) const;
   void InternalAddWindow(widget::WindowPanel *window);
-  void InternalProcessInput(const InputEventParam& event);
+  void InternalProcessInput(const InputEventParam &event);
 
   core::HashSet<core::ObjectHandle> windows_handles_;
 
@@ -65,6 +65,9 @@ private:
   core::HashMap<core::ObjectHandle, OccupiedMemory> occupied_index_;
 
   core::DelegateID input_event_id_;
+  core::ObjectHandle focused_window_panel_handle_ = 0;
+  // 用于确定Focused window
+  core::ObjectHandle pressed_window_panel_handle_ = 0; // 用于处理即将按下, 即focused改变的情况
 };
 
 } // namespace func::ui

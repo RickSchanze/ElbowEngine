@@ -19,6 +19,7 @@ public:
   // 判断是否接近于0
   static bool IsNearlyZero(float value, float tolerance = 1.e-4f);
   static bool IsNearlyZero(Vector3 value, float tolerance = 1.e-4f);
+  static bool IsNearlyZero(Vector2 value, Float tolerance = 1.e-4f);
 
   static float Clamp(float value, float min, float max);
   static float Clamp01(float value);
@@ -185,5 +186,12 @@ public:
     }
     return false; // 没有溢出
   }
+
+  /// 判断一个点在不在一个矩形内, VecT的数据类型需要和Rect存储的类型一样
+  /// 此函数认为pos在左下角, 坐标向右向上, 边界上会被视作在矩形里
+  static bool IsPointInsideRect(const Vector2I& pos, const Rect2DI& rect);
+
+  /// 将一个坐标input转换到另一个以new_origin为原点的坐标
+  static Vector2I TransformCoord(Vector2I input, Vector2I new_origin);
 };
 }

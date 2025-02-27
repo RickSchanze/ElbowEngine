@@ -60,6 +60,8 @@ add_library(${PROJECT_NAME}
         UI/UIManager.h
         Input/Input.cpp
         Input/Input.h
+        UI/Widget/IInteractable.cpp
+        UI/Widget/IInteractable.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

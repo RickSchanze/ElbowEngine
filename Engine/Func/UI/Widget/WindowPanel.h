@@ -6,22 +6,26 @@
 #include "Panel.h"
 
 #include GEN_HEADER("Func.WindowPanel.generated.h")
+#include "IInteractable.h"
 
 namespace func::ui::widget {
 class Text;
 }
 namespace func::ui::widget {
-class CLASS() WindowPanel : public Panel {
+class CLASS() WindowPanel : public Panel, public  IInteractable {
   GENERATED_CLASS(WindowPanel)
 public:
   WindowPanel();
 
   void SetTitle(const core::StringView &new_t);
-  core::StringView GetTitle() const;
+  [[nodiscard]] core::StringView GetTitle() const;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
   void Rebuild(core::Rect2DI draw_rect) override;
-  void SetFocused(Bool f) { focused_ = f; }
-  bool IsFocused() const { return focused_; }
+  void SetFocused(Bool f);
+  [[nodiscard]] bool IsFocused() const { return focused_; }
+
+  virtual void OnGetFocused();
+  virtual void OnLoseFocused();
 
 protected:
   PROPERTY()

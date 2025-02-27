@@ -5,6 +5,7 @@
 #include "UIManager.h"
 
 #include "Core/Base/Ranges.h"
+#include "Core/Math/Math.h"
 #include "Core/Object/ObjectRegistry.h"
 #include "Func/Input/Input.h"
 #include "Platform/RHI/Buffer.h"
@@ -66,9 +67,82 @@ void UIManager::InternalAddWindow(WindowPanel *window) {
 
 void UIManager::InternalProcessInput(const InputEventParam &event) {
   PROFILE_SCOPE_AUTO;
+  // 输入的鼠标位置左上角是原点, 给他改成左下角原点的
+  Vector2I mouse_pos = {event.mouse_pos.x, GetGlobalUIHeight() - event.mouse_pos.y};
+  // 优先对焦点窗口处理
+  // 键盘事件直接发送给焦点窗口
+  if (focused_window_panel_handle_ != 0) {
+    auto *panel = ObjectManager::GetObjectByHandle<WindowPanel>(focused_window_panel_handle_);
+    panel->OnKeyUp(event.released_keys);
+    panel->OnKeyDown(event.pressed_keys);
+    // 鼠标相关事件, 查询当前鼠标是否在焦点窗口, 如果在则发送给焦点窗口
+    Rect2DI bounding = panel->GetBoundingRect();
+    if (Math::IsPointInsideRect(mouse_pos, bounding)) {
+      if (Input::HasKeyRespond(event.pressed_keys)) {
+        panel->OnKeyDown(event.pressed_keys);
+      }
+      if (Input::HasKeyRespond(event.released_keys)) {
+        panel->OnKeyUp(event.released_keys);
+      }
+      if (Input::HasMouseButtonRespond(event.pressed_mouse)) {
+        // 将x, y转换至窗口的本地坐标
+        Vector2I new_pos = Math::TransformCoord(mouse_pos, panel->GetBoundingRect().LeftBottom());
+        panel->OnMousePressed(event.pressed_mouse, new_pos.x, new_pos.y);
+      }
+      if (Input::HasMouseButtonRespond(event.released_mouse)) {
+        // 将x, y转换至窗口的本地坐标
+        Vector2I new_pos = Math::TransformCoord(mouse_pos, panel->GetBoundingRect().LeftBottom());
+        panel->OnMouseReleased(event.released_mouse, new_pos.x, new_pos.y);
+      }
+      if (!Math::IsNearlyZero(event.mouse_move)) {
+        panel->OnMouseMove(event.mouse_move.x, event.mouse_move.y);
+      }
+      if (!Math::IsNearlyZero(event.mouse_scroll)) {
+        panel->OnMouseScroll(event.mouse_scroll.x, event.mouse_scroll.y);
+      }
+      return;
+    }
+  }
+  bool is_point_in_window = false;
+  // 走到这说明鼠标不在焦点窗口, 并且键盘事件只发送给焦点窗口
   for (auto &window_handle : windows_handles_) {
-
-    WindowPanel *panel = ObjectManager::GetObjectByHandle<WindowPanel>(window_handle);
+    if (window_handle == focused_window_panel_handle_)
+      continue;
+    auto *panel = ObjectManager::GetObjectByHandle<WindowPanel>(window_handle);
+    if (Math::IsPointInsideRect(mouse_pos, panel->GetBoundingRect())) {
+      // Move和Scroll事件不关心是哪个窗口
+      // TODO: 应该只触发顶层窗口
+      // TODO: 想办法找到顶层窗口
+      if (!Math::IsNearlyZero(event.mouse_move)) {
+        panel->OnMouseMove(event.mouse_move.x, event.mouse_move.y);
+      }
+      if (!Math::IsNearlyZero(event.mouse_scroll)) {
+        panel->OnMouseScroll(event.mouse_scroll.x, event.mouse_scroll.y);
+      }
+      // 在非focused窗口按下左键, 则修改focused
+      if (Input::IsMouseButtonPressed(MouseButton::Left, event.pressed_mouse)) {
+        pressed_window_panel_handle_ = panel->GetHandle();
+      }
+      if (Input::IsMouseButtonReleased(MouseButton::Left, event.pressed_mouse)) {
+        if (panel->GetHandle() == pressed_window_panel_handle_) {
+          if (WindowPanel *old_focused_window =
+                  ObjectManager::GetObjectByHandle<WindowPanel>(focused_window_panel_handle_)) {
+            old_focused_window->SetFocused(false);
+          }
+          panel->SetFocused(true);
+          focused_window_panel_handle_ = panel->GetHandle();
+        }
+        return;
+      }
+      is_point_in_window = true;
+    }
+  }
+  // 按到的地方没有Window, 并且有鼠标左键点击释放, 那么取消window的focus
+  if (!is_point_in_window && Input::IsMouseButtonReleased(MouseButton::Left, event.released_mouse)) {
+    if (WindowPanel *old_focused_window = ObjectManager::GetObjectByHandle<WindowPanel>(focused_window_panel_handle_)) {
+      old_focused_window->SetFocused(false);
+    }
+    focused_window_panel_handle_ = 0;
   }
 }
 
@@ -146,7 +220,7 @@ void UIManager::InternalRecycleVertexData(core::ObjectHandle handle) {
   }
 }
 
-void UIManager::InternalDraw(CommandBuffer &cmd) {
+void UIManager::InternalDraw(CommandBuffer &cmd) const {
   PROFILE_SCOPE_AUTO;
   // TODO: 遮挡关系检查
   cmd.Enqueue<Cmd_BindVertexBuffer>(vertex_buffer_.get());
