@@ -65,6 +65,18 @@ void UIManager::InternalAddWindow(WindowPanel *window) {
   }
 }
 
+static void DispatchMouseEnterOrLeave(ObjectHandle &mouse_stay_window_handle, WindowPanel *panel) {
+  PROFILE_SCOPE_AUTO;
+  if (panel->GetHandle() != mouse_stay_window_handle) {
+    WindowPanel *p = ObjectManager::GetObjectByHandle<WindowPanel>(mouse_stay_window_handle);
+    if (p) {
+      p->OnMouseLeave();
+    }
+    mouse_stay_window_handle = panel->GetHandle();
+    panel->OnMouseEnter();
+  }
+}
+
 void UIManager::InternalProcessInput(const InputEventParam &event) {
   PROFILE_SCOPE_AUTO;
   // 输入的鼠标位置左上角是原点, 给他改成左下角原点的
@@ -78,6 +90,8 @@ void UIManager::InternalProcessInput(const InputEventParam &event) {
     // 鼠标相关事件, 查询当前鼠标是否在焦点窗口, 如果在则发送给焦点窗口
     Rect2DI bounding = panel->GetBoundingRect();
     if (Math::IsPointInsideRect(mouse_pos, bounding)) {
+      // 鼠标移入事件
+      DispatchMouseEnterOrLeave(mouse_stay_window_handle_, panel);
       if (Input::HasKeyRespond(event.pressed_keys)) {
         panel->OnKeyDown(event.pressed_keys);
       }
@@ -110,6 +124,7 @@ void UIManager::InternalProcessInput(const InputEventParam &event) {
       continue;
     auto *panel = ObjectManager::GetObjectByHandle<WindowPanel>(window_handle);
     if (Math::IsPointInsideRect(mouse_pos, panel->GetBoundingRect())) {
+      DispatchMouseEnterOrLeave(mouse_stay_window_handle_, panel);
       // Move和Scroll事件不关心是哪个窗口
       // TODO: 应该只触发顶层窗口
       // TODO: 想办法找到顶层窗口
@@ -135,6 +150,13 @@ void UIManager::InternalProcessInput(const InputEventParam &event) {
         return;
       }
       is_point_in_window = true;
+    }
+  }
+  if (mouse_stay_window_handle_ != 0) {
+    auto *panel = ObjectManager::GetObjectByHandle<WindowPanel>(mouse_stay_window_handle_);
+    if (panel) {
+      panel->OnMouseLeave();
+      mouse_stay_window_handle_ = 0;
     }
   }
   // 按到的地方没有Window, 并且有鼠标左键点击释放, 那么取消window的focus

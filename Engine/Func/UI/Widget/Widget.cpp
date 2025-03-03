@@ -15,10 +15,13 @@ using namespace func;
 using namespace ui;
 using namespace widget;
 
-void Widget::Rebuild(core::Rect2DI draw_rect) {
-  NoEntry();
+void Widget::Rebuild(core::Rect2DI draw_rect) { NoEntry(); }
+void Widget::SetDirty(bool dirty) {
+  dirty_ = dirty;
+  if (dirty_) {
+    OnSetDirty();
+  }
 }
-void Widget::SetDirty(bool dirty) { dirty_ = dirty; }
 
 void Widget::SetVisible(bool visible) {
   if (visible != visible_) {

@@ -21,6 +21,8 @@ public:
 
   virtual void OnKeyDown(const RespondKeys &key) {}
   virtual void OnKeyUp(const RespondKeys &key) {}
+  virtual void OnMouseEnter() {}
+  virtual void OnMouseLeave() {}
 };
 
 } // namespace func::ui::widget

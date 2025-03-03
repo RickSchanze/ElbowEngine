@@ -136,6 +136,7 @@ void Text::Rebuild(Rect2DI draw_rect) {
   size_t vert_size = size * 4;
   size_t index_size = size * 6;
   VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), vert_size, index_size);
+  index_size_ = index_size;
   Vector4I padding = GetPadding();
   index_offset_ = data.index_offset;
   UInt32 cur_pos_x = bl.x + padding.x;
@@ -174,7 +175,6 @@ void Text::Rebuild(Rect2DI draw_rect) {
     VertexHelper::FillQuadUV(glyph.uv, left_top, left_bottom, right_top, right_bottom);
     VertexHelper::SetQuadColor(font_color_, left_top, left_bottom, right_top, right_bottom);
     VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
-    index_size_ += 6;
 
     cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);
   }

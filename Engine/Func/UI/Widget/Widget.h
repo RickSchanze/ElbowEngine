@@ -46,6 +46,7 @@ public:
 
   void SetDirty(bool dirty = true);
   [[nodiscard]] bool IsDirty() const { return dirty_; }
+  virtual void OnSetDirty() {}
   void SetVisible(bool visible = true);
   [[nodiscard]] bool IsVisible() const { return visible_; }
 

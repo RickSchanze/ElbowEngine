@@ -10,9 +10,9 @@
 
 using namespace func::ui;
 
-void VertexHelper::AppendQuad(VertexWriteData &data,
-                              const platform::rhi::Vertex_UI &left_top, const platform::rhi::Vertex_UI &left_bottom,
-                              const platform::rhi::Vertex_UI &right_top, const platform::rhi::Vertex_UI &right_bottom) {
+void VertexHelper::AppendQuad(VertexWriteData &data, const platform::rhi::Vertex_UI &left_top,
+                              const platform::rhi::Vertex_UI &left_bottom, const platform::rhi::Vertex_UI &right_top,
+                              const platform::rhi::Vertex_UI &right_bottom) {
   data.vertices.Add(left_top);
   data.vertices.Add(left_bottom);
   data.vertices.Add(right_top);

@@ -30,12 +30,12 @@ public:
 
   void SetWidth(UInt32 w);
   void SetHeight(UInt32 h);
-  core::Rect2DI GetBoundingRect() const;
+  [[nodiscard]] core::Rect2DI GetBoundingRect() const;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
   void Rebuild(core::Rect2DI draw_rect) override;
-
-protected:
-  [[nodiscard]] core::Rect2DI GetDrawRect(const core::Rect2DI &target) const;
+  void SetPosition(const core::Vector2I &pos);
+  // 默认行为SetDirty
+  virtual void OnSetPosition(const core::Vector2I &old_pos, const core::Vector2I &new_pos);
 
 protected:
   /// 背景图像, 应是一个TextureAtlas里的一部分

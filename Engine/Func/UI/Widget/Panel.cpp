@@ -80,6 +80,14 @@ void Panel::Rebuild(Rect2DI draw_rect) {
   SetDirty(false);
 }
 
+void Panel::SetPosition(const core::Vector2I &pos) {
+  if (position_ != pos) {
+    Vector2I old = position_;
+    position_ = pos;
+    OnSetPosition(old, pos);
+  }
+}
+
 Rect2DI Panel::GetBoundingRect() const {
   Rect2DI rtn;
   rtn.position = position_;
@@ -115,19 +123,4 @@ void Panel::SetHeight(UInt32 h) {
   }
 }
 
-Rect2DI Panel::GetDrawRect(const Rect2DI &target) const {
-  // TODO: 考虑一下溢出了怎么办
-  Vector4I padding = GetPadding();
-  Rect2DI rect;
-  Vector2I pos;
-  pos.x = target.position.x + position_.x + ExtractPaddingLeft(padding);
-  pos.y = target.position.y + position_.y + ExtractPaddingBottom(padding);
-  rect.position = pos;
-  Vector2I size;
-  const UInt32 x = size_.x - ExtractPaddingLeft(padding) - ExtractPaddingRight(padding);
-  const UInt32 y = size_.y - ExtractPaddingTop(padding) - ExtractPaddingBottom(padding);
-  size.x = x;
-  size.y = y;
-  rect.size = size;
-  return rect;
-}
+void Panel::OnSetPosition(const core::Vector2I &old_pos, const core::Vector2I &new_pos) { SetDirty(); }

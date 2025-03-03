@@ -26,18 +26,27 @@ public:
 
   virtual void OnGetFocused();
   virtual void OnLoseFocused();
+  void OnSetDirty() override;
+  void OnMousePressed(const RespondMouses &button, Int32 x, Int32 y) override;
+  void OnMouseReleased(const RespondMouses &button, Int32 x, Int32 y) override;
+  void OnMouseMove(Float x, Float y) override;
+  void OnMouseLeave() override;
 
 protected:
+  [[nodiscard]] core::Rect2DI GetTitleRect() const;
+
   PROPERTY()
   core::ObjectPtr<Text> title_;
 
   PROPERTY()
-  Int32 title_height_ = 20;
+  Int32 title_height_ = 30;
 
   Bool expanded_ = true;
 
   UInt64 index_size_ = 0;
 
   Bool focused_ = false;
+
+  Bool moving_ = false;
 };
 } // namespace func::ui::widget

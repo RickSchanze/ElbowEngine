@@ -68,6 +68,8 @@ private:
   core::ObjectHandle focused_window_panel_handle_ = 0;
   // 用于确定Focused window
   core::ObjectHandle pressed_window_panel_handle_ = 0; // 用于处理即将按下, 即focused改变的情况
+  // 鼠标在哪个窗口?
+  core::ObjectHandle mouse_stay_window_handle_ = 0;
 };
 
 } // namespace func::ui
