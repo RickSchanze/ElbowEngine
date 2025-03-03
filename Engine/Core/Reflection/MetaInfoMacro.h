@@ -1,8 +1,8 @@
 /**
  * @file MetaInfoMacro.h
- * @author Echo 
+ * @author Echo
  * @Date 24-10-31
- * @brief 
+ * @brief
  */
 
 #pragma once
@@ -45,31 +45,27 @@
 #define CONCAT2(a, b) a##b
 #define CONCAT3(a, b, c) a##b##c
 
-#define TO_POINTER(type) type*
+#define TO_POINTER(type) type *
 
 #ifndef REFL_GEN
-#define GENERATED_CLASS(class_)                                              \
-public:                                                                      \
-    static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
-                                                                             \
-    [[nodiscard]] const core::Type* GetType() const                          \
-    {                                                                        \
-        return core::TypeOf<class_>();                                       \
-    }                                                                        \
-    CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
+#define GENERATED_CLASS(class_)                                                                                        \
+public:                                                                                                                \
+  typedef ThisClass Super;                                                                                             \
+  typedef class_ ThisClass;                                                                                            \
+  static core::Type *CONCAT3(REFLECTION_Register_, class_, _Registerer)();                                             \
+                                                                                                                       \
+  [[nodiscard]] const core::Type *GetType() const { return core::TypeOf<class_>(); }                                   \
+  CONCAT2(GENERATED_BODY_IMPL_, class_)                                                                                \
 private:
 
-#define GENERATED_STRUCT(class_)                                             \
-public:                                                                      \
-    static core::Type* CONCAT3(REFLECTION_Register_, class_, _Registerer)(); \
-                                                                             \
-    [[nodiscard]] const core::Type* GetType() const                          \
-    {                                                                        \
-        return core::TypeOf<class_>();                                       \
-    }                                                                        \
-    CONCAT2(GENERATED_BODY_IMPL_, class_)                                    \
+#define GENERATED_STRUCT(class_)                                                                                       \
+public:                                                                                                                \
+  typedef class_ ThisStruct;                                                                                           \
+  static core::Type *CONCAT3(REFLECTION_Register_, class_, _Registerer)();                                             \
+                                                                                                                       \
+  [[nodiscard]] const core::Type *GetType() const { return core::TypeOf<class_>(); }                                   \
+  CONCAT2(GENERATED_BODY_IMPL_, class_)                                                                                \
 public:
-
 
 #define GEN_HEADER(a) a
 #else
@@ -78,23 +74,18 @@ public:
 #define GEN_HEADER(a) <string>
 #endif
 
-#define GENERATED_SOURCE()                                         \
-    static void Z_MetaInfo_Registration_Func();                    \
-    namespace                                                      \
-    {                                                              \
-    struct Z_MetaInfo_Registration                                 \
-    {                                                              \
-        Z_MetaInfo_Registration()                                  \
-        {                                                          \
-            Z_MetaInfo_Registration_Func();                        \
-        }                                                          \
-    };                                                             \
-    static const Z_MetaInfo_Registration Z_meta_info_registration; \
-    }                                                              \
-    void Z_MetaInfo_Registration_Func(){GENERATED_ALL_CLASS_BODY} GENERATED_IMPLEMENTATION
+#define GENERATED_SOURCE()                                                                                             \
+  static void Z_MetaInfo_Registration_Func();                                                                          \
+  namespace {                                                                                                          \
+  struct Z_MetaInfo_Registration {                                                                                     \
+    Z_MetaInfo_Registration() { Z_MetaInfo_Registration_Func(); }                                                      \
+  };                                                                                                                   \
+  static const Z_MetaInfo_Registration Z_meta_info_registration;                                                       \
+  }                                                                                                                    \
+  void Z_MetaInfo_Registration_Func(){GENERATED_ALL_CLASS_BODY} GENERATED_IMPLEMENTATION
 
 #define implements virtual public
 #define extends public
 #define ELBOW_INTERFACE
 
-#define STRUCT(...) CLASS(Trivial, __VA_ARGS__)
+#define STRUCT(...) CLASS(__VA_ARGS__)

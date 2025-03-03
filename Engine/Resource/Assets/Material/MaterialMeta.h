@@ -8,19 +8,17 @@
 
 #include GEN_HEADER("Resource.MaterialMeta.generated.h")
 
-namespace resource
-{
-class CLASS(SQLTable = "Material") MaterialMeta
-{
-    GENERATED_CLASS(MaterialMeta)
-public:
-    PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
-    Int32 id{};
+namespace resource {
+struct STRUCT(SQLTable = "Material") MaterialMeta {
+  GENERATED_STRUCT(MaterialMeta)
 
-    PROPERTY()
-    core::ObjectHandle object_handle{};
+  PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
+  Int32 id{};
 
-    PROPERTY()
-    core::String path;
+  PROPERTY()
+  core::ObjectHandle object_handle{};
+
+  PROPERTY()
+  core::String path;
 };
-}   // namespace resource
+} // namespace resource

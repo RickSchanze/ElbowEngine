@@ -30,13 +30,6 @@ void Widget::SetVisible(bool visible) {
   }
 }
 
-void Widget::SetPadding(core::Vector4I padding) {
-  if (padding != padding_) {
-    padding_ = padding;
-    SetDirty();
-  }
-}
-
 core::Rect2DI widget::CalcAlignedDrawRect(const core::Rect2DI &draw_rect, const core::Vector2I &size,
                                           HorizontalAlignment horizontal_alignment,
                                           VerticalAlignment vertical_alignment) {

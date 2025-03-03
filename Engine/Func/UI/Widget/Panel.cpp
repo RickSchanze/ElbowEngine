@@ -53,23 +53,22 @@ void Panel::Rebuild(Rect2DI draw_rect) {
     return;
   }
   VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), 4, 6);
-  Vector4I padding = GetPadding();
   auto uv_range = sprite_.GetUVRange();
   Vertex_UI left_top{};
-  left_top.position.x = draw_rect.position.x + position_.x + ExtractPaddingLeft(padding);
-  left_top.position.y = draw_rect.position.y + position_.y + size_.y + ExtractPaddingTop(padding);
+  left_top.position.x = draw_rect.position.x + position_.x;
+  left_top.position.y = draw_rect.position.y + position_.y + size_.y;
 
   Vertex_UI left_bottom{};
-  left_bottom.position.x = draw_rect.position.x + position_.x + ExtractPaddingLeft(padding);
-  left_bottom.position.y = draw_rect.position.y + position_.y + ExtractPaddingBottom(padding);
+  left_bottom.position.x = draw_rect.position.x + position_.x;
+  left_bottom.position.y = draw_rect.position.y + position_.y;
 
   Vertex_UI right_top{};
-  right_top.position.x = draw_rect.position.x + position_.x + size_.x + ExtractPaddingRight(padding);
-  right_top.position.y = draw_rect.position.y + position_.y + size_.y + ExtractPaddingTop(padding);
+  right_top.position.x = draw_rect.position.x + position_.x + size_.x;
+  right_top.position.y = draw_rect.position.y + position_.y + size_.y;
 
   Vertex_UI right_bottom{};
-  right_bottom.position.x = draw_rect.position.x + position_.x + size_.x + ExtractPaddingRight(padding);
-  right_bottom.position.y = draw_rect.position.y + position_.y + ExtractPaddingBottom(padding);
+  right_bottom.position.x = draw_rect.position.x + position_.x + size_.x;
+  right_bottom.position.y = draw_rect.position.y + position_.y;
 
   VertexHelper::FillQuadUV(uv_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::SetQuadColor(Style::Colors::PanelBackground(), left_top, left_bottom, right_top, right_bottom);

@@ -4,6 +4,22 @@
 using namespace core; \
 core::MetaInfoManager::Get()->RegisterTypeRegisterer(core::RTTITypeInfo::Create<func::ui::widget::Widget>(), &func::ui::widget::Widget::REFLECTION_Register_Widget_Registerer); \
 core::CtorManager::Get()->RegisterCtorDtor(RTTITypeInfo::Create<func::ui::widget::Widget>(), &func::ui::widget::Widget::ConstructAt, &func::ui::widget::Widget::DestroyAt); \
+{ \
+Type* type = Type::Create<func::ui::widget::HorizontalAlignment>("func.ui.widget.HorizontalAlignment"); \
+using enum func::ui::widget::HorizontalAlignment; \
+type->Internal_RegisterEnumValue(Left ,"Left"); \
+type->Internal_RegisterEnumValue(Center ,"Center"); \
+type->Internal_RegisterEnumValue(Right ,"Right"); \
+core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<func::ui::widget::HorizontalAlignment>(), type); \
+} \
+{ \
+Type* type = Type::Create<func::ui::widget::VerticalAlignment>("func.ui.widget.VerticalAlignment"); \
+using enum func::ui::widget::VerticalAlignment; \
+type->Internal_RegisterEnumValue(Top ,"Top"); \
+type->Internal_RegisterEnumValue(Center ,"Center"); \
+type->Internal_RegisterEnumValue(Bottom ,"Bottom"); \
+core::MetaInfoManager::Get()->RegisterType(core::RTTITypeInfo::Create<func::ui::widget::VerticalAlignment>(), type); \
+} \
 
 #undef GENERATED_BODY_IMPL_Widget
 #define GENERATED_BODY_IMPL_Widget \

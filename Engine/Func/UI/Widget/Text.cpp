@@ -11,6 +11,7 @@
 #include "Platform/RHI/CommandBuffer.h"
 #include "Platform/RHI/Commands.h"
 #include "Platform/RHI/VertexLayout.h"
+#include "Resource/AssetDataBase.h"
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/Material.h"
 
@@ -22,12 +23,12 @@ using namespace resource;
 using namespace platform;
 using namespace rhi;
 
-Text &Text::SetText(StringView text) {
+Text *Text::SetText(StringView text) {
   if (text == text_)
-    return *this;
+    return this;
   text_ = text;
   SetDirty();
-  return *this;
+  return this;
 }
 
 Text &Text::SetSpacing(Float space) {
@@ -52,12 +53,12 @@ Text &Text::SetFont(const Font *font) {
   return *this;
 }
 
-Text &Text::SetFontSize(Float size) {
+Text *Text::SetFontSize(Float size) {
   if (Math::ApproximatelyEqual(size, size_))
-    return *this;
+    return this;
   size_ = size;
   SetDirty();
-  return *this;
+  return this;
 }
 
 Text &Text::SetFontMaterial(const Material *mat) {
@@ -83,13 +84,17 @@ Text &Text::SetColor(core::Color color) {
 
 Vector2I Text::GetBoundingSize() {
   UnicodeString str = text_.ToUnicodeString();
+
   UInt64 size = str.Size();
   Font *font = font_;
-  Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   if (font == nullptr) {
-    LOGGER.Error("Func.UI.Text", "字体未设置");
-    return Vector2I{};
+    LOGGER.Warn("Func.UI.Text", "字体未设置, 使用Fallback字体");
+    font_ = Font::GetDefaultFont();
   }
+  font = font_;
+  Assert::Require("Func.UI.Text", font, "字体未设置, 且Fallback字体无效");
+  font->RequestLoadGlyphs(str);
+  Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   UInt32 bearing_height_top = 0;
   UInt32 bearing_height_bottom = 0;
   UInt32 width = 0;
@@ -105,15 +110,20 @@ Vector2I Text::GetBoundingSize() {
     bearing_height_bottom = std::max(bearing_height_bottom, glyph.height - glyph.bearing_y + base_line_);
   }
   Vector2I bounding_size;
-  auto padding = GetPadding();
-  bounding_size.x = width + padding.x + padding.z + (size - 1) * spacing_;
-  bounding_size.y = (bearing_height_top + bearing_height_bottom) * font_scale + padding.y + padding.w;
+  bounding_size.x = width + (size - 1) * spacing_;
+  bounding_size.y = (bearing_height_top + bearing_height_bottom) * font_scale;
   return bounding_size;
 }
 
 void Text::Draw(CommandBuffer &cmd) {
   Material *mat = font_material_;
   if (mat == nullptr) {
+    LOGGER.Warn("Func.UI.Text", "字体材质未设置, 使用Fallback");
+    font_material_ = Font::GetDefaultFontMaterial();
+  }
+  mat = font_material_;
+  if (mat == nullptr) {
+    LOGGER.Error("Func.UI.Text", "字体材质未设置, 且Fallback无效");
     return;
   }
   BindMaterial(cmd, mat);
@@ -141,10 +151,9 @@ void Text::Rebuild(Rect2DI draw_rect) {
   size_t index_size = size * 6;
   VertexWriteData data = UIManager::RequestVertexWriteData(GetHandle(), vert_size, index_size);
   index_size_ = index_size;
-  Vector4I padding = GetPadding();
   index_offset_ = data.index_offset;
-  UInt32 cur_pos_x = bl.x + padding.x;
-  UInt32 cur_pos_y = bl.y + base_line_ + padding.w;
+  UInt32 cur_pos_x = bl.x;
+  UInt32 cur_pos_y = bl.y + base_line_;
   Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   auto spacing = spacing_;
   for (UInt64 i = 0; i < size; ++i) {

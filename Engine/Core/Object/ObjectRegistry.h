@@ -7,11 +7,10 @@
 #include "Core/Base/FlatMap.h"
 #include "Core/Object/Object.h"
 #include "Core/Reflection/MetaInfoMacro.h"
-
-#include GEN_HEADER("Core.ObjectRegistry.generated.h")
 #include "Core/Async/Execution/Then.h"
 #include "Core/Async/ThreadManager.h"
 
+#include GEN_HEADER("Core.ObjectRegistry.generated.h")
 namespace core {
 class ThreadCluster;
 }
@@ -19,8 +18,8 @@ core::ThreadScheduler &_GetScheduler();
 
 namespace core {
 // TODO: 多线程安全
-class CLASS() ObjectRegistry {
-  GENERATED_CLASS(ObjectRegistry)
+struct CLASS() ObjectRegistry {
+  GENERATED_STRUCT(ObjectRegistry)
 public:
   ObjectHandle NextInstanceHandle();
 
@@ -100,5 +99,11 @@ public:
     return static_cast<T *>(GetObjectByHandle(handle));
   }
 };
+
+template <typename T, typename... Args>
+  requires std::derived_from<T, Object>
+static T *CreateNewObject(Args &&...args) {
+  return ObjectManager::CreateNewObject<T>(Forward<Args>(args)...);
+}
 
 } // namespace core

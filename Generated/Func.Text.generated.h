@@ -23,6 +23,7 @@ type->Internal_RegisterField("base_line_", &func::ui::widget::Text::base_line_, 
 type->Internal_RegisterField("font_", &func::ui::widget::Text::font_, offsetof(func::ui::widget::Text, font_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体"); \
 type->Internal_RegisterField("font_color_", &func::ui::widget::Text::font_color_, offsetof(func::ui::widget::Text, font_color_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体颜色"); \
 type->Internal_RegisterField("font_material_", &func::ui::widget::Text::font_material_, offsetof(func::ui::widget::Text, font_material_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "字体材质"); \
+type->Internal_RegisterField("vertical_alignment_", &func::ui::widget::Text::vertical_alignment_, offsetof(func::ui::widget::Text, vertical_alignment_))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "竖直对齐"); \
 return type; \
 } \
 

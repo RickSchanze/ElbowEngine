@@ -41,8 +41,8 @@ using ObjectStateFlag = int32_t;
  */
 class CLASS() Object : public ITypeGetter {
   GENERATED_CLASS(Object)
-  friend class ObjectPtrBase;
-  friend class ObjectRegistry;
+  friend struct ObjectPtrBase;
+  friend struct ObjectRegistry;
 
 public:
   explicit Object(ObjectFlag flag);

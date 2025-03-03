@@ -10,22 +10,20 @@
 
 #include GEN_HEADER("Resource.ShaderMeta.generated.h")
 
-namespace resource
-{
-class CLASS(SQLTable = "Shader") ShaderMeta
-{
-    GENERATED_CLASS(ShaderMeta)
+namespace resource {
+struct CLASS(SQLTable = "Shader") ShaderMeta {
+  GENERATED_STRUCT(ShaderMeta)
 
 public:
-    PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
-    int32_t id{};
+  PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
+  int32_t id{};
 
-    PROPERTY()
-    core::ObjectHandle object_handle{};
+  PROPERTY()
+  core::ObjectHandle object_handle{};
 
-    PROPERTY()
-    core::String path;
+  PROPERTY()
+  core::String path;
 
-    // 下面可以写一些Shader可能需要的属性, 例如是否开启blend等
+  // 下面可以写一些Shader可能需要的属性, 例如是否开启blend等
 };
-}   // namespace resource
+} // namespace resource

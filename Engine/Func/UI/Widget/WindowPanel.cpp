@@ -40,6 +40,7 @@ WindowPanel::WindowPanel() {
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
   title_->SetFontSize(APPLY_SCALE(title_height_ - 6));
   title_->SetColor(Color::White());
+  title_->SetParent(this);
   SetWidth(APPLY_SCALE(800));
   SetHeight(APPLY_SCALE(600));
   SetName("窗口");
@@ -62,13 +63,16 @@ void WindowPanel::Draw(CommandBuffer &cmd) {
   cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_ DEBUG_ONLY_PARAM("WindowPanelDraw"));
 
   title_->Draw(cmd);
+  if (slot_) {
+    slot_->Draw(cmd);
+  }
+  cmd.Execute("Draw Window Panel");
 }
 
 void WindowPanel::Rebuild(Rect2DI draw_rect) {
   if (!IsDirty()) {
     return;
   }
-  Panel::Rebuild(draw_rect);
   Texture2D *ui_atlas = material_->GetParam_Texture2D("atlas");
   if (ui_atlas == nullptr) {
     index_size_ = 0;
@@ -84,8 +88,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   Rect2D white_uv_range = white_range.GetUVRange();
   // 标题栏的四个顶点
   Rect2DI title_rect{};
-  title_rect.position = {draw_rect.position.x,
-                         draw_rect.position.y + draw_rect.size.y - title_height_};
+  title_rect.position = {draw_rect.position.x, draw_rect.position.y + draw_rect.size.y - title_height_};
   title_rect.size.x = draw_rect.size.x;
   title_rect.size.y = title_height_;
   Vertex_UI left_top{};
@@ -163,6 +166,9 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   title_text_rect.size.y = title_rect.size.y;
   VertexHelper::TransformPosToNDCSpace(data.vertices);
   text_title_->Rebuild(title_text_rect);
+  if (slot_) {
+    slot_->Rebuild(context_rect);
+  }
 
   SetDirty(false);
 }
@@ -215,8 +221,13 @@ void WindowPanel::OnMouseMove(Float x, Float y) {
   }
 }
 
-void WindowPanel::OnMouseLeave() {
-  moving_ = false;
+void WindowPanel::OnMouseLeave() { moving_ = false; }
+
+void WindowPanel::OnSetPosition(const core::Vector2I &old_pos, const core::Vector2I &new_pos) {
+  Super::OnSetPosition(old_pos, new_pos);
+  if (slot_) {
+    slot_->SetDirty();
+  }
 }
 
 Rect2DI WindowPanel::GetTitleRect() const {
@@ -228,12 +239,24 @@ Rect2DI WindowPanel::GetTitleRect() const {
   return rtn;
 }
 
-void WindowPanel::SetTitle(const core::StringView &new_t) {
+WindowPanel &WindowPanel::SetTitle(const core::StringView &new_t) {
   if (new_t == title_->GetText()) {
-    return;
+    return *this;
   }
   title_->SetText(new_t);
   SetDirty();
+  return *this;
+}
+
+WindowPanel &WindowPanel::SetSlot(Widget *w) {
+  if (w) {
+    w->SetParent(this);
+  }
+  if (slot_) {
+    slot_->SetParent(nullptr);
+  }
+  slot_ = w;
+  return *this;
 }
 
 StringView WindowPanel::GetTitle() const { return title_->GetText(); }

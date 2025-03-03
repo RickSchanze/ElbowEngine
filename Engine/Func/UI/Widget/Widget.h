@@ -7,7 +7,6 @@
 #include "Core/Base/ArrayProxy.h"
 #include "Core/Math/MathTypes.h"
 #include "Core/Object/Object.h"
-#include "Platform/RHI/VertexLayout.h"
 
 #include GEN_HEADER("Func.Widget.generated.h")
 
@@ -62,18 +61,15 @@ public:
   void SetVisible(bool visible = true);
   [[nodiscard]] bool IsVisible() const { return visible_; }
 
-  [[nodiscard]] core::Vector4I GetPadding() const { return padding_; }
-  void SetPadding(core::Vector4I padding);
-
   // 此函数用于计算这个Widget的包围盒的大小
   virtual core::Vector2I GetBoundingSize() { return {}; }
+
+  Widget *GetParent() const { return parent_; }
+  void SetParent(Widget *parent) { parent_ = parent; }
 
 protected:
   UInt64 GetIndexOffset() const { return index_offset_; }
   UInt64 GetIndexSize() const { return index_size_; }
-
-  // x: left, y: top, z: right, w: bottom
-  core::Vector4I padding_{};
 
   UInt64 index_offset_ = 0;
   UInt64 index_size_ = 0;
@@ -81,6 +77,7 @@ protected:
   bool dirty_ = true;
   bool visible_ = true;
   bool receive_input_ = false;
+  Widget *parent_ = nullptr;
 };
 
 // 一些通用的帮助函数

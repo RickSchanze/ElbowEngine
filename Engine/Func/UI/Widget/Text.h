@@ -16,13 +16,12 @@ namespace func::ui::widget {
 
 class CLASS() Text : public Widget {
 public:
-  Text &SetText(core::StringView text);
+  Text *SetText(core::StringView text);
   Text &SetSpacing(Float space);
   Text &SetFont(const resource::Font *font);
-  Text &SetFontSize(Float size);
+  Text *SetFontSize(Float size);
   Text &SetFontMaterial(const resource::Material *mat);
   Text &SetColor(core::Color color);
-  core::Rect2DI GetBoundingRect();
   [[nodiscard]] core::StringView GetText() const { return text_; }
   [[nodiscard]] core::Color GetFontColor() const { return font_color_; }
 

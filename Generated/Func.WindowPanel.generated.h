@@ -17,6 +17,8 @@ core::Type* func::ui::widget::WindowPanel::REFLECTION_Register_WindowPanel_Regis
 using namespace core; \
 Type* type = Type::Create<func::ui::widget::WindowPanel>("func.ui.widget.WindowPanel")->Internal_AddParent(TypeOf<func::ui::widget::Panel>())->SetComment("Panel是一个覆盖整个TargetRect的Widget"); \
 type->Internal_RegisterField("title_", &func::ui::widget::WindowPanel::title_, offsetof(func::ui::widget::WindowPanel, title_)); \
+type->Internal_RegisterField("title_height_", &func::ui::widget::WindowPanel::title_height_, offsetof(func::ui::widget::WindowPanel, title_height_)); \
+type->Internal_RegisterField("slot_", &func::ui::widget::WindowPanel::slot_, offsetof(func::ui::widget::WindowPanel, slot_)); \
 return type; \
 } \
 

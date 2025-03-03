@@ -11,9 +11,9 @@
 #include GEN_HEADER("Resource.Texture2DMeta.generated.h")
 
 namespace resource {
-class CLASS(SQLTable = "Texture2D") Texture2DMeta {
-  GENERATED_CLASS(Texture2DMeta)
-public:
+struct STRUCT(SQLTable = "Texture2D") Texture2DMeta {
+  GENERATED_STRUCT(Texture2DMeta)
+
   PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
   int32_t id{};
 

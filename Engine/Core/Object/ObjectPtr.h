@@ -12,8 +12,8 @@ core::Object *_ObjectManagerGetObjectByHandle(core::ObjectHandle handle);
 
 namespace core {
 
-class CLASS() ObjectPtrBase {
-  GENERATED_CLASS(ObjectPtrBase)
+struct CLASS() ObjectPtrBase {
+  GENERATED_STRUCT(ObjectPtrBase)
 public:
   ~ObjectPtrBase();
 

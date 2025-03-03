@@ -10,8 +10,8 @@
 #include GEN_HEADER("Resource.FontMeta.generated.h")
 
 namespace resource {
-class CLASS(SQLTable = "Font") FontMeta {
-  GENERATED_CLASS(FontMeta)
+struct STRUCT(SQLTable = "Font") FontMeta {
+  GENERATED_STRUCT(FontMeta)
 public:
   PROPERTY(SQLAttr = "(PrimaryKey, AutoIncrement)")
   Int32 id{};

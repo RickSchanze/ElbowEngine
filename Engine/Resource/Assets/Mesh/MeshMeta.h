@@ -8,10 +8,9 @@
 #include GEN_HEADER("Resource.MeshMeta.generated.h")
 
 namespace resource {
-class CLASS(SQLTable = "Mesh") MeshMeta {
-  GENERATED_CLASS(MeshMeta)
+struct STRUCT(SQLTable = "Mesh") MeshMeta {
+  GENERATED_STRUCT(MeshMeta)
 
-public:
   [[nodiscard]] int32_t GetId() const { return id; }
   [[nodiscard]] int32_t GetObjectHandle() const { return object_handle; }
   [[nodiscard]] bool GetTriangulate() const { return triangulate; }
@@ -51,4 +50,4 @@ public:
 
   // TODO: 一些高级选项
 };
-}   // namespace core::resource
+} // namespace resource
