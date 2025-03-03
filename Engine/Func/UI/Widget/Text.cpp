@@ -81,15 +81,14 @@ Text &Text::SetColor(core::Color color) {
   return *this;
 }
 
-Rect2DI Text::GetBoundingRect() { return GetFontRect(); }
-
-Rect2DI Text::GetFontRect() {
+Vector2I Text::GetBoundingSize() {
   UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   Font *font = font_;
+  Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   if (font == nullptr) {
     LOGGER.Error("Func.UI.Text", "字体未设置");
-    return Rect2DI{};
+    return Vector2I{};
   }
   UInt32 bearing_height_top = 0;
   UInt32 bearing_height_bottom = 0;
@@ -105,13 +104,11 @@ Rect2DI Text::GetFontRect() {
     bearing_height_top = std::max(bearing_height_top, glyph.bearing_y + base_line_);
     bearing_height_bottom = std::max(bearing_height_bottom, glyph.height - glyph.bearing_y + base_line_);
   }
-  Rect2DI rect{};
-  rect.position.x = 0;
-  rect.position.y = 0;
+  Vector2I bounding_size;
   auto padding = GetPadding();
-  rect.size.x = width + padding.x + padding.z + (size - 1) * spacing_;
-  rect.size.y = bearing_height_top + bearing_height_bottom + padding.y + padding.w;
-  return rect;
+  bounding_size.x = width + padding.x + padding.z + (size - 1) * spacing_;
+  bounding_size.y = (bearing_height_top + bearing_height_bottom) * font_scale + padding.y + padding.w;
+  return bounding_size;
 }
 
 void Text::Draw(CommandBuffer &cmd) {
@@ -128,10 +125,17 @@ void Text::Rebuild(Rect2DI draw_rect) {
   if (!IsDirty()) {
     return;
   }
+  Font *font = font_;
+  if (font == nullptr) {
+    LOGGER.Error("Func.UI.Text", "字体未设置");
+    return;
+  }
+  UnicodeString str = text_.ToUnicodeString();
+  font->RequestLoadGlyphs(str);
   // 左下角
+  draw_rect = CalcAlignedDrawRect(draw_rect, GetBoundingSize(), HorizontalAlignment::Left, vertical_alignment_);
   Vector2I bl = BottomLeft(draw_rect);
   Vector2I rt = TopRight(draw_rect);
-  UnicodeString str = text_.ToUnicodeString();
   UInt64 size = str.Size();
   size_t vert_size = size * 4;
   size_t index_size = size * 6;
@@ -141,13 +145,6 @@ void Text::Rebuild(Rect2DI draw_rect) {
   index_offset_ = data.index_offset;
   UInt32 cur_pos_x = bl.x + padding.x;
   UInt32 cur_pos_y = bl.y + base_line_ + padding.w;
-
-  Font *font = font_;
-  if (font == nullptr) {
-    LOGGER.Error("Func.UI.Text", "字体未设置");
-    return;
-  }
-  font->RequestLoadGlyphs(str);
   Float font_scale = static_cast<Float>(size_) / font->GetFontSize();
   auto spacing = spacing_;
   for (UInt64 i = 0; i < size; ++i) {

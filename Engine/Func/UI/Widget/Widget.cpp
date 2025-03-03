@@ -36,3 +36,36 @@ void Widget::SetPadding(core::Vector4I padding) {
     SetDirty();
   }
 }
+
+core::Rect2DI widget::CalcAlignedDrawRect(const core::Rect2DI &draw_rect, const core::Vector2I &size,
+                                          HorizontalAlignment horizontal_alignment,
+                                          VerticalAlignment vertical_alignment) {
+  core::Rect2DI adjusted_rect = draw_rect;
+  adjusted_rect.size = size;
+  // 处理vertical
+  if (size.y < draw_rect.size.y) {
+    switch (vertical_alignment) {
+    case VerticalAlignment::Center:
+      adjusted_rect.position.y += (draw_rect.size.y - size.y) / 2;
+      break;
+    case VerticalAlignment::Top:
+      adjusted_rect.position.y += draw_rect.size.y - size.y;
+      break;
+    default:
+      break;
+    }
+  }
+  if (size.x < draw_rect.size.x) {
+    switch (horizontal_alignment) {
+    case HorizontalAlignment::Center:
+      adjusted_rect.position.x += (draw_rect.size.x - size.x) / 2;
+      break;
+    case HorizontalAlignment::Right:
+      adjusted_rect.position.x += draw_rect.size.x - size.x;
+      break;
+    default:
+      break;
+    }
+  }
+  return adjusted_rect;
+}

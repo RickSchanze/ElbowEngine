@@ -24,6 +24,18 @@ class Buffer;
 }
 namespace func::ui::widget {
 
+enum class ENUM() HorizontalAlignment {
+  Left,
+  Center,
+  Right,
+};
+
+enum class ENUM() VerticalAlignment {
+  Top,
+  Center,
+  Bottom,
+};
+
 class CLASS() Widget : public core::Object {
   GENERATED_CLASS(Widget)
 public:
@@ -53,6 +65,9 @@ public:
   [[nodiscard]] core::Vector4I GetPadding() const { return padding_; }
   void SetPadding(core::Vector4I padding);
 
+  // 此函数用于计算这个Widget的包围盒的大小
+  virtual core::Vector2I GetBoundingSize() { return {}; }
+
 protected:
   UInt64 GetIndexOffset() const { return index_offset_; }
   UInt64 GetIndexSize() const { return index_size_; }
@@ -67,5 +82,13 @@ protected:
   bool visible_ = true;
   bool receive_input_ = false;
 };
+
+// 一些通用的帮助函数
+
+/// 计算一个修正后的绘制矩形
+/// 要在draw_rect中以vertical_alignment和horizontal_alignment对齐, 应该往哪绘制?
+/// 此函数用于计算这个, 且draw_rect的size会永远等于输入size
+core::Rect2DI CalcAlignedDrawRect(const core::Rect2DI &draw_rect, const core::Vector2I &size,
+                                  HorizontalAlignment horizontal_alignment, VerticalAlignment vertical_alignment);
 
 } // namespace func::ui::widget

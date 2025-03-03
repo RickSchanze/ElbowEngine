@@ -36,10 +36,9 @@ WindowPanel::WindowPanel() {
   title_ = ObjectManager::CreateNewObject<Text>();
   title_->SetName("Text_标题");
   title_->SetText("新窗口");
-  title_->SetFontSize(12);
   title_->SetFont(Font::GetDefaultFont());
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
-  title_->SetFontSize(APPLY_SCALE(title_height_));
+  title_->SetFontSize(APPLY_SCALE(title_height_ - 6));
   title_->SetColor(Color::White());
   SetWidth(APPLY_SCALE(800));
   SetHeight(APPLY_SCALE(600));

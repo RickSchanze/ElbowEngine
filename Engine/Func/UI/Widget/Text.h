@@ -23,18 +23,11 @@ public:
   Text &SetFontMaterial(const resource::Material *mat);
   Text &SetColor(core::Color color);
   core::Rect2DI GetBoundingRect();
-  core::StringView GetText() const { return text_; }
-
-  /**
-   * 计算可以容纳文字的矩形框大小
-   * @return
-   */
-  core::Rect2DI GetFontRect();
-
+  [[nodiscard]] core::StringView GetText() const { return text_; }
   [[nodiscard]] core::Color GetFontColor() const { return font_color_; }
 
+  core::Vector2I GetBoundingSize() override;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
-
   void Rebuild(core::Rect2DI draw_rect) override;
 
 private:
@@ -58,6 +51,9 @@ private:
 
   PROPERTY(Label = "字体材质")
   core::ObjectPtr<resource::Material> font_material_;
+
+  PROPERTY(Label = "竖直对齐")
+  VerticalAlignment vertical_alignment_ = VerticalAlignment::Center;
 };
 
 } // namespace func::ui::widget
