@@ -54,18 +54,31 @@ private:
 
 Font *Font::GetDefaultFont() { return AssetDataBase::Load<Font>("Assets/Font/MapleMono.ttf"); }
 
-Material *Font::GetDefaultFontMaterial() {
-  auto mat_path = "Assets/Material/DefaultFont.mat";
-  auto shader_path = "Assets/Shader/Text.slang";
-  if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
-    return AssetDataBase::Load<Material>(meta.GetValue().path);
-  } else {
-    auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
-    auto *font_material = ObjectManager::CreateNewObject<Material>();
-    font_material->SetShader(text_shader);
-    AssetDataBase::CreateAsset(font_material, mat_path);
-    return font_material;
+struct DefaultMatLoader {
+  DefaultMatLoader() {
+    Font *f = Font::GetDefaultFont();
+    Assert::Require("Resource,Font", f, "默认字体无法加载");
+    auto mat_path = "Assets/Material/DefaultFont.mat";
+    auto shader_path = "Assets/Shader/Text.slang";
+    if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
+      Material *m = AssetDataBase::Load<Material>(meta.GetValue().path);
+      m->SetTexture2D("atlas", f->InternalGetFontAtlas());
+      font_mat = m;
+    } else {
+      auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
+      auto *font_material = ObjectManager::CreateNewObject<Material>();
+      font_material->SetShader(text_shader);
+      AssetDataBase::CreateAsset(font_material, mat_path);
+      font_mat = font_material;
+    }
   }
+
+  Material *font_mat;
+};
+
+Material *Font::GetDefaultFontMaterial() {
+  static DefaultMatLoader loader;
+  return loader.font_mat;
 }
 
 Font::~Font() {

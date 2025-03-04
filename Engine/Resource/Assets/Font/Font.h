@@ -64,6 +64,8 @@ public:
 
   void RequestLoadGlyphs(const core::UnicodeString &str);
 
+  Texture2D* InternalGetFontAtlas() const { return font_atlas_; }
+
 private:
   void RequestLoadGlyph(UInt32 code_point);
   Int32 font_size_ = 32;                                      // 静态字体大小

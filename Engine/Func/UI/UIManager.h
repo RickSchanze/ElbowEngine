@@ -10,6 +10,9 @@
 #include "Platform/RHI/VertexLayout.h"
 #include "Platform/Window/Window.h"
 
+namespace resource {
+class Material;
+}
 namespace platform::rhi {
 class CommandBuffer;
 class Buffer;
@@ -46,6 +49,7 @@ public:
   static void AddWindow(widget::WindowPanel *window);
   static Int32 GetGlobalUIWidth();
   static Int32 GetGlobalUIHeight();
+  static resource::Material* GetDefaultUIMaterial();
 
 private:
   VertexWriteData InternalRequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);

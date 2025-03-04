@@ -18,6 +18,7 @@ using namespace core; \
 Type* type = Type::Create<func::ui::widget::VerticalLayout>("func.ui.widget.VerticalLayout")->Internal_AddParent(TypeOf<func::ui::widget::Widget>())->SetComment("Object不自动生成默认构造函数\nTODO: Destroy"); \
 type->Internal_RegisterField("children_", &func::ui::widget::VerticalLayout::children_, offsetof(func::ui::widget::VerticalLayout, children_)); \
 type->Internal_RegisterField("vertical_alignment_", &func::ui::widget::VerticalLayout::vertical_alignment_, offsetof(func::ui::widget::VerticalLayout, vertical_alignment_)); \
+type->Internal_RegisterField("spacing_", &func::ui::widget::VerticalLayout::spacing_, offsetof(func::ui::widget::VerticalLayout, spacing_)); \
 return type; \
 } \
 

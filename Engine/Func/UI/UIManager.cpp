@@ -59,6 +59,14 @@ void UIManager::AddWindow(WindowPanel *window) { GetByRef().InternalAddWindow(wi
 Int32 UIManager::GetGlobalUIWidth() { return WindowManager::GetMainWindow()->GetWidth(); }
 Int32 UIManager::GetGlobalUIHeight() { return WindowManager::GetMainWindow()->GetHeight(); }
 
+struct DefaultUIMaterialLoader {
+
+};
+
+resource::Material *UIManager::GetDefaultUIMaterial() {
+
+}
+
 void UIManager::InternalAddWindow(WindowPanel *window) {
   if (!windows_handles_.contains(window->GetHandle())) {
     windows_handles_.insert(window->GetHandle());
@@ -250,7 +258,7 @@ void UIManager::InternalDraw(CommandBuffer &cmd) const {
   for (auto &panel : windows_handles_) {
     WindowPanel *p = core::ObjectManager::GetObjectByHandle<WindowPanel>(panel);
     if (p) {
-      core::Rect2DI draw_rect = p->GetBoundingRect();
+      Rect2DI draw_rect = p->GetBoundingRect();
       p->Rebuild(draw_rect);
       p->Draw(cmd);
     } else {

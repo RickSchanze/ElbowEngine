@@ -75,7 +75,6 @@ void Panel::Rebuild(Rect2DI draw_rect) {
   VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
   index_size_ = 6;
   index_offset_ = data.index_offset;
-  VertexHelper::TransformPosToNDCSpace(data.vertices);
   SetDirty(false);
 }
 

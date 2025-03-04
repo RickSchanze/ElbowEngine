@@ -13,12 +13,11 @@ namespace func::ui::widget {
 class CLASS() VerticalLayout : public Widget {
   GENERATED_CLASS(VerticalLayout)
 public:
+  VerticalLayout();
   void Rebuild(core::Rect2DI draw_rect) override;
   void Draw(platform::rhi::CommandBuffer &cmd) override;
 
   VerticalLayout *AddChild(Widget *w);
-
-  void OnSetDirty() override;
 
 protected:
   PROPERTY()
@@ -27,5 +26,8 @@ protected:
 
   PROPERTY()
   VerticalAlignment vertical_alignment_ = VerticalAlignment::Top;
+
+  PROPERTY()
+  Int32 spacing_;
 };
 } // namespace func::ui::widget

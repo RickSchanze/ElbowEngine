@@ -23,7 +23,7 @@ inline Vector3 operator|(Vector3 v, DivideNum_Impl div) { return {v.x / div.num,
 struct DivideVec3_Impl {
   Vector3 v;
 };
-inline Vector3 operator|(Vector3 v, DivideVec3_Impl div) { return {v.x / div.v.x, v.y / div.v.y, v.z / div.v.z}; }
+inline Vector3 operator|(const Vector3& v, DivideVec3_Impl div) { return {v.x / div.v.x, v.y / div.v.y, v.z / div.v.z}; }
 
 struct ClampNum_Impl {
   Float min_, max_;

@@ -64,6 +64,8 @@ add_library(${PROJECT_NAME}
         UI/Widget/IInteractable.h
         UI/Widget/Layout/VerticalLayout.cpp
         UI/Widget/Layout/VerticalLayout.h
+        UI/Widget/Button.cpp
+        UI/Widget/Button.h
 )
 
 add_library(Engine::Func ALIAS ${PROJECT_NAME})

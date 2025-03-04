@@ -10,8 +10,6 @@
 
 #include GEN_HEADER("Func.Widget.generated.h")
 
-#define APPLY_SCALE(x) (x) * ::func::ui::Style::GetGlobalScale()
-
 namespace platform::rhi {
 class CommandBuffer;
 }
@@ -22,6 +20,27 @@ namespace platform::rhi {
 class Buffer;
 }
 namespace func::ui::widget {
+
+struct STRUCT() Padding {
+  PROPERTY()
+  float left = 0.f;
+
+  PROPERTY()
+  float top = 0.f;
+
+  PROPERTY()
+  float right = 0.f;
+
+  PROPERTY()
+  float bottom = 0.f;
+
+  /**
+   * 将rect表示的范围应用padding后获得的新范围
+   * @param rect
+   * @return
+   */
+  core::Rect2DI Apply(core::Rect2DI rect) const;
+};
 
 enum class ENUM() HorizontalAlignment {
   Left,

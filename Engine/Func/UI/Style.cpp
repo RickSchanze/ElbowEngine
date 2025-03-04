@@ -12,7 +12,9 @@ static Float scale = 1.f;
 Color Style::Colors::PanelBackground() { return Color::FromUInt(23, 23, 26); }
 Color Style::Colors::TitleBackground() { return Color::FromUInt(18, 18, 18); }
 core::Color Style::Colors::FocusedTitleBackground() { return Color::FromUInt(60, 60, 60); }
-core::Color Style::Colors::UIIconColor() { return Color::FromUInt(255, 255, 255); }
+core::Color Style::Colors::UIIcon() { return Color::FromUInt(255, 255, 255); }
+core::Color Style::Colors::ButtonNormal() { return Color::FromUInt(74, 158, 255); }
+core::Color Style::Colors::Text() { return Color::FromUInt(224, 224, 224); }
 
 Float Style::GetGlobalScale() { return scale; }
 

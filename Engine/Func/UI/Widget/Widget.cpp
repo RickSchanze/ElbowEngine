@@ -15,6 +15,14 @@ using namespace func;
 using namespace ui;
 using namespace widget;
 
+core::Rect2DI Padding::Apply(core::Rect2DI rect) const {
+  rect.size.x -= (left + right);
+  rect.size.y -= (top + bottom);
+  rect.position.x += left;
+  rect.position.y += bottom;
+  return rect;
+}
+
 void Widget::Rebuild(core::Rect2DI draw_rect) { NoEntry(); }
 void Widget::SetDirty(bool dirty) {
   dirty_ = dirty;

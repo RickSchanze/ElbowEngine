@@ -16,10 +16,11 @@ namespace func::ui::widget {
 
 class CLASS() Text : public Widget {
 public:
+  Text();
   Text *SetText(core::StringView text);
   Text &SetSpacing(Float space);
   Text &SetFont(const resource::Font *font);
-  Text *SetFontSize(Float size);
+  Text *SetTextSize(Float size);
   Text &SetFontMaterial(const resource::Material *mat);
   Text &SetColor(core::Color color);
   [[nodiscard]] core::StringView GetText() const { return text_; }
@@ -46,7 +47,7 @@ private:
   core::ObjectPtr<resource::Font> font_;
 
   PROPERTY(Label = "字体颜色")
-  core::Color font_color_ = core::Color::White();
+  core::Color font_color_;
 
   PROPERTY(Label = "字体材质")
   core::ObjectPtr<resource::Material> font_material_;

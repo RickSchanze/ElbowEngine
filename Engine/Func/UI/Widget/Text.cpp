@@ -6,6 +6,7 @@
 
 #include "Core/Math/Math.h"
 #include "Func/Render/Misc.h"
+#include "Func/UI/Style.h"
 #include "Func/UI/UIManager.h"
 #include "Func/UI/VertexHelper.h"
 #include "Platform/RHI/CommandBuffer.h"
@@ -22,6 +23,12 @@ using namespace core;
 using namespace resource;
 using namespace platform;
 using namespace rhi;
+
+Text::Text() {
+  font_color_ = Style::Colors::Text();
+  font_material_ = Font::GetDefaultFontMaterial();
+  font_ = Font::GetDefaultFont();
+}
 
 Text *Text::SetText(StringView text) {
   if (text == text_)
@@ -53,7 +60,7 @@ Text &Text::SetFont(const Font *font) {
   return *this;
 }
 
-Text *Text::SetFontSize(Float size) {
+Text *Text::SetTextSize(Float size) {
   if (Math::ApproximatelyEqual(size, size_))
     return this;
   size_ = size;
@@ -132,9 +139,6 @@ void Text::Draw(CommandBuffer &cmd) {
 }
 
 void Text::Rebuild(Rect2DI draw_rect) {
-  if (!IsDirty()) {
-    return;
-  }
   Font *font = font_;
   if (font == nullptr) {
     LOGGER.Error("Func.UI.Text", "字体未设置");
@@ -184,6 +188,5 @@ void Text::Rebuild(Rect2DI draw_rect) {
 
     cur_pos_x += ((glyph.bearing_x + glyph.width) * font_scale + spacing);
   }
-  VertexHelper::TransformPosToNDCSpace(data.vertices);
   SetDirty(false);
 }

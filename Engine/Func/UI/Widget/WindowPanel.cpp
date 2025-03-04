@@ -38,7 +38,7 @@ WindowPanel::WindowPanel() {
   title_->SetText("新窗口");
   title_->SetFont(Font::GetDefaultFont());
   title_->SetFontMaterial(Font::GetDefaultFontMaterial());
-  title_->SetFontSize(APPLY_SCALE(title_height_ - 6));
+  title_->SetTextSize(APPLY_SCALE(title_height_ - 6));
   title_->SetColor(Color::White());
   title_->SetParent(this);
   SetWidth(APPLY_SCALE(800));
@@ -122,7 +122,7 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   right_bottom.position.x = title_rect.position.x + title_height_ - ICON_PADDING;
   right_bottom.position.y = title_rect.position.y + ICON_PADDING;
 
-  VertexHelper::SetQuadColor(Style::Colors::UIIconColor(), left_top, left_bottom, right_top, right_bottom);
+  VertexHelper::SetQuadColor(Style::Colors::UIIcon(), left_top, left_bottom, right_top, right_bottom);
   VertexHelper::FillQuadUV(expanded_range, left_top, left_bottom, right_top, right_bottom);
   VertexHelper::AppendQuad(data, left_top, left_bottom, right_top, right_bottom);
 
@@ -164,7 +164,6 @@ void WindowPanel::Rebuild(Rect2DI draw_rect) {
   title_text_rect.position.y = title_rect.position.y + 1;
   title_text_rect.size.x = title_rect.size.x - title_height_ * 2 - 2;
   title_text_rect.size.y = title_rect.size.y;
-  VertexHelper::TransformPosToNDCSpace(data.vertices);
   text_title_->Rebuild(title_text_rect);
   if (slot_) {
     slot_->Rebuild(context_rect);

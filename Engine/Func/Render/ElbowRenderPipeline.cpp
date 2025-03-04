@@ -7,6 +7,7 @@
 #include "Core/Async/Execution/SyncGroup.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/UI/UIManager.h"
+#include "Func/UI/Widget/Button.h"
 #include "Func/UI/Widget/Layout/VerticalLayout.h"
 #include "Func/UI/Widget/Panel.h"
 #include "Func/UI/Widget/WindowPanel.h"
@@ -83,8 +84,9 @@ void func::ElbowRenderPipeline::Build() {
     this->material_ = obj_mat;
     auto panel_widget = ObjectManager::CreateNewObject<ui::widget::WindowPanel>();
     ui::widget::VerticalLayout *layout = ObjectManager::CreateNewObject<ui::widget::VerticalLayout>();
-    layout->AddChild(CreateNewObject<ui::widget::Text>()->SetText("123")->SetFontSize(16))
-        ->AddChild(CreateNewObject<ui::widget::Text>()->SetText("456")->SetFontSize(16));
+    layout->AddChild(CreateNewObject<ui::widget::Text>()->SetText("123")->SetTextSize(16))
+        ->AddChild(CreateNewObject<ui::widget::Text>()->SetText("456")->SetTextSize(16))
+        ->AddChild(CreateNewObject<ui::widget::Button>());
     panel_widget->SetSlot(layout);
     auto panel_mat = ObjectManager::CreateNewObject<Material>();
     auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);

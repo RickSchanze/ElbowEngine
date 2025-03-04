@@ -11,9 +11,13 @@ public:
   static core::Color PanelBackground();
   static core::Color TitleBackground();
   static core::Color FocusedTitleBackground();
-  static core::Color UIIconColor();
+  static core::Color UIIcon();
+  static core::Color ButtonNormal();
+  static core::Color Text();
 };
 
 Float GetGlobalScale();
 void SetGlobalScale(Float scale);
 } // namespace func::ui::Style
+
+#define APPLY_SCALE(x) (x) * ::func::ui::Style::GetGlobalScale()

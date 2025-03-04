@@ -5,6 +5,7 @@
 #include "VerticalLayout.h"
 
 #include "Core/Object/ObjectRegistry.h"
+#include "Func/UI/Style.h"
 
 #include GEN_HEADER("Func.VerticalLayout.generated.h")
 
@@ -14,8 +15,10 @@ using namespace func;
 using namespace ui;
 using namespace widget;
 
+VerticalLayout::VerticalLayout() : spacing_(APPLY_SCALE(10)) {}
+
 void VerticalLayout::Rebuild(core::Rect2DI draw_rect) {
-  Int32 current_y = draw_rect.size.y;
+  Int32 current_y = draw_rect.position.y + draw_rect.size.y;
   for (auto &child : cached_children_) {
     Widget *w = child;
     if (!w) {
@@ -27,12 +30,13 @@ void VerticalLayout::Rebuild(core::Rect2DI draw_rect) {
     child_draw_rect.position.y = current_y - size.y;
     child_draw_rect.size = size;
     w->Rebuild(child_draw_rect);
-    current_y -= size.y;
+    current_y -= (size.y + spacing_);
     if (current_y < 0) {
       // TODO: 处理小于0的情况
       break;
     }
   }
+  SetDirty(false);
 }
 
 void VerticalLayout::Draw(platform::rhi::CommandBuffer &cmd) {
@@ -50,10 +54,4 @@ VerticalLayout *VerticalLayout::AddChild(Widget *w) {
     cached_children_.push_back(w);
   }
   return this;
-}
-
-void VerticalLayout::OnSetDirty() {
-  for (auto w : cached_children_) {
-    w->SetDirty();
-  }
 }

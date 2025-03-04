@@ -13,10 +13,27 @@ using namespace func::ui;
 void VertexHelper::AppendQuad(VertexWriteData &data, const platform::rhi::Vertex_UI &left_top,
                               const platform::rhi::Vertex_UI &left_bottom, const platform::rhi::Vertex_UI &right_top,
                               const platform::rhi::Vertex_UI &right_bottom) {
-  data.vertices.Add(left_top);
-  data.vertices.Add(left_bottom);
-  data.vertices.Add(right_top);
-  data.vertices.Add(right_bottom);
+  Int32 width = UIManager::GetGlobalUIWidth(), height = UIManager::GetGlobalUIHeight();
+
+  platform::rhi::Vertex_UI adjusted_left_top = left_top;
+  adjusted_left_top.position =
+      adjusted_left_top.position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
+  data.vertices.Add(adjusted_left_top);
+
+  platform::rhi::Vertex_UI adjusted_left_bottom = left_bottom;
+  adjusted_left_bottom.position =
+      adjusted_left_bottom.position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
+  data.vertices.Add(adjusted_left_bottom);
+
+  platform::rhi::Vertex_UI adjusted_right_top = right_top;
+  adjusted_right_top.position =
+      adjusted_right_top.position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
+  data.vertices.Add(adjusted_right_top);
+
+  platform::rhi::Vertex_UI adjusted_right_bottom = right_bottom;
+  adjusted_right_bottom.position =
+      adjusted_right_bottom.position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
+  data.vertices.Add(adjusted_right_bottom);
 
   UInt64 index_end = data.vertex_offset + data.vertices.Size();
   data.indices.Add(index_end - 3);
@@ -52,9 +69,3 @@ void VertexHelper::SetQuadColor(const core::Color &color, platform::rhi::Vertex_
   right_bottom.color = color;
 }
 
-void VertexHelper::TransformPosToNDCSpace(const core::ArrayProxy<platform::rhi::Vertex_UI> &target) {
-  Int32 width = UIManager::GetGlobalUIWidth(), height = UIManager::GetGlobalUIHeight();
-  for (UInt64 i = 0; i < target.Size(); ++i) {
-    target[i].position = target[i].position | core::Divide({width, height, 1}) | core::ToVector2 | UIPos2NDC;
-  }
-}
