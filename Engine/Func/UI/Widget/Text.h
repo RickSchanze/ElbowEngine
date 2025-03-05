@@ -6,16 +6,24 @@
 #include "Core/Object/ObjectPtr.h"
 #include "Widget.h"
 
+#include GEN_HEADER("Func.Text.generated.h")
+
 namespace resource {
 class Material;
 }
 namespace resource {
 class Font;
 }
+namespace func::ui {
+class UIManager;
+}
+
 namespace func::ui::widget {
 
 class CLASS() Text : public Widget {
+  GENERATED_CLASS(Text)
 public:
+  friend func::ui::UIManager;
   Text();
   Text *SetText(core::StringView text);
   Text &SetSpacing(Float space);
@@ -27,10 +35,12 @@ public:
   [[nodiscard]] core::Color GetFontColor() const { return font_color_; }
 
   core::Vector2I GetBoundingSize() override;
-  void Draw(platform::rhi::CommandBuffer &cmd) override;
+
   void Rebuild(core::Rect2DI draw_rect) override;
 
 private:
+  void Draw(platform::rhi::CommandBuffer &cmd) override;
+
   PROPERTY(Label = "文本")
   core::String text_;
 

@@ -16,6 +16,10 @@
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/Material.h"
 
+#include GEN_HEADER("Func.Text.generated.h")
+
+GENERATED_SOURCE()
+
 using namespace func;
 using namespace ui;
 using namespace widget;

@@ -56,7 +56,7 @@ void Button::Draw(CommandBuffer &cmd) {
   cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1,
                                index_offset_ DEBUG_ONLY_PARAM(core::String::Format("Button {}", GetHandle())));
   if (text_) {
-    text_->Draw(cmd);
+    UIManager::AddDrawText(text_);
   }
 }
 

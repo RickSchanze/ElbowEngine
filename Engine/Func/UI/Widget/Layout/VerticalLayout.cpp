@@ -6,9 +6,10 @@
 
 #include "Core/Object/ObjectRegistry.h"
 #include "Func/UI/Style.h"
+#include "Func/UI/UIManager.h"
+#include "Func/UI/Widget/Text.h"
 
 #include GEN_HEADER("Func.VerticalLayout.generated.h")
-
 GENERATED_SOURCE()
 
 using namespace func;
@@ -42,6 +43,10 @@ void VerticalLayout::Rebuild(core::Rect2DI draw_rect) {
 void VerticalLayout::Draw(platform::rhi::CommandBuffer &cmd) {
   for (auto &child : cached_children_) {
     if (!child) {
+      continue;
+    }
+    if (child->GetType() == core::TypeOf<Text>()) {
+      UIManager::AddDrawText((Text *)child);
       continue;
     }
     child->Draw(cmd);

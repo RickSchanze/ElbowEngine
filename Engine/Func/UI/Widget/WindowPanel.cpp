@@ -62,7 +62,7 @@ void WindowPanel::Draw(CommandBuffer &cmd) {
   BindMaterial(cmd, mat);
   cmd.Enqueue<Cmd_DrawIndexed>(index_size_, 1, index_offset_ DEBUG_ONLY_PARAM("WindowPanelDraw"));
 
-  title_->Draw(cmd);
+  UIManager::AddDrawText(title_);
   if (slot_) {
     slot_->Draw(cmd);
   }

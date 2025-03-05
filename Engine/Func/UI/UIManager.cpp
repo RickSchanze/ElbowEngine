@@ -15,6 +15,7 @@
 #include "Platform/RHI/VertexLayout.h"
 #include "Platform/Window/Window.h"
 #include "Platform/Window/WindowManager.h"
+#include "Widget/Text.h"
 #include "Widget/WindowPanel.h"
 
 using namespace func;
@@ -59,13 +60,7 @@ void UIManager::AddWindow(WindowPanel *window) { GetByRef().InternalAddWindow(wi
 Int32 UIManager::GetGlobalUIWidth() { return WindowManager::GetMainWindow()->GetWidth(); }
 Int32 UIManager::GetGlobalUIHeight() { return WindowManager::GetMainWindow()->GetHeight(); }
 
-struct DefaultUIMaterialLoader {
-
-};
-
-resource::Material *UIManager::GetDefaultUIMaterial() {
-
-}
+void UIManager::AddDrawText(widget::Text *t) { GetByRef().InternalAddDrawText(t); }
 
 void UIManager::InternalAddWindow(WindowPanel *window) {
   if (!windows_handles_.contains(window->GetHandle())) {
@@ -176,6 +171,11 @@ void UIManager::InternalProcessInput(const InputEventParam &event) {
   }
 }
 
+void UIManager::InternalAddDrawText(widget::Text *t) {
+  if (t)
+    texts_to_render_.insert(t);
+}
+
 static UInt64 FindAvailableOffset(HashMap<ObjectHandle, OccupiedMemory> &occupied_vertex_, UInt64 vertex_count) {
   PROFILE_SCOPE_AUTO;
   if (occupied_vertex_.size() == 0) {
@@ -202,46 +202,46 @@ static UInt64 FindAvailableOffset(HashMap<ObjectHandle, OccupiedMemory> &occupie
   return offset_mark;
 }
 
-VertexWriteData UIManager::RequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count, UInt64 index_count) {
+VertexWriteData UIManager::RequestVertexWriteData(ObjectHandle handle, UInt64 vertex_count, UInt64 index_count) {
   return GetByRef().InternalRequestVertexWriteData(handle, vertex_count, index_count);
 }
 
-void UIManager::RecycleVertexData(core::ObjectHandle handle) { return GetByRef().InternalRecycleVertexData(handle); }
+void UIManager::RecycleVertexData(ObjectHandle handle) { return GetByRef().InternalRecycleVertexData(handle); }
 
-VertexWriteData UIManager::InternalRequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count,
+VertexWriteData UIManager::InternalRequestVertexWriteData(ObjectHandle handle, UInt64 vertex_count,
                                                           UInt64 index_count) {
   PROFILE_SCOPE_AUTO;
   VertexWriteData rtn{};
   if (occupied_vertex_.contains(handle)) {
     if (occupied_vertex_[handle].size >= vertex_count) {
       rtn.vertex_offset = occupied_vertex_[handle].offset;
-      rtn.vertices = core::ArrayProxy(vertex_buffer_data_ + rtn.vertex_offset, vertex_count);
+      rtn.vertices = ArrayProxy(vertex_buffer_data_ + rtn.vertex_offset, vertex_count);
     } else {
       occupied_vertex_.erase(handle);
     }
   }
   if (rtn.vertices.Remain() == 0) {
     rtn.vertex_offset = FindAvailableOffset(occupied_vertex_, vertex_count);
-    rtn.vertices = core::ArrayProxy(vertex_buffer_data_ + rtn.vertex_offset, vertex_count);
+    rtn.vertices = ArrayProxy(vertex_buffer_data_ + rtn.vertex_offset, vertex_count);
   }
   if (occupied_index_.contains(handle)) {
     if (occupied_index_[handle].size >= index_count) {
       rtn.index_offset = occupied_index_[handle].offset;
-      rtn.indices = core::ArrayProxy(index_buffer_data_ + rtn.index_offset, index_count);
+      rtn.indices = ArrayProxy(index_buffer_data_ + rtn.index_offset, index_count);
     } else {
       occupied_index_.erase(handle);
     }
   }
   if (rtn.indices.Remain() == 0) {
     rtn.index_offset = FindAvailableOffset(occupied_index_, index_count);
-    rtn.indices = core::ArrayProxy(index_buffer_data_ + rtn.index_offset, index_count);
+    rtn.indices = ArrayProxy(index_buffer_data_ + rtn.index_offset, index_count);
   }
   occupied_vertex_[handle] = {rtn.vertex_offset, vertex_count};
   occupied_index_[handle] = {rtn.index_offset, index_count};
   return rtn;
 }
 
-void UIManager::InternalRecycleVertexData(core::ObjectHandle handle) {
+void UIManager::InternalRecycleVertexData(ObjectHandle handle) {
   if (occupied_vertex_.contains(handle)) {
     occupied_vertex_.erase(handle);
   }
@@ -250,13 +250,13 @@ void UIManager::InternalRecycleVertexData(core::ObjectHandle handle) {
   }
 }
 
-void UIManager::InternalDraw(CommandBuffer &cmd) const {
+void UIManager::InternalDraw(CommandBuffer &cmd) {
   PROFILE_SCOPE_AUTO;
   // TODO: 遮挡关系检查
   cmd.Enqueue<Cmd_BindVertexBuffer>(vertex_buffer_.get());
   cmd.Enqueue<Cmd_BindIndexBuffer>(index_buffer_.get());
   for (auto &panel : windows_handles_) {
-    WindowPanel *p = core::ObjectManager::GetObjectByHandle<WindowPanel>(panel);
+    WindowPanel *p = ObjectManager::GetObjectByHandle<WindowPanel>(panel);
     if (p) {
       Rect2DI draw_rect = p->GetBoundingRect();
       p->Rebuild(draw_rect);
@@ -265,4 +265,8 @@ void UIManager::InternalDraw(CommandBuffer &cmd) const {
       LOGGER.Error("UIManager", "Draw: 窗口{}不存在", panel);
     }
   }
+  for (auto &text : texts_to_render_) {
+    text->Draw(cmd);
+  }
+  texts_to_render_.clear();
 }

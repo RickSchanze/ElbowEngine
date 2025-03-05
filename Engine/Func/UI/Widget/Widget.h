@@ -22,6 +22,8 @@ class Buffer;
 namespace func::ui::widget {
 
 struct STRUCT() Padding {
+  GENERATED_STRUCT(Padding)
+
   PROPERTY()
   float left = 0.f;
 

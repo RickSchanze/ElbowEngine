@@ -10,6 +10,9 @@
 #include "Platform/RHI/VertexLayout.h"
 #include "Platform/Window/Window.h"
 
+namespace func::ui::widget {
+class Text;
+}
 namespace resource {
 class Material;
 }
@@ -49,14 +52,16 @@ public:
   static void AddWindow(widget::WindowPanel *window);
   static Int32 GetGlobalUIWidth();
   static Int32 GetGlobalUIHeight();
-  static resource::Material* GetDefaultUIMaterial();
+  static resource::Material *GetDefaultUIMaterial();
+  static void AddDrawText(widget::Text* t);
 
 private:
   VertexWriteData InternalRequestVertexWriteData(core::ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
   void InternalRecycleVertexData(core::ObjectHandle handle);
-  void InternalDraw(platform::rhi::CommandBuffer &cmd) const;
+  void InternalDraw(platform::rhi::CommandBuffer &cmd);
   void InternalAddWindow(widget::WindowPanel *window);
   void InternalProcessInput(const InputEventParam &event);
+  void InternalAddDrawText(widget::Text* t);
 
   core::HashSet<core::ObjectHandle> windows_handles_;
 
@@ -74,6 +79,8 @@ private:
   core::ObjectHandle pressed_window_panel_handle_ = 0; // 用于处理即将按下, 即focused改变的情况
   // 鼠标在哪个窗口?
   core::ObjectHandle mouse_stay_window_handle_ = 0;
+  // 收集所有Text, 用于一次渲染, 这样不需要重复绑定DescriptorSet
+  core::HashSet<widget::Text *> texts_to_render_;
 };
 
 } // namespace func::ui
