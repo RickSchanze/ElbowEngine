@@ -5,86 +5,47 @@
 #include "Concept.h"
 #include "Core/Base/CoreTypeDef.h"
 
-namespace core::exec
-{
-namespace just_detail
-{
-template <typename... Args>
-struct JustSender
-{
-    using ValueTypes = std::tuple<Args...>;
+namespace core::exec {
 
-    [[no_unique_address]] Tuple<Args...> args;
+template <typename T> struct JustSender : Sender {
+  using value_type = Pure<T>;
+  Pure<T> value;
 
-    template <typename R>
-    struct Operation
-    {
-        [[no_unique_address]] Tuple<Args...> args;
-        [[no_unique_address]] R              r;
+  template <typename R> struct Operation {
+    Pure<T> v;
+    R r;
 
-        friend void TagInvoke(StartType, Operation& s) noexcept
-        {
-            try
-            {
-                std::apply([&s](Args&... Values) { SetValue(Move(s.r), Move(Values)...); }, s.args);
-            }
-            catch (...)
-            {
-                SetError(Forward<R>(s.r), std::current_exception());
-            }
-        }
-    };
-
-    template <typename Self, typename R>
-        requires std::is_same_v<std::remove_cvref_t<Self>, JustSender>
-    friend auto TagInvoke(ConnectType, Self&& s, R&& r)
-    {
-        return Operation<std::remove_cvref_t<R>>{Forward<Self>(s).args, Forward<R>(r)};
+    void Start() noexcept {
+      try {
+        r.SetValue(v);
+      } catch (...) {
+        r.SetError(std::current_exception());
+      }
     }
+  };
+
+  template <typename R> Operation<R> Connect(R &&r) { return {value, Forward<R>(r)}; }
 };
 
-template <typename R>
-struct JustOperation
-{
-    [[no_unique_address]] R r;
+struct VoidJustSender : Sender {
+  using value_type = void;
 
-    friend void TagInvoke(StartType, JustOperation& s) noexcept
-    {
-        try
-        {
-            SetValue(Move(s.r));
-        }
-        catch (...)
-        {
-            SetError(Move(s.r), std::current_exception());
-        }
+  template <typename R> struct Operation {
+    R r;
+
+    void Start() noexcept {
+      try {
+        r.SetValue();
+      } catch (...) {
+        r.SetError(std::current_exception());
+      }
     }
+  };
+
+  template <typename R> Operation<R> Connect(R &&r) { return {Forward<R>(r)}; }
 };
 
-template <>
-struct JustSender<void>
-{
-    using ValueTypes = void;
+template <typename T> JustSender<T> Just(T &&value) { return {Forward<T>(value)}; }
 
-    template <typename Self, typename R>
-        requires std::is_same_v<std::remove_cvref_t<Self>, JustSender>
-    friend auto TagInvoke(ConnectType, Self&& s, R&& r)
-    {
-        return JustOperation<std::remove_cvref_t<R>>{Forward<R>(r)};
-    }
-};
-}   // namespace just_detail
-template <typename... Args>
-constexpr std::conditional_t<sizeof...(Args) == 0, just_detail::JustSender<void>, just_detail::JustSender<std::remove_cvref_t<Args>...>>
-Just(Args&&... args)
-{
-    if constexpr (sizeof...(Args) > 0)
-    {
-        return just_detail::JustSender<std::remove_cvref_t<Args>...>{std::make_tuple(Forward<Args>(args)...)};
-    }
-    else
-    {
-        return just_detail::JustSender<void>{};
-    }
-}
-}   // namespace core::exec
+inline VoidJustSender Just() { return {}; }
+} // namespace core::exec

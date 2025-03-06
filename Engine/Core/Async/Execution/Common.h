@@ -104,4 +104,7 @@ concept CConnectable =
 
 template <typename Sender, typename Receiver>
 using ConnectResultType = std::invoke_result_t<ConnectType, Sender, Receiver>;
+
+struct Sender {};
+struct Receiver {};
 }   // namespace core::exec

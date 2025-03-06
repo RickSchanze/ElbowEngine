@@ -126,6 +126,8 @@ add_library(${PROJECT_NAME}
         Base/ArrayMap.h
         Base/ArrayProxy.cpp
         Base/ArrayProxy.h
+        Async/Execution/ThenSender.cpp
+        Async/Execution/ThenSender.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})
