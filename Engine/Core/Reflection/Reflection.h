@@ -13,7 +13,6 @@
 #include "Core/Base/Ref.h"
 #include "Core/Base/UniquePtr.h"
 #include "Core/CoreGlobal.h"
-#include "Core/CoreTypeTraits.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
 #include "Core/Object/ObjectPtr.h"
@@ -44,52 +43,52 @@ enum class ContainerIdentifier {
 };
 
 template <typename T> struct ContainerTypeTrait {
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::Count;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::Count;
 };
 
 template <typename T> struct ContainerTypeTrait<Array<T>> {
   using ValueType = T;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::Array;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::Array;
 };
 
 template <typename T, size_t N> struct ContainerTypeTrait<StaticArray<T, N>> {
   using ValueType = T;
 
   constexpr static int32_t ConstantSize = N;
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::StaticArray;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::StaticArray;
 };
 
 template <typename T> struct ContainerTypeTrait<Set<T>> {
   using ValueType = T;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::Set;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::Set;
 };
 
 template <typename T> struct ContainerTypeTrait<HashSet<T>> {
   using ValueType = T;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::HashSet;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::HashSet;
 };
 
 template <typename T> struct ContainerTypeTrait<List<T>> {
   using ValueType = T;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::List;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::List;
 };
 
 template <typename K, typename V> struct ContainerTypeTrait<HashMap<K, V>> {
   using KeyType = K;
   using ValueType = V;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::HashMap;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::HashMap;
 };
 
 template <typename K, typename V> struct ContainerTypeTrait<Map<K, V>> {
   using KeyType = K;
   using ValueType = V;
 
-  constexpr static ContainerIdentifier Value = ContainerIdentifier::Map;
+  constexpr static ContainerIdentifier value = ContainerIdentifier::Map;
 };
 
 struct Type;
@@ -392,7 +391,7 @@ struct Type {
   [[nodiscard]] bool IsDerivedFrom(const Type *type) const;
 
 #define REGISTER_FIELD_IMPL(name)                                                                                      \
-  else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::name) {                                      \
+  else if constexpr (ContainerTypeTrait<T>::value == ContainerIdentifier::name) {                                      \
     using ValueType = typename ContainerTypeTrait<T>::ValueType;                                                       \
     if constexpr (IsObjectPtr<ValueType>::value) {                                                                     \
       info.type_ = TypeOf<ObjectPtrBase>();                                                                            \
@@ -421,7 +420,7 @@ struct Type {
         {
             info.type_ = TypeOf<ObjectPtrBase>();
         }
-        else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Count)
+        else if constexpr (ContainerTypeTrait<T>::value == ContainerIdentifier::Count)
         {
             // 不是容器
             info.type_                 = TypeOf<T>();
@@ -431,7 +430,7 @@ struct Type {
         REGISTER_FIELD_IMPL(Set)
         REGISTER_FIELD_IMPL(List)
         REGISTER_FIELD_IMPL(HashSet)
-        else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::StaticArray)
+        else if constexpr (ContainerTypeTrait<T>::value == ContainerIdentifier::StaticArray)
         {
             using ValueType = typename ContainerTypeTrait<T>::ValueType;
             if constexpr (IsObjectPtr<ValueType>::value)
@@ -446,14 +445,14 @@ struct Type {
             info.container_view_ =
                 New<StaticArrayView<ClassT, typename ContainerTypeTrait<T>::ValueType, ContainerTypeTrait<T>::ConstantSize>>(field, this);
         }
-        else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::Map)
+        else if constexpr (ContainerTypeTrait<T>::value == ContainerIdentifier::Map)
         {
             info.type_                 = nullptr;
             info.container_identifier_ = ContainerIdentifier::Map;
             info.container_view_ =
                 New<MapView<ClassT, typename ContainerTypeTrait<T>::KeyType, typename ContainerTypeTrait<T>::ValueType, Map>>(field, this);
         }
-        else if constexpr (ContainerTypeTrait<T>::Value == ContainerIdentifier::HashMap)
+        else if constexpr (ContainerTypeTrait<T>::value == ContainerIdentifier::HashMap)
         {
             info.type_                 = nullptr;
             info.container_identifier_ = ContainerIdentifier::HashMap;

@@ -3,15 +3,13 @@
 //
 
 #pragma once
-#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Base/CoreTypeDef.h"
 #include "Core/Base/EString.h"
 #include "Core/CoreGlobal.h"
 #include "Enums.h"
+#include "Func/Camera/ACameraHolder.h"
 #include "GfxContext.h"
 #include "IResource.h"
-
-#include <queue>
 
 namespace core {
 class FrameAllocator;
@@ -41,7 +39,7 @@ public:
    * 执行完成后会调用Clear
    * @param label label 这一段命令的标签(for debug)
    */
-  virtual core::exec::AsyncResultHandle<> Execute(core::StringView label) = 0;
+  virtual core::exec::ExecFuture<> Execute(core::StringView label) = 0;
 
   /**
    * 清理队里里的命令 之前记录过的不会被清理

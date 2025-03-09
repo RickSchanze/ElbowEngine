@@ -59,14 +59,14 @@ struct DefaultMatLoader {
     Font *f = Font::GetDefaultFont();
     Assert::Require("Resource,Font", f, "默认字体无法加载");
     auto mat_path = "Assets/Material/DefaultFont.mat";
-    auto shader_path = "Assets/Shader/Text.slang";
     if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
       Material *m = AssetDataBase::Load<Material>(meta.GetValue().path);
       m->SetTexture2D("atlas", f->InternalGetFontAtlas());
       font_mat = m;
     } else {
-      auto *text_shader = AssetDataBase::Load<Shader>(shader_path);
-      auto *font_material = ObjectManager::CreateNewObject<Material>();
+      const auto shader_path = "Assets/Shader/Text.slang";
+      const Shader *text_shader = AssetDataBase::Load<Shader>(shader_path);
+      Material *font_material = ObjectManager::CreateNewObject<Material>();
       font_material->SetShader(text_shader);
       AssetDataBase::CreateAsset(font_material, mat_path);
       font_mat = font_material;
@@ -130,7 +130,7 @@ bool Font::Load(const FontMeta &meta) {
   atlas_meta.height = font_atlas_height_;
   atlas_meta.dynamic = true;
   atlas_meta.format = Format::R8_SRGB;
-  Texture2D *font_atlas = ObjectManager::CreateNewObjectAsync<Texture2D>()->GetValue().GetValue() | First;
+  Texture2D *font_atlas = ObjectManager::CreateNewObject<Texture2D>();
   font_atlas->SetName(String::Format("Font Atlas for {}", path_));
   font_atlas->Load(atlas_meta);
   font_atlas_ = font_atlas;

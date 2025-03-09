@@ -23,7 +23,7 @@ void WorldClock::TickAll() {
   duration = TimeUtils::Clamp(duration, Millisecond(0), Millisecond(1000));
   {
     PROFILE_SCOPE("Tick Main Thread Tasks");
-    ThreadManager::Poll(10);
+    ThreadManager::PollGameThread(10);
   }
   {
     PROFILE_SCOPE("TickInput");

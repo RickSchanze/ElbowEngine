@@ -22,7 +22,7 @@ static void DestroyAt(void* ptr) { static_cast<core::CoreConfig*>(ptr)->~CoreCon
 #define GENERATED_IMPLEMENTATION \
 core::Type* core::Version::REFLECTION_Register_Version_Registerer() { \
 using namespace core; \
-Type* type = Type::Create<core::Version>("core.Version")->SetAttribute(Type::Trivial); \
+Type* type = Type::Create<core::Version>("core.Version"); \
 type->Internal_RegisterField("major", &core::Version::major, offsetof(core::Version, major)); \
 type->Internal_RegisterField("minor", &core::Version::minor, offsetof(core::Version, minor)); \
 type->Internal_RegisterField("patch", &core::Version::patch, offsetof(core::Version, patch)); \
@@ -33,8 +33,7 @@ using namespace core; \
 Type* type = Type::Create<core::CoreConfig>("core.CoreConfig")->Internal_AddParent(TypeOf<core::IConfig>())->SetAttribute(core::Type::ValueAttribute::Config, "Config/Core/Core.cfg")->SetAttribute(core::Type::ValueAttribute::Category, "Core"); \
 type->Internal_RegisterField("app_name", &core::CoreConfig::app_name, offsetof(core::CoreConfig, app_name))->SetComment("应用的名称"); \
 type->Internal_RegisterField("app_version", &core::CoreConfig::app_version, offsetof(core::CoreConfig, app_version))->SetComment("应用版本号"); \
-type->Internal_RegisterField("thread_slot_count", &core::CoreConfig::thread_slot_count, offsetof(core::CoreConfig, thread_slot_count))->SetComment("各ThreadSlot对应的线程数")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Thread"); \
-type->Internal_RegisterField("enable_persistent_load_multithread", &core::CoreConfig::enable_persistent_load_multithread, offsetof(core::CoreConfig, enable_persistent_load_multithread))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "启用多线程持久化对象加载"); \
+type->Internal_RegisterField("anonymous_thread_count", &core::CoreConfig::anonymous_thread_count, offsetof(core::CoreConfig, anonymous_thread_count))->SetComment("各ThreadSlot对应的线程数")->SetAttribute(core::FieldInfo::ValueAttribute::Category, "Thread"); \
 type->Internal_RegisterField("tick_frame_interval", &core::CoreConfig::tick_frame_interval, offsetof(core::CoreConfig, tick_frame_interval))->SetAttribute(core::FieldInfo::ValueAttribute::Label, "需要Tick的Manager进行Tick的帧间隔"); \
 return type; \
 } \

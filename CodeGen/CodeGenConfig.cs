@@ -18,7 +18,6 @@ public class CodeGenConfig
 
     public List<string> SourceDirs { get; } =
     [
-        @"Engine\Test",
         @"Engine\Core",
         @"Engine\Platform",
         @"Engine\Resource",

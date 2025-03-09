@@ -8,7 +8,6 @@
 #pragma once
 
 #include "Core/Base/CoreTypeDef.h"
-#include "Core/CoreDef.h"
 #include "Core/Log/CoreLogCategory.h"
 #include "Core/Log/Logger.h"
 #include "fmt/format.h"

@@ -22,7 +22,6 @@ add_library(${PROJECT_NAME}
         CoreGlobal.h
         CoreGlobal.cpp
         CoreEvents.h
-        CoreTypeTraits.h
         Math/MathTypes.cpp
         Math/MathTypes.h
         Math/Math.cpp
@@ -74,27 +73,11 @@ add_library(${PROJECT_NAME}
         Singleton/MManager.cpp
         Singleton/MManager.h
         Reflection/ITypeGetter.cpp
-        Base/TagInvoke.h
         Base/TypeTraits.h
         Async/Execution/Concept.h
         Async/Execution/Just.h
         Async/Execution/Then.h
-        Async/Execution/NullReceiver.cpp
-        Async/Execution/NullReceiver.h
-        Async/Execution/NullScheduler.h
-        Async/Execution/Repeat.h
-        Async/ThreadSafeQueue.cpp
-        Async/ThreadSafeQueue.h
-        Async/ITask.h
-        Async/ThreadCluster.cpp
-        Async/ThreadCluster.h
-        Async/ThreadManager.cpp
-        Async/ThreadManager.h
-        Async/ThreadUtils.cpp
-        Async/ThreadUtils.h
         Assert.h
-        Async/Execution/WhenAll.h
-        Async/Execution/StartAsync.h
         Base/Exception.cpp
         Base/Exception.h
         Reflection/SharedAny.cpp
@@ -116,8 +99,6 @@ add_library(${PROJECT_NAME}
         Memory/FrameAllocator.h
         Base/Ranges.cpp
         Base/Ranges.h
-        Async/Execution/SyncGroup.cpp
-        Async/Execution/SyncGroup.h
         Math/MathPipe.cpp
         Math/MathPipe.h
         Base/Tree.cpp
@@ -126,8 +107,21 @@ add_library(${PROJECT_NAME}
         Base/ArrayMap.h
         Base/ArrayProxy.cpp
         Base/ArrayProxy.h
-        Async/Execution/ThenSender.cpp
-        Async/Execution/ThenSender.h
+        Async/Execution/FutureReceiver.h
+        Async/ConcurrentQueue.h
+        Async/Future.h
+        Async/Promise.h
+        Async/Thread.cpp
+        Async/Thread.h
+        Async/IRunnable.h
+        Async/ThreadManager.cpp
+        Async/ThreadManager.h
+        Base/SystemInfo.cpp
+        Base/SystemInfo.h
+        Async/Execution/ExecRunnable.h
+        Async/Execution/WhenAllFuture.h
+        Async/Execution/EmptyReceiver.h
+        Async/Execution/ExecFuture.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

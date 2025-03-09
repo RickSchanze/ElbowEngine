@@ -3,8 +3,7 @@
 //
 
 #include "ElbowRenderPipeline.h"
-
-#include "Core/Async/Execution/SyncGroup.h"
+#include "Core/Async/Execution/WhenAllFuture.h"
 #include "Core/Profiler/ProfileMacro.h"
 #include "Func/UI/UIManager.h"
 #include "Func/UI/Widget/Button.h"
@@ -74,27 +73,31 @@ void func::ElbowRenderPipeline::Build() {
   auto fbx = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
   auto ui_shader = AssetDataBase::LoadAsync("Assets/Shader/UIPanel.slang");
   auto ui_atlas = AssetDataBase::LoadAsync("Assets/Texture/UIAtlas.png");
-  MakeSyncGroup(obj_shader, fbx, ui_shader, ui_atlas)->OnCompleted([this](const auto &res) {
-    auto &[obj_shader_handle, fbx_handle, ui_shader_handle, ui_atlas_panel] = res;
-    this->mesh_ = ObjectManager::GetObjectByHandle<Mesh>(fbx_handle);
-    auto ui_shader_obj = ObjectManager::GetObjectByHandle<Shader>(ui_shader_handle);
-    auto obj_shader_obj = ObjectManager::GetObjectByHandle<Shader>(obj_shader_handle);
-    auto obj_mat = ObjectManager::CreateNewObjectAsync<Material>()->GetValue().GetValue() | First;
-    obj_mat->SetShader(obj_shader_obj);
-    this->material_ = obj_mat;
-    auto panel_widget = ObjectManager::CreateNewObject<ui::widget::WindowPanel>();
-    ui::widget::VerticalLayout *layout = ObjectManager::CreateNewObject<ui::widget::VerticalLayout>();
-    layout->AddChild(CreateNewObject<ui::widget::Text>()->SetText("123")->SetTextSize(16))
-        ->AddChild(CreateNewObject<ui::widget::Text>()->SetText("456")->SetTextSize(16))
-        ->AddChild(CreateNewObject<ui::widget::Button>());
-    panel_widget->SetSlot(layout);
-    auto panel_mat = ObjectManager::CreateNewObject<Material>();
-    auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
-    panel_mat->SetShader(ui_shader_obj);
-    panel_mat->SetTexture2D("atlas", ui_atlas_png);
-    panel_widget->SetMaterial(panel_mat);
-    this->ready_ = material_ && mesh_;
-  });
+  // auto c = WhenAllFuture(obj_shader, fbx, ui_shader, ui_atlas);
+  // ThreadManager::WhenAllFuturesCompleted(NamedThread::Game, [](std::tuple<ObjectHandle, ObjectHandle, ObjectHandle, ObjectHandle> t) {
+  //
+  // }, obj_shader, fbx, ui_shader, ui_atlas);
+  // MakeSyncGroup(obj_shader, fbx, ui_shader, ui_atlas)->OnCompleted([this](const auto &res) {
+  //   auto &[obj_shader_handle, fbx_handle, ui_shader_handle, ui_atlas_panel] = res;
+  //   this->mesh_ = ObjectManager::GetObjectByHandle<Mesh>(fbx_handle);
+  //   auto ui_shader_obj = ObjectManager::GetObjectByHandle<Shader>(ui_shader_handle);
+  //   auto obj_shader_obj = ObjectManager::GetObjectByHandle<Shader>(obj_shader_handle);
+  //   auto obj_mat = ObjectManager::CreateNewObjectAsync<Material>()->GetValue().GetValue() | First;
+  //   obj_mat->SetShader(obj_shader_obj);
+  //   this->material_ = obj_mat;
+  //   auto panel_widget = ObjectManager::CreateNewObject<ui::widget::WindowPanel>();
+  //   ui::widget::VerticalLayout *layout = ObjectManager::CreateNewObject<ui::widget::VerticalLayout>();
+  //   layout->AddChild(CreateNewObject<ui::widget::Text>()->SetText("123")->SetTextSize(16))
+  //       ->AddChild(CreateNewObject<ui::widget::Text>()->SetText("456")->SetTextSize(16))
+  //       ->AddChild(CreateNewObject<ui::widget::Button>());
+  //   panel_widget->SetSlot(layout);
+  //   auto panel_mat = ObjectManager::CreateNewObject<Material>();
+  //   auto ui_atlas_png = ObjectManager::GetObjectByHandle<Texture2D>(ui_atlas_panel);
+  //   panel_mat->SetShader(ui_shader_obj);
+  //   panel_mat->SetTexture2D("atlas", ui_atlas_png);
+  //   panel_widget->SetMaterial(panel_mat);
+  //   this->ready_ = material_ && mesh_;
+  // });
   depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }
 

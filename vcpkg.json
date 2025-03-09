@@ -30,9 +30,6 @@
     "name" : "icu",
     "version>=" : "74.2#4"
   }, {
-    "name" : "gtest",
-    "version>=" : "1.15.2"
-  }, {
     "name" : "xxhash",
     "version>=" : "0.8.2"
   }, {
@@ -50,5 +47,8 @@
   }, {
     "name" : "freetype",
     "version>=" : "2.13.3"
+  }, {
+    "name" : "concurrentqueue",
+    "version>=" : "1.0.4"
   } ]
 }

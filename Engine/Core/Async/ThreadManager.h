@@ -1,98 +1,68 @@
 //
-// Created by Echo on 24-12-12.
+// Created by Echo on 25-3-7.
 //
 
 #pragma once
-#include "Core/Core.h"
-#include "Core/Memory/MemoryManager.h"
+#include "Core/Base/UniquePtr.h"
+#include "Core/Singleton/MManager.h"
 #include "Execution/Common.h"
-#include "ThreadCluster.h"
-namespace core
-{
-constexpr auto MEMORY_POOL_ID_TASK = 1;
+#include "Execution/EmptyReceiver.h"
+#include "Execution/ExecRunnable.h"
+#include "Execution/FutureReceiver.h"
+#include "Execution/Then.h"
+#include "Execution/WhenAllFuture.h"
+#include "Future.h"
+#include "Thread.h"
 
-enum class ENUM() ThreadSlot {
-  Game, // Game线程(主线程)非常特殊, 不在ThreadSlot使用, 使用GameLoopScheduler
+namespace core {
+
+enum class NamedThread {
   Render,
-  Resource,
-  Other,
+  Game,
   Count,
 };
 
-void ThreadManagerAddSlotTask(ThreadSlot run_slot, SharedPtr<ITask> task);
-
-MemoryPool *_GetThreadManagerTaskMemoryPool();
-
-template <typename R> struct ThreadSchedulerOperationState {
-  Pure<R> receiver;
-  ThreadSlot slot_to_run_;
-
-  void Execute() {
-    try {
-      exec::SetValue(Move(receiver));
-    } catch (...) {
-      exec::SetError(Move(receiver), std::current_exception());
-    }
-  }
-
-  friend void TagInvoke(exec::StartType, ThreadSchedulerOperationState &op) {
-    auto task = core::MakeShared<OperationStateTask<ThreadSchedulerOperationState>>(op);
-    ThreadManagerAddSlotTask(op.slot_to_run_, task);
-  }
-};
-
-struct ThreadSchedulerSender {
-  using ValueTypes = void;
-
-  ThreadSlot slot_to_run;
-
-  template <typename Self, typename R>
-    requires std::is_same_v<Pure<Self>, ThreadSchedulerSender>
-  friend auto TagInvoke(exec::ConnectType, Self &&self, R &&receiver) {
-    return ThreadSchedulerOperationState<Pure<R>>{std::forward<R>(receiver), self.slot_to_run};
-  }
-};
-
-struct ThreadScheduler {
-  template <typename Scheduler>
-    requires std::is_same_v<Pure<Scheduler>, ThreadScheduler>
-  friend auto TagInvoke(exec::ScheduleType, Scheduler scheduler, const ThreadSlot slot) {
-    ThreadSchedulerSender sender{};
-    sender.slot_to_run = slot;
-    return sender;
-  }
-};
-
-class ThreadManager final : public Manager<ThreadManager> {
-private:
-  HashMap<ThreadSlot, UniquePtr<ThreadCluster>> clusters_;
-
-  MemoryPool *task_memory_pool_ = nullptr;
-
-  ThreadSafeQueue<SharedPtr<ITask>> task_queue_main_;
-
+class ThreadManager : public Manager<ThreadManager>, public exec::Scheduler {
 public:
-  static ThreadScheduler &GetScheduler();
-
-  static std::thread::id GetMainThreadId();
-
-  static MemoryPool *GetTaskMemoryPool();
-
   [[nodiscard]] ManagerLevel GetLevel() const override { return ManagerLevel::L4; }
   [[nodiscard]] StringView GetName() const override { return "ThreadManager"; }
 
   void Startup() override;
   void Shutdown() override;
 
-  void AddTask(SharedPtr<ITask> task, ThreadSlot slot);
+  static std::thread::id GetMainThread() { return GetByRef().main_thread_; }
 
-  /**
-   * 默认往主线程提交任务
-   * @param task
-   */
-  void AddTask(const SharedPtr<ITask> &task);
+  static void AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread = NamedThread::Count);
 
-  static void Poll(Int32 poll_cnt);
+  static void PollGameThread(Int32 work_num);
+
+  // 启动一个Sender并返回Future, 加Async是因为他只是启动不保证完成
+  template <typename SenderType>
+    requires std::is_base_of_v<exec::Sender, Pure<SenderType>>
+  static Future<typename Pure<SenderType>::value_type>
+  ScheduleFutureAsync(SenderType &&sender, NamedThread named_thread = NamedThread::Count) {
+    exec::FutureReceiver<typename Pure<SenderType>::value_type> receiver{};
+    auto f = receiver.GetFuture();
+    auto op = sender.Connect(Move(receiver));
+    auto runnable = MakeShared<exec::ExecRunnable<Pure<decltype(op)>>>(Move(op));
+    AddRunnable(runnable, named_thread);
+    return Move(f);
+  }
+
+  template <typename F, typename... Args>
+  static void WhenAllFuturesCompleted(NamedThread thread, F &&func, Args &&...args) {
+    auto s = exec::WhenAllFuture(Forward<Args>(args)...) | exec::Then(Forward<F>(func));
+    exec::EmptyReceiver<typename Pure<decltype(s)>::value_type> receiver;
+    auto op = s.Connect(receiver);
+    AddRunnable(MakeShared<exec::ExecRunnable<Pure<decltype(op)>>>(op), thread);
+  }
+
+private:
+  std::thread::id main_thread_;
+  StaticArray<UniquePtr<Thread>, (Int32)NamedThread::Count> named_threads_;
+  Array<UniquePtr<Thread>> anonymous_threads_;
 };
+
+inline bool IsMainThread() { return std::this_thread::get_id() == ThreadManager::GetMainThread(); }
 
 } // namespace core

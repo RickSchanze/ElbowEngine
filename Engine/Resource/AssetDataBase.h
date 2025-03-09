@@ -7,8 +7,10 @@
 
 #pragma once
 #include "Assets/Asset.h"
+#include "Core/Async/Execution/ExecFuture.h"
 #include "Core/Object/ObjectRegistry.h"
 #include "Core/Singleton/MManager.h"
+#include "Func/Camera/ACameraHolder.h"
 #include "SQLHelper.h"
 
 namespace core {
@@ -41,7 +43,7 @@ public:
    * @param path
    * @return 异步handle
    */
-  static core::exec::AsyncResultHandle<core::ObjectHandle> Import(core::StringView path);
+  static core::exec::ExecFuture<core::ObjectHandle> Import(core::StringView path);
 
   /**
    * 加载一个资产
@@ -56,18 +58,17 @@ public:
     return static_cast<T *>(Load(path));
   }
 
-  static core::exec::AsyncResultHandle<core::ObjectHandle> LoadAsync(core::StringView path);
+  static core::exec::ExecFuture<core::ObjectHandle> LoadAsync(core::StringView path);
 
-  static core::exec::AsyncResultHandle<core::Object *> LoadAsync(core::ObjectHandle handle,
-                                                                 const core::Type *asset_type);
+  static core::exec::ExecFuture<core::Object *> LoadAsync(core::ObjectHandle handle, const core::Type *asset_type);
 
-  template <typename T> static core::exec::AsyncResultHandle<core::Object *> LoadAsync(core::ObjectPtr<T> obj) {
+  template <typename T> static core::Future<core::Object *> LoadAsync(core::ObjectPtr<T> obj) {
     return LoadAsync(obj.GetHandle(), core::TypeOf<T>());
   }
 
   template <typename T> static core::Object *Load(core::ObjectPtr<T> obj) {
     auto res = LoadAsync(obj.GetHandle(), core::TypeOf<T>());
-    return std::get<0>(*res->GetValue());
+    return res.Get();
   }
 
   template <typename T> static core::Optional<T> QueryMeta(core::ObjectHandle handle);
@@ -90,7 +91,6 @@ protected:
   core::HashMap<const core::Type *, core::UniquePtr<SQLTable>> tables_;
   // TODO: 资产加载管理分离至ResourceManager
   // TODO: 并发HashMap
-  core::HashMap<core::String, core::exec::AsyncResultHandle<core::ObjectHandle>> loading_assets_;
   std::mutex loading_assets_mutex_;
   DECLARE_TRACEABLE_MUTEX(std::mutex, database_query_mutex_, "Mutex to protect database query");
 };
@@ -111,7 +111,7 @@ template <typename T> core::Optional<T> AssetDataBase::QueryMeta(core::StringVie
   auto result = table->Query(meta_type, where);
   if (result.empty())
     return {};
-  auto meta = result[0];
+  const core::SharedAny &meta = result[0];
   return meta.AsAny().AsCopy<T>();
 }
 

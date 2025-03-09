@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Func/Camera/ACameraHolder.h"
 #include "Platform/RHI/GfxContext.h"
 #include "Platform/RHI/Image.h"
 #include "vulkan/vulkan.h"
@@ -92,7 +93,7 @@ public:
     [[nodiscard]] core::SharedPtr<LowShader> CreateShader(const char* code, size_t size, core::StringView debug_name) override;
 #endif
 
-    core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
+    core::exec::ExecFuture<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) override;
 
     [[nodiscard]] core::SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info, core::StringView debug_name) override;
 

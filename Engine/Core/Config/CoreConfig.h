@@ -41,20 +41,9 @@ class CLASS(Config = "Config/Core/Core.cfg", Category = "Core") CoreConfig : ext
 
   // 各ThreadSlot对应的线程数
   PROPERTY(Category = "Thread")
-  DECLARE_CONFIG_ITEM_MAP(HashMap<ThreadSlot, int>, thread_slot_count, ThreadSlotCountMap,
-                          {{ThreadSlot::Render, 1}, {ThreadSlot::Resource, 3}, {ThreadSlot::Other, 5}});
-
-  PROPERTY(Label = "启用多线程持久化对象加载")
-  DECLARE_CONFIG_ITEM(bool, enable_persistent_load_multithread, EnablePersistentLoadMultiThread, true);
+  DECLARE_CONFIG_ITEM(UInt32, anonymous_thread_count, AnonymousThreadCount, 0);
 
   PROPERTY(Label = "需要Tick的Manager进行Tick的帧间隔")
   DECLARE_CONFIG_ITEM(UInt32, tick_frame_interval, TickFrameInterval, 30);
-
-public:
-  /**
-   * EnablePersistentLoadMultiThread = true && Resource slot count >= 1时为true
-   * @return
-   */
-  [[nodiscard]] bool IsMultiThreadPersistentLoadEnabled() const;
 };
 } // namespace core

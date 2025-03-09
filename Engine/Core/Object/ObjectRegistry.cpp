@@ -3,15 +3,15 @@
 //
 
 #include "ObjectRegistry.h"
-
+#include "Core/Async/Execution/Just.h"
+#include "Core/Async/Execution/Then.h"
+#include "Core/Async/ThreadManager.h"
 #include "Core/CoreEvents.h"
 #include "Core/Serialization/YamlArchive.h"
 #include "PersistentObject.h"
-#include "Core/Async/ThreadManager.h"
 #include "Platform/RHI/GfxContext.h"
 
 #include GEN_HEADER("Core.ObjectRegistry.generated.h")
-
 
 GENERATED_SOURCE()
 
@@ -22,7 +22,7 @@ ObjectHandle ObjectRegistry::NextInstanceHandle() { return next_handle_instanced
 
 constexpr auto REGISTRY_PATH = "Library/ObjectRegistry.yaml";
 
-AsyncResultHandle<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
+ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
   auto GetNext = [this]() -> ObjectHandle {
     if (!free_handles_.empty()) {
       const auto handle = free_handles_.back();
@@ -31,10 +31,12 @@ AsyncResultHandle<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
     }
     return next_handle_persistent_++;
   };
-  if (ThreadUtils::IsCurrentMainThread()) {
-    return MakeAsyncResult(GetNext());
+  if (IsMainThread()) {
+    return MakeExecFuture(GetNext());
   }
-  return StartAsync(Schedule(ThreadManager::GetScheduler(), ThreadSlot::Game) | Then([GetNext] { return GetNext(); }));
+
+  auto task = Just() | Then([GetNext]() { return GetNext(); });
+  return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game);
 }
 
 Object *ObjectRegistry::GetObjectByHandle(const ObjectHandle handle) {
@@ -144,7 +146,3 @@ void ObjectManager::SaveObjectRegistry() { GetRegistry().Save(); }
 ObjectRegistry &ObjectManager::GetRegistry() { return Get()->registry_; }
 
 Object *ObjectManager::GetObjectByHandle(ObjectHandle handle) { return GetRegistry().GetObjectByHandle(handle); }
-
-ThreadScheduler& _GetScheduler() {
-  return ThreadManager::GetScheduler();
-}

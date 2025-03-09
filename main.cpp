@@ -1,7 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 
-#include "Core/Async/Execution/ThenSender.h"
-#include "Core/Async/Execution/WhenAll.h"
+#include "Core/Async/Execution/FutureReceiver.h"
+#include "Core/Async/Execution/Just.h"
 #include "Core/Async/ThreadManager.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
@@ -53,7 +53,7 @@ static void TickManagerUpdate(const Millisecond &sec) {
 }
 
 int main() {
-  auto j = Just() | Then1([] { return 12; }) | Then1([](Int32){});
+  auto j = Just() | Then([] { return 12; }) | Then([](Int32) {});
   //   try {
   //     cpptrace::generate_trace(); // 这里需要先调用一次generate_trace 否则后面的无法生成trace
   //     SetRuntimeStage(RuntimeStage::Startup);

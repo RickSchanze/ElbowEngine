@@ -7,12 +7,12 @@
 
 #pragma once
 #include "Buffer.h"
-#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Core.h"
 #include "Core/Event/Event.h"
 #include "Core/Math/MathTypes.h"
 #include "Core/Memory/FrameAllocator.h"
 #include "Enums.h"
+#include "Func/Camera/ACameraHolder.h"
 #include "Pipeline.h"
 #include "SyncPrimitives.h"
 
@@ -136,8 +136,7 @@ public:
    * @param buffer
    * @param parameter
    */
-  virtual core::exec::AsyncResultHandle<> Submit(core::SharedPtr<CommandBuffer> buffer,
-                                                 const SubmitParameter &parameter) = 0;
+  virtual core::exec::ExecFuture<> Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) = 0;
 
   /**
    * 创建同步原语: Fence

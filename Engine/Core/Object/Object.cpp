@@ -6,7 +6,8 @@
  */
 
 #include "Object.h"
-#include "Core/Async/Execution/StartAsync.h"
+
+#include "Core/Async/Execution/Just.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Config/ConfigManager.h"
 #include "Core/Config/CoreConfig.h"
@@ -78,17 +79,18 @@ void Object::ResolveObjectPtr() {
   }
 }
 
-AsyncResultHandle<ObjectHandle> Object::PerformPersistentObjectLoadAsync() {
-  if (!IsPersistent())
-    return NULL_ASYNC_RESULT_HANDLE;
+ExecFuture<ObjectHandle> Object::PerformPersistentObjectLoadAsync() {
+  if (!IsPersistent()) {
+    LOGGER.Warn("Core.Object", "尝试加载非持久化对象, handle={}", GetHandle());
+    return MakeReadyFuture(std::make_tuple(0));
+  }
   auto *persistent = static_cast<PersistentObject *>(this);
-  auto &scheduler = ThreadManager::GetScheduler();
 
-  return StartAsync(Schedule(scheduler, ThreadSlot::Resource) //
-                    | Then([this, persistent] {
-                        persistent->PerformLoad();
-                        return handle_;
-                      }));
+  auto task = Just() | Then([this, persistent] {
+                persistent->PerformLoad();
+                return handle_;
+              });
+  return ThreadManager::ScheduleFutureAsync(task);
 }
 
 ObjectHandle Object::PerformPersistentObjectLoad() {

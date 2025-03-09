@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Func/Camera/ACameraHolder.h"
 #include "Platform/RHI/CommandBuffer.h"
 #include "vulkan/vulkan.h"
 
@@ -41,7 +42,7 @@ public:
 
   [[nodiscard]] void *GetNativeHandle() const override { return buffer_; }
 
-  core::exec::AsyncResultHandle<> Execute(core::StringView label) override;
+  core::exec::ExecFuture<> Execute(core::StringView label) override;
 
   void Begin() override;
   void End() override;

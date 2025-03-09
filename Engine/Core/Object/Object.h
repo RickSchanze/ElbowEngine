@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "Core/Async/Execution/StartAsync.h"
 #include "Core/Base/EString.h"
 #include "Core/Reflection/ITypeGetter.h"
 #include "Core/Reflection/MetaInfoMacro.h"
 #include "Core/Reflection/MetaInfoManager.h"
 
 #include GEN_HEADER("Core.Object.generated.h")
+#include "Core/Async/Execution/ExecFuture.h"
+#include "Core/Async/Future.h"
 
 namespace core {
 
@@ -123,7 +124,7 @@ public:
   void InternalSetAssetHandle(ObjectHandle handle);
 
   // TODO: 这里是否应该返回一个sender?
-  exec::AsyncResultHandle<ObjectHandle> PerformPersistentObjectLoadAsync();
+  exec::ExecFuture<ObjectHandle> PerformPersistentObjectLoadAsync();
 
   ObjectHandle PerformPersistentObjectLoad();
 };

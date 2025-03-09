@@ -9,7 +9,7 @@
 
 #include "Buffer_Vulkan.h"
 #include "CommandBuffer_Vulkan.h"
-#include "Core/Async/Execution/StartAsync.h"
+#include "Core/Async/Execution/Just.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Base/EString.h"
 #include "Core/Base/Ranges.h"
@@ -235,11 +235,10 @@ void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInf
                                                 VkCommandBuffer *command_buffers) const {
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto scheduler = core::ThreadManager::GetScheduler();
-    auto task = Schedule(scheduler, core::ThreadSlot::Render) | Then([alloc_info, command_buffers, this] {
+    auto task = Just() | Then([alloc_info, command_buffers, this] {
                   vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
                 });
-    StartAsync(task)->Wait();
+    ThreadManager::ScheduleFutureAsync(task, NamedThread::Render).Wait();
   } else {
     const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
     VERIFY_VULKAN_RESULT(result);
@@ -298,16 +297,15 @@ static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitP
   vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
 }
 
-AsyncResultHandle<> GfxContext_Vulkan::Submit(core::SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) {
+ExecFuture<> GfxContext_Vulkan::Submit(core::SharedPtr<CommandBuffer> buffer,
+                                                   const SubmitParameter &parameter) {
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto &scheduler = core::ThreadManager::GetScheduler();
-    auto task = Schedule(scheduler, core::ThreadSlot::Render) |
-                Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
-    return StartAsync(task);
+    auto task = Just() | Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
+    return ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
   } else {
     InternalSubmit(buffer, parameter);
-    return MakeAsyncResult();
+    return MakeExecFuture();
   }
 }
 
@@ -970,7 +968,9 @@ core::StringView VulkanErrorToString(VkResult result) {
     return "VK_ERROR_OUT_OF_DATE_KHR";
   case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
     return "VK_ERROR_INCOMPATIBLE_DISPLAY_KHR";
-  case VK_ERROR_VALIDATION_FAILED_EXT: return "VK_ERROR_VALIDATION_FAILED_EXT";
-    default: return "Unknown error";
-    }
+  case VK_ERROR_VALIDATION_FAILED_EXT:
+    return "VK_ERROR_VALIDATION_FAILED_EXT";
+  default:
+    return "Unknown error";
+  }
 }

@@ -4,19 +4,22 @@
 #pragma once
 #include "Concept.h"
 #include "Core/Base/CoreTypeDef.h"
+#include "Core/Base/TypeTraits.h"
 
 namespace core::exec {
 
-template <typename T> struct JustSender : Sender {
-  using value_type = Pure<T>;
-  Pure<T> value;
+template <typename... Args> struct JustSender : Sender {
+  using value_type = std::tuple<Pure<Args>...>;
+  std::tuple<Pure<Args>...> value;
 
-  template <typename R> struct Operation {
-    Pure<T> v;
-    R r;
+  template <typename R> struct Operation : Op {
+    using value_type = typename Pure<R>::receive_type;
+    std::tuple<Pure<Args>...> v;
+    Pure<R> r;
 
     void Start() noexcept {
       try {
+        std::apply([&](auto &&...args) { r.SetValue(args...); }, value);
         r.SetValue(v);
       } catch (...) {
         r.SetError(std::current_exception());
@@ -24,25 +27,38 @@ template <typename T> struct JustSender : Sender {
     }
   };
 
-  template <typename R> Operation<R> Connect(R &&r) { return {value, Forward<R>(r)}; }
+  template <typename R>
+    requires std::same_as<value_type, typename R::receive_type>
+  Operation<Pure<R>> Connect(R &&r) {
+    return {value, Forward<R>(r)};
+  }
 };
 
 struct VoidJustSender : Sender {
-  using value_type = void;
+  using value_type = std::tuple<>;
 
-  template <typename R> struct Operation {
-    R r;
+  template <typename R> struct Operation : Op {
+    Operation(R&& r) : r(Forward<R>(r)) {}
+
+    using value_type = std::tuple<>;
+    Pure<R> r;
 
     void Start() noexcept {
       try {
-        r.SetValue();
+        r.SetValue(std::make_tuple());
       } catch (...) {
         r.SetError(std::current_exception());
       }
     }
   };
 
-  template <typename R> Operation<R> Connect(R &&r) { return {Forward<R>(r)}; }
+  template <typename R>
+  Operation<Pure<R>> Connect(R &&r)
+    requires std::same_as<std::tuple<>, typename Pure<R>::receive_type>
+  {
+    Operation<Pure<R>> rtn(Move(r));
+    return rtn;
+  }
 };
 
 template <typename T> JustSender<T> Just(T &&value) { return {Forward<T>(value)}; }

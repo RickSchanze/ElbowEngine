@@ -1,130 +1,99 @@
 //
-// Created by RickS on 24-12-8.
+// Created by Echo on 25-3-6.
 //
-#pragma once
-#include "Common.h"
-#include "Core/Base/CoreTypeDef.h"
-#include "Core/Base/TypeTraits.h"
-#include "Core/CoreTypeTraits.h"
-#include "Just.h"
 
+#pragma once
+
+#include "Common.h"
+#include "Core/Base/TypeTraits.h"
 #include <exception>
 
-namespace core::exec
-{
-namespace then_detail
-{
-template <typename R, typename F>
-struct ThenReceiver
-{
-    [[no_unique_address]] R receiver;
-    [[no_unique_address]] F function;
+namespace core::exec {
+template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receiver {
+  using receive_type = FunctionArgsAsTuple<Pure<F>>;
+  Pure<ReceiverType> next;
+  F f;
 
-    template <typename... Vs>
-        requires(FunctionNoThrowInvokable<F, Vs...>() && !FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
-    {
-        SetValue(std::move(r.receiver), std::invoke(Move(r.function), Forward<Vs>(vs)...));
+  template <typename U1, typename U2> ThenReceiver(U1 &&r, U2 &&func) : next(Forward<U1>(r)), f(Forward<U2>(func)) {}
+
+  void SetValue(receive_type &&v) noexcept {
+    try {
+      std::apply([this](auto &&...args) { next.SetValue(std::make_tuple(f(args...))); }, v);
+    } catch (...) {
+      next.SetError(std::current_exception());
     }
+  }
 
-    template <typename... Vs>
-        requires(!FunctionNoThrowInvokable<F, Vs...>() && !FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
-    {
-        try
-        {
-            SetValue(std::move(r.receiver), std::invoke(Move(r.function), Forward<Vs>(vs)...));
-        }
-        catch (...)
-        {
-            SetError(std::move(r.receiver), std::current_exception());
-        }
-    }
-
-    template <typename... Vs>
-        requires(!FunctionNoThrowInvokable<F, Vs...>() && FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
-    {
-        try
-        {
-            std::invoke(Move(r.function), Forward<Vs>(vs)...);
-            SetValue(std::move(r.receiver));
-        }
-        catch (...)
-        {
-            SetError(std::move(r.receiver), std::current_exception());
-        }
-    }
-
-    template <typename... Vs>
-        requires(FunctionNoThrowInvokable<F, Vs...>() && FunctionReturnVoid<F, Vs...>())
-    friend auto TagInvoke(SetValueType, ThenReceiver&& r, Vs&&... vs) noexcept
-    {
-        std::invoke(Move(r.function), Forward<Vs>(vs)...);
-        SetValue(std::move(r.receiver));
-    }
-
-    template <typename E>
-    friend auto TagInvoke(SetErrorType, ThenReceiver&& r, E&& e) noexcept
-    {
-        SetError(std::move(r.receiver), Forward<E>(e));
-    }
-
-    friend auto TagInvoke(SetDoneType, ThenReceiver&& r) noexcept { SetDone(std::move(r.receiver)); }
+  void SetError(std::exception_ptr ptr) noexcept { next.SetError(ptr); }
 };
 
-template <typename Sender, typename F>
-struct ThenSender
-{
-    using ValueTypes = typename MakeTupleType<FunctionReturnType<F>>::Type;
+template <typename ReceiverType, typename F> struct VoidThenReceiver {
+  using receive_type = std::tuple<>;
+  static_assert(std::same_as<FunctionArgsAsTuple<Pure<F>>, receive_type>, "void receiver type not match");
 
-    Sender sender_;
-    F      function_;
+  Pure<ReceiverType> next;
+  F f;
 
-    template <typename SelfSender, typename Receiver>
-        requires std::is_same_v<std::remove_cvref_t<SelfSender>, ThenSender>
-    friend auto TagInvoke(ConnectType, SelfSender&& sender, Receiver&& receiver)
-    {
-        return Connect(
-            Forward<SelfSender>(sender).sender_,
-            ThenReceiver<Pure<Receiver>, F>{Forward<Pure<Receiver>>(receiver), Forward<SelfSender>(sender).function_}
-        );
+  template <typename U1, typename U2>
+  VoidThenReceiver(U1 &&r, U2 &&func) : next(Forward<U1>(r)), f(Forward<U2>(func)) {}
+
+  void SetValue(const std::tuple<>&) noexcept {
+    try {
+      if constexpr (std::same_as<FunctionReturnType<Pure<F>>, void>) {
+        next.SetValue(std::make_tuple());
+      } else {
+        next.SetValue(std::make_tuple(f()));
+      }
+    } catch (...) {
+      next.SetError(std::current_exception());
     }
+  }
+
+  void SetError(std::exception_ptr ptr) noexcept { next.SetError(ptr); }
 };
 
-template <typename Sender, typename F>
-concept CanFunctionReceiveSender =
-    CanParameterPackConvert<typename SenderTraits<std::remove_cvref_t<Sender>>::ValueTypes, FunctionArgsAsTuple<F>>::Value ||
-    (std::is_same_v<typename SenderTraits<std::remove_cvref_t<Sender>>::ValueTypes, void> && FunctionTraits<F>::IsNoInput);
+template <typename SenderT, typename F> struct ThenSender : exec::Sender {
+  using wrapped_type_ = typename WrapTuple<FunctionReturnType<Pure<F>>>::type;
+  using value_type = std::conditional_t<std::same_as<wrapped_type_, std::tuple<void>>, std::tuple<>, wrapped_type_>;
 
-struct ThenType
-{
-    template <typename F>
-    auto operator()(F&& f) const noexcept;
+  ThenSender(SenderT &&s, F &&f) : sender(Forward<SenderT>(s)), f(Forward<F>(f)) {}
 
-    template <typename SenderT, typename F>
-        requires CanFunctionReceiveSender<SenderT, F>
-    auto operator()(SenderT&& s, F&& f)
-    {
-        return ThenSender{Forward<SenderT>(s), Forward<F>(f)};
+  Pure<SenderT> sender;
+  F f;
+
+  template <typename ReceiverType>
+  auto Connect(ReceiverType &&r)
+    requires std::same_as<value_type, typename Pure<ReceiverType>::receive_type>
+  {
+    if constexpr (std::same_as<value_type, std::tuple<>>) {
+      return sender.Connect(VoidThenReceiver<ReceiverType, F>(Forward<ReceiverType>(r), Forward<F>(f)));
+    } else {
+      ThenReceiver<Pure<ReceiverType>, F> receiver(Forward<ReceiverType>(r), Forward<F>(f));
+      return sender.Connect(receiver);
     }
+  }
 };
 
-template <typename F>
-struct ThenClosure
-{
-    F f_;
-    template <typename SenderT>
-    friend auto operator|(SenderT&& s, ThenClosure&& t)
-    {
-        return ThenType{}(Move(s), Move(t.f_));
-    }
+struct ThenType {
+  template <typename F> auto operator()(F &&f) const noexcept;
+
+  template <typename SenderT, typename F> auto operator()(SenderT &&s, F &&f) {
+    return ThenSender{Forward<SenderT>(s), Forward<F>(f)};
+  }
 };
-template <typename F>
-auto ThenType::operator()(F&& f) const noexcept
-{
-    return ThenClosure{Forward<F>(f)};
-}
-}   // namespace then_detail
-inline constexpr auto Then = then_detail::ThenType{};
-}   // namespace core::exec
+
+template <typename F> struct ThenClosure {
+  F f_;
+  template <typename SenderT>
+  friend auto operator|(SenderT &&s, ThenClosure &&t) -> ThenSender<Pure<SenderT>, F>
+      // 下面一大坨是约束, 即要求s的输出参数value_type和F的输入参数一致
+    requires(std::same_as<typename Pure<SenderT>::value_type, FunctionArgsAsTuple<F>>)
+  {
+    ThenSender<SenderT, F> rtn(Forward<SenderT>(s), Forward<F>(t.f_));
+    return rtn;
+  }
+};
+template <typename F> auto ThenType::operator()(F &&f) const noexcept { return ThenClosure{Forward<F>(f)}; }
+
+inline ThenType Then;
+} // namespace core::exec

@@ -4,7 +4,7 @@
 
 #include "CommandBuffer_Vulkan.h"
 
-#include "Core/Async/Execution/StartAsync.h"
+#include "Core/Async/Execution/Just.h"
 #include "Core/Async/Execution/Then.h"
 #include "Core/Async/ThreadManager.h"
 #include "Core/Base/Ranges.h"
@@ -91,12 +91,11 @@ void CommandPool_Vulkan::FreeCommandBuffer(VkCommandBuffer buffer) {
   auto device = ctx.GetDevice();
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto scheduler = core::ThreadManager::GetScheduler();
-    auto task = Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer, device, command_pool = command_pool_] {
+    auto task = Just() | Then([buffer, device, command_pool = command_pool_] {
                   VkCommandBuffer b = buffer;
                   vkFreeCommandBuffers(device, command_pool, 1, &b);
                 });
-    StartAsync(task);
+    core::ThreadManager::ScheduleFutureAsync(task, core::NamedThread::Render);
   } else {
     vkFreeCommandBuffers(ctx.GetDevice(), command_pool_, 1, &buffer);
   }
@@ -109,7 +108,6 @@ void CommandPool_Vulkan::Reset() {
 
 CommandBuffer_Vulkan::~CommandBuffer_Vulkan() {
   if (self_managed_) {
-    const auto &ctx = *GetVulkanGfxContext();
     pool_->FreeCommandBuffer(buffer_);
   }
 }
@@ -418,20 +416,19 @@ static void InternalExecute(VkCommandBuffer buffer, const core::Array<RHICommand
   ctx.EndDebugLabel(buffer);
 }
 
-AsyncResultHandle<> CommandBuffer_Vulkan::Execute(core::StringView label) {
+ExecFuture<> CommandBuffer_Vulkan::Execute(core::StringView label) {
   PROFILE_SCOPE_AUTO;
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto scheduler = core::ThreadManager::GetScheduler();
-    auto task =
-        Schedule(scheduler, core::ThreadSlot::Render) |
-        Then([commands = commands_, label = label, buffer = buffer_] { InternalExecute(buffer, commands, label); });
+    auto task = Just() | Then([commands = commands_, label = label, buffer = buffer_] {
+                  InternalExecute(buffer, commands, label);
+                });
     commands_.clear();
-    return StartAsync(task);
+    return core::ThreadManager::ScheduleFutureAsync(task, core::NamedThread::Render);
   } else {
     InternalExecute(buffer_, commands_, label);
     commands_.clear();
-    return nullptr;
+    return MakeExecFuture();
   }
 }
 
@@ -439,14 +436,13 @@ void CommandBuffer_Vulkan::Begin() {
   PROFILE_SCOPE_AUTO;
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto scheduler = core::ThreadManager::GetScheduler();
-    auto task = Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer = buffer_] {
+    auto task = Just() | Then([buffer = buffer_] {
                   VkCommandBufferBeginInfo begin_info = {};
                   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
                   vkBeginCommandBuffer(buffer, &begin_info);
                 });
-    StartAsync(task);
+    core::ThreadManager::ScheduleFutureAsync(task, core::NamedThread::Render);
   } else {
     VkCommandBufferBeginInfo begin_info = {};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -459,10 +455,8 @@ void CommandBuffer_Vulkan::End() {
   PROFILE_SCOPE_AUTO;
   auto *cfg = core::GetConfig<PlatformConfig>();
   if (cfg->GetEnableMultithreadRender()) {
-    auto scheduler = core::ThreadManager::GetScheduler();
-    auto task =
-        Schedule(scheduler, core::ThreadSlot::Render) | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
-    StartAsync(task);
+    auto task = Just() | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
+    core::ThreadManager::ScheduleFutureAsync(task, core::NamedThread::Render);
   } else {
     vkEndCommandBuffer(buffer_);
   }

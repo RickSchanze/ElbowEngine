@@ -4,17 +4,21 @@
 
 #pragma once
 
+#include "Core/Async/Execution/Then.h"
+#include "Core/Async/ThreadManager.h"
 #include "Core/Base/FlatMap.h"
 #include "Core/Object/Object.h"
 #include "Core/Reflection/MetaInfoMacro.h"
-#include "Core/Async/Execution/Then.h"
-#include "Core/Async/ThreadManager.h"
 
 #include GEN_HEADER("Core.ObjectRegistry.generated.h")
+#include "Core/Async/Execution/Just.h"
+#include "Core/Profiler/ProfileMacro.h"
+#include "Func/Camera/ACameraHolder.h"
+
+#include <complex.h>
 namespace core {
 class ThreadCluster;
 }
-core::ThreadScheduler &_GetScheduler();
 
 namespace core {
 // TODO: 多线程安全
@@ -23,7 +27,7 @@ struct CLASS() ObjectRegistry {
 public:
   ObjectHandle NextInstanceHandle();
 
-  exec::AsyncResultHandle<ObjectHandle> NextPersistentHandle();
+  exec::ExecFuture<ObjectHandle> NextPersistentHandle();
 
   Object *GetObjectByHandle(ObjectHandle handle);
 
@@ -69,19 +73,18 @@ public:
 
   template <typename T, typename... Args>
     requires std::derived_from<T, Object>
-  static exec::AsyncResultHandle<T *> CreateNewObjectAsync(Args &&...args) {
-    if (ThreadUtils::IsCurrentMainThread()) {
-      return exec::MakeAsyncResult(NewObject<T>(Forward<Args>(args)...));
+  static exec::ExecFuture<T *> CreateNewObjectAsync(Args &&...args) {
+    if (IsMainThread()) {
+      return exec::MakeExecFuture(NewObject<T>(Forward<Args>(args)...));
     }
-    auto &scheduler = _GetScheduler();
-    return exec::StartAsync(exec::Schedule(scheduler, ThreadSlot::Game) |
-                            exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }));
+    return ThreadManager::ScheduleFutureAsync(
+        exec::Just() | exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }), NamedThread::Game);
   }
 
   template <typename T, typename... Args>
     requires std::derived_from<T, Object>
   static T *CreateNewObject(Args &&...args) {
-    return CreateNewObjectAsync<T>(Forward<Args>(args)...)->GetValue().GetValue() | First;
+    return CreateNewObjectAsync<T>(Forward<Args>(args)...).Get();
   }
 
   static bool IsObjectExist(ObjectHandle handle) { return GetRegistry().GetObjectByHandle(handle) != nullptr; }

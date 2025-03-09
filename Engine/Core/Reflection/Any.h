@@ -120,11 +120,11 @@ Optional<T> Any::AsCopy() const
     {
         return {};
     }
-    if constexpr (IsAnyOf<T, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, bool>::Value)
+    if constexpr (IsAnyOf<T, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, bool>::value)
     {
         return *AsInt64();
     }
-    if constexpr (IsAnyOf<T, float, double>::Value)
+    if constexpr (IsAnyOf<T, float, double>::value)
     {
         return *AsDouble();
     }

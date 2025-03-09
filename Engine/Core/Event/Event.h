@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Core/CoreTypeTraits.h"
+#include "Core/Base/TypeTraits.h"
 #include "Core/Utils/ContainerUtils.h"
 #include "Delegate.h"
 
@@ -114,7 +114,7 @@ template <typename ReturnT, typename... ArgumentArgs> struct MulticastEvent {
 
   template <typename... Args>
   void Invoke(Args &&...args)
-    requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::Value
+    requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::value
   {
     for (auto &delegate : delegates_) {
       delegate.Invoke(Forward<ArgumentArgs>(args)...);
@@ -123,7 +123,7 @@ template <typename ReturnT, typename... ArgumentArgs> struct MulticastEvent {
 
   template <typename... Args>
   void InvokeOnce(Args &&...args)
-    requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::Value
+    requires CanParameterPackConvert<::std::tuple<Args...>, ::std::tuple<ArgumentArgs...>>::value
   {
     for (auto &delegate : delegates_) {
       delegate.Invoke(Forward<ArgumentArgs>(args)...);

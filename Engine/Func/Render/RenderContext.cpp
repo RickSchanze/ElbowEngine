@@ -60,7 +60,7 @@ void RenderContext::Render(const Millisecond &sec) {
   param.submit_queue_type = QueueFamilyType::Graphics;
   param.signal_semaphore = render_finished_semaphores_[current_frame_].Get();
   param.wait_semaphore = image_available_semaphores_[current_frame_].Get();
-  ctx.Submit(cmd, param)->Wait();
+  ctx.Submit(cmd, param).Wait();
 
   if (!ctx.Present(*image_index, render_finished_semaphores_[current_frame_].Get())) {
     // TODO: 重建交换链/渲染管线

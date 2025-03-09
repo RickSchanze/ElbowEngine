@@ -54,7 +54,7 @@ void AssetDataBase::Shutdown() {
 }
 
 template <typename T, typename TMeta>
-AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path, ObjectRegistry &registry) {
+ExecFuture<ObjectHandle> InternalImport(StringView query, StringView path, ObjectRegistry &registry) {
   auto result = AssetDataBase::QueryMeta<TMeta>(query);
   if (result) {
     auto &meta = *result;
@@ -69,17 +69,17 @@ AsyncResultHandle<ObjectHandle> InternalImport(StringView query, StringView path
   } else {
     TMeta new_meta = {};
     new_meta.path = path;
-    auto &[asset] = *(ObjectManager::CreateNewObjectAsync<T>()->GetValue());
-    new_meta.object_handle = std::get<0>(*registry.NextPersistentHandle()->GetValue());
+    auto *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
+    new_meta.object_handle = registry.NextPersistentHandle().Get();
     AssetDataBase::InsertMeta(new_meta);
     asset->InternalSetAssetHandle(new_meta.object_handle);
     return asset->PerformPersistentObjectLoadAsync();
   }
 }
 
-AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path) {
+exec::ExecFuture<ObjectHandle> AssetDataBase::Import(StringView path) {
   PROFILE_SCOPE_AUTO;
-  Assert::Require("Resource.Import", ThreadUtils::IsCurrentMainThread(), "Import只能在主线程调用");
+  Assert::Require("Resource.Import", IsMainThread(), "Import只能在主线程调用");
   // 先查一下是否存在, 存在的话按现有配置重新导入
   auto query = String::Format("path = '{}'", path);
   auto &registry = ObjectManager::GetRegistry();
@@ -95,51 +95,36 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::Import(StringView path) {
   if (path.EndsWith(".ttf")) {
     return InternalImport<Font, FontMeta>(query, path, registry);
   }
-  return MakeAsyncResult(0);
+  return MakeExecFuture(0);
 }
 
 Object *AssetDataBase::Load(StringView path) {
   PROFILE_SCOPE_AUTO;
-  auto handle = LoadAsync(path);
-  if (!handle)
-    return nullptr;
-  handle->Wait();
-  auto op = handle->GetValue();
-  if (!op) {
-    return nullptr;
-  }
-  auto [obj] = *op;
-  return ObjectManager::GetObjectByHandle(obj);
+  const ObjectHandle obj_handle = LoadAsync(path).Get();
+  return ObjectManager::GetObjectByHandle(obj_handle);
 }
 
-template <typename T, typename TMeta> AsyncResultHandle<ObjectHandle> InternalLoadAsync(StringView path) {
+template <typename T, typename TMeta> ExecFuture<ObjectHandle> InternalLoadAsync(StringView path) {
   if (const auto meta_op = AssetDataBase::QueryMeta<TMeta>(String::Format("path = '{}'", path)); !meta_op) {
     LOGGER.Warn(logcat::Resource_Load, "资产{}未在资产数据库中找到.", path);
-    return NULL_ASYNC_RESULT_HANDLE;
+    return MakeExecFuture(0);
   } else {
     auto &meta = *meta_op;
     ObjectHandle handle = meta.object_handle;
     ObjectRegistry &registry = ObjectManager::GetRegistry();
     Object *obj = registry.GetObjectByHandle(handle);
     if (obj != nullptr) {
-      return MakeAsyncResult(handle);
+      return MakeExecFuture(handle);
     } else {
-      auto [asset] = *ObjectManager::CreateNewObjectAsync<T>()->GetValue();
+      T *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
       asset->InternalSetAssetHandle(handle);
       return asset->PerformPersistentObjectLoadAsync();
     }
   }
 }
 
-AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
+ExecFuture<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
   PROFILE_SCOPE_AUTO;
-  auto &self = GetByRef();
-  {
-    std::lock_guard m{self.loading_assets_mutex_};
-    if (self.loading_assets_.contains(path)) {
-      return self.loading_assets_.at(path);
-    }
-  }
   if (path.EndsWith(".slang")) {
     return InternalLoadAsync<Shader, ShaderMeta>(path);
   }
@@ -154,17 +139,15 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
   }
   if (path.EndsWith(".mat")) {
     // 查看资产数据库是否存在
-    auto meta_op = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", path));
-    if (meta_op) {
-      auto &meta = *meta_op;
+    if (Optional<MaterialMeta> meta_op = QueryMeta<MaterialMeta>(String::Format("path = '{}'", path))) {
+      const MaterialMeta &meta = *meta_op;
       ObjectHandle database_handle = meta.object_handle;
       ObjectRegistry &registry = ObjectManager::GetRegistry();
-      Object *obj = registry.GetObjectByHandle(database_handle);
-      if (obj != nullptr) {
-        return MakeAsyncResult(database_handle);
+      if (const Object *obj = registry.GetObjectByHandle(database_handle); obj != nullptr) {
+        return MakeExecFuture(database_handle);
       } else {
         // 创建一个instanced asset作为临时载入, 此时它被注册入registry
-        auto [asset] = *ObjectManager::CreateNewObjectAsync<Material>()->GetValue();
+        Material *asset = ObjectManager::CreateNewObjectAsync<Material>().Get();
         YamlArchive archive;
         auto content = File::ReadAllText(path);
         auto old_instanced_handle = asset->GetHandle();
@@ -177,22 +160,14 @@ AsyncResultHandle<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
             // 校验通过则将临时注册的取消注册
             ObjectManager::GetRegistry().UnregisterHandle(old_instanced_handle);
             auto rtn = asset->PerformPersistentObjectLoadAsync();
-            {
-              std::lock_guard m{self.loading_assets_mutex_};
-              self.loading_assets_[path] = rtn;
-              rtn->OnCompleted([rtn, &self](const auto &result) {
-                std::lock_guard m{self.loading_assets_mutex_};
-                core::range::RemoveByValue(self.loading_assets_, rtn);
-              });
-              return rtn;
-            }
+            return rtn;
           }
         }
-        return MakeAsyncResult(0);
+        return MakeExecFuture(0);
       }
     }
   }
-  return MakeAsyncResult(0);
+  return MakeExecFuture(0);
 }
 
 template <typename T> static core::String QueryPath(core::ObjectHandle handle) {
@@ -205,26 +180,22 @@ template <typename T> static core::String QueryPath(core::ObjectHandle handle) {
     auto &meta = *meta_op;
     return meta.path;
   }
+  return "";
 }
 
-AsyncResultHandle<Object *> AssetDataBase::LoadAsync(ObjectHandle handle, const core::Type *asset_type) {
+ExecFuture<Object *>  AssetDataBase::LoadAsync(ObjectHandle handle, const core::Type *asset_type) {
   if (asset_type == nullptr)
-    return MakeAsyncResult<Object *>(nullptr);
+    return MakeExecFuture<Object *>(nullptr);
   if (ObjectManager::IsObjectExist(handle)) {
-    return MakeAsyncResult(ObjectManager::GetObjectByHandle(handle));
+    return MakeExecFuture(ObjectManager::GetObjectByHandle(handle));
   }
   core::String path;
   if (asset_type == TypeOf<Shader>()) {
     path = QueryPath<Shader>(handle);
   }
   if (path.IsEmpty())
-    return MakeAsyncResult<Object *>(nullptr);
-  auto op_handle = LoadAsync(path)->GetValue();
-  if (!op_handle) {
-    return MakeAsyncResult<Object *>(nullptr);
-  }
-  auto [obj] = *op_handle;
-  return MakeAsyncResult<Object *>(ObjectManager::GetObjectByHandle(obj));
+    return MakeExecFuture<Object *>(nullptr);
+  auto obj_handle = LoadAsync(path).Get();
 }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                                                 \
@@ -236,6 +207,7 @@ AsyncResultHandle<Object *> AssetDataBase::LoadAsync(ObjectHandle handle, const 
 bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
   if (asset == nullptr) {
     LOGGER.Error("Resource", "CreateAsset: 传入asset为空");
+    return false;
   }
   const Type *type = asset->GetType();
   if (type == TypeOf<Mesh>() || type == TypeOf<Shader>()) {
@@ -247,8 +219,8 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
       LOGGER.Error("Resource", "CreateAsset: {}已存在", path);
       return false;
     }
-    auto handle = ObjectManager::GetRegistry().NextPersistentHandle()->GetValue();
-    asset->InternalSetAssetHandle(std::get<0>(*handle));
+    ObjectHandle handle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
+    asset->InternalSetAssetHandle(handle);
     YamlArchive archive;
     String serialized_str;
     Material &material = *static_cast<Material *>(asset);
@@ -258,7 +230,7 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
     }
     File::WriteAllText(path, serialized_str);
     MaterialMeta meta;
-    meta.object_handle = *handle | First;
+    meta.object_handle = handle;
     meta.path = path;
     InsertMeta(meta);
     return true;
@@ -268,12 +240,12 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
       LOGGER.Error("Resource", "CreateAsset: {}已存在", path);
       return false;
     }
-    auto handle = ObjectManager::GetRegistry().NextPersistentHandle()->GetValue();
-    asset->InternalSetAssetHandle(std::get<0>(*handle));
+    ObjectHandle handle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
+    asset->InternalSetAssetHandle(handle);
     auto tex = static_cast<Texture2D *>(asset);
     Assert::Require("Resource", Equals(tex->GetAssetPath(), path), "创建纹理资源失败: 路径不匹配");
     Texture2DMeta meta;
-    meta.object_handle = *handle | First;
+    meta.object_handle = handle;
     meta.path = path;
     meta.dynamic = false;
     meta.height = tex->GetHeight();
