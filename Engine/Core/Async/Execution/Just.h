@@ -12,6 +12,8 @@ template <typename... Args> struct JustSender : Sender {
   using value_type = std::tuple<Pure<Args>...>;
   std::tuple<Pure<Args>...> value;
 
+  JustSender(Args &&...args) : value(std::make_tuple(Pure<Args>(Forward<Args>(args))...)) {}
+
   template <typename R> struct Operation : Op {
     using value_type = typename Pure<R>::receive_type;
     std::tuple<Pure<Args>...> v;
@@ -38,7 +40,7 @@ struct VoidJustSender : Sender {
   using value_type = std::tuple<>;
 
   template <typename R> struct Operation : Op {
-    Operation(R&& r) : r(Forward<R>(r)) {}
+    Operation(R &&r) : r(Forward<R>(r)) {}
 
     using value_type = std::tuple<>;
     Pure<R> r;
@@ -61,7 +63,12 @@ struct VoidJustSender : Sender {
   }
 };
 
-template <typename T> JustSender<T> Just(T &&value) { return {Forward<T>(value)}; }
+template <typename... Args>
+auto Just(Args... args)
+  requires(sizeof...(Args) > 0)
+{
+  return JustSender<Pure<Args>...>(std::forward<Args>(args)...);
+}
 
 inline VoidJustSender Just() { return {}; }
 } // namespace core::exec
