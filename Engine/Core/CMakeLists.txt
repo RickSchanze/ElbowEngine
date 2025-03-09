@@ -119,9 +119,9 @@ add_library(${PROJECT_NAME}
         Base/SystemInfo.cpp
         Base/SystemInfo.h
         Async/Execution/ExecRunnable.h
-        Async/Execution/WhenAllFuture.h
-        Async/Execution/EmptyReceiver.h
+        Async/Execution/WhenAllExecFuture.h
         Async/Execution/ExecFuture.h
+        Async/Execution/EmptyReceiver.h
 )
 
 add_library(Engine::Core ALIAS ${PROJECT_NAME})

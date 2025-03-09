@@ -10,7 +10,14 @@ template <typename T> struct EmptyReceiver {
   using receive_type = T;
 
   void SetValue(T &&t) {}
-  void SetException(std::exception_ptr ptr) { std::rethrow_exception(ptr); }
+  void SetError(std::exception_ptr ptr) { std::rethrow_exception(ptr); }
+};
+
+template <> struct EmptyReceiver<void> {
+  using receive_type = std::tuple<>;
+
+  void SetValue(std::tuple<> &&t) {}
+  void SetError(std::exception_ptr ptr) { std::rethrow_exception(ptr); }
 };
 
 } // namespace core::exec

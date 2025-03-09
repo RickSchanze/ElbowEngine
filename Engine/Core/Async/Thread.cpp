@@ -42,7 +42,9 @@ void Thread::Work(Int32 work_num) {
   while (!stopped_ && work_num < 0 ? true : i < work_num) {
     SharedPtr<IRunnable> task;
     tasks_.WaitDequeue(task);
-    task->Run();
+    if (!task->Run()) {
+      tasks_.Enqueue(task);
+    }
     i = work_num < 0 ? 0 : i + 1;
   }
 }

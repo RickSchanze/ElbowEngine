@@ -20,7 +20,7 @@ template <typename T> struct Future {
 
   T Get() { return future_.get(); }
   T operator*() { return future_.get(); }
-  void Wait() { future_.wait(); }
+  void Wait() const { future_.wait(); }
 
   template <typename Rep, typename Period> bool WaitFor(const std::chrono::duration<Rep, Period> &timeout) {
     auto state = future_.wait_for(timeout);

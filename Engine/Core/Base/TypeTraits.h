@@ -97,4 +97,20 @@ template <typename T> struct WrapTuple {
   using type = std::conditional_t<IsTuple<T>::value, T, std::tuple<T>>;
 };
 
+// 将一个类似std::tuple<std::tuple<int>, std::tuple<int>, std::tuple<>, std::tuple<double> 展评为 std::tuple<int, int,
+// double>
+template <typename T> struct Flatten {
+  using type = std::tuple<T>;
+};
+
+// 处理空tuple
+template <> struct Flatten<std::tuple<>> {
+  using type = std::tuple<>;
+};
+
+// 递归展开tuple-like类型
+template <typename... Ts> struct Flatten<std::tuple<Ts...>> {
+  using type = decltype(std::tuple_cat(std::declval<typename Flatten<Ts>::type>()...));
+};
+
 } // namespace core

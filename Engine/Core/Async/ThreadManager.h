@@ -10,7 +10,7 @@
 #include "Execution/ExecRunnable.h"
 #include "Execution/FutureReceiver.h"
 #include "Execution/Then.h"
-#include "Execution/WhenAllFuture.h"
+#include "Execution/WhenAllExecFuture.h"
 #include "Future.h"
 #include "Thread.h"
 
@@ -50,11 +50,14 @@ public:
   }
 
   template <typename F, typename... Args>
-  static void WhenAllFuturesCompleted(NamedThread thread, F &&func, Args &&...args) {
-    auto s = exec::WhenAllFuture(Forward<Args>(args)...) | exec::Then(Forward<F>(func));
-    exec::EmptyReceiver<typename Pure<decltype(s)>::value_type> receiver;
-    auto op = s.Connect(receiver);
-    AddRunnable(MakeShared<exec::ExecRunnable<Pure<decltype(op)>>>(op), thread);
+    requires(
+        std::same_as<typename exec::WhenAllExecFutureSender<Pure<Args>...>::value_type, FunctionArgsAsTuple<Pure<F>>>)
+  static void WhenAllExecFuturesCompleted(NamedThread thread, F &&func, Args &&...args) {
+    auto f = exec::WhenAllExecFuture(Move(args)...) | exec::Then(Move(func));
+    auto receiver = exec::EmptyReceiver<typename Pure<decltype(f)>::value_type>{};
+    auto op = f.Connect(Move(receiver));
+    auto runnable = MakeShared<exec::ExecRunnable<Pure<decltype(op)>>>(Move(op));
+    AddRunnable(runnable, thread);
   }
 
 private:

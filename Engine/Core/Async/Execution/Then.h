@@ -18,7 +18,16 @@ template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receive
 
   void SetValue(receive_type &&v) noexcept {
     try {
-      std::apply([this](auto &&...args) { next.SetValue(std::make_tuple(f(args...))); }, v);
+      if constexpr (std::same_as<FunctionReturnType<Pure<Pure<F>>>, void>) {
+        std::apply(
+            [this](auto &&...args) {
+              f(args...);
+              next.SetValue(std::make_tuple());
+            },
+            v);
+      } else {
+        std::apply([this](auto &&...args) { next.SetValue(std::make_tuple(f(args...))); }, v);
+      }
     } catch (...) {
       next.SetError(std::current_exception());
     }
@@ -37,7 +46,7 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
   template <typename U1, typename U2>
   VoidThenReceiver(U1 &&r, U2 &&func) : next(Forward<U1>(r)), f(Forward<U2>(func)) {}
 
-  void SetValue(const std::tuple<>&) noexcept {
+  void SetValue(const std::tuple<> &) noexcept {
     try {
       if constexpr (std::same_as<FunctionReturnType<Pure<F>>, void>) {
         next.SetValue(std::make_tuple());
@@ -55,6 +64,7 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
 template <typename SenderT, typename F> struct ThenSender : exec::Sender {
   using wrapped_type_ = typename WrapTuple<FunctionReturnType<Pure<F>>>::type;
   using value_type = std::conditional_t<std::same_as<wrapped_type_, std::tuple<void>>, std::tuple<>, wrapped_type_>;
+  using input_type = FunctionArgsAsTuple<Pure<F>>;
 
   ThenSender(SenderT &&s, F &&f) : sender(Forward<SenderT>(s)), f(Forward<F>(f)) {}
 
@@ -65,8 +75,8 @@ template <typename SenderT, typename F> struct ThenSender : exec::Sender {
   auto Connect(ReceiverType &&r)
     requires std::same_as<value_type, typename Pure<ReceiverType>::receive_type>
   {
-    if constexpr (std::same_as<value_type, std::tuple<>>) {
-      return sender.Connect(VoidThenReceiver<ReceiverType, F>(Forward<ReceiverType>(r), Forward<F>(f)));
+    if constexpr (std::same_as<input_type, std::tuple<>>) {
+      return sender.Connect(VoidThenReceiver<Pure<ReceiverType>, F>(Forward<ReceiverType>(r), Forward<F>(f)));
     } else {
       ThenReceiver<Pure<ReceiverType>, F> receiver(Forward<ReceiverType>(r), Forward<F>(f));
       return sender.Connect(receiver);

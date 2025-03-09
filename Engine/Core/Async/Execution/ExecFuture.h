@@ -8,6 +8,7 @@
 namespace core::exec {
 
 template <typename... Args> struct ExecFuture {
+  using value_type = std::tuple<Args...>;
   Future<std::tuple<Args...>> future;
 
   ExecFuture(Future<std::tuple<Args...>> &&f) : future(Move(f)) {}
@@ -22,7 +23,7 @@ template <typename... Args> struct ExecFuture {
     }
   }
 
-  void Wait() { future.Wait(); }
+  void Wait() const { future.Wait(); }
 
   template <typename Rep, typename Period> bool WaitFor(const std::chrono::duration<Rep, Period> &timeout) {
     return future.WaitFor(timeout);
