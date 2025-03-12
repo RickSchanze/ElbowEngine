@@ -22,7 +22,7 @@ public:
 
   void AddRunnable(const SharedPtr<IRunnable> &runnable) { tasks_.Enqueue(runnable); }
 
-  void Work(Int32 work_num = 0);
+  void Work(Int32 work_num = -1, bool persistent = true);
 
   void Stop();
 
@@ -37,6 +37,7 @@ private:
   std::thread thread_;
   ConcurrentQueue<SharedPtr<IRunnable>> tasks_;
   std::atomic<bool> stopped_ = false;
+  std::atomic<bool> working_ = false;
 };
 
 } // namespace core

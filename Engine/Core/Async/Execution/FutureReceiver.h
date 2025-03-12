@@ -15,8 +15,12 @@ template <typename... Args> struct FutureReceiver : Receiver {
 
   Promise<receive_type> promise;
 
-  void SetValue(receive_type &&value) { promise.SetValue(value); }
-  void SetValue(receive_type &value) { promise.SetValue(value); }
+  void SetValue(receive_type &&value) {
+    promise.SetValue(value);
+  }
+  void SetValue(receive_type &value) {
+    promise.SetValue(value);
+  }
 
   void SetError(std::exception_ptr ptr) { promise.SetException(ptr); }
 
@@ -28,8 +32,12 @@ template <typename... Args> struct FutureReceiver<std::tuple<Args...>> : Receive
   using receive_type = std::tuple<Args...>;
   Promise<receive_type> promise;
 
-  void SetValue(receive_type &&value) { promise.SetValue(value); }
-  void SetValue(receive_type &value) { promise.SetValue(value); }
+  void SetValue(receive_type &&value) {
+    promise.SetValue(value);
+  }
+  void SetValue(receive_type &value) {
+    promise.SetValue(value);
+  }
 
   void SetError(std::exception_ptr ptr) { promise.SetException(ptr); }
 

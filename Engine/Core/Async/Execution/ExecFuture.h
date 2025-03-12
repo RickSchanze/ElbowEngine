@@ -11,7 +11,7 @@ template <typename... Args> struct ExecFuture {
   using value_type = std::tuple<Args...>;
   Future<std::tuple<Args...>> future;
 
-  ExecFuture(Future<std::tuple<Args...>> &&f) : future(Move(f)) {}
+  ExecFuture(Future<std::tuple<Args...>> &&f) { future = Move(f); }
 
   [[nodiscard]] bool Completed() const { return future.Completed(); }
 

@@ -63,7 +63,7 @@ ExecFuture<ObjectHandle> InternalImport(StringView query, StringView path, Objec
     if (obj != nullptr) {
       registry.RemoveObject(obj);
     }
-    auto *asset = New<T>();
+    auto *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
     asset->InternalSetAssetHandle(handle);
     return asset->PerformPersistentObjectLoadAsync();
   } else {
@@ -183,19 +183,19 @@ template <typename T> static core::String QueryPath(core::ObjectHandle handle) {
   return "";
 }
 
-ExecFuture<Object *>  AssetDataBase::LoadAsync(ObjectHandle handle, const core::Type *asset_type) {
+ExecFuture<core::ObjectHandle> AssetDataBase::LoadAsync(ObjectHandle handle, const core::Type *asset_type) {
   if (asset_type == nullptr)
-    return MakeExecFuture<Object *>(nullptr);
+    return MakeExecFuture(0);
   if (ObjectManager::IsObjectExist(handle)) {
-    return MakeExecFuture(ObjectManager::GetObjectByHandle(handle));
+    return MakeExecFuture(handle);
   }
   core::String path;
   if (asset_type == TypeOf<Shader>()) {
     path = QueryPath<Shader>(handle);
   }
   if (path.IsEmpty())
-    return MakeExecFuture<Object *>(nullptr);
-  auto obj_handle = LoadAsync(path).Get();
+    return MakeExecFuture(0);
+  return LoadAsync(path);
 }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                                                 \

@@ -60,15 +60,15 @@ public:
 
   static core::exec::ExecFuture<core::ObjectHandle> LoadAsync(core::StringView path);
 
-  static core::exec::ExecFuture<core::Object *> LoadAsync(core::ObjectHandle handle, const core::Type *asset_type);
+  static core::exec::ExecFuture<core::ObjectHandle> LoadAsync(core::ObjectHandle handle, const core::Type *asset_type);
 
-  template <typename T> static core::Future<core::Object *> LoadAsync(core::ObjectPtr<T> obj) {
+  template <typename T> static core::Future<core::ObjectHandle> LoadAsync(core::ObjectPtr<T> obj) {
     return LoadAsync(obj.GetHandle(), core::TypeOf<T>());
   }
 
   template <typename T> static core::Object *Load(core::ObjectPtr<T> obj) {
-    auto res = LoadAsync(obj.GetHandle(), core::TypeOf<T>());
-    return res.Get();
+    auto res = LoadAsync(obj.GetHandle(), core::TypeOf<T>()).Get();
+    return core::ObjectManager::GetObjectByHandle(res);
   }
 
   template <typename T> static core::Optional<T> QueryMeta(core::ObjectHandle handle);

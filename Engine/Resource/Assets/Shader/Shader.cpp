@@ -27,6 +27,7 @@ using namespace platform;
 using namespace core;
 
 void Shader::PerformLoad() {
+  std::this_thread::sleep_for(std::chrono::seconds(20));
   auto op_meta = AssetDataBase::QueryMeta<ShaderMeta>(GetHandle());
   if (!op_meta) {
     LOGGER.Error(logcat::Resource, "加载失败: handle为{}的Shader不在资产数据库", GetHandle());
@@ -43,7 +44,7 @@ void Shader::PerformLoad() {
     return;
   }
   SlangShaderLoader::Load(shader_path, *this);
-  path_ = shader_path;
+  SetName(shader_path);
 }
 
 static ShaderParamType FindParamType(StringView path, StringView name, slang::TypeLayoutReflection *variable) {
@@ -194,7 +195,7 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera) {
       auto variable_kind = variable_type->getKind();
       if (category == slang::DescriptorTableSlot) {
         if (variable_kind == slang::TypeReflection::Kind::ConstantBuffer) {
-          FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(), path_,
+          FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(), GetName(),
                                       field, has_camera);
         }
         if (variable_kind == slang::TypeReflection::Kind::SamplerState) {
@@ -209,7 +210,7 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera) {
           ShaderParam param{};
           param.binding = variable_binding;
           param.name = field_layout->getName();
-          auto type = FindParamType(path_, param.name, field_layout->getTypeLayout());
+          auto type = FindParamType(GetName(), param.name, field_layout->getTypeLayout());
           if (type == ShaderParamType::Count) {
             success = false;
           } else {
@@ -294,8 +295,6 @@ bool Shader::IsCompute() const { return annotations_[GetEnumValue(ShaderAnnotati
 bool Shader::IsGraphics() const { return annotations_[GetEnumValue(ShaderAnnotation::Pipeline)] == 1; }
 
 bool Shader::IsDepthEnabled() const { return annotations_[GetEnumValue(ShaderAnnotation::EnableDepth)] == 1; }
-
-core::StringView Shader::GetPath() { return path_; }
 
 static void FillInputLayout(GraphicsPipelineDesc &desc, uint32_t index) {
   PROFILE_SCOPE_AUTO;

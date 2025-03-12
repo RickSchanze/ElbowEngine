@@ -13,9 +13,9 @@ namespace core {
 
 template <typename T> struct Future {
   Future(Future &f) = delete;
-  Future(Future &&f) noexcept : future_(Move(f.future_)) {}
+  Future(Future &&f) noexcept { future_ = (Move(f.future_)); }
   explicit Future(std::future<T> &) = delete;
-  Future(std::future<T> &&f) noexcept : future_(Move(f)) {}
+  Future(std::future<T> &&f) { future_ = (Move(f)); }
   Future() = default;
 
   T Get() { return future_.get(); }
@@ -30,6 +30,8 @@ template <typename T> struct Future {
   [[nodiscard]] bool Completed() const {
     return future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
   }
+
+  Future &operator=(Future &&) = default;
 
 private:
   std::future<T> future_;
@@ -50,7 +52,7 @@ template <> struct Future<void> {
   }
 
   [[nodiscard]] bool Completed() const {
-    return future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+    return future_.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready;
   }
 
 private:

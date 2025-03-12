@@ -1,7 +1,7 @@
 Meta:
   TypeInfo:
     Name: core.ObjectRegistry
-    HashCode: 11928224780895813169
+    HashCode: 3751425465113267450
 Data:
   next_handle_persistent_: 2
   free_handles_:

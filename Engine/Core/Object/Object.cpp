@@ -82,21 +82,19 @@ void Object::ResolveObjectPtr() {
 ExecFuture<ObjectHandle> Object::PerformPersistentObjectLoadAsync() {
   if (!IsPersistent()) {
     LOGGER.Warn("Core.Object", "尝试加载非持久化对象, handle={}", GetHandle());
-    return MakeReadyFuture(std::make_tuple(0));
+    return MakeExecFuture(0);
   }
-  auto *persistent = static_cast<PersistentObject *>(this);
-
-  auto task = Just() | Then([this, persistent] {
-                persistent->PerformLoad();
-                return handle_;
+  auto task = Just() | Then([this] {
+                ((PersistentObject *)(this))->PerformLoad();
+                return GetHandle();
               });
-  return ThreadManager::ScheduleFutureAsync(task);
+  auto f = ThreadManager::ScheduleFutureAsync(task);
+  return ExecFuture<ObjectHandle>(Move(f));
 }
 
 ObjectHandle Object::PerformPersistentObjectLoad() {
   if (!IsPersistent())
     return INVALID_OBJECT_HANDLE;
-  auto handle = GetHandle();
   auto *persistent = static_cast<PersistentObject *>(this);
   persistent->PerformLoad();
   return GetHandle();

@@ -101,8 +101,6 @@ public:
 
   [[nodiscard]] const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
 
-  [[nodiscard]] core::StringView GetPath();
-
   bool FillGraphicsPSODescFromShader(platform::rhi::GraphicsPipelineDesc &desc, bool output_glsl = true);
 
 protected:
@@ -115,8 +113,6 @@ protected:
   ShaderAnnotationMap annotations_;
 
   Slang::ComPtr<slang::ISession> slang_session_;
-
-  core::String path_;
 
   bool is_compiled_ = false;
 };

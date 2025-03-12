@@ -73,7 +73,6 @@ void func::ElbowRenderPipeline::Build() {
   auto fbx = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
   auto ui_shader = AssetDataBase::LoadAsync("Assets/Shader/UIPanel.slang");
   auto ui_atlas = AssetDataBase::LoadAsync("Assets/Texture/UIAtlas.png");
-  auto c = WhenAllExecFuture(Move(obj_shader), Move(fbx), Move(ui_shader), Move(ui_atlas));
   ThreadManager::WhenAllExecFuturesCompleted(
       NamedThread::Game,
       [this](ObjectHandle obj_shader_handle, ObjectHandle fbx_handle, ObjectHandle ui_shader_handle,
@@ -96,9 +95,9 @@ void func::ElbowRenderPipeline::Build() {
         panel_mat->SetTexture2D("atlas", ui_atlas_png);
         panel_widget->SetMaterial(panel_mat);
         this->ready_ = mesh_;
+        this->depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
       },
       Move(obj_shader), Move(fbx), Move(ui_shader), Move(ui_atlas));
-  depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
 }
 
 void func::ElbowRenderPipeline::Clean() {

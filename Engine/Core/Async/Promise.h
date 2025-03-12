@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Core/Log/Logger.h"
 #include "Future.h"
 
 namespace core {
@@ -19,7 +20,13 @@ public:
 
   void SetValue(T &result) { promise_.set_value(result); }
   void SetValue(T &&result) { promise_.set_value(Move(result)); }
-  void SetException(std::exception_ptr ptr) { promise_.set_exception(ptr); }
+  void SetException(std::exception_ptr ptr) {
+    try {
+      std::rethrow_exception(ptr);
+    } catch (std::exception& ex) {
+      LOGGER.Critical("Async", "Exception: {}", ex.what());
+    }
+  }
 
 private:
   std::promise<T> promise_;

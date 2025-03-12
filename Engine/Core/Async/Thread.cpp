@@ -4,6 +4,7 @@
 
 #include "Thread.h"
 
+#include "Core/Log/Logger.h"
 #include "IRunnable.h"
 
 #ifdef PLATFORM_WINDOWS
@@ -31,19 +32,36 @@ void Thread::SetName(core::StringView name) {
     auto pSetThreadDescription =
         reinterpret_cast<SetThreadDescriptionFunc>(GetProcAddress(hModule, "SetThreadDescription"));
     if (pSetThreadDescription) {
-      pSetThreadDescription(GetCurrentThread(), name.ToWideString().c_str());
+      void *handle = thread_.native_handle();
+      pSetThreadDescription(handle, name.ToWideString().c_str());
     }
   }
 #endif
 }
 
-void Thread::Work(Int32 work_num) {
+void Thread::Work(Int32 work_num, bool persistent) {
   Int32 i = 0;
   while (!stopped_ && work_num < 0 ? true : i < work_num) {
     SharedPtr<IRunnable> task;
-    tasks_.WaitDequeue(task);
-    if (!task->Run()) {
-      tasks_.Enqueue(task);
+    if (persistent) {
+      tasks_.WaitDequeue(task);
+      working_ = true;
+      const bool run_completed = task->Run();
+      working_ = false;
+      if (!run_completed) {
+        tasks_.Enqueue(task);
+      }
+    } else {
+      if (tasks_.TryDequeue(task)) {
+        working_ = true;
+        const bool run_completed = task->Run();
+        working_ = false;
+        if (!run_completed) {
+          tasks_.Enqueue(task);
+        }
+      } else {
+        return;
+      }
     }
     i = work_num < 0 ? 0 : i + 1;
   }
@@ -56,4 +74,4 @@ void Thread::Stop() {
   }
 }
 
-bool Thread::Leisure() const { return tasks_.IsEmpty(); }
+bool Thread::Leisure() const { return working_; }
