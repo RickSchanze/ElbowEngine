@@ -14,6 +14,8 @@ namespace core::exec {
 template <typename OpType>
   requires std::is_base_of_v<Op, OpType>
 struct ExecRunnable final : IRunnable {
+  ExecRunnable(Pure<OpType>&) = delete;
+
   bool Run() override {
     if constexpr (std::same_as<decltype(std::declval<Pure<OpType>>().Start()), bool>) {
       return op_.Start();

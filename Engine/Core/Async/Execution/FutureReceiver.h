@@ -11,16 +11,14 @@ namespace core::exec {
 
 template <typename... Args> struct FutureReceiver : Receiver {
   FutureReceiver() = default;
+  FutureReceiver(FutureReceiver &&f) : promise(Move(f.promise)) {}
+  FutureReceiver(FutureReceiver &) = delete;
   using receive_type = std::tuple<Pure<Args>...>;
 
   Promise<receive_type> promise;
 
-  void SetValue(receive_type &&value) {
-    promise.SetValue(value);
-  }
-  void SetValue(receive_type &value) {
-    promise.SetValue(value);
-  }
+  void SetValue(receive_type &&value) { promise.SetValue(value); }
+  void SetValue(receive_type &value) { promise.SetValue(value); }
 
   void SetError(std::exception_ptr ptr) { promise.SetException(ptr); }
 
@@ -29,15 +27,13 @@ template <typename... Args> struct FutureReceiver : Receiver {
 
 template <typename... Args> struct FutureReceiver<std::tuple<Args...>> : Receiver {
   FutureReceiver() = default;
+  FutureReceiver(FutureReceiver &&f) : promise(Move(f.promise)) {}
+  FutureReceiver(FutureReceiver &f) = delete;
   using receive_type = std::tuple<Args...>;
   Promise<receive_type> promise;
 
-  void SetValue(receive_type &&value) {
-    promise.SetValue(value);
-  }
-  void SetValue(receive_type &value) {
-    promise.SetValue(value);
-  }
+  void SetValue(receive_type &&value) { promise.SetValue(value); }
+  void SetValue(receive_type &value) { promise.SetValue(value); }
 
   void SetError(std::exception_ptr ptr) { promise.SetException(ptr); }
 

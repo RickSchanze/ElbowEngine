@@ -50,7 +50,7 @@ static void TickManagerUpdate(const Millisecond &sec) {
 
 template <typename... Args> static void ResourceInitCreate(Args &&...args) {
   while (!(... && args.Completed())) {
-    ThreadManager::PollGameThread(INT_MAX);
+    ThreadManager::PollGameThread(10);
   }
 }
 
@@ -95,16 +95,16 @@ int main() {
       PROFILE_SCOPE("AssetDataBase Initialize");
       AssetDataBase::Get();
       ResourceInitCreate( //
-
+          Move(AssetDataBase::Import("Assets/Shader/Error.slang")),
+          Move(AssetDataBase::Import("Assets/Texture/Default.png")),
+          Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
+          Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")),
+          Move(AssetDataBase::Import("Assets/Shader/UIPanel.slang")),
+          Move(AssetDataBase::Import("Assets/Shader/Text.slang")),
+          Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
+          Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png")) //
       );
-      auto a1 = Move(AssetDataBase::Import("Assets/Shader/Error.slang"));
-      auto a2 = Move(AssetDataBase::Import("Assets/Texture/Default.png"));
-      auto a3 = Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx"));
-      auto a4 = Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf"));
-      auto a5 = Move(AssetDataBase::Import("Assets/Shader/UIPanel.slang"));
-      auto a6 = Move(AssetDataBase::Import("Assets/Shader/Text.slang"));
-      auto a7 = Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang"));
-      auto a8 = Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png"));
+
       // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
       // Texture2DMeta new_meta;
       // new_meta.dynamic = true;

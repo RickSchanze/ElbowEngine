@@ -52,6 +52,7 @@ void Thread::Work(Int32 work_num, bool persistent) {
         tasks_.Enqueue(task);
       }
     } else {
+      size_t s = tasks_.Size();
       if (tasks_.TryDequeue(task)) {
         working_ = true;
         const bool run_completed = task->Run();
@@ -59,8 +60,6 @@ void Thread::Work(Int32 work_num, bool persistent) {
         if (!run_completed) {
           tasks_.Enqueue(task);
         }
-      } else {
-        return;
       }
     }
     i = work_num < 0 ? 0 : i + 1;
@@ -74,4 +73,4 @@ void Thread::Stop() {
   }
 }
 
-bool Thread::Leisure() const { return working_; }
+bool Thread::Leisure() const { return !working_; }

@@ -23,7 +23,7 @@ public:
   void SetException(std::exception_ptr ptr) {
     try {
       std::rethrow_exception(ptr);
-    } catch (std::exception& ex) {
+    } catch (std::exception &ex) {
       LOGGER.Critical("Async", "Exception: {}", ex.what());
     }
   }

@@ -14,7 +14,7 @@ template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receive
   Pure<ReceiverType> next;
   F f;
 
-  template <typename U1, typename U2> ThenReceiver(U1 &&r, U2 &&func) : next(Forward<U1>(r)), f(Forward<U2>(func)) {}
+  ThenReceiver(ReceiverType &&r, F &&func) : next(Move(r)), f(Forward<F>(func)) {}
 
   void SetValue(receive_type &&v) noexcept {
     try {
@@ -43,8 +43,9 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
   Pure<ReceiverType> next;
   F f;
 
-  template <typename U1, typename U2>
-  VoidThenReceiver(U1 &&r, U2 &&func) : next(Forward<U1>(r)), f(Forward<U2>(func)) {}
+  VoidThenReceiver(ReceiverType &&r, F &&func) : next(Move(r)), f(Forward<F>(func)) {}
+  VoidThenReceiver(VoidThenReceiver &&r) : next(Move(r.next)), f(Move(r.f)) {}
+  VoidThenReceiver(const VoidThenReceiver &r) = delete;
 
   void SetValue(const std::tuple<> &) noexcept {
     try {
@@ -76,10 +77,10 @@ template <typename SenderT, typename F> struct ThenSender : exec::Sender {
     requires std::same_as<value_type, typename Pure<ReceiverType>::receive_type>
   {
     if constexpr (std::same_as<input_type, std::tuple<>>) {
-      return sender.Connect(VoidThenReceiver<Pure<ReceiverType>, F>(Forward<ReceiverType>(r), Forward<F>(f)));
+      return Move(sender.Connect(VoidThenReceiver<Pure<ReceiverType>, F>(Move(r), Forward<F>(f))));
     } else {
-      ThenReceiver<Pure<ReceiverType>, F> receiver(Forward<ReceiverType>(r), Forward<F>(f));
-      return sender.Connect(receiver);
+      ThenReceiver<Pure<ReceiverType>, F> receiver(Move(r), Forward<F>(f));
+      return Move(sender.Connect(receiver));
     }
   }
 };

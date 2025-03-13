@@ -42,7 +42,7 @@ void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThrea
   if (named_thread == NamedThread::Count) {
     for (const auto &anonymous_thread : self.anonymous_threads_) {
       if (anonymous_thread->Leisure()) {
-        anonymous_thread->AddRunnable(runnable);
+        anonymous_thread->AddRunnable(std::static_pointer_cast<IRunnable>(runnable));
         return;
       }
     }

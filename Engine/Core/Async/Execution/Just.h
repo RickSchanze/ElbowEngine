@@ -40,7 +40,8 @@ struct VoidJustSender : Sender {
   using value_type = std::tuple<>;
 
   template <typename R> struct Operation : Op {
-    Operation(R &&r) : r(Forward<R>(r)) {}
+    Operation(R &&r) : r(Move(r)) {}
+    Operation(R&) = delete;
 
     using value_type = std::tuple<>;
     Pure<R> r;
@@ -59,7 +60,7 @@ struct VoidJustSender : Sender {
     requires std::same_as<std::tuple<>, typename Pure<R>::receive_type>
   {
     Operation<Pure<R>> rtn(Move(r));
-    return rtn;
+    return Move(rtn);
   }
 };
 

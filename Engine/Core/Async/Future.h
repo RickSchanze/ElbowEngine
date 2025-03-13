@@ -13,9 +13,9 @@ namespace core {
 
 template <typename T> struct Future {
   Future(Future &f) = delete;
-  Future(Future &&f) noexcept { future_ = (Move(f.future_)); }
+  Future(Future &&f) noexcept = default;
   explicit Future(std::future<T> &) = delete;
-  Future(std::future<T> &&f) { future_ = (Move(f)); }
+  Future(std::future<T> &&f) : future_(Move(f)) {}
   Future() = default;
 
   T Get() { return future_.get(); }
