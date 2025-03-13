@@ -7,35 +7,11 @@
 #include "Core/Base/CoreTypeDef.h"
 #include "concurrentqueue/blockingconcurrentqueue.h"
 
-#if ELBOW_DEBUG
-#include <queue>
-#endif
-
-#ifdef ELBOW_DEBUG
-#define DEBUG_QUEUE 1
-#else
-#define DEBUG_QUEUE 0
-#endif
-
 namespace core {
 template <typename T> class ConcurrentQueue {
 public:
-  void Enqueue(const T &t) {
-#if DEBUG_QUEUE
-    std::lock_guard lock(mutex_);
-    queue_.push_back(t);
-#else
-    queue_.enqueue(t);
-#endif
-  }
-  void Enqueue(T &&t) {
-#if DEBUG_QUEUE
-    std::lock_guard lock(mutex_);
-    queue_.push_back(Move(t));
-#else
-    queue_.enqueue(std::move(t));
-#endif
-  }
+  void Enqueue(const T &t) { queue_.enqueue(t); }
+  void Enqueue(T &&t) { queue_.enqueue(std::move(t)); }
 
   bool TryDequeue(T &t) { return queue_.try_dequeue(t); }
   void WaitDequeue(T &t) { queue_.wait_dequeue(t); }
