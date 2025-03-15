@@ -44,12 +44,14 @@ void Thread::Work(Int32 work_num, bool persistent) {
   while (!stopped_ && work_num < 0 ? true : i < work_num) {
     SharedPtr<IRunnable> task;
     if (persistent) {
-      tasks_.WaitDequeue(task);
-      working_ = true;
-      const bool run_completed = task->Run();
-      working_ = false;
-      if (!run_completed) {
-        tasks_.Enqueue(task);
+      tasks_.WaitDequeueTimed(task, std::chrono::milliseconds(100));
+      if (task) {
+        working_ = true;
+        const bool run_completed = task->Run();
+        working_ = false;
+        if (!run_completed) {
+          tasks_.Enqueue(task);
+        }
       }
     } else {
       if (tasks_.TryDequeue(task)) {
@@ -61,7 +63,7 @@ void Thread::Work(Int32 work_num, bool persistent) {
         }
       }
     }
-    i = work_num < 0 ? 0 : i + 1;
+    i = work_num < 0 || persistent ? 0 : i + 1;
   }
 }
 
