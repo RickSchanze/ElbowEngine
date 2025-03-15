@@ -27,7 +27,6 @@ using namespace platform;
 using namespace core;
 
 void Shader::PerformLoad() {
-  std::this_thread::sleep_for(std::chrono::seconds(20));
   auto op_meta = AssetDataBase::QueryMeta<ShaderMeta>(GetHandle());
   if (!op_meta) {
     LOGGER.Error(logcat::Resource, "加载失败: handle为{}的Shader不在资产数据库", GetHandle());

@@ -50,6 +50,7 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
   void SetValue(const std::tuple<> &) noexcept {
     try {
       if constexpr (std::same_as<FunctionReturnType<Pure<F>>, void>) {
+        f();
         next.SetValue(std::make_tuple());
       } else {
         next.SetValue(std::make_tuple(f()));

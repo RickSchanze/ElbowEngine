@@ -27,6 +27,7 @@
 #include "Resource/Assets/Font/Font.h"
 #include "Resource/Assets/Material/SharedMaterial.h"
 #include "Resource/Assets/Shader/Shader.h"
+#include "Resource/Assets/Texture/Texture2DMeta.h"
 #include "cpptrace/cpptrace.hpp"
 
 namespace resource {
@@ -101,27 +102,26 @@ int main() {
           Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")),
           Move(AssetDataBase::Import("Assets/Shader/UIPanel.slang")),
           Move(AssetDataBase::Import("Assets/Shader/Text.slang")),
-          Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
-          Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png")) //
-      );
+          Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png")), //
+          Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")));
 
       // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
-      // Texture2DMeta new_meta;
-      // new_meta.dynamic = true;
-      // new_meta.width = 1024;
-      // new_meta.height = 1024;
-      // new_meta.format = platform::rhi::Format::R8G8B8A8_SRGB;
-      // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
-      // new_tex->SetName("UIAtlas");
-      // new_tex->Load(new_meta);
-      // new_tex->AppendSprite(ui::IconID::Close(), R"(C:\Users\Echo\Documents\Temp\Icons\关闭.png)");
-      // new_tex->AppendSprite(ui::IconID::White(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
-      // new_tex->AppendSprite(ui::IconID::Folded(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
-      // new_tex->AppendSprite(ui::IconID::Expanded(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
-      // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
-      // new_tex->Download();
-      // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
-      // AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+      Texture2DMeta new_meta;
+      new_meta.dynamic = true;
+      new_meta.width = 1024;
+      new_meta.height = 1024;
+      new_meta.format = platform::rhi::Format::R8G8B8A8_SRGB;
+      Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
+      new_tex->SetName("UIAtlas");
+      new_tex->Load(new_meta);
+      new_tex->AppendSprite(ui::IconID::Close(), R"(C:\Users\Echo\Documents\Temp\Icons\关闭.png)");
+      new_tex->AppendSprite(ui::IconID::White(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
+      new_tex->AppendSprite(ui::IconID::Folded(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
+      new_tex->AppendSprite(ui::IconID::Expanded(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
+      new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
+      new_tex->Download();
+      AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
+      AssetDataBase::Import("Assets/Texture/UIAtlas.png");
 #if WITH_EDITOR
       ObjectManager::SaveObjectRegistry();
 #endif

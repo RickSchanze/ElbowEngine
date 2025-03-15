@@ -18,8 +18,12 @@ public:
 
   Future<T> GetFuture() { return Future<T>(promise_.get_future()); }
 
-  void SetValue(T &result) { promise_.set_value(result); }
-  void SetValue(T &&result) { promise_.set_value(Move(result)); }
+  void SetValue(T &result) {
+    promise_.set_value(result);
+  }
+  void SetValue(T &&result) {
+    promise_.set_value(Move(result));
+  }
   void SetException(std::exception_ptr ptr) {
     try {
       std::rethrow_exception(ptr);

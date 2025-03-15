@@ -17,7 +17,7 @@ template <typename... Args> struct ExecFuture {
 
   template <size_t Index = 0> auto Get() {
     if constexpr (sizeof...(Args) == 0) {
-      Wait();
+      future.Get();
     } else {
       return std::get<Index>(future.Get());
     }

@@ -28,7 +28,8 @@ void GfxCommandHelper::EndSingleTransferCommand(const core::SharedPtr<CommandBuf
   SubmitParameter param{};
   param.fence = fence.Get();
   param.submit_queue_type = QueueFamilyType::Transfer;
-  ctx.Submit(command_buffer, param).Wait();
+  auto fuc = ctx.Submit(command_buffer, param);
+  fuc.Get();
   fence->SyncWait();
 }
 
@@ -59,7 +60,7 @@ void GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32
   auto &ctx = GetGfxContextRef();
   BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
   auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
-  void* mapped_data = staging_buffer->BeginWrite();
+  void *mapped_data = staging_buffer->BeginWrite();
   memcpy(mapped_data, data, size);
   staging_buffer->EndWrite();
   // 执行图像布局变换
