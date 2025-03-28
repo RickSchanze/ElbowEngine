@@ -1,0 +1,5 @@
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_subdirectory(Core)
+add_subdirectory(Platform)
+add_subdirectory(Resource)
+add_subdirectory(Func)

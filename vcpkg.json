@@ -1,0 +1,51 @@
+{
+    "dependencies": [
+      {
+        "name": "mimalloc"
+      },
+      {
+        "name": "shader-slang"
+      },
+      {
+        "name": "spdlog"
+      },
+      {
+        "name": "tracy"
+      },
+      {
+        "name": "yaml-cpp"
+      },
+      {
+        "name": "concurrentqueue"
+      },
+      {
+        "name": "glm"
+      },
+      {
+        "name": "xxhash"
+      },
+      {
+        "name": "glfw3"
+      },
+      {
+        "name": "sqlitecpp"
+      },
+      {
+        "name": "nlohmann-json"
+      },
+      {
+        "name": "assimp"
+      },
+      {
+        "name": "stb"
+      },
+      {
+        "name": "freetype"
+      },
+      {
+        "name": "utfcpp"
+      }
+    ],
+    "version": "0.0.1",
+    "name": "elbow-engine"
+  }

@@ -1,0 +1,16 @@
+Meta:
+  TypeInfo:
+    Name: resource.Material
+    HashCode: 17723025055868386955
+Data:
+  handle_: 9
+  flags_: 2
+  state_: 0
+  name_: ""
+  display_name_: 空对象
+  shader_:
+    object_: 2
+  float3_params_:
+    {}
+  texture_params_:
+    {}
