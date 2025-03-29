@@ -16,6 +16,9 @@ template<typename T>
 struct Vector3;
 
 template<typename T>
+struct Vector2;
+
+template<typename T>
 struct Vector4 {
 public:
     typedef Vector4 ThisStruct;
@@ -66,6 +69,9 @@ public:
     Vector3() = default;
     Vector3(T x, T y, T z) : x(x), y(y), z(z) {}
     explicit Vector3(const Vector4<T> &vec) : x(vec.x), y(vec.y), z(vec.z) {}
+    explicit Vector3(const Vector2<T> &vec);
+
+    Vector3 &operator=(const Vector2<T> &vec);
 
     bool operator==(const Vector3 &other) const { return x == other.x && y == other.y && z == other.z; }
     Vector3 operator+(Vector3 rhs) { return Vector3(x + rhs.x, y + rhs.y, z + rhs.z); }
@@ -144,6 +150,8 @@ struct Color {
     static Color Green();
     static Color Clear();
 
+    static Color FromUInt8(UInt8 r, UInt8 g, UInt8 b, UInt8 a = 255);
+
     Float r = 0;
     Float g = 0;
     Float b = 0;
@@ -152,6 +160,10 @@ struct Color {
 
 inline Color Color::Green() { return {0, 1, 0, 1}; }
 inline Color Color::Clear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
+
+inline Color Color::FromUInt8(UInt8 r, UInt8 g, UInt8 b, UInt8 a) {
+    return {static_cast<Float>(r) / 255.f, static_cast<Float>(g) / 255.f, static_cast<Float>(b) / 255.f, static_cast<Float>(a) / 255.f};
+}
 
 template<typename T>
 struct Rect2D {
@@ -437,6 +449,17 @@ const Type *Vector3<T>::GetType() {
     if constexpr (SameAs<T, Int32>)
         return TypeOf<Vector3i>();
     return nullptr;
+}
+
+template<typename T>
+Vector3<T>::Vector3(const Vector2<T> &vec) : x{vec.x}, y{vec.y}, z{0} {}
+
+template<typename T>
+Vector3<T> &Vector3<T>::operator=(const Vector2<T> &vec) {
+    x = vec.x;
+    y = vec.y;
+    z = 0;
+    return *this;
 }
 
 template<typename T>

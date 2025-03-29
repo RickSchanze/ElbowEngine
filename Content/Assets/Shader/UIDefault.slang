@@ -7,8 +7,8 @@
 
 import "Common/CommonStructure";
 import "Common/Utility";
-import "Common/ColorCorrection";
 
+uniform ConstantBuffer<Camera> camera;
 uniform Texture2D atlas;
 uniform SamplerState common_sampler;
 
@@ -24,20 +24,18 @@ struct FragOutput {
 
 [shader("vertex")]
 VertexOutput vert(VertexUI vert) {
-  VertexOutput output;
-  output.uv = vert.uv;
-  output.position = float4(vert.position, 1);
-  output.color = vert.color;
-  return output;
+    VertexOutput output;
+    output.uv = vert.uv;
+    float4 pos = mul(float4(vert.position, 1), camera.GetOrtho());
+    output.position = pos;
+    output.color = vert.color;
+    return output;
 }
-
-
 
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
-  FragOutput output;
-  output.color = atlas.Sample(common_sampler, input.uv);
-  output.color *= input.color;
-  output.color.rgb = GammaToLinear(output.color.rgb);
-  return output;
+    FragOutput output;
+    output.color = atlas.Sample(common_sampler, input.uv);
+    output.color *= input.color;
+    return output;
 }

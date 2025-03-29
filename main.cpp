@@ -11,14 +11,15 @@
 #include "Func/Render/Camera/Camera.hpp"
 #include "Func/Render/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Func/UI/Widget/Window.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
+#include "Platform/RHI/SyncPrimitives.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Platform/Window/Window.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
-#include "Platform/RHI/SyncPrimitives.hpp"
 
 using namespace rhi;
 
@@ -76,8 +77,7 @@ int main() {
             ResourceInitCreate( //
                     Move(AssetDataBase::Import("Assets/Shader/Error.slang")), Move(AssetDataBase::Import("Assets/Texture/Default.png")),
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
-                    Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")), Move(AssetDataBase::Import("Assets/Shader/UIPanel.slang")),
-                    Move(AssetDataBase::Import("Assets/Shader/Text.slang")),
+                    Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")), Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")),
                     Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png")), //
                     Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")) //
             );
@@ -114,6 +114,9 @@ int main() {
         TickEvents::Evt_TickInput.Bind(main_window, &PlatformWindow::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<ElbowEngineRenderPipeline>());
         NewObject<ACameraHolder>();
+        auto w = NewObject<Window>();
+        w->SetLocation({0, 0});
+        w->SetSize({200, 200});
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {
             ProfileScope _("Tick");

@@ -11,9 +11,9 @@
 #include "Core/Math/Math.hpp"
 #include "utf8.h"
 
-#include "Resource/AssetDataBase.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
+#include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Material/MaterialMeta.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 
@@ -155,8 +155,7 @@ void Font::RequestLoadGlyphs(const StringView &str) {
 void Font::RequestLoadGlyph(UInt32 code_point) {
     if (glyphs_.Contains(code_point))
         return;
-    UInt32 errcode = FontLib::LoadChar(dynamic_font_handle_->face, code_point);
-    if (errcode != 0) {
+    if (UInt32 errcode = FontLib::LoadChar(dynamic_font_handle_->face, code_point); errcode != 0) {
         Log(Warn) << String::Format("加载字符{}失败(<-这是Unicode代码), 错误码={}.", code_point, errcode);
         return;
     }
@@ -164,33 +163,31 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
     const FT_Bitmap &bitmap = slot->bitmap;
     if (cursor_.x + bitmap.width >= font_atlas_width_) {
         cursor_.x = 0;
-        cursor_.y += bitmap.rows + 1;
+        cursor_.y += bitmap.rows;
     }
     if (cursor_.y + bitmap.rows >= font_atlas_height_) {
         Log(Error) << String::Format("字体{}的字体图集不够大.", path_);
         return;
     }
     Array<UInt8> data;
-    data.Reserve(100);
+    data.Reserve(bitmap.rows * bitmap.width);
     for (Int32 y = 0; y < bitmap.rows; y++) {
         for (Int32 x = 0; x < bitmap.width; x++) {
             data.Add(bitmap.buffer[x + y * bitmap.pitch]);
         }
     }
-    rhi::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(),
-                                             {static_cast<Int32>(cursor_.x), static_cast<Int32>(cursor_.y), 0},
+    rhi::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.x, cursor_.y, 0},
                                              {static_cast<Int32>(bitmap.width), static_cast<Int32>(bitmap.rows), 1});
     // 保存此字符的信息
-    GlyphInfo info{};
-    info.uv.pos.x = static_cast<Float>(cursor_.x) / static_cast<Float>(font_atlas_width_);
-    info.uv.pos.y = static_cast<Float>(cursor_.y) / static_cast<Float>(font_atlas_height_);
-    info.uv.size.x = static_cast<Float>(bitmap.width) / static_cast<Float>(font_atlas_width_);
-    info.uv.size.y = static_cast<Float>(bitmap.rows) / static_cast<Float>(font_atlas_height_);
-    info.advance_x = slot->advance.x >> 6;
-    info.bearing_x = slot->metrics.horiBearingX >> 6;
-    info.bearing_y = slot->metrics.horiBearingY >> 6;
-    info.width = bitmap.width;
-    info.height = bitmap.rows;
-    cursor_.x += bitmap.width + 1;
+    FontCharacterInfo info{};
+    // 这里uv原点在左上角 再加上半像素矫正
+    info.uv.pos.x = (static_cast<Float>(cursor_.x) + 0.5f) / static_cast<Float>(font_atlas_width_);
+    info.uv.pos.y = (static_cast<Float>(cursor_.y) + 0.5f) / static_cast<Float>(font_atlas_height_);
+    info.uv.size.x = (static_cast<Float>(bitmap.width) - 1.f) / static_cast<Float>(font_atlas_width_);
+    info.uv.size.y = (static_cast<Float>(bitmap.rows) - 1.f) / static_cast<Float>(font_atlas_height_);
+    info.bearing.x = slot->bitmap_left;
+    info.bearing.y = slot->bitmap_top;
+    info.advance = slot->advance.x;
+    cursor_.x += bitmap.width;
     glyphs_[code_point] = info;
 }

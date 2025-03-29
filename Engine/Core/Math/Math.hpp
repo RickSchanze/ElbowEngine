@@ -94,4 +94,15 @@ struct Math {
         result[3, 2] = -1;
         return result;
     }
+
+    template<typename T>
+    static Matrix4x4<T> Ortho(const T left, const T right, const T bottom, const T top) {
+        Matrix4x4<T> result = Matrix4x4<T>::Identity();
+        result[0, 0] = static_cast<T>(2) / (right - left);
+        result[1, 1] = static_cast<T>(2) / (top - bottom);
+        result[3, 3] = static_cast<T>(1);
+        result[0, 3] = -(right + left) / (right - left);
+        result[1, 3] = -(top + bottom) / (top - bottom);
+        return result;
+    }
 };

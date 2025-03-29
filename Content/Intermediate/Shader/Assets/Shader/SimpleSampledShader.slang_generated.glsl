@@ -15,7 +15,7 @@ struct Camera_std140_0
 {
     _MatrixStorage_float4x4std140_0 view_0;
     _MatrixStorage_float4x4std140_0 projection_0;
-    _MatrixStorage_float4x4std140_0 data1_0;
+    _MatrixStorage_float4x4std140_0 ortho_0;
     _MatrixStorage_float4x4std140_0 data2_0;
 };
 
@@ -26,7 +26,7 @@ layout(std140) uniform block_Camera_std140_0
 {
     _MatrixStorage_float4x4std140_0 view_0;
     _MatrixStorage_float4x4std140_0 projection_0;
-    _MatrixStorage_float4x4std140_0 data1_0;
+    _MatrixStorage_float4x4std140_0 ortho_0;
     _MatrixStorage_float4x4std140_0 data2_0;
 }camera_0;
 

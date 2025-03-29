@@ -74,6 +74,10 @@ public:
     static const Type *GetStaticType() { return TypeOf<ObjectPtrBase>(); }
     ObjectPtr() : ObjectPtr(nullptr) {}
 
+    ObjectPtr(std::nullptr_t) {
+        SetObject(0);
+    }
+
     ObjectPtr(T *obj) {
         if (obj == nullptr) {
             SetObject(0);

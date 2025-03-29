@@ -152,6 +152,12 @@ public:
 
     void SortInplace() { std::sort(data_.begin(), data_.end()); }
 
+    void AddUnique(const T& t) {
+        if (!Contains(t)) {
+            Add(t);
+        }
+    }
+
 private:
     std::vector<T> data_;
 };

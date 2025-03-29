@@ -99,7 +99,7 @@ Object *AssetDataBase::Load(StringView path) {
 template<typename T, typename TMeta>
 ExecFuture<ObjectHandle> InternalLoadAsync(StringView path) {
     if (const auto meta_op = AssetDataBase::QueryMeta<TMeta>(String::Format("path = '{}'", *path)); !meta_op) {
-        Log(Error) << String::Format("资产{}未在资产数据库中找到.", path);
+        Log(Error) << String::Format("资产{}未在资产数据库中找到.", *path);
         return exec::MakeExecFuture(0);
     } else {
         auto &meta = *meta_op;

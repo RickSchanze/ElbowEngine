@@ -6,6 +6,7 @@
 
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
+#include "Func/UI/UiManager.hpp"
 #include "Helper.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/Commands.hpp"
@@ -52,12 +53,16 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     depth_attachment.layout = ImageLayout::DepthStencilAttachment;
     depth_attachment.target = depth_target_->GetImageView();
     cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
+    cmd.Execute("Begin Render");
     BindMaterial(cmd, material_);
     BindAndDrawMesh(cmd, mesh_);
+    cmd.Execute("Draw Cube Mesh");
+    UIManager::PerformGenerateRenderCommandsPass(cmd);
+
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                           PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
-    cmd.Execute("Draw Cube Mesh");
+    cmd.Execute("EndRender");
     cmd.End();
 }
 

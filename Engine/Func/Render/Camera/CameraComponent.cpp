@@ -7,6 +7,8 @@
 #include "Camera.hpp"
 #include "Core/Math/Math.hpp"
 #include "Func/World/Actor.hpp"
+#include "Platform/Window/PlatformWindow.hpp"
+#include "Platform/Window/PlatformWindowManager.hpp"
 
 IMPL_REFLECTED(CameraComponent) { return Type::Create<CameraComponent>("CameraComponent") | refl_helper::AddParents<SceneComponent>(); }
 
@@ -20,7 +22,12 @@ CameraComponent::CameraComponent() : SceneComponent() {
     if (!Camera::Get()->GetActive()) {
         Camera::Get()->SetActive(this);
     }
+    PlatformWindow *w = PlatformWindowManager::GetMainWindow();
+    ReCalcProjAndOrtho(w, w->GetWidth(), w->GetHeight());
+    window_resize_event_handle_ = WindowEvents::Evt_OnWindowResize.AddBind(this, &ThisClass::ReCalcProjAndOrtho);
 }
+
+CameraComponent::~CameraComponent() { WindowEvents::Evt_OnWindowResize.RemoveBind(window_resize_event_handle_); }
 
 void CameraComponent::UpdateViewBuffer() {
     // 计算view和projection
@@ -63,7 +70,7 @@ Float CameraComponent::GetFOV() const { return camera_shader_data_.data2[0, 0]; 
 
 void CameraComponent::SetFOV(const float fov) {
     camera_shader_data_.data2[0, 0] = fov;
-    ReCalcProj();
+    ReCalcProjAndOrtho(nullptr, 0, 0);
     SetDirty();
 }
 
@@ -71,7 +78,7 @@ Float CameraComponent::GetNearPlane() const { return camera_shader_data_.data2[0
 
 void CameraComponent::SetNearPlane(const Float near_plane) {
     camera_shader_data_.data2[0, 1] = near_plane;
-    ReCalcProj();
+    ReCalcProjAndOrtho(nullptr, 0, 0);
     SetDirty();
 }
 
@@ -79,7 +86,7 @@ Float CameraComponent::GetFarPlane() const { return camera_shader_data_.data2[0,
 
 void CameraComponent::SetFarPlane(const Float far_plane) {
     camera_shader_data_.data2[0, 2] = far_plane;
-    ReCalcProj();
+    ReCalcProjAndOrtho(nullptr, 0, 0);
     SetDirty();
 }
 
@@ -87,7 +94,7 @@ Float CameraComponent::GetAspectRatio() const { return camera_shader_data_.data2
 
 void CameraComponent::SetAspectRatio(const Float aspect) {
     camera_shader_data_.data2[0, 3] = aspect;
-    ReCalcProj();
+    ReCalcProjAndOrtho(nullptr, 0, 0);
     SetDirty();
 }
 
@@ -98,7 +105,7 @@ void CameraComponent::SetActive(const bool active) {
     SetDirty();
 }
 
-void CameraComponent::ReCalcProj() {
+void CameraComponent::ReCalcProjAndOrtho(PlatformWindow *window, Int32 w, Int32 h) {
     const Float fov = Math::Radians(GetFOV());
     const Float aspect_ratio = GetAspectRatio();
     const Float near_plane = GetNearPlane();
@@ -106,6 +113,12 @@ void CameraComponent::ReCalcProj() {
     Matrix4x4f projection = Math::Perspective(fov, aspect_ratio, near_plane, far_plane);
     // TODO: 不同图形API适配
     // OpenGL视口左边中Y朝上 而vulkan视口中Y朝下
-    projection[1][1] *= -1;
+    projection[1, 1] *= -1;
     camera_shader_data_.proj = projection;
+    if (window != nullptr) {
+        camera_shader_data_.ortho = Math::Ortho(0.f, static_cast<Float>(w), 0.f, static_cast<Float>(h));
+        // 一样是处理vulkan NDC坐标差异
+        camera_shader_data_.ortho[1, 1] *= -1;
+        camera_shader_data_.ortho[1, 3] *= -1;
+    }
 }

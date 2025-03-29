@@ -17,11 +17,11 @@ enum class FontRenderMethod {
     Bitmap,
 };
 
-struct GlyphInfo {
-    Rect2Df uv{};
-    UInt32 bearing_x{}, bearing_y{}; // 字符的偏移
-    UInt32 width{}, height{};
-    UInt32 advance_x{};
+struct FontCharacterInfo {
+    Rect2Df uv{}; // 字形的UV
+    Vector2i size{}; // 字形的大小
+    Vector2i bearing{}; // 从baseline到字形左部/顶部的便宜
+    UInt32 advance{}; // 从远点到下一个字形原点的距离
 };
 
 class REFLECTED() Font : public Asset {
@@ -57,7 +57,7 @@ public:
     [[nodiscard]] FontRenderMethod GetRenderMethod() const { return render_method_; }
     [[nodiscard]] StringView GetAssetPath() const { return path_; }
 
-    [[nodiscard]] GlyphInfo &GetGlyphInfo(const UInt32 unicode) { return glyphs_[unicode]; }
+    [[nodiscard]] const FontCharacterInfo &GetGlyphInfo(const UInt32 unicode) { return glyphs_[unicode]; }
     [[nodiscard]] bool HasGlyph(const UInt32 unicode) const { return glyphs_.Contains(unicode); }
 
     void RequestLoadGlyphs(const StringView &str);
@@ -73,12 +73,12 @@ private:
     Int32 font_atlas_width_ = 0; // 字体图集的宽度
     Int32 font_atlas_height_ = 0; // 字体图集的高度
     ObjectPtr<Texture2D> font_atlas_ = nullptr; // 字体图集
-    Map<UInt32, GlyphInfo> glyphs_; // 记录每个字符对应font atlas的信息
+    Map<UInt32, FontCharacterInfo> glyphs_; // 记录每个字符对应font atlas的信息
 
     struct FontHandle;
     FontHandle *dynamic_font_handle_ = nullptr; // 当字体是dynamic时有用
 
-    Vector2ui cursor_ = {0, 0};
+    Vector2i cursor_ = {0, 0};
 };
 
 IMPL_REFLECTED_INPLACE(Font) { return Type::Create<Font>("Font") | refl_helper::AddParents<Asset>(); }

@@ -33,14 +33,14 @@ public struct VertexUI {
 public struct Camera {
   float4x4 view;
   float4x4 projection;
-  float4x4 data1;
+  float4x4 ortho;
   float4x4 data2;
 
   public float4x4 GetView() { return view; }
 
   public float4x4 GetProjection() { return projection; }
 
-  public float3 GetPosition() { return data1[0].xyz; }
+  public float4x4 GetOrtho() { return ortho; }
 };
 
 public struct Model {

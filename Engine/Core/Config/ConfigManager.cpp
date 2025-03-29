@@ -11,7 +11,7 @@
 
 IConfig *ConfigManager::GetConfig(const Type *type) {
     if (!type->IsDefined(Type::ValueAttribute::Config)) {
-        Log(Error) << String::Format("Type {} is not a config type", *type->GetName());
+        Log(Fatal) << String::Format("Type {} is not a config type", *type->GetName());
         return nullptr;
     }
     if (configs_.Contains(type)) {
