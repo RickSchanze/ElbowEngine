@@ -11,7 +11,7 @@ using namespace rhi;
 
 VkComponentMapping rhi::FromComponentMapping(const ComponentMapping &mapping) {
     VkComponentMapping vk_mapping;
-    vk_mapping.a = RHIComponentMappingElementToVkComponentSwizzle(mapping.r);
+    vk_mapping.a = RHIComponentMappingElementToVkComponentSwizzle(mapping.a);
     vk_mapping.r = RHIComponentMappingElementToVkComponentSwizzle(mapping.r);
     vk_mapping.g = RHIComponentMappingElementToVkComponentSwizzle(mapping.g);
     vk_mapping.b = RHIComponentMappingElementToVkComponentSwizzle(mapping.b);

@@ -149,6 +149,7 @@ struct Color {
 
     static Color Green();
     static Color Clear();
+    static Color White();
 
     static Color FromUInt8(UInt8 r, UInt8 g, UInt8 b, UInt8 a = 255);
 
@@ -156,10 +157,13 @@ struct Color {
     Float g = 0;
     Float b = 0;
     Float a = 1;
+
+    bool operator==(const Color &other) const { return r == other.r && g == other.g && b == other.b && a == other.a; }
 };
 
 inline Color Color::Green() { return {0, 1, 0, 1}; }
 inline Color Color::Clear() { return {0.3f, 0.3f, 0.3f, 1.f}; }
+inline Color Color::White() { return {1.f, 1.f, 1.f, 1.f}; }
 
 inline Color Color::FromUInt8(UInt8 r, UInt8 g, UInt8 b, UInt8 a) {
     return {static_cast<Float>(r) / 255.f, static_cast<Float>(g) / 255.f, static_cast<Float>(b) / 255.f, static_cast<Float>(a) / 255.f};

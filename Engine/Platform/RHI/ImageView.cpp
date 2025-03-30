@@ -92,8 +92,15 @@ rhi::ImageViewDesc::ImageViewDesc(Image *image_) {
     subresource_range.base_array_layer = 0;
     subresource_range.level_count = image->GetMipLevels();
     subresource_range.base_mip_level = 0;
-    component_mapping.a = ComponentMappingElement::Identity;
-    component_mapping.b = ComponentMappingElement::Identity;
-    component_mapping.g = ComponentMappingElement::Identity;
-    component_mapping.r = ComponentMappingElement::Identity;
+    if (format == Format::R8_SRGB) {
+        component_mapping.a = ComponentMappingElement::R;
+        component_mapping.g = ComponentMappingElement::One;
+        component_mapping.b = ComponentMappingElement::One;
+        component_mapping.r = ComponentMappingElement::One;
+    } else {
+        component_mapping.a = ComponentMappingElement::Identity;
+        component_mapping.b = ComponentMappingElement::Identity;
+        component_mapping.g = ComponentMappingElement::Identity;
+        component_mapping.r = ComponentMappingElement::Identity;
+    }
 }

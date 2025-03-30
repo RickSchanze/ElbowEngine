@@ -145,7 +145,6 @@ bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
 }
 
 bool Material::SetTexture2D(const String &name, const Texture2D *texture) {
-
     if (SetTexture2D(name.GetHashCode(), texture)) {
         texture_params_[name] = texture;
         return true;

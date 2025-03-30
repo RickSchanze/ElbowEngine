@@ -69,6 +69,7 @@ struct UIVertexIndexManager {
     ~UIVertexIndexManager();
 
     UIBufferWrite RequestBufferWrite(ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
+    UIBufferWrite RequestBufferWrite(ObjectHandle handle);
 
     void ReleaseBuffer(ObjectHandle);
 
@@ -85,6 +86,7 @@ public:
 
     static UIBufferWrite RequestWriteData(ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
     static UIBufferWrite RequestWriteData(Widget *w, UInt64 vertex_count, UInt64 index_count);
+    static UIBufferWrite RequestWriteData(Widget* w);
     static Style &GetCurrentStyle();
     static void PerformRebuildPass(const MilliSeconds&);
     static void PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd);

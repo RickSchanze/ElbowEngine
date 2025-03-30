@@ -15,7 +15,7 @@ class Material;
 class Widget : public Object {
     friend class UIManager;
     REFLECTED_CLASS(Widget)
-private:
+protected:
     Rect2Df ui_rect_{}; // 这里记录的pos是左下角
     bool visible_ = true; // visible为false仅仅不发送draw call
     bool receive_input_ = false;
@@ -24,18 +24,18 @@ private:
 
     bool rebuild_dirty_ = true;
 
-protected:
     virtual void OnVisibleChanged(bool old, bool now);
     virtual void OnEnabledChanged(bool old, bool now);
 
-    virtual void Rebuild();
-
-    void SetRebuildDirty(bool dirty);
+    void SetRebuildDirty(bool dirty = true);
     bool IsRebuildDirty() const { return rebuild_dirty_; }
 
-    Rect2Df GetUIRect() const { return ui_rect_; }
 
 public:
+    virtual Vector2f GetRebuildRequiredSize() { return {}; };
+    Rect2Df GetUIRect() const { return ui_rect_; }
+    virtual void Rebuild();
+
     void SetReceiveInput(bool receive_input);
     bool IsReceiveInput() const { return receive_input_; }
 

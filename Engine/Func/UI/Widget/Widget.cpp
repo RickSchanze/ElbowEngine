@@ -18,7 +18,7 @@ void Widget::OnVisibleChanged(bool old, bool now) {}
 
 void Widget::OnEnabledChanged(bool old, bool now) {}
 
-void Widget::Rebuild() { VLOG_FATAL("未实现!!!"); }
+void Widget::Rebuild() { SetRebuildDirty(false); }
 
 void Widget::SetRebuildDirty(bool dirty) { rebuild_dirty_ = dirty; }
 

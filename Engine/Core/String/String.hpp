@@ -78,6 +78,7 @@ public:
     String(const char *str_begin, const char *str_end) : str_(str_begin, str_end) {}
     String(const StringView &view);
     String(const String &str) = default;
+    ~String();
 
     operator std::string() const { return str_; }
     constexpr const char *operator*() const { return str_.c_str(); }

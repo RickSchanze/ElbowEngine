@@ -21,7 +21,22 @@ Window::Window() {
 Window::~Window() { UIManager::UnRegisterWindow(this); }
 
 void Window::Rebuild() {
+    Super::Rebuild();
     auto write = UIManager::RequestWriteData(this, 4, 6);
-    auto color = UIManager::GetCurrentStyle().background_color;
+    const auto color = UIManager::GetCurrentStyle().background_color;
     write.AddQuad(GetUIRect(), Rect2Df{}, color);
+    Widget *s = slot_;
+    Vector2f size = s->GetRebuildRequiredSize();
+    s->SetLocation(ui_rect_.pos);
+    s->SetSize(size);
+    s->Rebuild();
+}
+
+Vector2f Window::GetRebuildRequiredSize() { return ui_rect_.size; }
+
+void Window::SetSlotWidget(Widget *now) {
+    if (now != slot_) {
+        slot_ = now;
+        SetRebuildDirty();
+    }
 }

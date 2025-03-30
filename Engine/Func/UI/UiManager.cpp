@@ -17,7 +17,9 @@
 #include "Platform/RHI/GfxContext.hpp"
 #include "Platform/RHI/VertexLayout.hpp"
 #include "Resource/AssetDataBase.hpp"
+#include "Resource/Assets/Font/Font.hpp"
 #include "Resource/Assets/Material/Material.hpp"
+#include "Resource/Assets/Texture/Texture2D.hpp"
 #include "Style.hpp"
 #include "UiUtility.hpp"
 #include "Widget/Widget.hpp"
@@ -133,6 +135,8 @@ void UIManager::Startup() {
     default_ui_font->SetName("DefaultUIFontMaterial");
     default_ui_font->SetShader(default_shader);
     default_ui_font_mat_ = default_ui_font;
+    Font *default_font = Font::GetDefaultFont();
+    default_ui_font_mat_->SetTexture2D("atlas", default_font->GetFontAtlas());
 
     post_tick_handle_ = TickEvents::Evt_WorldPostTick.AddBind(&UIManager::PerformRebuildPass);
 }
@@ -149,6 +153,11 @@ UIBufferWrite UIManager::RequestWriteData(ObjectHandle handle, UInt64 vertex_cou
 
 UIBufferWrite UIManager::RequestWriteData(Widget *w, UInt64 vertex_count, UInt64 index_count) {
     return RequestWriteData(w->GetHandle(), vertex_count, index_count);
+}
+
+UIBufferWrite UIManager::RequestWriteData(Widget *w) {
+    auto &self = GetByRef();
+    return self.buffer_manager_->RequestBufferWrite(w->GetHandle());
 }
 
 Style &UIManager::GetCurrentStyle() {
@@ -173,6 +182,12 @@ void UIManager::PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd) {
         const auto &info = self.buffer_manager_->RequestWidgetBufferInfo(w->GetHandle());
         helper::BindMaterial(cmd, w->GetMaterial());
         cmd.Enqueue<Cmd_DrawIndexed>(info->index_count, 1, info->index_offset DEBUG_ONLY(, w->GetName()));
+        const auto slot = w->GetSlotWidget();
+        const auto &slot_info = self.buffer_manager_->RequestWidgetBufferInfo(slot->GetHandle());
+        helper::BindMaterial(cmd, slot->GetMaterial());
+        if (slot_info->index_count != 0) {
+            cmd.Enqueue<Cmd_DrawIndexed>(slot_info->index_count, 1, slot_info->index_offset DEBUG_ONLY(, slot->GetName()));
+        }
     }
     cmd.Execute("Draw UI");
 }
@@ -244,6 +259,12 @@ UIBufferWrite UIVertexIndexManager::RequestBufferWrite(ObjectHandle handle, UInt
                 }
                 cursor = value.offset + value.size;
             }
+            if (write_data.index_buffer == nullptr) {
+                write_data.index_buffer = index_data + cursor;
+                write_data.index_count = index_count;
+                write_data.index_offset = cursor;
+                write_data.index_cursor = 0;
+            }
         }
     }
     if (write_data.vertex_buffer == nullptr) {
@@ -270,6 +291,12 @@ UIBufferWrite UIVertexIndexManager::RequestBufferWrite(ObjectHandle handle, UInt
                 }
                 cursor = value.offset + value.size;
             }
+            if (write_data.vertex_buffer == nullptr) {
+                write_data.vertex_buffer = vertex_data + cursor;
+                write_data.vertex_count = vertex_count;
+                write_data.vertex_offset = cursor;
+                write_data.vertex_cursor = 0;
+            }
         }
     }
     // 更新map
@@ -280,6 +307,23 @@ UIBufferWrite UIVertexIndexManager::RequestBufferWrite(ObjectHandle handle, UInt
     info.vertex_count = write_data.vertex_count;
     widget_buffer_map[handle] = info;
     return write_data;
+}
+
+UIBufferWrite UIVertexIndexManager::RequestBufferWrite(ObjectHandle handle) {
+    if (widget_buffer_map.Contains(handle)) {
+        const auto &buffer = widget_buffer_map[handle];
+        UIBufferWrite write_data{};
+        write_data.index_buffer = index_data + buffer.index_offset;
+        write_data.index_count = buffer.index_count;
+        write_data.index_offset = buffer.index_offset;
+        write_data.index_cursor = 0;
+        write_data.vertex_buffer = vertex_data + buffer.vertex_offset;
+        write_data.vertex_count = buffer.vertex_count;
+        write_data.vertex_offset = buffer.vertex_offset;
+        write_data.vertex_cursor = 0;
+        return write_data;
+    }
+    return {};
 }
 
 void UIVertexIndexManager::ReleaseBuffer(ObjectHandle handle) { widget_buffer_map.Remove(handle); }

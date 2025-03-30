@@ -15,6 +15,7 @@
 #endif
 
 String::String(const StringView &view) : str_(view.Data(), view.ByteCount()) {}
+String::~String() {}
 
 String String::FromWideChar(const std::wstring &wstr) {
     if (wstr.empty())

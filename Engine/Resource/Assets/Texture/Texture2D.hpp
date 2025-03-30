@@ -11,6 +11,9 @@
 
 
 namespace rhi {
+    struct ImageViewDesc;
+}
+namespace rhi {
     class Image;
     class ImageView;
 } // namespace rhi

@@ -8,7 +8,6 @@
 #endif
 #define STB_IMAGE_IMPLEMENTATION
 #include <charconv>
-#include "Resource/AssetDataBase.hpp"
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Path.hpp"
 #include "Platform/RHI/Buffer.hpp"
@@ -17,9 +16,10 @@
 #include "Platform/RHI/Image.hpp"
 #include "Platform/RHI/ImageView.hpp"
 #include "Resource/Algo.hpp"
+#include "Resource/AssetDataBase.hpp"
 #include "Texture2DMeta.hpp"
 #include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION  // 必须定义此宏以启用函数实现
+#define STB_IMAGE_WRITE_IMPLEMENTATION // 必须定义此宏以启用函数实现
 #include "stb_image_write.h"
 
 using namespace rhi;
@@ -73,10 +73,10 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         const Format format = meta.format;
         const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format, ImageDimension::D2};
         String debug_name = String::Format("Texture2D_{}", *path);
-        native_image_ = GetGfxContextRef().CreateImage(desc, debug_name);
+        native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *path);
-        native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
+        native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * channels);
         stbi_image_free(pixels);
         asset_path_ = meta.path;
@@ -89,11 +89,11 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         const Format format = meta.format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
         const ImageDesc desc{meta.width, meta.height, IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc, format, ImageDimension::D2};
-        String debug_name = String::Format("Texture2D_{}", name_);
-        native_image_ = GetGfxContextRef().CreateImage(desc, debug_name);
+        String debug_name = String::Format("Texture2D_{}", *name_);
+        native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *name_);
-        native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, debug_name);
+        native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         asset_path_ = meta.path;
         SetSpriteRangeString(meta.sprites_string);
     }

@@ -59,7 +59,9 @@ struct Font::FontHandle {
     ~FontHandle() { FT_Done_Face(face); }
 };
 
-Font *Font::GetDefaultFont() { return AssetDataBase::Load<Font>("Assets/Font/MapleMono.ttf"); }
+Font *Font::GetDefaultFont() {
+    return AssetDataBase::Load<Font>("Assets/Font/MapleMono.ttf");
+}
 
 Material *Font::GetDefaultFontMaterial() {
     struct DefaultMatLoader {
@@ -117,8 +119,8 @@ bool Font::Load(const FontMeta &meta) {
     atlas_meta.height = font_atlas_height_;
     atlas_meta.dynamic = true;
     atlas_meta.format = rhi::Format::R8_SRGB;
-    Texture2D *font_atlas = ObjectManager::CreateNewObject<Texture2D>();
-    font_atlas->SetName(String::Format("Font Atlas for {}", path_));
+    auto *font_atlas = ObjectManager::CreateNewObject<Texture2D>();
+    font_atlas->SetName(String::Format("Font Atlas for {}", *path_));
     font_atlas->Load(atlas_meta);
     font_atlas_ = font_atlas;
     dynamic_font_handle_ = New<FontHandle>(path_, font_size_);
@@ -188,6 +190,8 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
     info.bearing.x = slot->bitmap_left;
     info.bearing.y = slot->bitmap_top;
     info.advance = slot->advance.x;
+    info.size.x = bitmap.width;
+    info.size.y = bitmap.rows;
     cursor_.x += bitmap.width;
     glyphs_[code_point] = info;
 }

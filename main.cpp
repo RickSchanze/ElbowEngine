@@ -11,6 +11,7 @@
 #include "Func/Render/Camera/Camera.hpp"
 #include "Func/Render/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Func/UI/Widget/Text.hpp"
 #include "Func/UI/Widget/Window.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
@@ -117,6 +118,10 @@ int main() {
         auto w = NewObject<Window>();
         w->SetLocation({0, 0});
         w->SetSize({200, 200});
+        auto text = NewObject<Text>();
+        text->SetSize(32);
+        text->SetText("你好世界");
+        w->SetSlotWidget(text);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {
             ProfileScope _("Tick");

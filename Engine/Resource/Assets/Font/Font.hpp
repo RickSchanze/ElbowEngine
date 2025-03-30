@@ -57,8 +57,8 @@ public:
     [[nodiscard]] FontRenderMethod GetRenderMethod() const { return render_method_; }
     [[nodiscard]] StringView GetAssetPath() const { return path_; }
 
-    [[nodiscard]] const FontCharacterInfo &GetGlyphInfo(const UInt32 unicode) { return glyphs_[unicode]; }
-    [[nodiscard]] bool HasGlyph(const UInt32 unicode) const { return glyphs_.Contains(unicode); }
+    [[nodiscard]] const FontCharacterInfo &GetCharacterInfo(const UInt32 unicode) { return glyphs_[unicode]; }
+    [[nodiscard]] bool HasCharacterInfo(const UInt32 unicode) const { return glyphs_.Contains(unicode); }
 
     void RequestLoadGlyphs(const StringView &str);
 
@@ -81,4 +81,6 @@ private:
     Vector2i cursor_ = {0, 0};
 };
 
-IMPL_REFLECTED_INPLACE(Font) { return Type::Create<Font>("Font") | refl_helper::AddParents<Asset>(); }
+IMPL_REFLECTED_INPLACE(Font) {
+    return Type::Create<Font>("Font") | refl_helper::AddParents<Asset>() | refl_helper::AddField("font_atlas", &Font::font_atlas_);
+}

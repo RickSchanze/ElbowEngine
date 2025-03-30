@@ -15,6 +15,9 @@ public:
     ~Window() override;
 
     void Rebuild() override;
+    Vector2f GetRebuildRequiredSize() override;
+    Widget *GetSlotWidget() const { return slot_; }
+    void SetSlotWidget(Widget* now);
 
 protected:
     ObjectPtr<Text> title_text_;

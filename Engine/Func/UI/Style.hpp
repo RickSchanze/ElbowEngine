@@ -11,6 +11,7 @@ class Style : public Object {
     REFLECTED_CLASS(Style)
 public:
     Color background_color = Color::FromUInt8(23, 23, 26);
+    Color text_color = Color::FromUInt8(233, 233, 233);
 };
 
 REGISTER_TYPE(Style)
