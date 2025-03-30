@@ -12,3 +12,7 @@ RectVertices UIUtility::ExtractVertexFromRect2D(Rect2Df rect) {
     rtn.right_top.position = {rect.pos.x + rect.size.x, rect.pos.y + rect.size.y, 0};
     return rtn;
 }
+
+bool UIUtility::IsRectContainsPos(Rect2Df rect, Vector2f pos) {
+    return rect.pos.x <= pos.x && pos.x <= rect.pos.x + rect.size.x && rect.pos.y <= pos.y && pos.y <= rect.pos.y + rect.size.y;
+}

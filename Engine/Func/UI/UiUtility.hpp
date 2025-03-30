@@ -19,4 +19,7 @@ public:
     // 从一个矩形中提取它的四个顶点
     // 顺序
     static RectVertices ExtractVertexFromRect2D(Rect2Df rect);
+
+    // Rect的pos是左下角, 向上向右延伸size
+    static bool IsRectContainsPos(Rect2Df rect, Vector2f pos);
 };

@@ -99,7 +99,8 @@ static void GLFWMousePosCallback(GLFWwindow *window, double xpos, double ypos) {
     Assert(w != nullptr, "Window not found");
     auto &input_state = w->InternalGetInputStateRef();
     input_state.mouse.x = xpos;
-    input_state.mouse.y = ypos;
+    // 修正为左下角为原点, 向上
+    input_state.mouse.y = w->GetHeight() - ypos;
 }
 
 static void GLFWErrorCallback(int error, const char *description) { Log(Error) << String::Format("[GLFW] {}: {}", error, description); }

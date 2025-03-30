@@ -22,7 +22,7 @@ public:
         } else if constexpr (std::is_pointer_v<Pure<T>>) {
             stream << std::hex << std::showbase << t;
         } else if constexpr (CToStringAble<Pure<T>>) {
-            stream << t.ToString;
+            stream << *t.ToString();
         } else {
             static_assert(false, "T Can not Stringify.");
         }

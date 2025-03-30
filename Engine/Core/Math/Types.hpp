@@ -112,6 +112,12 @@ struct Vector2 {
         return *this;
     }
     Vector2 operator-(Vector2 rhs) { return Vector2(x - rhs.x, y - rhs.y); }
+
+    String ToString() { return String::Format("Vector2{{x = {}, y = {}}}", x, y); }
+
+    bool IsZero() { return x == 0 && y == 0; }
+    T SizeSquare() { return x * x + y * y; }
+    T Size() { return std::sqrt(SizeSquare()); }
 };
 
 template<typename T>

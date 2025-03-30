@@ -10,6 +10,8 @@ add_library(Func
         UI/IconConstantName.hpp
         UI/Style.cpp
         UI/Style.hpp
+        UI/UIEventDispatcher.cpp
+        UI/UIEventDispatcher.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)

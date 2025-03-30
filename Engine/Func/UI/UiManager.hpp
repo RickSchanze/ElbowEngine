@@ -11,6 +11,7 @@
 #include "Core/Object/ObjectPtr.hpp"
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
+#include "UIEventDispatcher.hpp"
 
 
 class Material;
@@ -77,6 +78,8 @@ struct UIVertexIndexManager {
 };
 
 class UIManager : public Manager<UIManager> {
+    friend class UIEventDispatcher;
+
 public:
     StringView GetName() const override { return "UIManager"; }
     Float GetLevel() const override { return 13.5f; }
@@ -86,18 +89,20 @@ public:
 
     static UIBufferWrite RequestWriteData(ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
     static UIBufferWrite RequestWriteData(Widget *w, UInt64 vertex_count, UInt64 index_count);
-    static UIBufferWrite RequestWriteData(Widget* w);
-    static WidgetVertexIndexBufferInfo* GetWidgetBufferInfo(ObjectHandle handle);
-    static WidgetVertexIndexBufferInfo* GetWidgetBufferInfo(Widget*  w);
+    static UIBufferWrite RequestWriteData(Widget *w);
+    static WidgetVertexIndexBufferInfo *GetWidgetBufferInfo(ObjectHandle handle);
+    static WidgetVertexIndexBufferInfo *GetWidgetBufferInfo(Widget *w);
     static Style &GetCurrentStyle();
-    static void PerformRebuildPass(const MilliSeconds&);
+    static void PerformRebuildPass(const MilliSeconds &);
     static void PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd);
     static Material *GetDefaultUIFontMaterial();
     static Material *GetDefaultUIMaterial();
-    static void RegisterWindow(Window* w);
-    static void UnRegisterWindow(Window* w);
+    static void RegisterWindow(Window *w);
+    static void UnRegisterWindow(Window *w);
 
 private:
+    static const Array<Window *> &GetWindows();
+
     UniquePtr<UIVertexIndexManager> buffer_manager_;
     UniquePtr<Style> current_style_;
     Array<Window *> windows_;
@@ -106,6 +111,8 @@ private:
     ObjectPtr<Material> default_ui_font_mat_ = nullptr;
 
     UInt64 post_tick_handle_ = 0;
+
+    UIEventDispatcher dispatcher_;
 };
 
 Float ApplyGlobalUIScale(Float value);

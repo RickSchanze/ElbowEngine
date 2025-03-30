@@ -13,6 +13,7 @@
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Texture/Sprite.hpp"
 #include "Text.hpp"
+#include "Platform/RHI/VertexLayout.hpp"
 
 IMPL_REFLECTED(Window) {
     return Type::Create<Window>("Window") | refl_helper::AddParents<Widget>() | refl_helper::AddField("title_text", &ThisClass::title_text_) |
@@ -46,24 +47,22 @@ void Window::Rebuild() {
     title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
     title_rect.size.x = ui_rect_.size.x;
     title_rect.size.y = ApplyGlobalUIScale(20);
-    write.AddQuad(title_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()),
-                  UIManager::GetCurrentStyle().title_background_color);
+    write.AddQuad(title_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()), UIManager::GetCurrentStyle().title_background_color);
 
-    // 第三个矩形, 下面的正文
+    // 第二个矩形, 下面的正文
     Rect2Df content;
     content.pos = ui_rect_.pos;
     content.size.x = ui_rect_.size.x;
     content.size.y = ui_rect_.size.y - ApplyGlobalUIScale(20);
     write.AddQuad(content, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()), UIManager::GetCurrentStyle().content_background_color);
 
-    // 第二个矩形 折叠标志
+    // 第三个矩形 折叠标志
     Rect2Df fold_rect;
     fold_rect.pos.x = ui_rect_.pos.x;
     fold_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
     fold_rect.size.x = ApplyGlobalUIScale(20);
     fold_rect.size.y = ApplyGlobalUIScale(20);
-    write.AddQuad(fold_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::WindowUnfold()),
-                  Color::White());
+    write.AddQuad(fold_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::WindowUnfold()), Color::White());
 
     // 文本的渲染
     Text *text = title_text_;
@@ -106,4 +105,13 @@ void Window::SetSlotWidget(Widget *now) {
         slot_ = now;
         SetRebuildDirty();
     }
+}
+
+void Window::SetFocused(bool now) {
+    if (now == focused_)
+        return;
+    focused_ = now;
+    const auto write = UIManager::RequestWriteData(this);
+    write.SetQuadColor(focused_ ? UIManager::GetCurrentStyle().focused_title_background_color : UIManager::GetCurrentStyle().title_background_color,
+                       *write.vertex_buffer, *(write.vertex_buffer + 1), *(write.vertex_buffer + 2), *(write.vertex_buffer + 3));
 }

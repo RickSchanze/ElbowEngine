@@ -18,11 +18,15 @@ public:
     void Draw(rhi::CommandBuffer &cmd) override;
     Vector2f GetRebuildRequiredSize() override;
     Widget *GetSlotWidget() const { return slot_; }
-    void SetSlotWidget(Widget* now);
+    void SetSlotWidget(Widget *now);
+
+    bool IsFocused() const { return focused_; }
+    void SetFocused(bool now);
 
 protected:
     ObjectPtr<Text> title_text_;
     ObjectPtr<Widget> slot_;
+    bool focused_ = false;
 };
 
 REGISTER_TYPE(Window)

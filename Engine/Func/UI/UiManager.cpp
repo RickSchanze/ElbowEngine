@@ -112,6 +112,8 @@ void UIManager::Startup() {
     const auto *cfg = GetConfig<FuncConfig>();
     buffer_manager_ = MakeUnique<UIVertexIndexManager>(cfg->GetPreservedUIVertexCount(), cfg->GetPreservedUIIndexCount());
 
+    TickEvents::Evt_PostInputTick.AddBind(&dispatcher_, &UIEventDispatcher::ProcessInputEvent);
+
     auto style_file_path = cfg->GetUIStylePath();
     current_style_ = MakeUnique<Style>();
     if (Path::IsExist(style_file_path)) {
@@ -125,12 +127,12 @@ void UIManager::Startup() {
         VLOG_ERROR("UI样式文件", style_file_path, "不存在");
     }
 
-    Shader *default_shader = reinterpret_cast<Shader *>(AssetDataBase::Load("Assets/Shader/UIDefault.slang"));
+    auto default_shader = reinterpret_cast<Shader *>(AssetDataBase::Load("Assets/Shader/UIDefault.slang"));
     Material *default_ui = ObjectManager::CreateNewObject<Material>();
     default_ui->SetName("DefaultUIFontMaterial");
     default_ui->SetShader(default_shader);
     default_ui_mat_ = default_ui;
-    Texture2D *default_ui_icon_atlas = reinterpret_cast<Texture2D *>(AssetDataBase::Load("Assets/Texture/UIAtlas.png"));
+    auto default_ui_icon_atlas = reinterpret_cast<Texture2D *>(AssetDataBase::Load("Assets/Texture/UIAtlas.png"));
     default_ui_mat_->SetTexture2D("atlas", default_ui_icon_atlas);
 
     Material *default_ui_font = ObjectManager::CreateNewObject<Material>();
@@ -211,6 +213,11 @@ void UIManager::RegisterWindow(Window *w) {
 void UIManager::UnRegisterWindow(Window *w) {
     auto &self = GetByRef();
     self.windows_.Remove(w);
+}
+
+const Array<Window *> &UIManager::GetWindows() {
+    auto& self = GetByRef();
+    return self.windows_;
 }
 
 Float ApplyGlobalUIScale(Float value) { return value * UIManager::GetCurrentStyle().global_scale; }
