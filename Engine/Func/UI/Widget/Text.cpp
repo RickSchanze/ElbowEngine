@@ -5,11 +5,14 @@
 #include "Text.hpp"
 
 #include "Core/Math/Math.hpp"
+#include "Func/Render/Helper.hpp"
 #include "Func/UI/Style.hpp"
 #include "Func/UI/UiManager.hpp"
+#include "Platform/RHI/Commands.hpp"
 #include "Platform/RHI/VertexLayout.hpp"
 #include "Resource/Assets/Font/Font.hpp"
 #include "Resource/Assets/Material/Material.hpp"
+#include "Resource/Assets/Material/SharedMaterial.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "utf8cpp/utf8.h"
 
@@ -95,7 +98,20 @@ void Text::Rebuild() {
     }
 }
 
-void Text::SetSize(UInt8 now) {
+void Text::Draw(rhi::CommandBuffer &cmd) {
+    WidgetVertexIndexBufferInfo *info = UIManager::GetWidgetBufferInfo(this);
+    if (info == nullptr) {
+        VLOG_ERROR("未找到此Widget对应的Buffer, 是不是忘记调用Rebuild了?");
+        return;
+    }
+    if (info->index_count == 0 || info->vertex_count == 0) {
+        return;
+    }
+    helper::BindMaterial(cmd, GetMaterial());
+    cmd.Enqueue<rhi::Cmd_DrawIndexed>(info->index_count, 1, info->index_offset);
+}
+
+void Text::SetFontSize(Float now) {
     if (font_size_ != now) {
         font_size_ = now;
         SetRebuildDirty(true);

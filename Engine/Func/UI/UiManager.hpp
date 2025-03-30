@@ -87,6 +87,8 @@ public:
     static UIBufferWrite RequestWriteData(ObjectHandle handle, UInt64 vertex_count, UInt64 index_count);
     static UIBufferWrite RequestWriteData(Widget *w, UInt64 vertex_count, UInt64 index_count);
     static UIBufferWrite RequestWriteData(Widget* w);
+    static WidgetVertexIndexBufferInfo* GetWidgetBufferInfo(ObjectHandle handle);
+    static WidgetVertexIndexBufferInfo* GetWidgetBufferInfo(Widget*  w);
     static Style &GetCurrentStyle();
     static void PerformRebuildPass(const MilliSeconds&);
     static void PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd);
@@ -105,3 +107,5 @@ private:
 
     UInt64 post_tick_handle_ = 0;
 };
+
+Float ApplyGlobalUIScale(Float value);

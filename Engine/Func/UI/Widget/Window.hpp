@@ -15,6 +15,7 @@ public:
     ~Window() override;
 
     void Rebuild() override;
+    void Draw(rhi::CommandBuffer &cmd) override;
     Vector2f GetRebuildRequiredSize() override;
     Widget *GetSlotWidget() const { return slot_; }
     void SetSlotWidget(Widget* now);

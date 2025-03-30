@@ -758,7 +758,7 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
 
     SurfaceFormat available_format{};
     for (auto &surface_format: swapchain_support.formats) {
-        if (surface_format.format == Format::B8G8R8A8_SRGB && surface_format.color_space == ColorSpace::sRGB) {
+        if (surface_format.format == Format::B8G8R8A8_UNorm && surface_format.color_space == ColorSpace::sRGB) {
             available_format = surface_format;
         }
     }
@@ -770,14 +770,14 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
     swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchain_create_info.surface = surface_handle;
     swapchain_create_info.minImageCount = image_count;
-    swapchain_create_info.imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    swapchain_create_info.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
     swapchain_create_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     swapchain_create_info.imageExtent = VkExtent2D{.width = static_cast<UInt32>(size.x), .height = static_cast<UInt32>(size.y)};
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     desc.depth_or_layers = 1;
-    desc.format = available_format.format;
+    desc.format = Format::B8G8R8A8_UNorm;
     desc.height = size.x;
     desc.width = size.y;
     desc.mip_levels = 1;

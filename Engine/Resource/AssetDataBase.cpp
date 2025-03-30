@@ -230,7 +230,7 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
         return true;
     }
     if (type == TypeOf<Texture2D>()) {
-        if (auto exist_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", path))) {
+        if (auto exist_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *path))) {
             Log(Error) << String::Format("{}已存在", path);
             return false;
         }

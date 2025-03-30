@@ -130,6 +130,8 @@ void UIManager::Startup() {
     default_ui->SetName("DefaultUIFontMaterial");
     default_ui->SetShader(default_shader);
     default_ui_mat_ = default_ui;
+    Texture2D *default_ui_icon_atlas = reinterpret_cast<Texture2D *>(AssetDataBase::Load("Assets/Texture/UIAtlas.png"));
+    default_ui_mat_->SetTexture2D("atlas", default_ui_icon_atlas);
 
     Material *default_ui_font = ObjectManager::CreateNewObject<Material>();
     default_ui_font->SetName("DefaultUIFontMaterial");
@@ -160,6 +162,13 @@ UIBufferWrite UIManager::RequestWriteData(Widget *w) {
     return self.buffer_manager_->RequestBufferWrite(w->GetHandle());
 }
 
+WidgetVertexIndexBufferInfo *UIManager::GetWidgetBufferInfo(ObjectHandle handle) {
+    auto &self = GetByRef();
+    return self.buffer_manager_->RequestWidgetBufferInfo(handle);
+}
+
+WidgetVertexIndexBufferInfo *UIManager::GetWidgetBufferInfo(Widget *w) { return w == nullptr ? nullptr : GetWidgetBufferInfo(w->GetHandle()); }
+
 Style &UIManager::GetCurrentStyle() {
     auto &self = GetByRef();
     return *self.current_style_;
@@ -179,15 +188,7 @@ void UIManager::PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd) {
     cmd.Enqueue<Cmd_BindIndexBuffer>(self.buffer_manager_->index_buffer.get());
     cmd.Enqueue<Cmd_BindVertexBuffer>(self.buffer_manager_->vertex_buffer.get());
     for (auto &w: self.windows_) {
-        const auto &info = self.buffer_manager_->RequestWidgetBufferInfo(w->GetHandle());
-        helper::BindMaterial(cmd, w->GetMaterial());
-        cmd.Enqueue<Cmd_DrawIndexed>(info->index_count, 1, info->index_offset DEBUG_ONLY(, w->GetName()));
-        const auto slot = w->GetSlotWidget();
-        const auto &slot_info = self.buffer_manager_->RequestWidgetBufferInfo(slot->GetHandle());
-        helper::BindMaterial(cmd, slot->GetMaterial());
-        if (slot_info->index_count != 0) {
-            cmd.Enqueue<Cmd_DrawIndexed>(slot_info->index_count, 1, slot_info->index_offset DEBUG_ONLY(, slot->GetName()));
-        }
+        w->Draw(cmd);
     }
     cmd.Execute("Draw UI");
 }
@@ -211,6 +212,8 @@ void UIManager::UnRegisterWindow(Window *w) {
     auto &self = GetByRef();
     self.windows_.Remove(w);
 }
+
+Float ApplyGlobalUIScale(Float value) { return value * UIManager::GetCurrentStyle().global_scale; }
 
 struct OccupiedMemory {
     UInt64 offset;

@@ -8,6 +8,9 @@
 #include "Core/Object/Object.hpp"
 #include "Core/Object/ObjectPtr.hpp"
 
+namespace rhi {
+    class CommandBuffer;
+}
 class Material;
 /**
  * Widget就是UI Element
@@ -35,6 +38,7 @@ public:
     virtual Vector2f GetRebuildRequiredSize() { return {}; };
     Rect2Df GetUIRect() const { return ui_rect_; }
     virtual void Rebuild();
+    virtual void Draw(rhi::CommandBuffer &cmd) {}
 
     void SetReceiveInput(bool receive_input);
     bool IsReceiveInput() const { return receive_input_; }

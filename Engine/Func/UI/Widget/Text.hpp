@@ -13,8 +13,8 @@ class Text : public Widget {
     REFLECTED_CLASS(Text)
 
     ObjectPtr<Font> font_ = nullptr;
-    UInt8 font_size_ = {32};
-    UInt8 space_{2};
+    Float font_size_ = {32};
+    Float space_{2};
     Color color_ = Color::White();
     String text_;
 
@@ -24,9 +24,10 @@ public:
 
     Vector2f GetRebuildRequiredSize() override;
     void Rebuild() override;
+    void Draw(rhi::CommandBuffer &cmd) override;
 
-    void SetSize(UInt8 now);
-    UInt8 GetSize() const { return font_size_; }
+    void SetFontSize(Float now);
+    Float GetFontSize() const { return font_size_; }
 
     void SetText(StringView text);
     StringView GetText() const { return text_; }

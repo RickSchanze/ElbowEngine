@@ -11,6 +11,7 @@
 #include "Func/Render/Camera/Camera.hpp"
 #include "Func/Render/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Func/UI/IconConstantName.hpp"
 #include "Func/UI/Widget/Text.hpp"
 #include "Func/UI/Widget/Window.hpp"
 #include "Func/World/WorldClock.hpp"
@@ -21,7 +22,11 @@
 #include "Platform/Window/Window.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
+#include "Resource/Assets/Texture/Texture2D.hpp"
+#include "Resource/Assets/Texture/Texture2DMeta.hpp"
 
+
+class Texture2D;
 using namespace rhi;
 
 static void TickManagerUpdate(const MilliSeconds &sec) {
@@ -79,7 +84,6 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/Error.slang")), Move(AssetDataBase::Import("Assets/Texture/Default.png")),
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
                     Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")), Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")),
-                    Move(AssetDataBase::Import("Assets/Texture/UIAtlas.png")), //
                     Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")) //
             );
 
@@ -92,14 +96,13 @@ int main() {
             // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
             // new_tex->SetName("UIAtlas");
             // new_tex->Load(new_meta);
-            // new_tex->AppendSprite(ui::IconID::Close(), R"(C:\Users\Echo\Documents\Temp\Icons\关闭.png)");
-            // new_tex->AppendSprite(ui::IconID::White(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
-            // new_tex->AppendSprite(ui::IconID::Folded(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
-            // new_tex->AppendSprite(ui::IconID::Expanded(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
+            // new_tex->AppendSprite(IconConstantName::PureWhite(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
+            // new_tex->AppendSprite(IconConstantName::WindowFold(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
+            // new_tex->AppendSprite(IconConstantName::WindowUnfold(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
             // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
             // new_tex->Download();
             // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
-            // AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+            AssetDataBase::Import("Assets/Texture/UIAtlas.png");
 #if WITH_EDITOR
             ObjectManager::SaveObjectRegistry();
 #endif
@@ -117,9 +120,9 @@ int main() {
         NewObject<ACameraHolder>();
         auto w = NewObject<Window>();
         w->SetLocation({0, 0});
-        w->SetSize({200, 200});
+        w->SetSize({400, 800});
         auto text = NewObject<Text>();
-        text->SetSize(32);
+        text->SetFontSize(32);
         text->SetText("你好世界");
         w->SetSlotWidget(text);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);

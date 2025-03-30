@@ -30,10 +30,10 @@ void helper::BindMaterial(CommandBuffer &cmd, const Material *mat) {
     }
     auto shared_mat = mat->GetSharedMaterial();
     auto &mgr = SharedMaterialManager::GetByRef();
-    // if (mgr.GetCurrentBindingSharedMaterial() != shared_mat) {
+    if (mgr.GetCurrentBindingSharedMaterial() != shared_mat) {
         mgr.SetCurrentBindingSharedMaterial(shared_mat);
         cmd.Enqueue<Cmd_BindPipeline>(shared_mat->GetPipeline());
-    // }
+    }
     auto descriptor_set = mat->GetDescriptorSet();
     cmd.Enqueue<Cmd_BindDescriptorSet>(shared_mat->GetPipeline(), descriptor_set);
 }

@@ -96,5 +96,6 @@ public:
 template<typename T, typename... Args>
     requires std::derived_from<T, Object>
 T *CreateNewObject(Args &&...args) {
+    Assert(IsMainThread(), "CreateNewObject can only be called in main thread, use CreateNewObjectAsync instead.");
     return ObjectManager::CreateNewObject<T>(Forward<Args>(args)...);
 }
