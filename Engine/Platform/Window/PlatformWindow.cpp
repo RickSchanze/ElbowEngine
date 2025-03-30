@@ -16,8 +16,6 @@ IMPL_ENUM_REFL(WindowLib) {
            refl_helper::AddEnumField("Count", std::to_underlying(WindowLib::Count));
 }
 
-EXEC_BEFORE_MAIN() { ReflManager::Get()->Register<WindowLib>(&ConstructType_WindowLib); }
-
 PlatformWindow::PlatformWindow(StringView title, Int32 width, Int32 height, Int32 flags) {
     auto *core_cfg = GetConfig<CoreConfig>();
     auto *platform_cfg = GetConfig<PlatformConfig>();

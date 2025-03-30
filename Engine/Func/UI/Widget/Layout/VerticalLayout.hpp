@@ -14,7 +14,7 @@ class VerticalLayout : public Layout {
 
     Array<ObjectPtr<Widget>> children_;
     EVerticalLayout layout_ = EVerticalLayout::Top;
-    Float space{};
+    Float space{5};
 
 public:
     VerticalLayout();

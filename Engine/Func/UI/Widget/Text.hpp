@@ -13,7 +13,7 @@ class Text : public Widget {
     REFLECTED_CLASS(Text)
 
     ObjectPtr<Font> font_ = nullptr;
-    Float font_size_ = {32};
+    Float font_size_ = {20};
     Float space_{2};
     Color color_ = Color::White();
     String text_;

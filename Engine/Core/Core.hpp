@@ -29,6 +29,8 @@
 #define EDITOR_ONLY(...)
 #endif
 
+#define CONCAT(x, y) x##y
+
 #define REFLECTED_CLASS(_class)                                                                                                                      \
 public:                                                                                                                                              \
     typedef ThisClass Super;                                                                                                                         \
@@ -56,8 +58,14 @@ private:
     };                                                                                                                                               \
     static inline BeforeMainTrigger_Register_##type beforeMainTrigger_Register_##type;
 
+#define REGISTER_ENUM_TYPE(type)                                                                                                                     \
+    struct BeforeMainTrigger_Register_##type {                                                                                                       \
+        BeforeMainTrigger_Register_##type() { ReflManager::GetByRef().Register<type>(&ConstructType_##type); }                                       \
+    };                                                                                                                                               \
+    static inline BeforeMainTrigger_Register_##type beforeMainTrigger_Register_##type;
+
 #define IMPL_ENUM_REFL(type) inline Type *ConstructType_##type()
-#define DECL_ENUM_REFL(type) Type* ConstructType_##type();
+#define DECL_ENUM_REFL(type) Type *ConstructType_##type();
 
 #define EXEC_BEFORE_MAIN_(line)                                                                                                                      \
     static void BeforeMainExec();                                                                                                                    \

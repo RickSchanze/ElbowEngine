@@ -77,7 +77,7 @@ void Window::Rebuild() {
     Widget *s = slot_;
     Vector2f size = s->GetRebuildRequiredSize();
     s->SetLocation(ui_rect_.pos);
-    s->SetSize(size.IsZero() ? ui_rect_.size : size);
+    s->SetSize(size.IsZero() ? content.size : size);
     s->Rebuild();
 }
 

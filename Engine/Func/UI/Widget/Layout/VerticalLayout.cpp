@@ -15,15 +15,16 @@ VerticalLayout::VerticalLayout() {
     SetName("VerticalLayout");
     layout_ = EVerticalLayout::Top;
     ui_rect_.size = {};
-    space = 2;
 }
 
 Vector2f VerticalLayout::GetRebuildRequiredSize() const { return ui_rect_.size; }
 
 void VerticalLayout::Rebuild() {
+    Super::Rebuild();
     // Rebuild时父widget已经把尺寸设置好
     Vector2f cursor = {ui_rect_.pos.x, ui_rect_.pos.y + ui_rect_.size.y};
     for (Widget *w: children_) {
+        // TODO: 根据枚举layout_来布局
         auto size = w->GetRebuildRequiredSize();
         w->SetLocation({cursor.x, cursor.y - size.y});
         w->SetSize(size);

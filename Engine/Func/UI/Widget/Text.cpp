@@ -44,6 +44,7 @@ Vector2f Text::GetRebuildRequiredSize() const {
     char *char_end = text_str + text_.ByteCount();
 
     Font *f = font_;
+    f->RequestLoadGlyphs(text_);
     const Float font_scale = static_cast<Float>(font_size_) / static_cast<Float>(f->GetFontSize());
     Vector2f result = {};
     // 遍历并输出码点

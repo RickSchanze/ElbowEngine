@@ -17,6 +17,8 @@ enum class WindowLib {
     SDL3,
     Count,
 };
+DECL_ENUM_REFL(WindowLib)
+REGISTER_ENUM_TYPE(WindowLib)
 
 enum WindowFlag {
     WF_NoWindowTitle = 1 << 0, // 窗口没有标题栏

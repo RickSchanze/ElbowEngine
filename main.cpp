@@ -124,11 +124,9 @@ int main() {
         w->SetSize({400, 800});
         auto layout = NewObject<VerticalLayout>();
         auto text = NewObject<Text>();
-        text->SetFontSize(32);
         text->SetText("你好世界");
         layout->AddChild(text);
         text = NewObject<Text>();
-        text->SetFontSize(32);
         text->SetText("测试垂直布局!");
         layout->AddChild(text);
         w->SetSlotWidget(layout);
