@@ -15,18 +15,24 @@ public:
     ~Window() override;
 
     void Rebuild() override;
+    void RebuildHierarchy();
     void Draw(rhi::CommandBuffer &cmd) override;
-    Vector2f GetRebuildRequiredSize() override;
+    Vector2f GetRebuildRequiredSize() const override;
     Widget *GetSlotWidget() const { return slot_; }
     void SetSlotWidget(Widget *now);
 
     bool IsFocused() const { return focused_; }
     void SetFocused(bool now);
 
+    void OnMouseMove(Vector2f old, Vector2f now) override;
+    void OnMouseButtonDown(MouseButton button, Vector2f pos) override;
+    void OnMouseButtonUp(MouseButton button, Vector2f pos) override;
+
 protected:
     ObjectPtr<Text> title_text_;
     ObjectPtr<Widget> slot_;
     bool focused_ = false;
+    bool moving_window_ = false;
 };
 
 REGISTER_TYPE(Window)

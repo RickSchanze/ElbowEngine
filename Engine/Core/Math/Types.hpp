@@ -106,6 +106,7 @@ struct Vector2 {
 
     Vector2 operator/(T rhs) { return Vector2{x / rhs, y / rhs}; }
     Vector2 operator+(T value) const { return {x + value, y + value}; }
+    Vector2 operator+(Vector2 rhs);
     Vector2 &operator+=(T value) {
         x += value;
         y += value;
@@ -479,6 +480,11 @@ const Type *Vector2<T>::GetType() {
     if constexpr (SameAs<T, Int32>)
         return TypeOf<Vector2i>();
     return nullptr;
+}
+
+template<typename T>
+Vector2<T> Vector2<T>::operator+(Vector2 rhs) {
+    return Vector2<T>(x + rhs.x, y + rhs.y);
 }
 
 template<typename T>

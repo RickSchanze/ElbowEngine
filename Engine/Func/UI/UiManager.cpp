@@ -179,9 +179,7 @@ Style &UIManager::GetCurrentStyle() {
 void UIManager::PerformRebuildPass(const MilliSeconds &) {
     auto &self = GetByRef();
     for (auto &w: self.windows_) {
-        if (w->IsRebuildDirty()) {
-            w->Rebuild();
-        }
+        w->RebuildHierarchy();
     }
 }
 
@@ -216,7 +214,7 @@ void UIManager::UnRegisterWindow(Window *w) {
 }
 
 const Array<Window *> &UIManager::GetWindows() {
-    auto& self = GetByRef();
+    auto &self = GetByRef();
     return self.windows_;
 }
 

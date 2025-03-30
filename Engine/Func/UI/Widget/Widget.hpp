@@ -31,17 +31,14 @@ protected:
     virtual void OnVisibleChanged(bool old, bool now);
     virtual void OnEnabledChanged(bool old, bool now);
 
-    void SetRebuildDirty(bool dirty = true);
-    bool IsRebuildDirty() const { return rebuild_dirty_; }
-
-
 public:
-    virtual Vector2f GetRebuildRequiredSize() { return {}; };
+    virtual Vector2f GetRebuildRequiredSize() const { return {}; };
     Rect2Df GetUIRect() const { return ui_rect_; }
     virtual void Rebuild();
     virtual void Draw(rhi::CommandBuffer &cmd) {}
 
-
+    void SetRebuildDirty(bool dirty = true);
+    bool IsRebuildDirty() const { return rebuild_dirty_; }
     // 输入相关虚函数
     virtual void OnMouseMove(Vector2f old, Vector2f now) {}
     virtual void OnMouseScroll(Vector2f value) {}

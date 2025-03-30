@@ -117,6 +117,12 @@ namespace refl_helper {
 
     inline Ext_AddEnumField AddEnumField(const StringView name, Int32 value) { return Ext_AddEnumField(name, value, nullptr); }
 
+    template<typename T>
+        requires IsEnum<T>
+    Ext_AddEnumField AddEnumField(const StringView name, T enum_val) {
+        return Ext_AddEnumField(name, std::to_underlying(enum_val), nullptr);
+    }
+
     Any GetValue(const Field *field, const Any &obj);
 
     /// 这个Field代表一个类的一个filed, 其类型是一个枚举

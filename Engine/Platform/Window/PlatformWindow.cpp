@@ -10,7 +10,7 @@
 #include "Platform/Config/PlatformConfig.hpp"
 #include "PlatformWindowManager.hpp"
 
-IMPL_ENUM(WindowLib) {
+IMPL_ENUM_REFL(WindowLib) {
     return Type::Create<WindowLib>("WindowLib") | refl_helper::AddEnumField("GLFW", std::to_underlying(WindowLib::GLFW)) |
            refl_helper::AddEnumField("SDL3", std::to_underlying(WindowLib::SDL3)) |
            refl_helper::AddEnumField("Count", std::to_underlying(WindowLib::Count));

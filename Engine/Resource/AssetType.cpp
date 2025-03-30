@@ -3,7 +3,7 @@
 //
 #include "AssetType.hpp"
 
-IMPL_ENUM(AssetType) {
+IMPL_ENUM_REFL(AssetType) {
     return Type::Create<AssetType>("AssetType") | refl_helper::AddEnumField("Mesh", static_cast<Int32>(AssetType::Mesh)) |
            refl_helper::AddEnumField("Shader", static_cast<Int32>(AssetType::Shader)) |
            refl_helper::AddEnumField("Texture2D", static_cast<Int32>(AssetType::Texture2D)) |

@@ -12,6 +12,10 @@ add_library(Func
         UI/Style.hpp
         UI/UIEventDispatcher.cpp
         UI/UIEventDispatcher.hpp
+        UI/Widget/Layout/Layout.cpp
+        UI/Widget/Layout/Layout.hpp
+        UI/Widget/Layout/VerticalLayout.cpp
+        UI/Widget/Layout/VerticalLayout.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)

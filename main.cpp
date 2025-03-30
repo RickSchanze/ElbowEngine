@@ -12,6 +12,7 @@
 #include "Func/Render/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/UI/IconConstantName.hpp"
+#include "Func/UI/Widget/Layout/VerticalLayout.hpp"
 #include "Func/UI/Widget/Text.hpp"
 #include "Func/UI/Widget/Window.hpp"
 #include "Func/World/WorldClock.hpp"
@@ -121,10 +122,16 @@ int main() {
         auto w = NewObject<Window>();
         w->SetLocation({0, 0});
         w->SetSize({400, 800});
+        auto layout = NewObject<VerticalLayout>();
         auto text = NewObject<Text>();
         text->SetFontSize(32);
         text->SetText("你好世界");
-        w->SetSlotWidget(text);
+        layout->AddChild(text);
+        text = NewObject<Text>();
+        text->SetFontSize(32);
+        text->SetText("测试垂直布局!");
+        layout->AddChild(text);
+        w->SetSlotWidget(layout);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {
             ProfileScope _("Tick");

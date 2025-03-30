@@ -9,11 +9,13 @@
 #include "Func/UI/IconConstantName.hpp"
 #include "Func/UI/Style.hpp"
 #include "Func/UI/UiManager.hpp"
+#include "Func/UI/UiUtility.hpp"
+#include "Layout/Layout.hpp"
 #include "Platform/RHI/Commands.hpp"
+#include "Platform/RHI/VertexLayout.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Texture/Sprite.hpp"
 #include "Text.hpp"
-#include "Platform/RHI/VertexLayout.hpp"
 
 IMPL_REFLECTED(Window) {
     return Type::Create<Window>("Window") | refl_helper::AddParents<Widget>() | refl_helper::AddField("title_text", &ThisClass::title_text_) |
@@ -75,8 +77,28 @@ void Window::Rebuild() {
     Widget *s = slot_;
     Vector2f size = s->GetRebuildRequiredSize();
     s->SetLocation(ui_rect_.pos);
-    s->SetSize(size);
+    s->SetSize(size.IsZero() ? ui_rect_.size : size);
     s->Rebuild();
+}
+
+void Window::RebuildHierarchy() {
+    if (IsRebuildDirty()) {
+        Rebuild();
+    } else {
+        if (Widget *w = slot_) {
+            if (w->IsRebuildDirty()) {
+                w->Rebuild();
+                return;
+            }
+            if (w->GetType()->IsDerivedFrom(Layout::GetStaticType())) {
+                static_cast<Layout *>(w)->RebuildHierarchy();
+            } else {
+                if (w->IsRebuildDirty()) {
+                    w->Rebuild();
+                }
+            }
+        }
+    }
 }
 
 void Window::Draw(rhi::CommandBuffer &cmd) {
@@ -98,7 +120,7 @@ void Window::Draw(rhi::CommandBuffer &cmd) {
     cmd.Execute("Draw UI Window");
 }
 
-Vector2f Window::GetRebuildRequiredSize() { return ui_rect_.size; }
+Vector2f Window::GetRebuildRequiredSize() const { return ui_rect_.size; }
 
 void Window::SetSlotWidget(Widget *now) {
     if (now != slot_) {
@@ -114,4 +136,29 @@ void Window::SetFocused(bool now) {
     const auto write = UIManager::RequestWriteData(this);
     write.SetQuadColor(focused_ ? UIManager::GetCurrentStyle().focused_title_background_color : UIManager::GetCurrentStyle().title_background_color,
                        *write.vertex_buffer, *(write.vertex_buffer + 1), *(write.vertex_buffer + 2), *(write.vertex_buffer + 3));
+}
+
+void Window::OnMouseMove(Vector2f old, Vector2f now) {
+    if (moving_window_) {
+        SetLocation(ui_rect_.pos + (now - old));
+    }
+}
+
+void Window::OnMouseButtonDown(MouseButton button, Vector2f pos) {
+    Rect2Df title_rect;
+    title_rect.pos.x = ui_rect_.pos.x;
+    title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
+    title_rect.size.x = ui_rect_.size.x;
+    title_rect.size.y = ApplyGlobalUIScale(20);
+    if (UIUtility::IsRectContainsPos(title_rect, pos)) {
+        moving_window_ = true;
+        return;
+    }
+}
+
+void Window::OnMouseButtonUp(MouseButton button, Vector2f pos) {
+    Widget::OnMouseButtonUp(button, pos);
+    if (moving_window_) {
+        moving_window_ = false;
+    }
 }

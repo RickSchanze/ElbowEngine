@@ -272,7 +272,7 @@ namespace rhi {
         Count,
     };
 
-    IMPL_ENUM(Format) {
+    IMPL_ENUM_REFL(Format) {
         return Type::Create<Format>("Format") | refl_helper::AddEnumField("R32G32B32_Float", std::to_underlying(Format::R32G32B32_Float)) |
                refl_helper::AddEnumField("R32G32B32A32_Float", std::to_underlying(Format::R32G32B32A32_Float)) |
                refl_helper::AddEnumField("R16G16B16A16_UNorm", std::to_underlying(Format::R16G16B16A16_UNorm)) |
@@ -296,14 +296,14 @@ namespace rhi {
                refl_helper::AddEnumField("Count", std::to_underlying(Format::Count));
     }
 
-    IMPL_ENUM(PresentMode) {
+    IMPL_ENUM_REFL(PresentMode) {
         return Type::Create<PresentMode>("PresentMode") | refl_helper::AddEnumField("VSync", std::to_underlying(PresentMode::VSync)) |
                refl_helper::AddEnumField("Immediate", std::to_underlying(PresentMode::Immediate)) |
                refl_helper::AddEnumField("TripleBuffer", std::to_underlying(PresentMode::TripleBuffer)) |
                refl_helper::AddEnumField("Count", std::to_underlying(PresentMode::Count));
     }
 
-    IMPL_ENUM(GraphicsAPI) {
+    IMPL_ENUM_REFL(GraphicsAPI) {
         return Type::Create<GraphicsAPI>("GraphicsAPI") | refl_helper::AddEnumField("Vulkan", std::to_underlying(GraphicsAPI::Vulkan)) |
                refl_helper::AddEnumField("D3D12", std::to_underlying(GraphicsAPI::D3D12)) |
                refl_helper::AddEnumField("OpenGL", std::to_underlying(GraphicsAPI::OpenGL)) |

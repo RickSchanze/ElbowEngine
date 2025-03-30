@@ -34,7 +34,7 @@ Text::~Text() {
     material_ = nullptr;
 }
 
-Vector2f Text::GetRebuildRequiredSize() {
+Vector2f Text::GetRebuildRequiredSize() const {
     if (text_.IsEmpty()) {
         return Vector2f{};
     }

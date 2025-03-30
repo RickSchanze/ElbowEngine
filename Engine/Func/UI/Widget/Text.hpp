@@ -22,7 +22,7 @@ public:
     Text();
     ~Text() override;
 
-    Vector2f GetRebuildRequiredSize() override;
+    Vector2f GetRebuildRequiredSize() const override;
     void Rebuild() override;
     void Draw(rhi::CommandBuffer &cmd) override;
 

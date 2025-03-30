@@ -152,9 +152,18 @@ public:
 
     void SortInplace() { std::sort(data_.begin(), data_.end()); }
 
-    void AddUnique(const T& t) {
+    void AddUnique(const T &t) {
         if (!Contains(t)) {
             Add(t);
+        }
+    }
+
+    template<typename Func>
+    void RemoveIf(Func &&func) {
+        for (Int32 i = Count() - 1; i >= 0; --i) {
+            if (func(data_[i])) {
+                data_.erase(data_.begin() + i);
+            }
         }
     }
 

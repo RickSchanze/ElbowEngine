@@ -56,7 +56,8 @@ private:
     };                                                                                                                                               \
     static inline BeforeMainTrigger_Register_##type beforeMainTrigger_Register_##type;
 
-#define IMPL_ENUM(type) inline Type *ConstructType_##type()
+#define IMPL_ENUM_REFL(type) inline Type *ConstructType_##type()
+#define DECL_ENUM_REFL(type) Type* ConstructType_##type();
 
 #define EXEC_BEFORE_MAIN_(line)                                                                                                                      \
     static void BeforeMainExec();                                                                                                                    \
