@@ -99,6 +99,7 @@ public:
     static Material *GetDefaultUIMaterial();
     static void RegisterWindow(Window *w);
     static void UnRegisterWindow(Window *w);
+    static Rect2Df GetIconAtlasUV(StringView name);
 
 private:
     static const Array<Window *> &GetWindows();

@@ -25,8 +25,8 @@ public:
     void SetFocused(bool now);
 
     void OnMouseMove(Vector2f old, Vector2f now) override;
-    void OnMouseButtonDown(MouseButton button, Vector2f pos) override;
-    void OnMouseButtonUp(MouseButton button, Vector2f pos) override;
+    void OnMouseButtonPressed(MouseButton button, Vector2f pos) override;
+    void OnMouseButtonReleased(MouseButton button, Vector2f pos) override;
 
 protected:
     ObjectPtr<Text> title_text_;

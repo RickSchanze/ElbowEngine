@@ -14,6 +14,17 @@ struct RectVertices {
     rhi::Vertex_UI right_bottom;
 };
 
+struct Padding {
+    REFLECTED_STRUCT(Padding)
+
+    Float left{};
+    Float right{};
+    Float top{};
+    Float bottom{};
+};
+
+REGISTER_TYPE(Padding)
+
 class UIUtility {
 public:
     // 从一个矩形中提取它的四个顶点

@@ -42,8 +42,10 @@ public:
     // 输入相关虚函数
     virtual void OnMouseMove(Vector2f old, Vector2f now) {}
     virtual void OnMouseScroll(Vector2f value) {}
-    virtual void OnMouseButtonDown(MouseButton button, Vector2f pos) {}
-    virtual void OnMouseButtonUp(MouseButton button, Vector2f pos) {}
+    virtual void OnMouseButtonPressed(MouseButton button, Vector2f pos) {}
+    virtual void OnMouseButtonReleased(MouseButton button, Vector2f pos) {}
+    virtual void OnMouseEnter() {}
+    virtual void OnMouseLeave() {}
 
     void SetReceiveInput(bool receive_input);
     bool IsReceiveInput() const { return receive_input_; }

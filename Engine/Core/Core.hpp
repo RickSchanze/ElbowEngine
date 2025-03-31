@@ -139,3 +139,5 @@ StringView GetEnumString(T e) {
     }
     return "ENUM_INVALID";
 }
+
+void NeverEnter();

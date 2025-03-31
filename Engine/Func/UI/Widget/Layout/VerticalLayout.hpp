@@ -16,8 +16,14 @@ class VerticalLayout : public Layout {
     EVerticalLayout layout_ = EVerticalLayout::Top;
     Float space{5};
 
+    Widget* entered_widget_ = nullptr;
+
 public:
     VerticalLayout();
+
+    void OnMouseMove(Vector2f old, Vector2f now) override;
+    void OnMouseButtonReleased(MouseButton button, Vector2f pos) override;
+    void OnMouseButtonPressed(MouseButton button, Vector2f pos) override;
 
     Vector2f GetRebuildRequiredSize() const override;
     void Rebuild() override;

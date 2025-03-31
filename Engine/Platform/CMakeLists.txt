@@ -6,7 +6,6 @@ file(GLOB_RECURSE PLATFORM_CPP_FILES *.cpp)
 
 add_library(Platform
         ${PLATFORM_CPP_FILES} ${PLATFORM_HEADER_FILES}
-        RHI/Commands.cpp
 )
 
 target_include_directories(Platform PUBLIC ../)

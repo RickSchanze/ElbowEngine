@@ -24,17 +24,21 @@ IMPL_REFLECTED(Text) {
 }
 
 Text::Text() {
+    ProfileScope _("Text::Text");
     font_ = Font::GetDefaultFont();
     color_ = UIManager::GetCurrentStyle().text_color;
     material_ = UIManager::GetDefaultUIFontMaterial();
+    font_size_ = ApplyGlobalUIScale(20);
 }
 
 Text::~Text() {
+    ProfileScope _(__func__);
     font_ = nullptr;
     material_ = nullptr;
 }
 
 Vector2f Text::GetRebuildRequiredSize() const {
+    ProfileScope _(__func__);
     if (text_.IsEmpty()) {
         return Vector2f{};
     }
@@ -65,6 +69,7 @@ Vector2f Text::GetRebuildRequiredSize() const {
 }
 
 void Text::Rebuild() {
+    ProfileScope _(__func__);
     Super::Rebuild();
     if (text_.IsEmpty()) {
         UIManager::RequestWriteData(this, 0, 0);
@@ -100,6 +105,7 @@ void Text::Rebuild() {
 }
 
 void Text::Draw(rhi::CommandBuffer &cmd) {
+    ProfileScope _(__func__);
     WidgetVertexIndexBufferInfo *info = UIManager::GetWidgetBufferInfo(this);
     if (info == nullptr) {
         VLOG_ERROR("未找到此Widget对应的Buffer, 是不是忘记调用Rebuild了?");
@@ -113,6 +119,7 @@ void Text::Draw(rhi::CommandBuffer &cmd) {
 }
 
 void Text::SetFontSize(Float now) {
+    ProfileScope _(__func__);
     if (font_size_ != now) {
         font_size_ = now;
         SetRebuildDirty(true);
@@ -120,6 +127,7 @@ void Text::SetFontSize(Float now) {
 }
 
 void Text::SetText(StringView text) {
+    ProfileScope _(__func__);
     if ((StringView) text_ != text) {
         text_ = text;
         SetRebuildDirty(true);
@@ -127,6 +135,7 @@ void Text::SetText(StringView text) {
 }
 
 void Text::SetColor(Color color) {
+    ProfileScope _(__func__);
     if (color_ != color) {
         color_ = color;
         if (const auto write = UIManager::RequestWriteData(this); write.index_count == 0 || write.vertex_count == 0) {

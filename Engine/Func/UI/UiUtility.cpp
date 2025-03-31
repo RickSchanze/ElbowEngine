@@ -4,6 +4,11 @@
 
 #include "UiUtility.hpp"
 
+IMPL_REFLECTED(Padding) {
+    return Type::Create<Padding>("Padding") | refl_helper::AddField("left", &Padding::left) | refl_helper::AddField("right", &Padding::right) |
+           refl_helper::AddField("top", &Padding::top) | refl_helper::AddField("bottom", &Padding::bottom);
+}
+
 RectVertices UIUtility::ExtractVertexFromRect2D(Rect2Df rect) {
     RectVertices rtn;
     rtn.left_bottom.position = rect.pos;

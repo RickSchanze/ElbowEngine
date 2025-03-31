@@ -12,6 +12,7 @@
 #include "Func/Render/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/UI/IconConstantName.hpp"
+#include "Func/UI/Widget/Button.hpp"
 #include "Func/UI/Widget/Layout/VerticalLayout.hpp"
 #include "Func/UI/Widget/Text.hpp"
 #include "Func/UI/Widget/Window.hpp"
@@ -129,6 +130,9 @@ int main() {
         text = NewObject<Text>();
         text->SetText("测试垂直布局!");
         layout->AddChild(text);
+        auto button = NewObject<Button>();
+        button->Evt_OnClicked.AddBind([] { VLOG_INFO("按钮按下!"); });
+        layout->AddChild(button);
         w->SetSlotWidget(layout);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {

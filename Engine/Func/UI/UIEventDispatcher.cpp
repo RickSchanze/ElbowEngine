@@ -27,17 +27,17 @@ void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
     {
         Window *focused_window = ObjectManager::GetObjectByHandle<Window>(focused_window_handle_);
         ProfileScope button_down_scope("MouseButtonDown");
-        if (Input::IsMouseButtonDown(MouseButton::Left)) {
+        if (Input::IsMouseButtonPressed(MouseButton::Left)) {
             if (focused_window != nullptr) {
                 if (UIUtility::IsRectContainsPos(focused_window->GetUIRect(), pos)) {
-                    focused_window->OnMouseButtonDown(MouseButton::Left, pos);
+                    focused_window->OnMouseButtonPressed(MouseButton::Left, pos);
                 } else {
                     focused_window->SetFocused(false);
                     focused_window_handle_ = 0;
                     for (auto &window: UIManager::GetWindows()) {
                         if (UIUtility::IsRectContainsPos(window->GetUIRect(), pos)) {
                             window->SetFocused(true);
-                            window->OnMouseButtonDown(MouseButton::Left, pos);
+                            window->OnMouseButtonPressed(MouseButton::Left, pos);
                             focused_window_handle_ = window->GetHandle();
                             break;
                         }
@@ -47,7 +47,7 @@ void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
                 for (auto &window: UIManager::GetWindows()) {
                     if (UIUtility::IsRectContainsPos(window->GetUIRect(), pos)) {
                         window->SetFocused(true);
-                        window->OnMouseButtonDown(MouseButton::Left, pos);
+                        window->OnMouseButtonPressed(MouseButton::Left, pos);
                         focused_window_handle_ = window->GetHandle();
                         break;
                     }
@@ -58,9 +58,9 @@ void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
     // 处理鼠标抬起事件
     {
         Window *focused_window = ObjectManager::GetObjectByHandle<Window>(focused_window_handle_);
-        if (Input::IsMouseButtonRelease(MouseButton::Left)) {
+        if (Input::IsMouseButtonReleased(MouseButton::Left)) {
             if (focused_window != nullptr) {
-                focused_window->OnMouseButtonUp(MouseButton::Left, pos);
+                focused_window->OnMouseButtonReleased(MouseButton::Left, pos);
             }
         }
     }

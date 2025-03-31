@@ -19,6 +19,7 @@
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Font/Font.hpp"
 #include "Resource/Assets/Material/Material.hpp"
+#include "Resource/Assets/Texture/Sprite.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "Style.hpp"
 #include "UiUtility.hpp"
@@ -211,6 +212,12 @@ void UIManager::RegisterWindow(Window *w) {
 void UIManager::UnRegisterWindow(Window *w) {
     auto &self = GetByRef();
     self.windows_.Remove(w);
+}
+
+Rect2Df UIManager::GetIconAtlasUV(StringView name) {
+    auto &self = GetByRef();
+    static Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
+    return Sprite::GetUVRange(tex, name);
 }
 
 const Array<Window *> &UIManager::GetWindows() {

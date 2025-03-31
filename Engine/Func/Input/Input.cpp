@@ -6,7 +6,7 @@
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 
-bool InputEventParam::IsKeyPressed(const KeyboardKey key) const { return pressed_keys.Contains(key); }
+bool InputActions::IsKeyPressed(const KeyboardKey key) const { return pressed_keys.Contains(key); }
 
 bool Input::IsKeyPress(KeyboardKey key) {
     return PlatformWindowManager::GetWindow(0)->InternalGetInputStateRef().keyboard.keys_state[static_cast<Int32>(key)] == KeyboardEvent::Press;
@@ -34,35 +34,26 @@ Vector2f Input::GetMousePos() {
     return {static_cast<Float>(mouse.x), static_cast<Float>(mouse.y)};
 }
 
-void Input::DispatchInputEvent(const MilliSeconds &) {
-    auto &self = GetByRef();
-    InputEventParam event = self.CalculateInputEvent();
-    Evt_FrameInputEvent.Invoke(event);
+bool Input::IsMouseButtonReleased(MouseButton button) {
+    auto& self = GetByRef();
+    return self.input_actions_.released_mouse.Contains(button);
 }
 
-bool Input::IsKeyPressed(const KeyboardKey key, RespondKeys pressed_keys) { return range::Contains(pressed_keys, key); }
-
-bool Input::IsMouseButtonReleased(const MouseButton button, RespondMouses mouse_buttons) { return range::Contains(mouse_buttons, button); }
-bool Input::IsMouseButtonPressed(const MouseButton button, RespondMouses mouse_buttons) { return range::Contains(mouse_buttons, button); }
-
-bool Input::HasKeyRespond(RespondKeys pressed_keys) {
-    return range::AnyOf(pressed_keys, [](const KeyboardKey &key) { return key != KeyboardKey::Count; });
-}
-
-bool Input::HasMouseButtonRespond(RespondMouses respond_mouses) {
-    return range::AnyOf(respond_mouses, [](const MouseButton &key) { return key != MouseButton::Count; });
+bool Input::IsMouseButtonPressed(MouseButton button) {
+    auto& self = GetByRef();
+    return self.input_actions_.pressed_mouse.Contains(button);
 }
 
 Float Input::GetLevel() const { return 12; }
 
 StringView Input::GetName() const { return "Input"; }
 
-void Input::Startup() { TickEvents::Evt_PostInputTick.AddBind(&Input::DispatchInputEvent); }
+void Input::Startup() { TickEvents::Evt_PostInputTick.AddBind(this, &Input::CalculateInputEvent); }
 
-void Input::Shutdown() { Evt_FrameInputEvent.ClearBind(); }
+void Input::Shutdown() { }
 
-InputEventParam Input::CalculateInputEvent() {
-    InputEventParam rtn{};
+void Input::CalculateInputEvent(const MilliSeconds &) {
+    InputActions result{};
     // 键盘有两种响应: 按下和释放
     StaticArray<KeyboardKey, PROCESS_KEY_EVENT_COUNT> released_key_this_frame;
     range::Fill(released_key_this_frame, KeyboardKey::Count);
@@ -84,7 +75,7 @@ InputEventParam Input::CalculateInputEvent() {
         }
     }
 
-    constexpr Int32 mouse_button_count = Int32(MouseButton::Count);
+    constexpr Int32 mouse_button_count = static_cast<Int32>(MouseButton::Count);
     StaticArray<MouseButton, static_cast<Int32>(MouseButton::Count)> released_mouse_button_this_frame;
     range::Fill(released_mouse_button_this_frame, MouseButton::Count);
     StaticArray<MouseButton, static_cast<Int32>(MouseButton::Count)> pressed_mouse_button_this_frame;
@@ -99,15 +90,10 @@ InputEventParam Input::CalculateInputEvent() {
         }
     }
 
-    const Vector2f previous_mouse_pos = {(Float) previous_frame_state_.mouse.x, (Float) previous_frame_state_.mouse.y};
-    const Vector2f mouse_move = Input::GetMousePos() - previous_mouse_pos;
-    rtn.mouse_move = mouse_move;
-    rtn.mouse_scroll = Input::GetMouseScroll();
-    rtn.pressed_keys = pressed_key_this_frame;
-    rtn.released_keys = released_key_this_frame;
-    rtn.pressed_mouse = pressed_mouse_button_this_frame;
-    rtn.released_mouse = released_mouse_button_this_frame;
-    rtn.mouse_pos = Input::GetMousePos();
+    result.pressed_keys = pressed_key_this_frame;
+    result.released_keys = released_key_this_frame;
+    result.pressed_mouse = pressed_mouse_button_this_frame;
+    result.released_mouse = released_mouse_button_this_frame;
     previous_frame_state_ = PlatformWindowManager::GetWindow(0)->InternalGetInputStateRef();
-    return rtn;
+    input_actions_ = result;
 }
