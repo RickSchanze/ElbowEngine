@@ -28,7 +28,8 @@ Text::Text() {
     font_ = Font::GetDefaultFont();
     color_ = UIManager::GetCurrentStyle().text_color;
     material_ = UIManager::GetDefaultUIFontMaterial();
-    font_size_ = ApplyGlobalUIScale(20);
+    font_size_ = ApplyGlobalUIScale(DEFAULT_FONT_SIZE);
+    space_ = 2;
 }
 
 Text::~Text() {

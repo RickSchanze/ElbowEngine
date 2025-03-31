@@ -47,9 +47,9 @@ void Window::Rebuild() {
     // First 整个标题
     Rect2Df title_rect;
     title_rect.pos.x = ui_rect_.pos.x;
-    title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
+    title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
     title_rect.size.x = ui_rect_.size.x;
-    title_rect.size.y = ApplyGlobalUIScale(20);
+    title_rect.size.y = ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
     write.AddQuad(title_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()),
                   focused_ ? UIManager::GetCurrentStyle().focused_title_background_color : UIManager::GetCurrentStyle().title_background_color);
 
@@ -57,22 +57,22 @@ void Window::Rebuild() {
     Rect2Df content;
     content.pos = ui_rect_.pos;
     content.size.x = ui_rect_.size.x;
-    content.size.y = ui_rect_.size.y - ApplyGlobalUIScale(20);
+    content.size.y = ui_rect_.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
     write.AddQuad(content, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()), UIManager::GetCurrentStyle().content_background_color);
 
     // 第三个矩形 折叠标志
     Rect2Df fold_rect;
     fold_rect.pos.x = ui_rect_.pos.x;
-    fold_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
-    fold_rect.size.x = ApplyGlobalUIScale(20);
-    fold_rect.size.y = ApplyGlobalUIScale(20);
+    fold_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y -
+                      ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT - (DEFAULT_WINDOW_TITLE_HEIGHT - DEFAULT_FONT_SIZE) / 2);
+    fold_rect.size.x = ApplyGlobalUIScale(DEFAULT_FONT_SIZE);
+    fold_rect.size.y = ApplyGlobalUIScale(DEFAULT_FONT_SIZE);
     write.AddQuad(fold_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::WindowUnfold()), Color::White());
 
     // 文本的渲染
     Text *text = title_text_;
     text->SetText(GetDisplayName());
-    text->SetFontSize(ApplyGlobalUIScale(20));
-    text->SetLocation({fold_rect.pos.x + fold_rect.size.x + ApplyGlobalUIScale(2), fold_rect.pos.y});
+    text->SetLocation({fold_rect.pos.x + fold_rect.size.x + ApplyGlobalUIScale(5), fold_rect.pos.y});
     text->SetSize(text->GetRebuildRequiredSize());
     text->Rebuild();
 
@@ -128,7 +128,8 @@ Vector2f Window::GetRebuildRequiredSize() const { return ui_rect_.size; }
 
 void Window::SetSlotWidget(Widget *now) {
     ProfileScope _(__func__);
-    if (now != slot_) {
+    Widget *w = slot_;
+    if (now != w) {
         slot_ = now;
         SetRebuildDirty();
     }

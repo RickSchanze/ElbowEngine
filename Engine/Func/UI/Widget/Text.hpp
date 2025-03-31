@@ -13,8 +13,8 @@ class Text : public Widget {
     REFLECTED_CLASS(Text)
 
     ObjectPtr<Font> font_ = nullptr;
-    Float font_size_ = {20};
-    Float space_{2};
+    Float font_size_; // initialized in constructor = DEFAULT_FONT_SIZE
+    Float space_; // initialized in constructor = 2
     Color color_ = Color::White();
     String text_;
 

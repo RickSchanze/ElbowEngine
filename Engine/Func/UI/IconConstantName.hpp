@@ -12,4 +12,6 @@ public:
     static StringView WindowFold();
     static StringView WindowUnfold();
     static StringView WindowClose();
+    static StringView CheckBox_Checked();
+    static StringView CheckBox_UnChecked();
 };

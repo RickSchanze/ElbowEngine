@@ -19,5 +19,14 @@ RectVertices UIUtility::ExtractVertexFromRect2D(Rect2Df rect) {
 }
 
 bool UIUtility::IsRectContainsPos(Rect2Df rect, Vector2f pos) {
+    if (rect.size.x == NumberMax<float>() && rect.size.y == NumberMax<float>()) {
+        return true;
+    }
+    if (rect.size.x == NumberMax<float>()) {
+        return rect.pos.y <= pos.y && pos.y <= rect.pos.y + rect.size.y;
+    }
+    if (rect.size.y == NumberMax<float>()) {
+        return rect.pos.x <= pos.x && pos.x <= rect.pos.x + rect.size.x;
+    }
     return rect.pos.x <= pos.x && pos.x <= rect.pos.x + rect.size.x && rect.pos.y <= pos.y && pos.y <= rect.pos.y + rect.size.y;
 }

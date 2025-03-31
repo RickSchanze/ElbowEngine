@@ -117,6 +117,18 @@ public:
         SetObject(other->GetHandle());
         return *this;
     }
+
+    bool operator==(const ObjectPtr & other) const {
+        return object_ == other.object_;
+    }
+
+    bool operator==(const T* other) const {
+        if (other == nullptr) {
+            if (object_ == 0) return true;
+            return false;
+        }
+        return object_ == other->GetHandle();
+    }
 };
 
 template<typename T>

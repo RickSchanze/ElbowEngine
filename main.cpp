@@ -13,6 +13,7 @@
 #include "Func/Render/RenderContext.hpp"
 #include "Func/UI/IconConstantName.hpp"
 #include "Func/UI/Widget/Button.hpp"
+#include "Func/UI/Widget/CheckBox.hpp"
 #include "Func/UI/Widget/Layout/VerticalLayout.hpp"
 #include "Func/UI/Widget/Text.hpp"
 #include "Func/UI/Widget/Window.hpp"
@@ -101,6 +102,8 @@ int main() {
             // new_tex->AppendSprite(IconConstantName::PureWhite(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
             // new_tex->AppendSprite(IconConstantName::WindowFold(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
             // new_tex->AppendSprite(IconConstantName::WindowUnfold(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
+            // new_tex->AppendSprite(IconConstantName::CheckBox_Checked(), R"(C:\Users\Echo\Documents\Temp\Icons\checkbox-checked.png)");
+            // new_tex->AppendSprite(IconConstantName::CheckBox_UnChecked(), R"(C:\Users\Echo\Documents\Temp\Icons\checkbox-unchecked.png)");
             // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
             // new_tex->Download();
             // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
@@ -133,6 +136,12 @@ int main() {
         auto button = NewObject<Button>();
         button->Evt_OnClicked.AddBind([] { VLOG_INFO("按钮按下!"); });
         layout->AddChild(button);
+        auto check_box = NewObject<CheckBox>();
+        check_box->SetText("测试CheckBox1");
+        layout->AddChild(check_box);
+        auto check_box2 = NewObject<CheckBox>();
+        check_box2->SetText("测试CheckBox2");
+        layout->AddChild(check_box2);
         w->SetSlotWidget(layout);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {

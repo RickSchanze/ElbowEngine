@@ -13,6 +13,16 @@ namespace rhi {
     class CommandBuffer;
 }
 class Material;
+
+template<typename T>
+struct ValueResetScope {
+    T &value;
+    explicit ValueResetScope(T &value) : value(value) {}
+    ~ValueResetScope() { value = {}; }
+};
+
+constexpr Float DEFAULT_FONT_SIZE = 20.f; // 所有字体和图标的默认大小
+
 /**
  * Widget就是UI Element
  */

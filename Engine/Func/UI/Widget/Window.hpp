@@ -6,6 +6,7 @@
 #include "Core/Object/ObjectPtr.hpp"
 #include "Widget.hpp"
 
+constexpr Float DEFAULT_WINDOW_TITLE_HEIGHT = 30.f;
 
 class Text;
 class Window : public Widget {

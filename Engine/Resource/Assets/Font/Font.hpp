@@ -67,7 +67,7 @@ public:
 private:
     void RequestLoadGlyph(UInt32 code_point);
 
-    Int32 font_size_ = 32; // 静态字体大小
+    Int32 font_size_ = 20; // 静态字体大小
     FontRenderMethod render_method_ = FontRenderMethod::Bitmap; // 默认不使用SDF
     String path_; // 资源路径
     Int32 font_atlas_width_ = 0; // 字体图集的宽度

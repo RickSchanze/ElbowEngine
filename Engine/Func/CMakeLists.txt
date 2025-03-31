@@ -6,6 +6,8 @@ file(GLOB_RECURSE FUNC_CPP_FILES *.cpp)
 
 add_library(Func
         ${FUNC_CPP_FILES} ${FUNC_HEADER_FILES}
+        UI/Widget/CheckBox.cpp
+        UI/Widget/CheckBox.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)
