@@ -63,6 +63,7 @@ std::string Log::GetFileName() const {
 }
 
 std::string_view Log::GetFuncName() const {
+    if (manual_func_name != nullptr) return manual_func_name;
     if constexpr (LOG_FULL_FUNCTION_DECL) {
         return loc_.function_name();
     } else {

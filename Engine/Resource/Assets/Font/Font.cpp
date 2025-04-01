@@ -103,6 +103,7 @@ void Font::PerformLoad() {
     }
     auto &meta = *op_meta;
     Load(meta);
+    SetName(meta.path);
 }
 
 bool Font::Load(const FontMeta &meta) {

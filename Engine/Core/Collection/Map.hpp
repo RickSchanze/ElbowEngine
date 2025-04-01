@@ -103,6 +103,9 @@ public:
     auto begin() const { return data_.begin(); }
     auto end() const { return data_.end(); }
 
+    template <typename T>
+    auto Erase(T&& key_or_iter) { return data_.erase(Forward<T>(key_or_iter)); }
+
 private:
     std::unordered_map<Key, Value> data_;
 };

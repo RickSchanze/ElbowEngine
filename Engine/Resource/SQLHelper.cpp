@@ -211,7 +211,7 @@ Array<SharedAny> SQLTable::Query(const Type *type, StringView where) {
         }
         return results;
     } catch (std::exception &e) {
-        VLOG_FATAL("Sql异常, 查询语句为: ", query_stat, ", 异常信息为", e.what());
+        VLOG_FATAL("Sql异常, 查询语句为: ", *query_stat, ", 异常信息为", e.what());
         Exit(1);
         return {};
     }

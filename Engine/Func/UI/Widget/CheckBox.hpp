@@ -5,6 +5,7 @@
 #pragma once
 #include "Widget.hpp"
 
+struct CheckBoxCheckedChangeEvent : MulticastEvent<void, bool /* now */> {};
 
 class Text;
 class CheckBox : public Widget {
@@ -27,6 +28,8 @@ public:
 
     Text *GetText() const { return text_; }
     void SetText(StringView text);
+
+    CheckBoxCheckedChangeEvent Evt_OnCheckedChanged{};
 
 private:
     bool checkbox_icon_pressed = false;

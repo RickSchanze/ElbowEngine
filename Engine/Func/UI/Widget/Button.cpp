@@ -38,6 +38,7 @@ Button::Button() {
     ProfileScope _("Button::Button");
     text_ = ObjectManager::CreateNewObject<Text>();
     text_->SetText("按钮");
+    text_->SetName("Button_Text");
     padding_.bottom = ApplyGlobalUIScale(10);
     padding_.top = ApplyGlobalUIScale(10);
     padding_.left = ApplyGlobalUIScale(5);
@@ -47,9 +48,10 @@ Button::Button() {
 void Button::Rebuild() {
     // 只需要绘制一个背景即可
     auto write = UIManager::RequestWriteData(this, 4, 6);
-    write.AddQuad(ui_rect_, UIManager::GetIconAtlasUV(IconConstantName::PureWhite()), SelectColor());
-    text_->SetLocation({ui_rect_.pos.x + padding_.left, ui_rect_.pos.y + padding_.bottom});
-    text_->SetSize({ui_rect_.size.x - padding_.left - padding_.right, ui_rect_.size.y - padding_.top - padding_.bottom});
+    write.AddQuad(abs_rect_, UIManager::GetIconAtlasUV(IconConstantName::PureWhite()), SelectColor());
+    text_->SetAbsoluteLocation({abs_rect_.pos.x + padding_.left, abs_rect_.pos.y + padding_.bottom});
+    // TODO: 正确性
+    text_->SetAbsoluteSize({abs_rect_.size.x - padding_.left - padding_.right, abs_rect_.size.y - padding_.top - padding_.bottom});
     text_->Rebuild();
 }
 

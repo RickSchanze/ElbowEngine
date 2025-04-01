@@ -140,6 +140,7 @@ int main() {
         check_box->SetText("测试CheckBox1");
         layout->AddChild(check_box);
         auto check_box2 = NewObject<CheckBox>();
+        check_box2->Evt_OnCheckedChanged.AddBind([](bool checked) { VLOG_INFO("Check box2 checked", checked); });
         check_box2->SetText("测试CheckBox2");
         layout->AddChild(check_box2);
         w->SetSlotWidget(layout);

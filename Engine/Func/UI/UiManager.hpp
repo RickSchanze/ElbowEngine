@@ -100,6 +100,7 @@ public:
     static void RegisterWindow(Window *w);
     static void UnRegisterWindow(Window *w);
     static Rect2Df GetIconAtlasUV(StringView name);
+    static bool IsRebuilding();
 
 private:
     static const Array<Window *> &GetWindows();
@@ -114,6 +115,7 @@ private:
     UInt64 post_tick_handle_ = 0;
 
     UIEventDispatcher dispatcher_;
+    bool rebuilding_ = false;
 };
 
 Float ApplyGlobalUIScale(Float value);

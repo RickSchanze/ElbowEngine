@@ -39,12 +39,14 @@ static inline ObjectRegTrigger _{};
 Object::~Object() {
     if (referenced_.Empty())
         return;
-    Log(Warn) << String::Format("对象{}被销毁时仍有{}个对象引用它", *name_, referenced_.Count());
-    for (const auto &handle: referenced_) {
-        if (Object *obj = ObjectManager::GetRegistry().GetObjectByHandle(handle)) {
-            Log(Warn) << String::FromInt(handle) + ": " + obj->name_;
-        } else {
-            Log(Warn) << String::FromInt(handle) + ": " + "已失效";
+    if constexpr (DUMP_OBJECT_REFERENCE_WHEN_DESTROY) {
+        Log(Warn, "Object::~Object") << String::Format("对象 {} 被销毁时仍有{}个对象引用它", *name_, referenced_.Count());
+        for (const auto &handle: referenced_) {
+            if (Object *obj = ObjectManager::GetRegistry().GetObjectByHandle(handle)) {
+                Log(Warn) << String::FromInt(handle) + ": " + obj->name_;
+            } else {
+                Log(Warn) << String::FromInt(handle) + ": " + "已失效";
+            }
         }
     }
 }

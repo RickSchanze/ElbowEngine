@@ -90,7 +90,7 @@ void ReflManager::RegisterTypeRegisterer(const RTTITypeInfo &type_info, MetaData
         return;
     if (meta_data_registers_.Contains(type_info)) {
         if (meta_data_registers_[type_info] != registerer) {
-            VLOG_FATAL("类型", type_info.name, "有不同的注册函数注册");
+            VLOG_FATAL("类型", *type_info.name, "有不同的注册函数注册");
         }
         return;
     }
@@ -114,14 +114,14 @@ Type *ReflManager::GetType(const RTTITypeInfo &type_info) {
     if (types_registered_.Contains(type_info)) {
         return types_registered_[type_info];
     }
-    VLOG_FATAL("类型", type_info.name, "没有注册成功");
+    VLOG_FATAL("类型", *type_info.name, "没有注册成功");
     return nullptr;
 }
 
 void ReflManager::RegisterCtorDtor(const RTTITypeInfo &info, InplaceCtor ctor, InplaceDtor dtor) {
     if (ctors_.Contains(info)) {
         if (ctors_[info].ctor != ctor || ctors_[info].dtor != dtor) {
-            VLOG_FATAL("类型", info.name, "有多个构造函数和析构函数的注册");
+            VLOG_FATAL("类型", *info.name, "有多个构造函数和析构函数的注册");
         }
         return;
     }

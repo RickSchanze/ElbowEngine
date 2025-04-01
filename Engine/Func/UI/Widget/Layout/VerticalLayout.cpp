@@ -19,18 +19,13 @@ VerticalLayout::VerticalLayout() {
     SetDisplayName("垂直布局");
     SetName("VerticalLayout");
     layout_ = EVerticalLayout::Top;
-    ui_rect_.size = {};
+    rel_rect_ = {};
 }
 
 void VerticalLayout::OnMouseMove(Vector2f old, Vector2f now) {
     ProfileScope _(__func__);
     for (Widget *w: children_) {
-        Rect2Df w_rect = w->GetUIRect();
-        // TODO: 使用最大值不好, 需要使用绝对左边/相对左边对来表示
-        if (w_rect.size.x == 0)
-            w_rect.size.x = NumberMax<Float>();
-        if (w_rect.size.y == 0)
-            w_rect.size.y = NumberMax<Float>();
+        Rect2Df w_rect = w->GetAbsoluteRect();
         if (UIUtility::IsRectContainsPos(w_rect, now)) {
             if (w != entered_widget_) {
                 if (entered_widget_) {
@@ -52,12 +47,7 @@ void VerticalLayout::OnMouseMove(Vector2f old, Vector2f now) {
 
 void VerticalLayout::OnMouseButtonReleased(MouseButton button, Vector2f pos) {
     for (Widget *w: children_) {
-        Rect2Df w_rect = w->GetUIRect();
-        // TODO: 使用最大值不好, 需要使用绝对左边/相对左边对来表示
-        if (w_rect.size.x == 0)
-            w_rect.size.x = NumberMax<Float>();
-        if (w_rect.size.y == 0)
-            w_rect.size.y = NumberMax<Float>();
+        Rect2Df w_rect = w->GetAbsoluteRect();
         if (UIUtility::IsRectContainsPos(w_rect, pos)) {
             w->OnMouseButtonReleased(button, pos);
             break;
@@ -67,12 +57,7 @@ void VerticalLayout::OnMouseButtonReleased(MouseButton button, Vector2f pos) {
 
 void VerticalLayout::OnMouseButtonPressed(MouseButton button, Vector2f pos) {
     for (Widget *w: children_) {
-        Rect2Df w_rect = w->GetUIRect();
-        // TODO: 使用最大值不好, 需要使用绝对左边/相对左边对来表示
-        if (w_rect.size.x == 0)
-            w_rect.size.x = NumberMax<Float>();
-        if (w_rect.size.y == 0)
-            w_rect.size.y = NumberMax<Float>();
+        Rect2Df w_rect = w->GetAbsoluteRect();
         if (UIUtility::IsRectContainsPos(w_rect, pos)) {
             w->OnMouseButtonPressed(button, pos);
             break;
@@ -80,29 +65,27 @@ void VerticalLayout::OnMouseButtonPressed(MouseButton button, Vector2f pos) {
     }
 }
 
-Vector2f VerticalLayout::GetRebuildRequiredSize() const { return ui_rect_.size; }
+Vector2f VerticalLayout::GetRebuildRequiredSize() const { return rel_rect_.size; }
 
 void VerticalLayout::Rebuild() {
     ProfileScope _(__func__);
     Super::Rebuild();
     // Rebuild时父widget已经把尺寸设置好
-    Vector2f cursor = {ui_rect_.pos.x, ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(5.f)};
+    Vector2f cursor = {abs_rect_.pos.x, abs_rect_.pos.y + abs_rect_.size.y - ApplyGlobalUIScale(5.f)};
     for (Widget *w: children_) {
         // TODO: 根据枚举layout_来布局
-        auto size = w->GetRebuildRequiredSize();
-        w->SetLocation({cursor.x, cursor.y - size.y});
-        if (size.x == 0) {
-            size.x = ui_rect_.size.x;
-        }
+        auto size = UIUtility::GetRebuildSize(w);
+        size.x = size.x == 0 ? abs_rect_.size.x : size.x;
+        w->SetAbsoluteSize(size);
         if (size.y == 0) {
-            size.y = ui_rect_.size.y;
+            VLOG_WARN("Widget ", *w->GetName(), " 在VerticalLayout的size.y = 0, 将被忽略");
+            continue;
         }
-        w->SetSize(size);
+        w->SetAbsoluteLocation(w->GetRelativeLocation() + Vector2f{cursor.x, cursor.y - size.y});
         w->Rebuild();
-        cursor.y -= (size.y + space);
+        cursor.y -= (size.y + space + w->GetRelativeLocation().y);
         // TODO: 多余的裁剪掉
     }
-    ui_rect_.size = {};
 }
 
 void VerticalLayout::RebuildHierarchy() {

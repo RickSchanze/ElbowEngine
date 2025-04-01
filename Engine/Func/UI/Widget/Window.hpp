@@ -34,6 +34,10 @@ protected:
     ObjectPtr<Widget> slot_;
     bool focused_ = false;
     bool moving_window_ = false;
+
+private:
+    // Window的Parent只能为nullptr, 因此相对位置就是绝对位置
+    void UpdateAbsRect();
 };
 
 REGISTER_TYPE(Window)

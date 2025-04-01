@@ -30,6 +30,10 @@ enum LogLevel { Info, Warn, Error, Fatal };
 class Log {
 public:
     explicit Log(const LogLevel level, const std::source_location &loc = std::source_location::current()) : loc_(loc), level_(level) {}
+    explicit Log(const LogLevel level, const StringView name, const std::source_location &loc = std::source_location::current()) :
+        loc_(loc), level_(level) {
+        manual_func_name = *name;
+    }
 
     void operator<<(const StringView &str) const;
 
@@ -39,5 +43,6 @@ private:
     std::string_view GetFuncName() const;
 
     std::source_location loc_;
+    const char *manual_func_name = nullptr;
     LogLevel level_;
 };

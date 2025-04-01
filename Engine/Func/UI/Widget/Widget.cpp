@@ -10,13 +10,25 @@
 IMPL_REFLECTED(Widget) {
     return Type::Create<Widget>("Widget") | refl_helper::AddParents<Object>() | refl_helper::AddField("visible", &Widget::visible_) |
            refl_helper::AddField("enable", &Widget::enable_) | refl_helper::AddField("receive_input", &Widget::receive_input_) |
-           refl_helper::AddField("visible", &Widget::visible_) | refl_helper::AddField("ui_rect", &Widget::ui_rect_) |
-           refl_helper::AddField("material", &Widget::material_);
+           refl_helper::AddField("visible", &Widget::visible_) | refl_helper::AddField("rel_rect", &Widget::rel_rect_) |
+           refl_helper::AddField("material", &Widget::material_) | refl_helper::AddField("parent_", &Widget::parent_);
 }
 
 void Widget::OnVisibleChanged(bool old, bool now) {}
 
 void Widget::OnEnabledChanged(bool old, bool now) {}
+
+Widget::Widget() { rel_rect_ = {}; }
+
+void Widget::SetAbsoluteLocation(Vector2f loc) {
+    Assert(UIManager::IsRebuilding(), "SetAbsoluteLocation只应该在Rebuild中调用.");
+    abs_rect_.pos = loc;
+}
+
+void Widget::SetAbsoluteSize(Vector2f size) {
+    Assert(UIManager::IsRebuilding(), "SetAbsoluteSize只应该在Rebuild中调用.");
+    abs_rect_.size = size;
+}
 
 void Widget::Rebuild() { SetRebuildDirty(false); }
 
@@ -39,11 +51,11 @@ void Widget::SetEnable(bool enable) {
 }
 
 void Widget::SetLocation(Vector2f loc) {
-    ui_rect_.pos = loc;
+    rel_rect_.pos = loc;
     SetRebuildDirty(true);
 }
 
-void Widget::SetSize(Vector2f size) { ui_rect_.size = size; }
+void Widget::SetSize(Vector2f size) { rel_rect_.size = size; }
 
 Material *Widget::GetMaterial() {
     if (material_ == nullptr) {
@@ -53,3 +65,19 @@ Material *Widget::GetMaterial() {
 }
 
 void Widget::SetMaterial(Material *mat) { material_ = mat; }
+
+void Widget::SetParent(Widget *w) {
+    Widget *old_parent = parent_;
+    Widget *new_parent = w;
+    if (old_parent != new_parent) {
+        parent_ = new_parent;
+        if (old_parent != nullptr) {
+            old_parent->SetParent(nullptr);
+            old_parent->SetRebuildDirty();
+        }
+        if (new_parent != nullptr) {
+            new_parent->SetRebuildDirty();
+        }
+        SetRebuildDirty(true);
+    }
+}

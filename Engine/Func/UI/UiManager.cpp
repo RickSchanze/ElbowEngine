@@ -122,10 +122,10 @@ void UIManager::Startup() {
             YamlArchive archive;
             archive.Deserialize(*op_style_str, current_style_.Get(), Style::GetStaticType());
         } else {
-            VLOG_ERROR("读取UI样式文件", style_file_path, "失败");
+            VLOG_ERROR("读取UI样式文件", *style_file_path, "失败");
         }
     } else {
-        VLOG_ERROR("UI样式文件", style_file_path, "不存在");
+        VLOG_ERROR("UI样式文件", *style_file_path, "不存在");
     }
 
     auto default_shader = reinterpret_cast<Shader *>(AssetDataBase::Load("Assets/Shader/UIDefault.slang"));
@@ -179,9 +179,11 @@ Style &UIManager::GetCurrentStyle() {
 
 void UIManager::PerformRebuildPass(const MilliSeconds &) {
     auto &self = GetByRef();
+    self.rebuilding_ = true;
     for (auto &w: self.windows_) {
         w->RebuildHierarchy();
     }
+    self.rebuilding_ = false;
 }
 
 void UIManager::PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd) {
@@ -218,6 +220,11 @@ Rect2Df UIManager::GetIconAtlasUV(StringView name) {
     auto &self = GetByRef();
     static Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
     return Sprite::GetUVRange(tex, name);
+}
+
+bool UIManager::IsRebuilding() {
+    auto& self = GetByRef();
+    return self.rebuilding_;
 }
 
 const Array<Window *> &UIManager::GetWindows() {

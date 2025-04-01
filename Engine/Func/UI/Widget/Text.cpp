@@ -82,7 +82,7 @@ void Text::Rebuild() {
     Font *f = font_;
     const Float font_scale = static_cast<Float>(font_size_) / static_cast<Float>(f->GetFontSize());
     f->RequestLoadGlyphs(text_);
-    Vector2f cursor = ui_rect_.pos;
+    Vector2f cursor = GetAbsoluteLocation();
     // 初始化迭代器
     auto char_begin = text_.begin();
     auto char_end = text_.end();

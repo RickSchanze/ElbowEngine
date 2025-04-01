@@ -7,6 +7,8 @@
 
 #include "Platform/RHI/VertexLayout.hpp"
 
+
+class Widget;
 struct RectVertices {
     rhi::Vertex_UI left_top;
     rhi::Vertex_UI right_top;
@@ -33,4 +35,6 @@ public:
 
     // Rect的pos是左下角, 向上向右延伸size
     static bool IsRectContainsPos(Rect2Df rect, Vector2f pos);
+
+    static Vector2f GetRebuildSize(Widget* w);
 };

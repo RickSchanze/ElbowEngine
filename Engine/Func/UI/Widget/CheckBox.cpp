@@ -29,20 +29,20 @@ static Rect2Df GetIconRect(Rect2Df ui_rect) {
 
 CheckBox::CheckBox() {
     text_ = ObjectManager::CreateNewObject<Text>();
-    ui_rect_.size.x = 0;
+    text_->SetName("Text_CheckBox");
 }
 
 void CheckBox::Rebuild() {
     ProfileScope _(__func__);
-    ValueResetScope scope{ui_rect_.size.x};
     Super::Rebuild();
-    Rect2Df checkbox_icon_rect = GetIconRect(ui_rect_);
+    Rect2Df checkbox_icon_rect = GetIconRect(abs_rect_);
     auto write = UIManager::RequestWriteData(this, 4, 6);
     write.AddQuad(checkbox_icon_rect,
                   UIManager::GetIconAtlasUV(checked_ ? IconConstantName::CheckBox_Checked() : IconConstantName::CheckBox_UnChecked()),
                   Color::White());
-    text_->SetLocation({ui_rect_.pos});
-    text_->SetSize({ui_rect_.size.x - checkbox_icon_rect.size.x, ui_rect_.size.y});
+    text_->SetAbsoluteLocation({abs_rect_.pos});
+    // TODO: AbsoluteSize正确性
+    text_->SetAbsoluteSize({abs_rect_.size.x - checkbox_icon_rect.size.x, abs_rect_.size.y});
     text_->Rebuild();
 }
 
@@ -61,7 +61,7 @@ void CheckBox::Draw(rhi::CommandBuffer &cmd) {
 }
 
 void CheckBox::OnMouseButtonPressed(MouseButton button, Vector2f pos) {
-    Rect2Df checkbox_icon_rect = GetIconRect(ui_rect_);
+    Rect2Df checkbox_icon_rect = GetIconRect(abs_rect_);
     if (UIUtility::IsRectContainsPos(checkbox_icon_rect, pos)) {
         checkbox_icon_pressed = true;
     }
@@ -82,6 +82,7 @@ void CheckBox::SetChecked(bool now) {
         const auto write = UIManager::RequestWriteData(this);
         write.FillQuadUV(UIManager::GetIconAtlasUV(checked_ ? IconConstantName::CheckBox_Checked() : IconConstantName::CheckBox_UnChecked()),
                          *write.vertex_buffer, *(write.vertex_buffer + 1), *(write.vertex_buffer + 2), *(write.vertex_buffer + 3));
+        Evt_OnCheckedChanged.Invoke(checked_);
     }
 }
 

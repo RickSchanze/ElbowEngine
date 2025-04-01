@@ -15,10 +15,12 @@ public:
     template<typename T>
         requires(!std::same_as<T, const char *>)
     static void Concat(std::ostringstream &stream, T &t) {
-        if constexpr (std::disjunction_v<std::is_arithmetic<Pure<T>>>) {
+        static_assert(!SameAs<Pure<T>, StringView>, "Did you forget to call operator *?");
+        static_assert(!SameAs<Pure<T>, String>, "Did you forget to call operator *?");
+        if constexpr (SameAs<Pure<T>, bool>) {
+            stream << (t ? "true" : "false");
+        } else if constexpr (std::disjunction_v<std::is_arithmetic<Pure<T>>>) {
             stream << t;
-        } else if constexpr (std::disjunction_v<std::is_same<Pure<T>, String>, std::is_same<Pure<T>, StringView>>) {
-            stream << *t;
         } else if constexpr (std::is_pointer_v<Pure<T>>) {
             stream << std::hex << std::showbase << t;
         } else if constexpr (CToStringAble<Pure<T>>) {

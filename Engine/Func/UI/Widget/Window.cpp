@@ -27,6 +27,7 @@ Window::Window() {
     SetDisplayName("空白窗口");
     UIManager::RegisterWindow(this);
     title_text_ = CreateNewObject<Text>();
+    title_text_->SetName("Text_WindowTitle");
 }
 
 Window::~Window() { UIManager::UnRegisterWindow(this); }
@@ -34,6 +35,7 @@ Window::~Window() { UIManager::UnRegisterWindow(this); }
 void Window::Rebuild() {
     ProfileScope _(__func__);
     Super::Rebuild();
+    UpdateAbsRect();
     // 请求三个矩形的大小 文本最后单独请求
     // ---------------------------------------------
     // |折叠标志|标题文本|---------------------------|
@@ -44,26 +46,27 @@ void Window::Rebuild() {
     // ---------------------------------------------|
     auto write = UIManager::RequestWriteData(this, 4 * 3, 6 * 3);
     auto ui_icon_atlas = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Texture/UIAtlas.png"));
+    Rect2Df window_rect = abs_rect_;
     // First 整个标题
     Rect2Df title_rect;
-    title_rect.pos.x = ui_rect_.pos.x;
-    title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
-    title_rect.size.x = ui_rect_.size.x;
+    title_rect.pos.x = window_rect.pos.x;
+    title_rect.pos.y = window_rect.pos.y + window_rect.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
+    title_rect.size.x = window_rect.size.x;
     title_rect.size.y = ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
     write.AddQuad(title_rect, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()),
                   focused_ ? UIManager::GetCurrentStyle().focused_title_background_color : UIManager::GetCurrentStyle().title_background_color);
 
     // 第二个矩形, 下面的正文
     Rect2Df content;
-    content.pos = ui_rect_.pos;
-    content.size.x = ui_rect_.size.x;
-    content.size.y = ui_rect_.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
+    content.pos = window_rect.pos;
+    content.size.x = window_rect.size.x;
+    content.size.y = window_rect.size.y - ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT);
     write.AddQuad(content, Sprite::GetUVRange(ui_icon_atlas, IconConstantName::PureWhite()), UIManager::GetCurrentStyle().content_background_color);
 
     // 第三个矩形 折叠标志
     Rect2Df fold_rect;
-    fold_rect.pos.x = ui_rect_.pos.x;
-    fold_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y -
+    fold_rect.pos.x = window_rect.pos.x;
+    fold_rect.pos.y = window_rect.pos.y + window_rect.size.y -
                       ApplyGlobalUIScale(DEFAULT_WINDOW_TITLE_HEIGHT - (DEFAULT_WINDOW_TITLE_HEIGHT - DEFAULT_FONT_SIZE) / 2);
     fold_rect.size.x = ApplyGlobalUIScale(DEFAULT_FONT_SIZE);
     fold_rect.size.y = ApplyGlobalUIScale(DEFAULT_FONT_SIZE);
@@ -72,14 +75,19 @@ void Window::Rebuild() {
     // 文本的渲染
     Text *text = title_text_;
     text->SetText(GetDisplayName());
-    text->SetLocation({fold_rect.pos.x + fold_rect.size.x + ApplyGlobalUIScale(5), fold_rect.pos.y});
-    text->SetSize(text->GetRebuildRequiredSize());
+    text->SetAbsoluteLocation({fold_rect.pos.x + fold_rect.size.x + ApplyGlobalUIScale(5), fold_rect.pos.y});
+    text->SetAbsoluteSize(text->GetRebuildRequiredSize());
     text->Rebuild();
 
     Widget *s = slot_;
-    Vector2f size = s->GetRebuildRequiredSize();
-    s->SetLocation(ui_rect_.pos);
-    s->SetSize(size.IsZero() ? content.size : size);
+    if (!s)
+        return;
+
+    s->SetAbsoluteLocation(window_rect.pos + s->GetRelativeLocation());
+    Vector2f s_size = UIUtility::GetRebuildSize(s);
+    s_size.x = s_size.x == 0 ? content.size.x : s_size.x;
+    s_size.y = s_size.y == 0 ? content.size.y : s_size.y;
+    s->SetAbsoluteSize(s_size);
     s->Rebuild();
 }
 
@@ -124,12 +132,18 @@ void Window::Draw(rhi::CommandBuffer &cmd) {
     cmd.Execute("Draw UI Window");
 }
 
-Vector2f Window::GetRebuildRequiredSize() const { return ui_rect_.size; }
+Vector2f Window::GetRebuildRequiredSize() const { return rel_rect_.size; }
 
 void Window::SetSlotWidget(Widget *now) {
     ProfileScope _(__func__);
     Widget *w = slot_;
     if (now != w) {
+        if (w != nullptr) {
+            w->SetParent(nullptr);
+        }
+        if (now != nullptr) {
+            now->SetParent(this);
+        }
         slot_ = now;
         SetRebuildDirty();
     }
@@ -148,20 +162,15 @@ void Window::SetFocused(bool now) {
 void Window::OnMouseMove(Vector2f old, Vector2f now) {
     ProfileScope _(__func__);
     if (moving_window_) {
-        SetLocation(ui_rect_.pos + (now - old));
+        SetLocation(rel_rect_.pos + (now - old));
     } else {
-        Widget *s = slot_;
-        if (s) {
-            Rect2Df content_rect = ui_rect_;
+        if (Widget *s = slot_) {
+            Rect2Df content_rect = abs_rect_;
             content_rect.size.y -= ApplyGlobalUIScale(20);
             if (UIUtility::IsRectContainsPos(content_rect, now)) {
-                auto s_rect = s->GetUIRect();
-                if (s_rect.size.IsZero()) {
+                auto s_rect = s->GetAbsoluteRect();
+                if (UIUtility::IsRectContainsPos(s_rect, now)) {
                     s->OnMouseMove(old, now);
-                } else {
-                    if (UIUtility::IsRectContainsPos(s_rect, now)) {
-                        s->OnMouseMove(old, now);
-                    }
                 }
             }
         }
@@ -171,23 +180,18 @@ void Window::OnMouseMove(Vector2f old, Vector2f now) {
 void Window::OnMouseButtonPressed(MouseButton button, Vector2f pos) {
     ProfileScope _(__func__);
     Rect2Df title_rect;
-    title_rect.pos.x = ui_rect_.pos.x;
-    title_rect.pos.y = ui_rect_.pos.y + ui_rect_.size.y - ApplyGlobalUIScale(20);
-    title_rect.size.x = ui_rect_.size.x;
+    title_rect.pos.x = abs_rect_.pos.x;
+    title_rect.pos.y = abs_rect_.pos.y + abs_rect_.size.y - ApplyGlobalUIScale(20);
+    title_rect.size.x = abs_rect_.size.x;
     title_rect.size.y = ApplyGlobalUIScale(20);
     if (UIUtility::IsRectContainsPos(title_rect, pos)) {
         moving_window_ = true;
         return;
     }
-    Widget *w = slot_;
-    if (w) {
-        Rect2Df w_rect = w->GetUIRect();
-        if (w_rect.size.IsZero()) {
+    if (Widget *w = slot_) {
+        Rect2Df w_rect = w->GetAbsoluteRect();
+        if (UIUtility::IsRectContainsPos(w_rect, pos)) {
             w->OnMouseButtonPressed(button, pos);
-        } else {
-            if (UIUtility::IsRectContainsPos(w_rect, pos)) {
-                w->OnMouseButtonPressed(button, pos);
-            }
         }
     }
 }
@@ -199,15 +203,12 @@ void Window::OnMouseButtonReleased(MouseButton button, Vector2f pos) {
         moving_window_ = false;
         return;
     }
-    Widget *w = slot_;
-    if (w) {
-        Rect2Df w_rect = w->GetUIRect();
-        if (w_rect.size.IsZero()) {
+    if (Widget *w = slot_) {
+        Rect2Df w_rect = w->GetAbsoluteRect();
+        if (UIUtility::IsRectContainsPos(w_rect, pos)) {
             w->OnMouseButtonReleased(button, pos);
-        } else {
-            if (UIUtility::IsRectContainsPos(w_rect, pos)) {
-                w->OnMouseButtonReleased(button, pos);
-            }
         }
     }
 }
+
+void Window::UpdateAbsRect() { abs_rect_ = rel_rect_; }

@@ -11,15 +11,9 @@
 #include "UiUtility.hpp"
 #include "Widget/Window.hpp"
 
-static Vector2f AdjustPosition(Vector2f pos) {
-    // glfw的坐标往下是负的, 例如左下角是0, -1080 右上角是1920, 0, 我们想转换到左下角0, 0 右下角1920, 1080
-    return {};
-}
-
 void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
     ProfileScope scope("UIEventDispatcher::ProcessInputEvent");
     auto pos = Input::GetMousePos();
-    auto mouse_scroll = Input::GetMouseScroll();
     bool mouse_move = previous_mouse_pos_ != pos;
     Vector2f previous_mouse_pos = previous_mouse_pos_;
     previous_mouse_pos_ = pos;
@@ -29,13 +23,13 @@ void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
         ProfileScope button_down_scope("MouseButtonDown");
         if (Input::IsMouseButtonPressed(MouseButton::Left)) {
             if (focused_window != nullptr) {
-                if (UIUtility::IsRectContainsPos(focused_window->GetUIRect(), pos)) {
+                if (UIUtility::IsRectContainsPos(focused_window->GetAbsoluteRect(), pos)) {
                     focused_window->OnMouseButtonPressed(MouseButton::Left, pos);
                 } else {
                     focused_window->SetFocused(false);
                     focused_window_handle_ = 0;
                     for (auto &window: UIManager::GetWindows()) {
-                        if (UIUtility::IsRectContainsPos(window->GetUIRect(), pos)) {
+                        if (UIUtility::IsRectContainsPos(window->GetAbsoluteRect(), pos)) {
                             window->SetFocused(true);
                             window->OnMouseButtonPressed(MouseButton::Left, pos);
                             focused_window_handle_ = window->GetHandle();
@@ -45,7 +39,7 @@ void UIEventDispatcher::ProcessInputEvent(const MilliSeconds &) {
                 }
             } else {
                 for (auto &window: UIManager::GetWindows()) {
-                    if (UIUtility::IsRectContainsPos(window->GetUIRect(), pos)) {
+                    if (UIUtility::IsRectContainsPos(window->GetAbsoluteRect(), pos)) {
                         window->SetFocused(true);
                         window->OnMouseButtonPressed(MouseButton::Left, pos);
                         focused_window_handle_ = window->GetHandle();
