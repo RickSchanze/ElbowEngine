@@ -6,13 +6,13 @@
 
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
+#include "Func/Render/Helper.hpp"
+#include "Func/Render/RenderTexture.hpp"
 #include "Func/UI/UiManager.hpp"
-#include "Helper.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/Commands.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
-#include "RenderTexture.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Mesh/Mesh.hpp"
@@ -32,7 +32,7 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     rect.size = {static_cast<Float>(w->GetWidth()), static_cast<Float>(w->GetHeight())};
     cmd.Enqueue<Cmd_SetScissor>(rect);
     cmd.Enqueue<Cmd_SetViewport>(rect);
-    cmd.Execute("WindowResize");
+    cmd.Execute();
 
     ImageSubresourceRange range{};
     range.aspect_mask = IA_Color;
@@ -53,16 +53,21 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     depth_attachment.layout = ImageLayout::DepthStencilAttachment;
     depth_attachment.target = depth_target_->GetImageView();
     cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
-    cmd.Execute("Begin Render");
-    BindMaterial(cmd, material_);
-    BindAndDrawMesh(cmd, mesh_);
-    cmd.Execute("Draw Cube Mesh");
+    cmd.Execute();
+    {
+        cmd.BeginDebugLabel("DrawAMesh");
+        BindMaterial(cmd, material_);
+        BindAndDrawMesh(cmd, mesh_);
+        cmd.EndDebugLabel();
+        cmd.Execute();
+    }
+
     UIManager::PerformGenerateRenderCommandsPass(cmd);
 
     cmd.Enqueue<Cmd_EndRender>();
     cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                           PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
-    cmd.Execute("EndRender");
+    cmd.Execute();
     cmd.End();
 }
 

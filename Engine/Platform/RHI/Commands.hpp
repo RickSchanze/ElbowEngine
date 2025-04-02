@@ -31,12 +31,25 @@ namespace rhi {
         BindDescriptorSet,
         CopyBufferToImage,
         CopyImageToBuffer,
+        BeginCommandDebugLabel,
+        EndCommandDebugLabel,
         Count,
     };
 
     struct RHICommand {
         virtual ~RHICommand() = default;
         [[nodiscard]] virtual RHICommandType GetType() const = 0;
+    };
+
+    struct Cmd_BeginCommandLabel final : RHICommand {
+        [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BeginCommandDebugLabel; }
+        StringView label;
+
+        explicit Cmd_BeginCommandLabel(StringView label_) : label(label_) {}
+    };
+
+    struct Cmd_EndCommandDebugLabel final : RHICommand {
+        [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::EndCommandDebugLabel; }
     };
 
     struct Cmd_CopyBuffer final : RHICommand {

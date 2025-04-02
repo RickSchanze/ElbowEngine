@@ -67,7 +67,7 @@ void RenderContext::Render(const MilliSeconds &sec) {
     if (!ctx.Present(*image_index, render_finished_semaphores_[current_frame_].Get())) {
         // TODO: 重建交换链/渲染管线
     }
-
+    SharedMaterialManager::GetByRef().ResetCurrentBindingSharedMaterial();
     current_frame_ = (current_frame_ + 1) % frames_in_flight_;
 }
 

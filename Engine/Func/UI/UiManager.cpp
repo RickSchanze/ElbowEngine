@@ -190,10 +190,12 @@ void UIManager::PerformGenerateRenderCommandsPass(rhi::CommandBuffer &cmd) {
     auto &self = GetByRef();
     cmd.Enqueue<Cmd_BindIndexBuffer>(self.buffer_manager_->index_buffer.get());
     cmd.Enqueue<Cmd_BindVertexBuffer>(self.buffer_manager_->vertex_buffer.get());
+    cmd.BeginDebugLabel("Draw UI");
     for (auto &w: self.windows_) {
         w->Draw(cmd);
     }
-    cmd.Execute("Draw UI");
+    cmd.EndDebugLabel();
+    cmd.Execute();
 }
 
 Material *UIManager::GetDefaultUIFontMaterial() {

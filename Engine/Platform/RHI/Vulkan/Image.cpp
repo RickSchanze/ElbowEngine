@@ -92,7 +92,7 @@ SharedPtr<Buffer> Image_Vulkan::CreateCPUVisibleBuffer() {
                                         Vector3i{static_cast<Int32>(GetWidth()), static_cast<Int32>(GetHeight()), 1});
     cmd->Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead,
                                            PSFB_Transfer, PSFB_FragmentShader);
-    cmd->Execute("CreateVisibleBuffer");
+    cmd->Execute();
     GfxCommandHelper::EndSingleTransferCommand(cmd);
     return dst_buffer;
 }

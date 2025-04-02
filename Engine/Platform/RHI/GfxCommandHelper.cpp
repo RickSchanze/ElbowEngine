@@ -36,7 +36,7 @@ void rhi::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, I
                                             AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage) {
     auto cmd = BeginSingleTransferCommand();
     cmd->Enqueue<Cmd_ImagePipelineBarrier>(old, new_, target, range, src_mask, dst_mask, src_stage, dst_stage);
-    cmd->Execute("");
+    cmd->Execute();
     EndSingleTransferCommand(cmd);
 }
 
@@ -49,7 +49,7 @@ void rhi::GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, U
     staging_buffer->EndWrite();
     auto cmd = BeginSingleTransferCommand();
     cmd->Enqueue<Cmd_CopyBuffer>(staging_buffer.get(), target);
-    cmd->Execute("CopyBuffer");
+    cmd->Execute();
     EndSingleTransferCommand(cmd);
 }
 
@@ -75,7 +75,7 @@ void rhi::GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, U
     img_size.y = copy_range.y == 0 ? target->GetHeight() : copy_range.y;
     img_size.z = copy_range.z == 0 ? 1 : copy_range.z;
     cmd->Enqueue<Cmd_CopyBufferToImage>(staging_buffer.get(), target, range, offset, img_size);
-    cmd->Execute("CopyBufferToImage2D");
+    cmd->Execute();
     EndSingleTransferCommand(cmd);
     PipelineBarrier(ImageLayout::TransferDst, ImageLayout::ShaderReadOnly, target, range, AFB_TransferWrite, AFB_ShaderRead, PSFB_Transfer,
                     PSFB_FragmentShader);

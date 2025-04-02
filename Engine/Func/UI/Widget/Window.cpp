@@ -37,13 +37,13 @@ void Window::Rebuild() {
     Super::Rebuild();
     UpdateAbsRect();
     // 请求三个矩形的大小 文本最后单独请求
-    // ---------------------------------------------
-    // |折叠标志|标题文本|---------------------------|
-    // ---------------------------------------------
+    // |--------------------------------------------|
+    // |折叠标志|标题文本|--------------------------|
+    // |--------------------------------------------|
     // |                                            |
-    // |               内容                         |
+    // |                 内容                       |
     // |                                            |
-    // ---------------------------------------------|
+    // |--------------------------------------------|
     auto write = UIManager::RequestWriteData(this, 4 * 3, 6 * 3);
     auto ui_icon_atlas = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Texture/UIAtlas.png"));
     Rect2Df window_rect = abs_rect_;
@@ -129,7 +129,7 @@ void Window::Draw(rhi::CommandBuffer &cmd) {
     if (slot_) {
         slot_->Draw(cmd);
     }
-    cmd.Execute("Draw UI Window");
+    cmd.Execute();
 }
 
 Vector2f Window::GetRebuildRequiredSize() const { return rel_rect_.size; }

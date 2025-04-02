@@ -4,9 +4,9 @@
 
 #pragma once
 #include "Core/Async/Exec/ExecFuture.hpp"
+#include "Core/Memory/FrameAllocator.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/String/String.hpp"
-#include "Core/Memory/FrameAllocator.hpp"
 #include "GfxContext.hpp"
 #include "IResource.hpp"
 
@@ -31,9 +31,24 @@ namespace rhi {
         /**
          * 交给渲染线程去翻译
          * 执行完成后会调用Clear
-         * @param label label 这一段命令的标签(for debug)
          */
-        virtual exec::ExecFuture<> Execute(StringView label) = 0;
+        virtual exec::ExecFuture<> Execute() = 0;
+
+        /// 插入一段DebugLabel
+        virtual void InternalBeginDebugLabel(StringView label) = 0;
+        virtual void InternalEndDebugLabel() = 0;
+
+        void BeginDebugLabel(StringView label) {
+#ifdef ELBOW_DEBUG
+            InternalBeginDebugLabel(label);
+#endif
+        }
+
+        void EndDebugLabel() {
+#ifdef ELBOW_DEBUG
+            InternalEndDebugLabel();
+#endif
+        }
 
         /**
          * 清理队里里的命令 之前记录过的不会被清理

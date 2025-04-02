@@ -40,11 +40,14 @@ namespace rhi {
 
         [[nodiscard]] void *GetNativeHandle() const override { return buffer_; }
 
-        exec::ExecFuture<> Execute(StringView label) override;
+        exec::ExecFuture<> Execute() override;
 
         void Begin() override;
 
         void End() override;
+
+        void InternalBeginDebugLabel(StringView label) override;
+        void InternalEndDebugLabel() override;
 
     private:
         VkCommandBuffer buffer_ = VK_NULL_HANDLE;

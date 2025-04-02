@@ -250,13 +250,21 @@ static void ExecuteCmdCopyImageToBuffer(const VkCommandBuffer cmd, const Cmd_Cop
     vkCmdCopyImageToBuffer(cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, 1, &copy_region);
 }
 
-static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &commands, StringView label) {
+static void ExecuteCmdBeginCommandDebugLabel(VkCommandBuffer buffer, Cmd_BeginCommandLabel *command) {
+    auto &ctx = *GetVulkanGfxContext();
+    VkDebugUtilsLabelEXT info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+    info.pLabelName = *command->label;
+    ctx.BeginDebugLabel(buffer, info);
+}
+
+static void ExecuteCmdEndCommandDebugLabel(VkCommandBuffer buffer) {
+    auto &ctx = *GetVulkanGfxContext();
+    ctx.EndDebugLabel(buffer);
+}
+
+static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &commands) {
     ProfileScope _(__func__);
-    const auto &ctx = *GetVulkanGfxContext();
-    VkDebugUtilsLabelEXT label_info = {};
-    label_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-    label_info.pLabelName = *label;
-    ctx.BeginDebugLabel(buffer, label_info);
     // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
     // 如果调用了Delete会崩溃
     for (Int32 i = 0; i < commands.Count(); i++) {
@@ -301,12 +309,17 @@ static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &c
             case RHICommandType::CopyImageToBuffer:
                 ExecuteCmdCopyImageToBuffer(buffer, static_cast<Cmd_CopyImageToBuffer *>(command));
                 break;
+            case RHICommandType::BeginCommandDebugLabel:
+                ExecuteCmdBeginCommandDebugLabel(buffer, static_cast<Cmd_BeginCommandLabel *>(command));
+                break;
+            case RHICommandType::EndCommandDebugLabel:
+                ExecuteCmdEndCommandDebugLabel(buffer);
+                break;
             default:
                 Log(Fatal) << "Unknown RHI Command";
         }
         std::destroy_at(command);
     }
-    ctx.EndDebugLabel(buffer);
 }
 
 
@@ -345,15 +358,15 @@ CommandBuffer_Vulkan::~CommandBuffer_Vulkan() {
     }
 }
 
-ExecFuture<> CommandBuffer_Vulkan::Execute(StringView label) {
+ExecFuture<> CommandBuffer_Vulkan::Execute() {
     ProfileScope _(__func__);
     const auto *cfg = GetConfig<PlatformConfig>();
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([commands = commands_, label = label, buffer = buffer_] { InternalExecute(buffer, commands, label); });
+        auto task = Just() | Then([commands = commands_, buffer = buffer_] { InternalExecute(buffer, commands); });
         commands_.Clear();
         return ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        InternalExecute(buffer_, commands_, label);
+        InternalExecute(buffer_, commands_);
         commands_.Clear();
         return MakeExecFuture();
     }
@@ -388,6 +401,10 @@ void CommandBuffer_Vulkan::End() {
         vkEndCommandBuffer(buffer_);
     }
 }
+
+void CommandBuffer_Vulkan::InternalBeginDebugLabel(StringView label) { Enqueue<Cmd_BeginCommandLabel>(label); }
+
+void CommandBuffer_Vulkan::InternalEndDebugLabel() { Enqueue<Cmd_EndCommandDebugLabel>(); }
 
 SharedPtr<CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer(bool self_managed) {
     VkCommandBufferAllocateInfo alloc_info = {};

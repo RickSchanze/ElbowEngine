@@ -9,9 +9,8 @@
 #include "Func/Input/Input.hpp"
 #include "Func/Render/Camera/ACameraHolder.hpp"
 #include "Func/Render/Camera/Camera.hpp"
-#include "Func/Render/ElbowEngineRenderPipeline.hpp"
+#include "Func/Render/Pipeline/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
-#include "Func/UI/IconConstantName.hpp"
 #include "Func/UI/Widget/Button.hpp"
 #include "Func/UI/Widget/CheckBox.hpp"
 #include "Func/UI/Widget/Layout/VerticalLayout.hpp"
@@ -123,27 +122,6 @@ int main() {
         TickEvents::Evt_TickInput.Bind(main_window, &PlatformWindow::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<ElbowEngineRenderPipeline>());
         NewObject<ACameraHolder>();
-        auto w = NewObject<Window>();
-        w->SetLocation({0, 0});
-        w->SetSize({400, 800});
-        auto layout = NewObject<VerticalLayout>();
-        auto text = NewObject<Text>();
-        text->SetText("你好世界");
-        layout->AddChild(text);
-        text = NewObject<Text>();
-        text->SetText("测试垂直布局!");
-        layout->AddChild(text);
-        auto button = NewObject<Button>();
-        button->Evt_OnClicked.AddBind([] { VLOG_INFO("按钮按下!"); });
-        layout->AddChild(button);
-        auto check_box = NewObject<CheckBox>();
-        check_box->SetText("测试CheckBox1");
-        layout->AddChild(check_box);
-        auto check_box2 = NewObject<CheckBox>();
-        check_box2->Evt_OnCheckedChanged.AddBind([](bool checked) { VLOG_INFO("Check box2 checked", checked); });
-        check_box2->SetText("测试CheckBox2");
-        layout->AddChild(check_box2);
-        w->SetSlotWidget(layout);
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         while (true) {
             ProfileScope _("Tick");

@@ -87,6 +87,7 @@ public:
     void UpdateSharedMaterialSet();
 
     SharedMaterial *GetCurrentBindingSharedMaterial() const { return current_binding_shared_material_; }
+    void ResetCurrentBindingSharedMaterial() { current_binding_shared_material_ = nullptr; }
     void SetCurrentBindingSharedMaterial(SharedMaterial *shared_material) { current_binding_shared_material_ = shared_material; }
 
 private:
