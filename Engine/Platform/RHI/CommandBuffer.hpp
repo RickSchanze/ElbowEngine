@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Commands.hpp"
 #include "Core/Async/Exec/ExecFuture.hpp"
 #include "Core/Memory/FrameAllocator.hpp"
 #include "Core/Misc/SharedPtr.hpp"
@@ -34,21 +35,38 @@ namespace rhi {
          */
         virtual exec::ExecFuture<> Execute() = 0;
 
-        /// 插入一段DebugLabel
-        virtual void InternalBeginDebugLabel(StringView label) = 0;
-        virtual void InternalEndDebugLabel() = 0;
+        /// 利用ImagePipeline更改图形布局(2025.4.3理解)
+        void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, Image *target, const ImageSubresourceRange &subresource_range,
+                                  AccessFlags src_access, AccessFlags dst_access, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
 
-        void BeginDebugLabel(StringView label) {
-#ifdef ELBOW_DEBUG
-            InternalBeginDebugLabel(label);
-#endif
-        }
-
-        void EndDebugLabel() {
-#ifdef ELBOW_DEBUG
-            InternalEndDebugLabel();
-#endif
-        }
+        /// 插入一段Commands Debug标签
+        void BeginDebugLabel(StringView label);
+        /// 结束Debug标签
+        void EndDebugLabel();
+        /// 开始渲染
+        void BeginRender(const Array<RenderAttachment> &colors, const RenderAttachment &depth = {}, Vector2f size = {0, 0});
+        /// 结束渲染
+        void EndRender();
+        /// 设置Scissor
+        void SetScissor(const Rect2Df &scissor);
+        /// 设置Viewport
+        void SetViewport(const Rect2Df &viewport);
+        /// 设置当前Pipeline
+        void BindPipeline(GraphicsPipeline *pipeline);
+        /// 绑定DescriptorSet
+        void BindDescriptorSet(GraphicsPipeline *pipeline, DescriptorSet *set);
+        /// 绑定VertexBuffer
+        void BindVertexBuffer(Buffer *buffer, UInt32 offset = 0, UInt32 binding = 0);
+        void BindVertexBuffer(const SharedPtr<Buffer> &buffer, UInt32 offset = 0, UInt32 binding = 0);
+        /// 绑定IndexBuffer
+        void BindIndexBuffer(Buffer *buffer_, UInt64 offset_ = 0);
+        void BindIndexBuffer(const SharedPtr<Buffer> &buffer, UInt64 offset_ = 0);
+        /// 绘制
+        void DrawIndexed(uint32_t index_count_, uint32_t instance_count_ = 1, UInt32 first_index_ = 0 DEBUG_ONLY(, const String &debug_name = ""));
+        /// 传输指令
+        void CopyBufferToImage(Buffer *src, Image *dst, const ImageSubresourceRange &subresource_range, Vector3i offset, Vector3i size);
+        void CopyImageToBuffer(Image *src, Buffer *dst, const ImageSubresourceRange &subresource_range, Vector3i offset, Vector3i size);
+        void CopyBuffer(Buffer *src, Buffer *dst, UInt64 size = 0);
 
         /**
          * 清理队里里的命令 之前记录过的不会被清理

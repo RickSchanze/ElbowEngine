@@ -46,13 +46,9 @@ namespace rhi {
 
         void End() override;
 
-        void InternalBeginDebugLabel(StringView label) override;
-        void InternalEndDebugLabel() override;
-
     private:
         VkCommandBuffer buffer_ = VK_NULL_HANDLE;
         CommandPool_Vulkan *pool_ = nullptr;
         bool self_managed_ = false;
     };
-
 } // namespace rhi

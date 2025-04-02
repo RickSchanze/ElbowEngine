@@ -402,10 +402,6 @@ void CommandBuffer_Vulkan::End() {
     }
 }
 
-void CommandBuffer_Vulkan::InternalBeginDebugLabel(StringView label) { Enqueue<Cmd_BeginCommandLabel>(label); }
-
-void CommandBuffer_Vulkan::InternalEndDebugLabel() { Enqueue<Cmd_EndCommandDebugLabel>(); }
-
 SharedPtr<CommandBuffer> CommandPool_Vulkan::CreateCommandBuffer(bool self_managed) {
     VkCommandBufferAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

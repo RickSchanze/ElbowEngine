@@ -116,7 +116,7 @@ void Text::Draw(rhi::CommandBuffer &cmd) {
         return;
     }
     helper::BindMaterial(cmd, GetMaterial());
-    cmd.Enqueue<rhi::Cmd_DrawIndexed>(info->index_count, 1, info->index_offset);
+    cmd.DrawIndexed(info->index_count, 1, info->index_offset);
 }
 
 void Text::SetFontSize(Float now) {

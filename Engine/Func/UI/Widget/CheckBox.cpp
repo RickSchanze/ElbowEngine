@@ -56,7 +56,7 @@ void CheckBox::Draw(rhi::CommandBuffer &cmd) {
     helper::BindMaterial(cmd, GetMaterial());
     auto info = UIManager::GetWidgetBufferInfo(this);
     Assert(info, "未找到此Widget对应的Buffer, 是不是忘记调用Rebuild了?");
-    cmd.Enqueue<rhi::Cmd_DrawIndexed>(info->index_count, 1, info->index_offset);
+    cmd.DrawIndexed(info->index_count, 1, info->index_offset);
     text_->Draw(cmd);
 }
 

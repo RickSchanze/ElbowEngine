@@ -86,11 +86,11 @@ SharedPtr<Buffer> Image_Vulkan::CreateCPUVisibleBuffer() {
     range.base_array_layer = 0;
     range.layer_count = 1;
     const auto cmd = GfxCommandHelper::BeginSingleTransferCommand();
-    cmd->Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ShaderReadOnly, ImageLayout::TransferSrc, this, range, AFB_ShaderRead, AFB_TransferRead,
+    cmd->ImagePipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::TransferSrc, this, range, AFB_ShaderRead, AFB_TransferRead,
                                            PSFB_FragmentShader, PSFB_Transfer);
-    cmd->Enqueue<Cmd_CopyImageToBuffer>(this, dst_buffer.get(), range, Vector3i{0, 0, 0},
+    cmd->CopyImageToBuffer(this, dst_buffer.get(), range, Vector3i{0, 0, 0},
                                         Vector3i{static_cast<Int32>(GetWidth()), static_cast<Int32>(GetHeight()), 1});
-    cmd->Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead,
+    cmd->ImagePipelineBarrier(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead,
                                            PSFB_Transfer, PSFB_FragmentShader);
     cmd->Execute();
     GfxCommandHelper::EndSingleTransferCommand(cmd);

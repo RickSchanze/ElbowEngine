@@ -17,10 +17,10 @@ void helper::BindAndDrawMesh(CommandBuffer &cmd, const Mesh *mesh) {
     if (mesh == nullptr)
         return;
     auto &storage = mesh->_GetStorage();
-    cmd.Enqueue<Cmd_BindVertexBuffer>(storage.vertex_buffer);
-    cmd.Enqueue<Cmd_BindVertexBuffer>(GlobalObjectInstancedDataBuffer::GetBuffer(), 0, 1);
-    cmd.Enqueue<Cmd_BindIndexBuffer>(storage.index_buffer);
-    cmd.Enqueue<Cmd_DrawIndexed>(storage.index_count, 1, 0 DEBUG_ONLY(, String::Format("MeshDraw: {}", *mesh->GetName())));
+    cmd.BindVertexBuffer(storage.vertex_buffer);
+    cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), 0, 1);
+    cmd.BindIndexBuffer(storage.index_buffer);
+    cmd.DrawIndexed(storage.index_count, 1, 0 DEBUG_ONLY(, String::Format("MeshDraw: {}", *mesh->GetName())));
 }
 
 void helper::BindMaterial(CommandBuffer &cmd, const Material *mat) {
@@ -32,8 +32,8 @@ void helper::BindMaterial(CommandBuffer &cmd, const Material *mat) {
     auto &mgr = SharedMaterialManager::GetByRef();
     if (mgr.GetCurrentBindingSharedMaterial() != shared_mat) {
         mgr.SetCurrentBindingSharedMaterial(shared_mat);
-        cmd.Enqueue<Cmd_BindPipeline>(shared_mat->GetPipeline());
+        cmd.BindPipeline(shared_mat->GetPipeline());
     }
     auto descriptor_set = mat->GetDescriptorSet();
-    cmd.Enqueue<Cmd_BindDescriptorSet>(shared_mat->GetPipeline(), descriptor_set);
+    cmd.BindDescriptorSet(shared_mat->GetPipeline(), descriptor_set);
 }

@@ -30,8 +30,8 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     auto w = PlatformWindowManager::GetMainWindow();
     Rect2Df rect{};
     rect.size = {static_cast<Float>(w->GetWidth()), static_cast<Float>(w->GetHeight())};
-    cmd.Enqueue<Cmd_SetScissor>(rect);
-    cmd.Enqueue<Cmd_SetViewport>(rect);
+    cmd.SetScissor(rect);
+    cmd.SetViewport(rect);
     cmd.Execute();
 
     ImageSubresourceRange range{};
@@ -40,8 +40,8 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
-    cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
-                                          PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
+    cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
+                             PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
     RenderAttachment attachment{};
     attachment.clear_color = Color::Clear();
     attachment.target = view;
@@ -52,7 +52,7 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     depth_attachment.clear_color.r = 1.0f;
     depth_attachment.layout = ImageLayout::DepthStencilAttachment;
     depth_attachment.target = depth_target_->GetImageView();
-    cmd.Enqueue<Cmd_BeginRender>(attachments, depth_attachment);
+    cmd.BeginRender(attachments, depth_attachment);
     cmd.Execute();
     {
         cmd.BeginDebugLabel("DrawAMesh");
@@ -64,9 +64,9 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
 
     UIManager::PerformGenerateRenderCommandsPass(cmd);
 
-    cmd.Enqueue<Cmd_EndRender>();
-    cmd.Enqueue<Cmd_ImagePipelineBarrier>(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
-                                          PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
+    cmd.EndRender();
+    cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
+                             PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
     cmd.Execute();
     cmd.End();
 }

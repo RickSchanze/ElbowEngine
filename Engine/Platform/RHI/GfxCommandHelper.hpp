@@ -18,7 +18,7 @@ namespace rhi {
 
         static void EndSingleTransferCommand(const SharedPtr<CommandBuffer> &command_buffer);
 
-        static void PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, ImageSubresourceRange range, AccessFlags src_mask,
+        static void PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range, AccessFlags src_mask,
                                     AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
 
         /**
