@@ -75,6 +75,7 @@ public:
 
     bool operator==(const Vector3 &other) const { return x == other.x && y == other.y && z == other.z; }
     Vector3 operator+(Vector3 rhs) { return Vector3(x + rhs.x, y + rhs.y, z + rhs.z); }
+    Vector3 operator-(Vector3 rhs) { return Vector3(x - rhs.x, y - rhs.y, z - rhs.z); }
 
     template<typename Self>
     auto &operator[](this Self &&self, UInt64 index) {
@@ -130,6 +131,8 @@ struct Quaternion {
     static void ConstructSelf(void *self) { new (self) Quaternion(); }
     static void DestructSelf(void *self) { static_cast<Quaternion *>(self)->~Quaternion(); }
     const Type *GetType();
+
+    static Quaternion Identity();
 
     T x = 0;
     T y = 0;
@@ -291,7 +294,7 @@ struct Matrix3x3 {
      * @return
      * @note https://www.zhihu.com/tardis/zm/art/78987582?source_id=1005
      */
-    static Matrix3x3 FormQuaternion(const Quaternion<T> &quat);
+    static Matrix3x3 FromQuaternion(const Quaternion<T> &quat);
     static Matrix3x3 Identity();
 };
 
@@ -497,6 +500,11 @@ const Type *Quaternion<T>::GetType() {
 }
 
 template<typename T>
+Quaternion<T> Quaternion<T>::Identity() {
+    return {0, 0, 0, 1};
+}
+
+template<typename T>
 Quaternion<T> Quaternion<T>::FromMatrix4x4(const Matrix4x4<T> &mat) {}
 
 template<typename T>
@@ -573,7 +581,7 @@ Matrix3x3<T> Matrix3x3<T>::Transpose() const {
 }
 
 template<typename T>
-Matrix3x3<T> Matrix3x3<T>::FormQuaternion(const Quaternion<T> &quat) {
+Matrix3x3<T> Matrix3x3<T>::FromQuaternion(const Quaternion<T> &quat) {
     Matrix3x3 result = Matrix3x3::Identity();
     T qxx(quat.x * quat.x);
     T qyy(quat.y * quat.y);

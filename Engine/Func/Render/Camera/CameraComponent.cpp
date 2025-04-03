@@ -39,7 +39,7 @@ void CameraComponent::UpdateViewBuffer() {
     const Vector3 location = owner->GetWorldLocation();
     const auto rotation_quat = owner->GetRotationQuaterion();
     // 正向旋转矩阵
-    const Matrix3x3f rotation = Matrix3x3f::FormQuaternion(rotation_quat);
+    const Matrix3x3f rotation = Matrix3x3f::FromQuaternion(rotation_quat);
     // 反向旋转矩阵
     const Matrix3x3f rotation_inv = rotation.Transpose();
     // 逆平移
@@ -47,20 +47,6 @@ void CameraComponent::UpdateViewBuffer() {
     // 计算view
     auto view = Matrix4x4f(rotation_inv);
     view[3] = Vector4f(translation, 1);
-    camera_shader_data_.view = view;
-
-    const glm::vec3 location1 = {owner->GetWorldLocation().x, owner->GetWorldLocation().y, owner->GetWorldLocation().z};
-    const glm::quat rotation_quat1 = {rotation_quat.x, rotation_quat.y, rotation_quat.z, rotation_quat.w};
-    // 正向旋转矩阵
-    const auto rotation1 = glm::mat3_cast(rotation_quat1);
-    // 反向旋转矩阵
-    const auto rotation_inv1 = glm::transpose(rotation1);
-    // 逆平移
-    const auto translation1 = -rotation_inv1 * location1;
-    // 计算view
-    auto view1 = glm::mat4(1);
-    view1 = glm::mat4(rotation_inv1);
-    view1[3] = glm::vec4(translation1, 1);
     camera_shader_data_.view = view;
 
     Camera::UpdateViewBuffer(camera_shader_data_);

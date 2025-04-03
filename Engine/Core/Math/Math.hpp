@@ -108,4 +108,5 @@ struct Math {
 
     static Float RandomFloat(Float lower = 0.f, Float upper = 1.f);
     static Color RandomColor(Color lower = {0, 0, 0, 0}, Color upper = {1, 1, 1, 1});
+    static Quaternionf FindLookAtRotation(Vector3f pos, Vector3f target);
 };

@@ -4,8 +4,8 @@
 
 #include "ACameraHolder.hpp"
 
-#include "Core/Math/Math.hpp"
 #include "CameraComponent.hpp"
+#include "Core/Math/Math.hpp"
 
 ACameraHolder::ACameraHolder() {
     SetDisplayName("临时摄像机");
@@ -19,4 +19,5 @@ void ACameraHolder::Tick(MilliSeconds delta_time) {
     const Float cos = Math::Cos(current_angle_);
     const Vector3f pos = {cos * radius_, 0, sin * radius_};
     SetLocation(pos);
+    SetRotation(Math::FindLookAtRotation(pos, {0, 0, 0}));
 }
