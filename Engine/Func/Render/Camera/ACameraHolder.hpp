@@ -18,7 +18,7 @@ public:
 
 private:
     Float speed_ = 1.f;
-    Float radius_ = 10.f;
+    Float radius_ = 100.f;
     Float current_angle_ = 0.f;
 
     ObjectPtr<CameraComponent> camera_;

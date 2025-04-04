@@ -6,6 +6,7 @@
 #include "SceneComponent.hpp"
 
 
+class Material;
 namespace rhi {
     class Buffer;
 }
@@ -14,6 +15,7 @@ class StaticMeshComponent : public SceneComponent {
     REFLECTED_CLASS(StaticMeshComponent)
 
     ObjectPtr<Mesh> mesh_; // mesh资产
+    ObjectPtr<Material> material_;
 
 public:
     StaticMeshComponent();
@@ -21,6 +23,8 @@ public:
 
     Mesh *GetMesh();
     void SetMesh(const Mesh *m);
+    Material* GetMaterial() const;
+    void SetMaterial(const Material *mat);
 
     void AwakeFromLoad() override;
     void UpdateTransform(const Transform &parent_transform) override;

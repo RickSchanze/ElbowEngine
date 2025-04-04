@@ -43,6 +43,6 @@ FragOutput frag(VertexOutput input) {
     FragOutput output;
     output.color = tex.Sample(common_sampler, input.uv);
     output.color = ReinhardToneMapping(output.color, param.exposure);
-    output.color = GammaToLinear(output.color);
+    // output.color = GammaToLinear(output.color);
     return output;
 }

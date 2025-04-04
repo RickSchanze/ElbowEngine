@@ -20,6 +20,8 @@ struct Transform {
     Vector3f GetLocation() const { return location; }
     Vector3f GetScale() const { return scale; }
 
+    void Rotate(Vector3f rot);
+
 private:
     // TODO: UI上的Rotation不应该用四元数
     REFLECTED(Label = "旋转")

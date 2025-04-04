@@ -6,6 +6,7 @@
 
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Mesh/Mesh.hpp"
 
 IMPL_REFLECTED(StaticMeshComponent) {
@@ -17,6 +18,7 @@ StaticMeshComponent::StaticMeshComponent() {
     SetName("StaticMeshComponent");
     SetDisplayName("静态网格体");
     RenderContext::AddMeshToDraw(this);
+    SetMaterial(nullptr);
 }
 
 StaticMeshComponent::~StaticMeshComponent() {
@@ -33,6 +35,15 @@ void StaticMeshComponent::SetMesh(const Mesh *m) {
             mesh_ = m;
         }
     }
+}
+
+Material *StaticMeshComponent::GetMaterial() const { return material_; }
+
+void StaticMeshComponent::SetMaterial(const Material *mat) {
+    if (mat == nullptr) {
+        material_ = Material::GetDefaultMaterial();
+    }
+    material_ = mat;
 }
 
 void StaticMeshComponent::AwakeFromLoad() {

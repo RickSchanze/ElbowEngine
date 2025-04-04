@@ -25,6 +25,7 @@
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Platform/Window/Window.hpp"
 #include "Resource/AssetDataBase.hpp"
+#include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 #include "Resource/Assets/Mesh/Mesh.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
@@ -93,8 +94,9 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/PBR/BasePass.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/ColorTransformPass.slang")),
-                    Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr"))//
-            );
+                    Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr")),
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")),
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png")));
 
             // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
             // Texture2DMeta new_meta;
@@ -131,10 +133,12 @@ int main() {
         NewObject<ACameraHolder>();
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         auto mesh = NewObject<Actor>()->AddComponent<StaticMeshComponent>();
-        mesh->SetMesh(static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Cube.fbx")));
-        auto mesh1 = NewObject<Actor>()->AddComponent<StaticMeshComponent>();
-        mesh1->SetMesh(static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Cube.fbx")));
-        mesh1->SetLocation({0, 0, -5});
+        mesh->SetMesh(static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")));
+        mesh->Rotate({90, 0, 0});
+        mesh->SetLocation({0, -20, 20});
+        Material *m = Material::CreateMaterialFromShader("Assets/Shader/PBR/BasePass.slang");
+        m->SetTexture2D("tex", static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png")));
+        mesh->SetMaterial(m);
         while (true) {
             ProfileScope _("Tick");
             GetWorldClock().TickAll();

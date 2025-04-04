@@ -90,6 +90,27 @@ void Material::Clean() {
     descriptor_set_ = nullptr;
 }
 
+Material *Material::GetDefaultMaterial() {
+    static Material *default_material; // 默认一个紫黑材质代表没设置
+    if (!default_material) {
+        default_material = CreateMaterialFromShader("Assets/Shader/PBR/BasePass.slang");
+    }
+    return default_material;
+}
+
+Material *Material::CreateMaterialFromShader(Shader *s) {
+    if (!s)
+        return nullptr;
+    Material *m = ObjectManager::CreateNewObject<Material>();
+    m->SetShader(s);
+    return m;
+}
+
+Material *Material::CreateMaterialFromShader(StringView path) {
+    Shader *s = AssetDataBase::Load<Shader>(path);
+    return CreateMaterialFromShader(s);
+}
+
 void Material::PerformLoad() {
     AssetDataBase::Load(shader_);
     Build();

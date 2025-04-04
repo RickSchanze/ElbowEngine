@@ -62,10 +62,11 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         cmd.BeginRender(attachments, depth_attachment);
         {
             cmd.BeginDebugLabel("MeshDraw");
-            helper::BindMaterial(cmd, basepass_material_);
             for (auto &mesh: RenderContext::GetDrawStaticMesh()) {
+                if (mesh->GetHandle() == skybox_cube_.GetHandle()) continue;
                 auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
                 auto index_count = mesh->GetIndexCount();
+                helper::BindMaterial(cmd, mesh->GetMaterial());
                 cmd.BindVertexBuffer(mesh->GetVertexBuffer());
                 cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
                 cmd.BindIndexBuffer(mesh->GetIndexBuffer());

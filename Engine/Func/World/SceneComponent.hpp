@@ -14,20 +14,25 @@ public:
     const Transform &GetWorldTransform() const { return world_transform_; }
     void SetTransform(const Transform &transform);
 
-    [[nodiscard]] Vector3f GetLocation() const { return transform_.location; }
-    [[nodiscard]] Vector3f GetWorldLocation() const;
+    Vector3f GetLocation() const { return transform_.location; }
+    Vector3f GetWorldLocation() const;
     void SetLocation(const Vector3f &location);
 
-    [[nodiscard]] Quaternionf GetWorldRotationQuaterion() const;
-    [[nodiscard]] Quaternionf GetRotationQuaterion() const;
-    [[nodiscard]] Vector3f GetWorldRotation() const;
-    [[nodiscard]] Vector3f GetRotation() const;
+    Quaternionf GetWorldRotationQuaterion() const;
+    Quaternionf GetRotationQuaterion() const;
+    Vector3f GetWorldRotation() const;
+    Vector3f GetRotation() const;
     void SetRotation(const Quaternionf &rotation);
+
+    Vector3f GetScale() const { return world_transform_.scale; }
+    void SetScale(const Vector3f &scale);
 
     virtual void UpdateTransform(const Transform &parent_transform);
 
     void SetTransformDirty(bool dirty = true) { transform_dirty_ = dirty; }
     bool IsTransformDirty() const { return transform_dirty_; }
+
+    void Rotate(Vector3f eluer_degree);
 
 protected:
     REFLECTED()

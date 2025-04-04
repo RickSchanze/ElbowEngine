@@ -71,6 +71,10 @@ public:
 
     [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
 
+    static Material* GetDefaultMaterial();
+    static Material* CreateMaterialFromShader(Shader* s);
+    static Material* CreateMaterialFromShader(StringView path);
+
 protected:
     REFLECTED()
     ObjectPtr<Shader> shader_;

@@ -25,3 +25,13 @@ void Transform::SetRotation(Quaternionf now) {
     cached_euler_.y = yaw;
     cached_euler_.z = roll;
 }
+
+void Transform::Rotate(Vector3f rot) {
+    // 欧拉角定义（XYZ 顺序）
+    glm::vec3 euler_degrees(rot.x, rot.y, rot.z);
+    glm::vec3 euler_radians = glm::radians(euler_degrees);
+
+    // 转换为四元数
+    glm::mat4 rotation_matrix = glm::eulerAngleXYZ(euler_radians.x, euler_radians.y, euler_radians.z);
+    SetRotation(quat_cast(rotation_matrix));
+}

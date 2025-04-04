@@ -47,6 +47,16 @@ void SceneComponent::SetRotation(const Quaternionf &rotation) {
     SetTransformDirty();
 }
 
+void SceneComponent::SetScale(const Vector3f &scale) {
+    transform_.scale = scale;
+    SetTransformDirty();
+}
+
+void SceneComponent::Rotate(Vector3f eluer_degree) {
+    transform_.Rotate(eluer_degree);
+    SetTransformDirty();
+}
+
 void SceneComponent::UpdateTransform(const Transform &parent_transform) {
     SetTransformDirty(false);
     world_transform_.location = transform_.location + parent_transform.location;
