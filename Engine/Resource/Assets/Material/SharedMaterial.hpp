@@ -9,6 +9,7 @@
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Misc/UniquePtr.hpp"
 #include "Core/TypeAlias.hpp"
+#include "Platform/RHI/Enums.hpp"
 
 
 class Shader;
@@ -32,7 +33,7 @@ struct MaterialParamBlock {
 class SharedMaterial {
     // 基础每个成员的部分
 public:
-    explicit SharedMaterial(Shader *shader);
+    explicit SharedMaterial(Shader *shade);
 
     const Map<UInt64, MaterialParamBlock> &GetUniformOffsets() const { return uniform_offsets_; }
     const Map<UInt64, MaterialParamBlock> &GetTextureBindings() const { return texture_bindings_; }

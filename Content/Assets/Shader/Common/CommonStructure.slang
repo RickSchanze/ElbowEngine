@@ -41,6 +41,10 @@ public struct Camera {
   public float4x4 GetProjection() { return projection; }
 
   public float4x4 GetOrtho() { return ortho; }
+
+  public float3 GetLocation() {
+      return float3(data2[0][1], data2[1][1], data2[2][1]);
+  }
 };
 
 public struct Model {

@@ -7,6 +7,7 @@
 import "Common/CommonStructure";
 import "Common/Utility";
 import "ToneMapping";
+import "ColorCorrection";
 
 struct HDRParam {
     float exposure; // 曝光度
@@ -42,5 +43,6 @@ FragOutput frag(VertexOutput input) {
     FragOutput output;
     output.color = tex.Sample(common_sampler, input.uv);
     output.color = ReinhardToneMapping(output.color, param.exposure);
+    output.color = GammaToLinear(output.color);
     return output;
 }

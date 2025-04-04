@@ -12,6 +12,7 @@
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
 #include "Func/UI/UiManager.hpp"
+#include "Func/World/Actor.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/VertexLayout.hpp"
@@ -19,6 +20,7 @@
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Material/Material.hpp"
+#include "Resource/Assets/Mesh/Mesh.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
@@ -76,6 +78,13 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
             cmd.BeginDebugLabel("SkyspherePass");
             helper::BindMaterial(cmd, skysphere_pass_material_);
             // draw skybox
+            StaticMeshComponent *mesh = skybox_cube_;
+            auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
+            auto index_count = mesh->GetIndexCount();
+            cmd.BindVertexBuffer(mesh->GetVertexBuffer());
+            cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
+            cmd.BindIndexBuffer(mesh->GetIndexBuffer());
+            cmd.DrawIndexed(index_count, 1, 0);
             cmd.EndDebugLabel();
         }
         cmd.EndRender();
@@ -112,19 +121,23 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
 void PBRRenderPipeline::Build() {
     ProfileScope _("RenderPipeline::Build");
     auto basepass_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/BasePass.slang");
-    auto skyspere_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/Sk"
-                                                    "yspherePass.slang");
+    auto skyspere_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/SkyspherePass.slang");
     auto colortransform_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/ColorTransformPass.slang");
     auto skysphere_texture = AssetDataBase::LoadAsync("Assets/Texture/poly_haven_studio_1k.exr");
+    auto cube_mesh = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
     ThreadManager::WhenAllExecFuturesCompleted(
             NamedThread::Game,
             [this](const ObjectHandle basepass_shader_handle, const ObjectHandle skysphere_shader_handle,
-                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle) {
+                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle,
+                   const ObjectHandle cube_mesh_handle) {
                 ProfileScope _("RenderPipeline::Build(OnAsyncCompleted)");
                 const Shader *baspass_shader = ObjectManager::GetObjectByHandle<Shader>(basepass_shader_handle);
                 const Shader *skysphere_pass_shader = ObjectManager::GetObjectByHandle<Shader>(skysphere_shader_handle);
                 const Shader *color_transform_pass_shader = ObjectManager::GetObjectByHandle<Shader>(color_transform_shader_handle);
                 const Texture2D *skysphere_texture = ObjectManager::GetObjectByHandle<Texture2D>(skysphere_texture_handle);
+                const Mesh *cube_mesh = ObjectManager::GetObjectByHandle<Mesh>(cube_mesh_handle);
+                skybox_cube_ = ObjectManager::CreateNewObject<Actor>()->AddComponent<StaticMeshComponent>();
+                skybox_cube_->SetMesh(cube_mesh);
 
                 basepass_material_ = ObjectManager::CreateNewObject<Material>();
                 skysphere_pass_material_ = ObjectManager::CreateNewObject<Material>();
@@ -149,12 +162,10 @@ void PBRRenderPipeline::Build() {
                 BufferDesc buffer_desc{4 * sizeof(Vertex1), BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
                 screen_quad_vertex_buffer_ = GetGfxContextRef().CreateBuffer(buffer_desc);
                 // vulkan的屏幕空间的四个顶点 TODO: GL和这个不一样
-                Vertex1 vertices[] = {
-                    {{-1.0f, -1.0f, 0.0f}, {0, 0, 0}, {0, 0}},
-                    {{1.0f, -1.0f, 0.0f}, {0, 0, 0}, {1, 0}},
-                    {{-1.0f, 1.0f, 0.0f}, {0, 0, 0}, {0, 1}},
-                    {{1.0f, 1.0f, 0.0f}, {0, 0, 0}, {1, 1}}
-                };
+                Vertex1 vertices[] = {{{-1.0f, -1.0f, 0.0f}, {0, 0, 0}, {0, 0}},
+                                      {{1.0f, -1.0f, 0.0f}, {0, 0, 0}, {1, 0}},
+                                      {{-1.0f, 1.0f, 0.0f}, {0, 0, 0}, {0, 1}},
+                                      {{1.0f, 1.0f, 0.0f}, {0, 0, 0}, {1, 1}}};
                 GfxCommandHelper::CopyDataToBuffer(&vertices, screen_quad_vertex_buffer_.get(), 4 * sizeof(Vertex1));
                 BufferDesc index_buffer_desc{6 * sizeof(UInt32), BUB_IndexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
                 screen_quad_index_buffer_ = GetGfxContextRef().CreateBuffer(index_buffer_desc);
@@ -162,7 +173,7 @@ void PBRRenderPipeline::Build() {
                 GfxCommandHelper::CopyDataToBuffer(&indices, screen_quad_index_buffer_.get(), 6 * sizeof(UInt32));
                 ready_ = true;
             },
-            Move(basepass_shader), Move(skyspere_shader), Move(colortransform_shader), Move(skysphere_texture));
+            Move(basepass_shader), Move(skyspere_shader), Move(colortransform_shader), Move(skysphere_texture), Move(cube_mesh));
 }
 
 void PBRRenderPipeline::Clean() {

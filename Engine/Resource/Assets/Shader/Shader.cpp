@@ -467,6 +467,9 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     const uint32_t input_layout_idx = anno[static_cast<Int32>(ShaderAnnotation::InputLayout)];
     FillInputLayout(pso_desc, input_layout_idx);
     auto layout = GetShaderDescriptorSetLayout(this);
+    if (anno[static_cast<Int32>(ShaderAnnotation::CullMode)] == 1) {
+        pso_desc.rasterization.cull_mode = CullMode::Front;
+    }
     if (anno[static_cast<Int32>(ShaderAnnotation::Blend)] == 1) {
         pso_desc.color_blend.enable_blend = true;
         pso_desc.color_blend.src_color_blend_factor = BlendFactor::SrcAlpha;

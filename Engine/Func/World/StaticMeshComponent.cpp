@@ -26,7 +26,7 @@ StaticMeshComponent::~StaticMeshComponent() {
 
 Mesh *StaticMeshComponent::GetMesh() { return mesh_; }
 
-void StaticMeshComponent::SetMesh(Mesh *m) {
+void StaticMeshComponent::SetMesh(const Mesh *m) {
     Mesh *old = mesh_;
     if (m != nullptr) {
         if (m != old) {

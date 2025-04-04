@@ -17,7 +17,7 @@ public:
     void SetTransform(const Transform &transform);
     [[nodiscard]] Vector3f GetLocation() const { return transform_.location; }
     [[nodiscard]] Vector3f GetWorldLocation() const;
-    void SetLocation(const Vector3f &location) { transform_.location = location; }
+    void SetLocation(const Vector3f &location);
     [[nodiscard]] Quaternionf GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
     void SetRotation(const Quaternionf &rotation) { transform_.SetRotation(rotation); }
 
@@ -31,12 +31,17 @@ public:
         return comp;
     }
 
+    bool IsTransformDirty() const { return transform_dirty_; }
+
 protected:
     void UpdateTransform();
+    void SetTransformDirty(bool dirty = true) { transform_dirty_ = dirty; }
 
 private:
     REFLECTED()
     Transform transform_;
+
+    bool transform_dirty_ = true;
 
     Array<ObjectPtr<Component>> components_;
 };

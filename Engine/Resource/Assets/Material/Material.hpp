@@ -29,6 +29,8 @@ class REFLECTED() Material : public Asset {
     REFLECTED_CLASS(Material)
 
 public:
+    Material() = default;
+
     void PerformLoad() override;
 
     void PerformUnload() override { Clean(); }

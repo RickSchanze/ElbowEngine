@@ -20,7 +20,7 @@ public:
     ~StaticMeshComponent() override;
 
     Mesh *GetMesh();
-    void SetMesh(Mesh *m);
+    void SetMesh(const Mesh *m);
 
     void AwakeFromLoad() override;
     void UpdateTransform(const Transform &parent_transform) override;

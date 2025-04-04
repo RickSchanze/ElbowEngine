@@ -48,7 +48,10 @@ void CameraComponent::UpdateViewBuffer() {
     auto view = Matrix4x4f(rotation_inv);
     view[3] = Vector4f(translation, 1);
     camera_shader_data_.view = view;
-
+    // 更新position
+    camera_shader_data_.data2[1, 0] = world_transform_.location.x;
+    camera_shader_data_.data2[1, 1] = world_transform_.location.y;
+    camera_shader_data_.data2[1, 2] = world_transform_.location.z;
     Camera::UpdateViewBuffer(camera_shader_data_);
 }
 

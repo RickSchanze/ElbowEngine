@@ -1,6 +1,7 @@
 /**
  * @Pipeline: Graphics
  * @InputLayout: Vertex1
+ * @CullMode: Front
  */
 
 import "Common/CommonStructure";
@@ -22,8 +23,15 @@ struct FragOutput {
 
 [shader("vertex")]
 VertOutput vert(Vertex vert) {
-    float4 vert_pos = float4(vert.location, 1);
-    float4 outpos = PerformMVP(vert_pos, vert.GetModelFloat4x4(), camera.GetView(), camera.GetProjection());
+    float4 vert_pos = float4(vert.position, 1);
+    float3 cam_loc = camera.GetLocation();
+    float4x4 model = {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        cam_loc.x, cam_loc.y, cam_loc.z, 1,
+    };
+    float4 outpos = PerformMVP(vert_pos, model, camera.GetView(), camera.GetProjection());
     outpos.z = outpos.w;
     VertOutput output;
     output.position = outpos;

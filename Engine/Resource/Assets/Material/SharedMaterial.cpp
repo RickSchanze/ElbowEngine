@@ -151,6 +151,7 @@ SharedMaterial::SharedMaterial(Shader *shader) {
         desc.attachments.color_formats.Add(Format::R32G32B32A32_Float);
         desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
     }
+
     pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
     set_layouts_ = desc.descriptor_set_layouts;
     // 1. 解析Shader参数 创建UniformBuffer和Texture

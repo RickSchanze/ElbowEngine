@@ -4,9 +4,11 @@
 
 #pragma once
 #include "Core/Misc/SharedPtr.hpp"
+#include "Core/Object/ObjectPtr.hpp"
 #include "Func/Render/RenderPipeline.hpp"
 
 
+class StaticMeshComponent;
 namespace rhi {
     class Buffer;
 }
@@ -31,5 +33,6 @@ private:
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<rhi::Buffer> screen_quad_vertex_buffer_;
     SharedPtr<rhi::Buffer> screen_quad_index_buffer_;
+    ObjectPtr<StaticMeshComponent> skybox_cube_;
     bool ready_ = false;
 };
