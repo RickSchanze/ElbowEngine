@@ -15,7 +15,9 @@ ACameraHolder::ACameraHolder() {
 
 void ACameraHolder::Tick(MilliSeconds delta_time) {
     current_angle_ += CastDuration<Seconds>(delta_time).count() * 2;
-    const Vector3f pos = {10, 0, 0};
+    const Float sin = Math::Sin(current_angle_);
+    const Float cos = Math::Cos(current_angle_);
+    const Vector3f pos = {cos * radius_, 0, sin * radius_};
     SetLocation(pos);
     SetRotation(Math::FindLookAtRotation(pos, {0, 0, 0}));
 }

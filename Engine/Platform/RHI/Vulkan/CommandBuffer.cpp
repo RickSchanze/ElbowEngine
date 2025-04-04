@@ -361,44 +361,39 @@ CommandBuffer_Vulkan::~CommandBuffer_Vulkan() {
 ExecFuture<> CommandBuffer_Vulkan::Execute() {
     ProfileScope _(__func__);
     const auto *cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([commands = commands_, buffer = buffer_] { InternalExecute(buffer, commands); });
+    commands_.Clear();
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([commands = commands_, buffer = buffer_] { InternalExecute(buffer, commands); });
-        commands_.Clear();
         return ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        InternalExecute(buffer_, commands_);
-        commands_.Clear();
-        return MakeExecFuture();
+        return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 
 void CommandBuffer_Vulkan::Begin() {
     ProfileScope _(__func__);
     const auto *cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([buffer = buffer_] {
+                    VkCommandBufferBeginInfo begin_info = {};
+                    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                    vkBeginCommandBuffer(buffer, &begin_info);
+                });
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([buffer = buffer_] {
-                        VkCommandBufferBeginInfo begin_info = {};
-                        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-                        vkBeginCommandBuffer(buffer, &begin_info);
-                    });
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        VkCommandBufferBeginInfo begin_info = {};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(buffer_, &begin_info);
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 
 void CommandBuffer_Vulkan::End() {
     ProfileScope _(__func__);
     const auto *cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([buffer = buffer_] { vkEndCommandBuffer(buffer); });
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        vkEndCommandBuffer(buffer_);
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 
@@ -437,14 +432,14 @@ void CommandPool_Vulkan::FreeCommandBuffer(VkCommandBuffer buffer) {
         return;
     auto device = ctx.GetDevice();
     const auto *cfg = GetConfig<PlatformConfig>();
-    if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([buffer, device, command_pool = command_pool_] {
+    auto task = Just() | Then([buffer, device, command_pool = command_pool_] {
                         const VkCommandBuffer b = buffer;
                         vkFreeCommandBuffers(device, command_pool, 1, &b);
                     });
+    if (cfg->GetEnableMultithreadRender()) {
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        vkFreeCommandBuffers(ctx.GetDevice(), command_pool_, 1, &buffer);
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 

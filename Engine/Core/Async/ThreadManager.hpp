@@ -34,7 +34,7 @@ public:
 
     static ThreadId GetMainThread() { return GetByRef().main_thread_; }
 
-    static void AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread = NamedThread::Count);
+    static void AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread = NamedThread::Count, bool immediate_exec = false);
 
     static void PollGameThread(Int32 work_num) {
         const auto &self = GetByRef();
@@ -44,13 +44,13 @@ public:
     // 启动一个Sender并返回Future, 加Async是因为他只是启动不保证完成
     template<typename SenderType>
         requires IsBaseOf<exec::Sender, Pure<SenderType>>
-    static Future<typename Pure<SenderType>::value_type> ScheduleFutureAsync(SenderType &&sender,
-                                                                             const NamedThread named_thread = NamedThread::Count) {
+    static Future<typename Pure<SenderType>::value_type> ScheduleFutureAsync(SenderType &&sender, const NamedThread named_thread = NamedThread::Count,
+                                                                             bool immediate_exec_on_game_thread = false) {
         exec::FutureReceiver<typename Pure<SenderType>::value_type> receiver{};
         auto f = receiver.GetFuture();
         auto op = sender.Connect(Move(receiver));
         auto runnable = MakeShared<exec::ExecRunnable<Pure<decltype(op)>>>(Move(op));
-        AddRunnable(runnable, named_thread);
+        AddRunnable(runnable, named_thread, immediate_exec_on_game_thread);
         return Move(f);
     }
 

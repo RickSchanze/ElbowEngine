@@ -89,7 +89,11 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/Error.slang")), Move(AssetDataBase::Import("Assets/Texture/Default.png")),
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
                     Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")), Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")),
-                    Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")) //
+                    Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
+                    Move(AssetDataBase::Import("Assets/Shader/PBR/BasePass.slang")),
+                    Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
+                    Move(AssetDataBase::Import("Assets/Shader/PBR/ColorTransformPass.slang")),
+                    Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr"))//
             );
 
             // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
@@ -101,11 +105,11 @@ int main() {
             // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
             // new_tex->SetName("UIAtlas");
             // new_tex->Load(new_meta);
-            // new_tex->AppendSprite(IconConstantName::PureWhite(), R"(C:\Users\Echo\Documents\Temp\Icons\白.png)");
-            // new_tex->AppendSprite(IconConstantName::WindowFold(), R"(C:\Users\Echo\Documents\Temp\Icons\收起.png)");
-            // new_tex->AppendSprite(IconConstantName::WindowUnfold(), R"(C:\Users\Echo\Documents\Temp\Icons\展开.png)");
-            // new_tex->AppendSprite(IconConstantName::CheckBox_Checked(), R"(C:\Users\Echo\Documents\Temp\Icons\checkbox-checked.png)");
-            // new_tex->AppendSprite(IconConstantName::CheckBox_UnChecked(), R"(C:\Users\Echo\Documents\Temp\Icons\checkbox-unchecked.png)");
+            // new_tex->AppendSprite(IconConstantName::PureWhite(), R"(C:/Users/Echo/Documents/Temp/Icons/白.png)");
+            // new_tex->AppendSprite(IconConstantName::WindowFold(), R"(C:/Users/Echo/Documents/Temp/Icons/收起.png)");
+            // new_tex->AppendSprite(IconConstantName::WindowUnfold(), R"(C:/Users/Echo/Documents/Temp/Icons/展开.png)");
+            // new_tex->AppendSprite(IconConstantName::CheckBox_Checked(), R"(C:/Users/Echo/Documents/Temp/Icons/checkbox-checked.png)");
+            // new_tex->AppendSprite(IconConstantName::CheckBox_UnChecked(), R"(C:/Users/Echo/Documents/Temp/Icons/checkbox-unchecked.png)");
             // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
             // new_tex->Download();
             // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());

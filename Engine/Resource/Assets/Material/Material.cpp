@@ -4,12 +4,12 @@
 
 #include "Material.hpp"
 
-#include "Resource/AssetDataBase.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "Platform/RHI/Image.hpp"
+#include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "SharedMaterial.hpp"
@@ -150,6 +150,39 @@ bool Material::SetTexture2D(const String &name, const Texture2D *texture) {
         return true;
     }
     return false;
+}
+
+bool Material::SetFloat(StringView name, Float value) const {
+    auto &uniform = shared_material_->GetUniformOffsets();
+    UInt64 name_hash = name.GetHashCode();
+    if (!uniform.Contains(name_hash)) {
+        Log(Error) << String::Format("材质{}中没有参数{}", GetHandle(), *name);
+        return false;
+    }
+    const UInt32 offset = uniform[name_hash].offset;
+    memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Float));
+    return true;
+}
+
+bool Material::SetParamNativeImageView(const String &name, rhi::ImageView *image_view, rhi::Sampler *sampler) const {
+    if (image_view == nullptr) {
+        VLOG_ERROR("参数无效");
+        return false;
+    }
+    if (!shared_material_)
+        return false;
+    auto &tex_bindings = shared_material_->GetTextureBindings();
+    if (!tex_bindings.Contains(name.GetHashCode())) {
+        Log(Error) << String::Format("材质{}中没有参数{}", GetHandle(), *name);
+        return false;
+    }
+    UInt32 binding = tex_bindings[name.GetHashCode()].binding;
+    DescriptorImageUpdateDesc update_info{};
+    update_info.image_layout = ImageLayout::ShaderReadOnly;
+    update_info.image_view = image_view;
+    update_info.sampler = sampler;
+    descriptor_set_->Update(binding, update_info);
+    return true;
 }
 
 void Material::SetShader(const Shader *shader) {

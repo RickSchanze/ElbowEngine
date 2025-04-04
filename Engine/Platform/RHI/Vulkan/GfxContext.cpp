@@ -145,7 +145,10 @@ const PhysicalDeviceInfo &GfxContext_Vulkan::QueryDeviceInfo() {
 
 Format GfxContext_Vulkan::GetDefaultDepthStencilFormat() const { return default_depth_stencil_format_; }
 
-Format GfxContext_Vulkan::GetDefaultColorFormat() const { return default_color_format_; }
+Format GfxContext_Vulkan::GetDefaultColorFormat() const {
+    // TODO: 灵活切换是否HDR渲染
+    return Format::R32G32B32A32_Float;
+}
 
 const QueueFamilyIndices &GfxContext_Vulkan::GetCurrentQueueFamilyIndices() const { return queue_family_indices_; }
 
@@ -223,12 +226,12 @@ void GfxContext_Vulkan::DestroyCommandPool_VK(VkCommandPool pool) const { vkDest
 
 void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo &alloc_info, VkCommandBuffer *command_buffers) const {
     auto *cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([alloc_info, command_buffers, this] { vkAllocateCommandBuffers(device_, &alloc_info, command_buffers); });
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([alloc_info, command_buffers, this] { vkAllocateCommandBuffers(device_, &alloc_info, command_buffers); });
+
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render).Wait();
     } else {
-        const VkResult result = vkAllocateCommandBuffers(device_, &alloc_info, command_buffers);
-        VerifyVulkanResult(result);
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true).Wait();
     }
 }
 
@@ -284,12 +287,11 @@ static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitP
 
 ExecFuture<> GfxContext_Vulkan::Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) {
     auto *cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
     if (cfg->GetEnableMultithreadRender()) {
-        auto task = Just() | Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
         return ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {
-        InternalSubmit(buffer, parameter);
-        return MakeExecFuture();
+        return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 

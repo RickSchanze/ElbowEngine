@@ -9,6 +9,7 @@
 #include "Platform/RHI/ImageView.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
+#include "Resource/Assets/Material/Material.hpp"
 
 using namespace rhi;
 
@@ -62,4 +63,10 @@ void RenderTexture::Resize(UInt32 width, UInt32 height) {
     native_handle_ = GetGfxContextRef().CreateImage(desc_);
     const ImageViewDesc view_desc(native_handle_.get());
     image_view_ = GetGfxContextRef().CreateImageView(view_desc);
+}
+
+bool RenderTexture::BindToMaterial(const String &name, Material *mat) const {
+    if (mat == nullptr)
+        return false;
+    return mat->SetParamNativeImageView(name, GetImageView());
 }

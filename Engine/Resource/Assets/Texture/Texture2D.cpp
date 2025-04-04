@@ -21,6 +21,10 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION // 必须定义此宏以启用函数实现
 #include "stb_image_write.h"
+#undef min
+#undef max
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
 
 using namespace rhi;
 
@@ -55,7 +59,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
     ProfileScope _(__func__);
     if (!meta.dynamic) {
         StringView path = meta.path;
-        if (!path.EndsWith(".png")) {
+        if (!path.EndsWith(".png") && !path.EndsWith(".exr")) {
             Log(Error) << String::Format("加载失败: Texture2D必须以.png结尾: {}", *path);
             return;
         }
@@ -64,20 +68,42 @@ void Texture2D::Load(const Texture2DMeta &meta) {
             return;
         }
         Int32 width = 0, height = 0, channels = 0;
-        stbi_uc *pixels = stbi_load(*path, &width, &height, &channels, STBI_rgb_alpha);
-        if (!pixels) {
-            Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
-            stbi_image_free(pixels);
+        UInt32 byte_count = 0;
+        UInt8* pixels = nullptr;
+        if (path.EndsWith(".png")) {
+            pixels = stbi_load(*path, &width, &height, &channels, STBI_rgb_alpha);
+            if (!pixels) {
+                Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
+                stbi_image_free(pixels);
+                return;
+            }
+            byte_count = width * height * 4;
+        } else if (path.EndsWith(".exr")) {
+            if (meta.format != Format::R32G32B32A32_Float) {
+                VLOG_WARN("HDR图像资产却没有使用R32G32B32A32_Float加载");
+            }
+            const char* err = nullptr;
+            Float* out;
+            Int32 ret = LoadEXR(&out, &width, &height, *path, &err);
+            if (ret != TINYEXR_SUCCESS) {
+                VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败, code=", ret);
+                FreeEXRErrorMessage(err);
+                return;
+            }
+            pixels = reinterpret_cast<UInt8*>(out);
+            channels = 4;
+            byte_count = width * height * 4 * sizeof(Float);
+        } else {
+            VLOG_ERROR("未知图像格式: ", *path);
             return;
         }
-        const Format format = meta.format;
-        const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, format, ImageDimension::D2};
+        const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, meta.format, ImageDimension::D2};
         String debug_name = String::Format("Texture2D_{}", *path);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *path);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
-        GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), width * height * channels);
+        GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), byte_count);
         stbi_image_free(pixels);
         asset_path_ = meta.path;
         SetSpriteRangeString(meta.sprites_string);

@@ -6,6 +6,9 @@
  */
 
 #include "String.hpp"
+
+#include <unordered_set>
+
 #include "Core/Core.hpp"
 #include "Core/Logger/Logger.hpp"
 #include "utf8cpp/utf8.h"
@@ -107,10 +110,16 @@ bool StringView::operator==(const StringView &o) const {
 bool StringView::operator==(const char *str) const { return ToStdStringView() == ::std::string_view(str); }
 
 bool StringView::ContainsAny(const StringView &o) const {
-    for (int i = 0; i < ByteCount(); i++) {
-        for (int j = 0; j < o.ByteCount(); j++)
-            if (str_[i] == o[j])
-                return true;
+    if (IsEmpty() || o.IsEmpty()) return false;
+
+    // 使用哈希表存储a的字符集合
+    std::unordered_set<char> charSet(begin(), end());
+
+    // 检查b中的每个字符
+    for (char ch : o) {
+        if (charSet.contains(ch)) {
+            return true;
+        }
     }
     return false;
 }

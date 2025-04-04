@@ -106,7 +106,7 @@ namespace rhi {
         virtual Format GetDefaultDepthStencilFormat() const = 0;
 
         /**
-         * 获取默认Color Format(也就是交换链图像格式)
+         * 获取默认Color Format(不一定是交换链图像格式, HDR时不一样)
          * @return
          */
         virtual Format GetDefaultColorFormat() const = 0;

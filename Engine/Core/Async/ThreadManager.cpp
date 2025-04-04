@@ -5,8 +5,8 @@
 #include "ThreadManager.hpp"
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Config/CoreConfig.hpp"
-#include "Core/Misc/SystemInfo.hpp"
 #include "Core/Memory/New.hpp"
+#include "Core/Misc/SystemInfo.hpp"
 
 void ThreadManager::Startup() {
     main_thread_ = GetThisThreadId();
@@ -35,7 +35,7 @@ void ThreadManager::Shutdown() {
     main_thread_ = ThreadId{};
 }
 
-void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread) {
+void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread, bool immediate_exec) {
     auto &self = GetByRef();
     if (named_thread == NamedThread::Count) {
         for (const auto &anonymous_thread: self.anonymous_threads_) {
@@ -45,6 +45,12 @@ void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThrea
             }
         }
     } else {
+        if (immediate_exec) {
+            if (IsMainThread() && named_thread == NamedThread::Game) {
+                runnable->Run();
+                return;
+            }
+        }
         // TODO: Task steeling
         auto &thread = self.named_threads_[static_cast<Int32>(named_thread)];
         thread->AddRunnable(runnable);

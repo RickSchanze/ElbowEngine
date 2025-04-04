@@ -9,6 +9,7 @@
 #include "Platform/RHI/Image.hpp"
 
 
+class Material;
 namespace rhi {
     class ImageView;
 }
@@ -36,7 +37,7 @@ public:
      */
     bool IsValid() const { return native_handle_ != nullptr; }
 
-    SharedPtr<rhi::Image> GetNativeHandle() const { return native_handle_; }
+    rhi::Image* GetImage() const { return native_handle_.get(); }
 
     UInt32 GetWidth() const { return desc_.width; }
     UInt32 GetHeight() const { return desc_.height; }
@@ -52,6 +53,8 @@ public:
     void SetWidth(UInt32 width);
     void SetHeight(UInt32 height);
     void Resize(UInt32 width, UInt32 height);
+
+    bool BindToMaterial(const String& name, Material* mat) const;
 
 private:
     SharedPtr<rhi::Image>     native_handle_ = nullptr;

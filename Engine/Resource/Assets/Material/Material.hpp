@@ -10,71 +10,85 @@
 #include "Resource/Assets/Asset.hpp"
 
 
+namespace rhi {
+    class Sampler;
+}
+namespace rhi {
+    class ImageView;
+}
+class RenderTexture;
 class Shader;
 class SharedMaterial;
 namespace rhi {
     class Buffer;
     class DescriptorSet;
-}
+} // namespace rhi
 class Texture2D;
 
 class REFLECTED() Material : public Asset {
-  REFLECTED_CLASS(Material)
+    REFLECTED_CLASS(Material)
 
 public:
-  void PerformLoad() override;
+    void PerformLoad() override;
 
-  void PerformUnload() override { Clean(); }
+    void PerformUnload() override { Clean(); }
 
-  [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Material; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Material; }
 
-  void SetFloat3(const String &name, const Vector3f &value) const {
-    if (!shared_material_)
-      return;
-    const UInt64 name_hash = name.GetHashCode();
-    SetFloat3(name_hash, value);
-  }
+    void SetFloat3(const String &name, const Vector3f &value) const {
+        if (!shared_material_)
+            return;
+        const UInt64 name_hash = name.GetHashCode();
+        SetFloat3(name_hash, value);
+    }
 
-  void SetFloat3(UInt64 name_hash, const Vector3f &value) const;
+    void SetFloat3(UInt64 name_hash, const Vector3f &value) const;
 
-  void SetFloat4(const String &name, const Vector4f &value) const;
+    void SetFloat4(const String &name, const Vector4f &value) const;
 
-  void SetFloat4(UInt64 name_hash, const Vector4f &value) const;
+    void SetFloat4(UInt64 name_hash, const Vector4f &value) const;
 
-  bool SetTexture2D(UInt64 name_hash, const Texture2D *texture) const;
+    bool SetTexture2D(UInt64 name_hash, const Texture2D *texture) const;
 
-  bool SetTexture2D(const String &name, const Texture2D *texture);
+    bool SetTexture2D(const String &name, const Texture2D *texture);
 
-  void SetShader(const Shader *shader);
+    bool SetFloat(StringView name, Float value) const;
 
-  [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
-  [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;
+    bool SetParamNativeImageView(const String& name, rhi::ImageView* image_view, rhi::Sampler* sampler = nullptr) const;
 
-  [[nodiscard]] rhi::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
+    void SetShader(const Shader *shader);
 
-  void Build();
+    [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
+    [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;
 
-  void Clean();
+    [[nodiscard]] rhi::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
 
-  [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
+    void Build();
+
+    void Clean();
+
+    [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
 
 protected:
-  REFLECTED()
-  ObjectPtr<Shader> shader_;
+    REFLECTED()
+    ObjectPtr<Shader> shader_;
 
-  REFLECTED()
-  Map<String, Vector3f> float3_params_;
+    REFLECTED()
+    Map<String, Vector3f> float3_params_;
 
-  REFLECTED()
-  Map<String, ObjectPtr<Texture2D>> texture_params_;
+    REFLECTED()
+    Map<String, Float> float_params_;
 
-  // 所有UniformBuffer都使用这一个Buffer
-  // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
-  SharedPtr<rhi::Buffer> buffer_;
+    REFLECTED()
+    Map<String, ObjectPtr<Texture2D>> texture_params_;
 
-  UInt8 *mapped_buffer_memory_ = nullptr;
+    // 所有UniformBuffer都使用这一个Buffer
+    // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
+    SharedPtr<rhi::Buffer> buffer_;
 
-  SharedPtr<rhi::DescriptorSet> descriptor_set_;
+    UInt8 *mapped_buffer_memory_ = nullptr;
 
-  SharedPtr<SharedMaterial> shared_material_;
+    SharedPtr<rhi::DescriptorSet> descriptor_set_;
+
+    SharedPtr<SharedMaterial> shared_material_;
 };

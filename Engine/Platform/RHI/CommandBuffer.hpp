@@ -38,6 +38,8 @@ namespace rhi {
         /// 利用ImagePipeline更改图形布局(2025.4.3理解)
         void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, Image *target, const ImageSubresourceRange &subresource_range,
                                   AccessFlags src_access, AccessFlags dst_access, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
+        void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, const SharedPtr<Image>& target, const ImageSubresourceRange &subresource_range,
+                                  AccessFlags src_access, AccessFlags dst_access, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
 
         /// 插入一段Commands Debug标签
         void BeginDebugLabel(StringView label);

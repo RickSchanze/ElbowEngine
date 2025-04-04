@@ -30,6 +30,9 @@ target_link_libraries(${PROJECT_NAME}  PRIVATE Freetype::Freetype) # since CMake
 find_package(utf8cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE utf8::cpp utf8cpp::utf8cpp)
 
+find_package(tinyexr CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::tinyexr::tinyexr)
+
 # 查找 shader-slang 的头文件和链接库
 find_path(SLANG_INCLUDE_DIR slang.h) # 查找 shader-slang 的头文件
 find_library(SLANG_LIBRARY NAMES slang) # 查找 shader-slang 的库文件

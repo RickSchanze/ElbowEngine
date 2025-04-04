@@ -14,6 +14,12 @@ void CommandBuffer::ImagePipelineBarrier(const ImageLayout old_layout, const Ima
     Enqueue<Cmd_ImagePipelineBarrier>(old_layout, new_layout, target, subresource_range, src_access, dst_access, src_stage, dst_stage);
 }
 
+void CommandBuffer::ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, const SharedPtr<Image> &target,
+                                         const ImageSubresourceRange &subresource_range, AccessFlags src_access, AccessFlags dst_access,
+                                         PipelineStageFlags src_stage, PipelineStageFlags dst_stage) {
+    Enqueue<Cmd_ImagePipelineBarrier>(old_layout, new_layout, target.get(), subresource_range, src_access, dst_access, src_stage, dst_stage);
+}
+
 void CommandBuffer::BeginDebugLabel(const StringView label) {
 #ifdef ELBOW_DEBUG
     Enqueue<Cmd_BeginCommandLabel>(label);
@@ -64,6 +70,4 @@ void CommandBuffer::CopyImageToBuffer(Image *src, Buffer *dst, const ImageSubres
     Enqueue<Cmd_CopyImageToBuffer>(src, dst, subresource_range, offset, size);
 }
 
-void CommandBuffer::CopyBuffer(Buffer *src, Buffer *dst, UInt64 size) {
-    Enqueue<Cmd_CopyBuffer>(src, dst, size);
-}
+void CommandBuffer::CopyBuffer(Buffer *src, Buffer *dst, UInt64 size) { Enqueue<Cmd_CopyBuffer>(src, dst, size); }
