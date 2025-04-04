@@ -12,30 +12,33 @@ namespace rhi {
     class Buffer;
 }
 struct MeshStorage {
-  SharedPtr<rhi::Buffer> vertex_buffer;
-  SharedPtr<rhi::Buffer> index_buffer;
-  size_t vertex_count;
-  size_t index_count;
+    SharedPtr<rhi::Buffer> vertex_buffer;
+    SharedPtr<rhi::Buffer> index_buffer;
+    UInt32 vertex_count;
+    UInt32 index_count;
 
-  [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
+    [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
 REFLECTED()
 class Mesh : public Asset {
-  REFLECTED_CLASS(Mesh)
+    REFLECTED_CLASS(Mesh)
 public:
-  [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
+    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 
-  void PerformLoad() override;
+    void PerformLoad() override;
 
-  [[nodiscard]] bool IsLoaded() const override { return loaded_; };
+    [[nodiscard]] bool IsLoaded() const override { return loaded_; };
 
-  MeshStorage &_GetStorage() const { return *storage_; }
+    MeshStorage &InternalGetStorage() const { return *storage_; }
+    UInt32 GetIndexCount() const;
+    SharedPtr<rhi::Buffer> GetVertexBuffer() const;
+    SharedPtr<rhi::Buffer> GetIndexBuffer() const;
 
 private:
-  UniquePtr<MeshStorage> storage_;
+    UniquePtr<MeshStorage> storage_;
 
-  Atomic<bool> loaded_ = false;
+    Atomic<bool> loaded_ = false;
 };
 
 IMPL_REFLECTED_INPLACE(Mesh) { return Type::Create<Mesh>("Mesh") | refl_helper::AddParents<Asset>(); }

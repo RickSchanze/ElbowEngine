@@ -57,7 +57,6 @@ Float CameraComponent::GetFOV() const { return camera_shader_data_.data2[0, 0]; 
 void CameraComponent::SetFOV(const float fov) {
     camera_shader_data_.data2[0, 0] = fov;
     ReCalcProjAndOrtho(nullptr, 0, 0);
-    SetDirty();
 }
 
 Float CameraComponent::GetNearPlane() const { return camera_shader_data_.data2[0, 1]; }
@@ -65,7 +64,6 @@ Float CameraComponent::GetNearPlane() const { return camera_shader_data_.data2[0
 void CameraComponent::SetNearPlane(const Float near_plane) {
     camera_shader_data_.data2[0, 1] = near_plane;
     ReCalcProjAndOrtho(nullptr, 0, 0);
-    SetDirty();
 }
 
 Float CameraComponent::GetFarPlane() const { return camera_shader_data_.data2[0, 2]; }
@@ -73,7 +71,6 @@ Float CameraComponent::GetFarPlane() const { return camera_shader_data_.data2[0,
 void CameraComponent::SetFarPlane(const Float far_plane) {
     camera_shader_data_.data2[0, 2] = far_plane;
     ReCalcProjAndOrtho(nullptr, 0, 0);
-    SetDirty();
 }
 
 Float CameraComponent::GetAspectRatio() const { return camera_shader_data_.data2[0, 3]; }
@@ -81,14 +78,12 @@ Float CameraComponent::GetAspectRatio() const { return camera_shader_data_.data2
 void CameraComponent::SetAspectRatio(const Float aspect) {
     camera_shader_data_.data2[0, 3] = aspect;
     ReCalcProjAndOrtho(nullptr, 0, 0);
-    SetDirty();
 }
 
 bool CameraComponent::IsActive() const { return active_; }
 
 void CameraComponent::SetActive(const bool active) {
     active_ = active;
-    SetDirty();
 }
 
 void CameraComponent::ReCalcProjAndOrtho(PlatformWindow *window, Int32 w, Int32 h) {

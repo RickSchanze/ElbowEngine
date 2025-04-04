@@ -104,3 +104,11 @@ void Mesh::PerformLoad() {
         name_ = Path::GetFileNameWithoutExt(file_path);
     }
 }
+UInt32 Mesh::GetIndexCount() const {
+    if (storage_) {
+        return storage_->index_count;
+    }
+    return 0;
+}
+SharedPtr<rhi::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
+SharedPtr<rhi::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }

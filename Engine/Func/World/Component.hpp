@@ -8,22 +8,16 @@
 
 class Actor;
 class Component : public Object {
-  REFLECTED_CLASS(Component)
+    REFLECTED_CLASS(Component)
 public:
-  Component();
-  Component(const Component &) = delete;
+    Component();
+    Component(const Component &) = delete;
 
-  void SetOwner(const Actor *owner);
+    void SetOwner(const Actor *owner);
 
-  Actor *GetOwner() const { return owner_; }
-
-  void SetDirty();
-
-  [[nodiscard]] bool IsDirty() const { return dirty_; }
+    Actor *GetOwner() const { return owner_; }
 
 protected:
-  REFLECTED()
-  ObjectPtr<Actor> owner_ = nullptr;
-
-  bool dirty_ = false;
+    REFLECTED()
+    ObjectPtr<Actor> owner_ = nullptr;
 };

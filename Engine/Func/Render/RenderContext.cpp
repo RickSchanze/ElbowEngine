@@ -93,6 +93,21 @@ void RenderContext::UpdateCameraDescriptorSet(DescriptorSet &desc_set) {
     desc_set.Update(0, info);
 }
 
+void RenderContext::AddMeshToDraw(StaticMeshComponent *comp) {
+    auto &self = GetByRef();
+    self.static_meshes_.AddUnique(comp);
+}
+
+void RenderContext::RemoveMesh(StaticMeshComponent *comp) {
+    auto &self = GetByRef();
+    self.static_meshes_.Remove(comp);
+}
+
+const Array<StaticMeshComponent *> &RenderContext::GetDrawStaticMesh() {
+    auto& self = GetByRef();
+    return self.static_meshes_;
+}
+
 bool RenderContext::ShouldRender() const {
     const bool render_pipeline_valid = render_pipeline_.IsSet();
     const bool render_evt_registered = TickEvents::Evt_TickRender.HasBound();

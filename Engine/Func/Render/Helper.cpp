@@ -16,7 +16,7 @@ using namespace rhi;
 void helper::BindAndDrawMesh(CommandBuffer &cmd, const Mesh *mesh) {
     if (mesh == nullptr)
         return;
-    auto &storage = mesh->_GetStorage();
+    auto &storage = mesh->InternalGetStorage();
     cmd.BindVertexBuffer(storage.vertex_buffer);
     cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), 0, 1);
     cmd.BindIndexBuffer(storage.index_buffer);

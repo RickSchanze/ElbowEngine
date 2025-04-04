@@ -6,8 +6,9 @@
 #include "Core/Manager/MManager.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Misc/UniquePtr.hpp"
+#include "Platform/RHI/SyncPrimitives.hpp"
 
-
+class StaticMeshComponent;
 class PlatformWindow;
 class RenderPipeline;
 namespace rhi {
@@ -15,8 +16,6 @@ namespace rhi {
     class DescriptorSetPool;
     class CommandBuffer;
     class CommandPool;
-    struct Fence;
-    struct Semaphore;
     class DescriptorSet;
 } // namespace rhi
 
@@ -38,6 +37,9 @@ public:
 
     static SharedPtr<rhi::DescriptorSet> AllocateDescriptorSet(const SharedPtr<rhi::DescriptorSetLayout> &layout);
     static void UpdateCameraDescriptorSet(rhi::DescriptorSet &desc_set);
+    static void AddMeshToDraw(StaticMeshComponent *comp);
+    static void RemoveMesh(StaticMeshComponent *comp);
+    static const Array<StaticMeshComponent *> &GetDrawStaticMesh();
 
 private:
     bool ShouldRender() const;
@@ -66,4 +68,6 @@ private:
 
     uint32_t frames_in_flight_{2};
     uint32_t current_frame_{0};
+
+    Array<StaticMeshComponent *> static_meshes_{};
 };

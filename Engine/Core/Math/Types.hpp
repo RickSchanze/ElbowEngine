@@ -141,6 +141,7 @@ struct Quaternion {
 
     Quaternion() = default;
     Quaternion(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+    Quaternion(const glm::quat &q) : x(q.x), y(q.y), z(q.z), w(q.w) {}
 
     Vector3<T> ToEulerAngle() const {
         glm::qua<T> q(x, y, z, w);
@@ -149,6 +150,15 @@ struct Quaternion {
     }
 
     Quaternion FromMatrix4x4(const Matrix4x4<T> &mat);
+
+    operator glm::quat() {
+        glm::quat q;
+        q.w = w;
+        q.x = x;
+        q.y = y;
+        q.z = z;
+        return q;
+    }
 };
 
 struct Color {
@@ -627,4 +637,9 @@ Vector3<T> operator*(const Matrix3x3<T> &mat, const Vector3<T> &vec) {
     return Vector3<T>(mat[0, 0] * vec.x + mat[0, 1] * vec.y + mat[0, 2] * vec.z, //
                       mat[1, 0] * vec.x + mat[1, 1] * vec.y + mat[1, 2] * vec.z, //
                       mat[2, 0] * vec.x + mat[2, 1] * vec.y + mat[2, 2] * vec.z);
+}
+
+template<typename T>
+Vector3<T> operator*(const Vector3<T> &left, const Vector3<T> &right) {
+    return Vector3<T>(left.x * right.x, left.y * right.y, left.z * right.z);
 }

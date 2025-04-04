@@ -16,5 +16,3 @@ Component::Component() {
 }
 
 void Component::SetOwner(const Actor *owner) { owner_ = owner; }
-
-void Component::SetDirty() { dirty_ = true; }

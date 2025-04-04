@@ -4,6 +4,9 @@
 
 #include "Actor.hpp"
 
+#include "Component.hpp"
+#include "SceneComponent.hpp"
+
 IMPL_REFLECTED(Actor) {
     return Type::Create<Actor>("Actor") | refl_helper::AddParents<Object>() | refl_helper::AddField("transform", &Actor::transform_);
 }
@@ -11,3 +14,15 @@ IMPL_REFLECTED(Actor) {
 void Actor::SetTransform(const Transform &transform) { transform_ = transform; }
 
 Vector3f Actor::GetWorldLocation() const { return GetLocation(); }
+
+void Actor::PreTick(MilliSeconds delta_time) { UpdateTransform(); }
+
+void Actor::UpdateTransform() {
+    for (Component *comp: components_) {
+        if (comp->GetType()->IsDerivedFrom(SceneComponent::GetStaticType())) {
+            SceneComponent *scene_comp = static_cast<SceneComponent *>(comp);
+            if (scene_comp->IsTransformDirty())
+                scene_comp->UpdateTransform(transform_);
+        }
+    }
+}

@@ -10,7 +10,7 @@
 
 
 class CameraComponent;
-class ACameraHolder : public Actor, public ITick {
+class ACameraHolder : public Actor {
 public:
     ACameraHolder();
 

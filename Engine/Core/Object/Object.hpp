@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "Core/Async/Exec/ExecFuture.hpp"
+#include "Core/Async/ThreadManager.hpp"
 #include "Core/Core.hpp"
 
 
@@ -63,6 +64,8 @@ public:
     [[nodiscard]] StringView GetDisplayName() const { return display_name_; }
 
     void SetObjectHandle(const Int32 handle) { handle_ = handle; }
+
+    virtual void AwakeFromLoad() {}
 
 protected:
     Int32 handle_ = 0;
@@ -139,7 +142,9 @@ T *Cast(Object *obj) {
 template<typename T, typename... Args>
     requires std::is_base_of_v<Object, T>
 T *NewObject(Args &&...args) {
+    Assert(IsMainThread(), "对象只能在主线程创建!");
     T *obj = New<T>(Forward<Args>(args)...);
     obj->OnCreated();
+    obj->AwakeFromLoad();
     return obj;
 }
