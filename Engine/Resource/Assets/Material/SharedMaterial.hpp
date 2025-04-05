@@ -20,6 +20,7 @@ namespace rhi {
 } // namespace rhi
 inline SharedPtr<rhi::DescriptorSet> (*AllocateDescriptorSetFunc)(const SharedPtr<rhi::DescriptorSetLayout> &layout);
 inline void (*UpdateCameraDescriptorSetFunc)(rhi::DescriptorSet &descriptor_set);
+inline void (*UpdateLightsDescriptorSetFunc)(rhi::DescriptorSet &descriptor_set);
 
 struct MaterialParamBlock {
     UInt32 offset;
@@ -43,6 +44,7 @@ public:
 
     bool IsValid() const { return pipeline_.IsSet(); }
     bool HasCamera() const { return has_camera_; }
+    bool HasLights() const { return has_lights_; }
 
     UInt64 GetUniformBufferSize() const { return uniform_buffer_size_; }
     const Map<UInt64, MaterialParamBlock> &GetStructOnlyOffsets() const { return struct_only_offsets_; }
@@ -69,6 +71,7 @@ private:
     Array<SharedPtr<rhi::DescriptorSetLayout>> set_layouts_;
 
     bool has_camera_;
+    bool has_lights_;
     UInt64 uniform_buffer_size_ = 0;
 };
 

@@ -157,9 +157,11 @@ SharedMaterial::SharedMaterial(Shader *shader) {
     // 1. 解析Shader参数 创建UniformBuffer和Texture
     Array<ShaderParam> params;
     bool has_camera = false;
-    shader->GetParams(params, has_camera);
+    bool has_light = false;
+    shader->GetParams(params, has_camera, has_light);
     // 2. 看情况更新永远binding = 0的摄像机数据的UniformBuffer
     has_camera_ = has_camera;
+    has_lights_ = has_light;
     // 3. 根据参数计算总UniformBuffer的大小, 以及每个binding UniformBuffer的偏移和大小
     uniform_buffer_size_ = RearrangeShaderParams(params, uniform_offsets_, texture_bindings_, sampler_bindings_, struct_only_offsets_);
 }

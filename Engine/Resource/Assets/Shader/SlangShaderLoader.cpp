@@ -132,12 +132,14 @@ void SlangShaderLoader::Load(StringView path, Shader &shader) {
     target_desc[1].format = SLANG_GLSL;
     target_desc[1].profile = global_session_->findProfile("glsl_460");
 
-    CompilerOptionEntry option_entry;
+    CompilerOptionEntry option_entry[2];
     if (rhi::GetGfxContextRef().GetAPI() == rhi::GraphicsAPI::Vulkan) {
-        option_entry.name = CompilerOptionName::EmitSpirvViaGLSL;
-        option_entry.value.intValue0 = 1;
-        target_desc[0].compilerOptionEntryCount = 1;
-        target_desc[0].compilerOptionEntries = &option_entry;
+        option_entry[0].name = CompilerOptionName::EmitSpirvDirectly;
+        option_entry[0].value.intValue0 = 1;
+        option_entry[1].name = CompilerOptionName::DebugInformation;
+        option_entry[1].value.intValue0 = SLANG_DEBUG_INFO_LEVEL_STANDARD;
+        target_desc[0].compilerOptionEntryCount = 2;
+        target_desc[0].compilerOptionEntries = option_entry;
     }
 
     session_desc.targets = target_desc;

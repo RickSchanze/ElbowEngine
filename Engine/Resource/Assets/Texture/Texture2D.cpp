@@ -45,6 +45,56 @@ static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *chan
 #endif
 }
 
+static bool LoadTextureAccordingFormat(const StringView path, Format format, UInt8 *&out, Int32 &width, Int32 &height, Int32 &channel,
+                                       UInt64 &byte_count) {
+    if (path.EndsWith(".exr")) {
+        if (format == Format::R32G32B32A32_Float) {
+            const char *err = nullptr;
+            Float *out_temp = nullptr;
+            Int32 ret = LoadEXR(&out_temp, &width, &height, *path, &err);
+            if (ret != TINYEXR_SUCCESS) {
+                VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败, code=", ret);
+                FreeEXRErrorMessage(err);
+                return false;
+            }
+            out = reinterpret_cast<UInt8 *>(out_temp);
+            channel = 4;
+            byte_count = width * height * 4 * sizeof(Float);
+            return true;
+
+        } else {
+            return false;
+        }
+    }
+    if (path.EndsWith(".png")) {
+        if (format == Format::R8_UNorm) {
+            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
+            if (!pixels) {
+                Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
+                stbi_image_free(pixels);
+                out = nullptr;
+                return false;
+            }
+            byte_count = width * height;
+            out = reinterpret_cast<UInt8 *>(pixels);
+            return true;
+        } else if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB) {
+            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb_alpha);
+            if (!pixels) {
+                Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
+                stbi_image_free(pixels);
+                out = nullptr;
+                return false;
+            }
+            byte_count = width * height * 4;
+            out = reinterpret_cast<UInt8 *>(pixels);
+            return true;
+        }
+    }
+    VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败");
+    return false;
+}
+
 void Texture2D::PerformLoad() {
     ProfileScope _(__func__);
     auto meta_op = AssetDataBase::QueryMeta<Texture2DMeta>(GetHandle());
@@ -68,44 +118,21 @@ void Texture2D::Load(const Texture2DMeta &meta) {
             return;
         }
         Int32 width = 0, height = 0, channels = 0;
-        UInt32 byte_count = 0;
-        UInt8* pixels = nullptr;
-        if (path.EndsWith(".png")) {
-            pixels = stbi_load(*path, &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) {
-                Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
-                stbi_image_free(pixels);
-                return;
-            }
-            byte_count = width * height * 4;
-        } else if (path.EndsWith(".exr")) {
-            if (meta.format != Format::R32G32B32A32_Float) {
-                VLOG_WARN("HDR图像资产却没有使用R32G32B32A32_Float加载");
-            }
-            const char* err = nullptr;
-            Float* out;
-            Int32 ret = LoadEXR(&out, &width, &height, *path, &err);
-            if (ret != TINYEXR_SUCCESS) {
-                VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败, code=", ret);
-                FreeEXRErrorMessage(err);
-                return;
-            }
-            pixels = reinterpret_cast<UInt8*>(out);
-            channels = 4;
-            byte_count = width * height * 4 * sizeof(Float);
-        } else {
-            VLOG_ERROR("未知图像格式: ", *path);
+        UInt64 byte_count = 0;
+        UInt8 *pixels = nullptr;
+        if (!LoadTextureAccordingFormat(path, meta.format, pixels, width, height, channels, byte_count)) {
             return;
         }
-        const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, meta.format, ImageDimension::D2};
+        const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, meta.format,
+                             ImageDimension::D2};
         String debug_name = String::Format("Texture2D_{}", *path);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *path);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), byte_count);
-        stbi_image_free(pixels);
-        asset_path_ = meta.path;
+        free(pixels);
+        meta_ = meta;
         SetSpriteRangeString(meta.sprites_string);
     } else {
         if (meta.width == 0 || meta.height == 0) {
@@ -120,7 +147,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *name_);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
-        asset_path_ = meta.path;
+        meta_ = meta;
         SetSpriteRangeString(meta.sprites_string);
     }
 }
@@ -170,6 +197,16 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
         }
     }
     return {};
+}
+
+
+void Texture2D::SetTextureUsage(TextureUsage usage) {
+    if (meta_.usage != usage) {
+        meta_.usage = usage;
+        meta_.format = SelectFormat();
+        SetNeedSave();
+        Load(meta_);
+    }
 }
 
 bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect) {
@@ -316,4 +353,32 @@ void Texture2D::SetSpriteRangeString(const StringView str) {
         }
         sprite_ranges_.Add(range);
     }
+}
+
+void Texture2D::Save() {
+    Super::Save();
+    if (auto op_meta = AssetDataBase::QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *GetAssetPath()))) {
+        AssetDataBase::UpdateMeta(meta_);
+    } else {
+        VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " path = ", *GetAssetPath());
+    }
+}
+
+Format Texture2D::SelectFormat() const {
+    if (GetTextureUsage() == TextureUsage::Color) {
+        if (GetAssetPath().EndsWith(".exr")) {
+            return Format::R32G32B32A32_Float;
+        }
+        return Format::R8G8B8A8_UNorm;
+    }
+    if (GetTextureUsage() == TextureUsage::Roughness) {
+        return Format::R8_UNorm;
+    }
+    if (GetTextureUsage() == TextureUsage::Metallic) {
+        return Format::R8_UNorm;
+    }
+    if (GetTextureUsage() == TextureUsage::AO) {
+        return Format::R8_UNorm;
+    }
+    return Format::Count;
 }

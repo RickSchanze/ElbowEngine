@@ -5,9 +5,11 @@
 #include "Core/Core.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Misc/UniquePtr.hpp"
+#include "MeshMeta.hpp"
 #include "Resource/Assets/Asset.hpp"
 
 
+struct MeshMeta;
 namespace rhi {
     class Buffer;
 }
@@ -34,10 +36,17 @@ public:
     UInt32 GetIndexCount() const;
     SharedPtr<rhi::Buffer> GetVertexBuffer() const;
     SharedPtr<rhi::Buffer> GetIndexBuffer() const;
+    StringView GetAssetPath() const { return meta_.path; }
+
+#if WITH_EDITOR
+    void Save() override;
+    void SetImportScale(float scale);
+    Float GetImportScale() const { return meta_.import_scale; }
+#endif
 
 private:
     UniquePtr<MeshStorage> storage_;
-
+    MeshMeta meta_{};
     Atomic<bool> loaded_ = false;
 };
 

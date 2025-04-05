@@ -23,6 +23,7 @@ public:
     SQLTable(const SQLTable &other) = default;
 
     void Insert(const Any &data);
+    void Update(const Any& data);
 
     /**
      * 查询特定条件的数据

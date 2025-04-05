@@ -71,5 +71,9 @@ Optional<double> Any::AsDouble() const {
         return *static_cast<UInt64 *>(ptr_->GetData());
     if (GetType() == TypeOf<bool>())
         return *static_cast<bool *>(ptr_->GetData());
+    if (GetType() == TypeOf<Float>())
+        return *static_cast<Float *>(ptr_->GetData());
+    if (GetType() == TypeOf<Double>())
+        return *static_cast<Double *>(ptr_->GetData());
     return {};
 }

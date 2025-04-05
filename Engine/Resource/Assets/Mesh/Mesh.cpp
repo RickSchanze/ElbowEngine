@@ -5,11 +5,12 @@
 #include "Mesh.hpp"
 
 #include "Core/FileSystem/Path.hpp"
+#include "Core/Profile.hpp"
 #include "MeshMeta.hpp"
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/GfxContext.hpp"
-#include "Platform/RHI/VertexLayout.hpp"
+#include "Platform/RHI/Misc.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
@@ -17,7 +18,8 @@
 
 using namespace rhi;
 
-static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out) {
+static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out, Float scale) {
+    ProfileScope _(__func__);
     Assimp::Importer importer;
     uint32_t import_flag = 0;
     if (meta.GetTriangulate()) {
@@ -54,7 +56,7 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
         const aiVector3D &nor = mesh->mNormals[i];
         const aiVector3D &tex = mesh->mTextureCoords[0][i];
         vertices.Add(Vertex1{
-                {pos.x, pos.y, pos.z},
+                Vector3f{pos.x, pos.y, pos.z} * scale,
                 {nor.x, nor.y, nor.z},
                 {tex.x, tex.y},
         });
@@ -88,22 +90,21 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
 }
 
 void Mesh::PerformLoad() {
+    ProfileScope _(__func__);
     auto op_meta = AssetDataBase::QueryMeta<MeshMeta>(GetHandle());
     if (!op_meta) {
         Log(Error) << String::Format("加载失败, handle = {}", GetHandle());
         return;
     }
-    auto &meta = *op_meta;
-    auto file_path = meta.GetPath();
+    meta_ = *op_meta;
+    auto file_path = meta_.GetPath();
     if (!Path::IsExist(file_path)) {
         Log(Error) << String::Format("加载失败, 文件不存在, path = {}", *file_path);
         return;
     }
-    loaded_ = LoadMesh(file_path, meta, storage_);
-    if (loaded_) {
-        name_ = Path::GetFileNameWithoutExt(file_path);
-    }
+    loaded_ = LoadMesh(file_path, meta_, storage_, meta_.import_scale);
 }
+
 UInt32 Mesh::GetIndexCount() const {
     if (storage_) {
         return storage_->index_count;
@@ -112,3 +113,20 @@ UInt32 Mesh::GetIndexCount() const {
 }
 SharedPtr<rhi::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
 SharedPtr<rhi::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
+
+void Mesh::Save() {
+    ProfileScope _(__func__);
+    Super::Save();
+    if (auto op_meta = AssetDataBase::QueryMeta<MeshMeta>(String::Format("path = '{}'", *GetAssetPath()))) {
+        AssetDataBase::UpdateMeta(meta_);
+    } else {
+        VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " path = ", *GetAssetPath());
+    }
+}
+
+void Mesh::SetImportScale(float scale) {
+    ProfileScope _(__func__);
+    meta_.import_scale = scale;
+    SetNeedSave();
+    loaded_ = LoadMesh(meta_.path, meta_, storage_, meta_.import_scale);
+}

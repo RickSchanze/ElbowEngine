@@ -9,6 +9,7 @@
 #include "Func/Input/Input.hpp"
 #include "Func/Render/Camera/ACameraHolder.hpp"
 #include "Func/Render/Camera/Camera.hpp"
+#include "Func/Render/Light/PointLightComponent.hpp"
 #include "Func/Render/Pipeline/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
@@ -96,7 +97,12 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/PBR/ColorTransformPass.slang")),
                     Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr")),
                     Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png")));
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"))),
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png")),
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png")),
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png") //ZL
+                    );
+
 
             // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
             // Texture2DMeta new_meta;
@@ -130,15 +136,37 @@ int main() {
         PlatformWindow *main_window = PlatformWindowManager::GetMainWindow();
         TickEvents::Evt_TickInput.Bind(main_window, &PlatformWindow::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<PBRRenderPipeline>());
-        NewObject<ACameraHolder>();
+        auto cam_holder = NewObject<ACameraHolder>();
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         auto mesh = NewObject<Actor>()->AddComponent<StaticMeshComponent>();
-        mesh->SetMesh(static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")));
+        auto mesh_res = static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx"));
+        mesh_res->SetImportScale(0.01f);
+        mesh_res->SaveIfNeed();
+        mesh->SetMesh(mesh_res);
         mesh->Rotate({90, 0, 0});
-        mesh->SetLocation({0, -20, 20});
-        Material *m = Material::CreateMaterialFromShader("Assets/Shader/PBR/BasePass.slang");
-        m->SetTexture2D("tex", static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png")));
+        mesh->SetLocation({0, 0, 0});
+        Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
+        auto color = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
+        auto metallic = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png"));
+        metallic->SetTextureUsage(TextureUsage::Metallic);
+        metallic->SaveIfNeed();
+        auto roughness = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
+        roughness->SetTextureUsage(TextureUsage::Roughness);
+        roughness->SaveIfNeed();
+        auto ao = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png"));
+        ao->SetTextureUsage(TextureUsage::AO);
+        ao->SaveIfNeed();
+        m->SetTexture2D("tex", color);
+        m->SetTexture2D("tex_metallic", metallic);
+        m->SetTexture2D("tex_roughness", roughness);
+        m->SetTexture2D("tex_ao", ao);
+        m->SetFloat("float_param.roughness", 1.0f);
+        m->SetFloat("float_param.metallic", 1.0f);
+        m->SetFloat("float_param.ao", 1.0f);
+        auto light = cam_holder->AddComponent<PointLightComponent>();
+        light->SetColor(Color::White());
         mesh->SetMaterial(m);
+        light->SetIntensity(5);
         while (true) {
             ProfileScope _("Tick");
             GetWorldClock().TickAll();

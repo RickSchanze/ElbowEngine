@@ -28,6 +28,8 @@ struct MeshMeta {
     REFLECTED()
     String path;
 
+    Float import_scale = 1.0f;
+
     // 将所有网格多边形面转换为三角形面
     REFLECTED(Label = "三角化", Category = "基础")
     bool triangulate = true;
@@ -58,5 +60,5 @@ IMPL_REFLECTED_INPLACE(MeshMeta) {
            refl_helper::AddField("generate_smooth_normals", &MeshMeta::generate_smooth_normals) |
            refl_helper::AddField("merge_duplicate_vertices", &MeshMeta::merge_duplicate_vertices) |
            refl_helper::AddField("remove_unused_materials", &MeshMeta::remove_unused_materials) |
-           refl_helper::AddField("can_be_removed", &MeshMeta::can_be_removed);
+           refl_helper::AddField("can_be_removed", &MeshMeta::can_be_removed) | refl_helper::AddField("import_scale", &MeshMeta::import_scale);
 }

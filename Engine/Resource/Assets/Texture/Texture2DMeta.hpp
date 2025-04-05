@@ -5,6 +5,16 @@
 #include "Core/Core.hpp"
 #include "Platform/RHI/Enums.hpp"
 
+enum class TextureUsage {
+    Normal, // 法线贴图
+    Roughness, // 粗糙度贴图
+    Metallic, // 金属度贴图
+    AO, // AO贴图
+    Color,
+};
+DECL_ENUM_REFL(TextureUsage);
+REGISTER_ENUM_TYPE(TextureUsage)
+
 struct REFLECTED(SQLTable = "Texture2D") Texture2DMeta {
     REFLECTED_STRUCT(Texture2DMeta)
 
@@ -23,6 +33,9 @@ struct REFLECTED(SQLTable = "Texture2D") Texture2DMeta {
     // 这个Texture2D包含的所有Sprite
     REFLECTED()
     String sprites_string;
+
+    TextureUsage usage = TextureUsage::Color;
+
 
     // 动态创建的Texture2D的参数
     bool dynamic = false;

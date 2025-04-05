@@ -2,6 +2,7 @@
 // Created by Echo on 2025/3/23.
 //
 #pragma once
+#include "Assets/Texture/Texture2DMeta.hpp"
 #include "Core/Async/Exec/ExecFuture.hpp"
 #include "Core/Manager/MManager.hpp"
 #include "Core/Misc/UniquePtr.hpp"
@@ -74,6 +75,9 @@ public:
     template<typename T>
     static void InsertMeta(const T &meta);
 
+    template <typename T>
+    static void UpdateMeta(const T& meta);
+
     /**
      * 创建一个资产并保存
      * @param asset
@@ -121,4 +125,16 @@ void AssetDataBase::InsertMeta(const T &meta) {
         Log(Error) << "没有注册表类型";
     const auto &table = Get()->tables_[meta_type];
     table->Insert(meta);
+}
+
+template<typename T>
+void AssetDataBase::UpdateMeta(const T &meta) {
+    if constexpr (SameAs<T, Texture2DMeta>) {
+        auto &self = GetByRef();
+        const Type *meta_type = TypeOf<T>();
+        if (!self.tables_.Contains(meta_type))
+            Log(Error) << "没有注册表类型";
+        const auto &table = self.tables_[meta_type];
+        table->Update(meta);
+    }
 }

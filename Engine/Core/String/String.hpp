@@ -54,6 +54,7 @@ public:
     StringView TrimQuotes() const;
 
     const char *operator*() const { return str_; }
+    operator std::string_view() const { return ToStdStringView(); }
 
     UInt64 GetHashCode() const { return std::hash<std::string_view>{}(ToStdStringView()); }
 
@@ -91,6 +92,8 @@ public:
      * @return
      */
     UInt64 Count() const;
+
+    bool EndsWith(StringView s) const;
 
     /**
      * 返回字符数 而不是Unicode字符串长度

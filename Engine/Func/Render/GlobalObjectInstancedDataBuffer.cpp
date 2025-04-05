@@ -10,7 +10,7 @@
 #include "Func/World/Transform.hpp"
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/GfxContext.hpp"
-#include "Platform/RHI/VertexLayout.hpp"
+#include "Platform/RHI/Misc.hpp"
 using namespace rhi;
 
 Buffer *GlobalObjectInstancedDataBuffer::GetBuffer() { return GetByRef().buffer_.get(); }

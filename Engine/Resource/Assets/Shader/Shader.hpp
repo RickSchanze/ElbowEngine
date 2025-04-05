@@ -69,32 +69,32 @@ public:
 
     void PerformLoad() override;
 
-    void GetParams(Array<ShaderParam> &out, bool &has_camera);
+    void GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_lights);
 
-    [[nodiscard]] bool IsLoaded() const override;
+    bool IsLoaded() const override;
 
     /**
      * 编译, 获取shader_codes
      */
     void Compile(bool output_glsl);
 
-    [[nodiscard]] bool IsCompute() const;
+    bool IsCompute() const;
 
-    [[nodiscard]] bool IsGraphics() const;
+    bool IsGraphics() const;
 
-    [[nodiscard]] bool IsCompiled() const { return is_compiled_; }
+    bool IsCompiled() const { return is_compiled_; }
 
-    [[nodiscard]] bool IsDepthEnabled() const;
+    bool IsDepthEnabled() const;
 
-    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Shader; }
+    AssetType GetAssetType() const override { return AssetType::Shader; }
 
-    [[nodiscard]] int GetEntryPointIndex(int stage_index) const { return stage_to_entry_point_index_[stage_index]; }
+    int GetEntryPointIndex(int stage_index) const { return stage_to_entry_point_index_[stage_index]; }
 
-    [[nodiscard]] auto &GetShaderHandles() { return shader_handles_; }
-    [[nodiscard]] const auto &GetAnnotations() const { return annotations_; }
-    [[nodiscard]] Int32 GetAnnotation(ShaderAnnotation annotation) const { return annotations_[static_cast<Int32>(annotation)]; }
+    auto &GetShaderHandles() { return shader_handles_; }
+    const auto &GetAnnotations() const { return annotations_; }
+    Int32 GetAnnotation(ShaderAnnotation annotation) const { return annotations_[static_cast<Int32>(annotation)]; }
 
-    [[nodiscard]] const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
+    const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
 
     bool FillGraphicsPSODescFromShader(rhi::GraphicsPipelineDesc &desc, bool output_glsl = true);
 

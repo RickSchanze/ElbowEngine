@@ -14,12 +14,7 @@ IMPL_REFLECTED(SceneComponent) {
 void SceneComponent::SetTransform(const Transform &transform) { transform_ = transform; }
 
 Vector3f SceneComponent::GetWorldLocation() const {
-    if (const Actor *owner = static_cast<Actor *>(owner_)) {
-        return owner->GetWorldLocation() + GetLocation();
-    }
-    Log(Error) << "场景组件丢失Actor";
-    // TODO: 世界场景
-    return transform_.location;
+    return world_transform_.location;
 }
 
 void SceneComponent::SetLocation(const Vector3f &location) {
@@ -28,17 +23,12 @@ void SceneComponent::SetLocation(const Vector3f &location) {
 }
 
 Quaternionf SceneComponent::GetWorldRotationQuaterion() const {
-    if (const Actor *owner = static_cast<Actor *>(owner_)) {
-        return owner->GetRotationQuaterion();
-    }
-    Log(Error) << "场景组件丢失Actor";
-    // TODO: 世界场景
-    return transform_.GetRotationQuaterion();
+    return world_transform_.GetRotationQuaterion();
 }
 
 Quaternionf SceneComponent::GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
 
-Vector3f SceneComponent::GetWorldRotation() const { return GetWorldRotationQuaterion().ToEulerAngle(); }
+Vector3f SceneComponent::GetWorldRotation() const { return world_transform_.GetRotationEuler(); }
 
 Vector3f SceneComponent::GetRotation() const { return transform_.GetRotationEuler(); }
 

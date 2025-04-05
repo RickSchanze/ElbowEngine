@@ -39,6 +39,9 @@ void Material::Build() {
     if (shared_material_->HasCamera()) {
         UpdateCameraDescriptorSetFunc(*descriptor_set_);
     }
+    if (shared_material_->HasLights()) {
+        UpdateLightsDescriptorSetFunc(*descriptor_set_);
+    }
     // 4. 创建UniformBuffer
     if (uniform_buffer_size != 0) {
         const String mat_uniform_debug_name = String::Format("{}-UniformBuffer", name_);
@@ -93,12 +96,12 @@ void Material::Clean() {
 Material *Material::GetDefaultMaterial() {
     static Material *default_material; // 默认一个紫黑材质代表没设置
     if (!default_material) {
-        default_material = CreateMaterialFromShader("Assets/Shader/PBR/BasePass.slang");
+        default_material = CreateFromShader("Assets/Shader/PBR/BasePass.slang");
     }
     return default_material;
 }
 
-Material *Material::CreateMaterialFromShader(Shader *s) {
+Material *Material::CreateFromShader(Shader *s) {
     if (!s)
         return nullptr;
     Material *m = ObjectManager::CreateNewObject<Material>();
@@ -106,9 +109,9 @@ Material *Material::CreateMaterialFromShader(Shader *s) {
     return m;
 }
 
-Material *Material::CreateMaterialFromShader(StringView path) {
+Material *Material::CreateFromShader(StringView path) {
     Shader *s = AssetDataBase::Load<Shader>(path);
-    return CreateMaterialFromShader(s);
+    return CreateFromShader(s);
 }
 
 void Material::PerformLoad() {

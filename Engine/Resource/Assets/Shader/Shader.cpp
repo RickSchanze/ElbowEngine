@@ -4,17 +4,17 @@
 
 #include "Shader.hpp"
 
-#include "Resource/AssetDataBase.hpp"
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Path.hpp"
 #include "Core/Profile.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/GfxContext.hpp"
+#include "Platform/RHI/Misc.hpp"
 #include "Platform/RHI/Pipeline.hpp"
-#include "Platform/RHI/VertexLayout.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
+#include "Resource/AssetDataBase.hpp"
 #include "Resource/Config.hpp"
 #include "ShaderMeta.hpp"
 #include "SlangShaderLoader.hpp"
@@ -102,13 +102,18 @@ static void GetLabel(slang::VariableReflection *variable, String &out) {
 }
 
 static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_buffer_type_layout, Array<ShaderParam> &output, UInt32 binding,
-                                        StringView variable_name, StringView path, slang::VariableReflection *variable, bool &has_camera) {
+                                        StringView variable_name, StringView path, slang::VariableReflection *variable, bool &has_camera,
+                                        bool &has_light) {
     auto element_type = constant_buffer_type_layout->getType()->getElementType();
     auto element_type_name = element_type->getName();
     auto element_type_layout = constant_buffer_type_layout->getElementTypeLayout();
     if (std::strcmp(element_type_name, "Camera") == 0) {
         has_camera = true;
         // 摄像机非常特殊直接跳过
+        return true;
+    }
+    if (strcmp(element_type_name, "GlobalLights") == 0) {
+        has_light = true;
         return true;
     }
     if (UInt32 field_cnt = element_type_layout->getFieldCount(); field_cnt == 0) {
@@ -160,7 +165,7 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
     return true;
 }
 
-void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera) {
+void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_lights) {
     if (!IsLoaded()) {
         PerformLoad();
     }
@@ -187,7 +192,8 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera) {
             auto variable_kind = variable_type->getKind();
             if (category == slang::DescriptorTableSlot) {
                 if (variable_kind == slang::TypeReflection::Kind::ConstantBuffer) {
-                    FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(), GetName(), field, has_camera);
+                    FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(), GetName(), field, has_camera,
+                                                has_lights);
                 }
                 if (variable_kind == slang::TypeReflection::Kind::SamplerState) {
                     ShaderParam param{};

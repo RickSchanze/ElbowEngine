@@ -9,6 +9,7 @@
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Profile.hpp"
 #include "Func/World/WorldClock.hpp"
+#include "Light/LightManager.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
@@ -93,6 +94,14 @@ void RenderContext::UpdateCameraDescriptorSet(DescriptorSet &desc_set) {
     desc_set.Update(0, info);
 }
 
+void RenderContext::UpdateLightsDescriptorSet(DescriptorSet &desc_set) {
+    DescriptorBufferUpdateDesc info{};
+    info.buffer = LightManager::GetGlobalLightBuffer();
+    info.range = sizeof(DynamicGlobalLights);
+    info.offset = 0;
+    desc_set.Update(1, info);
+}
+
 void RenderContext::AddMeshToDraw(StaticMeshComponent *comp) {
     auto &self = GetByRef();
     self.static_meshes_.AddUnique(comp);
@@ -104,7 +113,7 @@ void RenderContext::RemoveMesh(StaticMeshComponent *comp) {
 }
 
 const Array<StaticMeshComponent *> &RenderContext::GetDrawStaticMesh() {
-    auto& self = GetByRef();
+    auto &self = GetByRef();
     return self.static_meshes_;
 }
 
@@ -163,6 +172,7 @@ void RenderContext::Startup() {
     window_resized_evt_handle_ = WindowEvents::Evt_OnWindowResize.AddBind(this, &RenderContext::OnWindowResized);
     AllocateDescriptorSetFunc = &RenderContext::AllocateDescriptorSet;
     UpdateCameraDescriptorSetFunc = &RenderContext::UpdateCameraDescriptorSet;
+    UpdateLightsDescriptorSetFunc = &RenderContext::UpdateLightsDescriptorSet;
 }
 
 void RenderContext::Shutdown() {

@@ -62,6 +62,8 @@ public:
     static void DestructSelf(void *self) { static_cast<Vector3 *>(self)->~Vector3(); }
     const Type *GetType();
 
+    Vector3<Float> operator*(Float float_) const;
+
     T x = 0;
     T y = 0;
     T z = 0;
@@ -179,6 +181,9 @@ struct Color {
     Float a = 1;
 
     bool operator==(const Color &other) const { return r == other.r && g == other.g && b == other.b && a == other.a; }
+
+    operator Vector3<Float>();
+    Color operator*(Float rhs) const { return {r * rhs, g * rhs, b * rhs, a * rhs}; }
 };
 
 inline Color Color::Green() { return {0, 1, 0, 1}; }
@@ -188,6 +193,8 @@ inline Color Color::White() { return {1.f, 1.f, 1.f, 1.f}; }
 inline Color Color::FromUInt8(UInt8 r, UInt8 g, UInt8 b, UInt8 a) {
     return {static_cast<Float>(r) / 255.f, static_cast<Float>(g) / 255.f, static_cast<Float>(b) / 255.f, static_cast<Float>(a) / 255.f};
 }
+
+inline Color::operator Vector3<float>() { return {r, g, b}; }
 
 template<typename T>
 struct Rect2D {
@@ -473,6 +480,11 @@ const Type *Vector3<T>::GetType() {
     if constexpr (SameAs<T, Int32>)
         return TypeOf<Vector3i>();
     return nullptr;
+}
+
+template<typename T>
+Vector3<Float> Vector3<T>::operator*(Float float_) const {
+    return Vector3<Float>(x * float_, y * float_, z * float_);
 }
 
 template<typename T>

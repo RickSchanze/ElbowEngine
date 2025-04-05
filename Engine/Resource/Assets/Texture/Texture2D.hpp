@@ -8,6 +8,7 @@
 #include "Core/Profile.hpp"
 #include "Platform/RHI/Enums.hpp"
 #include "Resource/Assets/Asset.hpp"
+#include "Texture2DMeta.hpp"
 
 
 namespace rhi {
@@ -63,9 +64,11 @@ public:
 
     [[nodiscard]] SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
 
-    [[nodiscard]] String GetAssetPath() const { return asset_path_; }
+    [[nodiscard]] StringView GetAssetPath() const { return meta_.path; }
+    TextureUsage GetTextureUsage() const { return meta_.usage; }
 
 #if WITH_EDITOR
+    void SetTextureUsage(TextureUsage usage);
 
     /**
      * 这个函数设置asset_path, 你仅应在下面的场景调用此函数:
@@ -75,10 +78,16 @@ public:
      * 当asset_path被设置时, 调用此函数会触发Assert
      */
     void SetAssetPath(const StringView new_path) {
-        if (new_path == asset_path_)
+        if (meta_.dynamic) {
+            VLOG_ERROR("只要dynamic的可以修改path, 且修改完后变成非dynamic");
             return;
-        Assert(asset_path_.IsEmpty(), "SetAssetPath: 此纹理已有路径: {}", asset_path_);
-        asset_path_ = new_path;
+        }
+        if (new_path == GetAssetPath())
+            return;
+        Assert(GetAssetPath().IsEmpty(), "SetAssetPath: 此纹理已有路径: {}", *GetAssetPath());
+        meta_.path = new_path;
+        meta_.dynamic = false;
+        SetNeedSave();
     }
 
     /**
@@ -139,14 +148,18 @@ public:
     [[nodiscard]] String GetSpriteRangeString() const;
 
     void SetSpriteRangeString(const StringView str);
+
+    void Save() override;
 #endif
 
 private:
+    rhi::Format SelectFormat() const;
+
     SharedPtr<rhi::Image> native_image_ = nullptr;
     SharedPtr<rhi::ImageView> native_image_view_ = nullptr;
 
     // 这个Texture2D包含的sprites
     Array<SpriteRange> sprite_ranges_;
 
-    String asset_path_;
+    Texture2DMeta meta_;
 };

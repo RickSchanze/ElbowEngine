@@ -33,6 +33,8 @@ String String::FromWideChar(const std::wstring &wstr) {
 
 UInt64 String::Count() const { return static_cast<UInt64>(utf8::distance(str_.begin(), str_.end())); }
 
+bool String::EndsWith(StringView s) const { return str_.ends_with(s); }
+
 int32_t String::ByteCount() const { return static_cast<int32_t>(str_.size()); }
 
 bool String::EqualsStringView(const StringView &o) const {
@@ -110,13 +112,14 @@ bool StringView::operator==(const StringView &o) const {
 bool StringView::operator==(const char *str) const { return ToStdStringView() == ::std::string_view(str); }
 
 bool StringView::ContainsAny(const StringView &o) const {
-    if (IsEmpty() || o.IsEmpty()) return false;
+    if (IsEmpty() || o.IsEmpty())
+        return false;
 
     // 使用哈希表存储a的字符集合
     std::unordered_set<char> charSet(begin(), end());
 
     // 检查b中的每个字符
-    for (char ch : o) {
+    for (char ch: o) {
         if (charSet.contains(ch)) {
             return true;
         }
@@ -124,7 +127,7 @@ bool StringView::ContainsAny(const StringView &o) const {
     return false;
 }
 
-bool StringView::EndsWith(const StringView &o) const { return ByteCount() >= o.ByteCount() && ToStdStringView().ends_with(o.ToStdStringView()); }
+bool StringView::EndsWith(const StringView &o) const { return ToStdStringView().ends_with(o.ToStdStringView()); }
 
 bool StringView::StartsWith(const StringView &o) const { return ByteCount() >= o.ByteCount() && ToStdStringView().starts_with(o.ToStdStringView()); }
 

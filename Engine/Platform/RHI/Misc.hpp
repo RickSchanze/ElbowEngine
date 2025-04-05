@@ -24,4 +24,10 @@ namespace rhi {
         Vector2f uv;
         Color color;
     };
+
+    struct PointLight {
+        Vector3f location;
+        UInt8 _padding;
+        Vector3f color;
+    };
 } // namespace rhi

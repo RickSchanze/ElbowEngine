@@ -37,6 +37,7 @@ public:
 
     static SharedPtr<rhi::DescriptorSet> AllocateDescriptorSet(const SharedPtr<rhi::DescriptorSetLayout> &layout);
     static void UpdateCameraDescriptorSet(rhi::DescriptorSet &desc_set);
+    static void UpdateLightsDescriptorSet(rhi::DescriptorSet &desc_set);
     static void AddMeshToDraw(StaticMeshComponent *comp);
     static void RemoveMesh(StaticMeshComponent *comp);
     static const Array<StaticMeshComponent *> &GetDrawStaticMesh();

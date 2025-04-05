@@ -128,6 +128,12 @@ void SQLTable::Insert(const Any &data) {
                 Log(Fatal) << "存储类型错误";
             }
             insert.bind(static_cast<int32_t>(i) + 1, *op);
+        } else if (field_type == TypeOf<Float>() || field_type == TypeOf<Double>()) {
+            auto op = refl_helper::GetValue(field_info, data).AsDouble();
+            if (!op) {
+                Log(Fatal) << "存储类型错误";
+            }
+            insert.bind(static_cast<int32_t>(i) + 1, *op);
         } else if (field_type == TypeOf<String>()) {
             const auto value = refl_helper::GetValue(field_info, data).As<String>();
             if (value == nullptr) {
@@ -145,6 +151,67 @@ void SQLTable::Insert(const Any &data) {
         insert.exec();
     } catch (std::exception &e) {
         Log(Fatal) << "SqlLite异常: "_es + e.what();
+    }
+}
+
+void SQLTable::Update(const Any &data) {
+    ProfileScope _(__func__);
+    const Type *data_type = data.GetType();
+    if (data_type != type_) {
+        Log(Fatal) << "data:"_es + "输入类型不符";
+    }
+    String update_stat = String::Format("UPDATE {} SET ", *table_name_);
+
+    const auto fields = data_type->GetFields();
+    Int32 id = 0;
+    for (size_t i = 0; i < fields.Count(); ++i) {
+        auto &field = fields[i];
+        if (field->GetName() == "id") {
+            auto op = refl_helper::GetValue(field, data).AsInt64();
+            id = *op;
+            continue;
+        }
+        StringView field_name = field->GetName();
+        if (const auto &field_type = field->GetType();
+            field_type == TypeOf<bool>() || field_type == TypeOf<int8_t>() || field_type == TypeOf<int16_t>() || field_type == TypeOf<int32_t>() ||
+            field_type == TypeOf<int64_t>() || field_type == TypeOf<uint8_t>() || field_type == TypeOf<uint16_t>() ||
+            field_type == TypeOf<uint32_t>() || field_type == TypeOf<uint64_t>()) {
+            auto op = refl_helper::GetValue(field, data).AsInt64();
+            if (!op) {
+                Log(Fatal) << "存储类型错误";
+            }
+            update_stat += String::Format("{} = {} ", *field_name, *op);
+        } else if (field_type == TypeOf<Float>() || field_type == TypeOf<Double>()) {
+            auto op = refl_helper::GetValue(field, data).AsDouble();
+            if (!op) {
+                Log(Fatal) << "存储类型错误";
+            }
+            update_stat += String::Format("{} = {} ", *field_name, *op);
+        } else if (field_type == TypeOf<String>()) {
+            const auto value = refl_helper::GetValue(field, data).As<String>();
+            if (value == nullptr) {
+                Log(Fatal) << "存储类型错误";
+                continue;
+            }
+            update_stat += String::Format("{} = '{}' ", *field_name, **value);
+        } else if (field_type->IsEnumType()) {
+            auto value = refl_helper::GetObjEnumValue(field, data);
+            update_stat += String::Format("{} = {} ", *field_name, *value);
+        } else {
+            Log(Fatal) << "存储类型错误";
+        }
+        if (i != fields.Count() - 1) {
+            update_stat += ", ";
+        }
+    }
+
+    update_stat += String::Format(" WHERE id = {}", id);
+
+    try {
+        SQLite::Statement update(*db_, update_stat);
+        update.exec();
+    } catch (std::exception &e) {
+        Log(Fatal) << "SqlLite异常: "_es + e.what() + ", sql:"_es + update_stat;
     }
 }
 

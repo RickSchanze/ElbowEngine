@@ -13,8 +13,8 @@
 class VLog {
 public:
     template<typename T>
-        requires(!std::same_as<T, const char *>)
-    static void Concat(std::ostringstream &stream, T &t) {
+        requires(!std::is_convertible_v<T, const char *>)
+    static void Concat(std::ostringstream &stream, const T &t) {
         static_assert(!SameAs<Pure<T>, StringView>, "Did you forget to call operator *?");
         static_assert(!SameAs<Pure<T>, String>, "Did you forget to call operator *?");
         if constexpr (SameAs<Pure<T>, bool>) {
