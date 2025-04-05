@@ -49,6 +49,8 @@ VkFormat RHIFormatToVkFormat(const Format format) {
             return VK_FORMAT_R8G8B8A8_SRGB;
         case Format::R8_SRGB:
             return VK_FORMAT_R8_SRGB;
+        case Format::R8G8B8_UNorm:
+            return VK_FORMAT_R8G8B8_UNORM;
         default:
             return VK_FORMAT_UNDEFINED;
     }
@@ -96,6 +98,8 @@ Format VkFormatToRHIFormat(const VkFormat format) {
             return Format::R8G8B8A8_SRGB;
         case VK_FORMAT_R8_SRGB:
             return Format::R8_SRGB;
+        case VK_FORMAT_R8G8B8_UNORM:
+            return Format::R8G8B8_UNorm;
         default:
             return Format::Count;
     }

@@ -21,7 +21,7 @@ using namespace rhi;
 static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out, Float scale) {
     ProfileScope _(__func__);
     Assimp::Importer importer;
-    uint32_t import_flag = 0;
+    uint32_t import_flag = aiProcess_CalcTangentSpace | aiProcess_FlipUVs; // FlipUVs处理图行API差异
     if (meta.GetTriangulate()) {
         import_flag |= aiProcess_Triangulate;
     }
@@ -55,10 +55,15 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
         const aiVector3D &pos = mesh->mVertices[i];
         const aiVector3D &nor = mesh->mNormals[i];
         const aiVector3D &tex = mesh->mTextureCoords[0][i];
+        const aiVector3D &tangent = mesh->mTangents[i];
+        const aiVector3D &bitangent = mesh->mBitangents[i];
         vertices.Add(Vertex1{
                 Vector3f{pos.x, pos.y, pos.z} * scale,
                 {nor.x, nor.y, nor.z},
                 {tex.x, tex.y},
+                {tangent.x, tangent.y, tangent.z},
+                {bitangent.x, bitangent.y, bitangent.z},
+
         });
     }
     for (UInt32 i = 0; i < mesh->mNumFaces; ++i) {

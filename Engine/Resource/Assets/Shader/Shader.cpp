@@ -322,23 +322,37 @@ static void FillInputLayout(GraphicsPipelineDesc &desc, uint32_t index) {
             texcoord.offset = offsetof(Vertex1, texcoord);
             desc.vertex_attributes.Add(texcoord);
 
+            VertexAttributeDesc tangent{};
+            tangent.location = 3;
+            tangent.binding = 0;
+            tangent.format = Format::R32G32B32_Float;
+            tangent.offset = offsetof(Vertex1, tangent);
+            desc.vertex_attributes.Add(tangent);
+
+            VertexAttributeDesc bitangent{};
+            bitangent.location = 4;
+            bitangent.binding = 0;
+            bitangent.format = Format::R32G32B32_Float;
+            bitangent.offset = offsetof(Vertex1, bitangent);
+            desc.vertex_attributes.Add(bitangent);
+
             // Instanced数据
             VertexAttributeDesc location{};
-            location.location = 3;
+            location.location = 5;
             location.binding = 1;
             location.format = Format::R32G32B32_Float;
             location.offset = offsetof(InstancedData1, location);
             desc.vertex_attributes.Add(location);
 
             VertexAttributeDesc rotation{};
-            rotation.location = 4;
+            rotation.location = 6;
             rotation.binding = 1;
             rotation.format = Format::R32G32B32_Float;
             rotation.offset = offsetof(InstancedData1, rotation);
             desc.vertex_attributes.Add(rotation);
 
             VertexAttributeDesc scale{};
-            scale.location = 5;
+            scale.location = 7;
             scale.binding = 1;
             scale.format = Format::R32G32B32_Float;
             scale.offset = offsetof(InstancedData1, scale);

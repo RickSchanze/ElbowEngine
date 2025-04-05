@@ -9,6 +9,7 @@ namespace rhi {
     enum class Format {
         R32G32B32_Float, // 每个元素由3个32位浮点数分量构成
         R32G32B32A32_Float, // 每个元素由4个32位浮点数分量构成
+        R8G8B8_UNorm,
         R16G16B16A16_UNorm, // 每个元素由4个16位分量构成, 每个分量被映射到[0, 1]
         R32G32_UInt, // 每个元素由2个32位无符号整数构成
         R8G8B8A8_UNorm, // 每个元素由4个8位无符号数构成, 被映射到[0, 1]
@@ -293,6 +294,7 @@ namespace rhi {
                refl_helper::AddEnumField("R32G32_Float", std::to_underlying(Format::R32G32_Float)) |
                refl_helper::AddEnumField("R8_UNorm", std::to_underlying(Format::R8_UNorm)) |
                refl_helper::AddEnumField("R8_SRGB", std::to_underlying(Format::R8_SRGB)) |
+               refl_helper::AddEnumField("R8G8B8_UNorm", std::to_underlying(Format::R8G8B8_UNorm)) |
                refl_helper::AddEnumField("Count", std::to_underlying(Format::Count));
     }
 

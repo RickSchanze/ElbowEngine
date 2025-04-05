@@ -31,6 +31,7 @@ void RenderContext::Render(const MilliSeconds &sec) {
     // 我们要向这张交换链图像上渲染
     if (!ShouldRender()) {
         if (window_resized_) {
+            GetGfxContextRef().WaitForDeviceIdle();
             // 调整交换链图像大小
             PlatformWindow *main = PlatformWindowManager::GetMainWindow();
             if (main->GetWidth() == 0 || main->GetHeight() == 0)
@@ -126,6 +127,7 @@ bool RenderContext::ShouldRender() const {
 
 void RenderContext::OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) {
     SetRenderEnable(false);
+    GetGfxContextRef().WaitForDeviceIdle();
     window_resized_ = true;
     if (render_pipeline_) {
         render_pipeline_->OnWindowResized(window, width, height);

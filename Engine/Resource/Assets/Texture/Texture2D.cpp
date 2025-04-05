@@ -78,7 +78,8 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             byte_count = width * height;
             out = reinterpret_cast<UInt8 *>(pixels);
             return true;
-        } else if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB) {
+        }
+        if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB) {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb_alpha);
             if (!pixels) {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
@@ -87,6 +88,18 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
                 return false;
             }
             byte_count = width * height * 4;
+            out = reinterpret_cast<UInt8 *>(pixels);
+            return true;
+        }
+        if (format == Format::R8G8B8_UNorm) {
+            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb);
+            if (!pixels) {
+                Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
+                stbi_image_free(pixels);
+                out = nullptr;
+                return false;
+            }
+            byte_count = width * height * 3;
             out = reinterpret_cast<UInt8 *>(pixels);
             return true;
         }
@@ -379,6 +392,9 @@ Format Texture2D::SelectFormat() const {
     }
     if (GetTextureUsage() == TextureUsage::AO) {
         return Format::R8_UNorm;
+    }
+    if (GetTextureUsage() == TextureUsage::Normal) {
+        return Format::R8G8B8A8_UNorm;
     }
     return Format::Count;
 }

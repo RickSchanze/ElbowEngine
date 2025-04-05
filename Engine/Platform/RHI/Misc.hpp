@@ -11,6 +11,9 @@ namespace rhi {
         Vector3f position;
         Vector3f normal;
         Vector2f texcoord;
+        Vector3f tangent;
+        Vector3f bitangent;
+
     };
 
     struct InstancedData1 {

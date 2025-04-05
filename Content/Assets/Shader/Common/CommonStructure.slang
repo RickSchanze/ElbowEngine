@@ -6,6 +6,9 @@ public struct Vertex {
   public float3 position;
   public float3 normal;
   public float2 uv0;
+  public float3 tangent;
+  public float3 bitangent;
+  
 
   // 实例化数据: 整个模型的位置, 旋转, 缩放
   public float3 location;

@@ -190,4 +190,5 @@ void PBRRenderPipeline::OnWindowResized(PlatformWindow *window, Int32 width, Int
         return;
     depth_target_->Resize(width, height);
     hdr_color_->Resize(width, height);
+    hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
 }
