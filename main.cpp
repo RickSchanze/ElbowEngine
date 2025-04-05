@@ -87,10 +87,14 @@ int main() {
         {
             ProfileScope _("AssetDataBase Initialize");
             AssetDataBase::Get();
+            // TODO: 这个函数并没有真正等待所有任务完成
             ResourceInitCreate( //
-                    Move(AssetDataBase::Import("Assets/Shader/Error.slang")), Move(AssetDataBase::Import("Assets/Texture/Default.png")),
+            Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png")), // ZL,
+                    Move(AssetDataBase::Import("Assets/Shader/Error.slang")),
+                    Move(AssetDataBase::Import("Assets/Texture/Default.png")), //
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
-                    Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")), Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")),
+                    Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")),
+                    Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")), //
                     Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/BasePass.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
@@ -100,9 +104,7 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"))),
                     Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png")),
                     Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png") //ZL
-                    );
-
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
 
             // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
             // Texture2DMeta new_meta;
@@ -122,6 +124,7 @@ int main() {
             // new_tex->Download();
             // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
             AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+
 #if WITH_EDITOR
             ObjectManager::SaveObjectRegistry();
 #endif
@@ -145,6 +148,7 @@ int main() {
         mesh->SetMesh(mesh_res);
         mesh->Rotate({90, 0, 0});
         mesh->SetLocation({0, 0, 0});
+
         Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
         auto color = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
         auto metallic = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png"));
@@ -156,10 +160,14 @@ int main() {
         auto ao = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png"));
         ao->SetTextureUsage(TextureUsage::AO);
         ao->SaveIfNeed();
+        auto normal = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png"));
+        normal->SetTextureUsage(TextureUsage::Normal);
+        normal->SaveIfNeed();
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);
         m->SetTexture2D("tex_roughness", roughness);
         m->SetTexture2D("tex_ao", ao);
+        m->SetTexture2D("tex_normal", normal);
         m->SetFloat("float_param.roughness", 1.0f);
         m->SetFloat("float_param.metallic", 1.0f);
         m->SetFloat("float_param.ao", 1.0f);
