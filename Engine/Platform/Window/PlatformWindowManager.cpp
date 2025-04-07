@@ -4,10 +4,28 @@
 
 #include "PlatformWindowManager.hpp"
 
+#include <imgui.h>
+
 #include "Core/Collection/Range/Range.hpp"
 #include "Core/Logger/Logger.hpp"
 #include "Core/Memory/New.hpp"
+#include "Platform/RHI/GfxContext.hpp"
 #include "PlatformWindow.hpp"
+
+void PlatformWindowManager::Startup() {
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+}
+
+void PlatformWindowManager::Shutdown() {
+    for (const auto &value: windows_ | std::views::values) {
+        Delete(value);
+    }
+    windows_.Clear();
+    ImGui::DestroyContext();
+}
 
 void PlatformWindowManager::AddWindow(PlatformWindow *window) {
     if (windows_.Empty()) {
@@ -26,6 +44,7 @@ void PlatformWindowManager::AddWindow(PlatformWindow *window) {
 
 bool PlatformWindowManager::RemoveWindow(Int32 window_id) {
     if (windows_.Contains(window_id)) {
+        Delete(windows_[window_id]);
         windows_.Remove(window_id);
         return true;
     }
@@ -33,6 +52,11 @@ bool PlatformWindowManager::RemoveWindow(Int32 window_id) {
 }
 
 bool PlatformWindowManager::RemoveWindow(StringView window_title) {
+    for (const auto &value: windows_ | std::views::values) {
+        if (value->GetTitle() == window_title) {
+            Delete(value);
+        }
+    }
     return windows_.RemoveIf([window_title](const auto &pair) { return pair.second->GetTitle() == window_title; });
 }
 
@@ -44,6 +68,8 @@ PlatformWindow *PlatformWindowManager::_GetWindowByPtr(const void *ptr) {
     }
     return nullptr;
 }
+
+void PlatformWindowManager::BeginImGuiFrame(Int32 window_id) { GetWindow(window_id)->BeginImGuiFrame(); }
 
 PlatformWindow *PlatformWindowManager::InternalGetWindow(Int32 window_id) const {
     if (windows_.Contains(window_id)) {

@@ -35,6 +35,13 @@ void ThreadManager::Shutdown() {
     main_thread_ = ThreadId{};
 }
 
+void ThreadManager::StopAndWait(NamedThread named_thread) {
+    auto &self = GetByRef();
+    auto &thread = self.named_threads_[static_cast<Int32>(named_thread)];
+    thread->Stop();
+    thread->Join();
+}
+
 void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread, bool immediate_exec) {
     auto &self = GetByRef();
     if (named_thread == NamedThread::Count) {

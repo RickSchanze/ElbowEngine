@@ -8,7 +8,6 @@
 #include "Core/Profile.hpp"
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/RenderTexture.hpp"
-#include "Func/UI/UiManager.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/Commands.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
@@ -61,8 +60,6 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
         cmd.EndDebugLabel();
         cmd.Execute();
     }
-
-    UIManager::PerformGenerateRenderCommandsPass(cmd);
 
     cmd.EndRender();
     cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,

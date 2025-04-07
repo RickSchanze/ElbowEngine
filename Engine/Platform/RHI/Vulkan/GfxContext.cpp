@@ -26,6 +26,8 @@
 #include "Platform/RHI/SyncPrimitives.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "SyncPrimitives.hpp"
+#include "imgui.h"
+#include "imgui_impl_vulkan.h"
 
 using namespace exec;
 
@@ -385,6 +387,8 @@ SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc &des
     return rtn;
 }
 
+Format GfxContext_Vulkan::GetSwapchainImageFormat() { return Format::B8G8R8A8_UNorm; }
+
 Format GfxContext_Vulkan::FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
     for (const Array<VkFormat> fmts =
                  candidates | range::view::Select([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | range::To<Array<VkFormat>>();
@@ -414,7 +418,6 @@ constexpr const char *swapchain_image_view_names_[] = {
 };
 
 void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
-
     auto vulkan_ctx = static_cast<GfxContext_Vulkan *>(ctx);
     UInt32 img_cnt = 0;
     VerifyVulkanResult(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, nullptr));
@@ -441,11 +444,103 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
 
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
+
+#if USE_IMGUI
+    // 初始化ImGui环境
+    auto cfg = GetConfig<PlatformConfig>();
+    VkDescriptorPoolSize pool_size[] = {
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, cfg->GetMinImGuiImageSamplerPoolSize()},
+    };
+    VkDescriptorPoolCreateInfo pool_info{};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 0;
+    for (const auto &size: pool_size) {
+        pool_info.maxSets += size.descriptorCount;
+    }
+    pool_info.poolSizeCount = std::size(pool_size);
+    pool_info.pPoolSizes = pool_size;
+    VkDescriptorPool pool;
+    VerifyVulkanResult(vkCreateDescriptorPool(vulkan_ctx->device_, &pool_info, nullptr, &pool));
+
+    VkAttachmentDescription attachment = {};
+    attachment.format = RHIFormatToVkFormat(vulkan_ctx->GetSwapchainImageFormat());
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference color_attachment = {};
+    color_attachment.attachment = 0;
+    color_attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &color_attachment;
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0; // or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkRenderPass render_pass = {};
+    VkRenderPassCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    info.attachmentCount = 1;
+    info.pAttachments = &attachment;
+    info.subpassCount = 1;
+    info.pSubpasses = &subpass;
+    info.dependencyCount = 1;
+    info.pDependencies = &dependency;
+    VerifyVulkanResult(vkCreateRenderPass(vulkan_ctx->device_, &info, nullptr, &render_pass));
+
+    VkFramebufferCreateInfo framebuffer_create_info = {};
+    framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffer_create_info.renderPass = render_pass;
+    framebuffer_create_info.width = cfg->GetDefaultWindowSize().x;
+    framebuffer_create_info.height = cfg->GetDefaultWindowSize().y;
+    framebuffer_create_info.layers = 1;
+    framebuffer_create_info.attachmentCount = 1;
+    vulkan_ctx->imgui_framebuffers_.Resize(vulkan_ctx->swapchain_image_views_.Count());
+    for (UInt32 i = 0; i < vulkan_ctx->imgui_framebuffers_.Count(); i++) {
+        VkImageView view = vulkan_ctx->swapchain_image_views_[i]->GetNativeHandleT<VkImageView>();
+        framebuffer_create_info.pAttachments = &view;
+        VerifyVulkanResult(vkCreateFramebuffer(vulkan_ctx->device_, &framebuffer_create_info, nullptr, &vulkan_ctx->imgui_framebuffers_[i]));
+    }
+
+    ImGui_ImplVulkan_InitInfo imgui_info = {};
+    imgui_info.Instance = vulkan_ctx->instance_;
+    imgui_info.PhysicalDevice = vulkan_ctx->physical_device_;
+    imgui_info.Device = vulkan_ctx->device_;
+    imgui_info.Queue = vulkan_ctx->graphics_queue_;
+    imgui_info.DescriptorPool = pool;
+    imgui_info.MinImageCount = vulkan_ctx->swapchain_image_views_.Count();
+    imgui_info.ImageCount = vulkan_ctx->swapchain_image_views_.Count();
+    imgui_info.Subpass = 0;
+    imgui_info.CheckVkResultFn = VerifyVulkanResult;
+    imgui_info.RenderPass = render_pass;
+    Assert(ImGui_ImplVulkan_Init(&imgui_info), "ImGui初始化失败!");
+    vulkan_ctx->imgui_pool_ = pool;
+    vulkan_ctx->imgui_render_pass_ = render_pass;
+#endif
 }
 
 void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext *ctx) {
     auto vulkan_ctx = static_cast<GfxContext_Vulkan *>(ctx);
     vkDeviceWaitIdle(vulkan_ctx->device_);
+#if USE_IMGUI
+    ImGui_ImplVulkan_Shutdown();
+    vkDestroyRenderPass(vulkan_ctx->device_, vulkan_ctx->imgui_render_pass_, nullptr);
+    for (const auto framebuffer: vulkan_ctx->imgui_framebuffers_) {
+        vkDestroyFramebuffer(vulkan_ctx->device_, framebuffer, nullptr);
+    }
+    if (vulkan_ctx->imgui_pool_) {
+        vkDestroyDescriptorPool(vulkan_ctx->device_, vulkan_ctx->imgui_pool_, nullptr);
+    }
+#endif
     vulkan_ctx->transfer_pool_ = nullptr;
     for (auto img: vulkan_ctx->swapchain_images_) {
         Delete(img);
@@ -799,6 +894,8 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
     swapchain_create_info.presentMode = RHIPresentModeToVkPresentMode(present_mode);
     swapchain_create_info.clipped = VK_TRUE;
     VerifyVulkanResult(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, AddressOf(swapchain)));
+
+
     return VkFormatToRHIFormat(swapchain_create_info.imageFormat);
 }
 
@@ -861,10 +958,69 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height) {
                 return New<ImageView_Vulkan>(desc);
             }) |
             range::To<Array<ImageView_Vulkan *>>();
+    for (const auto framebuffer: imgui_framebuffers_) {
+        vkDestroyFramebuffer(device_, framebuffer, nullptr);
+    }
+    VkFramebufferCreateInfo framebuffer_create_info = {};
+    framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffer_create_info.renderPass = imgui_render_pass_;
+    framebuffer_create_info.width = width;
+    framebuffer_create_info.height = height;
+    framebuffer_create_info.layers = 1;
+    framebuffer_create_info.attachmentCount = 1;
+    imgui_framebuffers_.Resize(swapchain_image_views_.Count());
+    for (UInt32 i = 0; i < imgui_framebuffers_.Count(); i++) {
+        VkImageView view = swapchain_image_views_[i]->GetNativeHandleT<VkImageView>();
+        framebuffer_create_info.pAttachments = &view;
+        VerifyVulkanResult(vkCreateFramebuffer(device_, &framebuffer_create_info, nullptr, &imgui_framebuffers_[i]));
+    }
 }
 
 SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const DescriptorSetPoolDesc &desc) {
     return MakeShared<DescriptorSetPool_Vulkan>(desc);
+}
+
+void GfxContext_Vulkan::BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) {
+    VkCommandBuffer buffer = cmd.GetNativeHandleT<VkCommandBuffer>();
+    auto cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([buffer, this, img_index, w, h]() {
+                    ImGui_ImplVulkan_NewFrame();
+                    VkDebugUtilsLabelEXT debug_label_info = {};
+                    debug_label_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                    debug_label_info.pLabelName = "ImGui Pass";
+                    BeginDebugLabel(buffer, debug_label_info);
+                    VkRenderPassBeginInfo info = {};
+                    VkClearValue clear_value;
+                    Color clear_color = Color::Clear();
+                    clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
+                    info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                    info.renderPass = imgui_render_pass_;
+                    info.framebuffer = imgui_framebuffers_[img_index];
+                    info.renderArea.extent.width = w;
+                    info.renderArea.extent.height = h;
+                    info.clearValueCount = 1;
+                    info.pClearValues = &clear_value;
+                    vkCmdBeginRenderPass(buffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+                });
+    if (cfg->GetEnableMultithreadRender()) {
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
+    } else {
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
+    }
+}
+
+void GfxContext_Vulkan::EndImGuiFrame(rhi::CommandBuffer &buffer) {
+    auto cfg = GetConfig<PlatformConfig>();
+    auto task = Just() | Then([&buffer]() {
+                    ImGui::Render();
+                    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), buffer.GetNativeHandleT<VkCommandBuffer>());
+                    vkCmdEndRenderPass(buffer.GetNativeHandleT<VkCommandBuffer>());
+                });
+    if (cfg->GetEnableMultithreadRender()) {
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
+    } else {
+        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
+    }
 }
 
 SharedPtr<Sampler> GfxContext_Vulkan::CreateSampler(const SamplerDesc &desc, StringView debug_name) {

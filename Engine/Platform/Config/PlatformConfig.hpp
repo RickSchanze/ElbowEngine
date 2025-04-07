@@ -22,6 +22,9 @@ class PlatformConfig : public IConfig {
     DEFINE_CFG_ITEM(WindowLib, window_lib, WindowLib, WindowLib::GLFW);
     DEFINE_CFG_ITEM(Int32, window_flag, WindowFlag, 0);
     DEFINE_CFG_ITEM(UInt8, frame_count_in_flight, FrameCountInFlight, 2);
+#if USE_IMGUI
+    DEFINE_CFG_ITEM(UInt32, min_imgui_image_sampler_pool_size, MinImGuiImageSamplerPoolSize, 100);
+#endif
 
 public:
     bool GetValidEnableValidationLayer() const;

@@ -105,6 +105,8 @@ public:
     // 用于实现Window的类里修改输入
     LowLevelInputState &InternalGetInputStateRef() { return input_state_; }
 
+    virtual void BeginImGuiFrame() = 0;
+
 protected:
     StringView title_;
     Int32 width_;

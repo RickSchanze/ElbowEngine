@@ -6,11 +6,10 @@ file(GLOB_RECURSE FUNC_CPP_FILES *.cpp)
 
 add_library(Func
         ${FUNC_CPP_FILES} ${FUNC_HEADER_FILES}
-        Render/Light/LightManager.cpp
-        Render/Light/LightManager.hpp
-        Render/Light/PointLightComponent.cpp
-        Render/Light/PointLightComponent.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)
 target_link_libraries(Func PRIVATE Platform)
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)

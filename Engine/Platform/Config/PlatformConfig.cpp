@@ -14,6 +14,9 @@ IMPL_REFLECTED_INPLACE(PlatformConfig) {
            refl_helper::AddField("window_lib", &PlatformConfig::window_lib) | //
            refl_helper::AddField("window_flag", &PlatformConfig::window_flag) | //
            refl_helper::AddField("frame_count_in_flight", &PlatformConfig::frame_count_in_flight) |
+#if USE_IMGUI
+           refl_helper::AddField("min_imgui_image_sampler_pool_size", &PlatformConfig::min_imgui_image_sampler_pool_size) |
+#endif
            refl_helper::Attribute(Type::ValueAttribute::Config, "Config/Platform/PlatformConfig.cfg");
 }
 

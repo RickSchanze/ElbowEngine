@@ -8,6 +8,8 @@
 #include "Core/Math/Math.hpp"
 #include "Core/Profile.hpp"
 #include "ITick.hpp"
+#include "Platform/Window/PlatformWindow.hpp"
+#include "Platform/Window/PlatformWindowManager.hpp"
 
 
 class ITick;
@@ -25,6 +27,7 @@ void WorldClock::TickAll() {
         ProfileScope _("TickInput");
         TickEvents::Evt_TickInput.Invoke(duration);
         TickEvents::Evt_PostInputTick.Invoke(duration);
+
     }
     {
         ProfileScope _("TickLogic");

@@ -47,6 +47,10 @@
     },
     {
       "name": "tinyexr"
+    },
+    {
+      "name": "imgui",
+      "features": ["docking-experimental", "glfw-binding", "vulkan-binding"]
     }
   ],
   "version": "0.0.1",

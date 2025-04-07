@@ -4,16 +4,18 @@
 
 #include "PBRRenderPipeline.hpp"
 
-#include "Core/Math/Math.hpp"
+#include <imgui.h>
+
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
-#include "Func/UI/UiManager.hpp"
 #include "Func/World/Actor.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
+#include "Platform/RHI/Buffer.hpp"
+#include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/Misc.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
@@ -94,10 +96,17 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         cmd.EndDebugLabel();
         cmd.Execute();
     }
+
     {
         cmd.BeginDebugLabel("ColorTransformPass");
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                                  PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
+        cmd.Execute();
+        {
+            BeginImGuiFrame(cmd, params);
+            // ImGui::ShowDemoWindow();
+            EndImGuiFrame(cmd);
+        }
         Array<RenderAttachment> attachments{};
         RenderAttachment attachment{};
         attachment.clear_color = Color::Clear();
@@ -110,11 +119,14 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         cmd.BindIndexBuffer(screen_quad_index_buffer_);
         cmd.DrawIndexed(6, 1, 0);
         cmd.EndRender();
+        cmd.Execute();
+
         cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                  PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
         cmd.EndDebugLabel();
         cmd.Execute();
     }
+
     cmd.End();
     cmd.Execute();
 }

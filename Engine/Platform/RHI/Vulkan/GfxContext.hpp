@@ -88,6 +88,8 @@ namespace rhi {
 
         SharedPtr<ImageView> CreateImageView(const ImageViewDesc &desc, StringView debug_name) override;
 
+        static Format GetSwapchainImageFormat();
+
     private:
         [[nodiscard]] Format FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
@@ -124,6 +126,9 @@ namespace rhi {
 
         SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc &desc) override;
 
+        void BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32, Int32 w, Int32 h) override;
+        void EndImGuiFrame(rhi::CommandBuffer &buffer) override;
+
     protected:
         SharedPtr<Sampler> CreateSampler(const SamplerDesc &desc, StringView debug_name) override;
 
@@ -155,6 +160,12 @@ namespace rhi {
         PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
 
         ImageDesc swapchain_image_desc_ = ImageDesc::Default();
+
+#if USE_IMGUI
+        VkDescriptorPool imgui_pool_ = nullptr;
+        VkRenderPass imgui_render_pass_ = nullptr;
+        Array<VkFramebuffer> imgui_framebuffers_ = {};
+#endif
     };
 
     GfxContext_Vulkan *GetVulkanGfxContext();

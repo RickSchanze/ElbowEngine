@@ -1,3 +1,4 @@
+#include <imgui.h>
 #include <windows.h>
 #include "Core/Async/ThreadManager.hpp"
 #include "Core/Config/ConfigManager.hpp"
@@ -10,17 +11,12 @@
 #include "Func/Render/Camera/ACameraHolder.hpp"
 #include "Func/Render/Camera/Camera.hpp"
 #include "Func/Render/Light/PointLightComponent.hpp"
-#include "Func/Render/Pipeline/ElbowEngineRenderPipeline.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
-#include "Func/UI/Widget/Button.hpp"
-#include "Func/UI/Widget/CheckBox.hpp"
-#include "Func/UI/Widget/Layout/VerticalLayout.hpp"
-#include "Func/UI/Widget/Text.hpp"
-#include "Func/UI/Widget/Window.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
+#include "Platform/ImGuiContextProxy.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/SyncPrimitives.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
@@ -65,6 +61,7 @@ int main() {
             VLOG_FATAL("Set project path failed, Abort!!!");
             return -1;
         }
+
         {
             ThreadManager::Get();
         }
@@ -89,7 +86,7 @@ int main() {
             AssetDataBase::Get();
             // TODO: 这个函数并没有真正等待所有任务完成
             ResourceInitCreate( //
-            Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png")), // ZL,
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png")), // ZL,
                     Move(AssetDataBase::Import("Assets/Shader/Error.slang")),
                     Move(AssetDataBase::Import("Assets/Texture/Default.png")), //
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
@@ -100,11 +97,7 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/ColorTransformPass.slang")),
                     Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"))),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
+                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")));
 
             // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
             // Texture2DMeta new_meta;
@@ -123,7 +116,21 @@ int main() {
             // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
             // new_tex->Download();
             // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
-            AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+            {
+                auto t1 = AssetDataBase::Import("Assets/Texture/UIAtlas.png");
+                auto t2 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png");
+                auto t3 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png");
+                auto t4 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png");
+                auto t5 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png");
+                while (true) {
+                    auto all_completed = t1.Completed() && t2.Completed() && t3.Completed() && t4.Completed() && t5.Completed();
+                    if (!all_completed) {
+                        ThreadManager::PollGameThread(100);
+                    } else {
+                        break;
+                    }
+                }
+            }
 
 #if WITH_EDITOR
             ObjectManager::SaveObjectRegistry();

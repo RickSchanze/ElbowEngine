@@ -11,14 +11,12 @@ public:
     [[nodiscard]] Float GetLevel() const override { return 5; }
     [[nodiscard]] StringView GetName() const override { return "PlatformWindowManager"; }
 
+    void Startup() override;
+    void Shutdown() override;
+
     void AddWindow(PlatformWindow *window);
 
     bool RemoveWindow(Int32 window_id);
-
-    bool RemoveWindow(PlatformWindow *window) {
-        windows_.RemoveByValue(window);
-        return false;
-    }
 
     bool RemoveWindow(StringView window_title);
 
@@ -27,6 +25,8 @@ public:
     [[nodiscard]] static PlatformWindow *GetWindow(Int32 window_id) { return GetByRef().InternalGetWindow(window_id); }
     [[nodiscard]] static PlatformWindow *GetWindow(StringView window_title) { return GetByRef().InternalGetWindow(window_title); }
     [[nodiscard]] static PlatformWindow *GetMainWindow() { return GetWindow(0); }
+
+    static void BeginImGuiFrame(Int32 window_id = 0);
 
 protected:
     [[nodiscard]] PlatformWindow *InternalGetWindow(Int32 window_id) const;

@@ -14,9 +14,10 @@ namespace rhi {
     class CommandBuffer;
     class GfxCommandHelper {
     public:
-        static SharedPtr<CommandBuffer> BeginSingleTransferCommand();
+        static SharedPtr<CommandBuffer> BeginSingleCommand();
 
-        static void EndSingleTransferCommand(const SharedPtr<CommandBuffer> &command_buffer);
+        static void EndSingleCommandTransfer(const SharedPtr<CommandBuffer> &command_buffer);
+        static void EndSingleCommandGraphics(const SharedPtr<CommandBuffer> &command_buffer);
 
         static void PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range, AccessFlags src_mask,
                                     AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);

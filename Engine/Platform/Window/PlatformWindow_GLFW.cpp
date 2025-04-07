@@ -14,7 +14,7 @@
 #include "Platform/RHI/Events.hpp"
 #include "Platform/RHI/Surface.hpp"
 #include "PlatformWindowManager.hpp"
-
+#include "imgui_impl_glfw.h"
 
 static bool glfw_callback_registered = false;
 
@@ -161,6 +161,9 @@ PlatformWindow_GLFW::PlatformWindow_GLFW(StringView window_title, int width, int
         glfwSetCursorPosCallback(window_, GLFWMousePosCallback);
         glfw_callback_registered = true;
     }
+#if USE_IMGUI
+    ImGui_ImplGlfw_InitForVulkan(window_, true);
+#endif
 }
 
 PlatformWindow_GLFW::~PlatformWindow_GLFW() {
@@ -179,9 +182,14 @@ void PlatformWindow_GLFW::PollInputs(const MilliSeconds &sec) {
 bool PlatformWindow_GLFW::ShouldClose() { return glfwWindowShouldClose(window_); }
 
 void PlatformWindow_GLFW::Close() {
+#if USE_IMGUI
+    ImGui_ImplGlfw_Shutdown();
+#endif
     glfwDestroyWindow(window_);
     window_ = nullptr;
 }
+
+void PlatformWindow_GLFW::BeginImGuiFrame() { ImGui_ImplGlfw_NewFrame(); }
 
 class GLFWSurface : public rhi::Surface {
 public:

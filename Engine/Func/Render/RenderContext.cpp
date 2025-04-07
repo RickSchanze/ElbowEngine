@@ -11,6 +11,7 @@
 #include "Func/World/WorldClock.hpp"
 #include "Light/LightManager.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
+#include "Platform/ImGuiContextProxy.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/GfxContext.hpp"
@@ -56,6 +57,8 @@ void RenderContext::Render(const MilliSeconds &sec) {
     RenderParams params{};
     params.current_image_index = *image_index;
     params.window_resized = window_resized_;
+    params.window_width = PlatformWindowManager::GetMainWindow()->GetWidth();
+    params.window_height = PlatformWindowManager::GetMainWindow()->GetHeight();
     render_pipeline_->Render(*cmd, params);
     window_resized_ = false;
 
@@ -175,9 +178,11 @@ void RenderContext::Startup() {
     AllocateDescriptorSetFunc = &RenderContext::AllocateDescriptorSet;
     UpdateCameraDescriptorSetFunc = &RenderContext::UpdateCameraDescriptorSet;
     UpdateLightsDescriptorSetFunc = &RenderContext::UpdateLightsDescriptorSet;
+    ImGuiContextProxy::CreateFontAssets();
 }
 
 void RenderContext::Shutdown() {
+    ImGuiContextProxy::DestroyFontAssets();
     GetGfxContextRef().WaitForDeviceIdle();
     WindowEvents::Evt_OnWindowResize.RemoveBind(window_resized_evt_handle_);
     TickEvents::Evt_TickRender.Unbind();

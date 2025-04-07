@@ -34,6 +34,8 @@ public:
 
     static ThreadId GetMainThread() { return GetByRef().main_thread_; }
 
+    static void StopAndWait(NamedThread named_thread);
+
     static void AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread = NamedThread::Count, bool immediate_exec = false);
 
     static void PollGameThread(Int32 work_num) {

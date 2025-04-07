@@ -19,6 +19,7 @@ public:
     void PollInputs(const MilliSeconds &sec) override;
     bool ShouldClose() override;
     void Close() override;
+    void BeginImGuiFrame() override;
 
     rhi::Surface *CreateSurface(void *user_data, rhi::GraphicsAPI api) override;
     void DestroySurface(rhi::Surface *&surface) override;

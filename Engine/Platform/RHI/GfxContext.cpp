@@ -5,6 +5,8 @@
 #include "GfxContext.hpp"
 #include "Vulkan/GfxContext.hpp"
 
+#include <imgui.h>
+
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Memory/FrameAllocator.hpp"
 #include "Events.hpp"
@@ -57,6 +59,7 @@ FrameAllocator &GfxContext::GetCommandAllocator() {
     }
     return *cmd_allocator_;
 }
+
 
 void GfxContext::PreDestroyed(GfxContext *self) { self->sampler_pool_.Clear(); }
 

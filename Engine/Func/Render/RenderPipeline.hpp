@@ -16,13 +16,15 @@ namespace rhi {
 struct RenderParams {
     UInt32 current_image_index;
     bool window_resized;
+    Int32 window_width;
+    Int32 window_height;
 };
 
 class RenderPipeline {
 public:
     virtual ~RenderPipeline() = default;
 
-    virtual void Render(rhi::CommandBuffer &cmd, const RenderParams &current_image_index) = 0;
+    virtual void Render(rhi::CommandBuffer &cmd, const RenderParams &render_param) = 0;
 
     virtual void Build() {}
     virtual void Clean() {}
@@ -30,6 +32,9 @@ public:
     virtual bool IsReady() const { return false; }
 
     virtual void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) = 0;
+
+    void BeginImGuiFrame(rhi::CommandBuffer& cmd, const RenderParams &render_param);
+    void EndImGuiFrame(rhi::CommandBuffer& cmd);
 
 protected:
     rhi::ImageView *GetBackBufferView(UInt32 current_image_index);

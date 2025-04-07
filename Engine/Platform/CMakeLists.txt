@@ -6,13 +6,15 @@ file(GLOB_RECURSE PLATFORM_CPP_FILES *.cpp)
 
 add_library(Platform
         ${PLATFORM_CPP_FILES} ${PLATFORM_HEADER_FILES}
-        RHI/CommandBuffer.cpp
 )
 
 target_include_directories(Platform PUBLIC ../)
 
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${VULKAN_PATH}/Include)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
