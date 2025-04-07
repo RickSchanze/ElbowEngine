@@ -7,8 +7,10 @@
 #include <imgui.h>
 
 #include "Core/Collection/Range/Range.hpp"
+#include "Core/Config/ConfigManager.hpp"
 #include "Core/Logger/Logger.hpp"
 #include "Core/Memory/New.hpp"
+#include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "PlatformWindow.hpp"
 
@@ -17,6 +19,9 @@ void PlatformWindowManager::Startup() {
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    auto cfg = GetConfig<PlatformConfig>();
+    io.Fonts->AddFontFromFileTTF(*cfg->GetDefaultImGuiFontPath(), cfg->GetDefaultImGuiFontSize(), nullptr,
+                                 io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 }
 
 void PlatformWindowManager::Shutdown() {

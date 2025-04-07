@@ -90,8 +90,6 @@ int main() {
                     Move(AssetDataBase::Import("Assets/Shader/Error.slang")),
                     Move(AssetDataBase::Import("Assets/Texture/Default.png")), //
                     Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
-                    Move(AssetDataBase::Import("Assets/Font/MapleMono.ttf")),
-                    Move(AssetDataBase::Import("Assets/Shader/UIDefault.slang")), //
                     Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/BasePass.slang")),
                     Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
@@ -184,8 +182,9 @@ int main() {
         light->SetIntensity(5);
         while (true) {
             ProfileScope _("Tick");
-            GetWorldClock().TickAll();
+            GetWorldClock().TickAll(main_window);
             if (main_window->ShouldClose()) {
+                GetGfxContextRef().WaitForDeviceIdle();
                 main_window->Close();
                 break;
             }

@@ -182,8 +182,8 @@ void RenderContext::Startup() {
 }
 
 void RenderContext::Shutdown() {
-    ImGuiContextProxy::DestroyFontAssets();
     GetGfxContextRef().WaitForDeviceIdle();
+    ImGuiContextProxy::DestroyFontAssets();
     WindowEvents::Evt_OnWindowResize.RemoveBind(window_resized_evt_handle_);
     TickEvents::Evt_TickRender.Unbind();
     command_buffers_.Clear();

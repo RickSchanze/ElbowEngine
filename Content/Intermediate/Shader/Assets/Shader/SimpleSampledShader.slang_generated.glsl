@@ -57,7 +57,7 @@ mat4x4 RotateX_0(float angle_0, mat4x4 m_0)
     float sx_0 = sin(angle_0);
 
 #line 36
-    return (((mat4x4(1.0, 0.0, 0.0, 0.0, 0.0, cx_0, sx_0, 0.0, 0.0, - sx_0, cx_0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_0)));
+    return (((mat4x4(1.0, 0.0, 0.0, 0.0, 0.0, cx_0, - sx_0, 0.0, 0.0, sx_0, cx_0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_0)));
 }
 
 mat4x4 RotateY_0(float angle_1, mat4x4 m_1)
@@ -68,7 +68,7 @@ mat4x4 RotateY_0(float angle_1, mat4x4 m_1)
     float sy_0 = sin(angle_1);
 
 #line 48
-    return (((mat4x4(cy_0, 0.0, - sy_0, 0.0, 0.0, 1.0, 0.0, 0.0, sy_0, 0.0, cy_0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_1)));
+    return (((mat4x4(cy_0, 0.0, sy_0, 0.0, 0.0, 1.0, 0.0, 0.0, - sy_0, 0.0, cy_0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_1)));
 }
 
 mat4x4 RotateZ_0(float angle_2, mat4x4 m_2)
@@ -79,14 +79,14 @@ mat4x4 RotateZ_0(float angle_2, mat4x4 m_2)
     float sz_0 = sin(angle_2);
 
 #line 60
-    return (((mat4x4(cz_0, sz_0, 0.0, 0.0, - sz_0, cz_0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_2)));
+    return (((mat4x4(cz_0, - sz_0, 0.0, 0.0, sz_0, cz_0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)) * (m_2)));
 }
 
 mat4x4 Translate_0(float x_0, float y_0, float z_0, mat4x4 m_3)
 {
 
 #line 70
-    return (((mat4x4(1.0, 0.0, 0.0, x_0, 0.0, 1.0, 0.0, y_0, 0.0, 0.0, 1.0, z_0, 0.0, 0.0, 0.0, 1.0)) * (m_3)));
+    return (((mat4x4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x_0, y_0, - z_0, 1.0)) * (m_3)));
 }
 
 mat4x4 Translate_1(vec3 translation_0, mat4x4 m_4)

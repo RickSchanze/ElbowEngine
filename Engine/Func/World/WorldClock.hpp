@@ -5,6 +5,7 @@
 #pragma once
 #include "Core/Event/Event.hpp"
 #include "Core/Manager/MManager.hpp"
+#include "Platform/Window/PlatformWindow.hpp"
 
 class ITick;
 // 超过33ms的帧被认为是异常帧, 被强制Clamp到33ms
@@ -27,7 +28,7 @@ public:
 
 class WorldClock : public Manager<WorldClock> {
 public:
-    void TickAll();
+    void TickAll(PlatformWindow *w);
 
     [[nodiscard]] MilliSeconds GetDeltaTime() const;
 

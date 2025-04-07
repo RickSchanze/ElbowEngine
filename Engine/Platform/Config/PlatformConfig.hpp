@@ -24,6 +24,8 @@ class PlatformConfig : public IConfig {
     DEFINE_CFG_ITEM(UInt8, frame_count_in_flight, FrameCountInFlight, 2);
 #if USE_IMGUI
     DEFINE_CFG_ITEM(UInt32, min_imgui_image_sampler_pool_size, MinImGuiImageSamplerPoolSize, 100);
+    DEFINE_CFG_ITEM(String, default_imgui_font_path, DefaultImGuiFontPath, "Assets/Font/Default.ttf");
+    DEFINE_CFG_ITEM(UInt32, default_imgui_font_size, DefaultImGuiFontSize, 20);
 #endif
 
 public:

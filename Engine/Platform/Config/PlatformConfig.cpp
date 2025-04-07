@@ -16,6 +16,8 @@ IMPL_REFLECTED_INPLACE(PlatformConfig) {
            refl_helper::AddField("frame_count_in_flight", &PlatformConfig::frame_count_in_flight) |
 #if USE_IMGUI
            refl_helper::AddField("min_imgui_image_sampler_pool_size", &PlatformConfig::min_imgui_image_sampler_pool_size) |
+           refl_helper::AddField("default_imgui_font_path", &ThisClass::default_imgui_font_path) |
+           refl_helper::AddField("default_imgui_font_size", &ThisClass::default_imgui_font_size) |
 #endif
            refl_helper::Attribute(Type::ValueAttribute::Config, "Config/Platform/PlatformConfig.cfg");
 }

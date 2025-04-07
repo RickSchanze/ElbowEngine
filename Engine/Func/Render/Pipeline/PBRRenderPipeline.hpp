@@ -24,6 +24,10 @@ public:
     [[nodiscard]] bool IsReady() const override;
 
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
+    void PerformMeshPass(rhi::CommandBuffer& cmd) const;
+    void PerformSkyboxPass(rhi::CommandBuffer& cmd) const;
+    void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target) const;
+    void PerformImGuiPass(rhi::CommandBuffer& cmd, const RenderParams& params);
 
 private:
     Material *basepass_material_ = nullptr;

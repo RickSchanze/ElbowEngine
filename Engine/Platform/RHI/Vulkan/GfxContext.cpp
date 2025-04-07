@@ -191,7 +191,9 @@ VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlag
     return buffer;
 }
 
-void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const { vkDestroyBuffer(device_, buffer, nullptr); }
+void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const {
+    vkDestroyBuffer(device_, buffer, nullptr);
+}
 
 VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const {
     VkMemoryRequirements mem_requirements;

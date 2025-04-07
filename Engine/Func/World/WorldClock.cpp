@@ -13,7 +13,7 @@
 
 
 class ITick;
-void WorldClock::TickAll() {
+void WorldClock::TickAll(PlatformWindow *w) {
     const auto now = Now();
     auto duration = CastDuration<std::chrono::duration<Float, std::milli>>(now - last_tick_tp_);
     last_tick_tp_ = now;
@@ -26,8 +26,10 @@ void WorldClock::TickAll() {
     {
         ProfileScope _("TickInput");
         TickEvents::Evt_TickInput.Invoke(duration);
+        if (w->ShouldClose()) {
+            return;
+        }
         TickEvents::Evt_PostInputTick.Invoke(duration);
-
     }
     {
         ProfileScope _("TickLogic");

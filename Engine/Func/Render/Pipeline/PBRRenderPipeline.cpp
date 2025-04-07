@@ -12,12 +12,17 @@
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
+#include "Func/UI/ImGuiDemoWindow.hpp"
+#include "Func/UI/LayoutUtility.hpp"
+#include "Func/UI/UIManager.hpp"
+#include "Func/UI/ViewportWindow.hpp"
 #include "Func/World/Actor.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/Misc.hpp"
+#include "Platform/RHI/Pipeline.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/AssetDataBase.hpp"
@@ -47,6 +52,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
+    const bool has_active_viewport = UIManager::GetActiveViewportWindow();
     {
         cmd.BeginDebugLabel("BasePass");
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, hdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
@@ -62,33 +68,10 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         depth_attachment.layout = ImageLayout::DepthStencilAttachment;
         depth_attachment.target = depth_target_->GetImageView();
         cmd.BeginRender(attachments, depth_attachment);
-        {
-            cmd.BeginDebugLabel("MeshDraw");
-            for (auto &mesh: RenderContext::GetDrawStaticMesh()) {
-                if (mesh->GetHandle() == skybox_cube_.GetHandle()) continue;
-                auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
-                auto index_count = mesh->GetIndexCount();
-                helper::BindMaterial(cmd, mesh->GetMaterial());
-                cmd.BindVertexBuffer(mesh->GetVertexBuffer());
-                cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
-                cmd.BindIndexBuffer(mesh->GetIndexBuffer());
-                cmd.DrawIndexed(index_count, 1, 0);
-            }
-            cmd.EndDebugLabel();
-        }
-
-        {
-            cmd.BeginDebugLabel("SkyspherePass");
-            helper::BindMaterial(cmd, skysphere_pass_material_);
-            // draw skybox
-            StaticMeshComponent *mesh = skybox_cube_;
-            auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
-            auto index_count = mesh->GetIndexCount();
-            cmd.BindVertexBuffer(mesh->GetVertexBuffer());
-            cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
-            cmd.BindIndexBuffer(mesh->GetIndexBuffer());
-            cmd.DrawIndexed(index_count, 1, 0);
-            cmd.EndDebugLabel();
+        if (has_active_viewport) {
+            PerformMeshPass(cmd);
+            PerformSkyboxPass(cmd);
+            cmd.Execute();
         }
         cmd.EndRender();
         cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, hdr_color_->GetImage(), range, AFB_ColorAttachmentWrite,
@@ -96,34 +79,25 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         cmd.EndDebugLabel();
         cmd.Execute();
     }
-
     {
-        cmd.BeginDebugLabel("ColorTransformPass");
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                                  PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
         cmd.Execute();
-        {
-            BeginImGuiFrame(cmd, params);
-            // ImGui::ShowDemoWindow();
-            EndImGuiFrame(cmd);
+        PerformImGuiPass(cmd, params);
+        if (has_active_viewport) {
+            cmd.BeginDebugLabel("ColorTransformPass");
+            auto *active = UIManager::GetActiveViewportWindow();
+            rect.size = active->GetSize();
+            rect.pos = active->GetPosition();
+            rect = LayoutUtility::ScaleFit(rect, Vector2f{(Float) hdr_color_->GetWidth(), (Float) hdr_color_->GetHeight()});
+            cmd.SetViewport(rect);
+            cmd.SetScissor(rect);
+            PerformColorTransformPass(cmd, view);
+            cmd.EndDebugLabel();
+            cmd.Execute();
         }
-        Array<RenderAttachment> attachments{};
-        RenderAttachment attachment{};
-        attachment.clear_color = Color::Clear();
-        attachment.target = view;
-        attachment.layout = ImageLayout::ColorAttachment;
-        attachments.Add(attachment);
-        cmd.BeginRender(attachments);
-        helper::BindMaterial(cmd, color_transform_pass_material_);
-        cmd.BindVertexBuffer(screen_quad_vertex_buffer_);
-        cmd.BindIndexBuffer(screen_quad_index_buffer_);
-        cmd.DrawIndexed(6, 1, 0);
-        cmd.EndRender();
-        cmd.Execute();
-
         cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                  PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
-        cmd.EndDebugLabel();
         cmd.Execute();
     }
 
@@ -131,8 +105,65 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     cmd.Execute();
 }
 
+void PBRRenderPipeline::PerformMeshPass(rhi::CommandBuffer &cmd) const {
+    ProfileScope _(__func__);
+    cmd.BeginDebugLabel("MeshDraw");
+    for (auto &mesh: RenderContext::GetDrawStaticMesh()) {
+        if (mesh->GetHandle() == skybox_cube_.GetHandle())
+            continue;
+        auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
+        auto index_count = mesh->GetIndexCount();
+        helper::BindMaterial(cmd, mesh->GetMaterial());
+        cmd.BindVertexBuffer(mesh->GetVertexBuffer());
+        cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
+        cmd.BindIndexBuffer(mesh->GetIndexBuffer());
+        cmd.DrawIndexed(index_count, 1, 0);
+    }
+    cmd.EndDebugLabel();
+}
+
+void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd) const {
+    ProfileScope _(__func__);
+    cmd.BeginDebugLabel("SkyspherePass");
+    helper::BindMaterial(cmd, skysphere_pass_material_);
+    // draw skybox
+    StaticMeshComponent *mesh = skybox_cube_;
+    auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
+    auto index_count = mesh->GetIndexCount();
+    cmd.BindVertexBuffer(mesh->GetVertexBuffer());
+    cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
+    cmd.BindIndexBuffer(mesh->GetIndexBuffer());
+    cmd.DrawIndexed(index_count, 1, 0);
+    cmd.EndDebugLabel();
+}
+
+void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::ImageView *target) const {
+    ProfileScope _(__func__);
+    Array<RenderAttachment> attachments{};
+    RenderAttachment attachment{};
+    attachment.load_op = AttachmentLoadOperation::DontCare;
+    attachment.store_op = AttachmentStoreOperation::Store;
+    attachment.target = target;
+    attachment.layout = ImageLayout::ColorAttachment;
+    attachments.Add(attachment);
+    cmd.BeginRender(attachments);
+    helper::BindMaterial(cmd, color_transform_pass_material_);
+    cmd.BindVertexBuffer(screen_quad_vertex_buffer_);
+    cmd.BindIndexBuffer(screen_quad_index_buffer_);
+    cmd.DrawIndexed(6, 1, 0);
+    cmd.EndRender();
+}
+
+void PBRRenderPipeline::PerformImGuiPass(rhi::CommandBuffer &cmd, const RenderParams &params) {
+    ProfileScope _(__func__);
+    BeginImGuiFrame(cmd, params);
+    UIManager::DrawAll();
+    EndImGuiFrame(cmd);
+}
+
 void PBRRenderPipeline::Build() {
     ProfileScope _("RenderPipeline::Build");
+    ObjectManager::CreateNewObject<ImGuiDemoWindow>();
     auto basepass_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/BasePass.slang");
     auto skyspere_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/SkyspherePass.slang");
     auto colortransform_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/ColorTransformPass.slang");

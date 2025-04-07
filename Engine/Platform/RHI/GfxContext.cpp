@@ -63,10 +63,7 @@ FrameAllocator &GfxContext::GetCommandAllocator() {
 
 void GfxContext::PreDestroyed(GfxContext *self) { self->sampler_pool_.Clear(); }
 
-GfxContext *rhi::GetGfxContext() {
-    Assert(ctx, "GfxContext not initialized");
-    return ctx;
-}
+GfxContext *rhi::GetGfxContext() { return ctx; }
 
 GfxContext &rhi::GetGfxContextRef() { return *GetGfxContext(); }
 
