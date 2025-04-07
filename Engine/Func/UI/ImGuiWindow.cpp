@@ -14,4 +14,4 @@ ImGuiWindow::ImGuiWindow() { UIManager::AddWindow(this); }
 
 StringView ImGuiWindow::GetWindowTitle() { return "空白ImGui窗口"; }
 
-void ImGuiWindow::Draw() { NeverEnter(); }
+void ImGuiWindow::Draw(const ImGuiDrawer& drawer) { NeverEnter(); }

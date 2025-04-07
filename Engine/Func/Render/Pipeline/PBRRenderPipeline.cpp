@@ -52,7 +52,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
-    const bool has_active_viewport = UIManager::GetActiveViewportWindow();
+    const bool has_active_viewport = UIManager::HasActiveViewportWindow();
     {
         cmd.BeginDebugLabel("BasePass");
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, hdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
@@ -91,6 +91,8 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
             rect.pos = active->GetPosition();
             rect = LayoutUtility::ScaleFit(rect, Vector2f{(Float) hdr_color_->GetWidth(), (Float) hdr_color_->GetHeight()});
             cmd.SetViewport(rect);
+            rect.pos.x = rect.pos.x <= 0 ? 0 : rect.pos.x;
+            rect.pos.y = rect.pos.y <= 0 ? 0 : rect.pos.y;
             cmd.SetScissor(rect);
             PerformColorTransformPass(cmd, view);
             cmd.EndDebugLabel();

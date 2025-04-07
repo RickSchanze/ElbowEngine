@@ -6,6 +6,8 @@
 #include "Core/Object/Object.hpp"
 #include "Window.hpp"
 
+
+class ImGuiDrawer;
 class ImGuiWindow : public Window {
     REFLECTED_CLASS(ImGuiWindow)
 
@@ -14,7 +16,7 @@ public:
 
     StringView GetWindowTitle() override;
 
-    virtual void Draw();
+    virtual void Draw(const ImGuiDrawer& drawer);
 };
 
 REGISTER_TYPE(ImGuiWindow)

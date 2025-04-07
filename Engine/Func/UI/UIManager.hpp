@@ -20,6 +20,7 @@ public:
     static void RemoveWindow(ImGuiWindow* w);
     static ViewportWindow* GetActiveViewportWindow();
     static void ActivateViewportWindow();
+    static bool HasActiveViewportWindow();
 
     void Startup() override;
     void Shutdown() override;

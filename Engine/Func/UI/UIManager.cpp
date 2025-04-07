@@ -9,19 +9,20 @@
 #include "GlobalDockingWindow.hpp"
 #include "ImGuiWindow.hpp"
 #include "ViewportWindow.hpp"
+#include "ImGuiDrawer.hpp"
 
 void UIManager::DrawAll() {
     auto &self = GetByRef();
     if (!self.global_docking_window_) {
         self.global_docking_window_ = ObjectManager::CreateNewObject<GlobalDockingWindow>();
     }
-    self.global_docking_window_->Draw();
+    self.global_docking_window_->Draw({});
     for (auto &window: self.windows_ | range::view::Values) {
         if (window->IsVisible())
-            window->Draw();
+            window->Draw({});
     }
     if (self.active_viewport_window_ && self.active_viewport_window_->IsVisible()) {
-        self.active_viewport_window_->Draw();
+        self.active_viewport_window_->Draw({});
     }
 }
 
@@ -63,6 +64,10 @@ void UIManager::ActivateViewportWindow() {
     } else {
         self.active_viewport_window_->SetVisible(true);
     }
+}
+
+bool UIManager::HasActiveViewportWindow() {
+    return GetByRef().active_viewport_window_ != nullptr && GetByRef().active_viewport_window_->IsVisible();
 }
 
 

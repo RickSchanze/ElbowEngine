@@ -20,6 +20,8 @@ add_library(Func
         UI/ViewportWindow.hpp
         UI/LayoutUtility.cpp
         UI/LayoutUtility.hpp
+        UI/ImGuiDrawer.cpp
+        UI/ImGuiDrawer.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)

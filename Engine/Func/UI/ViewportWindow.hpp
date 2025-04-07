@@ -10,7 +10,7 @@
 class ViewportWindow : public ImGuiWindow {
     REFLECTED_CLASS(ViewportWindow)
 public:
-    void Draw() override;
+    void Draw(const ImGuiDrawer& drawer) override;
     Vector2f GetPosition() const { return pos_; }
     Vector2f GetSize() const { return size_; }
 

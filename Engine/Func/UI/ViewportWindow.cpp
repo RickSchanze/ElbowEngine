@@ -6,10 +6,12 @@
 
 #include <imgui.h>
 
+#include "ImGuiDrawer.hpp"
+
 IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiWindow>(); }
 
-void ViewportWindow::Draw() {
-    if (ImGui::Begin("视口")) {
+void ViewportWindow::Draw(const ImGuiDrawer& drawer) {
+    if (drawer.Begin("视口", &visible_)) {
         // 获取窗口的屏幕坐标原点（包括标题栏和边框）
         ImVec2 window_pos = ImGui::GetWindowPos();
 
@@ -22,11 +24,10 @@ void ViewportWindow::Draw() {
         ImVec2 content_screen_max = ImVec2(window_pos.x + content_max.x, window_pos.y + content_max.y);
 
         // 计算内容区域的位置和尺寸
-        ImVec2 content_pos = content_screen_min;  // 内容区域的左上角屏幕坐标
-        ImVec2 content_size = ImVec2(content_screen_max.x - content_screen_min.x,
-                                    content_screen_max.y - content_screen_min.y);
+        ImVec2 content_pos = content_screen_min; // 内容区域的左上角屏幕坐标
+        ImVec2 content_size = ImVec2(content_screen_max.x - content_screen_min.x, content_screen_max.y - content_screen_min.y);
         pos_ = content_pos | ToVector2f;
         size_ = content_size | ToVector2f;
-        ImGui::End();
+        drawer.End();
     }
 }

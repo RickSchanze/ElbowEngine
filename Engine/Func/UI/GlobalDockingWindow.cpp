@@ -11,7 +11,7 @@
 
 IMPL_REFLECTED(GlobalDockingWindow) { return Type::Create<GlobalDockingWindow>("GlobalDockingWindow") | refl_helper::AddParents<ImGuiWindow>(); }
 
-void GlobalDockingWindow::Draw() {
+void GlobalDockingWindow::Draw(const ImGuiDrawer& drawer) {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     // 全屏覆盖
     {
