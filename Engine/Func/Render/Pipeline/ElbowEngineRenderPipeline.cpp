@@ -8,6 +8,8 @@
 #include "Core/Profile.hpp"
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/RenderTexture.hpp"
+#include "Func/UI/UIManager.hpp"
+#include "Func/UI/ViewportWindow.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/Commands.hpp"
 #include "Platform/Window/PlatformWindow.hpp"

@@ -6,12 +6,16 @@
 
 #include <imgui.h>
 
+#include "Func/Render/Camera/Camera.hpp"
+#include "Func/Render/Camera/CameraComponent.hpp"
 #include "ImGuiDrawer.hpp"
 
 IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiWindow>(); }
 
-void ViewportWindow::Draw(const ImGuiDrawer& drawer) {
-    if (drawer.Begin("视口", &visible_)) {
+ViewportWindow::ViewportWindow() { bound_camera_ = Camera::GetByRef().GetActive(); }
+
+void ViewportWindow::Draw() {
+    if (ImGuiDrawer::Begin("视口", &visible_)) {
         // 获取窗口的屏幕坐标原点（包括标题栏和边框）
         ImVec2 window_pos = ImGui::GetWindowPos();
 
@@ -26,8 +30,31 @@ void ViewportWindow::Draw(const ImGuiDrawer& drawer) {
         // 计算内容区域的位置和尺寸
         ImVec2 content_pos = content_screen_min; // 内容区域的左上角屏幕坐标
         ImVec2 content_size = ImVec2(content_screen_max.x - content_screen_min.x, content_screen_max.y - content_screen_min.y);
-        pos_ = content_pos | ToVector2f;
-        size_ = content_size | ToVector2f;
-        drawer.End();
+        // size变化了则绑定camera的viewport
+        Vector2f pos = content_pos | ToVector2f;
+        Vector2f size = content_size | ToVector2f;
+        if (size != size_) {
+            // 重新计算摄像机的aspect_ratio和viewport
+            if (!bound_camera_) {
+                bound_camera_ = Camera::GetByRef().GetActive();
+            }
+            if (!bound_camera_) {
+                VLOG_ERROR("Viewport没有绑定摄像机");
+            } else {
+                bound_camera_->SetAspectRatio(size.x / size.y);
+            }
+        }
+        size_ = size;
+        pos_ = pos;
+        ImGuiDrawer::End();
+    } else {
+        ImGuiDrawer::End();
     }
+}
+
+void ViewportWindow::BindCamera(CameraComponent *camera) {
+    if (camera == nullptr) {
+        return;
+    }
+    bound_camera_ = camera;
 }

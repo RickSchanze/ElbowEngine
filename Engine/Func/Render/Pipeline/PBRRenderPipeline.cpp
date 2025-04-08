@@ -4,8 +4,6 @@
 
 #include "PBRRenderPipeline.hpp"
 
-#include <imgui.h>
-
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
@@ -13,7 +11,6 @@
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
 #include "Func/UI/ImGuiDemoWindow.hpp"
-#include "Func/UI/LayoutUtility.hpp"
 #include "Func/UI/UIManager.hpp"
 #include "Func/UI/ViewportWindow.hpp"
 #include "Func/World/Actor.hpp"
@@ -22,7 +19,6 @@
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/Misc.hpp"
-#include "Platform/RHI/Pipeline.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/AssetDataBase.hpp"
@@ -35,16 +31,16 @@ using namespace rhi;
 
 void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     ProfileScope scope(__func__);
+    const bool has_active_viewport = UIManager::HasActiveViewportWindow();
+    if (has_active_viewport) {
+        Vector2f active_viewport_size = UIManager::GetActiveViewportWindow()->GetSize();
+        if (active_viewport_size != hdr_color_->GetSize()) {
+            OnWindowResized(nullptr, active_viewport_size.x, active_viewport_size.y);
+        }
+    }
     const auto view = GetBackBufferView(params.current_image_index);
     auto image = GetBackBuffer(params.current_image_index);
     cmd.Begin();
-
-    auto w = PlatformWindowManager::GetMainWindow();
-    Rect2Df rect{};
-    rect.size = {static_cast<Float>(w->GetWidth()), static_cast<Float>(w->GetHeight())};
-    cmd.SetScissor(rect);
-    cmd.SetViewport(rect);
-    cmd.Execute();
 
     ImageSubresourceRange range{};
     range.aspect_mask = IA_Color;
@@ -52,8 +48,12 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
-    const bool has_active_viewport = UIManager::HasActiveViewportWindow();
     {
+        Rect2Df rect{};
+        rect.size = hdr_color_->GetSize();
+        cmd.SetScissor(rect);
+        cmd.SetViewport(rect);
+        cmd.Execute();
         cmd.BeginDebugLabel("BasePass");
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, hdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
                                  PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
@@ -67,7 +67,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         depth_attachment.clear_color.r = 1.0f;
         depth_attachment.layout = ImageLayout::DepthStencilAttachment;
         depth_attachment.target = depth_target_->GetImageView();
-        cmd.BeginRender(attachments, depth_attachment);
+        cmd.BeginRender(attachments, depth_attachment, hdr_color_->GetSize());
         if (has_active_viewport) {
             PerformMeshPass(cmd);
             PerformSkyboxPass(cmd);
@@ -83,20 +83,25 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                                  PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
         cmd.Execute();
+
         PerformImGuiPass(cmd, params);
+
         if (has_active_viewport) {
-            cmd.BeginDebugLabel("ColorTransformPass");
             auto *active = UIManager::GetActiveViewportWindow();
+            Rect2Df rect;
             rect.size = active->GetSize();
             rect.pos = active->GetPosition();
-            rect = LayoutUtility::ScaleFit(rect, Vector2f{(Float) hdr_color_->GetWidth(), (Float) hdr_color_->GetHeight()});
-            cmd.SetViewport(rect);
-            rect.pos.x = rect.pos.x <= 0 ? 0 : rect.pos.x;
-            rect.pos.y = rect.pos.y <= 0 ? 0 : rect.pos.y;
-            cmd.SetScissor(rect);
-            PerformColorTransformPass(cmd, view);
-            cmd.EndDebugLabel();
-            cmd.Execute();
+            if (rect.size.x <= 0 || rect.size.y <= 0) {
+            } else {
+                cmd.BeginDebugLabel("ColorTransformPass");
+                cmd.SetViewport(rect);
+                rect.pos.x = rect.pos.x <= 0 ? 0 : rect.pos.x;
+                rect.pos.y = rect.pos.y <= 0 ? 0 : rect.pos.y;
+                cmd.SetScissor(rect);
+                PerformColorTransformPass(cmd, view);
+                cmd.EndDebugLabel();
+                cmd.Execute();
+            }
         }
         cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                  PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
@@ -233,7 +238,13 @@ bool PBRRenderPipeline::IsReady() const { return ready_; }
 void PBRRenderPipeline::OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) {
     if (width == 0 || height == 0)
         return;
-    depth_target_->Resize(width, height);
-    hdr_color_->Resize(width, height);
+    auto *viewport = UIManager::GetActiveViewportWindow();
+    Vector2f viewport_size = viewport->GetSize();
+    if (viewport_size == Vector2f{static_cast<Float>(depth_target_->GetWidth()), static_cast<Float>(depth_target_->GetHeight())}) {
+        return;
+    }
+    GetGfxContextRef().WaitForQueueExecution(QueueFamilyType::Graphics);
+    depth_target_->Resize(viewport_size.x, viewport_size.y);
+    hdr_color_->Resize(viewport_size.x, viewport_size.y);
     hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
 }

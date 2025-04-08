@@ -16,13 +16,13 @@ void UIManager::DrawAll() {
     if (!self.global_docking_window_) {
         self.global_docking_window_ = ObjectManager::CreateNewObject<GlobalDockingWindow>();
     }
-    self.global_docking_window_->Draw({});
+    self.global_docking_window_->Draw();
     for (auto &window: self.windows_ | range::view::Values) {
         if (window->IsVisible())
-            window->Draw({});
+            window->Draw();
     }
     if (self.active_viewport_window_ && self.active_viewport_window_->IsVisible()) {
-        self.active_viewport_window_->Draw({});
+        self.active_viewport_window_->Draw();
     }
 }
 

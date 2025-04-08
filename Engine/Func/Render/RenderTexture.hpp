@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Core/Math/Types.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/TypeAlias.hpp"
 #include "Platform/RHI/Enums.hpp"
@@ -22,12 +23,11 @@ namespace rhi {
  */
 rhi::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
 
-class RenderTexture
-{
+class RenderTexture {
 public:
     RenderTexture() = default;
 
-    explicit RenderTexture(const rhi::ImageDesc& desc);
+    explicit RenderTexture(const rhi::ImageDesc &desc);
 
     ~RenderTexture();
 
@@ -37,16 +37,17 @@ public:
      */
     bool IsValid() const { return native_handle_ != nullptr; }
 
-    rhi::Image* GetImage() const { return native_handle_.get(); }
+    rhi::Image *GetImage() const { return native_handle_.get(); }
 
     UInt32 GetWidth() const { return desc_.width; }
     UInt32 GetHeight() const { return desc_.height; }
     UInt32 GetDepth() const { return desc_.depth_or_layers; }
     UInt32 GetMipLevels() const { return desc_.mip_levels; }
+    Vector2f GetSize() const { return Vector2f{static_cast<Float>(desc_.width), static_cast<Float>(desc_.height)}; }
 
     rhi::Format GetFormat() const { return desc_.format; }
 
-    rhi::ImageView* GetImageView() const { return image_view_.get(); }
+    rhi::ImageView *GetImageView() const { return image_view_.get(); }
 
     // 下面三个用于设置RenderTexture的宽高, 注意是高耗时操作
     // 因为是销毁后重建, 所以尽量不要频繁调用
@@ -54,11 +55,11 @@ public:
     void SetHeight(UInt32 height);
     void Resize(UInt32 width, UInt32 height);
 
-    bool BindToMaterial(const String& name, Material* mat) const;
+    bool BindToMaterial(const String &name, Material *mat) const;
 
 private:
-    SharedPtr<rhi::Image>     native_handle_ = nullptr;
-    SharedPtr<rhi::ImageView> image_view_    = nullptr;
+    SharedPtr<rhi::Image> native_handle_ = nullptr;
+    SharedPtr<rhi::ImageView> image_view_ = nullptr;
 
     rhi::ImageDesc desc_ = rhi::ImageDesc::Default();
 };

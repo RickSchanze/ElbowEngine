@@ -16,7 +16,7 @@ public:
 
     StringView GetWindowTitle() override;
 
-    virtual void Draw(const ImGuiDrawer& drawer);
+    virtual void Draw();
 };
 
 REGISTER_TYPE(ImGuiWindow)

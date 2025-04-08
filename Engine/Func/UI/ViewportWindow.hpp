@@ -7,16 +7,23 @@
 #include "ImGuiWindow.hpp"
 
 
+class CameraComponent;
 class ViewportWindow : public ImGuiWindow {
     REFLECTED_CLASS(ViewportWindow)
 public:
-    void Draw(const ImGuiDrawer& drawer) override;
+    ViewportWindow();
+    void Draw() override;
     Vector2f GetPosition() const { return pos_; }
     Vector2f GetSize() const { return size_; }
+
+    CameraComponent* GetBoundCamera() const { return bound_camera_; }
+    void BindCamera(CameraComponent* camera);
+
 
 protected:
     Vector2f pos_;
     Vector2f size_;
+    CameraComponent* bound_camera_ = nullptr;
 };
 
 REGISTER_TYPE(ViewportWindow)

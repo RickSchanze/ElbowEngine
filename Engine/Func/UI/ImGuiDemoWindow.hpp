@@ -9,7 +9,7 @@
 class ImGuiDemoWindow : public ImGuiWindow {
     REFLECTED_CLASS(ImGuiDemoWindow)
 public:
-    void Draw(const ImGuiDrawer& drawer) override;
+    void Draw() override;
 };
 
 REGISTER_TYPE(ImGuiDemoWindow)

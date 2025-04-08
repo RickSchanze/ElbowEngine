@@ -9,7 +9,7 @@
 class GlobalDockingWindow : public ImGuiWindow{
     REFLECTED_CLASS(GlobalDockingWindow)
 public:
-    void Draw(const ImGuiDrawer& drawer) override;
+    void Draw() override;
 };
 
 REGISTER_TYPE(GlobalDockingWindow)
