@@ -13,6 +13,7 @@
 #include "Func/Render/Light/PointLightComponent.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Func/World/Scene/Scene.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
@@ -144,9 +145,13 @@ int main() {
         PlatformWindow *main_window = PlatformWindowManager::GetMainWindow();
         TickEvents::Evt_TickInput.Bind(main_window, &PlatformWindow::PollInputs);
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<PBRRenderPipeline>());
-        auto cam_holder = NewObject<ACameraHolder>();
+
+        auto cam_holder = Scene::GetByRef().CreateActor<ACameraHolder>();
+        cam_holder->SetDisplayName("摄像机");
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
-        auto mesh = NewObject<Actor>()->AddComponent<StaticMeshComponent>();
+        auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
+        mesh_actor->SetDisplayName("PBR物体");
+        auto mesh = mesh_actor->AddComponent<StaticMeshComponent>();
         auto mesh_res = static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx"));
         mesh_res->SetImportScale(0.01f);
         mesh_res->SaveIfNeed();

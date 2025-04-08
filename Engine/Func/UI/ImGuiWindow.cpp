@@ -10,8 +10,9 @@ IMPL_REFLECTED(ImGuiWindow) {
     return Type::Create<ImGuiWindow>("ImGuiWindow") | refl_helper::AddParents<Window>();
 }
 
-ImGuiWindow::ImGuiWindow() { UIManager::AddWindow(this); }
-
-StringView ImGuiWindow::GetWindowTitle() { return "空白ImGui窗口"; }
+StringView ImGuiWindow::GetWindowIdentity() {
+    NeverEnter();
+    return "空白ImGui窗口";
+}
 
 void ImGuiWindow::Draw() { NeverEnter(); }

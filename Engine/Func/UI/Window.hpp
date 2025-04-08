@@ -14,7 +14,7 @@ struct ImVec2;
 class Window : public Object {
     REFLECTED_CLASS(Window)
 public:
-    virtual StringView GetWindowTitle();
+    virtual StringView GetWindowIdentity();
     bool IsVisible() const { return visible_; }
     void SetVisible(bool visible) { visible_ = visible; }
 

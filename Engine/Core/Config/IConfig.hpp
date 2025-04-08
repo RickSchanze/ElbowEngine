@@ -17,7 +17,7 @@ public:
 
     static void ConstructSelf(void *self) { new (self) IConfig(); }
     static void DestructSelf(void *self) { static_cast<IConfig *>(self)->~IConfig(); }
-    virtual const Type *GetType() { return TypeOf<IConfig>(); }
+    virtual const Type *GetType() const { return TypeOf<IConfig>(); }
     static const Type *GetStaticType() { return TypeOf<IConfig, true>(); }
 
     [[nodiscard]] bool IsDirty() const { return dirty_; }

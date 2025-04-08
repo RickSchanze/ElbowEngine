@@ -42,7 +42,7 @@ public:
 
     static void ConstructSelf(void *self) { new (self) Object(); }
     static void DestructSelf(void *self) { static_cast<Object *>(self)->~Object(); }
-    virtual const Type *GetType() { return TypeOf<Object>(); }
+    virtual const Type *GetType() const { return TypeOf<Object>(); }
     static const Type *GetStaticType() { return TypeOf<Object, true>(); }
 
 public:

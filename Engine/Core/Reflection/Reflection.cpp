@@ -27,3 +27,12 @@ nlohmann::json ParseSubAttr(const StringView attr) {
     }
     return result;
 }
+
+void *CreateFromType(const Type *t) {
+    if (t == nullptr)
+        return nullptr;
+    UInt64 size = t->GetSize();
+    void *p = Malloc(size);
+    ReflManager::GetByRef().ConstructAt(t, p);
+    return p;
+}

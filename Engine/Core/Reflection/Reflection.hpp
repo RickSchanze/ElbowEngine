@@ -11,3 +11,5 @@
 #include "Type.hpp"
 
 nlohmann::json ParseSubAttr(const StringView attr);
+
+void* CreateFromType(const Type* t);

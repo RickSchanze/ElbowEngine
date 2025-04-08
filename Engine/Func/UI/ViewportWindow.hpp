@@ -18,7 +18,7 @@ public:
 
     CameraComponent* GetBoundCamera() const { return bound_camera_; }
     void BindCamera(CameraComponent* camera);
-
+    StringView GetWindowIdentity() override { return "ViewportWindow"; }
 
 protected:
     Vector2f pos_;

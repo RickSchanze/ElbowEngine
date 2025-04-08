@@ -239,6 +239,8 @@ void PBRRenderPipeline::OnWindowResized(PlatformWindow *window, Int32 width, Int
     if (width == 0 || height == 0)
         return;
     auto *viewport = UIManager::GetActiveViewportWindow();
+    if (viewport == nullptr)
+        return;
     Vector2f viewport_size = viewport->GetSize();
     if (viewport_size == Vector2f{static_cast<Float>(depth_target_->GetWidth()), static_cast<Float>(depth_target_->GetHeight())}) {
         return;

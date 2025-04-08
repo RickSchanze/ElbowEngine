@@ -7,9 +7,9 @@
 #include "Core/Collection/Range/Range.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "GlobalDockingWindow.hpp"
+#include "ImGuiDrawer.hpp"
 #include "ImGuiWindow.hpp"
 #include "ViewportWindow.hpp"
-#include "ImGuiDrawer.hpp"
 
 void UIManager::DrawAll() {
     auto &self = GetByRef();
@@ -35,8 +35,8 @@ void UIManager::AddWindow(ImGuiWindow *w) {
         VLOG_ERROR("视口请用ActivateViewportWindow");
         return;
     }
-    if (!self.windows_.Contains(w->GetWindowTitle())) {
-        self.windows_.Add(w->GetWindowTitle(), w);
+    if (!self.windows_.Contains(w->GetWindowIdentity())) {
+        self.windows_.Add(w->GetWindowIdentity(), w);
     }
 }
 
@@ -45,8 +45,8 @@ void UIManager::RemoveWindow(ImGuiWindow *w) {
         return;
     }
     auto &self = GetByRef();
-    if (self.windows_.Contains(w->GetWindowTitle())) {
-        self.windows_.Remove(w->GetWindowTitle());
+    if (self.windows_.Contains(w->GetWindowIdentity())) {
+        self.windows_.Remove(w->GetWindowIdentity());
     }
     if (w == self.active_viewport_window_) {
         self.active_viewport_window_ = nullptr;
@@ -66,8 +66,41 @@ void UIManager::ActivateViewportWindow() {
     }
 }
 
-bool UIManager::HasActiveViewportWindow() {
-    return GetByRef().active_viewport_window_ != nullptr && GetByRef().active_viewport_window_->IsVisible();
+bool UIManager::HasActiveViewportWindow() { return GetByRef().active_viewport_window_ != nullptr && GetByRef().active_viewport_window_->IsVisible(); }
+
+ImGuiWindow *UIManager::CreateOrActivateWindow(const Type *t) {
+    auto &self = GetByRef();
+    if (t == ViewportWindow::GetStaticType()) {
+        if (self.active_viewport_window_) {
+            self.active_viewport_window_->SetVisible(true);
+        } else {
+            self.active_viewport_window_ = CreateNewObject<ViewportWindow>();
+        }
+        return self.active_viewport_window_;
+    } else {
+        for (auto *w: self.windows_ | range::view::Values) {
+            if (w->GetType() == t) {
+                w->SetVisible(true);
+                return w;
+            }
+        }
+        ImGuiWindow *w = static_cast<ImGuiWindow *>(CreateFromType(t));
+        AddWindow(w);
+        return w;
+    }
+}
+
+ImGuiWindow *UIManager::GetWindow(const Type *t) {
+    auto &self = GetByRef();
+    if (t == ViewportWindow::GetStaticType()) {
+        return self.active_viewport_window_;
+    }
+    for (auto *w: self.windows_ | range::view::Values) {
+        if (w->GetType() == t) {
+            return w;
+        }
+    }
+    return nullptr;
 }
 
 

@@ -12,9 +12,7 @@ class ImGuiWindow : public Window {
     REFLECTED_CLASS(ImGuiWindow)
 
 public:
-    ImGuiWindow();
-
-    StringView GetWindowTitle() override;
+    StringView GetWindowIdentity() override;
 
     virtual void Draw();
 };

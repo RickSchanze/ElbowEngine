@@ -37,7 +37,7 @@ public:                                                                         
     typedef _class ThisClass;                                                                                                                        \
     static void ConstructSelf(void *self) { new (self) _class(); }                                                                                   \
     static void DestructSelf(void *self) { static_cast<_class *>(self)->~_class(); }                                                                 \
-    virtual const Type *GetType() override { return TypeOf<_class>(); }                                                                              \
+    virtual const Type *GetType() const override { return TypeOf<_class>(); }                                                                        \
     static const Type *GetStaticType() { return TypeOf<_class, true>(); }                                                                            \
     static Type *ConstructType();                                                                                                                    \
                                                                                                                                                      \
@@ -82,7 +82,7 @@ public:                                                                         
     typedef _class ThisClass;                                                                                                                        \
     static void ConstructSelf(void *self) { new (self) _class(); }                                                                                   \
     static void DestructSelf(void *self) { static_cast<_class *>(self)->~_class(); }                                                                 \
-    const Type *GetType() { return TypeOf<_class>(); }                                                                                               \
+    const Type *GetType() const { return TypeOf<_class>(); }                                                                                         \
     static const Type *GetStaticType() { return TypeOf<_class, true>(); }                                                                            \
     static Type *ConstructType();                                                                                                                    \
                                                                                                                                                      \
@@ -93,7 +93,7 @@ public:                                                                         
     typedef _class ThisStruct;                                                                                                                       \
     static void ConstructSelf(void *self) { new (self) _class(); }                                                                                   \
     static void DestructSelf(void *self) { static_cast<_class *>(self)->~_class(); }                                                                 \
-    const Type *GetType() { return TypeOf<_class>(); }                                                                                               \
+    const Type *GetType() const { return TypeOf<_class>(); }                                                                                         \
     static const Type *GetStaticType() { return TypeOf<_class, true>(); }                                                                            \
     static Type *ConstructType();
 

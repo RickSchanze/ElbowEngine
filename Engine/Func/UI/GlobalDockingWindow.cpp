@@ -7,6 +7,9 @@
 #include <imgui.h>
 
 #include "Core/Object/ObjectManager.hpp"
+#include "DetailWindow.hpp"
+#include "ImGuiDemoWindow.hpp"
+#include "InspectorWindow.hpp"
 #include "UIManager.hpp"
 
 IMPL_REFLECTED(GlobalDockingWindow) { return Type::Create<GlobalDockingWindow>("GlobalDockingWindow") | refl_helper::AddParents<ImGuiWindow>(); }
@@ -31,7 +34,16 @@ void GlobalDockingWindow::Draw() {
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("窗口")) {
             if (ImGui::MenuItem("视口")) {
-                UIManager::ActivateViewportWindow();
+                UIManager::CreateOrActivateWindow<ViewportWindow>();
+            }
+            if (ImGui::MenuItem("Inspector")) {
+                UIManager::CreateOrActivateWindow<InspectorWindow>();
+            }
+            if (ImGui::MenuItem("ImGui Demo")) {
+                UIManager::CreateOrActivateWindow<ImGuiDemoWindow>();
+            }
+            if (ImGui::MenuItem("细节")) {
+                UIManager::CreateOrActivateWindow<DetailWindow>();
             }
             ImGui::EndMenu();
         }

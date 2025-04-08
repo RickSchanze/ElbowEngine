@@ -10,6 +10,7 @@ class ImGuiDemoWindow : public ImGuiWindow {
     REFLECTED_CLASS(ImGuiDemoWindow)
 public:
     void Draw() override;
+    StringView GetWindowIdentity() override { return "ImGuiDemoWindow"; }
 };
 
 REGISTER_TYPE(ImGuiDemoWindow)

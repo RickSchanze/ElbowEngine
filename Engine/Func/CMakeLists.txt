@@ -22,6 +22,12 @@ add_library(Func
         UI/LayoutUtility.hpp
         UI/ImGuiDrawer.cpp
         UI/ImGuiDrawer.hpp
+        UI/InspectorWindow.cpp
+        UI/InspectorWindow.hpp
+        World/Scene/Scene.cpp
+        World/Scene/Scene.hpp
+        UI/DetailWindow.cpp
+        UI/DetailWindow.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)
