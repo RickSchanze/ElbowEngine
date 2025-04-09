@@ -145,11 +145,14 @@ SharedMaterial::SharedMaterial(Shader *shader) {
     }
 
     // TODO: 扩展性实现
-    if (shader->GetName().EndsWith("TransformPass.slang")) {
-        desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
-    } else {
-        desc.attachments.color_formats.Add(Format::R32G32B32A32_Float);
+    if (shader->GetAnnotation(ShaderAnnotation::EnableDepth)) {
         desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
+    }
+
+    if (shader->GetAnnotation(ShaderAnnotation::HDR)) {
+        desc.attachments.color_formats.Add(Format::R32G32B32A32_Float);
+    } else {
+        desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
     }
 
     pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);

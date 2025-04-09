@@ -86,6 +86,8 @@ static void FindObjPtr(const Type *t, void *field_ptr, ObjectHandle handle) {
     }
 }
 
+void Object::OnDestroyed() {}
+
 void Object::InternalSetAssetHandle(ObjectHandle handle) {
     // 此时自己的Object Handle 需要通知所有的ObjectPtr
     auto type = GetType();
@@ -114,4 +116,10 @@ ObjectHandle Object::PerformPersistentObjectLoad() {
     auto *persistent = static_cast<PersistentObject *>(this);
     persistent->PerformLoad();
     return GetHandle();
+}
+
+void Destroy(Object *obj) {
+    if (obj) {
+        ObjectManager::GetRegistry().RemoveObject(obj);
+    }
 }

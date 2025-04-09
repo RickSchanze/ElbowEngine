@@ -65,10 +65,9 @@ public:
     [[nodiscard]] SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
 
     [[nodiscard]] StringView GetAssetPath() const { return meta_.path; }
-    TextureUsage GetTextureUsage() const { return meta_.usage; }
 
 #if WITH_EDITOR
-    void SetTextureUsage(TextureUsage usage);
+    void SetTextureFormat(rhi::Format format);
 
     /**
      * 这个函数设置asset_path, 你仅应在下面的场景调用此函数:
@@ -153,8 +152,6 @@ public:
 #endif
 
 private:
-    rhi::Format SelectFormat() const;
-
     SharedPtr<rhi::Image> native_image_ = nullptr;
     SharedPtr<rhi::ImageView> native_image_view_ = nullptr;
 

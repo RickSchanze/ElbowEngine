@@ -65,8 +65,6 @@ public:
 
     void SetObjectHandle(const Int32 handle) { handle_ = handle; }
 
-    virtual void AwakeFromLoad() {}
-
 protected:
     Int32 handle_ = 0;
     ObjectFlag flags_ = 0;
@@ -116,6 +114,8 @@ public:
         ResolveObjectPtr();
     }
 
+    virtual void OnDestroyed();
+
     [[nodiscard]] bool IsPendingKill() const { return state_ & PendingKill; }
 
     [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
@@ -145,6 +145,7 @@ T *NewObject(Args &&...args) {
     Assert(IsMainThread(), "对象只能在主线程创建!");
     T *obj = New<T>(Forward<Args>(args)...);
     obj->OnCreated();
-    obj->AwakeFromLoad();
     return obj;
 }
+
+void Destroy(Object *obj);

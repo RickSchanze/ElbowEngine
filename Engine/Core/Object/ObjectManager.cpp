@@ -61,7 +61,9 @@ void ObjectRegistry::RemoveObject(Object *object) {
         return;
     }
     if (object->IsPersistent()) {
-        static_cast<PersistentObject *>(object)->PerformUnload();
+        if (static_cast<PersistentObject *>(object)->IsLoaded()) {
+            static_cast<PersistentObject *>(object)->PerformUnload();
+        }
     }
     Delete(object);
     objects_.Remove(handle);

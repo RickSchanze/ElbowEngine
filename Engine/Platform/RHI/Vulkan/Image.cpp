@@ -10,6 +10,7 @@
 #include "GfxContext.hpp"
 #include "Platform/RHI/Commands.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
+#include "Platform/RHI/ImageView.hpp"
 
 using namespace rhi;
 
@@ -23,16 +24,18 @@ Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {
     image_info.format = RHIFormatToVkFormat(desc.format);
     image_info.extent.width = desc.width;
     image_info.extent.height = desc.height;
-    image_info.extent.depth = desc.depth_or_layers;
+    image_info.extent.depth = desc.dimension == ImageDimension::D2 ? 1 : desc.depth_or_layers;
     image_info.mipLevels = desc.mip_levels;
-    image_info.arrayLayers = desc.depth_or_layers;
+    image_info.arrayLayers = desc.dimension == ImageDimension::D2 ? desc.depth_or_layers : 1;
     image_info.usage = RHIImageUsageToVkImageUsageFlags(desc.usage);
     image_info.samples = RHISampleCountToVkSampleCount(desc.samples);
     image_info.initialLayout = RHIImageLayoutToVkImageLayout(desc.initial_state);
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     image_info.queueFamilyIndexCount = 0;
     image_info.pQueueFamilyIndices = nullptr;
-    image_info.flags = 0;
+    if (desc.depth_or_layers == 6) {
+        image_info.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    }
     image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     VerifyVulkanResult(vkCreateImage(device, &image_info, nullptr, &image_handle_));
     VkMemoryRequirements mem_req{};
@@ -87,11 +90,11 @@ SharedPtr<Buffer> Image_Vulkan::CreateCPUVisibleBuffer() {
     range.layer_count = 1;
     const auto cmd = GfxCommandHelper::BeginSingleCommand();
     cmd->ImagePipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::TransferSrc, this, range, AFB_ShaderRead, AFB_TransferRead,
-                                           PSFB_FragmentShader, PSFB_Transfer);
+                              PSFB_FragmentShader, PSFB_Transfer);
     cmd->CopyImageToBuffer(this, dst_buffer.get(), range, Vector3i{0, 0, 0},
-                                        Vector3i{static_cast<Int32>(GetWidth()), static_cast<Int32>(GetHeight()), 1});
-    cmd->ImagePipelineBarrier(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead,
-                                           PSFB_Transfer, PSFB_FragmentShader);
+                           Vector3i{static_cast<Int32>(GetWidth()), static_cast<Int32>(GetHeight()), 1});
+    cmd->ImagePipelineBarrier(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead, PSFB_Transfer,
+                              PSFB_FragmentShader);
     cmd->Execute();
     GfxCommandHelper::EndSingleCommandTransfer(cmd);
     return dst_buffer;
@@ -139,4 +142,18 @@ UInt32 Image::GetNumChannels() const {
         default:
             return 0;
     }
+}
+
+StaticArray<SharedPtr<ImageView>, 6> Image::CreateCubemapViews() {
+    if (GetDepthOrLayers() == 1)
+        return {};
+    StaticArray<SharedPtr<ImageView>, 6> result;
+    for (Int32 i = 0; i < GetDepthOrLayers(); i++) {
+        ImageViewDesc view_desc{this};
+        view_desc.type = ImageDimension::D2;
+        view_desc.subresource_range.base_array_layer = i;
+        view_desc.subresource_range.layer_count = 1;
+        result[i] = GetGfxContextRef().CreateImageView(view_desc);
+    }
+    return result;
 }

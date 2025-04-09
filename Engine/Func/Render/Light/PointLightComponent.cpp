@@ -29,8 +29,8 @@ void PointLightComponent::UpdateTransform(const Transform &parent_transform) {
     UpdateSelf();
 }
 
-void PointLightComponent::AwakeFromLoad() {
-    SceneComponent::AwakeFromLoad();
+void PointLightComponent::OnCreated() {
+    Super::OnCreated();
     LightManager::AddLight(this);
 }
 

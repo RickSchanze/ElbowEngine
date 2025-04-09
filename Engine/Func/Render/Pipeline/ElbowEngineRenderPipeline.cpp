@@ -71,8 +71,8 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
 }
 
 void ElbowEngineRenderPipeline::Build() {
-    auto obj_shader = AssetDataBase::LoadAsync("Assets/Shader/SimpleSampledShader.slang");
-    auto fbx = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
+    auto obj_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/SimpleSampledShader.slang");
+    auto fbx = AssetDataBase::LoadFromPathAsync("Assets/Mesh/Cube.fbx");
     ThreadManager::WhenAllExecFuturesCompleted(
             NamedThread::Game,
             [this](const ObjectHandle obj_shader_handle, const ObjectHandle fbx_handle) {

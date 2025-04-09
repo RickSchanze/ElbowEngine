@@ -22,8 +22,8 @@ public:
     Color GetColor() const { return color_; }
     void SetColor(Color color);
     void UpdateTransform(const Transform &parent_transform) override;
+    void OnCreated() override;
 
-    void AwakeFromLoad() override;
     Float GetIntensity() const { return intensity_; }
     void SetIntensity(Float intensity);
 

@@ -43,17 +43,25 @@ public:
      * @param path
      * @return
      */
-    static Object *Load(StringView path);
+    static Object *LoadFromPath(StringView path);
 
     template<typename T>
         requires IsBaseOf<Object, T>
-    static T *Load(StringView path) {
-        return static_cast<T *>(Load(path));
+    static T *LoadFromPath(StringView path) {
+        return static_cast<T *>(LoadFromPath(path));
     }
 
-    static exec::ExecFuture<ObjectHandle> LoadAsync(StringView path);
+    static exec::ExecFuture<ObjectHandle> LoadFromPathAsync(StringView path);
 
     static exec::ExecFuture<ObjectHandle> LoadAsync(ObjectHandle handle, const Type *asset_type);
+
+    static exec::ExecFuture<ObjectHandle> LoadOrImportAsync(StringView path);
+    static Object *LoadOrImport(StringView path);
+
+    template<typename T> requires IsBaseOf<Object, T>
+    static T *LoadOrImportT(StringView path) {
+        return static_cast<T *>(LoadOrImport(path));
+    }
 
     template<typename T>
     static Future<ObjectHandle> LoadAsync(ObjectPtr<T> obj) {
@@ -75,8 +83,8 @@ public:
     template<typename T>
     static void InsertMeta(const T &meta);
 
-    template <typename T>
-    static void UpdateMeta(const T& meta);
+    template<typename T>
+    static void UpdateMeta(const T &meta);
 
     /**
      * 创建一个资产并保存

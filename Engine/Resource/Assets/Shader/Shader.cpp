@@ -47,6 +47,14 @@ static ShaderParamType FindParamType(StringView path, StringView name, slang::Ty
         case slang::TypeReflection::Kind::Struct:
             Log(Error) << String::Format("{}:{} Shader参数只允许一层嵌套", *path, name);
             return ShaderParamType::Count;
+        case slang::TypeReflection::Kind::Matrix: {
+            const auto column_count = var_type->getColumnCount();
+            const auto row_count = var_type->getRowCount();
+            if (column_count == 4 && row_count == 4) {
+                return ShaderParamType::Matrix4x4f;
+            }
+            break;
+        }
         case slang::TypeReflection::Kind::Vector: {
             const auto column_count = var_type->getColumnCount();
             if (const auto element_type = var_type->getElementType()->getScalarType(); element_type == slang::TypeReflection::Float32) {
@@ -74,6 +82,9 @@ static ShaderParamType FindParamType(StringView path, StringView name, slang::Ty
         case slang::TypeReflection::Kind::Resource: {
             auto shape = var_type->getResourceShape();
             if (shape == SlangResourceShape::SLANG_TEXTURE_2D) {
+                return ShaderParamType::Texture2D;
+            }
+            if (shape == SlangResourceShape::SLANG_TEXTURE_CUBE) {
                 return ShaderParamType::Texture2D;
             } else {
                 Log(Error) << String::Format("{}:{} 不支持的Resource类型", *path, name);
@@ -420,6 +431,8 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
                     } else if (kind == slang::TypeReflection::Kind::Resource) {
                         auto shape = variable->getType()->getResourceShape();
                         if (shape == SLANG_TEXTURE_2D) {
+                            binding.descriptor_type = DescriptorType::SampledImage;
+                        } else if (shape == SLANG_TEXTURE_CUBE) {
                             binding.descriptor_type = DescriptorType::SampledImage;
                         }
                     }

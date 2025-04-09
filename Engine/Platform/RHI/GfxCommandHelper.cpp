@@ -44,8 +44,8 @@ void rhi::GfxCommandHelper::EndSingleCommandGraphics(const SharedPtr<CommandBuff
     fence->SyncWait();
 }
 
-void rhi::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range, AccessFlags src_mask,
-                                            AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage) {
+void rhi::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range,
+                                            AccessFlags src_mask, AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage) {
     auto cmd = BeginSingleCommand();
     cmd->ImagePipelineBarrier(old, new_, target, range, src_mask, dst_mask, src_stage, dst_stage);
     cmd->Execute();

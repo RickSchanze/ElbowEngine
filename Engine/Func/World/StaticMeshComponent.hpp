@@ -26,7 +26,7 @@ public:
     Material* GetMaterial() const;
     void SetMaterial(const Material *mat);
 
-    void AwakeFromLoad() override;
+    void OnCreated() override;
     void UpdateTransform(const Transform &parent_transform) override;
 
     UInt32 GetIndexCount();

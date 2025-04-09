@@ -110,7 +110,7 @@ Material *Material::CreateFromShader(Shader *s) {
 }
 
 Material *Material::CreateFromShader(StringView path) {
-    Shader *s = AssetDataBase::Load<Shader>(path);
+    Shader *s = AssetDataBase::LoadFromPath<Shader>(path);
     return CreateFromShader(s);
 }
 
@@ -217,6 +217,18 @@ void Material::SetShader(const Shader *shader) {
     shader_ = shader;
     Clean();
     Build();
+}
+
+bool Material::SetMatrix4x4(StringView name, const Matrix4x4f &value) const {
+    auto &uniform = shared_material_->GetUniformOffsets();
+    UInt64 name_hash = name.GetHashCode();
+    if (!uniform.Contains(name_hash)) {
+        Log(Error) << String::Format("材质{}中没有参数{}", GetHandle(), *name);
+        return false;
+    }
+    const UInt32 offset = uniform[name_hash].offset;
+    memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Matrix4x4f));
+    return true;
 }
 
 ObjectHandle Material::GetParam_Texture2DHandle(const String &name) const {

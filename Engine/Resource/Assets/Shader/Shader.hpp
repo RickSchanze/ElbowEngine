@@ -25,6 +25,7 @@ enum class ShaderAnnotation {
     Blend, // 混合状态: On Off
     CullMode, // 默认Back
     Name,
+    HDR, // 是否HDR确定输出格式
     Count,
 };
 
@@ -35,6 +36,7 @@ enum class ShaderParamType {
     Texture2D,
     SamplerState,
     Struct,
+    Matrix4x4f,
     Count,
 };
 

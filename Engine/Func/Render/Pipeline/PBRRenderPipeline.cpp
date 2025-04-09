@@ -8,6 +8,7 @@
 #include "Core/Profile.hpp"
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
 #include "Func/Render/Helper.hpp"
+#include "Func/Render/Offline/ImageTransformer.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
 #include "Func/UI/ImGuiDemoWindow.hpp"
@@ -166,11 +167,11 @@ void PBRRenderPipeline::PerformImGuiPass(rhi::CommandBuffer &cmd, const RenderPa
 void PBRRenderPipeline::Build() {
     ProfileScope _("RenderPipeline::Build");
     ObjectManager::CreateNewObject<ImGuiDemoWindow>();
-    auto basepass_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/BasePass.slang");
-    auto skyspere_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/SkyspherePass.slang");
-    auto colortransform_shader = AssetDataBase::LoadAsync("Assets/Shader/PBR/ColorTransformPass.slang");
-    auto skysphere_texture = AssetDataBase::LoadAsync("Assets/Texture/poly_haven_studio_1k.exr");
-    auto cube_mesh = AssetDataBase::LoadAsync("Assets/Mesh/Cube.fbx");
+    auto basepass_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/BasePass.slang");
+    auto skyspere_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/SkyspherePass.slang");
+    auto colortransform_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/ColorTransformPass.slang");
+    auto skysphere_texture = AssetDataBase::LoadFromPathAsync("Assets/Texture/poly_haven_studio_1k.exr");
+    auto cube_mesh = AssetDataBase::LoadFromPathAsync("Assets/Mesh/Cube.fbx");
     ThreadManager::WhenAllExecFuturesCompleted(
             NamedThread::Game,
             [this](const ObjectHandle basepass_shader_handle, const ObjectHandle skysphere_shader_handle,

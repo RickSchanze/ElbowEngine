@@ -50,7 +50,7 @@ Rect2Df Sprite::GetUVRange() {
 }
 
 Sprite Sprite::GetUIWhiteSprite() {
-    Texture2D *tex = AssetDataBase::Load<Texture2D>("Assets/Texture/UIAtlas.png");
+    Texture2D *tex = AssetDataBase::LoadFromPath<Texture2D>("Assets/Texture/UIAtlas.png");
     Sprite range = {tex, "White"};
     return range;
 }

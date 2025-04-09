@@ -33,6 +33,7 @@ void ParseAnnotations(const StringView path, Int32 (&output)[static_cast<Int32>(
     output[static_cast<Int32>(ShaderAnnotation::EnableDepth)] = 1;
     output[static_cast<Int32>(ShaderAnnotation::Blend)] = 0;
     output[static_cast<Int32>(ShaderAnnotation::CullMode)] = 0; // 0是Back
+    output[static_cast<Int32>(ShaderAnnotation::HDR)] = 1; // 0是Back
 
     std::ifstream input(*path);
     if (!input.is_open()) {
@@ -96,6 +97,11 @@ void ParseAnnotations(const StringView path, Int32 (&output)[static_cast<Int32>(
                 if (key == "CullMode") {
                     if (value == "Front") {
                         output[static_cast<Int32>(ShaderAnnotation::CullMode)] = 1;
+                    }
+                }
+                if (key == "HDR") {
+                    if (value == "Off") {
+                        output[static_cast<Int32>(ShaderAnnotation::HDR)] = 0;
                     }
                 }
             }

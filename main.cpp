@@ -152,7 +152,7 @@ int main() {
         auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
         mesh_actor->SetDisplayName("PBR物体");
         auto mesh = mesh_actor->AddComponent<StaticMeshComponent>();
-        auto mesh_res = static_cast<Mesh *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx"));
+        auto mesh_res = static_cast<Mesh *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx"));
         mesh_res->SetImportScale(0.01f);
         mesh_res->SaveIfNeed();
         mesh->SetMesh(mesh_res);
@@ -160,18 +160,18 @@ int main() {
         mesh->SetLocation({0, 0, 0});
 
         Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
-        auto color = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
-        auto metallic = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png"));
-        metallic->SetTextureUsage(TextureUsage::Metallic);
+        auto color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
+        auto metallic = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png"));
+        metallic->SetTextureFormat(Format::R8_UNorm);
         metallic->SaveIfNeed();
-        auto roughness = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
-        roughness->SetTextureUsage(TextureUsage::Roughness);
+        auto roughness = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
+        roughness->SetTextureFormat(Format::R8_UNorm);
         roughness->SaveIfNeed();
-        auto ao = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png"));
-        ao->SetTextureUsage(TextureUsage::AO);
+        auto ao = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png"));
+        ao->SetTextureFormat(Format::R8_UNorm);
         ao->SaveIfNeed();
-        auto normal = static_cast<Texture2D *>(AssetDataBase::Load("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png"));
-        normal->SetTextureUsage(TextureUsage::Normal);
+        auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png"));
+        normal->SetTextureFormat(Format::R8_UNorm);
         normal->SaveIfNeed();
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);

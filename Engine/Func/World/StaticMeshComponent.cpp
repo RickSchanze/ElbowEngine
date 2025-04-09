@@ -46,8 +46,8 @@ void StaticMeshComponent::SetMaterial(const Material *mat) {
     material_ = mat;
 }
 
-void StaticMeshComponent::AwakeFromLoad() {
-    Super::AwakeFromLoad();
+void StaticMeshComponent::OnCreated() {
+    Super::OnCreated();
     GlobalObjectInstancedDataBuffer::UpdateInstancedData(GetHandle(), GetTransform());
 }
 

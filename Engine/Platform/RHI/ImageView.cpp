@@ -75,7 +75,11 @@ rhi::ImageViewDesc::ImageViewDesc(Image *image_, ImageDimension type_, Format fo
 
 rhi::ImageViewDesc::ImageViewDesc(Image *image_) {
     image = image_;
-    type = image->GetDimension();
+    if (image_->GetDepthOrLayers() == 6) {
+        type = ImageDimension::Cube;
+    } else {
+        type = ImageDimension::D2;
+    }
     format = image->GetFormat();
     ImageAspect aspect = 0;
     ImageUsage usage = image->GetUsage();

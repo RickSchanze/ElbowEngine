@@ -5,8 +5,7 @@ file(GLOB_RECURSE CORE_HEADER_FILES *.hpp)
 file(GLOB_RECURSE CORE_CPP_FILES *.cpp)
 
 add_library(Core
-        ${CORE_CPP_FILES} ${CORE_HEADER_FILES}
-)
+        ${CORE_CPP_FILES} ${CORE_HEADER_FILES})
 
 find_package(mimalloc CONFIG REQUIRED)
 target_link_libraries(Core PRIVATE $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)

@@ -3,6 +3,8 @@
 //
 #include "AssetDataBase.hpp"
 
+#include <tinyexr.h>
+
 #include "Assets/Font/Font.hpp"
 #include "Assets/Font/FontMeta.hpp"
 #include "Assets/Material/Material.hpp"
@@ -95,9 +97,9 @@ ExecFuture<ObjectHandle> AssetDataBase::Import(StringView path) {
     return exec::MakeExecFuture(0);
 }
 
-Object *AssetDataBase::Load(StringView path) {
+Object *AssetDataBase::LoadFromPath(StringView path) {
     ProfileScope _(__func__);
-    const ObjectHandle obj_handle = LoadAsync(path).Get();
+    const ObjectHandle obj_handle = LoadFromPathAsync(path).Get();
     return ObjectManager::GetObjectByHandle(obj_handle);
 }
 
@@ -121,7 +123,7 @@ ExecFuture<ObjectHandle> InternalLoadAsync(StringView path) {
     }
 }
 
-ExecFuture<ObjectHandle> AssetDataBase::LoadAsync(StringView path) {
+ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView path) {
     ProfileScope _(__func__);
     if (path.EndsWith(".slang")) {
         return InternalLoadAsync<Shader, ShaderMeta>(path);
@@ -194,8 +196,32 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadAsync(ObjectHandle handle, const Typ
     }
     if (path.IsEmpty())
         return MakeExecFuture(0);
-    return LoadAsync(path);
+    return LoadFromPathAsync(path);
 }
+
+ExecFuture<ObjectHandle> AssetDataBase::LoadOrImportAsync(StringView path) {
+    if (path.EndsWith(".slang")) {
+        if (const auto op_meta = QueryMeta<ShaderMeta>(String::Format("path = '{}'", *path))) {
+            return LoadFromPathAsync(path);
+        }
+        return Import(path);
+    }
+    if (path.EndsWith(".exr") || path.EndsWith(".png")) {
+        if (const auto op_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *path))) {
+            return LoadFromPathAsync(path);
+        }
+        return Import(path);
+    }
+    if (path.EndsWith(".fbx")) {
+        if (const auto op_meta = QueryMeta<MeshMeta>(String::Format("path = '{}'", *path))) {
+            return LoadFromPathAsync(path);
+        }
+        return Import(path);
+    }
+    return MakeExecFuture(0);
+}
+
+Object *AssetDataBase::LoadOrImport(StringView path) { return ObjectManager::GetObjectByHandle(LoadOrImportAsync(path).Get()); }
 
 #define CREATE_ASSET_TABLE(asset_type)                                                                                                               \
     {                                                                                                                                                \

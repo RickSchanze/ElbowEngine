@@ -60,6 +60,8 @@ public:
 
     void SetShader(const Shader *shader);
 
+    bool SetMatrix4x4(StringView name, const Matrix4x4f &value) const;
+
     [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
     [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;
 

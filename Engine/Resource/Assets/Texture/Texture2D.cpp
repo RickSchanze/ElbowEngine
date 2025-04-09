@@ -136,8 +136,12 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         if (!LoadTextureAccordingFormat(path, meta.format, pixels, width, height, channels, byte_count)) {
             return;
         }
-        const ImageDesc desc{static_cast<size_t>(width), static_cast<size_t>(height), IUB_TransferDst | IUB_ShaderRead, meta.format,
-                             ImageDimension::D2};
+        const ImageDesc desc{static_cast<size_t>(width),
+                             static_cast<size_t>(height),
+                             IUB_TransferDst | IUB_ShaderRead, //
+                             meta.format,
+                             ImageDimension::D2, //
+                             meta.is_cubemap ? 6 : 1};
         String debug_name = String::Format("Texture2D_{}", *path);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -154,13 +158,15 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         }
         const Format format = meta.format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
-        const ImageDesc desc{meta.width, meta.height, IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc, format, ImageDimension::D2};
+        const ImageDesc desc{meta.width, meta.height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget,
+                             format,     ImageDimension::D2, meta.is_cubemap ? 6 : 1};
         String debug_name = String::Format("Texture2D_{}", *name_);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
         debug_name = String::Format("Texture2DView_{}", *name_);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         meta_ = meta;
+
         SetSpriteRangeString(meta.sprites_string);
     }
 }
@@ -187,7 +193,7 @@ rhi::Format Texture2D::GetFormat() const {
 
 Texture2D *Texture2D::GetDefault() {
     ProfileScope _(__func__);
-    const auto rtn = AssetDataBase::Load<Texture2D>("Assets/Texture/Default.png");
+    const auto rtn = AssetDataBase::LoadFromPath<Texture2D>("Assets/Texture/Default.png");
     Assert(rtn != nullptr, "Default.png不存在");
     return rtn;
 }
@@ -213,10 +219,9 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
 }
 
 
-void Texture2D::SetTextureUsage(TextureUsage usage) {
-    if (meta_.usage != usage) {
-        meta_.usage = usage;
-        meta_.format = SelectFormat();
+void Texture2D::SetTextureFormat(Format format) {
+    if (meta_.format != format) {
+        meta_.format = format;
         SetNeedSave();
         Load(meta_);
     }
@@ -375,26 +380,4 @@ void Texture2D::Save() {
     } else {
         VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " path = ", *GetAssetPath());
     }
-}
-
-Format Texture2D::SelectFormat() const {
-    if (GetTextureUsage() == TextureUsage::Color) {
-        if (GetAssetPath().EndsWith(".exr")) {
-            return Format::R32G32B32A32_Float;
-        }
-        return Format::R8G8B8A8_UNorm;
-    }
-    if (GetTextureUsage() == TextureUsage::Roughness) {
-        return Format::R8_UNorm;
-    }
-    if (GetTextureUsage() == TextureUsage::Metallic) {
-        return Format::R8_UNorm;
-    }
-    if (GetTextureUsage() == TextureUsage::AO) {
-        return Format::R8_UNorm;
-    }
-    if (GetTextureUsage() == TextureUsage::Normal) {
-        return Format::R8G8B8A8_UNorm;
-    }
-    return Format::Count;
 }

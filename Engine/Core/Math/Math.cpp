@@ -5,6 +5,8 @@
 
 #include <random>
 
+#include "MathExtensions.hpp"
+
 Float Math::RandomFloat(Float lower, Float upper) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -34,4 +36,8 @@ Quaternionf Math::FindLookAtRotation(Vector3f pos, Vector3f target) {
     float angle = glm::acos(glm::dot(ref, glm_dir));
     glm::quat result = glm::angleAxis(angle, axis);
     return {result.x, result.y, result.z, result.w};
+}
+
+Matrix4x4f Math::LookAt(Vector3f pos, Vector3f target, Vector3f up) {
+    return lookAt(pos | ToGLMVec3, target | ToGLMVec3, up | ToGLMVec3) | ToMatrix4x4f;
 }

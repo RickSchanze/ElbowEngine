@@ -2,6 +2,7 @@
  * @Pipeline: Graphics
  * @InputLayout: Vertex1
  * @EnableDepth: false
+ * @HDR: Off
  */
 // 这里给一个屏幕空间四边形, 直接采样渲染
 import "Common/CommonStructure";
