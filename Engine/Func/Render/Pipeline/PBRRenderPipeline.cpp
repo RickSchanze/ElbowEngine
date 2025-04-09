@@ -34,7 +34,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     const bool has_active_viewport = UIManager::HasActiveViewportWindow();
     if (has_active_viewport) {
         Vector2f active_viewport_size = UIManager::GetActiveViewportWindow()->GetSize();
-        if (active_viewport_size != hdr_color_->GetSize()) {
+        if (!sdr_color_ || active_viewport_size != sdr_color_->GetSize()) {
             OnWindowResized(nullptr, active_viewport_size.x, active_viewport_size.y);
         }
     }
@@ -48,61 +48,56 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
-    {
-        Rect2Df rect{};
-        rect.size = hdr_color_->GetSize();
-        cmd.SetScissor(rect);
-        cmd.SetViewport(rect);
-        cmd.Execute();
-        cmd.BeginDebugLabel("BasePass");
-        cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, hdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
-                                 PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
-        Array<RenderAttachment> attachments{};
-        RenderAttachment attachment{};
-        attachment.clear_color = Color::Clear();
-        attachment.target = hdr_color_->GetImageView();
-        attachment.layout = ImageLayout::ColorAttachment;
-        attachments.Add(attachment);
-        RenderAttachment depth_attachment{};
-        depth_attachment.clear_color.r = 1.0f;
-        depth_attachment.layout = ImageLayout::DepthStencilAttachment;
-        depth_attachment.target = depth_target_->GetImageView();
-        cmd.BeginRender(attachments, depth_attachment, hdr_color_->GetSize());
-        if (has_active_viewport) {
+    if (has_active_viewport) {
+        {
+            Rect2Df rect{};
+            rect.size = hdr_color_->GetSize();
+            cmd.SetScissor(rect);
+            cmd.SetViewport(rect);
+            cmd.Execute();
+            cmd.BeginDebugLabel("BasePass");
+            cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, hdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
+                                     PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
+            Array<RenderAttachment> attachments{};
+            RenderAttachment attachment{};
+            attachment.clear_color = Color::Clear();
+            attachment.target = hdr_color_->GetImageView();
+            attachment.layout = ImageLayout::ColorAttachment;
+            attachments.Add(attachment);
+            RenderAttachment depth_attachment{};
+            depth_attachment.clear_color.r = 1.0f;
+            depth_attachment.layout = ImageLayout::DepthStencilAttachment;
+            depth_attachment.target = depth_target_->GetImageView();
+            cmd.BeginRender(attachments, depth_attachment, hdr_color_->GetSize());
             PerformMeshPass(cmd);
             PerformSkyboxPass(cmd);
             cmd.Execute();
+            cmd.EndRender();
+            cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, hdr_color_->GetImage(), range,
+                                     AFB_ColorAttachmentWrite, 0, PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
+            cmd.EndDebugLabel();
+            cmd.Execute();
         }
-        cmd.EndRender();
-        cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, hdr_color_->GetImage(), range, AFB_ColorAttachmentWrite,
-                                 0, PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
-        cmd.EndDebugLabel();
-        cmd.Execute();
+        {
+            cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, sdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
+                                     PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
+            Rect2Df rect{};
+            rect.size = UIManager::GetActiveViewportWindow()->GetSize();
+            cmd.BeginDebugLabel("ColorTransformPass");
+            cmd.SetViewport(rect);
+            cmd.SetScissor(rect);
+            PerformColorTransformPass(cmd, sdr_color_->GetImageView(), rect.size);
+            cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, sdr_color_->GetImage(), range, 0,
+                                     AFB_ColorAttachmentWrite, PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
+            cmd.EndDebugLabel();
+            cmd.Execute();
+        }
     }
     {
         cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                                  PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
         cmd.Execute();
-
         PerformImGuiPass(cmd, params);
-
-        if (has_active_viewport) {
-            auto *active = UIManager::GetActiveViewportWindow();
-            Rect2Df rect;
-            rect.size = active->GetSize();
-            rect.pos = active->GetPosition();
-            if (rect.size.x <= 0 || rect.size.y <= 0) {
-            } else {
-                cmd.BeginDebugLabel("ColorTransformPass");
-                cmd.SetViewport(rect);
-                rect.pos.x = rect.pos.x <= 0 ? 0 : rect.pos.x;
-                rect.pos.y = rect.pos.y <= 0 ? 0 : rect.pos.y;
-                cmd.SetScissor(rect);
-                PerformColorTransformPass(cmd, view);
-                cmd.EndDebugLabel();
-                cmd.Execute();
-            }
-        }
         cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::PresentSrc, image, range, AFB_ColorAttachmentWrite, 0,
                                  PSFB_ColorAttachmentOutput, PSFB_BottomOfPipe);
         cmd.Execute();
@@ -144,7 +139,7 @@ void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd) const {
     cmd.EndDebugLabel();
 }
 
-void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::ImageView *target) const {
+void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::ImageView *target, Vector2f size) const {
     ProfileScope _(__func__);
     Array<RenderAttachment> attachments{};
     RenderAttachment attachment{};
@@ -153,7 +148,7 @@ void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::
     attachment.target = target;
     attachment.layout = ImageLayout::ColorAttachment;
     attachments.Add(attachment);
-    cmd.BeginRender(attachments);
+    cmd.BeginRender(attachments, {}, size);
     helper::BindMaterial(cmd, color_transform_pass_material_);
     cmd.BindVertexBuffer(screen_quad_vertex_buffer_);
     cmd.BindIndexBuffer(screen_quad_index_buffer_);
@@ -198,14 +193,16 @@ void PBRRenderPipeline::Build() {
                 skysphere_pass_material_->SetShader(skysphere_pass_shader);
                 color_transform_pass_material_->SetShader(color_transform_pass_shader);
 
-                depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
                 auto *w = PlatformWindowManager::GetMainWindow();
                 UInt64 width = w->GetWidth();
                 UInt64 height = w->GetHeight();
                 ImageDesc desc{width, height, IUB_RenderTarget | IUB_ShaderRead, Format::R32G32B32A32_Float};
                 hdr_color_ = MakeShared<RenderTexture>(desc);
-
+                depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
                 hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
+                desc.format = Format::B8G8R8A8_UNorm;
+                sdr_color_ = MakeShared<RenderTexture>(desc);
+
                 skysphere_pass_material_->SetTexture2D("skybox_texture", skysphere_texture);
                 color_transform_pass_material_->SetFloat("param.exposure", 3);
 
@@ -229,6 +226,8 @@ void PBRRenderPipeline::Build() {
 
 void PBRRenderPipeline::Clean() {
     depth_target_ = nullptr;
+    sdr_color_ = nullptr;
+    hdr_color_ = nullptr;
     ready_ = false;
     basepass_material_ = nullptr;
 }
@@ -242,11 +241,13 @@ void PBRRenderPipeline::OnWindowResized(PlatformWindow *window, Int32 width, Int
     if (viewport == nullptr)
         return;
     Vector2f viewport_size = viewport->GetSize();
-    if (viewport_size == Vector2f{static_cast<Float>(depth_target_->GetWidth()), static_cast<Float>(depth_target_->GetHeight())}) {
+    if (sdr_color_ && viewport_size == Vector2f{static_cast<Float>(sdr_color_->GetWidth()), static_cast<Float>(sdr_color_->GetHeight())}) {
         return;
     }
     GetGfxContextRef().WaitForQueueExecution(QueueFamilyType::Graphics);
     depth_target_->Resize(viewport_size.x, viewport_size.y);
     hdr_color_->Resize(viewport_size.x, viewport_size.y);
     hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
+    sdr_color_->Resize(viewport_size.x, viewport_size.y);
+    UIManager::GetActiveViewportWindow()->BindRenderTexture(sdr_color_.get());
 }

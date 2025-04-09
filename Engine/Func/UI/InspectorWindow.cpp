@@ -12,7 +12,6 @@ IMPL_REFLECTED(InspectorWindow) { return Type::Create<InspectorWindow>("Inspecto
 
 void InspectorWindow::Draw() {
     if (ImGuiDrawer::Begin("Inspector", &visible_)) {
-
         ImGui::BeginTable("##Actors", 1);
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -25,6 +24,6 @@ void InspectorWindow::Draw() {
             ImGui::PopID();
         }
         ImGui::EndTable();
-        ImGui::End();
     }
+    ImGui::End();
 }

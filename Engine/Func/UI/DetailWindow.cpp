@@ -22,6 +22,6 @@ void DetailWindow::Draw() {
             ImGui::SameLine();
             ImGui::Text("%d", selected_actor->GetHandle());
         }
-        ImGui::End();
     }
+    ImGui::End();
 }

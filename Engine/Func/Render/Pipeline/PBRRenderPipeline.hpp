@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Core/Math/Types.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Object/ObjectPtr.hpp"
 #include "Func/Render/RenderPipeline.hpp"
@@ -26,7 +27,7 @@ public:
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
     void PerformMeshPass(rhi::CommandBuffer& cmd) const;
     void PerformSkyboxPass(rhi::CommandBuffer& cmd) const;
-    void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target) const;
+    void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target, Vector2f render_size) const;
     void PerformImGuiPass(rhi::CommandBuffer& cmd, const RenderParams& params);
 
 private:
@@ -35,6 +36,7 @@ private:
     Material *color_transform_pass_material_ = nullptr;
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
+    SharedPtr<RenderTexture> sdr_color_;
     SharedPtr<rhi::Buffer> screen_quad_vertex_buffer_;
     SharedPtr<rhi::Buffer> screen_quad_index_buffer_;
     ObjectPtr<StaticMeshComponent> skybox_cube_;

@@ -9,6 +9,7 @@
 #include "Func/Render/Camera/Camera.hpp"
 #include "Func/Render/Camera/CameraComponent.hpp"
 #include "ImGuiDrawer.hpp"
+#include "Platform/RHI/DescriptorSet.hpp"
 
 IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiWindow>(); }
 
@@ -46,10 +47,11 @@ void ViewportWindow::Draw() {
         }
         size_ = size;
         pos_ = pos;
-        ImGuiDrawer::End();
-    } else {
-        ImGuiDrawer::End();
+        if (bound_render_texture_) {
+            ImGuiDrawer::Image(*bound_render_texture_, size_);
+        }
     }
+    ImGui::End();
 }
 
 void ViewportWindow::BindCamera(CameraComponent *camera) {
@@ -57,4 +59,12 @@ void ViewportWindow::BindCamera(CameraComponent *camera) {
         return;
     }
     bound_camera_ = camera;
+}
+
+void ViewportWindow::BindRenderTexture(RenderTexture *tex) {
+    if (tex == nullptr)
+        return;
+    if (tex == bound_render_texture_)
+        return;
+    bound_render_texture_ = tex;
 }
