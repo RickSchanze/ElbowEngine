@@ -3,11 +3,11 @@
 //
 
 #pragma once
-#include "ImGuiWindow.hpp"
+#include "ImGuiDrawWindow.hpp"
 
 
 class Actor;
-class InspectorWindow : public ImGuiWindow {
+class InspectorWindow : public ImGuiDrawWindow {
     REFLECTED_CLASS(InspectorWindow)
 public:
     void Draw() override;

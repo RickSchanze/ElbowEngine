@@ -6,6 +6,6 @@
 
 #include <imgui.h>
 
-IMPL_REFLECTED(ImGuiDemoWindow) { return Type::Create<ImGuiDemoWindow>("ImGuiDemoWindow") | refl_helper::AddParents<ImGuiWindow>(); }
+IMPL_REFLECTED(ImGuiDemoWindow) { return Type::Create<ImGuiDemoWindow>("ImGuiDemoWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 void ImGuiDemoWindow::Draw() { ImGui::ShowDemoWindow(&visible_); }

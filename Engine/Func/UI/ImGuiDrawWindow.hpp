@@ -8,8 +8,8 @@
 
 
 class ImGuiDrawer;
-class ImGuiWindow : public Window {
-    REFLECTED_CLASS(ImGuiWindow)
+class ImGuiDrawWindow : public Window {
+    REFLECTED_CLASS(ImGuiDrawWindow)
 
 public:
     StringView GetWindowIdentity() override;
@@ -17,4 +17,4 @@ public:
     virtual void Draw();
 };
 
-REGISTER_TYPE(ImGuiWindow)
+REGISTER_TYPE(ImGuiDrawWindow)

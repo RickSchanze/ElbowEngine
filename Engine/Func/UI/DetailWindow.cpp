@@ -9,7 +9,7 @@
 #include "InspectorWindow.hpp"
 #include "UIManager.hpp"
 
-IMPL_REFLECTED(DetailWindow) { return Type::Create<DetailWindow>("DetailWindow") | refl_helper::AddParents<ImGuiWindow>(); }
+IMPL_REFLECTED(DetailWindow) { return Type::Create<DetailWindow>("DetailWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 void DetailWindow::Draw() {
     InspectorWindow *inspector = UIManager::GetWindow<InspectorWindow>();

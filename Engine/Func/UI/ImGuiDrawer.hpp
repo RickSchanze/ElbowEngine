@@ -19,6 +19,11 @@ struct ImGuiImageData {
     rhi::ImageView *view;
 };
 
+enum class ImGuiItemLabelFlag {
+    Left,
+    Right,
+};
+
 // 只是一些便于本项目的imgui默认值wraper
 class ImGuiDrawer : public Manager<ImGuiDrawer> {
 public:
@@ -29,7 +34,12 @@ public:
     static void End();
     static void Image(RenderTexture &tex, Vector2f size, Vector2f uv0 = {0, 0}, Vector2f uv1 = {1, 1});
 
+    static void ItemLabel(StringView title, ImGuiItemLabelFlag flags);
+
     void Shutdown() override;
+
+    static bool CheckBox(const char *label, bool *checked);
+    static bool InputFloat3(const char *label, float *v, const char *format = "%.3f", ImGuiInputTextFlags extra_flags = 0);
 
 private:
     Map<RenderTexture *, ImGuiImageData> texture_map_;

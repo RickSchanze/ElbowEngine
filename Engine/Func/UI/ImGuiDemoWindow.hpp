@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include "ImGuiWindow.hpp"
+#include "ImGuiDrawWindow.hpp"
 
 
-class ImGuiDemoWindow : public ImGuiWindow {
+class ImGuiDemoWindow : public ImGuiDrawWindow {
     REFLECTED_CLASS(ImGuiDemoWindow)
 public:
     void Draw() override;

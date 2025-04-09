@@ -7,8 +7,8 @@
 #include "Core/Collection/Range/Range.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "GlobalDockingWindow.hpp"
+#include "ImGuiDrawWindow.hpp"
 #include "ImGuiDrawer.hpp"
-#include "ImGuiWindow.hpp"
 #include "ViewportWindow.hpp"
 
 void UIManager::DrawAll() {
@@ -26,7 +26,7 @@ void UIManager::DrawAll() {
     }
 }
 
-void UIManager::AddWindow(ImGuiWindow *w) {
+void UIManager::AddWindow(ImGuiDrawWindow *w) {
     if (w == nullptr) {
         return;
     }
@@ -40,7 +40,7 @@ void UIManager::AddWindow(ImGuiWindow *w) {
     }
 }
 
-void UIManager::RemoveWindow(ImGuiWindow *w) {
+void UIManager::RemoveWindow(ImGuiDrawWindow *w) {
     if (w == nullptr) {
         return;
     }
@@ -68,7 +68,7 @@ void UIManager::ActivateViewportWindow() {
 
 bool UIManager::HasActiveViewportWindow() { return GetByRef().active_viewport_window_ != nullptr && GetByRef().active_viewport_window_->IsVisible(); }
 
-ImGuiWindow *UIManager::CreateOrActivateWindow(const Type *t) {
+ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t) {
     auto &self = GetByRef();
     if (t == ViewportWindow::GetStaticType()) {
         if (self.active_viewport_window_) {
@@ -84,13 +84,13 @@ ImGuiWindow *UIManager::CreateOrActivateWindow(const Type *t) {
                 return w;
             }
         }
-        ImGuiWindow *w = static_cast<ImGuiWindow *>(CreateFromType(t));
+        ImGuiDrawWindow *w = static_cast<ImGuiDrawWindow *>(CreateFromType(t));
         AddWindow(w);
         return w;
     }
 }
 
-ImGuiWindow *UIManager::GetWindow(const Type *t) {
+ImGuiDrawWindow *UIManager::GetWindow(const Type *t) {
     auto &self = GetByRef();
     if (t == ViewportWindow::GetStaticType()) {
         return self.active_viewport_window_;

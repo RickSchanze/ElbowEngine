@@ -12,7 +12,7 @@
 #include "InspectorWindow.hpp"
 #include "UIManager.hpp"
 
-IMPL_REFLECTED(GlobalDockingWindow) { return Type::Create<GlobalDockingWindow>("GlobalDockingWindow") | refl_helper::AddParents<ImGuiWindow>(); }
+IMPL_REFLECTED(GlobalDockingWindow) { return Type::Create<GlobalDockingWindow>("GlobalDockingWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 void GlobalDockingWindow::Draw() {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;

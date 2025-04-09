@@ -4,7 +4,7 @@
 
 #pragma once
 #include "Core/Math/Types.hpp"
-#include "ImGuiWindow.hpp"
+#include "ImGuiDrawWindow.hpp"
 
 
 class RenderTexture;
@@ -12,7 +12,7 @@ namespace rhi {
     class DescriptorSet;
 }
 class CameraComponent;
-class ViewportWindow : public ImGuiWindow {
+class ViewportWindow : public ImGuiDrawWindow {
     REFLECTED_CLASS(ViewportWindow)
 public:
     ViewportWindow();

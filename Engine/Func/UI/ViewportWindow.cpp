@@ -11,7 +11,7 @@
 #include "ImGuiDrawer.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 
-IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiWindow>(); }
+IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 ViewportWindow::ViewportWindow() { bound_camera_ = Camera::GetByRef().GetActive(); }
 

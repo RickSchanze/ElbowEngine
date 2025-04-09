@@ -8,9 +8,11 @@
 #include "Func/World/Scene/Scene.hpp"
 #include "ImGuiDrawer.hpp"
 
-IMPL_REFLECTED(InspectorWindow) { return Type::Create<InspectorWindow>("InspectorWindow") | refl_helper::AddParents<ImGuiWindow>(); }
+IMPL_REFLECTED(InspectorWindow) { return Type::Create<InspectorWindow>("InspectorWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 void InspectorWindow::Draw() {
+    static bool a = true;
+    static float b[3];
     if (ImGuiDrawer::Begin("Inspector", &visible_)) {
         ImGui::BeginTable("##Actors", 1);
         ImGui::TableNextRow();

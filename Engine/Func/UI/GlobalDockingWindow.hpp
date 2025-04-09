@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include "ImGuiWindow.hpp"
+#include "ImGuiDrawWindow.hpp"
 
 
-class GlobalDockingWindow : public ImGuiWindow{
+class GlobalDockingWindow : public ImGuiDrawWindow{
     REFLECTED_CLASS(GlobalDockingWindow)
 public:
     void Draw() override;

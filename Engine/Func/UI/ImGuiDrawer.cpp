@@ -5,6 +5,7 @@
 #include "ImGuiDrawer.hpp"
 
 #include <imgui_impl_vulkan.h>
+#include "imgui_internal.h"
 
 #include "Func/Render/RenderTexture.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
@@ -31,8 +32,58 @@ void ImGuiDrawer::Image(RenderTexture &tex, Vector2f size, Vector2f uv0, Vector2
     ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
 }
 
+void ImGuiDrawer::ItemLabel(StringView title, ImGuiItemLabelFlag flags) {
+    using namespace ImGui;
+    ImGuiWindow *window = ImGui::GetCurrentWindow();
+    const ImVec2 lineStart = ImGui::GetCursorScreenPos();
+    const ImGuiStyle &style = ImGui::GetStyle();
+    float fullWidth = ImGui::GetContentRegionAvail().x;
+    float itemWidth = ImGui::CalcItemWidth() + style.ItemSpacing.x;
+    const char *title_begin = *title;
+    const char *title_end = title_begin + title.ByteCount();
+    ImVec2 textSize = ImGui::CalcTextSize(title_begin, title_end);
+    ImRect textRect;
+    textRect.Min = ImGui::GetCursorScreenPos();
+    if (flags == ImGuiItemLabelFlag::Right)
+        textRect.Min.x = textRect.Min.x + itemWidth;
+    textRect.Max = textRect.Min;
+    textRect.Max.x += fullWidth - itemWidth;
+    textRect.Max.y += textSize.y;
+
+    SetCursorScreenPos(textRect.Min);
+
+    AlignTextToFramePadding();
+    // Adjust text rect manually because we render it directly into a drawlist instead of using public functions.
+    textRect.Min.y += window->DC.CurrLineTextBaseOffset;
+    textRect.Max.y += window->DC.CurrLineTextBaseOffset;
+
+    ItemSize(textRect);
+    if (ItemAdd(textRect, window->GetID(title_begin, title_end))) {
+        RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x, textRect.Max.x, title_begin, title_end, &textSize);
+
+        if (textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
+            ImGui::SetTooltip("%.*s", title.ByteCount(), *title);
+    }
+    if (flags == ImGuiItemLabelFlag::Left) {
+        ImVec2 screen_pos = {textRect.Max.x - 0, textRect.Max.y - (textSize.y + window->DC.CurrLineTextBaseOffset)};
+        ImGui::SetCursorScreenPos(screen_pos);
+        ImGui::SameLine();
+    } else if (flags == ImGuiItemLabelFlag::Right)
+        ImGui::SetCursorScreenPos(lineStart);
+}
+
 void ImGuiDrawer::Shutdown() {
     for (auto &pair: texture_map_) {
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(pair.second.id));
     }
+}
+
+bool ImGuiDrawer::CheckBox(const char *label, bool *checked) {
+    ItemLabel(label, ImGuiItemLabelFlag::Left);
+    return ImGui::Checkbox("##", checked);
+}
+
+bool ImGuiDrawer::InputFloat3(const char *label, float *v, const char *format, ImGuiInputTextFlags extra_flags) {
+    ItemLabel(label, ImGuiItemLabelFlag::Left);
+    return ImGui::InputFloat3("##", v, format, extra_flags);
 }
