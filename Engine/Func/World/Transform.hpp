@@ -15,6 +15,7 @@ struct Transform {
     Vector3f scale = {1, 1, 1};
 
     void SetRotation(Quaternionf now);
+    void SetRotation(Vector3f now);
     Vector3f GetRotationEuler() const { return cached_euler_; }
     Quaternionf GetRotationQuaterion() const { return rotation; }
     Vector3f GetLocation() const { return location; }

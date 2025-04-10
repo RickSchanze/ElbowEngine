@@ -13,6 +13,9 @@
 #include "Func/Render/Light/PointLightComponent.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
+#include "Func/UI/DetailWindow.hpp"
+#include "Func/UI/InspectorWindow.hpp"
+#include "Func/UI/UIManager.hpp"
 #include "Func/World/Scene/Scene.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Func/World/WorldClock.hpp"
@@ -156,7 +159,7 @@ int main() {
         mesh_res->SetImportScale(0.01f);
         mesh_res->SaveIfNeed();
         mesh->SetMesh(mesh_res);
-        mesh->Rotate({90, 0, 0});
+        mesh_actor->SetRotation({90, 0, 0});
         mesh->SetLocation({0, 0, 0});
 
         Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
@@ -185,6 +188,9 @@ int main() {
         light->SetColor(Color::White());
         mesh->SetMaterial(m);
         light->SetIntensity(5);
+        UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
+        UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
+        UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());
         while (true) {
             ProfileScope _("Tick");
             GetWorldClock().TickAll(main_window);

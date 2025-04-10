@@ -21,6 +21,9 @@ void DetailWindow::Draw() {
             ImGui::Text("%s", *selected_actor->GetDisplayName());
             ImGui::SameLine();
             ImGui::Text("%d", selected_actor->GetHandle());
+            if (ImGui::CollapsingHeader("变换")) {
+                ImGuiDrawer::DrawTransform(selected_actor);
+            }
         }
     }
     ImGui::End();

@@ -23,6 +23,7 @@ public:
     Vector3f GetWorldRotation() const;
     Vector3f GetRotation() const;
     void SetRotation(const Quaternionf &rotation);
+    void SetRotation(const Vector3f& eluer);
 
     Vector3f GetScale() const { return world_transform_.scale; }
     void SetScale(const Vector3f &scale);

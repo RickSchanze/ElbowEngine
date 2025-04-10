@@ -8,6 +8,9 @@
 #include "imgui_internal.h"
 
 #include "Func/Render/RenderTexture.hpp"
+#include "Func/World/Actor.hpp"
+#include "Func/World/SceneComponent.hpp"
+#include "Func/World/Transform.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/ImageView.hpp"
 
@@ -86,4 +89,51 @@ bool ImGuiDrawer::CheckBox(const char *label, bool *checked) {
 bool ImGuiDrawer::InputFloat3(const char *label, float *v, const char *format, ImGuiInputTextFlags extra_flags) {
     ItemLabel(label, ImGuiItemLabelFlag::Left);
     return ImGui::InputFloat3("##", v, format, extra_flags);
+}
+
+void ImGuiDrawer::DrawTransform(Actor *actor) {
+    Transform trans = actor->GetTransform();
+    Vector3f rotation = trans.GetRotationEuler();
+    ImGui::PushID(actor);
+    ImGui::PushID("位置");
+    InputFloat3("位置", &trans.location.x);
+    ImGui::PopID();
+    ImGui::PushID("旋转");
+    InputFloat3("旋转", &rotation.x);
+    ImGui::PopID();
+    ImGui::PushID("缩放");
+    InputFloat3("缩放", &trans.scale.x);
+    ImGui::PopID();
+    ImGui::PopID();
+    Transform old = actor->GetTransform();
+    if (trans.location != old.location) {
+        actor->SetLocation(trans.location);
+    }
+    if (trans.scale != old.scale) {
+        actor->SetScale(trans.scale);
+    }
+    if (rotation != trans.GetRotationEuler()) {
+        actor->SetRotation(rotation);
+    }
+}
+
+
+void ImGuiDrawer::DrawTransform(SceneComponent *comp) {
+    Transform trans = comp->GetTransform();
+    Vector3f rotation = trans.GetRotationEuler();
+    ImGui::PushID(comp);
+    InputFloat3("位置", &trans.location.x);
+    InputFloat3("旋转", &rotation.x);
+    InputFloat3("缩放", &trans.scale.x);
+    ImGui::PopID();
+    Transform old = comp->GetTransform();
+    if (trans.location != old.location) {
+        comp->SetLocation(trans.location);
+    }
+    if (trans.scale != old.scale) {
+        comp->SetScale(trans.scale);
+    }
+    if (rotation != trans.GetRotationEuler()) {
+        comp->SetRotation(rotation);
+    }
 }

@@ -13,18 +13,14 @@ IMPL_REFLECTED(SceneComponent) {
 
 void SceneComponent::SetTransform(const Transform &transform) { transform_ = transform; }
 
-Vector3f SceneComponent::GetWorldLocation() const {
-    return world_transform_.location;
-}
+Vector3f SceneComponent::GetWorldLocation() const { return world_transform_.location; }
 
 void SceneComponent::SetLocation(const Vector3f &location) {
     transform_.location = location;
     SetTransformDirty();
 }
 
-Quaternionf SceneComponent::GetWorldRotationQuaterion() const {
-    return world_transform_.GetRotationQuaterion();
-}
+Quaternionf SceneComponent::GetWorldRotationQuaterion() const { return world_transform_.GetRotationQuaterion(); }
 
 Quaternionf SceneComponent::GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
 
@@ -34,6 +30,11 @@ Vector3f SceneComponent::GetRotation() const { return transform_.GetRotationEule
 
 void SceneComponent::SetRotation(const Quaternionf &rotation) {
     transform_.SetRotation(rotation);
+    SetTransformDirty();
+}
+
+void SceneComponent::SetRotation(const Vector3f &eluer) {
+    transform_.SetRotation(eluer);
     SetTransformDirty();
 }
 

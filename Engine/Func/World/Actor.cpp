@@ -20,6 +20,21 @@ void Actor::SetLocation(const Vector3f &location) {
     SetTransformDirty();
 }
 
+void Actor::SetRotation(const Quaternionf &rotation) {
+    transform_.SetRotation(rotation);
+    SetTransformDirty();
+}
+
+void Actor::SetRotation(const Vector3f &eluer) {
+    transform_.SetRotation(eluer);
+    SetTransformDirty();
+}
+
+void Actor::SetScale(const Vector3f &scale) {
+    transform_.scale = scale;
+    SetTransformDirty();
+}
+
 void Actor::PreTick(MilliSeconds delta_time) { UpdateTransform(); }
 
 void Actor::UpdateTransform() {

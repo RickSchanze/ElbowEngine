@@ -15,11 +15,16 @@ class Actor : public Object, public ITick {
 public:
     Transform &GetTransform() { return transform_; }
     void SetTransform(const Transform &transform);
-    [[nodiscard]] Vector3f GetLocation() const { return transform_.location; }
-    [[nodiscard]] Vector3f GetWorldLocation() const;
+    Vector3f GetLocation() const { return transform_.location; }
+    Vector3f GetWorldLocation() const;
     void SetLocation(const Vector3f &location);
-    [[nodiscard]] Quaternionf GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
-    void SetRotation(const Quaternionf &rotation) { transform_.SetRotation(rotation); }
+    Quaternionf GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
+
+    void SetRotation(const Quaternionf &rotation);
+    void SetRotation(const Vector3f &eluer);
+
+    Vector3f GetScale() const { return transform_.scale; }
+    void SetScale(const Vector3f &scale);
 
     void PreTick(MilliSeconds delta_time) override;
 
