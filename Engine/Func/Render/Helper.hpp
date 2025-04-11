@@ -3,7 +3,7 @@
 
 namespace rhi {
     class CommandBuffer;
-    class GraphicsPipeline;
+    class Pipeline;
 } // namespace rhi
 class Material;
 class Mesh;

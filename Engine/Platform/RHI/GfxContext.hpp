@@ -14,6 +14,7 @@
 
 class FrameAllocator;
 namespace rhi {
+    struct ComputePipelineDesc;
     struct Fence;
     struct Semaphore;
     class CommandBuffer;
@@ -21,7 +22,7 @@ namespace rhi {
     struct BufferDesc;
     class CommandPool;
     struct CommandPoolCreateInfo;
-    class GraphicsPipeline;
+    class Pipeline;
     struct GraphicsPipelineDesc;
     class LowShader;
     class RenderPass;
@@ -149,6 +150,8 @@ namespace rhi {
          */
         virtual SharedPtr<LowShader> CreateShader(const char *code, size_t size, StringView debug_name = "") = 0;
 
+        virtual UniquePtr<Pipeline> CreateComputePipeline(const ComputePipelineDesc &create_info) = 0;
+
         /**
          * 创建一个GraphicsPipeline, 你需要自己管理它的生命周期
          * 对于render_pass,
@@ -158,7 +161,7 @@ namespace rhi {
          * @param render_pass
          * @return
          */
-        virtual UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RenderPass *render_pass) = 0;
+        virtual UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RenderPass *render_pass) = 0;
 
         /**
          * 创建一个新的DescriptorSetLayout

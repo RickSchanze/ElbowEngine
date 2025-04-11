@@ -40,7 +40,9 @@ private:
 class DescriptorSet_Vulkan : public DescriptorSet {
 public:
   DescriptorSet_Vulkan(VkDescriptorSet handle) : handle_(handle) {}
-  ~DescriptorSet_Vulkan() override { handle_ = nullptr; }
+  ~DescriptorSet_Vulkan() override {
+      handle_ = nullptr;
+  }
 
   [[nodiscard]] void *GetNativeHandle() const override { return handle_; }
 

@@ -174,3 +174,25 @@ GraphicsPipeline_Vulkan::~GraphicsPipeline_Vulkan() {
     vkDestroyPipeline(device, pipeline_, nullptr);
     vkDestroyPipelineLayout(device, pipeline_layout_, nullptr);
 }
+
+ComputePipeline_Vulkan::ComputePipeline_Vulkan(const ComputePipelineDesc &desc) {
+    VkPipelineLayoutCreateInfo pipeline_layout_info{};
+    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_info.setLayoutCount = 1;
+    VkDescriptorSetLayout set_layout = desc.pipline_layout->GetNativeHandleT<VkDescriptorSetLayout>();
+    pipeline_layout_info.pSetLayouts = &set_layout;
+    VerifyVulkanResult(vkCreatePipelineLayout(GetVulkanGfxContext()->GetDevice(), &pipeline_layout_info, nullptr, &pipeline_layout_));
+    VkComputePipelineCreateInfo pipeline_info{};
+    pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipeline_info.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    pipeline_info.stage.module = desc.shader.shader->GetNativeHandleT<VkShaderModule>();
+    pipeline_info.stage.pName = "main";
+    pipeline_info.layout = pipeline_layout_;
+    VerifyVulkanResult(vkCreateComputePipelines(GetVulkanGfxContext()->GetDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline_));
+}
+
+ComputePipeline_Vulkan::~ComputePipeline_Vulkan() {
+    vkDestroyPipeline(GetVulkanGfxContext()->GetDevice(), pipeline_, nullptr);
+    vkDestroyPipelineLayout(GetVulkanGfxContext()->GetDevice(), pipeline_layout_, nullptr);
+}

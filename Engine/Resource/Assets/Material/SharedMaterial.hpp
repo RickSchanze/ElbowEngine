@@ -10,11 +10,12 @@
 #include "Core/Misc/UniquePtr.hpp"
 #include "Core/TypeAlias.hpp"
 #include "Platform/RHI/Enums.hpp"
+#include "Resource/Assets/Shader/Shader.hpp"
 
 
 class Shader;
 namespace rhi {
-    class GraphicsPipeline;
+    class Pipeline;
     class DescriptorSetLayout;
     class DescriptorSet;
 } // namespace rhi
@@ -26,6 +27,7 @@ struct MaterialParamBlock {
     UInt32 offset;
     UInt32 size;
     UInt32 binding;
+    ShaderParamType type = ShaderParamType::Count;
 };
 
 /**
@@ -48,12 +50,12 @@ public:
 
     UInt64 GetUniformBufferSize() const { return uniform_buffer_size_; }
     const Map<UInt64, MaterialParamBlock> &GetStructOnlyOffsets() const { return struct_only_offsets_; }
-    rhi::GraphicsPipeline *GetPipeline() const { return pipeline_.Get(); }
+    rhi::Pipeline *GetPipeline() const { return pipeline_.Get(); }
     const Array<SharedPtr<rhi::DescriptorSetLayout>> &GetDescriptorSetLayouts() const { return set_layouts_; }
 
 private:
     // 当前使用的pipeline
-    UniquePtr<rhi::GraphicsPipeline> pipeline_;
+    UniquePtr<rhi::Pipeline> pipeline_;
 
     // 这个是参数名字的哈希哈希到buffer_偏移量的映射
     Map<UInt64, MaterialParamBlock> uniform_offsets_;

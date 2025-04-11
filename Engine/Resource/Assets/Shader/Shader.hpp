@@ -10,6 +10,9 @@
 #pragma once
 
 namespace rhi {
+    struct ComputePipelineDesc;
+}
+namespace rhi {
     class LowShader;
     struct GraphicsPipelineDesc;
 } // namespace rhi
@@ -34,6 +37,7 @@ enum class ShaderParamType {
     Float4,
     Float,
     Texture2D,
+    StorageTexture2D,
     SamplerState,
     Struct,
     Matrix4x4f,
@@ -99,6 +103,7 @@ public:
     const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
 
     bool FillGraphicsPSODescFromShader(rhi::GraphicsPipelineDesc &desc, bool output_glsl = true);
+    bool FillComputePSODescFromShader(rhi::ComputePipelineDesc& desc, bool output_glsl = true);
 
 protected:
     Int32 stage_to_entry_point_index_[SHADER_STAGE_COUNT];

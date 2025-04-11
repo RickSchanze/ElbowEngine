@@ -9,7 +9,9 @@
 #include "Core/Memory/Memory.hpp"
 #include "GfxContext.hpp"
 #include "Image.hpp"
+#include "RenderDocApp.hpp"
 #include "SyncPrimitives.hpp"
+#include "Windows.h"
 
 
 SharedPtr<rhi::CommandBuffer> rhi::GfxCommandHelper::BeginSingleCommand() {
@@ -39,6 +41,19 @@ void rhi::GfxCommandHelper::EndSingleCommandGraphics(const SharedPtr<CommandBuff
     SubmitParameter param{};
     param.fence = fence.Get();
     param.submit_queue_type = QueueFamilyType::Graphics;
+    auto fuc = ctx.Submit(command_buffer, param);
+    fuc.Get();
+    fence->SyncWait();
+}
+
+void rhi::GfxCommandHelper::EndSingleCommandCompute(const SharedPtr<CommandBuffer> &command_buffer) {
+    command_buffer->End();
+    command_buffer->Execute();
+    auto &ctx = GetGfxContextRef();
+    const auto fence = ctx.CreateFence(false);
+    SubmitParameter param{};
+    param.fence = fence.Get();
+    param.submit_queue_type = QueueFamilyType::Compute;
     auto fuc = ctx.Submit(command_buffer, param);
     fuc.Get();
     fence->SyncWait();

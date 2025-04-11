@@ -13,6 +13,9 @@
 
 
 namespace rhi {
+    class ComputePipeline;
+}
+namespace rhi {
     struct RHICommand;
     enum class QueueFamilyType;
     struct CommandPoolCreateInfo {
@@ -38,8 +41,9 @@ namespace rhi {
         /// 利用ImagePipeline更改图形布局(2025.4.3理解)
         void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, Image *target, const ImageSubresourceRange &subresource_range,
                                   AccessFlags src_access, AccessFlags dst_access, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
-        void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, const SharedPtr<Image>& target, const ImageSubresourceRange &subresource_range,
-                                  AccessFlags src_access, AccessFlags dst_access, PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
+        void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, const SharedPtr<Image> &target,
+                                  const ImageSubresourceRange &subresource_range, AccessFlags src_access, AccessFlags dst_access,
+                                  PipelineStageFlags src_stage, PipelineStageFlags dst_stage);
 
         /// 插入一段Commands Debug标签
         void BeginDebugLabel(StringView label);
@@ -54,9 +58,10 @@ namespace rhi {
         /// 设置Viewport
         void SetViewport(const Rect2Df &viewport);
         /// 设置当前Pipeline
-        void BindPipeline(GraphicsPipeline *pipeline);
+        void BindPipeline(Pipeline *pipeline);
+        void BindComputePipeline(Pipeline *pipeline);
         /// 绑定DescriptorSet
-        void BindDescriptorSet(GraphicsPipeline *pipeline, DescriptorSet *set);
+        void BindDescriptorSet(Pipeline *pipeline, DescriptorSet *set, bool is_compute = false);
         /// 绑定VertexBuffer
         void BindVertexBuffer(Buffer *buffer, UInt32 offset = 0, UInt32 binding = 0);
         void BindVertexBuffer(const SharedPtr<Buffer> &buffer, UInt32 offset = 0, UInt32 binding = 0);
@@ -69,6 +74,7 @@ namespace rhi {
         void CopyBufferToImage(Buffer *src, Image *dst, const ImageSubresourceRange &subresource_range, Vector3i offset, Vector3i size);
         void CopyImageToBuffer(Image *src, Buffer *dst, const ImageSubresourceRange &subresource_range, Vector3i offset, Vector3i size);
         void CopyBuffer(Buffer *src, Buffer *dst, UInt64 size = 0);
+        void Dispatch(UInt32 x, UInt32 y, UInt32 z) { Enqueue<Cmd_Dispatch>(x, y, z); }
 
         /**
          * 清理队里里的命令 之前记录过的不会被清理

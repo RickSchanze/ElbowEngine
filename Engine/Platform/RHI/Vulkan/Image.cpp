@@ -79,7 +79,8 @@ Image_Vulkan::~Image_Vulkan() {
 }
 
 SharedPtr<Buffer> Image_Vulkan::CreateCPUVisibleBuffer() {
-    const BufferDesc rtn_desc{GetWidth() * GetHeight() * GetNumChannels(), BufferUsageBits::BUB_TransferDst, BMPB_HostCoherent | BMPB_HostVisible};
+    const BufferDesc rtn_desc{GetWidth() * GetHeight() * GetNumChannels() * GetFormatComponentSize(), BufferUsageBits::BUB_TransferDst,
+                              BMPB_HostCoherent | BMPB_HostVisible};
     auto dst_buffer = GetGfxContextRef().CreateBuffer(rtn_desc);
     // 将图像转换到TransferDst布局
     ImageSubresourceRange range{};
@@ -98,6 +99,26 @@ SharedPtr<Buffer> Image_Vulkan::CreateCPUVisibleBuffer() {
     cmd->Execute();
     GfxCommandHelper::EndSingleCommandTransfer(cmd);
     return dst_buffer;
+}
+
+UInt8 Image_Vulkan::GetFormatComponentSize() {
+    const Format f = GetFormat();
+    if (f == Format::Count)
+        return 0;
+    switch (f) {
+        case Format::R8_SRGB:
+        case Format::R8_UNorm:
+        case Format::R8G8B8A8_UNorm:
+        case Format::B8G8R8A8_UNorm:
+        case Format::R8G8B8A8_SRGB:
+            return 1;
+        case Format::D32_Float:
+        case Format::R32G32B32_Float:
+        case Format::R32G32B32A32_Float:
+            return 4;
+        default:
+            return 0;
+    }
 }
 
 Sampler_Vulkan::Sampler_Vulkan(const SamplerDesc &desc) {
@@ -138,6 +159,7 @@ UInt32 Image::GetNumChannels() const {
         case Format::R8G8B8A8_UNorm:
         case Format::B8G8R8A8_UNorm:
         case Format::R8G8B8A8_SRGB:
+        case Format::R32G32B32A32_Float:
             return 4;
         default:
             return 0;

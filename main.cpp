@@ -31,6 +31,7 @@
 #include "Resource/Assets/Mesh/Mesh.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "Resource/Assets/Texture/Texture2DMeta.hpp"
+#include "Resource/Assets/Shader/Shader.hpp"
 
 
 class Texture2D;
@@ -191,6 +192,7 @@ int main() {
         UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());
+
         while (true) {
             ProfileScope _("Tick");
             GetWorldClock().TickAll(main_window);

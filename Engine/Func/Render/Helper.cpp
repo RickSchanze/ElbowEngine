@@ -32,8 +32,12 @@ void helper::BindMaterial(CommandBuffer &cmd, const Material *mat) {
     auto &mgr = SharedMaterialManager::GetByRef();
     if (mgr.GetCurrentBindingSharedMaterial() != shared_mat) {
         mgr.SetCurrentBindingSharedMaterial(shared_mat);
-        cmd.BindPipeline(shared_mat->GetPipeline());
+        if (mat->IsComputeMaterial()) {
+            cmd.BindComputePipeline(shared_mat->GetPipeline());
+        } else {
+            cmd.BindPipeline(shared_mat->GetPipeline());
+        }
     }
     auto descriptor_set = mat->GetDescriptorSet();
-    cmd.BindDescriptorSet(shared_mat->GetPipeline(), descriptor_set);
+    cmd.BindDescriptorSet(shared_mat->GetPipeline(), descriptor_set, mat->IsComputeMaterial());
 }

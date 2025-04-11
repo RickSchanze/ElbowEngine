@@ -82,7 +82,12 @@ static ShaderParamType FindParamType(StringView path, StringView name, slang::Ty
         case slang::TypeReflection::Kind::Resource: {
             auto shape = var_type->getResourceShape();
             if (shape == SlangResourceShape::SLANG_TEXTURE_2D) {
-                return ShaderParamType::Texture2D;
+                auto access = var_type->getResourceAccess();
+                if (access == SLANG_RESOURCE_ACCESS_READ) {
+                    return ShaderParamType::Texture2D;
+                } else if (access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
+                    return ShaderParamType::StorageTexture2D;
+                }
             }
             if (shape == SlangResourceShape::SLANG_TEXTURE_CUBE) {
                 return ShaderParamType::Texture2D;
@@ -287,6 +292,34 @@ void Shader::Compile(bool output_glsl) {
         shader_handles_[FRAGMENT_STAGE_IDX] =
                 ctx->CreateShader(static_cast<const char *>(frag_code->getBufferPointer()), frag_code->getBufferSize(), frag_name);
         is_compiled_ = true;
+    } else if (IsCompute()) {
+        if (output_glsl) {
+            String output_code = "Compute: \n";
+            Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
+            Slang::ComPtr<slang::IBlob> compute_code = nullptr;
+            linked_program_->getEntryPointCode(stage_to_entry_point_index_[COMPUTE_STAGE_IDX], 1, compute_code.writeRef(), diagnostics.writeRef());
+            if (diagnostics) {
+                Log(Error) << String::Format("Shader编译失败: {}", static_cast<const char *>(diagnostics->getBufferPointer()));
+                return;
+            }
+            output_code += String::Format("{}\n", static_cast<const char *>(compute_code->getBufferPointer()));
+            StringView intermediate_path = cfg->GetValidShaderIntermediatePath();
+            String file_name = String::Format("{}_generated.glsl", *name_);
+            String output_path = Path::Combine(intermediate_path, file_name);
+            File::WriteAllText(output_path, output_code);
+        }
+        Slang::ComPtr<slang::IBlob> compute_code;
+        Slang::ComPtr<slang::IBlob> diagnostics = nullptr;
+        linked_program_->getEntryPointCode(stage_to_entry_point_index_[COMPUTE_STAGE_IDX], 0, compute_code.writeRef(), diagnostics.writeRef());
+        if (diagnostics) {
+            Log(Error) << String::Format("Shader编译失败: {}", static_cast<const char *>(diagnostics->getBufferPointer()));
+            return;
+        }
+        auto *ctx = GetGfxContext();
+        String compute_name = String::Format("{}.Compute", *name_);
+        shader_handles_[COMPUTE_STAGE_IDX] =
+                ctx->CreateShader(static_cast<const char *>(compute_code->getBufferPointer()), compute_code->getBufferSize(), compute_name);
+        is_compiled_ = true;
     }
 }
 
@@ -420,7 +453,7 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
                 const auto variable = field->getVariable();
 
                 binding.binding = field->getBindingIndex();
-                binding.stage_flags = Vertex | Fragment;
+                binding.stage_flags = shader->IsGraphics() ? Vertex | Fragment : ShaderStageBits::Compute;
                 binding.descriptor_count = 1;
                 if (field->getCategory() == slang::DescriptorTableSlot) {
                     auto kind = variable->getType()->getKind();
@@ -431,7 +464,12 @@ static Array<SharedPtr<DescriptorSetLayout>> GetShaderDescriptorSetLayout(const 
                     } else if (kind == slang::TypeReflection::Kind::Resource) {
                         auto shape = variable->getType()->getResourceShape();
                         if (shape == SLANG_TEXTURE_2D) {
-                            binding.descriptor_type = DescriptorType::SampledImage;
+                            auto access = variable->getType()->getResourceAccess();
+                            if (access == SLANG_RESOURCE_ACCESS_READ) {
+                                binding.descriptor_type = DescriptorType::SampledImage;
+                            } else if (access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
+                                binding.descriptor_type = DescriptorType::StorageImage;
+                            }
                         } else if (shape == SLANG_TEXTURE_CUBE) {
                             binding.descriptor_type = DescriptorType::SampledImage;
                         }
@@ -517,5 +555,29 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
         pso_desc.depth_stencil.enable_depth_write = false;
     }
     pso_desc.descriptor_set_layouts = layout;
+    return true;
+}
+
+bool Shader::FillComputePSODescFromShader(rhi::ComputePipelineDesc &desc, bool output_glsl) {
+    ProfileScope _(__func__);
+    if (!IsLoaded()) {
+        Log(Error) << "CreatePSOFromShader: shader is nullptr or not loaded";
+        return false;
+    }
+    if (!IsCompiled()) {
+        Compile(output_glsl);
+    }
+    if (!IsCompiled()) {
+        Log(Error) << "shader is not compiled";
+        return false;
+    }
+    if (!IsCompute()) {
+        Log(Error) << "shader is not compute";
+        return false;
+    }
+    auto layout = GetShaderDescriptorSetLayout(this);
+    desc.pipline_layout = layout[0];
+    desc.shader.shader = shader_handles_[COMPUTE_STAGE_IDX].get();
+    desc.shader.stage = Compute;
     return true;
 }

@@ -111,17 +111,25 @@ static UInt64 RearrangeShaderParams(const Array<ShaderParam> &params, Map<UInt64
         if (param.type == ShaderParamType::Texture2D) {
             MaterialParamBlock param_block{};
             param_block.binding = param.binding;
+            param_block.type = param.type;
             texture_bindings[name_hash] = param_block;
         } else if (param.type == ShaderParamType::SamplerState) {
             MaterialParamBlock param_block{};
             param_block.binding = param.binding;
+            param_block.type = param.type;
             sampler_bindings[name_hash] = param_block;
+        } else if (param.type == ShaderParamType::StorageTexture2D) {
+            MaterialParamBlock param_block{};
+            param_block.binding = param.binding;
+            param_block.type = param.type;
+            texture_bindings[name_hash] = param_block;
         } else {
             if (param.is_struct_member) {
                 MaterialParamBlock block = blocks[param.binding];
                 block.size = param.size;
                 block.offset = param.offset + block.offset;
                 block.binding = param.binding;
+                block.type = param.type;
                 offsets[name_hash] = block;
             } else {
                 offsets[name_hash] = blocks[param.binding];
@@ -138,25 +146,37 @@ SharedMaterial::SharedMaterial(Shader *shader) {
         Log(Error) << "输入shader为空";
         return;
     }
-    GraphicsPipelineDesc desc{};
-    if (!shader->FillGraphicsPSODescFromShader(desc)) {
-        Log(Error) << "无法填充GraphicsPipelineDesc";
-        return;
+    if (shader->IsGraphics()) {
+        GraphicsPipelineDesc desc{};
+        if (!shader->FillGraphicsPSODescFromShader(desc)) {
+            Log(Error) << "无法填充GraphicsPipelineDesc";
+            return;
+        }
+
+        // TODO: 扩展性实现
+        if (shader->GetAnnotation(ShaderAnnotation::EnableDepth)) {
+            desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
+        }
+
+        if (shader->GetAnnotation(ShaderAnnotation::HDR)) {
+            desc.attachments.color_formats.Add(Format::R32G32B32A32_Float);
+        } else {
+            desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
+        }
+
+        pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
+        set_layouts_ = desc.descriptor_set_layouts;
+    } else if (shader->IsCompute()) {
+        ComputePipelineDesc my_desc{};
+        if (!shader->FillComputePSODescFromShader(my_desc)) {
+            VLOG_ERROR("无法填充ComputePipelineDesc");
+            return;
+        }
+        pipeline_ = GetGfxContextRef().CreateComputePipeline(my_desc);
+        set_layouts_ = {my_desc.pipline_layout};
+        VLOG_INFO("set layout:", my_desc.pipline_layout.get());
     }
 
-    // TODO: 扩展性实现
-    if (shader->GetAnnotation(ShaderAnnotation::EnableDepth)) {
-        desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
-    }
-
-    if (shader->GetAnnotation(ShaderAnnotation::HDR)) {
-        desc.attachments.color_formats.Add(Format::R32G32B32A32_Float);
-    } else {
-        desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
-    }
-
-    pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
-    set_layouts_ = desc.descriptor_set_layouts;
     // 1. 解析Shader参数 创建UniformBuffer和Texture
     Array<ShaderParam> params;
     bool has_camera = false;

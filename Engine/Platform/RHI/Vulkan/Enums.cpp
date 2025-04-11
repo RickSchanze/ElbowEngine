@@ -640,7 +640,8 @@ VkDescriptorType RHIDescriptorTypeToVkDescriptorType(rhi::DescriptorType type) {
         // case DescriptorType::CombinedImageSampler: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         case DescriptorType::SampledImage:
             return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        // case DescriptorType::StorageImage: return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        case DescriptorType::StorageImage:
+            return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
         // case DescriptorType::UniformTexelBuffer: return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
         // case DescriptorType::StorageTexelBuffer: return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
         case DescriptorType::UniformBuffer:
@@ -659,7 +660,8 @@ rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(const VkDescriptorType t
         // case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return DescriptorType::CombinedImageSampler;
         case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
             return DescriptorType::SampledImage;
-        // case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE: return DescriptorType::StorageImage;
+        case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+            return DescriptorType::StorageImage;
         // case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: return DescriptorType::UniformTexelBuffer;
         // case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: return DescriptorType::StorageTexelBuffer;
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
@@ -689,6 +691,8 @@ VkAccessFlags RHIAccessFlagToVkAccessFlag(rhi::AccessFlags access_flag) {
         flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
     if (access_flag & AFB_ShaderRead)
         flags |= VK_ACCESS_SHADER_READ_BIT;
+    if (access_flag & AFB_ShaderWrite)
+        flags |= VK_ACCESS_SHADER_WRITE_BIT;
     return flags;
 }
 
@@ -729,6 +733,8 @@ VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(rhi::PipelineStageFlags p
         flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
     if (pipeline_stage & PSFB_FragmentShader)
         flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    if (pipeline_stage & PSFB_ComputeShader)
+        flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     return flags;
 }
 
@@ -813,6 +819,8 @@ VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(ImageUsage usage_flag) {
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     if (usage_flag & IUB_ShaderRead)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    if (usage_flag & IUB_Storage)
+        flags |= VK_IMAGE_USAGE_STORAGE_BIT;
     return flags;
 }
 

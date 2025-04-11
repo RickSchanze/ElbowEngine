@@ -131,6 +131,7 @@ public:
      * 拉取GPU图像保存到当前的GetAssetPath()中
      */
     void Download() const;
+    void Download(StringView path) const;
 
     /**
      * 将data数据通道转换

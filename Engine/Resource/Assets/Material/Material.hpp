@@ -50,9 +50,9 @@ public:
 
     void SetFloat4(UInt64 name_hash, const Vector4f &value) const;
 
-    bool SetTexture2D(UInt64 name_hash, const Texture2D *texture) const;
+    bool SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage = false) const;
 
-    bool SetTexture2D(const String &name, const Texture2D *texture);
+    bool SetTexture2D(const String &name, const Texture2D *texture, bool is_storage = false);
 
     bool SetFloat(StringView name, Float value) const;
 
@@ -61,6 +61,8 @@ public:
     void SetShader(const Shader *shader);
 
     bool SetMatrix4x4(StringView name, const Matrix4x4f &value) const;
+
+    bool IsComputeMaterial() const;
 
     [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
     [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;

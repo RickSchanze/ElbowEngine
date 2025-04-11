@@ -25,8 +25,13 @@ static void ExecuteCmdBindDescriptorSet(const VkCommandBuffer cmd, const Cmd_Bin
         Log(Error) << "命令BindDescriptorSet错误, 传入的cmd_bind_descriptor_set无效";
         return;
     }
-    const auto pipeline = static_cast<GraphicsPipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline);
-    const VkPipelineLayout layout = pipeline->GetPipelineLayout();
+    VkPipelineLayout layout;
+    if (cmd_bind_descriptor_set->is_compute) {
+        layout = static_cast<ComputePipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline)->GetPipelineLayout();
+    } else {
+        GraphicsPipeline_Vulkan *pipeline = static_cast<GraphicsPipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline);
+        layout = pipeline->GetPipelineLayout();
+    }
     const auto set = cmd_bind_descriptor_set->set->GetNativeHandleT<VkDescriptorSet>();
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &set, 0, nullptr);
 }
@@ -263,6 +268,25 @@ static void ExecuteCmdEndCommandDebugLabel(VkCommandBuffer buffer) {
     ctx.EndDebugLabel(buffer);
 }
 
+static void ExecuteCmdBindComputePipeline(VkCommandBuffer buffer, Cmd_BindComputePipeline *command) {
+    auto &ctx = *GetVulkanGfxContext();
+    if (command->pipeline == nullptr || !command->pipeline->IsValid()) {
+        Log(Fatal) << "命令BindComputePipeline错误, 传入的pipeline无效";
+        return;
+    }
+    auto vk_pipeline = ((ComputePipeline_Vulkan *)command->pipeline);
+    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_COMPUTE, vk_pipeline->GetNativeHandleT<VkPipeline>());
+}
+
+static void ExecuteCmdDispatch(VkCommandBuffer buffer, Cmd_Dispatch *command) {
+    auto &ctx = *GetVulkanGfxContext();
+    if (!command) {
+        Log(Fatal) << "命令Dispatch错误, 传入的pipeline无效";
+        return;
+    }
+    vkCmdDispatch(buffer, command->x, command->y, command->z);
+}
+
 static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &commands) {
     ProfileScope _(__func__);
     // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
@@ -315,6 +339,12 @@ static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &c
             case RHICommandType::EndCommandDebugLabel:
                 ExecuteCmdEndCommandDebugLabel(buffer);
                 break;
+            case RHICommandType::BindComputePipeline:
+                ExecuteCmdBindComputePipeline(buffer, static_cast<Cmd_BindComputePipeline *>(command));
+                break;
+            case RHICommandType::Dispatch:
+                ExecuteCmdDispatch(buffer, static_cast<Cmd_Dispatch *>(command));
+                break;
             default:
                 Log(Fatal) << "Unknown RHI Command";
         }
@@ -327,13 +357,13 @@ CommandPool_Vulkan::CommandPool_Vulkan(CommandPoolCreateInfo info) : CommandPool
     const auto &ctx = *GetVulkanGfxContext();
     VkCommandPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    const auto &[graphics_family, present_family, transfer_family] = ctx.GetCurrentQueueFamilyIndices();
+    const auto &[graphics_family, present_family, transfer_family, compute_family] = ctx.GetCurrentQueueFamilyIndices();
     switch (info.type) {
         case QueueFamilyType::Graphics:
             pool_info.queueFamilyIndex = *graphics_family;
             break;
         case QueueFamilyType::Compute:
-            Log(Fatal) << "计算队列尚不支持";
+            pool_info.queueFamilyIndex = *compute_family;
             break;
         case QueueFamilyType::Transfer:
             pool_info.queueFamilyIndex = *transfer_family;
@@ -433,9 +463,9 @@ void CommandPool_Vulkan::FreeCommandBuffer(VkCommandBuffer buffer) {
     auto device = ctx.GetDevice();
     const auto *cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([buffer, device, command_pool = command_pool_] {
-                        const VkCommandBuffer b = buffer;
-                        vkFreeCommandBuffers(device, command_pool, 1, &b);
-                    });
+                    const VkCommandBuffer b = buffer;
+                    vkFreeCommandBuffers(device, command_pool, 1, &b);
+                });
     if (cfg->GetEnableMultithreadRender()) {
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
     } else {

@@ -9,6 +9,7 @@
 #include "Func/Render/RenderPipeline.hpp"
 
 
+class Texture2D;
 class StaticMeshComponent;
 namespace rhi {
     class Buffer;
@@ -26,7 +27,7 @@ public:
 
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
     void PerformMeshPass(rhi::CommandBuffer& cmd) const;
-    void PerformSkyboxPass(rhi::CommandBuffer& cmd) const;
+    void PerformSkyboxPass(rhi::CommandBuffer& cmd);
     void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target, Vector2f render_size) const;
     void PerformImGuiPass(rhi::CommandBuffer& cmd, const RenderParams& params);
 
@@ -34,6 +35,8 @@ private:
     Material *basepass_material_ = nullptr;
     Material *skysphere_pass_material_ = nullptr;
     Material *color_transform_pass_material_ = nullptr;
+    Material* compute_material_ = nullptr;
+    Texture2D* test_dynamic_sky_sphere_map_ = nullptr;
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<RenderTexture> sdr_color_;

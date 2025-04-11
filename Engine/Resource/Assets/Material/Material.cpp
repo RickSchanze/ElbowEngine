@@ -36,6 +36,7 @@ void Material::Build() {
     // TODO: shared_material不可用时的Fallback
     const UInt64 uniform_buffer_size = shared_material_->GetUniformBufferSize();
     descriptor_set_ = AllocateDescriptorSetFunc(shared_material_->GetDescriptorSetLayouts()[0]);
+    VLOG_INFO("set layout: ")
     if (shared_material_->HasCamera()) {
         UpdateCameraDescriptorSetFunc(*descriptor_set_);
     }
@@ -63,7 +64,12 @@ void Material::Build() {
     }
     for (auto &param: shared_material_->GetTextureBindings() | range::view::Values) {
         DescriptorImageUpdateDesc update_info{};
-        update_info.image_layout = ImageLayout::ShaderReadOnly;
+        if (param.type == ShaderParamType::StorageTexture2D) {
+            // 当前情况是Compute Shader compute shader绑定时应该所有的都准备好了
+            continue;
+        } else {
+            update_info.image_layout = ImageLayout::ShaderReadOnly;
+        }
         update_info.image_view = Texture2D::GetDefault()->GetNativeImageView();
         update_info.sampler = nullptr;
         descriptor_set_->Update(param.binding, update_info);
@@ -147,7 +153,7 @@ void Material::SetFloat4(UInt64 name_hash, const Vector4f &value) const {
     memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Vector3f));
 }
 
-bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
+bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage) const {
     if (texture == nullptr || !texture->IsLoaded()) {
         Log(Error) << "传入无效texture";
         return false;
@@ -161,15 +167,20 @@ bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture) const {
     }
     const UInt32 binding = texture_bindings[name_hash].binding;
     DescriptorImageUpdateDesc update_info{};
-    update_info.image_layout = ImageLayout::ShaderReadOnly;
+    if (!is_storage) {
+        update_info.image_layout = ImageLayout::ShaderReadOnly;
+    } else {
+        update_info.image_layout = ImageLayout::General;
+    }
     update_info.image_view = texture->GetNativeImageView();
     update_info.sampler = nullptr;
+    update_info.descriptor_type = is_storage ? DescriptorType::StorageImage : DescriptorType::SampledImage;
     descriptor_set_->Update(binding, update_info);
     return true;
 }
 
-bool Material::SetTexture2D(const String &name, const Texture2D *texture) {
-    if (SetTexture2D(name.GetHashCode(), texture)) {
+bool Material::SetTexture2D(const String &name, const Texture2D *texture, bool is_storage) {
+    if (SetTexture2D(name.GetHashCode(), texture, is_storage)) {
         texture_params_[name] = texture;
         return true;
     }
@@ -230,6 +241,8 @@ bool Material::SetMatrix4x4(StringView name, const Matrix4x4f &value) const {
     memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Matrix4x4f));
     return true;
 }
+
+bool Material::IsComputeMaterial() const { return shader_->IsCompute(); }
 
 ObjectHandle Material::GetParam_Texture2DHandle(const String &name) const {
     if (texture_params_.Contains(name)) {

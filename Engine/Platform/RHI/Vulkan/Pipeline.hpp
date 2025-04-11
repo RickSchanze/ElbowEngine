@@ -28,4 +28,18 @@ namespace rhi {
 
         bool dynamic_rendering_ = false;
     };
+
+    class ComputePipeline_Vulkan : public ComputePipeline {
+    public:
+        [[nodiscard]] void *GetNativeHandle() const override { return pipeline_; }
+
+        explicit ComputePipeline_Vulkan(const ComputePipelineDesc &desc);
+        ~ComputePipeline_Vulkan() override;
+
+        VkPipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
+
+    private:
+        VkPipeline pipeline_ = VK_NULL_HANDLE;
+        VkPipelineLayout pipeline_layout_ = VK_NULL_HANDLE;
+    };
 } // namespace rhi

@@ -8,6 +8,7 @@
 #include "IResource.hpp"
 
 namespace rhi {
+    class Pipeline : public IResource {};
     class DescriptorSetLayout;
     class LowShader;
     struct RasterizationDecs {
@@ -100,7 +101,12 @@ namespace rhi {
         Array<SharedPtr<DescriptorSetLayout>> descriptor_set_layouts{};
     };
 
-    class GraphicsPipeline : public IResource {
-    public:
+
+    class GraphicsPipeline : public Pipeline {};
+
+    struct ComputePipelineDesc {
+        ShaderDesc shader{};
+        SharedPtr<DescriptorSetLayout> pipline_layout{};
     };
+    class ComputePipeline : public Pipeline {};
 } // namespace rhi

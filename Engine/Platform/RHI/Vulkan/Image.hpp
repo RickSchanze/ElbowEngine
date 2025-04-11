@@ -25,6 +25,8 @@ namespace rhi {
 
         SharedPtr<Buffer> CreateCPUVisibleBuffer() override;
 
+        UInt8 GetFormatComponentSize();
+
     protected:
         VkImage image_handle_ = VK_NULL_HANDLE;
         VkDeviceMemory image_memory_ = VK_NULL_HANDLE;

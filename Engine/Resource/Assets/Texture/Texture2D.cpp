@@ -158,7 +158,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         }
         const Format format = meta.format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
-        const ImageDesc desc{meta.width, meta.height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget,
+        const ImageDesc desc{meta.width, meta.height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
                              format,     ImageDimension::D2, meta.is_cubemap ? 6 : 1};
         String debug_name = String::Format("Texture2D_{}", *name_);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
@@ -291,20 +291,34 @@ bool Texture2D::AppendSprite(const UInt64 id, StringView path) {
     return success;
 }
 
-void Texture2D::Download() const {
+void Texture2D::Download() const { Download(GetAssetPath()); }
+
+void Texture2D::Download(StringView path) const {
     ProfileScope _(__func__);
-    if (GetAssetPath().IsEmpty()) {
+    if (path.IsEmpty()) {
         Log(Error) << "下载纹理失败: 资源路径为空";
         return;
     }
-    // 将图像数据拉取下来保存到新的图片中
-    const auto w = GetWidth();
-    const auto h = GetHeight();
-    const auto num_channels = GetNumChannels();
-    const auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
-    const void *data = cpu_buffer->BeginRead();
-    stbi_write_png(*GetAssetPath(), w, h, num_channels, data, w * num_channels);
-    cpu_buffer->EndRead();
+    if (path.EndsWith(".png")) {
+        // 将图像数据拉取下来保存到新的图片中
+        const auto w = GetWidth();
+        const auto h = GetHeight();
+        const auto num_channels = GetNumChannels();
+        const auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
+        const void *data = cpu_buffer->BeginRead();
+        stbi_write_png(*path, w, h, num_channels, data, w * num_channels);
+
+        cpu_buffer->EndRead();
+    } else if (path.EndsWith(".hdr")) {
+        // 将图像数据拉取下来保存到新的图片中
+        const auto w = GetWidth();
+        const auto h = GetHeight();
+        const auto num_channels = 4;
+        const auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
+        const void *data = cpu_buffer->BeginRead();
+        stbi_write_hdr(*path, w, h, num_channels, static_cast<const Float *>(data));
+        cpu_buffer->EndRead();
+    }
 }
 
 UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels) {

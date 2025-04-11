@@ -15,11 +15,12 @@ namespace rhi {
     StringView VulkanErrorToString(VkResult result);
 
     struct QueueFamilyIndices {
-        Optional<uint32_t> graphics_family;
-        Optional<uint32_t> present_family;
-        Optional<uint32_t> transfer_family;
+        Optional<UInt32> graphics_family;
+        Optional<UInt32> present_family;
+        Optional<UInt32> transfer_family;
+        Optional<UInt32> compute_family;
 
-        [[nodiscard]] bool IsComplete() const { return graphics_family && present_family && transfer_family; }
+        [[nodiscard]] bool IsComplete() const { return graphics_family && present_family && transfer_family && compute_family; }
     };
 
     class GfxContext_Vulkan final : public GfxContext {
@@ -90,6 +91,8 @@ namespace rhi {
 
         static Format GetSwapchainImageFormat();
 
+        UniquePtr<Pipeline> CreateComputePipeline(const ComputePipelineDesc &create_info) override;
+
     private:
         [[nodiscard]] Format FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
@@ -101,7 +104,7 @@ namespace rhi {
         static void PreVulkanGfxContextDestroyed(GfxContext *ctx);
 
     public:
-        [[nodiscard]] UniquePtr<GraphicsPipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info,
+        [[nodiscard]] UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info,
                                                                          rhi::RenderPass *render_pass) override;
 
         [[nodiscard]] Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore) override;
@@ -140,6 +143,7 @@ namespace rhi {
         VkQueue graphics_queue_ = nullptr;
         VkQueue present_queue_ = nullptr;
         VkQueue transfer_queue_ = nullptr;
+        VkQueue compute_queue_ = nullptr;
         VkSwapchainKHR swapchain_ = nullptr;
         QueueFamilyIndices queue_family_indices_{};
 

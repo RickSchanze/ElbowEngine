@@ -191,9 +191,7 @@ VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlag
     return buffer;
 }
 
-void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const {
-    vkDestroyBuffer(device_, buffer, nullptr);
-}
+void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const { vkDestroyBuffer(device_, buffer, nullptr); }
 
 VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const {
     VkMemoryRequirements mem_requirements;
@@ -358,7 +356,7 @@ VkQueue GfxContext_Vulkan::GetQueue(QueueFamilyType type) const {
             return graphics_queue_;
             break;
         case QueueFamilyType::Compute:
-            Log(Fatal) << "Compute queue尚不支持";
+            return compute_queue_;
             break;
         case QueueFamilyType::Transfer:
             return transfer_queue_;
@@ -390,6 +388,10 @@ SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc &des
 }
 
 Format GfxContext_Vulkan::GetSwapchainImageFormat() { return Format::B8G8R8A8_UNorm; }
+
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateComputePipeline(const ComputePipelineDesc &create_info) {
+    return MakeUnique<ComputePipeline_Vulkan>(create_info);
+}
 
 Format GfxContext_Vulkan::FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
     for (const Array<VkFormat> fmts =
@@ -559,7 +561,7 @@ void GfxContext_Vulkan::WaitForDeviceIdle() { vkDeviceWaitIdle(device_); }
 
 void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type) { vkQueueWaitIdle(GetQueue(type)); }
 
-UniquePtr<GraphicsPipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, rhi::RenderPass *render_pass) {
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, rhi::RenderPass *render_pass) {
     return MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
 
@@ -761,6 +763,9 @@ static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surfa
         if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT) {
             indices.transfer_family = i;
         }
+        if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+            indices.compute_family = i;
+        }
         if (indices.IsComplete()) {
             break;
         }
@@ -798,12 +803,12 @@ static void SelectPhysicalDevice(VkPhysicalDevice &physical_device, VkInstance i
 }
 
 static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface *surface, OUT VkDevice &device, OUT VkQueue &graphics_queue,
-                                OUT VkQueue &present_queue, OUT VkQueue &transfer_queue) {
+                                OUT VkQueue &present_queue, OUT VkQueue &transfer_queue, OUT VkQueue &compute_queue) {
     auto indices = FindQueueFamilies(physical_device, surface);
     Assert(indices.IsComplete(), "Find uncompleted queue families.");
     Array<VkDeviceQueueCreateInfo> queue_create_infos;
     queue_create_infos.Reserve(2);
-    Array unique_queue_families = Array{*indices.graphics_family, *indices.present_family, *indices.transfer_family}.Unique();
+    Array unique_queue_families = Array{*indices.graphics_family, *indices.present_family, *indices.transfer_family, *indices.compute_family}.Unique();
     float queue_priority = 1.0f;
     for (UInt32 queue_family: unique_queue_families) {
         VkDeviceQueueCreateInfo create_info = {};
@@ -843,6 +848,7 @@ static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface *surfa
     vkGetDeviceQueue(device, *indices.graphics_family, 0, &graphics_queue);
     vkGetDeviceQueue(device, *indices.present_family, 0, &present_queue);
     vkGetDeviceQueue(device, *indices.transfer_family, 0, &transfer_queue);
+    vkGetDeviceQueue(device, *indices.compute_family, 0, &compute_queue);
 }
 
 static void DestroyLogicalDevice(VkDevice &device) {
@@ -915,7 +921,7 @@ GfxContext_Vulkan::GfxContext_Vulkan() {
     CreateSurface(surface_, instance_);
     SelectPhysicalDevice(physical_device_, instance_, surface_);
     queue_family_indices_ = FindQueueFamilies(physical_device_, surface_);
-    CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_, transfer_queue_);
+    CreateLogicalDevice(physical_device_, surface_, device_, graphics_queue_, present_queue_, transfer_queue_, compute_queue_);
     FindVulkanExtensionSymbols();
     auto cfg = GetConfig<PlatformConfig>();
     default_color_format_ = CreateSwapChain(QuerySwapChainSupportInfo(), surface_, physical_device_, device_, swapchain_image_desc_,

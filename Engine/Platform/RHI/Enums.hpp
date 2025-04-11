@@ -192,6 +192,7 @@ namespace rhi {
         Sampler,
         UniformBuffer,
         SampledImage,
+        StorageImage,
         Count,
     };
 
@@ -204,6 +205,7 @@ namespace rhi {
         AFB_TransferRead = 1 << 4,
         AFB_TransferWrite = 1 << 5,
         AFB_ShaderRead = 1 << 6,
+        AFB_ShaderWrite = 1 << 7,
     };
     using AccessFlags = Int32;
 
@@ -215,6 +217,7 @@ namespace rhi {
         PSFB_DepthStencilAttachment = 1 << 3,
         PSFB_Transfer = 1 << 4,
         PSFB_FragmentShader = 1 << 5,
+        PSFB_ComputeShader = 1 << 6,
     };
     using PipelineStageFlags = Int32;
 
@@ -232,6 +235,7 @@ namespace rhi {
         IUB_ShaderRead = 0b0010000, // VK_IMAGE_USAGE_SAMPLED_BIT
         IUB_Transient = 0b0100000, // VK_IMAGE_USAGE_STORAGE_BIT
         IUB_SwapChain = 0b1000000, // For swapchain use
+        IUB_Storage = 0b10000000, // VK_IMAGE_USAGE_STORAGE_BIT
         IUB_Max, // VK_IMAGE_USAGE_MAX_ENUM
     };
     using ImageUsage = UInt32;

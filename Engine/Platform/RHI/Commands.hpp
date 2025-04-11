@@ -13,7 +13,7 @@ namespace rhi {
     class DescriptorSet;
     class Image;
     class ImageView;
-    class GraphicsPipeline;
+    class Pipeline;
 
     enum class RHICommandType {
         CopyBuffer,
@@ -21,6 +21,7 @@ namespace rhi {
         BindIndexBuffer,
         DrawIndexed,
         BindGraphicsPipeline,
+        BindComputePipeline,
         BeginRender,
         EndRender,
         BeginRenderPass,
@@ -33,6 +34,7 @@ namespace rhi {
         CopyImageToBuffer,
         BeginCommandDebugLabel,
         EndCommandDebugLabel,
+        Dispatch,
         Count,
     };
 
@@ -102,16 +104,26 @@ namespace rhi {
     struct Cmd_BindPipeline final : RHICommand {
         [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindGraphicsPipeline; }
 
-        GraphicsPipeline *pipeline;
+        Pipeline *pipeline;
 
-        explicit Cmd_BindPipeline(GraphicsPipeline *pipeline_) : pipeline(pipeline_) {}
+        explicit Cmd_BindPipeline(Pipeline *pipeline_) : pipeline(pipeline_) {}
+    };
+
+    struct Cmd_BindComputePipeline final : RHICommand {
+        [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindComputePipeline; }
+
+        Pipeline *pipeline;
+
+        explicit Cmd_BindComputePipeline(Pipeline *pipeline_) : pipeline(pipeline_) {}
     };
 
     struct Cmd_BindDescriptorSet final : RHICommand {
         [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindDescriptorSet; }
-        GraphicsPipeline *pipeline;
+        Pipeline *pipeline;
         DescriptorSet *set;
-        explicit Cmd_BindDescriptorSet(GraphicsPipeline *pipeline_, DescriptorSet *set_) : pipeline(pipeline_), set(set_) {}
+        bool is_compute = false;
+        explicit Cmd_BindDescriptorSet(Pipeline *pipeline_, DescriptorSet *set_, bool is_compute_) :
+            pipeline(pipeline_), set(set_), is_compute(is_compute_) {}
     };
 
     struct RenderAttachment {
@@ -215,5 +227,15 @@ namespace rhi {
         ImageSubresourceRange subresource_range{};
         Vector3i offset{};
         Vector3i size{};
+    };
+
+    struct Cmd_Dispatch final : RHICommand {
+        [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::Dispatch; }
+
+        explicit Cmd_Dispatch(const UInt32 x_, const UInt32 y_, const UInt32 z_) : x(x_), y(y_), z(z_) {}
+
+        UInt32 x = 0;
+        UInt32 y = 0;
+        UInt32 z = 0;
     };
 } // namespace rhi

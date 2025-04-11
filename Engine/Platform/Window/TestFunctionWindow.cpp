@@ -16,8 +16,8 @@ void TestFunctionWindow::Draw() {
         if (ImGui::Button("将球面贴图转换为立方体贴图")) {
             auto *tex = AssetDataBase::LoadOrImportT<Texture2D>("Assets/Texture/poly_haven_studio_1k.exr");
             if (tex) {
-                auto *cubemap = ImageTransformer::TransformSphereMapToCubeMap(tex, 512, rhi::Format::R32G32B32A32_Float);
-                VLOG_INFO("创建cubemap!:", cubemap);
+                ImageTransformer::CalculateIrradianceMap(tex);
+                // VLOG_INFO("创建cubemap!:", cubemap);
             }
         }
     }
