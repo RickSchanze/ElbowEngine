@@ -61,6 +61,7 @@ public:
     void SetShader(const Shader *shader);
 
     bool SetMatrix4x4(StringView name, const Matrix4x4f &value) const;
+    bool SetMatrix3x3(StringView name, const Matrix3x3f &value) const;
 
     bool IsComputeMaterial() const;
 

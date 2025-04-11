@@ -10,16 +10,20 @@ import "Fresnel";
 import "GGX";
 
 struct PBRFloatParam {
-
     float metallic;
     float roughness;
     float ao;
+}
+
+struct MatrixParam {
+    float4x4 normal_matrix;
 }
 
 uniform ConstantBuffer<Camera> camera;
 uniform ConstantBuffer<GlobalLights> dynamic_lights;
 
 uniform ConstantBuffer<PBRFloatParam> float_param;
+uniform ConstantBuffer<MatrixParam> martix_param;
 
 uniform Texture2D tex;
 uniform Texture2D<float> tex_metallic;
@@ -48,13 +52,14 @@ VertexOutput vert(Vertex vert) {
     float4 pos_vec4 = float4(vert.position, 1);
     float4x4 model = vert.GetModelFloat4x4();
     float4 world_pos = mul(pos_vec4, model);
+
     output.position = mul(world_pos, camera.GetView());
     output.position = mul(output.position, camera.GetProjection());
     output.uv = vert.uv0;
     output.world_position = world_pos.xyz;
     output.tagent = vert.tangent;
     output.bitangent = vert.bitangent;
-    output.normal = vert.normal;
+    output.normal = mul(vert.normal, float3x3(model));
     return output;
 }
 
@@ -66,7 +71,7 @@ FragOutput frag(VertexOutput input) {
     float3 V =  normalize(camera_world_pos - input.world_position);
     FragOutput output;
 
-    float4 albedo = tex.Sample(common_sampler, input.uv);
+    float3 albedo = tex.Sample(common_sampler, input.uv).xyz;
     float metalness = float_param.metallic * tex_metallic.Sample(common_sampler, input.uv);
     float roughness = float_param.roughness * tex_roughness.Sample(common_sampler, input.uv);
     float ao = float_param.ao * tex_ao.Sample(common_sampler, input.uv);
@@ -75,24 +80,44 @@ FragOutput frag(VertexOutput input) {
     float3 L_0 = float3(0); // 渲染方程输出
     for (int i = 0; i < dynamic_lights.point_light_count; i++)
     {
-        float3 temp = dynamic_lights.point_light[i].location - world_pos; 
-        float distance = length(temp);
-        float3 L = normalize(temp); // 光照方向
-        float3 H = normalize(L + V);
-        float attenuation = 1.f;
-        float3 radiance = dynamic_lights.point_light[i].color * attenuation * 5;
-        float3 F = FresnelSchlick(F0, max(dot(H, V), 0));
-        float NDF = GGX_TrowbridgeReitz(N, H, roughness);
-        float G = GGX_GeometrySmith(N, V, L, roughness);
-        // 计算cook-torrance BRDF
-        float3 numerator = NDF * G * F;
-        float3 denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        float3 specular = numerator / max(denominator, 0.001);
-        float3 k_S = F;
-        float3 k_D = float3(1) - k_S;
-        k_D *= (1 - metalness); // 金属不折射光, 没有漫反射颜色
-        float NdotL = max(dot(N, L), 0.f);
-        L_0 += (k_D * albedo.xyz / PI + specular) * radiance * NdotL;
+        // float3 temp = dynamic_lights.point_light[i].location - world_pos;
+        // float distance = length(temp);
+        // float3 L = normalize(temp); // 光照方向
+        // float3 H = normalize(L + V);
+        // float attenuation = 1.f;
+        // float3 radiance = dynamic_lights.point_light[i].color * attenuation * 5;
+        // float3 F = FresnelSchlick(F0, max(dot(H, V), 0));
+        // float NDF = GGX_TrowbridgeReitz(N, H, roughness);
+        // float G = GGX_GeometrySmith(N, V, L, roughness);
+        // // 计算cook-torrance BRDF
+        // float3 numerator = NDF * G * F;
+        // float3 denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+        // float3 specular = numerator / max(denominator, 0.001);
+        // float3 k_S = F;
+        // float3 k_D = float3(1) - k_S;
+        // k_D *= (1 - metalness); // 金属不折射光, 没有漫反射颜色
+        // float NdotL = max(dot(N, L), 0.f);
+        // L_0 += (k_D * albedo.xyz / PI + specular) * radiance * NdotL;
+        float3 L = normalize(dynamic_lights.point_light[i].location - world_pos);
+        float3 H = normalize(V + L);
+        float NdotV = clamp(dot(N, V), 0.0, 1.0);
+        float NdotL = clamp(dot(N, L), 0.0, 1.0);
+        float LdotH = clamp(dot(L, H), 0, 1);
+        float NdotH = clamp(dot(N, H), 0, 1);
+        float3 light_color = dynamic_lights.point_light[i].color;
+        if (NdotL > 0.0) {
+            float D = GGX_TrowbridgeReitz(NdotH, roughness);
+            float G = GGX_GeometrySmith(NdotV, NdotL, roughness);
+            float3 F = FresnelSchlick(float3(0.04), NdotV);
+            float3 numerator = D * G * F;
+            float3 denominator = 4 * NdotL * NdotV + 0.00001;
+            float3 specular = numerator / denominator;
+            
+            float3 kS = F;
+            float3 kD = float3(1) - kS;
+            kD *= 1 - metalness;
+            L_0 += (kD * albedo / PI + specular) * light_color * NdotL; 
+        }
     }
     // 计算环境光
     float3 kS = FresnelSchlickRoughess(max(dot(N, V), 0.0), F0, roughness);
@@ -100,6 +125,6 @@ FragOutput frag(VertexOutput input) {
     float3 irradiance = tex_irradiance.Sample(common_sampler, input.uv);
     float3 diffuse = irradiance * albedo.xyz; 
     float3 ambient = kD * diffuse * ao;
-    output.color = float4(L_0 + ambient, albedo.a);
+    output.color = float4(L_0 + ambient, 1);
     return output;
 }

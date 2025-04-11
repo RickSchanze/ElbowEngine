@@ -17,6 +17,19 @@ public float GGX_TrowbridgeReitz(float3 normal, float3 half, float roughness) {
     return nom / denom;
 }
 
+public float GGX_TrowbridgeReitz(float NdotH, float roughness) {
+    // According to Epic, 用平方更正确一点
+    float a = roughness * roughness; // 这里对粗糙度二次加工
+    float a2 = a * a;
+    float NdotH2 = NdotH * NdotH;
+
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1);
+    denom = denom * denom * PI;
+
+    return nom / denom;
+}
+
 public float GGX_Schlick(float NdotV, float roughness) {
     // 这里只是直接光照的计算方法
     // According to Epic, 用平方更正确一点
@@ -34,6 +47,12 @@ public float GGX_Schlick(float NdotV, float roughness) {
 public float GGX_GeometrySmith(float3 N, float3 V, float3 L, float roughness) {
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
+    float ggx1 = GGX_Schlick(NdotV, roughness);
+    float ggx2 = GGX_Schlick(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+
+public float GGX_GeometrySmith(float NdotV, float NdotL, float roughness) {
     float ggx1 = GGX_Schlick(NdotV, roughness);
     float ggx2 = GGX_Schlick(NdotL, roughness);
     return ggx1 * ggx2;

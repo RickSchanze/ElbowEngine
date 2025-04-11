@@ -1,9 +1,13 @@
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/euler_angles.hpp>
 #include <imgui.h>
 #include <windows.h>
+
 #include "Core/Async/ThreadManager.hpp"
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Config/CoreConfig.hpp"
 #include "Core/FileSystem/Path.hpp"
+#include "Core/Math/MathExtensions.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
 #include "Core/TypeAlias.hpp"
@@ -163,7 +167,7 @@ int main() {
         mesh_res->SaveIfNeed();
         mesh->SetMesh(mesh_res);
         mesh_actor->SetRotation({90, 0, 0});
-        mesh->SetLocation({0, 0, 0});
+        mesh->SetLocation({0, -0.05, 0});
 
         Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
         auto color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
@@ -200,6 +204,14 @@ int main() {
 
         while (true) {
             ProfileScope _("Tick");
+            // 构建normal_matrix
+            glm::vec3 location = mesh->GetLocation() | ToGLMVec3;
+            glm::vec3 rotation = mesh->GetRotation() | ToGLMVec3;
+            glm::vec3 scale = mesh->GetScale() | ToGLMVec3;
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), location) * glm::yawPitchRoll(rotation.y, rotation.x, rotation.z) *
+                              glm::scale(glm::mat4(1.0f), scale);
+            Matrix4x4f normal_matrix = glm::transpose(glm::inverse(glm::mat3(model))) | ToMatrix4x4f;
+            m->SetMatrix4x4("martix_param.normal_matrix", normal_matrix);
             GetWorldClock().TickAll(main_window);
             if (main_window->ShouldClose()) {
                 GetGfxContextRef().WaitForDeviceIdle();
