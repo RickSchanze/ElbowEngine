@@ -20,10 +20,9 @@ public:
     /**
      * 将球面贴图转换为立方体贴图
      * @param environment_sphere
-     * @param size
-     * @param cube_format
+     * @param download
      */
-    static Texture2D *CalculateIrradianceMap(Texture2D *environment_sphere);
+    static Texture2D *CalculateIrradianceMap(Texture2D *environment_sphere, bool download = true);
     static void CalculateIrradianceMap(Texture2D *environment_sphere, Texture2D *target);
     static void CalculateIrradianceMap(rhi::CommandBuffer& buffer, Texture2D *environment_sphere, Texture2D *target);
     static void CalculateIrradianceMap(rhi::CommandBuffer& buffer, Texture2D *environment_sphere, Texture2D *target, Material* material);

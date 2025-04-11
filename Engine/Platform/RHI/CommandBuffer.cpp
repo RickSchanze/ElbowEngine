@@ -46,7 +46,9 @@ void CommandBuffer::BindPipeline(Pipeline *pipeline) { Enqueue<Cmd_BindPipeline>
 
 void CommandBuffer::BindComputePipeline(Pipeline *pipeline) { Enqueue<Cmd_BindComputePipeline>(pipeline); }
 
-void CommandBuffer::BindDescriptorSet(Pipeline *pipeline, DescriptorSet *set, bool is_compute) { Enqueue<Cmd_BindDescriptorSet>(pipeline, set, is_compute); }
+void CommandBuffer::BindDescriptorSet(Pipeline *pipeline, DescriptorSet *set) { Enqueue<Cmd_BindDescriptorSet>(pipeline, set); }
+
+void CommandBuffer::BindDescriptorSetCompute(Pipeline *pipeline, DescriptorSet *set) { Enqueue<Cmd_BindDescriptorSetCompute>(pipeline, set); }
 
 void CommandBuffer::BindVertexBuffer(Buffer *buffer, UInt32 offset, UInt32 binding) { Enqueue<Cmd_BindVertexBuffer>(buffer, offset, binding); }
 

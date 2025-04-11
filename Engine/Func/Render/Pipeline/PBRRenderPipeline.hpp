@@ -35,8 +35,6 @@ private:
     Material *basepass_material_ = nullptr;
     Material *skysphere_pass_material_ = nullptr;
     Material *color_transform_pass_material_ = nullptr;
-    Material* compute_material_ = nullptr;
-    Texture2D* test_dynamic_sky_sphere_map_ = nullptr;
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<RenderTexture> sdr_color_;

@@ -66,6 +66,22 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             return false;
         }
     }
+    if (path.EndsWith(".hdr")) {
+        if (format == Format::R32G32B32A32_Float) {
+            Float *out_temp = stbi_loadf(*path, &width, &height, &channel, 4);
+            if (!out_temp) {
+                VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败");
+                return false;
+            }
+            out = reinterpret_cast<UInt8 *>(out_temp);
+            channel = 4;
+            byte_count = width * height * 4 * sizeof(Float);
+            return true;
+
+        } else {
+            return false;
+        }
+    }
     if (path.EndsWith(".png")) {
         if (format == Format::R8_UNorm) {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
@@ -122,7 +138,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
     ProfileScope _(__func__);
     if (!meta.dynamic) {
         StringView path = meta.path;
-        if (!path.EndsWith(".png") && !path.EndsWith(".exr")) {
+        if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr")) {
             Log(Error) << String::Format("加载失败: Texture2D必须以.png结尾: {}", *path);
             return;
         }

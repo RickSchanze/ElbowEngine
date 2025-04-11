@@ -153,7 +153,6 @@ SharedMaterial::SharedMaterial(Shader *shader) {
             return;
         }
 
-        // TODO: 扩展性实现
         if (shader->GetAnnotation(ShaderAnnotation::EnableDepth)) {
             desc.attachments.depth_format = GetGfxContextRef().GetDefaultDepthStencilFormat();
         }

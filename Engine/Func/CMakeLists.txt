@@ -6,6 +6,8 @@ file(GLOB_RECURSE FUNC_CPP_FILES *.cpp)
 
 add_library(Func
         ${FUNC_CPP_FILES} ${FUNC_HEADER_FILES}
+        Render/Camera/Rotating.cpp
+        Render/Camera/Rotating.hpp
 )
 
 target_link_libraries(Func PRIVATE Core)

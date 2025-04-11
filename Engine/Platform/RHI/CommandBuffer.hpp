@@ -61,7 +61,8 @@ namespace rhi {
         void BindPipeline(Pipeline *pipeline);
         void BindComputePipeline(Pipeline *pipeline);
         /// 绑定DescriptorSet
-        void BindDescriptorSet(Pipeline *pipeline, DescriptorSet *set, bool is_compute = false);
+        void BindDescriptorSet(Pipeline *pipeline, DescriptorSet *set);
+        void BindDescriptorSetCompute(Pipeline *pipeline, DescriptorSet *set);
         /// 绑定VertexBuffer
         void BindVertexBuffer(Buffer *buffer, UInt32 offset = 0, UInt32 binding = 0);
         void BindVertexBuffer(const SharedPtr<Buffer> &buffer, UInt32 offset = 0, UInt32 binding = 0);

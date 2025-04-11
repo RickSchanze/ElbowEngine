@@ -10,6 +10,7 @@
 #include "Func/Input/Input.hpp"
 #include "Func/Render/Camera/ACameraHolder.hpp"
 #include "Func/Render/Camera/Camera.hpp"
+#include "Func/Render/Camera/Rotating.hpp"
 #include "Func/Render/Light/PointLightComponent.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
 #include "Func/Render/RenderContext.hpp"
@@ -29,9 +30,9 @@
 #include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 #include "Resource/Assets/Mesh/Mesh.hpp"
+#include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "Resource/Assets/Texture/Texture2DMeta.hpp"
-#include "Resource/Assets/Shader/Shader.hpp"
 
 
 class Texture2D;
@@ -125,8 +126,9 @@ int main() {
                 auto t3 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png");
                 auto t4 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png");
                 auto t5 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png");
+                auto t6 = AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr_irradiance_map.hdr");
                 while (true) {
-                    auto all_completed = t1.Completed() && t2.Completed() && t3.Completed() && t4.Completed() && t5.Completed();
+                    auto all_completed = t1.Completed() && t2.Completed() && t3.Completed() && t4.Completed() && t5.Completed() && t6.Completed();
                     if (!all_completed) {
                         ThreadManager::PollGameThread(100);
                     } else {
@@ -177,14 +179,17 @@ int main() {
         auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png"));
         normal->SetTextureFormat(Format::R8_UNorm);
         normal->SaveIfNeed();
+        auto irradiance_map = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/poly_haven_studio_1k.exr_irradiance_map.hdr"));
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);
         m->SetTexture2D("tex_roughness", roughness);
         m->SetTexture2D("tex_ao", ao);
         m->SetTexture2D("tex_normal", normal);
+        m->SetTexture2D("tex_irradiance", irradiance_map);
         m->SetFloat("float_param.roughness", 1.0f);
         m->SetFloat("float_param.metallic", 1.0f);
         m->SetFloat("float_param.ao", 1.0f);
+        auto light_holder = CreateNewObject<Rotating>();
         auto light = cam_holder->AddComponent<PointLightComponent>();
         light->SetColor(Color::White());
         mesh->SetMaterial(m);

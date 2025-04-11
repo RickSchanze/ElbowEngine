@@ -26,6 +26,7 @@ uniform Texture2D<float> tex_metallic;
 uniform Texture2D<float> tex_roughness;
 uniform Texture2D<float> tex_ao;
 uniform Texture2D<float3> tex_normal;
+uniform Texture2D<float3> tex_irradiance;
 uniform SamplerState common_sampler;
 
 struct VertexOutput {
@@ -59,12 +60,10 @@ VertexOutput vert(Vertex vert) {
 
 [shader("fragment")]
 FragOutput frag(VertexOutput input) {
-    float3x3 TBN = float3x3(normalize(input.tagent), normalize(input.bitangent), normalize(input.normal));
-    float3x3 TBN_inv = transpose(TBN);
     float3 camera_world_pos = camera.GetLocation();
-    float3 N = tex_normal.Sample(common_sampler, input.uv) * 2 - 1;
+    float3 N = input.normal;
     float3 world_pos = input.world_position;
-    float3 V =  mul(normalize(camera_world_pos - input.world_position), TBN_inv);
+    float3 V =  normalize(camera_world_pos - input.world_position);
     FragOutput output;
 
     float4 albedo = tex.Sample(common_sampler, input.uv);
@@ -78,10 +77,10 @@ FragOutput frag(VertexOutput input) {
     {
         float3 temp = dynamic_lights.point_light[i].location - world_pos; 
         float distance = length(temp);
-        float3 L = mul(normalize(temp), TBN_inv); // 光照方向
+        float3 L = normalize(temp); // 光照方向
         float3 H = normalize(L + V);
-        float attenuation = 1.f / (distance * distance);
-        float3 radiance = dynamic_lights.point_light[i].color * attenuation;
+        float attenuation = 1.f;
+        float3 radiance = dynamic_lights.point_light[i].color * attenuation * 5;
         float3 F = FresnelSchlick(F0, max(dot(H, V), 0));
         float NDF = GGX_TrowbridgeReitz(N, H, roughness);
         float G = GGX_GeometrySmith(N, V, L, roughness);
@@ -95,7 +94,12 @@ FragOutput frag(VertexOutput input) {
         float NdotL = max(dot(N, L), 0.f);
         L_0 += (k_D * albedo.xyz / PI + specular) * radiance * NdotL;
     }
-    float3 ambient = float3(0.03) * albedo.xyz * ao;
+    // 计算环境光
+    float3 kS = FresnelSchlickRoughess(max(dot(N, V), 0.0), F0, roughness);
+    float3 kD = 1 - kS;
+    float3 irradiance = tex_irradiance.Sample(common_sampler, input.uv);
+    float3 diffuse = irradiance * albedo.xyz; 
+    float3 ambient = kD * diffuse * ao;
     output.color = float4(L_0 + ambient, albedo.a);
     return output;
 }

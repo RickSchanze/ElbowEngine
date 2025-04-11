@@ -35,8 +35,8 @@ void Material::Build() {
     }
     // TODO: shared_material不可用时的Fallback
     const UInt64 uniform_buffer_size = shared_material_->GetUniformBufferSize();
+
     descriptor_set_ = AllocateDescriptorSetFunc(shared_material_->GetDescriptorSetLayouts()[0]);
-    VLOG_INFO("set layout: ")
     if (shared_material_->HasCamera()) {
         UpdateCameraDescriptorSetFunc(*descriptor_set_);
     }
@@ -65,6 +65,7 @@ void Material::Build() {
     for (auto &param: shared_material_->GetTextureBindings() | range::view::Values) {
         DescriptorImageUpdateDesc update_info{};
         if (param.type == ShaderParamType::StorageTexture2D) {
+            VLOG_INFO("Mat Layout:", shared_material_->GetDescriptorSetLayouts()[0].get());
             // 当前情况是Compute Shader compute shader绑定时应该所有的都准备好了
             continue;
         } else {

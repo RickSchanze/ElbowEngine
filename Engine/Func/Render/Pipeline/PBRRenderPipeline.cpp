@@ -49,30 +49,6 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     range.base_mip_level = 0;
     range.layer_count = 1;
     range.level_count = 1;
-    auto m = AssetDataBase::LoadFromPath<Texture2D>("Assets/Texture/poly_haven_studio_1k.exr");
-    if (!test_dynamic_sky_sphere_map_) {
-        Texture2DMeta irradiance_map_meta;
-        irradiance_map_meta.dynamic = true;
-        irradiance_map_meta.format = m->GetFormat();
-        irradiance_map_meta.height = m->GetHeight();
-        irradiance_map_meta.width = m->GetWidth();
-        if (!compute_material_) {
-            compute_material_ = ObjectManager::CreateNewObject<Material>();
-        }
-        test_dynamic_sky_sphere_map_ = ObjectManager::CreateNewObject<Texture2D>();
-        test_dynamic_sky_sphere_map_->Load(irradiance_map_meta);
-        test_dynamic_sky_sphere_map_->SetName("IrradianceMap");
-        skysphere_pass_material_->SetTexture2D("skybox_texture", test_dynamic_sky_sphere_map_);
-        Shader *ss = AssetDataBase::LoadOrImportT<Shader>("Assets/Shader/PBR/Environment/irradiance.slang");
-        compute_material_->SetShader(ss);
-        compute_material_->SetTexture2D("output_irradiance", test_dynamic_sky_sphere_map_, true);
-        compute_material_->SetTexture2D("input_equirect_map", m);
-        compute_material_->SetFloat("params.output_size_x", test_dynamic_sky_sphere_map_->GetWidth());
-        compute_material_->SetFloat("params.output_size_y", test_dynamic_sky_sphere_map_->GetHeight());
-        compute_material_->SetFloat("params.sample_delta", 0.01);
-        compute_material_->SetFloat("params.sky_intensity", 1.f);
-    }
-    ImageTransformer::CalculateIrradianceMap(cmd, m, test_dynamic_sky_sphere_map_, compute_material_);
     if (has_active_viewport) {
         {
             Rect2Df rect{};
@@ -103,21 +79,20 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
             cmd.EndDebugLabel();
             cmd.Execute();
         }
-
         {
-            cmd.BeginDebugLabel("ColorTransformPass");
             cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, sdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
                                      PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
             Rect2Df rect{};
             rect.size = UIManager::GetActiveViewportWindow()->GetSize();
             if (rect.size.x != 0 && rect.size.y != 0) {
+                cmd.BeginDebugLabel("ColorTransformPass");
                 cmd.SetViewport(rect);
                 cmd.SetScissor(rect);
                 PerformColorTransformPass(cmd, sdr_color_->GetImageView(), rect.size);
+                cmd.EndDebugLabel();
             }
             cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, sdr_color_->GetImage(), range, 0,
                                      AFB_ColorAttachmentWrite, PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
-            cmd.EndDebugLabel();
             cmd.Execute();
         }
     }
@@ -152,7 +127,7 @@ void PBRRenderPipeline::PerformMeshPass(rhi::CommandBuffer &cmd) const {
     cmd.EndDebugLabel();
 }
 
-void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd)  {
+void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd) {
     ProfileScope _(__func__);
     cmd.BeginDebugLabel("SkyspherePass");
     helper::BindMaterial(cmd, skysphere_pass_material_);
@@ -197,13 +172,12 @@ void PBRRenderPipeline::Build() {
     auto basepass_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/BasePass.slang");
     auto skyspere_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/SkyspherePass.slang");
     auto colortransform_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/ColorTransformPass.slang");
-    auto skysphere_texture = AssetDataBase::LoadFromPathAsync("Assets/Texture/poly_haven_studio_1k.exr");
+    auto skysphere_texture = AssetDataBase::LoadOrImportAsync("Assets/Texture/poly_haven_studio_1k.exr");
     auto cube_mesh = AssetDataBase::LoadFromPathAsync("Assets/Mesh/Cube.fbx");
     ThreadManager::WhenAllExecFuturesCompleted(
             NamedThread::Game,
             [this](const ObjectHandle basepass_shader_handle, const ObjectHandle skysphere_shader_handle,
-                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle,
-                   const ObjectHandle cube_mesh_handle) {
+                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle, const ObjectHandle cube_mesh_handle) {
                 ProfileScope _("RenderPipeline::Build(OnAsyncCompleted)");
                 const Shader *baspass_shader = ObjectManager::GetObjectByHandle<Shader>(basepass_shader_handle);
                 const Shader *skysphere_pass_shader = ObjectManager::GetObjectByHandle<Shader>(skysphere_shader_handle);

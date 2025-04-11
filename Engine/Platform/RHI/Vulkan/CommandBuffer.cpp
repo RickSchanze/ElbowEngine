@@ -20,18 +20,25 @@
 using namespace exec;
 using namespace rhi;
 
+static void ExecuteCmdBindDescriptorSetCompute(const VkCommandBuffer cmd, const Cmd_BindDescriptorSetCompute *cmd_bind_descriptor_set) {
+    ProfileScope _(__func__);
+    if (cmd_bind_descriptor_set == nullptr || cmd_bind_descriptor_set->set == nullptr || !cmd_bind_descriptor_set->set->IsValid()) {
+        Log(Error) << "命令BindDescriptorSet错误, 传入的cmd_bind_descriptor_set无效";
+        return;
+    }
+    const auto pipeline = (ComputePipeline_Vulkan *) cmd_bind_descriptor_set->pipeline;
+    const auto layout = pipeline->GetPipelineLayout();
+    const auto set = cmd_bind_descriptor_set->set->GetNativeHandleT<VkDescriptorSet>();
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
+}
+
 static void ExecuteCmdBindDescriptorSet(const VkCommandBuffer cmd, const Cmd_BindDescriptorSet *cmd_bind_descriptor_set) {
     if (cmd_bind_descriptor_set == nullptr || cmd_bind_descriptor_set->set == nullptr || !cmd_bind_descriptor_set->set->IsValid()) {
         Log(Error) << "命令BindDescriptorSet错误, 传入的cmd_bind_descriptor_set无效";
         return;
     }
-    VkPipelineLayout layout;
-    if (cmd_bind_descriptor_set->is_compute) {
-        layout = static_cast<ComputePipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline)->GetPipelineLayout();
-    } else {
-        GraphicsPipeline_Vulkan *pipeline = static_cast<GraphicsPipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline);
-        layout = pipeline->GetPipelineLayout();
-    }
+    GraphicsPipeline_Vulkan *pipeline = static_cast<GraphicsPipeline_Vulkan *>(cmd_bind_descriptor_set->pipeline);
+    VkPipelineLayout layout = pipeline->GetPipelineLayout();
     const auto set = cmd_bind_descriptor_set->set->GetNativeHandleT<VkDescriptorSet>();
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &set, 0, nullptr);
 }
@@ -274,7 +281,7 @@ static void ExecuteCmdBindComputePipeline(VkCommandBuffer buffer, Cmd_BindComput
         Log(Fatal) << "命令BindComputePipeline错误, 传入的pipeline无效";
         return;
     }
-    auto vk_pipeline = ((ComputePipeline_Vulkan *)command->pipeline);
+    auto vk_pipeline = ((ComputePipeline_Vulkan *) command->pipeline);
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_COMPUTE, vk_pipeline->GetNativeHandleT<VkPipeline>());
 }
 
@@ -344,6 +351,9 @@ static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &c
                 break;
             case RHICommandType::Dispatch:
                 ExecuteCmdDispatch(buffer, static_cast<Cmd_Dispatch *>(command));
+                break;
+            case RHICommandType::BindDescriptorSetCompute:
+                ExecuteCmdBindDescriptorSetCompute(buffer, static_cast<Cmd_BindDescriptorSetCompute *>(command));
                 break;
             default:
                 Log(Fatal) << "Unknown RHI Command";

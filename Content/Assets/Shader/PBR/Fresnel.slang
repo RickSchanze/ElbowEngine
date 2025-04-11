@@ -15,3 +15,8 @@ public float3 GetFresnelF0(float3 color, float metalness) {
     float3 F0 = float3(0.04f);
     return lerp(F0, color, metalness);
 }
+
+public float3 FresnelSchlickRoughess(float cos_theta, float3 F0, float roughness) {
+    return F0 + (max(float3(1 - roughness), F0) - F0) * pow(1.0 - cos_theta, 5.0);
+}
+

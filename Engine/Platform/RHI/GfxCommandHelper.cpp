@@ -9,9 +9,7 @@
 #include "Core/Memory/Memory.hpp"
 #include "GfxContext.hpp"
 #include "Image.hpp"
-#include "RenderDocApp.hpp"
 #include "SyncPrimitives.hpp"
-#include "Windows.h"
 
 
 SharedPtr<rhi::CommandBuffer> rhi::GfxCommandHelper::BeginSingleCommand() {

@@ -30,6 +30,7 @@ namespace rhi {
         SetScissor,
         SetViewport,
         BindDescriptorSet,
+        BindDescriptorSetCompute,
         CopyBufferToImage,
         CopyImageToBuffer,
         BeginCommandDebugLabel,
@@ -121,9 +122,14 @@ namespace rhi {
         [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindDescriptorSet; }
         Pipeline *pipeline;
         DescriptorSet *set;
-        bool is_compute = false;
-        explicit Cmd_BindDescriptorSet(Pipeline *pipeline_, DescriptorSet *set_, bool is_compute_) :
-            pipeline(pipeline_), set(set_), is_compute(is_compute_) {}
+        explicit Cmd_BindDescriptorSet(Pipeline *pipeline_, DescriptorSet *set_) : pipeline(pipeline_), set(set_) {}
+    };
+
+    struct Cmd_BindDescriptorSetCompute final : RHICommand {
+        [[nodiscard]] RHICommandType GetType() const override { return RHICommandType::BindDescriptorSetCompute; }
+        Pipeline *pipeline;
+        DescriptorSet *set;
+        explicit Cmd_BindDescriptorSetCompute(Pipeline *pipeline_, DescriptorSet *set_) : pipeline(pipeline_), set(set_) {}
     };
 
     struct RenderAttachment {

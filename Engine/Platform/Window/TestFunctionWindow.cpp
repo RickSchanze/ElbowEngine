@@ -17,7 +17,6 @@ void TestFunctionWindow::Draw() {
             auto *tex = AssetDataBase::LoadOrImportT<Texture2D>("Assets/Texture/poly_haven_studio_1k.exr");
             if (tex) {
                 ImageTransformer::CalculateIrradianceMap(tex);
-                // VLOG_INFO("创建cubemap!:", cubemap);
             }
         }
     }

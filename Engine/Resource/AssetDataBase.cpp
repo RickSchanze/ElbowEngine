@@ -66,7 +66,7 @@ exec::ExecFuture<ObjectHandle> InternalImport(StringView query, StringView path,
         auto *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
         new_meta.object_handle = registry.NextPersistentHandle().Get();
         if constexpr (SameAs<T, Texture2D>) {
-            if (path.EndsWith(".exr")) {
+            if (path.EndsWith(".exr") || path.EndsWith(".hdr")) {
                 new_meta.format = rhi::Format::R32G32B32A32_Float;
             }
         }
@@ -88,7 +88,7 @@ ExecFuture<ObjectHandle> AssetDataBase::Import(StringView path) {
     if (path.EndsWith(".slang")) {
         return InternalImport<Shader, ShaderMeta>(query, path, registry);
     }
-    if (path.EndsWith(".png") || path.EndsWith(".exr")) {
+    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr")) {
         return InternalImport<Texture2D, Texture2DMeta>(query, path, registry);
     }
     if (path.EndsWith(".ttf")) {
@@ -131,7 +131,7 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView path) {
     if (path.EndsWith(".fbx")) {
         return InternalLoadAsync<Mesh, MeshMeta>(path);
     }
-    if (path.EndsWith(".png") || path.EndsWith(".exr")) {
+    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr")) {
         return InternalLoadAsync<Texture2D, Texture2DMeta>(path);
     }
     if (path.EndsWith(".ttf")) {
@@ -206,7 +206,7 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadOrImportAsync(StringView path) {
         }
         return Import(path);
     }
-    if (path.EndsWith(".exr") || path.EndsWith(".png")) {
+    if (path.EndsWith(".exr") || path.EndsWith(".png") || path.EndsWith(".hdr")) {
         if (const auto op_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *path))) {
             return LoadFromPathAsync(path);
         }
