@@ -6,6 +6,7 @@
 
 import "Common/CommonStructure";
 import "Common/Utility";
+import "Common/Math";
 
 uniform ConstantBuffer<Camera> camera;
 uniform Texture2D skybox_texture;

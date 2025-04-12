@@ -8,6 +8,7 @@ import "Common/Utility";
 import "Light";
 import "Fresnel";
 import "GGX";
+import "Common/Math";
 
 struct PBRFloatParam {
     float metallic;

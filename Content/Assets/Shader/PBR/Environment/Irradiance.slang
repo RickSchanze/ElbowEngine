@@ -1,7 +1,7 @@
 /**
  * @Pipeline: Compute
  */
-
+import "Common/Math";
 struct Params {
     float output_size_x;
     float output_size_y;
@@ -32,9 +32,7 @@ float3 SphericalToDir(float theta, float phi) {
 [numthreads(16, 16, 1)]
 void compute(uint3 tid: SV_DispatchThreadID) {
     float2 uv = (tid.xy + 0.5) / float2(params.output_size_x, params.output_size_y);
-    float phi = uv.x * 2 * PI;
-    float theta = uv.y * PI; 
-    float3 N = float3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
+    float3 N = GetNormalFromUV(uv);
     float3 up = float3(0, 1, 0);
     float3 right = normalize(cross(up, N));
     up = normalize(cross(N, right));

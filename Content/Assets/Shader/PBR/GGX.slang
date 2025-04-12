@@ -1,5 +1,6 @@
 module GGX;
 import "Common/Utility";
+import "Common/Math";
 
 // 这个GGX一版用于发现分布函数
 // 直接传入粗糙度

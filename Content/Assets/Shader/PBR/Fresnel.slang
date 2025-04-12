@@ -1,4 +1,5 @@
 module Fresnel;
+import "Common/Math";
 
 // cos_theta = 表面法线n 与 观察方向n的点乘
 public float3 FresnelSchlick(float3 F0, float cos_theta) {

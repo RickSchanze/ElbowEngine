@@ -1,6 +1,6 @@
 module Utility;
 
-public static const float PI = 3.141592653589793;
+
 
 public float4 PerformMVP(float4 pos, float4x4 m, float4x4 v, float4x4 p) {
     float4 m = mul(pos, m);
@@ -76,18 +76,3 @@ public float4x4 Translate(float3 translation, float4x4 m) {
     return Translate(translation.x, translation.y, translation.z, m);
 }
 
-public float2 GetUVFromDirection(float3 dir) {
-    float3 normilized_dir = normalize(dir);
-    float phi = atan2(dir.z, dir.x) + PI;
-    float theta = acos(dir.y);
-    float2 uv;
-    uv.x = phi / (2.f * PI);
-    uv.y = theta / PI;
-    return uv;
-}
-
-public float3 GetNormalFromUV(float2 uv) {
-    float phi = uv.x * 2 * PI;
-    float theta = uv.y * PI;
-    return float3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
-}

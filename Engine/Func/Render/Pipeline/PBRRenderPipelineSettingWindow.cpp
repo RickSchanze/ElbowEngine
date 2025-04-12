@@ -29,7 +29,7 @@ void PBRRenderPipelineSettingWindow::GeneratePrefilteredEnvironmentMapAndReplace
     auto w = pipeline_->skybox_texture_->GetWidth();
     auto h = pipeline_->skybox_texture_->GetHeight();
     auto scale = w / h;
-    Texture2D *tex = EnvironmentMapBaker::BakePrefilteredEnvironmentMap(pipeline_->skybox_texture_, h * scale, 512, 5);
+    Texture2D *tex = EnvironmentMapBaker::BakePrefilteredEnvironmentMap(pipeline_->skybox_texture_, 512 * scale, 512, 5);
     if (tex) {
         auto task = ThreadManager::ScheduleFutureAsync(
                 exec::Just() | exec::Then([tex, this]() { pipeline_->skysphere_pass_material_->SetTexture2D("skybox_texture", tex); }),
