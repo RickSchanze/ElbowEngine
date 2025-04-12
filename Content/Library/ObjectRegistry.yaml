@@ -1,8 +1,0 @@
-Meta:
-  TypeInfo:
-    Name: ObjectRegistry
-    HashCode: 6355387056163263090
-Data:
-  next_handle_persistent: 10
-  free_handles:
-    []

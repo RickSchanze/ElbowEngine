@@ -10,6 +10,7 @@
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Logger/Logger.hpp"
 #include "Core/Memory/New.hpp"
+#include "ImGuiAllCodeUTFCharacter.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "PlatformWindow.hpp"
@@ -20,8 +21,12 @@ void PlatformWindowManager::Startup() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     auto cfg = GetConfig<PlatformConfig>();
-    io.Fonts->AddFontFromFileTTF(*cfg->GetDefaultImGuiFontPath(), cfg->GetDefaultImGuiFontSize(), nullptr,
-                                 io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    ImFontGlyphRangesBuilder builder;
+    builder.AddText(IMGUI_USED_CHARACTER_CODE);
+    ImVector<ImWchar> ranges;
+    builder.BuildRanges(&ranges);
+    io.Fonts->AddFontFromFileTTF(*cfg->GetDefaultImGuiFontPath(), cfg->GetDefaultImGuiFontSize(), nullptr, ranges.Data);
+    io.Fonts->Build();
 }
 
 void PlatformWindowManager::Shutdown() {
