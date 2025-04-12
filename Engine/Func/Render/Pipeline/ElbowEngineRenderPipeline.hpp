@@ -4,7 +4,7 @@
 
 #pragma once
 #include "Core/Misc/SharedPtr.hpp"
-#include "Func/Render/RenderPipeline.hpp"
+#include "RenderPipeline.hpp"
 
 
 class Material;

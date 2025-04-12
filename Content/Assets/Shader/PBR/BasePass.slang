@@ -80,24 +80,6 @@ FragOutput frag(VertexOutput input) {
     float3 L_0 = float3(0); // 渲染方程输出
     for (int i = 0; i < dynamic_lights.point_light_count; i++)
     {
-        // float3 temp = dynamic_lights.point_light[i].location - world_pos;
-        // float distance = length(temp);
-        // float3 L = normalize(temp); // 光照方向
-        // float3 H = normalize(L + V);
-        // float attenuation = 1.f;
-        // float3 radiance = dynamic_lights.point_light[i].color * attenuation * 5;
-        // float3 F = FresnelSchlick(F0, max(dot(H, V), 0));
-        // float NDF = GGX_TrowbridgeReitz(N, H, roughness);
-        // float G = GGX_GeometrySmith(N, V, L, roughness);
-        // // 计算cook-torrance BRDF
-        // float3 numerator = NDF * G * F;
-        // float3 denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        // float3 specular = numerator / max(denominator, 0.001);
-        // float3 k_S = F;
-        // float3 k_D = float3(1) - k_S;
-        // k_D *= (1 - metalness); // 金属不折射光, 没有漫反射颜色
-        // float NdotL = max(dot(N, L), 0.f);
-        // L_0 += (k_D * albedo.xyz / PI + specular) * radiance * NdotL;
         float3 L = normalize(dynamic_lights.point_light[i].location - world_pos);
         float3 H = normalize(V + L);
         float NdotV = clamp(dot(N, V), 0.0, 1.0);
@@ -124,7 +106,7 @@ FragOutput frag(VertexOutput input) {
     float3 kD = 1 - kS;
     float3 irradiance = tex_irradiance.Sample(common_sampler, input.uv);
     float3 diffuse = irradiance * albedo.xyz; 
-    float3 ambient = kD * diffuse * ao;
+    float3 ambient = kD * diffuse * ao + 0.03;
     output.color = float4(L_0 + ambient, 1);
     return output;
 }

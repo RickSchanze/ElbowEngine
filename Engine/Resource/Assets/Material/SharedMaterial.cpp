@@ -173,7 +173,6 @@ SharedMaterial::SharedMaterial(Shader *shader) {
         }
         pipeline_ = GetGfxContextRef().CreateComputePipeline(my_desc);
         set_layouts_ = {my_desc.pipline_layout};
-        VLOG_INFO("set layout:", my_desc.pipline_layout.get());
     }
 
     // 1. 解析Shader参数 创建UniformBuffer和Texture

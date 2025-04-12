@@ -4,11 +4,11 @@
 
 #include "RenderPipeline.hpp"
 
-#include <imgui_impl_vulkan.h>
+#include <../../../../cmake-build-debug/vcpkg_installed/x64-windows/include/imgui_impl_vulkan.h>
 
-#include "Platform/RHI/CommandBuffer.hpp"
-#include "Platform/RHI/GfxContext.hpp"
-#include "Platform/Window/PlatformWindowManager.hpp"
+#include "../../../Platform/RHI/CommandBuffer.hpp"
+#include "../../../Platform/RHI/GfxContext.hpp"
+#include "../../../Platform/Window/PlatformWindowManager.hpp"
 
 using namespace rhi;
 

@@ -31,7 +31,7 @@ struct SpriteRange {
 class REFLECTED() Texture2D : public Asset {
     REFLECTED_CLASS(Texture2D)
 public:
-    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Texture2D; }
+    AssetType GetAssetType() const override { return AssetType::Texture2D; }
 
     void PerformLoad() override;
 
@@ -42,29 +42,33 @@ public:
 
     // TODO: 返回bool 错误处理
     void Load(const Texture2DMeta &meta);
-    [[nodiscard]] bool IsLoaded() const override { return static_cast<bool>(native_image_); }
+    bool IsLoaded() const override { return static_cast<bool>(native_image_); }
 
-    [[nodiscard]] UInt32 GetWidth() const;
+    UInt32 GetWidth() const;
 
-    [[nodiscard]] UInt32 GetHeight() const;
+    UInt32 GetHeight() const;
 
-    [[nodiscard]] UInt32 GetNumChannels() const;
+    UInt32 GetNumChannels() const;
 
-    [[nodiscard]] rhi::Format GetFormat() const;
+    UInt32 GetMipLevelCount() const;
+
+    rhi::Format GetFormat() const;
 
     static Texture2D *GetDefault();
 
-    [[nodiscard]] rhi::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
-    [[nodiscard]] rhi::Image *GetNativeImage() const { return native_image_.get(); }
+    rhi::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
+    rhi::Image *GetNativeImage() const { return native_image_.get(); }
 
-    [[nodiscard]] Rect2Df GetUVRect(const SpriteRange &sprite_range) const;
+    Rect2Df GetUVRect(const SpriteRange &sprite_range) const;
 
 
-    [[nodiscard]] SpriteRange GetSpriteRange(const UInt64 id) const;
+    SpriteRange GetSpriteRange(const UInt64 id) const;
 
-    [[nodiscard]] SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
+    SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
 
-    [[nodiscard]] StringView GetAssetPath() const { return meta_.path; }
+    StringView GetAssetPath() const { return meta_.path; }
+
+    SharedPtr<rhi::ImageView> CreateImageView(rhi::ImageViewDesc& desc) const;
 
 #if WITH_EDITOR
     void SetTextureFormat(rhi::Format format);
@@ -145,7 +149,7 @@ public:
      */
     static UInt8 *ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels);
 
-    [[nodiscard]] String GetSpriteRangeString() const;
+    String GetSpriteRangeString() const;
 
     void SetSpriteRangeString(const StringView str);
 

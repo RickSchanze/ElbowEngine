@@ -294,6 +294,39 @@ static void ExecuteCmdDispatch(VkCommandBuffer buffer, Cmd_Dispatch *command) {
     vkCmdDispatch(buffer, command->x, command->y, command->z);
 }
 
+static void ExecuteCmdBlitImage(VkCommandBuffer buffer, Cmd_BlitImage *command) {
+    auto &ctx = *GetVulkanGfxContext();
+    if (!command || !command->src || !command->src->IsValid() || !command->dst || !command->dst->IsValid()) {
+        Log(Fatal) << "命令BlitImage错误, 传入的command无效";
+        return;
+    }
+    VkImage src_image = command->src->GetNativeHandleT<VkImage>();
+    VkImage dst_image = command->dst->GetNativeHandleT<VkImage>();
+    VkImageBlit blit;
+    blit.srcSubresource.aspectMask = RHIImageAspectToVkImageAspect(command->desc.src_subresource.aspect_mask);
+    blit.srcSubresource.layerCount = command->desc.src_subresource.layer_count;
+    blit.srcSubresource.baseArrayLayer = command->desc.src_subresource.base_array_layer;
+    blit.srcSubresource.mipLevel = command->desc.src_subresource.base_mip_level;
+    blit.srcOffsets[0].x = command->desc.src_offsets[0].x;
+    blit.srcOffsets[0].y = command->desc.src_offsets[0].y;
+    blit.srcOffsets[0].z = command->desc.src_offsets[0].z;
+    blit.srcOffsets[1].x = command->desc.src_offsets[1].x;
+    blit.srcOffsets[1].y = command->desc.src_offsets[1].y;
+    blit.srcOffsets[1].z = command->desc.src_offsets[1].z;
+    blit.dstSubresource.aspectMask = RHIImageAspectToVkImageAspect(command->desc.dst_subresource.aspect_mask);
+    blit.dstSubresource.layerCount = command->desc.dst_subresource.layer_count;
+    blit.dstSubresource.baseArrayLayer = command->desc.dst_subresource.base_array_layer;
+    blit.dstSubresource.mipLevel = command->desc.dst_subresource.base_mip_level;
+    blit.dstOffsets[0].x = command->desc.dst_offsets[0].x;
+    blit.dstOffsets[0].y = command->desc.dst_offsets[0].y;
+    blit.dstOffsets[0].z = command->desc.dst_offsets[0].z;
+    blit.dstOffsets[1].x = command->desc.dst_offsets[1].x;
+    blit.dstOffsets[1].y = command->desc.dst_offsets[1].y;
+    blit.dstOffsets[1].z = command->desc.dst_offsets[1].z;
+    vkCmdBlitImage(buffer, src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
+                   VK_FILTER_LINEAR);
+}
+
 static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &commands) {
     ProfileScope _(__func__);
     // 注意这里不对Command调用delete因为它使用双帧分配器 会自动回收
@@ -354,6 +387,9 @@ static void InternalExecute(VkCommandBuffer buffer, const Array<RHICommand *> &c
                 break;
             case RHICommandType::BindDescriptorSetCompute:
                 ExecuteCmdBindDescriptorSetCompute(buffer, static_cast<Cmd_BindDescriptorSetCompute *>(command));
+                break;
+            case RHICommandType::BlitImage:
+                ExecuteCmdBlitImage(buffer, static_cast<Cmd_BlitImage *>(command));
                 break;
             default:
                 Log(Fatal) << "Unknown RHI Command";

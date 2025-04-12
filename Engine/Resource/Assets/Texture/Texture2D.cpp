@@ -152,12 +152,12 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         if (!LoadTextureAccordingFormat(path, meta.format, pixels, width, height, channels, byte_count)) {
             return;
         }
-        const ImageDesc desc{static_cast<size_t>(width),
-                             static_cast<size_t>(height),
+        const ImageDesc desc{static_cast<UInt32>(width),
+                             static_cast<UInt32>(height),
                              IUB_TransferDst | IUB_ShaderRead, //
                              meta.format,
                              ImageDimension::D2, //
-                             meta.is_cubemap ? 6 : 1};
+                             meta.is_cubemap ? 6 : 1, static_cast<UInt16>(meta.mip_level)};
         String debug_name = String::Format("Texture2D_{}", *path);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -175,7 +175,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         const Format format = meta.format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
         const ImageDesc desc{meta.width, meta.height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
-                             format,     ImageDimension::D2, meta.is_cubemap ? 6 : 1};
+                             format,     ImageDimension::D2, meta.is_cubemap ? 6 : 1, static_cast<UInt16>(meta.mip_level)};
         String debug_name = String::Format("Texture2D_{}", *name_);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -200,6 +200,9 @@ UInt32 Texture2D::GetHeight() const {
 }
 
 UInt32 Texture2D::GetNumChannels() const { return native_image_->GetNumChannels(); }
+
+UInt32 Texture2D::GetMipLevelCount() const { return native_image_->GetMipLevelCount(); }
+
 
 rhi::Format Texture2D::GetFormat() const {
     if (!native_image_)
@@ -234,6 +237,11 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
     return {};
 }
 
+
+SharedPtr<rhi::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const {
+    desc.image = native_image_.get();
+    return GetGfxContext()->CreateImageView(desc);
+}
 
 void Texture2D::SetTextureFormat(Format format) {
     if (meta_.format != format) {

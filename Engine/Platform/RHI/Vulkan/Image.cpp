@@ -46,6 +46,29 @@ Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {
     alloc_info.memoryTypeIndex = GetVulkanGfxContext()->FindMemoryType(mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VerifyVulkanResult(vkAllocateMemory(device, &alloc_info, nullptr, &image_memory_));
     vkBindImageMemory(device, image_handle_, image_memory_, 0);
+    auto cmd = GfxCommandHelper::BeginSingleCommand();
+    ImageSubresourceRange range{};
+    if (desc_.usage & ImageUsageBits::IUB_RenderTarget || desc_.usage & ImageUsageBits::IUB_ShaderRead) {
+        range.aspect_mask = IA_Color;
+    } else if (desc_.usage & ImageUsageBits::IUB_DepthStencil) {
+        range.aspect_mask = IA_Depth;
+    }
+    range.base_array_layer = 0;
+    range.layer_count = desc.depth_or_layers;
+    range.base_mip_level = 0;
+    range.level_count = desc.mip_levels;
+    auto new_layout = ImageLayout::Count;
+    if (range.aspect_mask & IA_Color) {
+        new_layout = ImageLayout::ShaderReadOnly;
+    } else if (range.aspect_mask & IA_Depth || range.aspect_mask & IA_Stencil) {
+        new_layout = ImageLayout::DepthStencilAttachment;
+    }
+    cmd->ImagePipelineBarrier(ImageLayout::Undefined, new_layout, this, range, AFB_None, AFB_ShaderRead, PSFB_TopOfPipe, PSFB_FragmentShader);
+    cmd->Execute();
+    if (image_info.mipLevels > 1) {
+        GenerateMipmaps(*cmd);
+    }
+    GfxCommandHelper::EndSingleCommandTransfer(cmd);
 }
 
 Image_Vulkan::Image_Vulkan(VkImage handle_, Int32 index, UInt32 width_, UInt32 height_, Format format_) {
@@ -121,6 +144,60 @@ UInt8 Image_Vulkan::GetFormatComponentSize() {
     }
 }
 
+void Image_Vulkan::GenerateMipmaps(CommandBuffer &cmd) {
+    if (desc_.mip_levels <= 1)
+        return;
+    // 检查支不支持线性blitting
+    VkFormatProperties format_properties;
+    auto &ctx = *GetVulkanGfxContext();
+    vkGetPhysicalDeviceFormatProperties(ctx.GetPhysicalDevice(), RHIFormatToVkFormat(desc_.format), &format_properties);
+    if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+        // TODO: Enum string
+        VLOG_FATAL("图像格式 {} 不支持 linear blitting.", RHIFormatToVkFormat(desc_.format));
+    }
+    UInt32 mip_width = desc_.width;
+    UInt32 mip_height = desc_.height;
+    ImageSubresourceRange range{};
+    // TODO: 这里可能需要更多格式
+    range.aspect_mask = IA_Color;
+    range.base_array_layer = 0;
+    range.layer_count = desc_.depth_or_layers;
+    range.level_count = desc_.mip_levels;
+    cmd.ImagePipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::TransferDst, this, range, AFB_ShaderRead, AFB_TransferWrite,
+                             PSFB_FragmentShader, PSFB_Transfer);
+    for (Int32 i = 1; i < desc_.mip_levels; i++) {
+        range.base_mip_level = i - 1;
+        range.level_count = 1;
+        // 当前只能在Image立即创建时调用此函数, 意味着其Layout肯定是Undefined
+        cmd.ImagePipelineBarrier(ImageLayout::TransferDst, ImageLayout::TransferSrc, this, range, AFB_TransferWrite, AFB_TransferRead, PSFB_Transfer,
+                                 PSFB_Transfer);
+        ImageBlitDesc desc{};
+        desc.src_offsets[0] = {0, 0, 0};
+        desc.src_offsets[1] = {static_cast<Int32>(mip_width), static_cast<Int32>(mip_height), 1};
+        desc.src_subresource.aspect_mask = IA_Color;
+        desc.src_subresource.base_array_layer = 0;
+        desc.src_subresource.layer_count = 1;
+        desc.src_subresource.base_mip_level = i - 1;
+        desc.src_subresource.level_count = 1;
+        desc.dst_offsets[0] = {0, 0, 0};
+        desc.dst_offsets[1] = {static_cast<Int32>(mip_width > 1 ? mip_width / 2 : 1), static_cast<Int32>(mip_height > 1 ? mip_height / 2 : 1), 1};
+        desc.dst_subresource.aspect_mask = IA_Color;
+        desc.dst_subresource.base_array_layer = 0;
+        desc.dst_subresource.layer_count = 1;
+        desc.dst_subresource.base_mip_level = i;
+        cmd.BlitImage(this, this, desc);
+        cmd.ImagePipelineBarrier(ImageLayout::TransferSrc, ImageLayout::ShaderReadOnly, this, range, AFB_TransferRead, AFB_ShaderRead, PSFB_Transfer,
+                                 PSFB_FragmentShader);
+        cmd.Execute();
+        mip_height = mip_height > 1 ? mip_height / 2 : 1;
+        mip_width = mip_width > 1 ? mip_width / 2 : 1;
+    }
+    range.base_mip_level = desc_.mip_levels - 1;
+    cmd.ImagePipelineBarrier(ImageLayout::TransferDst, ImageLayout::ShaderReadOnly, this, range, AFB_TransferWrite, AFB_ShaderRead, PSFB_Transfer,
+                             PSFB_FragmentShader);
+    cmd.Execute();
+}
+
 Sampler_Vulkan::Sampler_Vulkan(const SamplerDesc &desc) {
     VkSamplerCreateInfo sampler_info{};
     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -139,7 +216,7 @@ Sampler_Vulkan::Sampler_Vulkan(const SamplerDesc &desc) {
     sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     sampler_info.mipLodBias = 0.0f;
     sampler_info.minLod = 0.0f;
-    sampler_info.maxLod = 0.0f;
+    sampler_info.maxLod = 100.f;
     VerifyVulkanResult(vkCreateSampler(GetVulkanGfxContext()->GetDevice(), &sampler_info, nullptr, &sampler_handle_));
 }
 

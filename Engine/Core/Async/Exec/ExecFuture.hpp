@@ -14,7 +14,7 @@ namespace exec {
 
         ExecFuture(Future<Tuple<Args...>> &&f) { future = Move(f); }
 
-        [[nodiscard]] bool Completed() const { return future.Completed(); }
+        [[nodiscard]] bool IsCompleted() const { return future.IsCompleted(); }
 
         template<size_t Index = 0>
         auto Get() {

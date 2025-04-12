@@ -85,3 +85,9 @@ public float2 GetUVFromDirection(float3 dir) {
     uv.y = theta / PI;
     return uv;
 }
+
+public float3 GetNormalFromUV(float2 uv) {
+    float phi = uv.x * 2 * PI;
+    float theta = uv.y * PI;
+    return float3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
+}

@@ -35,6 +35,7 @@ namespace rhi {
         CopyImageToBuffer,
         BeginCommandDebugLabel,
         EndCommandDebugLabel,
+        BlitImage,
         Dispatch,
         Count,
     };
@@ -243,5 +244,21 @@ namespace rhi {
         UInt32 x = 0;
         UInt32 y = 0;
         UInt32 z = 0;
+    };
+
+    struct ImageBlitDesc {
+        ImageSubresourceRange src_subresource;
+        Vector3i src_offsets[2];
+        ImageSubresourceRange dst_subresource;
+        Vector3i dst_offsets[2];
+    };
+
+    struct Cmd_BlitImage : RHICommand {
+        RHICommandType GetType() const override { return RHICommandType::BlitImage; }
+        explicit Cmd_BlitImage(Image *src_, Image *dst_, const ImageBlitDesc &desc_) : src(src_), dst(dst_), desc(desc_) {}
+
+        Image *src;
+        Image *dst;
+        ImageBlitDesc desc;
     };
 } // namespace rhi

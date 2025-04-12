@@ -75,3 +75,5 @@ void CommandBuffer::CopyImageToBuffer(Image *src, Buffer *dst, const ImageSubres
 }
 
 void CommandBuffer::CopyBuffer(Buffer *src, Buffer *dst, UInt64 size) { Enqueue<Cmd_CopyBuffer>(src, dst, size); }
+
+void CommandBuffer::BlitImage(Image *src, Image *dst, const ImageBlitDesc &desc) { Enqueue<Cmd_BlitImage>(src, dst, desc); }

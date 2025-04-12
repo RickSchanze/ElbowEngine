@@ -10,6 +10,7 @@
 #include "Core/Profile.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Light/LightManager.hpp"
+#include "Pipeline/RenderPipeline.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/ImGuiContextProxy.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
@@ -18,7 +19,6 @@
 #include "Platform/RHI/SyncPrimitives.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
-#include "RenderPipeline.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 
 using namespace rhi;
@@ -119,6 +119,11 @@ void RenderContext::RemoveMesh(StaticMeshComponent *comp) {
 const Array<StaticMeshComponent *> &RenderContext::GetDrawStaticMesh() {
     auto &self = GetByRef();
     return self.static_meshes_;
+}
+
+RenderPipeline *RenderContext::GetBoundRenderPipeline() {
+    auto &self = GetByRef();
+    return self.render_pipeline_ ? self.render_pipeline_.Get() : nullptr;
 }
 
 bool RenderContext::ShouldRender() const {

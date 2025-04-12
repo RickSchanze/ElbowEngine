@@ -8,6 +8,9 @@
 #include "vulkan/vulkan.h"
 
 namespace rhi {
+    class CommandBuffer;
+}
+namespace rhi {
     class Image_Vulkan final : public Image {
         friend class GfxContext_Vulkan;
 
@@ -26,6 +29,9 @@ namespace rhi {
         SharedPtr<Buffer> CreateCPUVisibleBuffer() override;
 
         UInt8 GetFormatComponentSize();
+
+        // TODO: 从文件直接加载mipmap链
+        void GenerateMipmaps(CommandBuffer& cmd);
 
     protected:
         VkImage image_handle_ = VK_NULL_HANDLE;

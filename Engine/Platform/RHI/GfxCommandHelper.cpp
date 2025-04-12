@@ -93,7 +93,8 @@ void rhi::GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, U
     range.base_array_layer = 0;
     range.layer_count = 1;
 
-    PipelineBarrier(ImageLayout::Undefined, ImageLayout::TransferDst, target, range, 0, AFB_TransferWrite, PSFB_TopOfPipe, PSFB_Transfer);
+    PipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::TransferDst, target, range, AFB_ShaderRead, AFB_TransferWrite, PSFB_FragmentShader,
+                    PSFB_Transfer);
     auto cmd = BeginSingleCommand();
     Vector3i img_size{};
     img_size.x = copy_range.x == 0 ? target->GetWidth() : copy_range.x;

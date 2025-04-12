@@ -68,7 +68,9 @@ void UIManager::ActivateViewportWindow() {
 
 bool UIManager::HasActiveViewportWindow() { return GetByRef().active_viewport_window_ != nullptr && GetByRef().active_viewport_window_->IsVisible(); }
 
-ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t) {
+ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t) { return CreateOrActivateWindow(t, false); }
+
+ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t, bool silent) {
     auto &self = GetByRef();
     if (t == ViewportWindow::GetStaticType()) {
         if (self.active_viewport_window_) {
@@ -80,11 +82,15 @@ ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t) {
     } else {
         for (auto *w: self.windows_ | range::view::Values) {
             if (w->GetType() == t) {
-                w->SetVisible(true);
+                if (!silent) {
+                    w->SetVisible(true);
+                }
                 return w;
             }
         }
         ImGuiDrawWindow *w = static_cast<ImGuiDrawWindow *>(CreateFromType(t));
+        if (silent)
+            w->SetVisible(false);
         AddWindow(w);
         return w;
     }

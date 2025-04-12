@@ -111,7 +111,7 @@ namespace rhi {
         Int32 base_array_layer = 0;
         Int32 layer_count = -1;
 
-        explicit ImageSubresourceRange(/** ImageAspect */ const Int32 aspect_mask_ = -1, const UInt32 base_mip_level_ = 0,
+        ImageSubresourceRange(/** ImageAspect */ const Int32 aspect_mask_ = -1, const UInt32 base_mip_level_ = 0,
                                        const UInt32 level_count_ = -1, const UInt32 base_array_layer_ = 0, const UInt32 layer_count_ = -1) :
             aspect_mask(aspect_mask_), base_mip_level(base_mip_level_), level_count(level_count_), base_array_layer(base_array_layer_),
             layer_count(layer_count_) {}

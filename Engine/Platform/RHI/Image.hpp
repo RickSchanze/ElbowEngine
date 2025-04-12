@@ -11,8 +11,8 @@
 namespace rhi {
     class Buffer;
     struct ImageDesc {
-        size_t width;
-        size_t height;
+        UInt32 width;
+        UInt32 height;
         ImageUsage usage;
         ImageDimension dimension;
         UInt16 depth_or_layers; // 对于2D图像, 代表layerCount, 对于3D图像, 代表depth
@@ -21,7 +21,7 @@ namespace rhi {
         SampleCount samples;
         ImageLayout initial_state; // 初始图像状态
 
-        ImageDesc(const size_t width_, const size_t height_, const ImageUsage usage_, const Format format_,
+        ImageDesc(const UInt32 width_, const UInt32 height_, const ImageUsage usage_, const Format format_,
                   const ImageDimension dimension_ = ImageDimension::D2, const Int32 depth_or_layers_ = 1, const UInt16 mip_levels_ = 1,
                   const SampleCount samples_ = SampleCount::SC_1, const ImageLayout initial_state_ = ImageLayout::Undefined) :
             width(width_), height(height_), usage(usage_), dimension(dimension_), depth_or_layers(depth_or_layers_), mip_levels(mip_levels_),
@@ -45,7 +45,7 @@ namespace rhi {
         ImageUsage GetUsage() const { return desc_.usage; }
         ImageDimension GetDimension() const { return desc_.dimension; }
         UInt16 GetDepthOrLayers() const { return desc_.depth_or_layers; }
-        UInt16 GetMipLevels() const { return desc_.mip_levels; }
+        UInt16 GetMipLevelCount() const { return desc_.mip_levels; }
         Format GetFormat() const { return desc_.format; }
         SampleCount GetSampleCount() const { return desc_.samples; }
         ImageLayout GetState() const { return desc_.initial_state; }

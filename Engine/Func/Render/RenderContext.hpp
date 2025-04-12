@@ -41,6 +41,7 @@ public:
     static void AddMeshToDraw(StaticMeshComponent *comp);
     static void RemoveMesh(StaticMeshComponent *comp);
     static const Array<StaticMeshComponent *> &GetDrawStaticMesh();
+    static RenderPipeline* GetBoundRenderPipeline();
 
 private:
     bool ShouldRender() const;

@@ -3,9 +3,11 @@
 //
 
 #pragma once
+#include "Core/Core.hpp"
 #include "Core/TypeAlias.hpp"
 
 
+class ImGuiDrawWindow;
 class PlatformWindow;
 
 namespace rhi {
@@ -33,8 +35,12 @@ public:
 
     virtual void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) = 0;
 
-    void BeginImGuiFrame(rhi::CommandBuffer& cmd, const RenderParams &render_param);
-    void EndImGuiFrame(rhi::CommandBuffer& cmd);
+    void BeginImGuiFrame(rhi::CommandBuffer &cmd, const RenderParams &render_param);
+    void EndImGuiFrame(rhi::CommandBuffer &cmd);
+
+#if WITH_EDITOR
+    virtual ImGuiDrawWindow *GetSettingWindow() { return nullptr; }
+#endif
 
 protected:
     rhi::ImageView *GetBackBufferView(UInt32 current_image_index);

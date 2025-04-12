@@ -20,7 +20,7 @@ namespace rhi {
         Optional<UInt32> transfer_family;
         Optional<UInt32> compute_family;
 
-        [[nodiscard]] bool IsComplete() const { return graphics_family && present_family && transfer_family && compute_family; }
+        bool IsComplete() const { return graphics_family && present_family && transfer_family && compute_family; }
     };
 
     class GfxContext_Vulkan final : public GfxContext {
@@ -31,26 +31,26 @@ namespace rhi {
         GfxContext_Vulkan(const GfxContext_Vulkan &) = delete;
         ~GfxContext_Vulkan() override;
 
-        [[nodiscard]] GraphicsAPI GetAPI() const override;
+        GraphicsAPI GetAPI() const override;
 
         static Array<VkExtensionProperties> GetAvailableExtensions(VkPhysicalDevice);
 
-        [[nodiscard]] SwapChainSupportInfo QuerySwapChainSupportInfo() override;
-        [[nodiscard]] const PhysicalDeviceFeature &QueryDeviceFeature() override;
-        [[nodiscard]] const PhysicalDeviceInfo &QueryDeviceInfo() override;
+        SwapChainSupportInfo QuerySwapChainSupportInfo() override;
+        const PhysicalDeviceFeature &QueryDeviceFeature() override;
+        const PhysicalDeviceInfo &QueryDeviceInfo() override;
 
-        [[nodiscard]] Format GetDefaultDepthStencilFormat() const override;
-        [[nodiscard]] Format GetDefaultColorFormat() const override;
+        Format GetDefaultDepthStencilFormat() const override;
+        Format GetDefaultColorFormat() const override;
 
-        [[nodiscard]] const QueueFamilyIndices &GetCurrentQueueFamilyIndices() const;
+        const QueueFamilyIndices &GetCurrentQueueFamilyIndices() const;
 
-        [[nodiscard]] VkImageView CreateImageView_VK(const ImageViewDesc &desc) const;
+        VkImageView CreateImageView_VK(const ImageViewDesc &desc) const;
         void DestroyImageView_VK(VkImageView view) const;
 
-        [[nodiscard]] VkBuffer CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const;
+        VkBuffer CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const;
         void DestroyBuffer_VK(VkBuffer buffer) const;
 
-        [[nodiscard]] VkDeviceMemory AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const;
+        VkDeviceMemory AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const;
         void FreeBufferMemory_VK(VkDeviceMemory memory) const;
 
         void BindBufferMemory_VK(VkBuffer buffer, VkDeviceMemory memory) const;
@@ -58,32 +58,32 @@ namespace rhi {
         void MapMemory_VK(VkDeviceMemory memory, VkDeviceSize size, void **data, VkDeviceSize offset = 0) const;
         void UnmapMemory_VK(VkDeviceMemory memory) const;
 
-        [[nodiscard]] VkCommandPool CreateCommandPool_VK(const VkCommandPoolCreateInfo &info) const;
+        VkCommandPool CreateCommandPool_VK(const VkCommandPoolCreateInfo &info) const;
         void DestroyCommandPool_VK(VkCommandPool pool) const;
         void CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo &alloc_info, VkCommandBuffer *command_buffers) const;
 
-        [[nodiscard]] UniquePtr<Fence> CreateFence(bool signaled) override;
+        UniquePtr<Fence> CreateFence(bool signaled) override;
 
-        [[nodiscard]] SharedPtr<LowShader> CreateShader(const char *code, size_t size, StringView debug_name) override;
+        SharedPtr<LowShader> CreateShader(const char *code, size_t size, StringView debug_name) override;
 
         exec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) override;
 
-        [[nodiscard]] SharedPtr<Buffer> CreateBuffer(const BufferDesc &create_info, StringView debug_name) override;
+        SharedPtr<Buffer> CreateBuffer(const BufferDesc &create_info, StringView debug_name) override;
 
-        [[nodiscard]] SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo &create_info) override;
+        SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo &create_info) override;
 
-        [[nodiscard]] CommandPool &GetTransferPool() override { return *transfer_pool_; }
+        CommandPool &GetTransferPool() override { return *transfer_pool_; }
 
         void SetObjectDebugName(VkObjectType type, void *handle, StringView name) const;
 
-        [[nodiscard]] uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
+        uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
         void BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT &info) const;
         void EndDebugLabel(VkCommandBuffer cmd) const;
 
-        [[nodiscard]] VkDevice GetDevice() const { return device_; }
+        VkDevice GetDevice() const { return device_; }
 
-        [[nodiscard]] VkQueue GetQueue(QueueFamilyType type) const;
+        VkQueue GetQueue(QueueFamilyType type) const;
 
         SharedPtr<Image> CreateImage(const ImageDesc &desc, StringView debug_name) override;
 
@@ -93,8 +93,10 @@ namespace rhi {
 
         UniquePtr<Pipeline> CreateComputePipeline(const ComputePipelineDesc &create_info) override;
 
+        VkPhysicalDevice GetPhysicalDevice() const { return physical_device_; }
+
     private:
-        [[nodiscard]] Format FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+        Format FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
         void FindVulkanExtensionSymbols();
 
@@ -104,18 +106,17 @@ namespace rhi {
         static void PreVulkanGfxContextDestroyed(GfxContext *ctx);
 
     public:
-        [[nodiscard]] UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info,
-                                                                         rhi::RenderPass *render_pass) override;
+        UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, rhi::RenderPass *render_pass) override;
 
-        [[nodiscard]] Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore) override;
+        Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore) override;
 
-        [[nodiscard]] SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc &desc) override;
+        SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc &desc) override;
 
-        [[nodiscard]] UniquePtr<Semaphore> Create_Semaphore(UInt64 init_value, bool timeline) override;
+        UniquePtr<Semaphore> Create_Semaphore(UInt64 init_value, bool timeline) override;
 
         bool Present(uint32_t image_index, Semaphore *wait_semaphore) override;
 
-        [[nodiscard]] VkSwapchainKHR GetSwapchain() const { return swapchain_; }
+        VkSwapchainKHR GetSwapchain() const { return swapchain_; }
 
         ImageView *GetSwapChainView(UInt32 index) override;
 

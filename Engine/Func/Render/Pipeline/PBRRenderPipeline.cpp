@@ -8,7 +8,7 @@
 #include "Core/Profile.hpp"
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
 #include "Func/Render/Helper.hpp"
-#include "Func/Render/Offline/ImageTransformer.hpp"
+#include "Func/Render/Pipeline/PBRRenderPipelineSettingWindow.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/Render/RenderTexture.hpp"
 #include "Func/UI/ImGuiDemoWindow.hpp"
@@ -39,7 +39,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
             OnWindowResized(nullptr, active_viewport_size.x, active_viewport_size.y);
         }
     }
-    const auto view = GetBackBufferView(params.current_image_index);
+
     auto image = GetBackBuffer(params.current_image_index);
     cmd.Begin();
 
@@ -166,23 +166,31 @@ void PBRRenderPipeline::PerformImGuiPass(rhi::CommandBuffer &cmd, const RenderPa
     EndImGuiFrame(cmd);
 }
 
+ImGuiDrawWindow *PBRRenderPipeline::GetSettingWindow() {
+    PBRRenderPipelineSettingWindow *w = UIManager::CreateOrActivateWindow<PBRRenderPipelineSettingWindow>(true);
+    w->SetRenderPipeline(this);
+    return w;
+}
+
+
 void PBRRenderPipeline::Build() {
     ProfileScope _("RenderPipeline::Build");
     ObjectManager::CreateNewObject<ImGuiDemoWindow>();
     auto basepass_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/BasePass.slang");
     auto skyspere_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/SkyspherePass.slang");
     auto colortransform_shader = AssetDataBase::LoadFromPathAsync("Assets/Shader/PBR/ColorTransformPass.slang");
-    auto skysphere_texture = AssetDataBase::LoadOrImportAsync("Assets/Texture/poly_haven_studio_1k.exr");
+    auto skysphere_texture = AssetDataBase::LoadOrImportAsync("Assets/Texture/NewportLoft.hdr");
     auto cube_mesh = AssetDataBase::LoadFromPathAsync("Assets/Mesh/Cube.fbx");
     ThreadManager::WhenAllExecFuturesCompleted(
             NamedThread::Game,
             [this](const ObjectHandle basepass_shader_handle, const ObjectHandle skysphere_shader_handle,
-                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle, const ObjectHandle cube_mesh_handle) {
+                   const ObjectHandle color_transform_shader_handle, const ObjectHandle skysphere_texture_handle,
+                   const ObjectHandle cube_mesh_handle) {
                 ProfileScope _("RenderPipeline::Build(OnAsyncCompleted)");
                 const Shader *baspass_shader = ObjectManager::GetObjectByHandle<Shader>(basepass_shader_handle);
                 const Shader *skysphere_pass_shader = ObjectManager::GetObjectByHandle<Shader>(skysphere_shader_handle);
                 const Shader *color_transform_pass_shader = ObjectManager::GetObjectByHandle<Shader>(color_transform_shader_handle);
-                const Texture2D *skysphere_texture = ObjectManager::GetObjectByHandle<Texture2D>(skysphere_texture_handle);
+                Texture2D *skysphere_texture = ObjectManager::GetObjectByHandle<Texture2D>(skysphere_texture_handle);
                 const Mesh *cube_mesh = ObjectManager::GetObjectByHandle<Mesh>(cube_mesh_handle);
                 skybox_cube_ = ObjectManager::CreateNewObject<Actor>()->AddComponent<StaticMeshComponent>();
                 skybox_cube_->SetMesh(cube_mesh);
@@ -198,13 +206,15 @@ void PBRRenderPipeline::Build() {
                 auto *w = PlatformWindowManager::GetMainWindow();
                 UInt64 width = w->GetWidth();
                 UInt64 height = w->GetHeight();
-                ImageDesc desc{width, height, IUB_RenderTarget | IUB_ShaderRead, Format::R32G32B32A32_Float};
+                ImageDesc desc{static_cast<UInt32>(width), static_cast<UInt32>(height), IUB_RenderTarget | IUB_ShaderRead,
+                               Format::R32G32B32A32_Float};
                 hdr_color_ = MakeShared<RenderTexture>(desc);
                 depth_target_ = MakeShared<RenderTexture>(GetDepthImageDesc());
                 hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
                 desc.format = Format::B8G8R8A8_UNorm;
                 sdr_color_ = MakeShared<RenderTexture>(desc);
 
+                skybox_texture_ = skysphere_texture;
                 skysphere_pass_material_->SetTexture2D("skybox_texture", skysphere_texture);
                 color_transform_pass_material_->SetFloat("param.exposure", 3);
 

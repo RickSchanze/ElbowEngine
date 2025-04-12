@@ -16,6 +16,8 @@ struct REFLECTED(SQLTable = "Texture2D") Texture2DMeta {
     REFLECTED()
     Int32 object_handle{};
 
+    Int32 mip_level = 1;
+
     REFLECTED()
     String path;
 

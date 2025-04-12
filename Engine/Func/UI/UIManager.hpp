@@ -26,7 +26,14 @@ public:
     static ViewportWindow *GetActiveViewportWindow();
     static void ActivateViewportWindow();
     static bool HasActiveViewportWindow();
+    // 这里可见默认为true
     static ImGuiDrawWindow *CreateOrActivateWindow(const Type *t);
+    /**
+     * @param t
+     * @param silent 创建窗口时是否可见?
+     * @return
+     */
+    static ImGuiDrawWindow *CreateOrActivateWindow(const Type *t, bool silent);
     static ImGuiDrawWindow *GetWindow(const Type *t);
     template<typename T>
     static T *GetWindow() {
@@ -35,7 +42,7 @@ public:
 
     template<typename T>
         requires IsBaseOf<ImGuiDrawWindow, T>
-    static T *CreateOrActivateWindow() {
+    static T *CreateOrActivateWindow(bool silent = false) {
         auto &self = GetByRef();
         if constexpr (SameAs<T, ViewportWindow>) {
             if (self.active_viewport_window_) {
@@ -49,11 +56,15 @@ public:
             for (auto &pair: self.windows_) {
                 auto *w = pair.second;
                 if (w->GetType() == window_type) {
-                    w->SetVisible(true);
+                    if (!silent) {
+                        w->SetVisible(true);
+                    }
                     return static_cast<T *>(w);
                 }
             }
             T *rtn = static_cast<T *>(CreateNewObject<T>());
+            if (silent)
+                rtn->SetVisible(false);
             AddWindow(rtn);
             return rtn;
         }

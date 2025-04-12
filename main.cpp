@@ -55,8 +55,13 @@ static void TickManagerUpdate(const MilliSeconds &sec) {
 
 template<typename... Args>
 static void ResourceInitCreate(Args &&...args) {
-    while (!(... && args.Completed())) {
-        ThreadManager::PollGameThread(10);
+    while (true) {
+        const bool all_completed = (args.IsCompleted() && ...);
+        if (!all_completed) {
+            ThreadManager::PollGameThread(100);
+        } else {
+            break;
+        }
     }
 }
 
@@ -96,50 +101,26 @@ int main() {
             AssetDataBase::Get();
             // TODO: 这个函数并没有真正等待所有任务完成
             ResourceInitCreate( //
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png")), // ZL,
-                    Move(AssetDataBase::Import("Assets/Shader/Error.slang")),
-                    Move(AssetDataBase::Import("Assets/Texture/Default.png")), //
-                    Move(AssetDataBase::Import("Assets/Mesh/Cube.fbx")), //
-                    Move(AssetDataBase::Import("Assets/Shader/SimpleSampledShader.slang")),
-                    Move(AssetDataBase::Import("Assets/Shader/PBR/BasePass.slang")),
-                    Move(AssetDataBase::Import("Assets/Shader/PBR/SkyspherePass.slang")),
-                    Move(AssetDataBase::Import("Assets/Shader/PBR/ColorTransformPass.slang")),
-                    Move(AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr")),
-                    Move(AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx")));
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/Error.slang")),
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Default.png")), //
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cube.fbx")), //
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/BasePass.slang")),
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/SkyspherePass.slang")),
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/ColorTransformPass.slang")), //
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/PrefilteredColor.slang")), //
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Black.png")), // Black
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")) // White
+            );
 
-            // 测试Texture2D的Sprite Append功能 以及CreateAsset Texture的功能
-            // Texture2DMeta new_meta;
-            // new_meta.dynamic = true;
-            // new_meta.width = 1024;
-            // new_meta.height = 1024;
-            // new_meta.format = rhi::Format::R8G8B8A8_SRGB;
-            // Texture2D *new_tex = ObjectManager::CreateNewObject<Texture2D>();
-            // new_tex->SetName("UIAtlas");
-            // new_tex->Load(new_meta);
-            // new_tex->AppendSprite(IconConstantName::PureWhite(), R"(C:/Users/Echo/Documents/Temp/Icons/白.png)");
-            // new_tex->AppendSprite(IconConstantName::WindowFold(), R"(C:/Users/Echo/Documents/Temp/Icons/收起.png)");
-            // new_tex->AppendSprite(IconConstantName::WindowUnfold(), R"(C:/Users/Echo/Documents/Temp/Icons/展开.png)");
-            // new_tex->AppendSprite(IconConstantName::CheckBox_Checked(), R"(C:/Users/Echo/Documents/Temp/Icons/checkbox-checked.png)");
-            // new_tex->AppendSprite(IconConstantName::CheckBox_UnChecked(), R"(C:/Users/Echo/Documents/Temp/Icons/checkbox-unchecked.png)");
-            // new_tex->SetAssetPath("Assets/Texture/UIAtlas.png");
-            // new_tex->Download();
-            // AssetDataBase::CreateAsset(new_tex, new_tex->GetAssetPath());
-            {
-                auto t1 = AssetDataBase::Import("Assets/Texture/UIAtlas.png");
-                auto t2 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png");
-                auto t3 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png");
-                auto t4 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png");
-                auto t5 = AssetDataBase::Import("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png");
-                auto t6 = AssetDataBase::Import("Assets/Texture/poly_haven_studio_1k.exr_irradiance_map.hdr");
-                while (true) {
-                    auto all_completed = t1.Completed() && t2.Completed() && t3.Completed() && t4.Completed() && t5.Completed() && t6.Completed();
-                    if (!all_completed) {
-                        ThreadManager::PollGameThread(100);
-                    } else {
-                        break;
-                    }
-                }
-            }
+            // PBR资产(测试用)
+            ResourceInitCreate( //
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Cerberus_LP.fbx")), // Mesh
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_A.png")), // Albedo,
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_M.png")), // Metallic
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_N.png")), // Normal
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_R.png")), // Roughness
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png")) // AO
+            );
 
 #if WITH_EDITOR
             ObjectManager::SaveObjectRegistry();
@@ -162,28 +143,28 @@ int main() {
         auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
         mesh_actor->SetDisplayName("PBR物体");
         auto mesh = mesh_actor->AddComponent<StaticMeshComponent>();
-        auto mesh_res = static_cast<Mesh *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_LP.fbx"));
+        auto mesh_res = static_cast<Mesh *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Cerberus_LP.fbx"));
         mesh_res->SetImportScale(0.01f);
         mesh_res->SaveIfNeed();
         mesh->SetMesh(mesh_res);
         mesh_actor->SetRotation({90, 0, 0});
-        mesh->SetLocation({0, -0.05, 0});
+        mesh->SetLocation({0, 0, 0});
 
         Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
-        auto color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Colour.png"));
-        auto metallic = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Metallic.png"));
+        auto color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_A.png"));
+        auto metallic = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_M.png"));
         metallic->SetTextureFormat(Format::R8_UNorm);
         metallic->SaveIfNeed();
-        auto roughness = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Roughness.png"));
+        auto roughness = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_R.png"));
         roughness->SetTextureFormat(Format::R8_UNorm);
         roughness->SaveIfNeed();
-        auto ao = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_AO.png"));
+        auto ao = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png"));
         ao->SetTextureFormat(Format::R8_UNorm);
         ao->SaveIfNeed();
-        auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Suitcase/Vintage_Suitcase_Normal_OpenGL.png"));
+        auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
         normal->SetTextureFormat(Format::R8_UNorm);
         normal->SaveIfNeed();
-        auto irradiance_map = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/poly_haven_studio_1k.exr_irradiance_map.hdr"));
+        auto irradiance_map = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);
         m->SetTexture2D("tex_roughness", roughness);

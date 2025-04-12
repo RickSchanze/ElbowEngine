@@ -57,3 +57,22 @@ public float GGX_GeometrySmith(float NdotV, float NdotL, float roughness) {
     float ggx2 = GGX_Schlick(NdotL, roughness);
     return ggx1 * ggx2;
 }
+
+public float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness) {
+    float a = roughness * roughness;
+    float phi = 2 * PI * Xi.x;
+    float cos_thta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+    float sin_theta = sqrt(1 - cos_thta * cos_thta);
+    // 从球坐标系转到笛卡尔坐标系
+    float3 H;
+    H.x = cos(phi) * sin_theta;
+    H.y = sin(phi) * sin_theta;
+    H.z = cos_thta;
+    // 切线空间转世界空间
+    float3 up = abs(N.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangent = normalize(cross(up, N));
+    float3 bitangent = cross(N, tangent);
+
+    float3 sample_vec = tangent * H.x + bitangent * H.y + N * H.z;
+    return normalize(sample_vec);
+}

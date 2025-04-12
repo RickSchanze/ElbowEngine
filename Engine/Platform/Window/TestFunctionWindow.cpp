@@ -4,7 +4,6 @@
 
 #include "TestFunctionWindow.hpp"
 
-#include "Func/Render/Offline/ImageTransformer.hpp"
 #include "Func/UI/ImGuiDrawer.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
@@ -16,7 +15,6 @@ void TestFunctionWindow::Draw() {
         if (ImGui::Button("将球面贴图转换为立方体贴图")) {
             auto *tex = AssetDataBase::LoadOrImportT<Texture2D>("Assets/Texture/poly_haven_studio_1k.exr");
             if (tex) {
-                ImageTransformer::CalculateIrradianceMap(tex);
             }
         }
     }

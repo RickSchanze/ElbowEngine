@@ -30,7 +30,7 @@ namespace exec {
             template<size_t I>
             bool Check() {
                 if constexpr (I < sizeof...(ExecFutures)) {
-                    return std::get<I>(op_futures).Completed() && Check<I + 1>();
+                    return std::get<I>(op_futures).IsCompleted() && Check<I + 1>();
                 } else {
                     return true;
                 }

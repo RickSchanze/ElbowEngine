@@ -65,7 +65,7 @@ rhi::ImageViewDesc::ImageViewDesc(Image *image_, ImageDimension type_, Format fo
         }
     }
     if (subresource_range.level_count == -1) {
-        subresource_range.level_count = image->GetMipLevels();
+        subresource_range.level_count = image->GetMipLevelCount();
     }
     if (subresource_range.aspect_mask == -1) {
         Log(Error) << "aspect_mask must be specified when creating an image view.";
@@ -94,7 +94,7 @@ rhi::ImageViewDesc::ImageViewDesc(Image *image_) {
     subresource_range.aspect_mask = aspect;
     subresource_range.layer_count = image->GetDepthOrLayers();
     subresource_range.base_array_layer = 0;
-    subresource_range.level_count = image->GetMipLevels();
+    subresource_range.level_count = image->GetMipLevelCount();
     subresource_range.base_mip_level = 0;
     if (format == Format::R8_SRGB) {
         component_mapping.a = ComponentMappingElement::R;

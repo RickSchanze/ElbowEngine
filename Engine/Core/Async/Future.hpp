@@ -22,7 +22,7 @@ template <typename T> struct Future {
     return state == std::future_status::ready;
   }
 
-  [[nodiscard]] bool Completed() const { return future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
+  [[nodiscard]] bool IsCompleted() const { return future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
 
   Future &operator=(Future &&) = default;
 
@@ -44,7 +44,7 @@ template <> struct Future<void> {
     return state == std::future_status::ready;
   }
 
-  [[nodiscard]] bool Completed() const { return future_.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready; }
+  [[nodiscard]] bool IsCompleted() const { return future_.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready; }
 
 private:
   std::future<void> future_;

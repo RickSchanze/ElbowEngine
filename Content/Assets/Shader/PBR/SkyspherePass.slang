@@ -31,6 +31,7 @@ VertOutput vert(Vertex vert) {
         0, 0, 1, 0,
         cam_loc.x, cam_loc.y, cam_loc.z, 1,
     };
+
     float4 outpos = PerformMVP(vert_pos, model, camera.GetView(), camera.GetProjection());
     outpos.z = outpos.w;
     VertOutput output;
@@ -43,7 +44,7 @@ VertOutput vert(Vertex vert) {
 FragOutput frag(VertOutput vert_in) {
     float2 uv = GetUVFromDirection(vert_in.ray_dir);
     FragOutput output;
-    output.color = skybox_texture.Sample(common_sampler, uv);
+    output.color = skybox_texture.SampleLevel(common_sampler, uv, 1);
     return output;
 }
 

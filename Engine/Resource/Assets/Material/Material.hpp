@@ -37,31 +37,31 @@ public:
 
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Material; }
 
-    void SetFloat3(const String &name, const Vector3f &value) const {
+    // 这些Set表达的都不是const的语义, 因此不加const
+    void SetFloat3(const String &name, const Vector3f &value) {
         if (!shared_material_)
             return;
         const UInt64 name_hash = name.GetHashCode();
         SetFloat3(name_hash, value);
     }
 
-    void SetFloat3(UInt64 name_hash, const Vector3f &value) const;
+    void SetFloat3(UInt64 name_hash, const Vector3f &value);
 
-    void SetFloat4(const String &name, const Vector4f &value) const;
+    void SetFloat4(const String &name, const Vector4f &value);
 
-    void SetFloat4(UInt64 name_hash, const Vector4f &value) const;
+    void SetFloat4(UInt64 name_hash, const Vector4f &value);
 
-    bool SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage = false) const;
-
+    bool SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage = false);
     bool SetTexture2D(const String &name, const Texture2D *texture, bool is_storage = false);
 
-    bool SetFloat(StringView name, Float value) const;
+    bool SetFloat(StringView name, Float value);
 
-    bool SetParamNativeImageView(const String& name, rhi::ImageView* image_view, rhi::Sampler* sampler = nullptr) const;
+    bool SetParamNativeImageView(const String &name, rhi::ImageView *image_view, bool is_storage = false);
 
     void SetShader(const Shader *shader);
 
-    bool SetMatrix4x4(StringView name, const Matrix4x4f &value) const;
-    bool SetMatrix3x3(StringView name, const Matrix3x3f &value) const;
+    bool SetMatrix4x4(StringView name, const Matrix4x4f &value);
+    bool SetMatrix3x3(StringView name, const Matrix3x3f &value);
 
     bool IsComputeMaterial() const;
 
@@ -76,9 +76,9 @@ public:
 
     [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
 
-    static Material* GetDefaultMaterial();
-    static Material* CreateFromShader(Shader* s);
-    static Material* CreateFromShader(StringView path);
+    static Material *GetDefaultMaterial();
+    static Material *CreateFromShader(Shader *s);
+    static Material *CreateFromShader(StringView path);
 
 protected:
     REFLECTED()

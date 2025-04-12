@@ -8,6 +8,8 @@
 
 #include "Core/Object/ObjectManager.hpp"
 #include "DetailWindow.hpp"
+#include "Func/Render/Pipeline/RenderPipeline.hpp"
+#include "Func/Render/RenderContext.hpp"
 #include "ImGuiDemoWindow.hpp"
 #include "InspectorWindow.hpp"
 #include "Platform/Window/TestFunctionWindow.hpp"
@@ -48,6 +50,20 @@ void GlobalDockingWindow::Draw() {
             }
             if (ImGui::MenuItem("功能测试")) {
                 UIManager::CreateOrActivateWindow<TestFunctionWindow>();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("工具")) {
+            if (ImGui::MenuItem("渲染管线设置")) {
+                auto *pipeline = RenderContext::GetBoundRenderPipeline();
+                if (pipeline) {
+                    ImGuiDrawWindow *window = pipeline->GetSettingWindow();
+                    if (window) {
+                        window->SetVisible(true);
+                    } else {
+                        VLOG_ERROR("打开渲染管线设置窗口失败, 可能是因为渲染管线没有实现GetSettingWindow函数");
+                    }
+                }
             }
             ImGui::EndMenu();
         }

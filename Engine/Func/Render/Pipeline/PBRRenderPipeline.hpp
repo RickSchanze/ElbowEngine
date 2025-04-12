@@ -6,7 +6,7 @@
 #include "Core/Math/Types.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Object/ObjectPtr.hpp"
-#include "Func/Render/RenderPipeline.hpp"
+#include "RenderPipeline.hpp"
 
 
 class Texture2D;
@@ -16,8 +16,12 @@ namespace rhi {
 }
 class RenderTexture;
 class Material;
+
+
+
 class PBRRenderPipeline : public RenderPipeline {
 public:
+    friend class PBRRenderPipelineSettingWindow;
     void Render(rhi::CommandBuffer &cmd, const RenderParams &params) override;
 
     void Build() override;
@@ -31,10 +35,13 @@ public:
     void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target, Vector2f render_size) const;
     void PerformImGuiPass(rhi::CommandBuffer& cmd, const RenderParams& params);
 
+    ImGuiDrawWindow *GetSettingWindow() override;
+
 private:
     Material *basepass_material_ = nullptr;
     Material *skysphere_pass_material_ = nullptr;
     Material *color_transform_pass_material_ = nullptr;
+    Texture2D* skybox_texture_ = nullptr;
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<RenderTexture> sdr_color_;

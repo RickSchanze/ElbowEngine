@@ -10,6 +10,7 @@
 #include "Core/String/String.hpp"
 #include "GfxContext.hpp"
 #include "IResource.hpp"
+#include "Image.hpp"
 
 
 namespace rhi {
@@ -83,6 +84,8 @@ namespace rhi {
         void Clear() { commands_.Clear(); }
 
         void EnqueueCommand(RHICommand *command) { commands_.Add(command); }
+
+        void BlitImage(Image* src, Image* dst, const ImageBlitDesc& desc);
 
         template<typename T, typename... Args>
         void Enqueue(Args &&...args) {

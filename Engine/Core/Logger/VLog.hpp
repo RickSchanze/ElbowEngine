@@ -25,6 +25,8 @@ public:
             stream << std::hex << std::showbase << t;
         } else if constexpr (CToStringAble<Pure<T>>) {
             stream << *t.ToString();
+        } else if constexpr (IsEnum<Pure<T>>) {
+            stream << std::to_underlying(t);
         } else {
             static_assert(false, "T Can not Stringify.");
         }

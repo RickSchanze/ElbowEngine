@@ -9,6 +9,7 @@
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "Platform/RHI/Image.hpp"
+#include "Platform/RHI/ImageView.hpp"
 #include "Resource/AssetDataBase.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
@@ -65,7 +66,6 @@ void Material::Build() {
     for (auto &param: shared_material_->GetTextureBindings() | range::view::Values) {
         DescriptorImageUpdateDesc update_info{};
         if (param.type == ShaderParamType::StorageTexture2D) {
-            VLOG_INFO("Mat Layout:", shared_material_->GetDescriptorSetLayouts()[0].get());
             // 当前情况是Compute Shader compute shader绑定时应该所有的都准备好了
             continue;
         } else {
@@ -126,7 +126,7 @@ void Material::PerformLoad() {
     Build();
 }
 
-void Material::SetFloat3(UInt64 name_hash, const Vector3f &value) const {
+void Material::SetFloat3(UInt64 name_hash, const Vector3f &value) {
     if (!shared_material_)
         return;
     auto &uniform_offsets = shared_material_->GetUniformOffsets();
@@ -137,12 +137,12 @@ void Material::SetFloat3(UInt64 name_hash, const Vector3f &value) const {
     const UInt32 offset = uniform_offsets[name_hash].offset;
     memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Vector3f));
 }
-void Material::SetFloat4(const String &name, const Vector4f &value) const {
+void Material::SetFloat4(const String &name, const Vector4f &value) {
     const UInt64 name_hash = name.GetHashCode();
     SetFloat4(name_hash, value);
 }
 
-void Material::SetFloat4(UInt64 name_hash, const Vector4f &value) const {
+void Material::SetFloat4(UInt64 name_hash, const Vector4f &value) {
     if (!shared_material_)
         return;
     auto &uniform_offsets = shared_material_->GetUniformOffsets();
@@ -154,7 +154,7 @@ void Material::SetFloat4(UInt64 name_hash, const Vector4f &value) const {
     memcpy(mapped_buffer_memory_ + offset, &value, sizeof(Vector3f));
 }
 
-bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage) const {
+bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage) {
     if (texture == nullptr || !texture->IsLoaded()) {
         Log(Error) << "传入无效texture";
         return false;
@@ -166,6 +166,7 @@ bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_
         Log(Error) << String::Format("材质{}中没有参数{}", GetHandle(), name_hash);
         return false;
     }
+    GetGfxContextRef().WaitForQueueExecution(QueueFamilyType::Graphics);
     const UInt32 binding = texture_bindings[name_hash].binding;
     DescriptorImageUpdateDesc update_info{};
     if (!is_storage) {
@@ -188,7 +189,7 @@ bool Material::SetTexture2D(const String &name, const Texture2D *texture, bool i
     return false;
 }
 
-bool Material::SetFloat(StringView name, Float value) const {
+bool Material::SetFloat(StringView name, Float value) {
     auto &uniform = shared_material_->GetUniformOffsets();
     UInt64 name_hash = name.GetHashCode();
     if (!uniform.Contains(name_hash)) {
@@ -200,7 +201,7 @@ bool Material::SetFloat(StringView name, Float value) const {
     return true;
 }
 
-bool Material::SetParamNativeImageView(const String &name, rhi::ImageView *image_view, rhi::Sampler *sampler) const {
+bool Material::SetParamNativeImageView(const String &name, rhi::ImageView *image_view, bool is_storage) {
     if (image_view == nullptr) {
         VLOG_ERROR("参数无效");
         return false;
@@ -214,9 +215,10 @@ bool Material::SetParamNativeImageView(const String &name, rhi::ImageView *image
     }
     UInt32 binding = tex_bindings[name.GetHashCode()].binding;
     DescriptorImageUpdateDesc update_info{};
-    update_info.image_layout = ImageLayout::ShaderReadOnly;
+    update_info.image_layout = is_storage ? ImageLayout::General : ImageLayout::ShaderReadOnly;
     update_info.image_view = image_view;
-    update_info.sampler = sampler;
+    update_info.descriptor_type = is_storage ? DescriptorType::StorageImage : DescriptorType::SampledImage;
+    update_info.sampler = nullptr;
     descriptor_set_->Update(binding, update_info);
     return true;
 }
@@ -231,7 +233,7 @@ void Material::SetShader(const Shader *shader) {
     Build();
 }
 
-bool Material::SetMatrix4x4(StringView name, const Matrix4x4f &value) const {
+bool Material::SetMatrix4x4(StringView name, const Matrix4x4f &value) {
     auto &uniform = shared_material_->GetUniformOffsets();
     UInt64 name_hash = name.GetHashCode();
     if (!uniform.Contains(name_hash)) {
