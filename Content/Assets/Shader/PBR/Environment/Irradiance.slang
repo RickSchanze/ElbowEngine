@@ -12,7 +12,6 @@ uniform ConstantBuffer<Params> params;
 uniform Texture2D<float3> input_equirect_map; 
 uniform SamplerState common_samler;
 uniform RWTexture2D<float4> output_irradiance;
-static const float PI = 3.1415926535;
 
 float2 DirToUV(float3 dir) {
     float phi = atan2(dir.y, dir.x) + PI;      

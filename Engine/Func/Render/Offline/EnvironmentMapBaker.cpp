@@ -16,8 +16,7 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 using namespace rhi;
 
-Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta, Float intensity,
-                                                  bool download) {
+Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta, Float intensity) {
     if (!environment_sphere) {
         VLOG_ERROR("烘焙失败!输入环境贴图为空");
         return nullptr;
@@ -38,16 +37,11 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
     Texture2D *irradiance_map = ObjectManager::CreateNewObject<Texture2D>();
     irradiance_map->Load(irradiance_map_meta);
     irradiance_map->SetName("IrradianceMap");
-    BakeIrradianceMap(environment_sphere, irradiance_map);
-    if (download) {
-        StringView path = environment_sphere->GetAssetPath();
-        auto file_name = Path::GetFileNameWithoutExt(path) + "_irradiance_map.hdr";
-        String new_path = Path::Combine(Path::GetParent(path), file_name);
-        irradiance_map->Download(new_path);
-        VLOG_INFO(*path, "的辐照度图保存至", *new_path);
-    }
-    return environment_sphere;
+    BakeIrradianceMap(environment_sphere, irradiance_map, sample_delta, intensity);
+    VLOG_INFO("成功烘焙", *environment_sphere->GetAssetPath(), "的辐照度图!");
+    return irradiance_map;
 }
+
 void EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Texture2D *target, Float sample_delta, Float intensity) {
     if (target == nullptr || environment_sphere == nullptr) {
         VLOG_ERROR("烘焙失败!输入环境贴图或者输出target为空");

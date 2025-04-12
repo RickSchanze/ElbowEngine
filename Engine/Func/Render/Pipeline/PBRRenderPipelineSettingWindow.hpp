@@ -15,7 +15,8 @@ public:
     void SetRenderPipeline(PBRRenderPipeline* pipeline);
 
 protected:
-    void GeneratePrefilteredEnvironmentMapAndReplaceSkyBox() const;
+    void GeneratePrefilteredMapAndReplaceSkyBox() const;
+    void GenerateIrradianceMapAndReplaceSkyBox() const;
 
 
     PBRRenderPipeline* pipeline_ = nullptr;

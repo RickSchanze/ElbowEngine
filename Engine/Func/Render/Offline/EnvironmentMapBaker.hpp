@@ -20,11 +20,9 @@ public:
      * @param output_size 输出IrradianceMap的尺寸
      * @param sample_delta 采样间隔 值越小 采样次数越多 越慢
      * @param intensity 强度
-     * @param download
      */
     // TODO: BakeIrradianceMapAsync
-    static Texture2D *BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta = 0.01f, Float intensity = 1.0f,
-                                        bool download = true);
+    static Texture2D *BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta = 0.01f, Float intensity = 1.0f);
     static void BakeIrradianceMap(Texture2D *environment_sphere, Texture2D *target, Float sample_delta = 0.01f, Float intensity = 1.0f);
     static void BakeIrradianceMap(rhi::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material);
 
