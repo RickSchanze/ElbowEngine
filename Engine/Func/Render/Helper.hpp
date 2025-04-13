@@ -1,14 +1,16 @@
 #pragma once
+#include "Resource/Assets/Material/Material.hpp"
 
 
-namespace rhi {
+namespace RHI {
     class CommandBuffer;
     class Pipeline;
-} // namespace rhi
+} // namespace RHI
 class Material;
 class Mesh;
 
-namespace helper {
-    void BindAndDrawMesh(rhi::CommandBuffer &cmd, const Mesh *mesh);
-    void BindMaterial(rhi::CommandBuffer &cmd, const Material *mat);
-} // namespace helper
+namespace Helper {
+    void BindAndDrawMesh(RHI::CommandBuffer &cmd, const Mesh *mesh);
+    void BindMaterial(RHI::CommandBuffer &cmd, const Material *mat);
+    void BindComputeMaterial(RHI::CommandBuffer& InCmd, const Material* InMat);
+} // namespace Helper

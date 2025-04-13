@@ -9,7 +9,7 @@
 #include "Platform/RHI/LowShader.hpp"
 #include "Platform/RHI/RenderPass.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &desc, const RenderPass *render_pass) {
     auto decive = GetVulkanGfxContext()->GetDevice();

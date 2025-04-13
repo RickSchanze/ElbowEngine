@@ -48,31 +48,31 @@ void AssetDataBase::Shutdown() {
 }
 
 template<typename T, typename TMeta>
-exec::ExecFuture<ObjectHandle> InternalImport(StringView query, StringView path, ObjectRegistry &registry) {
-    auto result = AssetDataBase::QueryMeta<TMeta>(query);
-    if (result) {
-        auto &meta = *result;
-        ObjectHandle handle = meta.object_handle;
-        auto *obj = registry.GetObjectByHandle(handle);
-        if (obj != nullptr) {
-            registry.RemoveObject(obj);
+ExecFuture<ObjectHandle> InternalImport(StringView InQuery, StringView InPath, ObjectRegistry &InRegistry) {
+    auto Reuslt = AssetDataBase::QueryMeta<TMeta>(InQuery);
+    if (Reuslt) {
+        auto &Meta = *Reuslt;
+        ObjectHandle Handle = Meta.ObjectHandle;
+        auto *Obj = InRegistry.GetObjectByHandle(Handle);
+        if (Obj != nullptr) {
+            InRegistry.RemoveObject(Obj);
         }
-        auto *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
-        asset->InternalSetAssetHandle(handle);
-        return asset->PerformPersistentObjectLoadAsync();
+        auto *Asset = ObjectManager::CreateNewObjectAsync<T>().Get();
+        Asset->InternalSetAssetHandle(Handle);
+        return Asset->PerformPersistentObjectLoadAsync();
     } else {
-        TMeta new_meta = {};
-        new_meta.path = path;
-        auto *asset = ObjectManager::CreateNewObjectAsync<T>().Get();
-        new_meta.object_handle = registry.NextPersistentHandle().Get();
+        TMeta NewMeta = {};
+        NewMeta.Path = InPath;
+        auto *Asset = ObjectManager::CreateNewObjectAsync<T>().Get();
+        NewMeta.ObjectHandle = InRegistry.NextPersistentHandle().Get();
         if constexpr (SameAs<T, Texture2D>) {
-            if (path.EndsWith(".exr") || path.EndsWith(".hdr")) {
-                new_meta.format = rhi::Format::R32G32B32A32_Float;
+            if (InPath.EndsWith(".exr") || InPath.EndsWith(".hdr")) {
+                NewMeta.Format = RHI::Format::R32G32B32A32_Float;
             }
         }
-        AssetDataBase::InsertMeta(new_meta);
-        asset->InternalSetAssetHandle(new_meta.object_handle);
-        return asset->PerformPersistentObjectLoadAsync();
+        AssetDataBase::InsertMeta(NewMeta);
+        Asset->InternalSetAssetHandle(NewMeta.ObjectHandle);
+        return Asset->PerformPersistentObjectLoadAsync();
     }
 }
 
@@ -110,7 +110,7 @@ ExecFuture<ObjectHandle> InternalLoadAsync(StringView path) {
         return exec::MakeExecFuture(0);
     } else {
         auto &meta = *meta_op;
-        ObjectHandle handle = meta.object_handle;
+        ObjectHandle handle = meta.ObjectHandle;
         ObjectRegistry &registry = ObjectManager::GetRegistry();
         Object *obj = registry.GetObjectByHandle(handle);
         if (obj != nullptr) {
@@ -141,7 +141,7 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView path) {
         // 查看资产数据库是否存在
         if (Optional<MaterialMeta> meta_op = QueryMeta<MaterialMeta>(String::Format("path = '{}'", path))) {
             const MaterialMeta &meta = *meta_op;
-            ObjectHandle database_handle = meta.object_handle;
+            ObjectHandle database_handle = meta.ObjectHandle;
             ObjectRegistry &registry = ObjectManager::GetRegistry();
             if (const Object *obj = registry.GetObjectByHandle(database_handle); obj != nullptr) {
                 return MakeExecFuture(database_handle);
@@ -179,7 +179,7 @@ static String QueryPath(ObjectHandle handle) {
             return "";
         }
         auto &meta = *meta_op;
-        return meta.path;
+        return meta.Path;
     }
     return "";
 }
@@ -255,8 +255,8 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
         }
         File::WriteAllText(path, serialized_str);
         MaterialMeta meta;
-        meta.object_handle = handle;
-        meta.path = path;
+        meta.ObjectHandle = handle;
+        meta.Path = path;
         InsertMeta(meta);
         return true;
     }
@@ -270,13 +270,13 @@ bool AssetDataBase::CreateAsset(Asset *asset, StringView path) {
         auto tex = static_cast<Texture2D *>(asset);
         Assert(StringView(tex->GetAssetPath()) == path, "创建纹理资源失败: 路径不匹配");
         Texture2DMeta meta;
-        meta.object_handle = handle;
-        meta.path = path;
-        meta.dynamic = false;
-        meta.height = tex->GetHeight();
-        meta.width = tex->GetWidth();
-        meta.format = tex->GetFormat();
-        meta.sprites_string = tex->GetSpriteRangeString();
+        meta.ObjectHandle = handle;
+        meta.Path = path;
+        meta.IsDynamic = false;
+        meta.Height = tex->GetHeight();
+        meta.Width = tex->GetWidth();
+        meta.Format = tex->GetFormat();
+        meta.SpritesString = tex->GetSpriteRangeString();
         InsertMeta(meta);
         return true;
     }

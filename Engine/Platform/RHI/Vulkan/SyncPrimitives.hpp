@@ -5,7 +5,7 @@
 #include "Platform/RHI/SyncPrimitives.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     struct Fence_Vulkan : Fence {
         Fence_Vulkan(bool signaled);
 

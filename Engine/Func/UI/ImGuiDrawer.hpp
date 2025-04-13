@@ -6,19 +6,20 @@
 #include "ImGuiDemoWindow.hpp"
 
 
+class Texture2D;
 class SceneComponent;
 class Actor;
-namespace rhi {
+namespace RHI {
     class ImageView;
 }
 class RenderTexture;
-namespace rhi {
+namespace RHI {
     class DescriptorSet;
 }
 
 struct ImGuiImageData {
     ImTextureID id;
-    rhi::ImageView *view;
+    RHI::ImageView *view;
 };
 
 enum class ImGuiItemLabelFlag {
@@ -35,6 +36,7 @@ public:
     static bool Begin(const char *title, bool *p_open = nullptr, ImGuiWindowFlags f = ImGuiWindowFlags_NoCollapse);
     static void End();
     static void Image(RenderTexture &tex, Vector2f size, Vector2f uv0 = {0, 0}, Vector2f uv1 = {1, 1});
+    static void Image(Texture2D* InTex, Vector2f InSize, Vector2f uv0 = {0, 0}, Vector2f uv1 = {1, 1});
 
     static void ItemLabel(StringView title, ImGuiItemLabelFlag flags);
 
@@ -42,9 +44,10 @@ public:
 
     static bool CheckBox(const char *label, bool *checked);
     static bool InputFloat3(const char *label, float *v, const char *format = "%.3f", ImGuiInputTextFlags extra_flags = 0);
-    static void DrawTransform(Actor* actor);
-    static void DrawTransform(SceneComponent* comp);
+    static void DrawTransform(Actor *actor);
+    static void DrawTransform(SceneComponent *comp);
 
 private:
-    Map<RenderTexture *, ImGuiImageData> texture_map_;
+    Map<RenderTexture *, ImGuiImageData> mRenderTextureMap;
+    Map<Texture2D *, ImGuiImageData> mTextureMap;
 };

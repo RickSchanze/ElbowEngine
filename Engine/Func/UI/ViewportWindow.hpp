@@ -8,7 +8,7 @@
 
 
 class RenderTexture;
-namespace rhi {
+namespace RHI {
     class DescriptorSet;
 }
 class CameraComponent;

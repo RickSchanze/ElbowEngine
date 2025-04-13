@@ -19,8 +19,8 @@
 #include "Resource/Assets/Mesh/Mesh.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 
-using namespace rhi;
-using namespace helper;
+using namespace RHI;
+using namespace Helper;
 
 void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     ProfileScope scope(__func__);

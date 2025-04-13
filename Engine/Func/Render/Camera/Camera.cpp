@@ -8,7 +8,7 @@
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 void Camera::SetActive(CameraComponent *camera) {
     active_ = camera;

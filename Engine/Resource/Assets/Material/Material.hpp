@@ -10,16 +10,16 @@
 #include "Resource/Assets/Asset.hpp"
 
 
-namespace rhi {
+namespace RHI {
     class Sampler;
 }
-namespace rhi {
+namespace RHI {
     class ImageView;
 }
 class RenderTexture;
 class Shader;
 class SharedMaterial;
-namespace rhi {
+namespace RHI {
     class Buffer;
     class DescriptorSet;
 } // namespace rhi
@@ -56,7 +56,7 @@ public:
 
     bool SetFloat(StringView name, Float value);
 
-    bool SetParamNativeImageView(const String &name, rhi::ImageView *image_view, bool is_storage = false);
+    bool SetParamNativeImageView(const String &name, RHI::ImageView *image_view, bool is_storage = false);
 
     void SetShader(const Shader *shader);
 
@@ -68,7 +68,7 @@ public:
     [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
     [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;
 
-    [[nodiscard]] rhi::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
+    [[nodiscard]] RHI::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
 
     void Build();
 
@@ -95,11 +95,11 @@ protected:
 
     // 所有UniformBuffer都使用这一个Buffer
     // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
-    SharedPtr<rhi::Buffer> buffer_;
+    SharedPtr<RHI::Buffer> buffer_;
 
     UInt8 *mapped_buffer_memory_ = nullptr;
 
-    SharedPtr<rhi::DescriptorSet> descriptor_set_;
+    SharedPtr<RHI::DescriptorSet> descriptor_set_;
 
     SharedPtr<SharedMaterial> shared_material_;
 };

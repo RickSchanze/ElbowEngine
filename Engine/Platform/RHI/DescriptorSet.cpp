@@ -6,4 +6,4 @@
 
 #include "Events.hpp"
 
-rhi::DescriptorSetLayoutPool::DescriptorSetLayoutPool() { Evt_OnGfxContextPreDestroyed.AddBind(this, &DescriptorSetLayoutPool::Clear); }
+RHI::DescriptorSetLayoutPool::DescriptorSetLayoutPool() { Evt_OnGfxContextPreDestroyed.AddBind(this, &DescriptorSetLayoutPool::Clear); }

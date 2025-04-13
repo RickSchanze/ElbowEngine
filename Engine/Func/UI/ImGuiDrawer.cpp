@@ -13,6 +13,7 @@
 #include "Func/World/Transform.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/ImageView.hpp"
+#include "Resource/Assets/Texture/Texture2D.hpp"
 
 bool ImGuiDrawer::Begin(const char *title, bool *p_open, ImGuiWindowFlags f) { return ImGui::Begin(title, p_open, f); }
 void ImGuiDrawer::End() { ImGui::End(); }
@@ -20,19 +21,41 @@ void ImGuiDrawer::End() { ImGui::End(); }
 void ImGuiDrawer::Image(RenderTexture &tex, Vector2f size, Vector2f uv0, Vector2f uv1) {
     auto &self = GetByRef();
     RenderTexture *p_tex = &tex;
-    if (self.texture_map_.Contains(p_tex)) {
-        auto &image_data = self.texture_map_[p_tex];
+    if (self.mRenderTextureMap.Contains(p_tex)) {
+        auto &image_data = self.mRenderTextureMap[p_tex];
         if (image_data.view == tex.GetImageView()) {
-            ImGui::Image(self.texture_map_[p_tex].id, ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+            ImGui::Image(self.mRenderTextureMap[p_tex].id, ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
             return;
         }
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(image_data.id));
-        self.texture_map_.Remove(p_tex);
+        self.mRenderTextureMap.Remove(p_tex);
     }
-    VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(rhi::GetGfxContextRef().GetSampler(rhi::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
+    VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
                                                       tex.GetImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    self.texture_map_[p_tex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), tex.GetImageView()};
+    self.mRenderTextureMap[p_tex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), tex.GetImageView()};
     ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+}
+
+void ImGuiDrawer::Image(Texture2D *InTex, Vector2f InSize, Vector2f uv0, Vector2f uv1) {
+    if (!InTex) {
+        // TODO: 显示一张图片就Error
+        return;
+    }
+    auto &Self = GetByRef();
+    if (Self.mTextureMap.Contains(InTex)) {
+        auto &ImageData = Self.mTextureMap[InTex];
+        if (ImageData.view == InTex->GetNativeImageView()) {
+            ImGui::Image(Self.mTextureMap[InTex].id, ImVec2{InSize.x, InSize.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+            return;
+        }
+        ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(ImageData.id));
+        Self.mTextureMap.Remove(InTex);
+    }
+    VkDescriptorSet set =
+            ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
+                                        InTex->GetNativeImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    Self.mTextureMap[InTex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), InTex->GetNativeImageView()};
+    ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{InSize.x, InSize.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
 }
 
 void ImGuiDrawer::ItemLabel(StringView title, ImGuiItemLabelFlag flags) {
@@ -76,7 +99,7 @@ void ImGuiDrawer::ItemLabel(StringView title, ImGuiItemLabelFlag flags) {
 }
 
 void ImGuiDrawer::Shutdown() {
-    for (auto &pair: texture_map_) {
+    for (auto &pair: mRenderTextureMap) {
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(pair.second.id));
     }
 }

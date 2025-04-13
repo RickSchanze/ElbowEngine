@@ -7,7 +7,7 @@
 #include "Enums.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     struct BufferDesc {
         size_t size{};
         BufferUsage usage{};

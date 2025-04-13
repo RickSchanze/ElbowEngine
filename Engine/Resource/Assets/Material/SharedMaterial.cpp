@@ -12,7 +12,7 @@
 #include "Platform/RHI/Pipeline.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 static UInt64 CalcUniformBufferOffsetsTotalSize(const Array<ShaderParam> &params, Map<UInt32, MaterialParamBlock> &out) {
     ProfileScope _(__func__);

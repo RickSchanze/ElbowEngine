@@ -6,7 +6,7 @@
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 Cmd_BeginRender::Cmd_BeginRender(const Array<RenderAttachment> &colors_, const RenderAttachment &depth_,
                                  Vector2f size_)

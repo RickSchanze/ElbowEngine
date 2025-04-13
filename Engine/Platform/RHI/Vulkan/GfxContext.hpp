@@ -6,7 +6,7 @@
 #include "Platform/RHI/Image.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     class Surface;
 
     class Image_Vulkan;
@@ -106,7 +106,7 @@ namespace rhi {
         static void PreVulkanGfxContextDestroyed(GfxContext *ctx);
 
     public:
-        UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, rhi::RenderPass *render_pass) override;
+        UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RHI::RenderPass *render_pass) override;
 
         Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore) override;
 
@@ -130,8 +130,8 @@ namespace rhi {
 
         SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc &desc) override;
 
-        void BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32, Int32 w, Int32 h) override;
-        void EndImGuiFrame(rhi::CommandBuffer &buffer) override;
+        void BeginImGuiFrame(RHI::CommandBuffer &cmd, Int32, Int32 w, Int32 h) override;
+        void EndImGuiFrame(RHI::CommandBuffer &buffer) override;
 
     protected:
         SharedPtr<Sampler> CreateSampler(const SamplerDesc &desc, StringView debug_name) override;

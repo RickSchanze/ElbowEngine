@@ -18,7 +18,7 @@
 #include "Platform/RHI/ImageView.hpp"
 
 using namespace exec;
-using namespace rhi;
+using namespace RHI;
 
 static void ExecuteCmdBindDescriptorSetCompute(const VkCommandBuffer cmd, const Cmd_BindDescriptorSetCompute *cmd_bind_descriptor_set) {
     ProfileScope _(__func__);

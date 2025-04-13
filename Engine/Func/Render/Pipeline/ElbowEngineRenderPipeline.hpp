@@ -12,7 +12,7 @@ class Mesh;
 class RenderTexture;
 class ElbowEngineRenderPipeline : public RenderPipeline {
 public:
-    void Render(rhi::CommandBuffer &cmd, const RenderParams &params) override;
+    void Render(RHI::CommandBuffer &cmd, const RenderParams &params) override;
 
     void Build() override;
     void Clean() override;

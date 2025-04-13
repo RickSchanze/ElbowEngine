@@ -7,7 +7,7 @@
 #include "Enums.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     class Pipeline : public IResource {};
     class DescriptorSetLayout;
     class LowShader;

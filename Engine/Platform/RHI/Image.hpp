@@ -8,7 +8,7 @@
 #include "Core/Misc/SharedPtr.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     class Buffer;
     struct ImageDesc {
         UInt32 width;
@@ -95,6 +95,6 @@ namespace rhi {
 } // namespace rhi
 
 template<>
-struct std::hash<rhi::SamplerDesc> {
-    size_t operator()(const rhi::SamplerDesc &desc) const noexcept { return desc.GetHashCode(); }
+struct std::hash<RHI::SamplerDesc> {
+    size_t operator()(const RHI::SamplerDesc &desc) const noexcept { return desc.GetHashCode(); }
 };

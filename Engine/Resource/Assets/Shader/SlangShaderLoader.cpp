@@ -15,7 +15,7 @@
 #include "Resource/Config.hpp"
 
 using namespace slang;
-using namespace rhi;
+using namespace RHI;
 
 #define VERIFY_SLANG_RESULT(result)                                                                                                                  \
     {                                                                                                                                                \
@@ -139,7 +139,7 @@ void SlangShaderLoader::Load(StringView path, Shader &shader) {
     target_desc[1].profile = global_session_->findProfile("glsl_460");
 
     CompilerOptionEntry option_entry[2];
-    if (rhi::GetGfxContextRef().GetAPI() == rhi::GraphicsAPI::Vulkan) {
+    if (RHI::GetGfxContextRef().GetAPI() == RHI::GraphicsAPI::Vulkan) {
         option_entry[0].name = CompilerOptionName::EmitSpirvDirectly;
         option_entry[0].value.intValue0 = 1;
         option_entry[1].name = CompilerOptionName::DebugInformation;

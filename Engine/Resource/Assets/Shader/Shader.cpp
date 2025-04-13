@@ -18,7 +18,7 @@
 #include "Resource/Config.hpp"
 #include "ShaderMeta.hpp"
 #include "SlangShaderLoader.hpp"
-using namespace rhi;
+using namespace RHI;
 
 IMPL_REFLECTED_INPLACE(Shader) { return Type::Create<Shader>("Shader") | refl_helper::AddParents<Asset>(); }
 
@@ -29,7 +29,7 @@ void Shader::PerformLoad() {
         return;
     }
     auto &meta = *op_meta;
-    StringView shader_path = meta.path;
+    StringView shader_path = meta.Path;
     if (!Path::IsExist(shader_path)) {
         Log(Error) << String::Format("加载失败: 路径为{}的Shader文件不存在", *shader_path);
         return;
@@ -558,7 +558,7 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     return true;
 }
 
-bool Shader::FillComputePSODescFromShader(rhi::ComputePipelineDesc &desc, bool output_glsl) {
+bool Shader::FillComputePSODescFromShader(RHI::ComputePipelineDesc &desc, bool output_glsl) {
     ProfileScope _(__func__);
     if (!IsLoaded()) {
         Log(Error) << "CreatePSOFromShader: shader is nullptr or not loaded";

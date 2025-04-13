@@ -5,7 +5,7 @@
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     class CommandPool_Vulkan final : public CommandPool {
     public:
         explicit CommandPool_Vulkan(CommandPoolCreateInfo info);

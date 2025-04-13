@@ -11,7 +11,7 @@
 #include "Platform/RHI/ImageView.hpp"
 
 using namespace range;
-using namespace rhi;
+using namespace RHI;
 DescriptorSetLayout_Vulkan::DescriptorSetLayout_Vulkan(const DescriptorSetLayoutDesc &desc) : DescriptorSetLayout(desc) {
     auto &ctx = *GetVulkanGfxContext();
     auto device = ctx.GetDevice();

@@ -9,7 +9,7 @@
 #include "Core/TypeAlias.hpp"
 #include "Platform/RHI/Enums.hpp"
 
-namespace rhi {
+namespace RHI {
     class Surface;
 }
 enum class WindowLib {
@@ -79,13 +79,13 @@ public:
      * @param api 表示当前在用什么API
      * @return
      */
-    virtual rhi::Surface *CreateSurface(void *instance, rhi::GraphicsAPI api) = 0;
+    virtual RHI::Surface *CreateSurface(void *instance, RHI::GraphicsAPI api) = 0;
 
     /**
      * 销毁一个Surface
      * @param surface 需要销毁的Surface, 因为是一个Ref因此也会将传入的surface置为nullptr
      */
-    virtual void DestroySurface(rhi::Surface *&surface) = 0;
+    virtual void DestroySurface(RHI::Surface *&surface) = 0;
 
     [[nodiscard]] StringView GetTitle() const { return title_; }
     [[nodiscard]] Int32 GetWidth() const { return width_; }

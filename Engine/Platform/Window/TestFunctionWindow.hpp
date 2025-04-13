@@ -6,7 +6,7 @@
 #include "Func/UI/ImGuiDrawWindow.hpp"
 
 
-namespace rhi {
+namespace RHI {
     class ImageView;
 }
 class TestFunctionWindow : public ImGuiDrawWindow {

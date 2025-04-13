@@ -9,10 +9,10 @@
 #include "slang-com-ptr.h"
 #pragma once
 
-namespace rhi {
+namespace RHI {
     struct ComputePipelineDesc;
 }
-namespace rhi {
+namespace RHI {
     class LowShader;
     struct GraphicsPipelineDesc;
 } // namespace rhi
@@ -102,13 +102,13 @@ public:
 
     const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
 
-    bool FillGraphicsPSODescFromShader(rhi::GraphicsPipelineDesc &desc, bool output_glsl = true);
-    bool FillComputePSODescFromShader(rhi::ComputePipelineDesc& desc, bool output_glsl = true);
+    bool FillGraphicsPSODescFromShader(RHI::GraphicsPipelineDesc &desc, bool output_glsl = true);
+    bool FillComputePSODescFromShader(RHI::ComputePipelineDesc& desc, bool output_glsl = true);
 
 protected:
     Int32 stage_to_entry_point_index_[SHADER_STAGE_COUNT];
 
-    SharedPtr<rhi::LowShader> shader_handles_[SHADER_STAGE_COUNT];
+    SharedPtr<RHI::LowShader> shader_handles_[SHADER_STAGE_COUNT];
 
     Slang::ComPtr<slang::IComponentType> linked_program_;
 

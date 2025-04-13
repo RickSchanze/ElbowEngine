@@ -41,6 +41,16 @@ public float GGX_Schlick(float NdotV, float roughness) {
     return nom / denom;
 }
 
+public float GGX_SchlickSpecularIBL(float NdotV, float Roughnes) {
+    // 这里只是直接光照的计算方法
+    // According to Epic, 用平方更正确一点
+    float a = Roughnes;
+    float K = (a * a) / 8.0;
+    float Nom = NdotV;
+    float Denom = NdotV * (1 - K) + K;
+    return Nom / Denom;
+}
+
 /// N: 法线
 /// V: 实现方向
 /// L: 光纤方向
@@ -50,6 +60,14 @@ public float GGX_GeometrySmith(float3 N, float3 V, float3 L, float roughness) {
     float NdotL = max(dot(N, L), 0.0);
     float ggx1 = GGX_Schlick(NdotV, roughness);
     float ggx2 = GGX_Schlick(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+
+public float GGX_GeometrySmithSpecularIBL(float3 N, float3 V, float3 L, float roughness) {
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx1 = GGX_SchlickSpecularIBL(NdotV, roughness);
+    float ggx2 = GGX_SchlickSpecularIBL(NdotL, roughness);
     return ggx1 * ggx2;
 }
 

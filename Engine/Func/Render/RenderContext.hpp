@@ -11,7 +11,7 @@
 class StaticMeshComponent;
 class PlatformWindow;
 class RenderPipeline;
-namespace rhi {
+namespace RHI {
     class DescriptorSetLayout;
     class DescriptorSetPool;
     class CommandBuffer;
@@ -35,9 +35,9 @@ public:
     void SetRenderEnable(bool enable);
     bool IsRenderEnable() const { return should_render_; }
 
-    static SharedPtr<rhi::DescriptorSet> AllocateDescriptorSet(const SharedPtr<rhi::DescriptorSetLayout> &layout);
-    static void UpdateCameraDescriptorSet(rhi::DescriptorSet &desc_set);
-    static void UpdateLightsDescriptorSet(rhi::DescriptorSet &desc_set);
+    static SharedPtr<RHI::DescriptorSet> AllocateDescriptorSet(const SharedPtr<RHI::DescriptorSetLayout> &layout);
+    static void UpdateCameraDescriptorSet(RHI::DescriptorSet &desc_set);
+    static void UpdateLightsDescriptorSet(RHI::DescriptorSet &desc_set);
     static void AddMeshToDraw(StaticMeshComponent *comp);
     static void RemoveMesh(StaticMeshComponent *comp);
     static const Array<StaticMeshComponent *> &GetDrawStaticMesh();
@@ -51,20 +51,20 @@ private:
     // 当前渲染管线
     UniquePtr<RenderPipeline> render_pipeline_{};
 
-    Array<UniquePtr<rhi::Semaphore>> image_available_semaphores_{};
-    Array<UniquePtr<rhi::Semaphore>> render_finished_semaphores_{};
-    Array<UniquePtr<rhi::Fence>> in_flight_fences_{};
+    Array<UniquePtr<RHI::Semaphore>> image_available_semaphores_{};
+    Array<UniquePtr<RHI::Semaphore>> render_finished_semaphores_{};
+    Array<UniquePtr<RHI::Fence>> in_flight_fences_{};
 
     // 每次渲染时的命令池
-    SharedPtr<rhi::CommandPool> command_pool_{};
-    Array<SharedPtr<rhi::CommandBuffer>> command_buffers_{};
+    SharedPtr<RHI::CommandPool> command_pool_{};
+    Array<SharedPtr<RHI::CommandBuffer>> command_buffers_{};
 
     // 窗口
     UInt64 window_resized_evt_handle_{};
     bool window_resized_{true};
 
     // for descriptor
-    SharedPtr<rhi::DescriptorSetPool> descriptor_pool_{};
+    SharedPtr<RHI::DescriptorSetPool> descriptor_pool_{};
 
     bool should_render_{true};
 

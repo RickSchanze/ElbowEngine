@@ -63,7 +63,7 @@ static bool SupportValidationLayer(StringView layer_name) {
     return false;
 }
 
-using namespace rhi;
+using namespace RHI;
 GraphicsAPI GfxContext_Vulkan::GetAPI() const { return GraphicsAPI::Vulkan; }
 
 Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkPhysicalDevice) {
@@ -172,7 +172,7 @@ VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc &desc) con
     view_info.pNext = nullptr;
     VkImageView view_handle = VK_NULL_HANDLE;
     if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS) {
-        Log(Error) << "Failed to create ImageView: "_es + rhi::VulkanErrorToString(result);
+        Log(Error) << "Failed to create ImageView: "_es + RHI::VulkanErrorToString(result);
     }
     return view_handle;
 }
@@ -561,7 +561,7 @@ void GfxContext_Vulkan::WaitForDeviceIdle() { vkDeviceWaitIdle(device_); }
 
 void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type) { vkQueueWaitIdle(GetQueue(type)); }
 
-UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, rhi::RenderPass *render_pass) {
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RHI::RenderPass *render_pass) {
     return MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
 
@@ -635,7 +635,7 @@ Image *GfxContext_Vulkan::GetSwapChainImage(UInt32 index) {
     return swapchain_images_[index];
 }
 
-GfxContext_Vulkan *rhi::GetVulkanGfxContext() { return static_cast<GfxContext_Vulkan *>(GetGfxContext()); }
+GfxContext_Vulkan *RHI::GetVulkanGfxContext() { return static_cast<GfxContext_Vulkan *>(GetGfxContext()); }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data) {
@@ -988,7 +988,7 @@ SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const De
     return MakeShared<DescriptorSetPool_Vulkan>(desc);
 }
 
-void GfxContext_Vulkan::BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) {
+void GfxContext_Vulkan::BeginImGuiFrame(RHI::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) {
     VkCommandBuffer buffer = cmd.GetNativeHandleT<VkCommandBuffer>();
     auto cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([buffer, this, img_index, w, h]() {
@@ -1017,7 +1017,7 @@ void GfxContext_Vulkan::BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32 img_index
     }
 }
 
-void GfxContext_Vulkan::EndImGuiFrame(rhi::CommandBuffer &buffer) {
+void GfxContext_Vulkan::EndImGuiFrame(RHI::CommandBuffer &buffer) {
     auto cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([&buffer]() {
                     ImGui::Render();

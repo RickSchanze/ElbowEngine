@@ -6,7 +6,7 @@
 
 #include "Core/Math/Types.hpp"
 
-namespace rhi {
+namespace RHI {
     struct Vertex1 {
         Vector3f position;
         Vector3f normal;

@@ -6,17 +6,17 @@
 #include "vulkan/vulkan.h"
 
 
-VkFormat RHIFormatToVkFormat(rhi::Format format);
-rhi::Format VkFormatToRHIFormat(VkFormat format);
+VkFormat RHIFormatToVkFormat(RHI::Format format);
+RHI::Format VkFormatToRHIFormat(VkFormat format);
 
-VkColorSpaceKHR RHIColorSpaceToVkColorSpace(rhi::ColorSpace color_space);
-rhi::ColorSpace VkColorSpaceToRHIColorSpace(VkColorSpaceKHR color_space);
+VkColorSpaceKHR RHIColorSpaceToVkColorSpace(RHI::ColorSpace color_space);
+RHI::ColorSpace VkColorSpaceToRHIColorSpace(VkColorSpaceKHR color_space);
 
-VkPresentModeKHR RHIPresentModeToVkPresentMode(rhi::PresentMode present_mode);
-rhi::PresentMode VkPresentModeToRHIPresentMode(VkPresentModeKHR present_mode);
+VkPresentModeKHR RHIPresentModeToVkPresentMode(RHI::PresentMode present_mode);
+RHI::PresentMode VkPresentModeToRHIPresentMode(VkPresentModeKHR present_mode);
 
-VkSampleCountFlagBits RHISampleCountToVkSampleCount(rhi::SampleCount sample_count);
-rhi::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
+VkSampleCountFlagBits RHISampleCountToVkSampleCount(RHI::SampleCount sample_count);
+RHI::SampleCount VkSampleCountToRHISampleCount(VkSampleCountFlagBits sample_count);
 
 /**
  * @param aspect 由ImageAspect组成的bitmask, 类型int
@@ -29,68 +29,68 @@ VkImageAspectFlags RHIImageAspectToVkImageAspect(/** ImageAspect */ int aspect);
  */
 int VkImageAspectToRHIImageAspect(VkImageAspectFlags aspect);
 
-rhi::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle);
-VkComponentSwizzle RHIComponentMappingElementToVkComponentSwizzle(rhi::ComponentMappingElement swizzle);
+RHI::ComponentMappingElement VkComponentSwizzleToRHIComponentMappingElement(VkComponentSwizzle swizzle);
+VkComponentSwizzle RHIComponentMappingElementToVkComponentSwizzle(RHI::ComponentMappingElement swizzle);
 
-VkImageViewType RHIImageDimensionToVkImageViewType(rhi::ImageDimension type);
-rhi::ImageDimension VkImageViewTypeToRHIImageDimension(VkImageViewType type);
+VkImageViewType RHIImageDimensionToVkImageViewType(RHI::ImageDimension type);
+RHI::ImageDimension VkImageViewTypeToRHIImageDimension(VkImageViewType type);
 
-VkBufferUsageFlags RHIBufferUsageToVkBufferUsage(rhi::BufferUsage usage);
-rhi::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usage);
+VkBufferUsageFlags RHIBufferUsageToVkBufferUsage(RHI::BufferUsage usage);
+RHI::BufferUsage VkBufferUsageToRHIBufferUsage(VkBufferUsageFlags usage);
 
-VkMemoryPropertyFlags RHIMemoryPropertyToVkMemoryProperty(rhi::BufferMemoryProperty property);
-rhi::BufferMemoryProperty VkMemoryPropertyToRHIMemoryProperty(VkMemoryPropertyFlags property);
+VkMemoryPropertyFlags RHIMemoryPropertyToVkMemoryProperty(RHI::BufferMemoryProperty property);
+RHI::BufferMemoryProperty VkMemoryPropertyToRHIMemoryProperty(VkMemoryPropertyFlags property);
 
-VkImageLayout RHIImageLayoutToVkImageLayout(rhi::ImageLayout layout);
-rhi::ImageLayout VkImageLayoutToRHIImageLayout(VkImageLayout layout);
+VkImageLayout RHIImageLayoutToVkImageLayout(RHI::ImageLayout layout);
+RHI::ImageLayout VkImageLayoutToRHIImageLayout(VkImageLayout layout);
 
-VkAttachmentLoadOp RHIAttachmentLoadOpToVkAttachmentLoadOp(rhi::AttachmentLoadOperation load_op);
-rhi::AttachmentLoadOperation VkAttachmentLoadOpToRHIAttachmentLoadOp(VkAttachmentLoadOp load_op);
+VkAttachmentLoadOp RHIAttachmentLoadOpToVkAttachmentLoadOp(RHI::AttachmentLoadOperation load_op);
+RHI::AttachmentLoadOperation VkAttachmentLoadOpToRHIAttachmentLoadOp(VkAttachmentLoadOp load_op);
 
-VkAttachmentStoreOp RHIAttachmentStoreOpToVkAttachmentStoreOp(rhi::AttachmentStoreOperation store_op);
-rhi::AttachmentStoreOperation VkAttachmentStoreOpToRHIAttachmentStoreOp(VkAttachmentStoreOp store_op);
+VkAttachmentStoreOp RHIAttachmentStoreOpToVkAttachmentStoreOp(RHI::AttachmentStoreOperation store_op);
+RHI::AttachmentStoreOperation VkAttachmentStoreOpToRHIAttachmentStoreOp(VkAttachmentStoreOp store_op);
 
-VkPolygonMode RHIPolygonModeToVkPolygonMode(rhi::PolygonMode polygon_mode);
-rhi::PolygonMode VkPolygonModeToRHIPolygonMode(VkPolygonMode polygon_mode);
+VkPolygonMode RHIPolygonModeToVkPolygonMode(RHI::PolygonMode polygon_mode);
+RHI::PolygonMode VkPolygonModeToRHIPolygonMode(VkPolygonMode polygon_mode);
 
-VkFrontFace RHIFrontFaceToVkFrontFace(rhi::FrontFace front_face);
-rhi::FrontFace VkFrontFaceToRHIFrontFace(VkFrontFace front_face);
+VkFrontFace RHIFrontFaceToVkFrontFace(RHI::FrontFace front_face);
+RHI::FrontFace VkFrontFaceToRHIFrontFace(VkFrontFace front_face);
 
-VkCullModeFlags RHICullModeToVkCullMode(rhi::CullMode cull_mode);
-rhi::CullMode VkCullModeToRHICullMode(VkCullModeFlags cull_mode);
+VkCullModeFlags RHICullModeToVkCullMode(RHI::CullMode cull_mode);
+RHI::CullMode VkCullModeToRHICullMode(VkCullModeFlags cull_mode);
 
-VkCompareOp RHICompareOpToVkCompareOp(rhi::CompareOp compare_op);
-rhi::CompareOp VkCompareOpToRHICompareOp(VkCompareOp compare_op);
+VkCompareOp RHICompareOpToVkCompareOp(RHI::CompareOp compare_op);
+RHI::CompareOp VkCompareOpToRHICompareOp(VkCompareOp compare_op);
 
-VkShaderStageFlags RHIShaderStageToVkShaderStage(rhi::ShaderStage stage);
-rhi::ShaderStage VkShaderStageToRHIShaderStage(VkShaderStageFlags stage);
+VkShaderStageFlags RHIShaderStageToVkShaderStage(RHI::ShaderStage stage);
+RHI::ShaderStage VkShaderStageToRHIShaderStage(VkShaderStageFlags stage);
 
-VkDescriptorType RHIDescriptorTypeToVkDescriptorType(rhi::DescriptorType type);
-rhi::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorType type);
+VkDescriptorType RHIDescriptorTypeToVkDescriptorType(RHI::DescriptorType type);
+RHI::DescriptorType VkDescriptorTypeToRHIDescriptorType(VkDescriptorType type);
 
-VkAccessFlags RHIAccessFlagToVkAccessFlag(rhi::AccessFlags access_flag);
-rhi::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag);
+VkAccessFlags RHIAccessFlagToVkAccessFlag(RHI::AccessFlags access_flag);
+RHI::AccessFlags VkAccessFlagToRHIAccessFlag(VkAccessFlags access_flag);
 
-VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(rhi::PipelineStageFlags pipeline_stage);
-rhi::PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage);
+VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(RHI::PipelineStageFlags pipeline_stage);
+RHI::PipelineStageFlags VkPipelineStageToRHIPipelineStage(VkPipelineStageFlags pipeline_stage);
 
-VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(rhi::VertexInputRate rate);
-rhi::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInputRate rate);
+VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(RHI::VertexInputRate rate);
+RHI::VertexInputRate VkVertexInputRateToRHIVertexInputRate(VkVertexInputRate rate);
 
-VkImageType RHIImageDimensionToVkImageType(rhi::ImageDimension dimension);
-rhi::ImageDimension VkImageTypeToRHIImageDimension(VkImageType type);
+VkImageType RHIImageDimensionToVkImageType(RHI::ImageDimension dimension);
+RHI::ImageDimension VkImageTypeToRHIImageDimension(VkImageType type);
 
-VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(rhi::ImageUsage usage_flag);
-rhi::ImageUsage VkImageUsageFlagsToRHIImageUsage(VkImageUsageFlags usage_flag);
+VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(RHI::ImageUsage usage_flag);
+RHI::ImageUsage VkImageUsageFlagsToRHIImageUsage(VkImageUsageFlags usage_flag);
 
-VkFilter RHIFilterToVkFilter(rhi::FilterMode filter);
-rhi::FilterMode VkFilterToRHIFilter(VkFilter filter);
+VkFilter RHIFilterToVkFilter(RHI::FilterMode filter);
+RHI::FilterMode VkFilterToRHIFilter(VkFilter filter);
 
-VkSamplerAddressMode RHISamplerAddressModeToVkSamplerAddressMode(rhi::SamplerAddressMode address_mode);
-rhi::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(VkSamplerAddressMode address_mode);
+VkSamplerAddressMode RHISamplerAddressModeToVkSamplerAddressMode(RHI::SamplerAddressMode address_mode);
+RHI::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(VkSamplerAddressMode address_mode);
 
-VkBlendFactor RHIBlendFactorToVkBlendFactor(rhi::BlendFactor blend_factor);
-rhi::BlendFactor VkBlendFactorToRHIBlendFactor(VkBlendFactor blend_factor);
+VkBlendFactor RHIBlendFactorToVkBlendFactor(RHI::BlendFactor blend_factor);
+RHI::BlendFactor VkBlendFactorToRHIBlendFactor(VkBlendFactor blend_factor);
 
-VkBlendOp RHIBlendOpToVkBlendOp(rhi::BlendOp op);
-rhi::BlendOp VKBlendOpToRHIBlendOp(VkBlendOp op);
+VkBlendOp RHIBlendOpToVkBlendOp(RHI::BlendOp op);
+RHI::BlendOp VKBlendOpToRHIBlendOp(VkBlendOp op);

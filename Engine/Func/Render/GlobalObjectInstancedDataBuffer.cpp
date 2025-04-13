@@ -11,7 +11,7 @@
 #include "Platform/RHI/Buffer.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "Platform/RHI/Misc.hpp"
-using namespace rhi;
+using namespace RHI;
 
 Buffer *GlobalObjectInstancedDataBuffer::GetBuffer() { return GetByRef().buffer_.get(); }
 

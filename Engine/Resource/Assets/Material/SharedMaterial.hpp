@@ -14,14 +14,14 @@
 
 
 class Shader;
-namespace rhi {
+namespace RHI {
     class Pipeline;
     class DescriptorSetLayout;
     class DescriptorSet;
 } // namespace rhi
-inline SharedPtr<rhi::DescriptorSet> (*AllocateDescriptorSetFunc)(const SharedPtr<rhi::DescriptorSetLayout> &layout);
-inline void (*UpdateCameraDescriptorSetFunc)(rhi::DescriptorSet &descriptor_set);
-inline void (*UpdateLightsDescriptorSetFunc)(rhi::DescriptorSet &descriptor_set);
+inline SharedPtr<RHI::DescriptorSet> (*AllocateDescriptorSetFunc)(const SharedPtr<RHI::DescriptorSetLayout> &layout);
+inline void (*UpdateCameraDescriptorSetFunc)(RHI::DescriptorSet &descriptor_set);
+inline void (*UpdateLightsDescriptorSetFunc)(RHI::DescriptorSet &descriptor_set);
 
 struct MaterialParamBlock {
     UInt32 offset;
@@ -50,12 +50,12 @@ public:
 
     UInt64 GetUniformBufferSize() const { return uniform_buffer_size_; }
     const Map<UInt64, MaterialParamBlock> &GetStructOnlyOffsets() const { return struct_only_offsets_; }
-    rhi::Pipeline *GetPipeline() const { return pipeline_.Get(); }
-    const Array<SharedPtr<rhi::DescriptorSetLayout>> &GetDescriptorSetLayouts() const { return set_layouts_; }
+    RHI::Pipeline *GetPipeline() const { return pipeline_.Get(); }
+    const Array<SharedPtr<RHI::DescriptorSetLayout>> &GetDescriptorSetLayouts() const { return set_layouts_; }
 
 private:
     // 当前使用的pipeline
-    UniquePtr<rhi::Pipeline> pipeline_;
+    UniquePtr<RHI::Pipeline> pipeline_;
 
     // 这个是参数名字的哈希哈希到buffer_偏移量的映射
     Map<UInt64, MaterialParamBlock> uniform_offsets_;
@@ -70,7 +70,7 @@ private:
     // 例如只有param, 而没有param.color, param.alpha等等
     Map<UInt64, MaterialParamBlock> struct_only_offsets_;
 
-    Array<SharedPtr<rhi::DescriptorSetLayout>> set_layouts_;
+    Array<SharedPtr<RHI::DescriptorSetLayout>> set_layouts_;
 
     bool has_camera_;
     bool has_lights_;

@@ -6,6 +6,6 @@
 
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
 class LowShader : public IResource {};
 } // namespace rhi

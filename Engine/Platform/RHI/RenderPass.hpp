@@ -6,7 +6,7 @@
 #include "Enums.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     struct AttachmentDesc {
         Format format;
         SampleCount sample_count;

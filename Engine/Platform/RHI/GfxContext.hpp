@@ -13,7 +13,7 @@
 
 
 class FrameAllocator;
-namespace rhi {
+namespace RHI {
     struct ComputePipelineDesc;
     struct Fence;
     struct Semaphore;
@@ -253,8 +253,8 @@ namespace rhi {
 
         FrameAllocator &GetCommandAllocator();
 
-        virtual void BeginImGuiFrame(rhi::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) = 0;
-        virtual void EndImGuiFrame(rhi::CommandBuffer& buffer) = 0;
+        virtual void BeginImGuiFrame(RHI::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) = 0;
+        virtual void EndImGuiFrame(RHI::CommandBuffer& buffer) = 0;
 
     protected:
         virtual SharedPtr<Sampler> CreateSampler(const SamplerDesc &desc, StringView debug_name = "") = 0;

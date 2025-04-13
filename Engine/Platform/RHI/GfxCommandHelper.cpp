@@ -12,7 +12,7 @@
 #include "SyncPrimitives.hpp"
 
 
-SharedPtr<rhi::CommandBuffer> rhi::GfxCommandHelper::BeginSingleCommand() {
+SharedPtr<RHI::CommandBuffer> RHI::GfxCommandHelper::BeginSingleCommand() {
     auto &ctx = GetGfxContextRef();
     auto &pool = ctx.GetTransferPool();
     auto cmd = pool.CreateCommandBuffer(true);
@@ -20,7 +20,7 @@ SharedPtr<rhi::CommandBuffer> rhi::GfxCommandHelper::BeginSingleCommand() {
     return cmd;
 }
 
-void rhi::GfxCommandHelper::EndSingleCommandTransfer(const SharedPtr<CommandBuffer> &command_buffer) {
+void RHI::GfxCommandHelper::EndSingleCommandTransfer(const SharedPtr<CommandBuffer> &command_buffer) {
     command_buffer->End();
     auto &ctx = GetGfxContextRef();
     const auto fence = ctx.CreateFence(false);
@@ -32,7 +32,7 @@ void rhi::GfxCommandHelper::EndSingleCommandTransfer(const SharedPtr<CommandBuff
     fence->SyncWait();
 }
 
-void rhi::GfxCommandHelper::EndSingleCommandGraphics(const SharedPtr<CommandBuffer> &command_buffer) {
+void RHI::GfxCommandHelper::EndSingleCommandGraphics(const SharedPtr<CommandBuffer> &command_buffer) {
     command_buffer->End();
     auto &ctx = GetGfxContextRef();
     const auto fence = ctx.CreateFence(false);
@@ -44,7 +44,7 @@ void rhi::GfxCommandHelper::EndSingleCommandGraphics(const SharedPtr<CommandBuff
     fence->SyncWait();
 }
 
-void rhi::GfxCommandHelper::EndSingleCommandCompute(const SharedPtr<CommandBuffer> &command_buffer) {
+void RHI::GfxCommandHelper::EndSingleCommandCompute(const SharedPtr<CommandBuffer> &command_buffer) {
     command_buffer->End();
     command_buffer->Execute();
     auto &ctx = GetGfxContextRef();
@@ -57,7 +57,7 @@ void rhi::GfxCommandHelper::EndSingleCommandCompute(const SharedPtr<CommandBuffe
     fence->SyncWait();
 }
 
-void rhi::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range,
+void RHI::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, Image *target, const ImageSubresourceRange &range,
                                             AccessFlags src_mask, AccessFlags dst_mask, PipelineStageFlags src_stage, PipelineStageFlags dst_stage) {
     auto cmd = BeginSingleCommand();
     cmd->ImagePipelineBarrier(old, new_, target, range, src_mask, dst_mask, src_stage, dst_stage);
@@ -65,7 +65,7 @@ void rhi::GfxCommandHelper::PipelineBarrier(ImageLayout old, ImageLayout new_, I
     EndSingleCommandTransfer(cmd);
 }
 
-void rhi::GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, UInt32 size, UInt32 offset) {
+void RHI::GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, UInt32 size, UInt32 offset) {
     auto &ctx = GetGfxContextRef();
     BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
     auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);
@@ -78,7 +78,7 @@ void rhi::GfxCommandHelper::CopyDataToBuffer(const void *data, Buffer *target, U
     EndSingleCommandTransfer(cmd);
 }
 
-void rhi::GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32 size, Vector3i offset, Vector3i copy_range) {
+void RHI::GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, UInt32 size, Vector3i offset, Vector3i copy_range) {
     auto &ctx = GetGfxContextRef();
     BufferDesc staging_buffer_info{size, BUB_TransferSrc, BMPB_HostVisible | BMPB_HostCoherent};
     auto staging_buffer = ctx.CreateBuffer(staging_buffer_info);

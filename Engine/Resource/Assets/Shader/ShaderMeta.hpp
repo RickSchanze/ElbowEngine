@@ -9,13 +9,13 @@ struct ShaderMeta {
     REFLECTED_STRUCT(ShaderMeta)
 
     REFLECTED(SQLAttr = "(PrimaryKey, AutoIncrement)")
-    Int32 id{};
+    Int32 Id{};
 
     REFLECTED()
-    Int32 object_handle{};
+    Int32 ObjectHandle{};
 
     REFLECTED()
-    String path;
+    String Path;
 
     // 下面可以写一些Shader可能需要的属性, 例如是否开启blend等
 };

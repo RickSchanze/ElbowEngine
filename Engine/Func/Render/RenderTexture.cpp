@@ -11,7 +11,7 @@
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/Assets/Material/Material.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 ImageDesc GetDepthImageDesc(UInt32 width, UInt32 height) {
     width = width > 0 ? width : PlatformWindowManager::GetMainWindow()->GetWidth();

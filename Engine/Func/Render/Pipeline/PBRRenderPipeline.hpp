@@ -11,7 +11,7 @@
 
 class Texture2D;
 class StaticMeshComponent;
-namespace rhi {
+namespace RHI {
     class Buffer;
 }
 class RenderTexture;
@@ -22,7 +22,7 @@ class Material;
 class PBRRenderPipeline : public RenderPipeline {
 public:
     friend class PBRRenderPipelineSettingWindow;
-    void Render(rhi::CommandBuffer &cmd, const RenderParams &params) override;
+    void Render(RHI::CommandBuffer &cmd, const RenderParams &params) override;
 
     void Build() override;
     void Clean() override;
@@ -30,10 +30,10 @@ public:
     [[nodiscard]] bool IsReady() const override;
 
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
-    void PerformMeshPass(rhi::CommandBuffer& cmd) const;
-    void PerformSkyboxPass(rhi::CommandBuffer& cmd);
-    void PerformColorTransformPass(rhi::CommandBuffer& cmd, rhi::ImageView* target, Vector2f render_size) const;
-    void PerformImGuiPass(rhi::CommandBuffer& cmd, const RenderParams& params);
+    void PerformMeshPass(RHI::CommandBuffer& cmd) const;
+    void PerformSkyboxPass(RHI::CommandBuffer& cmd);
+    void PerformColorTransformPass(RHI::CommandBuffer& cmd, RHI::ImageView* target, Vector2f render_size) const;
+    void PerformImGuiPass(RHI::CommandBuffer& cmd, const RenderParams& params);
 
     ImGuiDrawWindow *GetSettingWindow() override;
 
@@ -45,8 +45,8 @@ private:
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<RenderTexture> sdr_color_;
-    SharedPtr<rhi::Buffer> screen_quad_vertex_buffer_;
-    SharedPtr<rhi::Buffer> screen_quad_index_buffer_;
+    SharedPtr<RHI::Buffer> screen_quad_vertex_buffer_;
+    SharedPtr<RHI::Buffer> screen_quad_index_buffer_;
     ObjectPtr<StaticMeshComponent> skybox_cube_;
     bool ready_ = false;
 };

@@ -10,12 +10,12 @@
 
 
 struct MeshMeta;
-namespace rhi {
+namespace RHI {
     class Buffer;
 }
 struct MeshStorage {
-    SharedPtr<rhi::Buffer> vertex_buffer;
-    SharedPtr<rhi::Buffer> index_buffer;
+    SharedPtr<RHI::Buffer> vertex_buffer;
+    SharedPtr<RHI::Buffer> index_buffer;
     UInt32 vertex_count;
     UInt32 index_count;
 
@@ -34,14 +34,14 @@ public:
 
     MeshStorage &InternalGetStorage() const { return *storage_; }
     UInt32 GetIndexCount() const;
-    SharedPtr<rhi::Buffer> GetVertexBuffer() const;
-    SharedPtr<rhi::Buffer> GetIndexBuffer() const;
-    StringView GetAssetPath() const { return meta_.path; }
+    SharedPtr<RHI::Buffer> GetVertexBuffer() const;
+    SharedPtr<RHI::Buffer> GetIndexBuffer() const;
+    StringView GetAssetPath() const { return meta_.Path; }
 
 #if WITH_EDITOR
     void Save() override;
     void SetImportScale(float scale);
-    Float GetImportScale() const { return meta_.import_scale; }
+    Float GetImportScale() const { return meta_.ImportScale; }
 #endif
 
 private:

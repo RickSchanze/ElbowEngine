@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace rhi {
+namespace RHI {
 class IResource {
 public:
   virtual ~IResource() = default;

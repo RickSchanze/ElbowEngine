@@ -7,10 +7,10 @@
 #include "Platform/RHI/Image.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     class CommandBuffer;
 }
-namespace rhi {
+namespace RHI {
     class Image_Vulkan final : public Image {
         friend class GfxContext_Vulkan;
 

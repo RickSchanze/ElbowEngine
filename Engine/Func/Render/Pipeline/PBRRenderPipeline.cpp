@@ -28,7 +28,7 @@
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     ProfileScope scope(__func__);
@@ -110,7 +110,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     cmd.Execute();
 }
 
-void PBRRenderPipeline::PerformMeshPass(rhi::CommandBuffer &cmd) const {
+void PBRRenderPipeline::PerformMeshPass(RHI::CommandBuffer &cmd) const {
     ProfileScope _(__func__);
     cmd.BeginDebugLabel("MeshDraw");
     for (auto &mesh: RenderContext::GetDrawStaticMesh()) {
@@ -118,7 +118,7 @@ void PBRRenderPipeline::PerformMeshPass(rhi::CommandBuffer &cmd) const {
             continue;
         auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
         auto index_count = mesh->GetIndexCount();
-        helper::BindMaterial(cmd, mesh->GetMaterial());
+        Helper::BindMaterial(cmd, mesh->GetMaterial());
         cmd.BindVertexBuffer(mesh->GetVertexBuffer());
         cmd.BindVertexBuffer(GlobalObjectInstancedDataBuffer::GetBuffer(), sizeof(InstancedData1) * first_instance_index, 1);
         cmd.BindIndexBuffer(mesh->GetIndexBuffer());
@@ -127,10 +127,10 @@ void PBRRenderPipeline::PerformMeshPass(rhi::CommandBuffer &cmd) const {
     cmd.EndDebugLabel();
 }
 
-void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd) {
+void PBRRenderPipeline::PerformSkyboxPass(RHI::CommandBuffer &cmd) {
     ProfileScope _(__func__);
     cmd.BeginDebugLabel("SkyspherePass");
-    helper::BindMaterial(cmd, skysphere_pass_material_);
+    Helper::BindMaterial(cmd, skysphere_pass_material_);
     // draw skybox
     StaticMeshComponent *mesh = skybox_cube_;
     auto first_instance_index = GlobalObjectInstancedDataBuffer::GetObjectInstanceIndex(mesh->GetHandle());
@@ -142,7 +142,7 @@ void PBRRenderPipeline::PerformSkyboxPass(rhi::CommandBuffer &cmd) {
     cmd.EndDebugLabel();
 }
 
-void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::ImageView *target, Vector2f size) const {
+void PBRRenderPipeline::PerformColorTransformPass(RHI::CommandBuffer &cmd, RHI::ImageView *target, Vector2f size) const {
     ProfileScope _(__func__);
     Array<RenderAttachment> attachments{};
     RenderAttachment attachment{};
@@ -152,14 +152,14 @@ void PBRRenderPipeline::PerformColorTransformPass(rhi::CommandBuffer &cmd, rhi::
     attachment.layout = ImageLayout::ColorAttachment;
     attachments.Add(attachment);
     cmd.BeginRender(attachments, {}, size);
-    helper::BindMaterial(cmd, color_transform_pass_material_);
+    Helper::BindMaterial(cmd, color_transform_pass_material_);
     cmd.BindVertexBuffer(screen_quad_vertex_buffer_);
     cmd.BindIndexBuffer(screen_quad_index_buffer_);
     cmd.DrawIndexed(6, 1, 0);
     cmd.EndRender();
 }
 
-void PBRRenderPipeline::PerformImGuiPass(rhi::CommandBuffer &cmd, const RenderParams &params) {
+void PBRRenderPipeline::PerformImGuiPass(RHI::CommandBuffer &cmd, const RenderParams &params) {
     ProfileScope _(__func__);
     BeginImGuiFrame(cmd, params);
     UIManager::DrawAll();
@@ -190,7 +190,7 @@ void PBRRenderPipeline::Build() {
                 const Shader *baspass_shader = ObjectManager::GetObjectByHandle<Shader>(basepass_shader_handle);
                 const Shader *skysphere_pass_shader = ObjectManager::GetObjectByHandle<Shader>(skysphere_shader_handle);
                 const Shader *color_transform_pass_shader = ObjectManager::GetObjectByHandle<Shader>(color_transform_shader_handle);
-                Texture2D *skysphere_texture = ObjectManager::GetObjectByHandle<Texture2D>(skysphere_texture_handle);
+                Texture2D *SkyBoxTexture = ObjectManager::GetObjectByHandle<Texture2D>(skysphere_texture_handle);
                 const Mesh *cube_mesh = ObjectManager::GetObjectByHandle<Mesh>(cube_mesh_handle);
                 skybox_cube_ = ObjectManager::CreateNewObject<Actor>()->AddComponent<StaticMeshComponent>();
                 skybox_cube_->SetMesh(cube_mesh);
@@ -214,8 +214,8 @@ void PBRRenderPipeline::Build() {
                 desc.format = Format::B8G8R8A8_UNorm;
                 sdr_color_ = MakeShared<RenderTexture>(desc);
 
-                skybox_texture_ = skysphere_texture;
-                skysphere_pass_material_->SetTexture2D("skybox_texture", skysphere_texture);
+                skybox_texture_ = SkyBoxTexture;
+                skysphere_pass_material_->SetTexture2D("skybox_texture", SkyBoxTexture);
                 color_transform_pass_material_->SetFloat("param.exposure", 3);
 
                 // 创建screen space quad

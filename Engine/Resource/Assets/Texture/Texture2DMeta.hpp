@@ -11,30 +11,30 @@ struct REFLECTED(SQLTable = "Texture2D") Texture2DMeta {
     REFLECTED_STRUCT(Texture2DMeta)
 
     REFLECTED(SQLAttr = "(PrimaryKey, AutoIncrement)")
-    Int32 id{};
+    Int32 Id{};
 
     REFLECTED()
-    Int32 object_handle{};
+    Int32 ObjectHandle{};
 
-    Int32 mip_level = 1;
-
-    REFLECTED()
-    String path;
+    Int32 MipmapLevel = 1;
 
     REFLECTED()
-    rhi::Format format = rhi::Format::R8G8B8A8_SRGB;
+    String Path;
+
+    REFLECTED()
+    RHI::Format Format = RHI::Format::R8G8B8A8_SRGB;
 
     // 这个Texture2D包含的所有Sprite
     REFLECTED()
-    String sprites_string;
+    String SpritesString;
 
-    bool is_cubemap = false;
+    bool IsCubeMap = false;
 
 
     // 动态创建的Texture2D的参数
-    bool dynamic = false;
-    UInt32 width = 0;
-    UInt32 height = 0;
+    bool IsDynamic = false;
+    UInt32 Width = 0;
+    UInt32 Height = 0;
 };
 
 REGISTER_TYPE(Texture2DMeta)

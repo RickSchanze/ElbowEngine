@@ -70,7 +70,7 @@ Material *Font::GetDefaultFontMaterial() {
             Assert(f, "默认字体无法加载");
             auto mat_path = "Assets/Material/DefaultFont.mat";
             if (auto meta = AssetDataBase::QueryMeta<MaterialMeta>(String::Format("path = '{}'", mat_path))) {
-                Material *m = AssetDataBase::LoadFromPath<Material>((*meta).path);
+                Material *m = AssetDataBase::LoadFromPath<Material>((*meta).Path);
                 m->SetTexture2D("atlas", f->InternalGetFontAtlas());
                 font_mat = m;
             } else {
@@ -103,23 +103,23 @@ void Font::PerformLoad() {
     }
     auto &meta = *op_meta;
     Load(meta);
-    SetName(meta.path);
+    SetName(meta.Path);
 }
 
 bool Font::Load(const FontMeta &meta) {
-    path_ = meta.path;
-    font_atlas_width_ = meta.font_atlas_width;
-    font_atlas_height_ = meta.font_atlas_height;
-    font_size_ = meta.font_size;
+    path_ = meta.Path;
+    font_atlas_width_ = meta.FontAtlasWidth;
+    font_atlas_height_ = meta.FontAtlasHeight;
+    font_size_ = meta.FontSize;
     if (Math::WillMultiplyOverflow(font_atlas_width_, font_atlas_height_)) {
         Log(Error) << "字体图集尺寸过大";
         return false;
     }
     Texture2DMeta atlas_meta;
-    atlas_meta.width = font_atlas_width_;
-    atlas_meta.height = font_atlas_height_;
-    atlas_meta.dynamic = true;
-    atlas_meta.format = rhi::Format::R8_SRGB;
+    atlas_meta.Width = font_atlas_width_;
+    atlas_meta.Height = font_atlas_height_;
+    atlas_meta.IsDynamic = true;
+    atlas_meta.Format = RHI::Format::R8_SRGB;
     auto *font_atlas = ObjectManager::CreateNewObject<Texture2D>();
     font_atlas->SetName(String::Format("Font Atlas for {}", *path_));
     font_atlas->Load(atlas_meta);
@@ -179,7 +179,7 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
             data.Add(bitmap.buffer[x + y * bitmap.pitch]);
         }
     }
-    rhi::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.x, cursor_.y, 0},
+    RHI::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.x, cursor_.y, 0},
                                              {static_cast<Int32>(bitmap.width), static_cast<Int32>(bitmap.rows), 1});
     // 保存此字符的信息
     FontCharacterInfo info{};

@@ -17,6 +17,7 @@
 #include "Func/Render/Camera/Rotating.hpp"
 #include "Func/Render/Light/PointLightComponent.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipeline.hpp"
+#include "Func/Render/Pipeline/PBRRenderPipelineSettingWindow.hpp"
 #include "Func/Render/RenderContext.hpp"
 #include "Func/UI/DetailWindow.hpp"
 #include "Func/UI/InspectorWindow.hpp"
@@ -40,7 +41,7 @@
 
 
 class Texture2D;
-using namespace rhi;
+using namespace RHI;
 
 static void TickManagerUpdate(const MilliSeconds &sec) {
     static UInt32 interval = GetConfig<CoreConfig>()->GetTickFrameInterval();
@@ -109,6 +110,7 @@ int main() {
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/ColorTransformPass.slang")), //
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/PrefilteredColor.slang")), //
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Black.png")), // Black
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")), // White
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")) // White
             );
 
@@ -119,7 +121,8 @@ int main() {
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_M.png")), // Metallic
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_N.png")), // Normal
                     Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_R.png")), // Roughness
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png")) // AO
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png")), // AO
+                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/IntegrateBRDF.slang")) //
             );
 
 #if WITH_EDITOR
@@ -164,13 +167,15 @@ int main() {
         auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
         normal->SetTextureFormat(Format::R8_UNorm);
         normal->SaveIfNeed();
-        auto irradiance_map = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
+        auto Black = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);
         m->SetTexture2D("tex_roughness", roughness);
         m->SetTexture2D("tex_ao", ao);
         m->SetTexture2D("tex_normal", normal);
-        m->SetTexture2D("tex_irradiance", irradiance_map);
+        m->SetTexture2D("Tex_Irradiance", Black);
+        m->SetTexture2D("Tex_Prefiltered", Black);
+        m->SetTexture2D("Tex_BRDFLUT", Black);
         m->SetFloat("float_param.roughness", 1.0f);
         m->SetFloat("float_param.metallic", 1.0f);
         m->SetFloat("float_param.ao", 1.0f);
@@ -182,6 +187,9 @@ int main() {
         UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());
+        PBRRenderPipelineSettingWindow *PBRWindow =
+                reinterpret_cast<PBRRenderPipelineSettingWindow *>(RenderContext::GetBoundRenderPipeline()->GetSettingWindow());
+        PBRWindow->SetMeshMaterial(m);
 
         while (true) {
             ProfileScope _("Tick");

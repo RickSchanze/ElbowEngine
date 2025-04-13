@@ -13,7 +13,7 @@
 #include "IResource.hpp"
 
 
-namespace rhi {
+namespace RHI {
 
     class Buffer;
     class ImageView;
@@ -110,11 +110,11 @@ namespace rhi {
 } // namespace rhi
 
 template<>
-struct std::hash<rhi::DescriptorSetLayoutDesc> {
-    size_t operator()(const rhi::DescriptorSetLayoutDesc &desc) const noexcept { return desc.GetHashCode(); }
+struct std::hash<RHI::DescriptorSetLayoutDesc> {
+    size_t operator()(const RHI::DescriptorSetLayoutDesc &desc) const noexcept { return desc.GetHashCode(); }
 }; // namespace std
 
-namespace rhi {
+namespace RHI {
     class DescriptorSetLayoutPool : public Singleton<DescriptorSetLayoutPool> {
     public:
         DescriptorSetLayoutPool();

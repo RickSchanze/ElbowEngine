@@ -5,6 +5,6 @@
 
 IMPL_REFLECTED(ShaderMeta) {
     return Type::Create<ShaderMeta>("ShaderMeta") | refl_helper::Attribute(Type::ValueAttribute::SQLTable, "Shader") |
-           refl_helper::AddField("id", &ShaderMeta::id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") |
-           refl_helper::AddField("object_handle", &ShaderMeta::object_handle) | refl_helper::AddField("path", &ShaderMeta::path);
+           refl_helper::AddField("Id", &ShaderMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") |
+           refl_helper::AddField("ObjectHandle", &ShaderMeta::ObjectHandle) | refl_helper::AddField("Path", &ShaderMeta::Path);
 }

@@ -5,7 +5,7 @@
 #include "Platform/RHI/ImageView.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
 
 VkComponentMapping FromComponentMapping(const ComponentMapping &mapping);
 

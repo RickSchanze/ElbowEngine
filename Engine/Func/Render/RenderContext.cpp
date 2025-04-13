@@ -21,7 +21,7 @@
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 RenderContext::~RenderContext() = default;
 

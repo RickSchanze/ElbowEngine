@@ -6,7 +6,7 @@
 #include "Core/TypeAlias.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     struct Fence : IResource {
         ~Fence() override = default;
         virtual void SyncWait() = 0;

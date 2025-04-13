@@ -5,7 +5,7 @@
 #include "Platform/RHI/Buffer.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     class Buffer_Vulkan final : public Buffer {
     public:
         explicit Buffer_Vulkan(const BufferDesc &info);

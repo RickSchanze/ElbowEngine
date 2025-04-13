@@ -5,7 +5,7 @@
 #pragma once
 #include "Core/Core.hpp"
 
-namespace rhi {
+namespace RHI {
     enum class Format {
         R32G32B32_Float, // 每个元素由3个32位浮点数分量构成
         R32G32B32A32_Float, // 每个元素由4个32位浮点数分量构成

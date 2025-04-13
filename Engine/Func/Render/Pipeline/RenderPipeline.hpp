@@ -10,7 +10,7 @@
 class ImGuiDrawWindow;
 class PlatformWindow;
 
-namespace rhi {
+namespace RHI {
     class Image;
     class ImageView;
     class CommandBuffer;
@@ -26,7 +26,7 @@ class RenderPipeline {
 public:
     virtual ~RenderPipeline() = default;
 
-    virtual void Render(rhi::CommandBuffer &cmd, const RenderParams &render_param) = 0;
+    virtual void Render(RHI::CommandBuffer &cmd, const RenderParams &render_param) = 0;
 
     virtual void Build() {}
     virtual void Clean() {}
@@ -35,14 +35,14 @@ public:
 
     virtual void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) = 0;
 
-    void BeginImGuiFrame(rhi::CommandBuffer &cmd, const RenderParams &render_param);
-    void EndImGuiFrame(rhi::CommandBuffer &cmd);
+    void BeginImGuiFrame(RHI::CommandBuffer &cmd, const RenderParams &render_param);
+    void EndImGuiFrame(RHI::CommandBuffer &cmd);
 
 #if WITH_EDITOR
     virtual ImGuiDrawWindow *GetSettingWindow() { return nullptr; }
 #endif
 
 protected:
-    rhi::ImageView *GetBackBufferView(UInt32 current_image_index);
-    rhi::Image *GetBackBuffer(UInt32 current_image_index);
+    RHI::ImageView *GetBackBufferView(UInt32 current_image_index);
+    RHI::Image *GetBackBuffer(UInt32 current_image_index);
 };

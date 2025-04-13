@@ -7,7 +7,7 @@
 
 
 class Material;
-namespace rhi {
+namespace RHI {
     class Buffer;
 }
 class Mesh;
@@ -30,8 +30,8 @@ public:
     void UpdateTransform(const Transform &parent_transform) override;
 
     UInt32 GetIndexCount();
-    SharedPtr<rhi::Buffer> GetVertexBuffer() const;
-    SharedPtr<rhi::Buffer> GetIndexBuffer() const;
+    SharedPtr<RHI::Buffer> GetVertexBuffer() const;
+    SharedPtr<RHI::Buffer> GetIndexBuffer() const;
 };
 
 REGISTER_TYPE(StaticMeshComponent)

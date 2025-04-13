@@ -11,10 +11,10 @@
 #include "Texture2DMeta.hpp"
 
 
-namespace rhi {
+namespace RHI {
     struct ImageViewDesc;
 }
-namespace rhi {
+namespace RHI {
     class Image;
     class ImageView;
 } // namespace rhi
@@ -52,12 +52,12 @@ public:
 
     UInt32 GetMipLevelCount() const;
 
-    rhi::Format GetFormat() const;
+    RHI::Format GetFormat() const;
 
     static Texture2D *GetDefault();
 
-    rhi::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
-    rhi::Image *GetNativeImage() const { return native_image_.get(); }
+    RHI::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
+    RHI::Image *GetNativeImage() const { return native_image_.get(); }
 
     Rect2Df GetUVRect(const SpriteRange &sprite_range) const;
 
@@ -66,12 +66,12 @@ public:
 
     SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
 
-    StringView GetAssetPath() const { return meta_.path; }
+    StringView GetAssetPath() const { return meta_.Path; }
 
-    SharedPtr<rhi::ImageView> CreateImageView(rhi::ImageViewDesc& desc) const;
+    SharedPtr<RHI::ImageView> CreateImageView(RHI::ImageViewDesc& desc) const;
 
 #if WITH_EDITOR
-    void SetTextureFormat(rhi::Format format);
+    void SetTextureFormat(RHI::Format format);
 
     /**
      * 这个函数设置asset_path, 你仅应在下面的场景调用此函数:
@@ -81,15 +81,15 @@ public:
      * 当asset_path被设置时, 调用此函数会触发Assert
      */
     void SetAssetPath(const StringView new_path) {
-        if (meta_.dynamic) {
+        if (meta_.IsDynamic) {
             VLOG_ERROR("只要dynamic的可以修改path, 且修改完后变成非dynamic");
             return;
         }
         if (new_path == GetAssetPath())
             return;
         Assert(GetAssetPath().IsEmpty(), "SetAssetPath: 此纹理已有路径: {}", *GetAssetPath());
-        meta_.path = new_path;
-        meta_.dynamic = false;
+        meta_.Path = new_path;
+        meta_.IsDynamic = false;
         SetNeedSave();
     }
 
@@ -157,8 +157,8 @@ public:
 #endif
 
 private:
-    SharedPtr<rhi::Image> native_image_ = nullptr;
-    SharedPtr<rhi::ImageView> native_image_view_ = nullptr;
+    SharedPtr<RHI::Image> native_image_ = nullptr;
+    SharedPtr<RHI::ImageView> native_image_view_ = nullptr;
 
     // 这个Texture2D包含的sprites
     Array<SpriteRange> sprite_ranges_;

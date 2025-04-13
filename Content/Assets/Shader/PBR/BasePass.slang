@@ -31,7 +31,9 @@ uniform Texture2D<float> tex_metallic;
 uniform Texture2D<float> tex_roughness;
 uniform Texture2D<float> tex_ao;
 uniform Texture2D<float3> tex_normal;
-uniform Texture2D<float3> tex_irradiance;
+uniform Texture2D<float3> Tex_Irradiance;
+uniform Texture2D<float3> Tex_Prefiltered;
+uniform Texture2D<float2> Tex_BRDFLUT;
 uniform SamplerState common_sampler;
 
 struct VertexOutput {
@@ -69,14 +71,15 @@ FragOutput frag(VertexOutput input) {
     float3 camera_world_pos = camera.GetLocation();
     float3 N = input.normal;
     float3 world_pos = input.world_position;
-    float3 V =  normalize(camera_world_pos - input.world_position);
+    float3 V = normalize(camera_world_pos - input.world_position);
+    float3 R = reflect(-V, N);
     FragOutput output;
 
     float3 albedo = tex.Sample(common_sampler, input.uv).xyz;
-    float metalness = float_param.metallic * tex_metallic.Sample(common_sampler, input.uv);
-    float roughness = float_param.roughness * tex_roughness.Sample(common_sampler, input.uv);
-    float ao = float_param.ao * tex_ao.Sample(common_sampler, input.uv);
-    float3 F0 = GetFresnelF0(albedo.xyz, metalness);
+    float Metallic = float_param.metallic * tex_metallic.Sample(common_sampler, input.uv);
+    float Roughness = float_param.roughness * tex_roughness.Sample(common_sampler, input.uv);
+    float AO = float_param.ao * tex_ao.Sample(common_sampler, input.uv);
+    float3 F0 = GetFresnelF0(albedo.xyz, Metallic);
     
     float3 L_0 = float3(0); // 渲染方程输出
     for (int i = 0; i < dynamic_lights.point_light_count; i++)
@@ -89,8 +92,8 @@ FragOutput frag(VertexOutput input) {
         float NdotH = clamp(dot(N, H), 0, 1);
         float3 light_color = dynamic_lights.point_light[i].color;
         if (NdotL > 0.0) {
-            float D = GGX_TrowbridgeReitz(NdotH, roughness);
-            float G = GGX_GeometrySmith(NdotV, NdotL, roughness);
+            float D = GGX_TrowbridgeReitz(NdotH, Roughness);
+            float G = GGX_GeometrySmith(NdotV, NdotL, Roughness);
             float3 F = FresnelSchlick(float3(0.04), NdotV);
             float3 numerator = D * G * F;
             float3 denominator = 4 * NdotL * NdotV + 0.00001;
@@ -98,16 +101,22 @@ FragOutput frag(VertexOutput input) {
             
             float3 kS = F;
             float3 kD = float3(1) - kS;
-            kD *= 1 - metalness;
+            kD *= 1 - Metallic;
             L_0 += (kD * albedo / PI + specular) * light_color * NdotL; 
         }
     }
     // 计算环境光
-    float3 kS = FresnelSchlickRoughess(max(dot(N, V), 0.0), F0, roughness);
-    float3 kD = 1 - kS;
-    float3 irradiance = tex_irradiance.Sample(common_sampler, input.uv);
-    float3 diffuse = irradiance * albedo.xyz; 
-    float3 ambient = kD * diffuse * ao + 0.03;
-    output.color = float4(L_0 + ambient, 1);
+    float3 F = FresnelSchlickRoughess(max(dot(N, V), 0.0), F0, Roughness);
+    float3 Ks = F;
+    float3 Kd = 1 - Ks;
+    Kd *= 1 - Metallic;
+    float3 Irradiance = Tex_Irradiance.Sample(common_sampler, input.uv);
+    float3 Diffuse = Irradiance * albedo.xyz;
+    const static float MAX_REFLECTION_LOD = 4.0;
+    float3 PrefilteredColor = Tex_Prefiltered.SampleLevel(common_sampler, GetUVFromDirection(R), Roughness * MAX_REFLECTION_LOD);
+    float2 EnvBRDF = Tex_BRDFLUT.Sample(common_sampler, float2(max(dot(N, V), 0.0), Roughness));
+    float3 Specular = PrefilteredColor * (F * EnvBRDF.x + EnvBRDF.y);
+    float3 Ambient = (Kd * Diffuse + Specular) * AO;
+    output.color = float4(L_0 + Ambient, 1);
     return output;
 }

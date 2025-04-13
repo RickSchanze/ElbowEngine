@@ -6,6 +6,7 @@
 
 #include "Core/FileSystem/Path.hpp"
 #include "Core/Object/ObjectManager.hpp"
+#include "Func/Render/Helper.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/ImageView.hpp"
@@ -14,7 +15,7 @@
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
-using namespace rhi;
+using namespace RHI;
 
 Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta, Float intensity) {
     if (!environment_sphere) {
@@ -30,10 +31,10 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
         return nullptr;
     }
     Texture2DMeta irradiance_map_meta;
-    irradiance_map_meta.dynamic = true;
-    irradiance_map_meta.format = environment_sphere->GetFormat();
-    irradiance_map_meta.height = output_size.y;
-    irradiance_map_meta.width = output_size.x;
+    irradiance_map_meta.IsDynamic = true;
+    irradiance_map_meta.Format = environment_sphere->GetFormat();
+    irradiance_map_meta.Height = output_size.y;
+    irradiance_map_meta.Width = output_size.x;
     Texture2D *irradiance_map = ObjectManager::CreateNewObject<Texture2D>();
     irradiance_map->Load(irradiance_map_meta);
     irradiance_map->SetName("IrradianceMap");
@@ -52,7 +53,7 @@ void EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Textu
         return;
     }
     Material *material = CreateNewObject<Material>();
-    Shader *ss = AssetDataBase::LoadOrImportT<Shader>("Assets/Shader/PBR/Environment/irradiance.slang");
+    Shader *ss = AssetDataBase::LoadOrImportT<Shader>("Assets/Shader/PBR/Environment/Irradiance.slang");
     material->SetShader(ss);
     material->SetTexture2D("output_irradiance", target, true);
     material->SetTexture2D("input_equirect_map", environment_sphere);
@@ -66,7 +67,7 @@ void EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Textu
     Destroy(material);
 }
 
-void EnvironmentMapBaker::BakeIrradianceMap(rhi::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material) {
+void EnvironmentMapBaker::BakeIrradianceMap(RHI::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material) {
     if (!environment_sphere || !target || !material) {
         return;
     }
@@ -134,11 +135,11 @@ Texture2D *EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environ
     }
     // 创建Texture
     Texture2DMeta meta;
-    meta.dynamic = true;
-    meta.format = environment_sphere->GetFormat();
-    meta.width = width;
-    meta.height = height;
-    meta.mip_level = mip_level;
+    meta.IsDynamic = true;
+    meta.Format = environment_sphere->GetFormat();
+    meta.Width = width;
+    meta.Height = height;
+    meta.MipmapLevel = mip_level;
     Texture2D *prefiltered_map = CreateNewObject<Texture2D>();
     prefiltered_map->Load(meta);
     // 创建Material
@@ -149,4 +150,38 @@ Texture2D *EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environ
     Destroy(material);
     VLOG_INFO("成功烘焙", *environment_sphere->GetAssetPath(), "的预滤波环境贴图!");
     return prefiltered_map;
+}
+
+Texture2D *EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize) {
+    Texture2DMeta meta;
+    meta.IsDynamic = true;
+    meta.Format = RHI::Format::R32G32_Float;
+    meta.Width = InSize;
+    meta.Height = InSize;
+    Texture2D *BRDFMap = CreateNewObject<Texture2D>();
+    BRDFMap->Load(meta);
+    Material *MyMaterial = CreateNewObject<Material>();
+    MyMaterial->SetShader(AssetDataBase::LoadFromPath<Shader>("Assets/Shader/PBR/Environment/IntegrateBRDF.slang"));
+    BakeIntegrateBRDFLookUpMap(BRDFMap, MyMaterial);
+    Destroy(MyMaterial);
+    return BRDFMap;
+}
+
+void EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const Texture2D *OutBRDFMap, Material *InMaterial) {
+    auto Cmd = GfxCommandHelper::BeginSingleCommand();
+    const Float OutSizeX = static_cast<Float>(OutBRDFMap->GetWidth());
+    const Float OutSizeY = static_cast<Float>(OutBRDFMap->GetHeight());
+    InMaterial->SetFloat("InParams.X", OutSizeX);
+    InMaterial->SetFloat("InParams.Y", OutSizeY);
+    InMaterial->SetTexture2D("OutBRDFMap", OutBRDFMap, true);
+    Cmd->ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::General, OutBRDFMap->GetNativeImage(), ImageSubresourceRange{IA_Color, 0, 1, 0, 1},
+                              0, AFB_ShaderWrite, PSFB_TopOfPipe, PSFB_ComputeShader);
+    Helper::BindComputeMaterial(*Cmd, InMaterial);
+    const Int32 DispatchX = (OutSizeX + 15) / 16;
+    const Int32 DispatchY = (OutSizeY + 15) / 16;
+    Cmd->Dispatch(DispatchX, DispatchY, 1);
+    Cmd->ImagePipelineBarrier(ImageLayout::General, ImageLayout::ShaderReadOnly, OutBRDFMap->GetNativeImage(),
+                              ImageSubresourceRange{IA_Color, 0, 1, 0, 1}, 0, AFB_ShaderRead, PSFB_TopOfPipe, PSFB_FragmentShader);
+    Cmd->Execute();
+    GfxCommandHelper::EndSingleCommandCompute(Cmd);
 }

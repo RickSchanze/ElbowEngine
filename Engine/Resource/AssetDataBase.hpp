@@ -106,7 +106,7 @@ protected:
 
 template<typename T>
 Optional<T> AssetDataBase::QueryMeta(ObjectHandle handle) {
-    String query = String::Format("object_handle = {}", handle);
+    String query = String::Format("ObjectHandle = {}", handle);
     return QueryMeta<T>(query);
 }
 

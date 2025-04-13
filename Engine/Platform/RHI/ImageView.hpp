@@ -6,7 +6,7 @@
 #include "Enums.hpp"
 #include "IResource.hpp"
 
-namespace rhi {
+namespace RHI {
     class Image;
     struct ComponentMapping {
         ComponentMappingElement r;

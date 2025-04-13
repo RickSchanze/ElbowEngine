@@ -16,7 +16,7 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
-using namespace rhi;
+using namespace RHI;
 
 static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out, Float scale) {
     ProfileScope _(__func__);
@@ -107,7 +107,7 @@ void Mesh::PerformLoad() {
         Log(Error) << String::Format("加载失败, 文件不存在, path = {}", *file_path);
         return;
     }
-    loaded_ = LoadMesh(file_path, meta_, storage_, meta_.import_scale);
+    loaded_ = LoadMesh(file_path, meta_, storage_, meta_.ImportScale);
 }
 
 UInt32 Mesh::GetIndexCount() const {
@@ -116,8 +116,8 @@ UInt32 Mesh::GetIndexCount() const {
     }
     return 0;
 }
-SharedPtr<rhi::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
-SharedPtr<rhi::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
+SharedPtr<RHI::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
+SharedPtr<RHI::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
 
 void Mesh::Save() {
     ProfileScope _(__func__);
@@ -131,7 +131,7 @@ void Mesh::Save() {
 
 void Mesh::SetImportScale(float scale) {
     ProfileScope _(__func__);
-    meta_.import_scale = scale;
+    meta_.ImportScale = scale;
     SetNeedSave();
-    loaded_ = LoadMesh(meta_.path, meta_, storage_, meta_.import_scale);
+    loaded_ = LoadMesh(meta_.Path, meta_, storage_, meta_.ImportScale);
 }

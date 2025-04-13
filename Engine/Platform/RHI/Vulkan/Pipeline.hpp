@@ -6,7 +6,7 @@
 #include "Platform/RHI/Pipeline.hpp"
 #include "vulkan/vulkan.h"
 
-namespace rhi {
+namespace RHI {
     class RenderPass;
     class GraphicsPipeline_Vulkan : public GraphicsPipeline {
     public:

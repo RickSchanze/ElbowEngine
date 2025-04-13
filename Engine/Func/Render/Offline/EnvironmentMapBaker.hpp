@@ -4,11 +4,12 @@
 
 #pragma once
 #include "Core/Math/Types.hpp"
+#include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
 
 class Material;
-namespace rhi {
+namespace RHI {
     class CommandBuffer;
 }
 class Texture2D;
@@ -24,7 +25,7 @@ public:
     // TODO: BakeIrradianceMapAsync
     static Texture2D *BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta = 0.01f, Float intensity = 1.0f);
     static void BakeIrradianceMap(Texture2D *environment_sphere, Texture2D *target, Float sample_delta = 0.01f, Float intensity = 1.0f);
-    static void BakeIrradianceMap(rhi::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material);
+    static void BakeIrradianceMap(RHI::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material);
 
     /**
      * 烘焙环境贴图的预过滤环境贴图(Prefiltered Environment Map)(相当于高光)
@@ -44,6 +45,8 @@ public:
      * @param mip_level 生成的预过滤贴图mip等级
      * @return 一个新的Texture2D*
      */
-    static Texture2D *BakePrefilteredEnvironmentMap(Texture2D *environment_sphere, UInt32 width, UInt32 height,
-                                                    UInt32 mip_level = 1);
+    static Texture2D *BakePrefilteredEnvironmentMap(Texture2D *environment_sphere, UInt32 width, UInt32 height, UInt32 mip_level = 1);
+
+    static Texture2D* BakeIntegrateBRDFLookUpMap(UInt32 InSize);
+    static void BakeIntegrateBRDFLookUpMap(const Texture2D *OutBRDFMap, Material *InMaterial);
 };

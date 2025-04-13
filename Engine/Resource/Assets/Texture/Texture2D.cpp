@@ -26,7 +26,7 @@
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
 
-using namespace rhi;
+using namespace RHI;
 
 IMPL_REFLECTED_INPLACE(Texture2D) { return Type::Create<Texture2D>("Texture2D") | refl_helper::AddParents<Asset>(); }
 
@@ -136,8 +136,8 @@ void Texture2D::PerformLoad() {
 
 void Texture2D::Load(const Texture2DMeta &meta) {
     ProfileScope _(__func__);
-    if (!meta.dynamic) {
-        StringView path = meta.path;
+    if (!meta.IsDynamic) {
+        StringView path = meta.Path;
         if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr")) {
             Log(Error) << String::Format("加载失败: Texture2D必须以.png结尾: {}", *path);
             return;
@@ -149,15 +149,15 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         Int32 width = 0, height = 0, channels = 0;
         UInt64 byte_count = 0;
         UInt8 *pixels = nullptr;
-        if (!LoadTextureAccordingFormat(path, meta.format, pixels, width, height, channels, byte_count)) {
+        if (!LoadTextureAccordingFormat(path, meta.Format, pixels, width, height, channels, byte_count)) {
             return;
         }
         const ImageDesc desc{static_cast<UInt32>(width),
                              static_cast<UInt32>(height),
                              IUB_TransferDst | IUB_ShaderRead, //
-                             meta.format,
+                             meta.Format,
                              ImageDimension::D2, //
-                             meta.is_cubemap ? 6 : 1, static_cast<UInt16>(meta.mip_level)};
+                             meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
         String debug_name = String::Format("Texture2D_{}", *path);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -166,16 +166,16 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), byte_count);
         free(pixels);
         meta_ = meta;
-        SetSpriteRangeString(meta.sprites_string);
+        SetSpriteRangeString(meta.SpritesString);
     } else {
-        if (meta.width == 0 || meta.height == 0) {
+        if (meta.Width == 0 || meta.Height == 0) {
             Log(Error) << "加载失败: Texture2D的宽度和高度必须大于0";
             return;
         }
-        const Format format = meta.format;
+        const Format format = meta.Format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
-        const ImageDesc desc{meta.width, meta.height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
-                             format,     ImageDimension::D2, meta.is_cubemap ? 6 : 1, static_cast<UInt16>(meta.mip_level)};
+        const ImageDesc desc{meta.Width, meta.Height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
+                             format,     ImageDimension::D2, meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
         String debug_name = String::Format("Texture2D_{}", *name_);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -183,7 +183,7 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         meta_ = meta;
 
-        SetSpriteRangeString(meta.sprites_string);
+        SetSpriteRangeString(meta.SpritesString);
     }
 }
 
@@ -204,9 +204,9 @@ UInt32 Texture2D::GetNumChannels() const { return native_image_->GetNumChannels(
 UInt32 Texture2D::GetMipLevelCount() const { return native_image_->GetMipLevelCount(); }
 
 
-rhi::Format Texture2D::GetFormat() const {
+RHI::Format Texture2D::GetFormat() const {
     if (!native_image_)
-        return rhi::Format::Count;
+        return RHI::Format::Count;
     return native_image_->GetFormat();
 }
 
@@ -238,14 +238,14 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
 }
 
 
-SharedPtr<rhi::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const {
+SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const {
     desc.image = native_image_.get();
     return GetGfxContext()->CreateImageView(desc);
 }
 
 void Texture2D::SetTextureFormat(Format format) {
-    if (meta_.format != format) {
-        meta_.format = format;
+    if (meta_.Format != format) {
+        meta_.Format = format;
         SetNeedSave();
         Load(meta_);
     }

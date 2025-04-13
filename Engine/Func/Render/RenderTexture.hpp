@@ -11,7 +11,7 @@
 
 
 class Material;
-namespace rhi {
+namespace RHI {
     class ImageView;
 }
 /**
@@ -21,13 +21,13 @@ namespace rhi {
  * @param height
  * @return
  */
-rhi::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
+RHI::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
 
 class RenderTexture {
 public:
     RenderTexture() = default;
 
-    explicit RenderTexture(const rhi::ImageDesc &desc);
+    explicit RenderTexture(const RHI::ImageDesc &desc);
 
     ~RenderTexture();
 
@@ -37,7 +37,7 @@ public:
      */
     bool IsValid() const { return native_handle_ != nullptr; }
 
-    rhi::Image *GetImage() const { return native_handle_.get(); }
+    RHI::Image *GetImage() const { return native_handle_.get(); }
 
     UInt32 GetWidth() const { return desc_.width; }
     UInt32 GetHeight() const { return desc_.height; }
@@ -45,9 +45,9 @@ public:
     UInt32 GetMipLevels() const { return desc_.mip_levels; }
     Vector2f GetSize() const { return Vector2f{static_cast<Float>(desc_.width), static_cast<Float>(desc_.height)}; }
 
-    rhi::Format GetFormat() const { return desc_.format; }
+    RHI::Format GetFormat() const { return desc_.format; }
 
-    rhi::ImageView *GetImageView() const { return image_view_.get(); }
+    RHI::ImageView *GetImageView() const { return image_view_.get(); }
 
     // 下面三个用于设置RenderTexture的宽高, 注意是高耗时操作
     // 因为是销毁后重建, 所以尽量不要频繁调用
@@ -58,8 +58,8 @@ public:
     bool BindToMaterial(const String &name, Material *mat) const;
 
 private:
-    SharedPtr<rhi::Image> native_handle_ = nullptr;
-    SharedPtr<rhi::ImageView> image_view_ = nullptr;
+    SharedPtr<RHI::Image> native_handle_ = nullptr;
+    SharedPtr<RHI::ImageView> image_view_ = nullptr;
 
-    rhi::ImageDesc desc_ = rhi::ImageDesc::Default();
+    RHI::ImageDesc desc_ = RHI::ImageDesc::Default();
 };

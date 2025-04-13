@@ -15,7 +15,7 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "SharedMaterial.hpp"
 
-using namespace rhi;
+using namespace RHI;
 
 IMPL_REFLECTED_INPLACE(Material) {
     return Type::Create<Material>("Material") | refl_helper::AddParents<Asset>() | refl_helper::AddField("shader", &Material::shader_) |
@@ -47,7 +47,7 @@ void Material::Build() {
     // 4. 创建UniformBuffer
     if (uniform_buffer_size != 0) {
         const String mat_uniform_debug_name = String::Format("{}-UniformBuffer", name_);
-        const rhi::BufferDesc uniform_desc{uniform_buffer_size, BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
+        const RHI::BufferDesc uniform_desc{uniform_buffer_size, BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
         buffer_ = GetGfxContextRef().CreateBuffer(uniform_desc, mat_uniform_debug_name);
 
         // 5. Update DescriptorSet - 先全Update成默认的
@@ -201,7 +201,7 @@ bool Material::SetFloat(StringView name, Float value) {
     return true;
 }
 
-bool Material::SetParamNativeImageView(const String &name, rhi::ImageView *image_view, bool is_storage) {
+bool Material::SetParamNativeImageView(const String &name, RHI::ImageView *image_view, bool is_storage) {
     if (image_view == nullptr) {
         VLOG_ERROR("参数无效");
         return false;

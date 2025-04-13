@@ -6,7 +6,7 @@
 #include "vulkan/vulkan.h"
 
 
-namespace rhi {
+namespace RHI {
 class DescriptorSetLayout_Vulkan : public DescriptorSetLayout {
 public:
   [[nodiscard]] void *GetNativeHandle() const override { return handle_; }

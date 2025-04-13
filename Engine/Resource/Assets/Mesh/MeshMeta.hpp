@@ -10,55 +10,58 @@ REFLECTED(SQLTable = "Mesh")
 struct MeshMeta {
     REFLECTED_STRUCT(MeshMeta)
 
-    [[nodiscard]] Int32 GetId() const { return id; }
-    [[nodiscard]] Int32 GetObjectHandle() const { return object_handle; }
-    [[nodiscard]] bool GetTriangulate() const { return triangulate; }
-    [[nodiscard]] bool GetGenerateNormals() const { return generate_normals; }
-    [[nodiscard]] bool GetGenerateSmoothNormals() const { return generate_smooth_normals; }
-    [[nodiscard]] bool GetMergeDuplicateVertices() const { return merge_duplicate_vertices; }
-    [[nodiscard]] bool GetRemoveUnusedMaterials() const { return remove_unused_materials; }
-    [[nodiscard]] StringView GetPath() const { return path; }
+    [[nodiscard]] Int32 GetId() const { return Id; }
+    [[nodiscard]] Int32 GetObjectHandle() const { return ObjectHandle; }
+    [[nodiscard]] bool GetTriangulate() const { return Triangulate; }
+    [[nodiscard]] bool GetGenerateNormals() const { return GenerateNormals; }
+    [[nodiscard]] bool GetGenerateSmoothNormals() const { return GenerateSmoothNormals; }
+    [[nodiscard]] bool GetMergeDuplicateVertices() const { return MergeDuplicateVertices; }
+    [[nodiscard]] bool GetRemoveUnusedMaterials() const { return RemoveUnusedMaterials; }
+    [[nodiscard]] StringView GetPath() const { return Path; }
 
     REFLECTED(SQLAttr = "(PrimaryKey, AutoIncrement)")
-    Int32 id = 0;
+    Int32 Id = 0;
 
     REFLECTED()
-    Int32 object_handle = 0;
+    Int32 ObjectHandle = 0;
 
     REFLECTED()
-    String path;
+    String Path;
 
-    Float import_scale = 1.0f;
+    Float ImportScale = 1.0f;
 
     // 将所有网格多边形面转换为三角形面
     REFLECTED(Label = "三角化", Category = "基础")
-    bool triangulate = true;
+    bool Triangulate = true;
 
     REFLECTED(Label = "生成法线", Category = "基础")
-    bool generate_normals = true;
+    bool GenerateNormals = true;
 
     REFLECTED(Label = "生产平滑法线", Category = "基础")
-    bool generate_smooth_normals = false;
+    bool GenerateSmoothNormals = false;
 
     REFLECTED(Label = "合并重复顶点", Category = "基础")
-    bool merge_duplicate_vertices = true;
+    bool MergeDuplicateVertices = true;
 
     REFLECTED(Label = "移除多余材质", Category = "基础")
-    bool remove_unused_materials = true;
+    bool RemoveUnusedMaterials = true;
 
     REFLECTED(Hidden)
-    bool can_be_removed = true;
+    bool CanBeRemoved = true;
 
     // TODO: 一些高级选项
 };
 
 IMPL_REFLECTED_INPLACE(MeshMeta) {
     return Type::Create<MeshMeta>("MeshMeta") | refl_helper::Attribute(Type::ValueAttribute::SQLTable, "Mesh") |
-           refl_helper::AddField("id", &MeshMeta::id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") |
-           refl_helper::AddField("object_handle", &MeshMeta::object_handle) | refl_helper::AddField("path", &MeshMeta::path) |
-           refl_helper::AddField("triangulate", &MeshMeta::triangulate) | refl_helper::AddField("generate_normals", &MeshMeta::generate_normals) |
-           refl_helper::AddField("generate_smooth_normals", &MeshMeta::generate_smooth_normals) |
-           refl_helper::AddField("merge_duplicate_vertices", &MeshMeta::merge_duplicate_vertices) |
-           refl_helper::AddField("remove_unused_materials", &MeshMeta::remove_unused_materials) |
-           refl_helper::AddField("can_be_removed", &MeshMeta::can_be_removed) | refl_helper::AddField("import_scale", &MeshMeta::import_scale);
+           refl_helper::AddField("Id", &MeshMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
+           refl_helper::AddField("ObjectHandle", &MeshMeta::ObjectHandle) | //
+           refl_helper::AddField("Path", &MeshMeta::Path) | //
+           refl_helper::AddField("Triangulate", &MeshMeta::Triangulate) | //
+           refl_helper::AddField("GenerateNormals", &MeshMeta::GenerateNormals) | //
+           refl_helper::AddField("GenerateSmoothNormals", &MeshMeta::GenerateSmoothNormals) | //
+           refl_helper::AddField("MergeDuplicateVertices", &MeshMeta::MergeDuplicateVertices) | //
+           refl_helper::AddField("RemoveUnusedMaterials", &MeshMeta::RemoveUnusedMaterials) | //
+           refl_helper::AddField("CanBeRemoved", &MeshMeta::CanBeRemoved) | //
+           refl_helper::AddField("import_scale", &MeshMeta::ImportScale);
 }
