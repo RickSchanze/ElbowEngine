@@ -31,7 +31,6 @@ float3 SphericalToDir(float theta, float phi) {
 [numthreads(16, 16, 1)]
 void compute(uint3 tid: SV_DispatchThreadID) {
     float2 uv = (tid.xy + 0.5) / float2(params.output_size_x, params.output_size_y);
-    uv.x = 1 - uv.x;
     float3 N = GetNormalFromUV(uv);
     float3 up = float3(0, 1, 0);
     float3 right = normalize(cross(up, N));
