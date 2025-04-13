@@ -163,7 +163,6 @@ bool Material::SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_
         return false;
     auto &texture_bindings = shared_material_->GetTextureBindings();
     if (!texture_bindings.Contains(name_hash)) {
-        Log(Error) << String::Format("材质{}中没有参数{}", GetHandle(), name_hash);
         return false;
     }
     GetGfxContextRef().WaitForQueueExecution(QueueFamilyType::Graphics);
@@ -186,6 +185,7 @@ bool Material::SetTexture2D(const String &name, const Texture2D *texture, bool i
         texture_params_[name] = texture;
         return true;
     }
+    VLOG_ERROR("材质[", *GetName(), "]中没有参数[", *name, "]");
     return false;
 }
 

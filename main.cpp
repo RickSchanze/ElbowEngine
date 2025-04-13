@@ -164,22 +164,22 @@ int main() {
         auto ao = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png"));
         ao->SetTextureFormat(Format::R8_UNorm);
         ao->SaveIfNeed();
-        auto normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
-        normal->SetTextureFormat(Format::R8_UNorm);
-        normal->SaveIfNeed();
+        auto Normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
+        Normal->SetTextureFormat(Format::R8_UNorm);
+        Normal->SaveIfNeed();
         auto Black = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
+        m->SetName("MeshMaterial");
         m->SetTexture2D("tex", color);
         m->SetTexture2D("tex_metallic", metallic);
         m->SetTexture2D("tex_roughness", roughness);
         m->SetTexture2D("tex_ao", ao);
-        m->SetTexture2D("tex_normal", normal);
+        m->SetTexture2D("Tex_Normal", Normal);
         m->SetTexture2D("Tex_Irradiance", Black);
         m->SetTexture2D("Tex_Prefiltered", Black);
         m->SetTexture2D("Tex_BRDFLUT", Black);
         m->SetFloat("float_param.roughness", 1.0f);
         m->SetFloat("float_param.metallic", 1.0f);
         m->SetFloat("float_param.ao", 1.0f);
-        auto light_holder = CreateNewObject<Rotating>();
         auto light = cam_holder->AddComponent<PointLightComponent>();
         light->SetColor(Color::White());
         mesh->SetMaterial(m);
@@ -200,7 +200,7 @@ int main() {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), location) * glm::yawPitchRoll(rotation.y, rotation.x, rotation.z) *
                               glm::scale(glm::mat4(1.0f), scale);
             Matrix4x4f normal_matrix = glm::transpose(glm::inverse(glm::mat3(model))) | ToMatrix4x4f;
-            m->SetMatrix4x4("martix_param.normal_matrix", normal_matrix);
+            m->SetMatrix4x4("InMatrixParam.NormalMatrix", normal_matrix);
             GetWorldClock().TickAll(main_window);
             if (main_window->ShouldClose()) {
                 GetGfxContextRef().WaitForDeviceIdle();

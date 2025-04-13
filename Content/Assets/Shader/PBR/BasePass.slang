@@ -17,20 +17,20 @@ struct PBRFloatParam {
 }
 
 struct MatrixParam {
-    float4x4 normal_matrix;
+    float4x4 NormalMatrix;
 }
 
 uniform ConstantBuffer<Camera> camera;
 uniform ConstantBuffer<GlobalLights> dynamic_lights;
 
 uniform ConstantBuffer<PBRFloatParam> float_param;
-uniform ConstantBuffer<MatrixParam> martix_param;
+uniform ConstantBuffer<MatrixParam> InMatrixParam;
 
 uniform Texture2D tex;
 uniform Texture2D<float> tex_metallic;
 uniform Texture2D<float> tex_roughness;
 uniform Texture2D<float> tex_ao;
-uniform Texture2D<float3> tex_normal;
+uniform Texture2D<float3> Tex_Normal;
 uniform Texture2D<float3> Tex_Irradiance;
 uniform Texture2D<float3> Tex_Prefiltered;
 uniform Texture2D<float2> Tex_BRDFLUT;
@@ -55,6 +55,7 @@ VertexOutput vert(Vertex vert) {
     float4 pos_vec4 = float4(vert.position, 1);
     float4x4 model = vert.GetModelFloat4x4();
     float4 world_pos = mul(pos_vec4, model);
+    float3x3 model_3x3 = float3x3(model);
 
     output.position = mul(world_pos, camera.GetView());
     output.position = mul(output.position, camera.GetProjection());
@@ -62,7 +63,13 @@ VertexOutput vert(Vertex vert) {
     output.world_position = world_pos.xyz;
     output.tagent = vert.tangent;
     output.bitangent = vert.bitangent;
-    output.normal = mul(vert.normal, float3x3(model));
+
+    float3 T = mul(vert.tangent, model_3x3);
+    float3 B = mul(vert.bitangent, model_3x3);
+    float3 N = mul(vert.normal, model_3x3);
+    float3x3 TBN = float3x3(T.x, B.x, N.x, T.y, B.y, N.y, T.z, B.z, N.z);
+    float3 TangentNormal = Tex_Normal.SampleLevel(common_sampler, vert.uv0, 0);
+    output.normal = normalize(mul(TangentNormal, TBN));
     return output;
 }
 
@@ -85,12 +92,14 @@ FragOutput frag(VertexOutput input) {
     for (int i = 0; i < dynamic_lights.point_light_count; i++)
     {
         float3 L = normalize(dynamic_lights.point_light[i].location - world_pos);
+        float Distance = length(dynamic_lights.point_light[i].location - world_pos);
+        float Distance2 = Distance * Distance + 0.0001;
         float3 H = normalize(V + L);
         float NdotV = clamp(dot(N, V), 0.0, 1.0);
         float NdotL = clamp(dot(N, L), 0.0, 1.0);
         float LdotH = clamp(dot(L, H), 0, 1);
         float NdotH = clamp(dot(N, H), 0, 1);
-        float3 light_color = dynamic_lights.point_light[i].color;
+        float3 light_color = dynamic_lights.point_light[i].color * 10 / Distance2;
         if (NdotL > 0.0) {
             float D = GGX_TrowbridgeReitz(NdotH, Roughness);
             float G = GGX_GeometrySmith(NdotV, NdotL, Roughness);
@@ -98,7 +107,6 @@ FragOutput frag(VertexOutput input) {
             float3 numerator = D * G * F;
             float3 denominator = 4 * NdotL * NdotV + 0.00001;
             float3 specular = numerator / denominator;
-            
             float3 kS = F;
             float3 kD = float3(1) - kS;
             kD *= 1 - Metallic;

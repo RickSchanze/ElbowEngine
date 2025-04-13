@@ -38,7 +38,7 @@ void PBRRenderPipelineSettingWindow::GeneratePrefilteredMapAndApply() const {
     auto w = mPipeline->skybox_texture_->GetWidth();
     auto h = mPipeline->skybox_texture_->GetHeight();
     auto scale = w / h;
-    Texture2D *tex = EnvironmentMapBaker::BakePrefilteredEnvironmentMap(mPipeline->skybox_texture_, 512 * scale, 512, 5);
+    Texture2D *tex = EnvironmentMapBaker::BakePrefilteredEnvironmentMap(mPipeline->skybox_texture_, 1024 * scale, 1024, 5);
     if (tex) {
         auto task = ThreadManager::ScheduleFutureAsync(
                 exec::Just() | exec::Then([tex, this]() { mMeshMat->SetTexture2D("Tex_Prefiltered", tex); }),
@@ -50,7 +50,7 @@ void PBRRenderPipelineSettingWindow::GenerateIrradianceMapAndApply() const {
     auto w = mPipeline->skybox_texture_->GetWidth();
     auto h = mPipeline->skybox_texture_->GetHeight();
     auto scale = w / h;
-    Texture2D *tex = EnvironmentMapBaker::BakeIrradianceMap(mPipeline->skybox_texture_, Vector2f(512 * scale, 512), 0.05, 1);
+    Texture2D *tex = EnvironmentMapBaker::BakeIrradianceMap(mPipeline->skybox_texture_, Vector2f(1024 * scale, 1024), 0.05, 1);
     if (tex) {
         auto task = ThreadManager::ScheduleFutureAsync(
                 exec::Just() | exec::Then([tex, this]() { mMeshMat->SetTexture2D("Tex_Irradiance", tex); }),
@@ -59,7 +59,7 @@ void PBRRenderPipelineSettingWindow::GenerateIrradianceMapAndApply() const {
 }
 
 void PBRRenderPipelineSettingWindow::GenerateBRDFMapApply()  {
-     mBRDFMap = EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(500);
+     mBRDFMap = EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(800);
     if (mBRDFMap) {
         auto task = ThreadManager::ScheduleFutureAsync(
                 exec::Just() | exec::Then([this]() { mMeshMat->SetTexture2D("Tex_BRDFLUT", mBRDFMap); }),
