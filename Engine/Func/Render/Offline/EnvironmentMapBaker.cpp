@@ -164,6 +164,7 @@ Texture2D *EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize) 
     MyMaterial->SetShader(AssetDataBase::LoadFromPath<Shader>("Assets/Shader/PBR/Environment/IntegrateBRDF.slang"));
     BakeIntegrateBRDFLookUpMap(BRDFMap, MyMaterial);
     Destroy(MyMaterial);
+    VLOG_INFO("成功烘焙BRDFIntegrateLookUpMap!");
     return BRDFMap;
 }
 
