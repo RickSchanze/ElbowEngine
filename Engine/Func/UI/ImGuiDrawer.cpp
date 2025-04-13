@@ -119,13 +119,13 @@ void ImGuiDrawer::DrawTransform(Actor *actor) {
     Vector3f rotation = trans.GetRotationEuler();
     ImGui::PushID(actor);
     ImGui::PushID("位置");
-    InputFloat3("位置", &trans.location.x);
+    ImGui::DragFloat3("位置", &trans.location.x, 0.1);
     ImGui::PopID();
     ImGui::PushID("旋转");
-    InputFloat3("旋转", &rotation.x);
+    ImGui::DragFloat3("旋转", &rotation.x, 0.1);
     ImGui::PopID();
     ImGui::PushID("缩放");
-    InputFloat3("缩放", &trans.scale.x);
+    ImGui::DragFloat3("缩放", &trans.scale.x, 0.1);
     ImGui::PopID();
     ImGui::PopID();
     Transform old = actor->GetTransform();
@@ -145,9 +145,9 @@ void ImGuiDrawer::DrawTransform(SceneComponent *comp) {
     Transform trans = comp->GetTransform();
     Vector3f rotation = trans.GetRotationEuler();
     ImGui::PushID(comp);
-    InputFloat3("位置", &trans.location.x);
-    InputFloat3("旋转", &rotation.x);
-    InputFloat3("缩放", &trans.scale.x);
+    ImGui::DragFloat3("位置", &trans.location.x);
+    ImGui::DragFloat3("旋转", &rotation.x);
+    ImGui::DragFloat3("缩放", &trans.scale.x);
     ImGui::PopID();
     Transform old = comp->GetTransform();
     if (trans.location != old.location) {

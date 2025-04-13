@@ -165,7 +165,7 @@ int main() {
         ao->SetTextureFormat(Format::R8_UNorm);
         ao->SaveIfNeed();
         auto Normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
-        Normal->SetTextureFormat(Format::R8_UNorm);
+        Normal->SetTextureFormat(Format::R8G8B8A8_SRGB);
         Normal->SaveIfNeed();
         auto Black = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
         m->SetName("MeshMaterial");
