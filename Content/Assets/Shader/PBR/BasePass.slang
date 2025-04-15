@@ -30,6 +30,7 @@ uniform Texture2D<float3> Tex_Normal;
 uniform Texture2D<float3> Tex_Irradiance;
 uniform Texture2D<float3> Tex_Prefiltered;
 uniform Texture2D<float2> Tex_BRDFLUT;
+uniform TextureCube<float> Tex_ShadowMap;
 uniform SamplerState LinearSampler;
 
 struct VertexOutput {
@@ -73,6 +74,11 @@ FragOutput Fragment(VertexOutput Input) {
         float3 L = normalize(uDynamicLights.PointLights[I].Location - Input.WorldPosition);
         float3 H = normalize(L + V);
         float Distance = length(uDynamicLights.PointLights[I].Location - Input.WorldPosition);
+        // 判断有没有在阴影
+        float SampledDistance = Tex_ShadowMap.Sample(LinearSampler, Input.WorldPosition - uDynamicLights.PointLights[I].Location);
+        if (Distance > SampledDistance) {
+            continue;
+        }
         float Attenuation = 1 / (Distance * Distance);
         float3 Radiance = uDynamicLights.PointLights[I].Color * Attenuation;
 

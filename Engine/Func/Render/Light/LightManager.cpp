@@ -11,45 +11,56 @@
 using namespace RHI;
 
 
-void LightManager::Startup() {
+void LightManager::Startup()
+{
     BufferDesc desc{sizeof(DynamicGlobalLights), BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
     global_light_buffer_ = RHI::GetGfxContextRef().CreateBuffer(desc);
     dynamic_global_lights_ = reinterpret_cast<DynamicGlobalLights *>(global_light_buffer_->BeginWrite());
 }
 
-void LightManager::Shutdown() {
+void LightManager::Shutdown()
+{
     global_light_buffer_->EndWrite();
     global_light_buffer_ = nullptr;
     dynamic_global_lights_ = nullptr;
 }
 
-void LightManager::AddLight(PointLightComponent *point_light_component) {
-    if (point_light_component == nullptr) {
+void LightManager::AddLight(PointLightComponent *point_light_component)
+{
+    if (point_light_component == nullptr)
+    {
         VLOG_WARN("传入的点光源组件为空");
         return;
     }
     auto &self = GetByRef();
-    if (self.point_light_map_.Contains(point_light_component)) {
+    if (self.point_light_map_.Contains(point_light_component))
+    {
         return;
     }
     Int8 index = self.FindNextAvailablePointLightIndex();
-    if (index != -1) {
+    if (index != -1)
+    {
         self.occupied_[index] = true;
         self.point_light_map_[point_light_component] = index;
         Int32 count = self.dynamic_global_lights_->point_light_count + 1;
         memcpy(&self.dynamic_global_lights_->point_light_count, &count, sizeof(Int32));
-    } else {
+    }
+    else
+    {
         VLOG_ERROR("动态光源数量超出限制");
     }
     UpdateLight(point_light_component);
 }
 
-void LightManager::UpdateLight(PointLightComponent *point_light_component) {
-    if (point_light_component == nullptr) {
+void LightManager::UpdateLight(PointLightComponent *point_light_component)
+{
+    if (point_light_component == nullptr)
+    {
         return;
     }
     auto &self = GetByRef();
-    if (self.point_light_map_.Contains(point_light_component)) {
+    if (self.point_light_map_.Contains(point_light_component))
+    {
         Int8 index = self.point_light_map_[point_light_component];
         PointLight light;
         light.location = point_light_component->GetWorldLocation();
@@ -58,12 +69,15 @@ void LightManager::UpdateLight(PointLightComponent *point_light_component) {
     }
 }
 
-void LightManager::RemoveLight(PointLightComponent *point_light_component) {
-    if (point_light_component == nullptr) {
+void LightManager::RemoveLight(PointLightComponent *point_light_component)
+{
+    if (point_light_component == nullptr)
+    {
         return;
     }
     auto &self = GetByRef();
-    if (self.point_light_map_.Contains(point_light_component)) {
+    if (self.point_light_map_.Contains(point_light_component))
+    {
         Int8 index = self.point_light_map_[point_light_component];
         std::swap(self.dynamic_global_lights_->point_lights[index],
                   self.dynamic_global_lights_->point_lights[self.dynamic_global_lights_->point_light_count - 1]);
@@ -72,14 +86,24 @@ void LightManager::RemoveLight(PointLightComponent *point_light_component) {
     }
 }
 
-RHI::Buffer *LightManager::GetGlobalLightBuffer() {
-    auto& self = GetByRef();
+RHI::Buffer *LightManager::GetGlobalLightBuffer()
+{
+    auto &self = GetByRef();
     return self.global_light_buffer_.get();
 }
 
-Int8 LightManager::FindNextAvailablePointLightIndex() const {
-    for (Int8 i = 0; i < MAX_POINT_LIGHT_COUNT; ++i) {
-        if (!occupied_[i]) {
+Vector3f LightManager::GetLightPositions(PointLightComponent *Index)
+{
+    auto &Self = GetByRef();
+    return Self.point_light_map_.begin()->first->GetLocation();
+}
+
+Int8 LightManager::FindNextAvailablePointLightIndex() const
+{
+    for (Int8 i = 0; i < MAX_POINT_LIGHT_COUNT; ++i)
+    {
+        if (!occupied_[i])
+        {
             return i;
         }
     }

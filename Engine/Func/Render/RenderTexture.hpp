@@ -11,9 +11,12 @@
 
 
 class Material;
-namespace RHI {
-    class ImageView;
+
+namespace RHI
+{
+class ImageView;
 }
+
 /**
  * 获取深度图形的默认描述
  * width或height为0时从主窗口取
@@ -23,7 +26,8 @@ namespace RHI {
  */
 RHI::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
 
-class RenderTexture {
+class RenderTexture
+{
 public:
     RenderTexture() = default;
 
@@ -35,30 +39,65 @@ public:
      * 判断是否有效
      * @return
      */
-    bool IsValid() const { return native_handle_ != nullptr; }
+    bool IsValid() const
+    {
+        return mNativeHandle != nullptr;
+    }
 
-    RHI::Image *GetImage() const { return native_handle_.get(); }
+    RHI::Image *GetImage() const
+    {
+        return mNativeHandle.get();
+    }
 
-    UInt32 GetWidth() const { return desc_.width; }
-    UInt32 GetHeight() const { return desc_.height; }
-    UInt32 GetDepth() const { return desc_.depth_or_layers; }
-    UInt32 GetMipLevels() const { return desc_.mip_levels; }
-    Vector2f GetSize() const { return Vector2f{static_cast<Float>(desc_.width), static_cast<Float>(desc_.height)}; }
+    UInt32 GetWidth() const
+    {
+        return desc_.Width;
+    }
 
-    RHI::Format GetFormat() const { return desc_.format; }
+    UInt32 GetHeight() const
+    {
+        return desc_.Height;
+    }
 
-    RHI::ImageView *GetImageView() const { return image_view_.get(); }
+    UInt32 GetDepth() const
+    {
+        return desc_.DepthOrLayers;
+    }
+
+    UInt32 GetMipLevels() const
+    {
+        return desc_.MipLevels;
+    }
+
+    Vector2f GetSize() const
+    {
+        return Vector2f{static_cast<Float>(desc_.Width), static_cast<Float>(desc_.Height)};
+    }
+
+    RHI::Format GetFormat() const
+    {
+        return desc_.Format;
+    }
+
+    RHI::ImageView *GetImageView() const
+    {
+        return image_view_.get();
+    }
 
     // 下面三个用于设置RenderTexture的宽高, 注意是高耗时操作
     // 因为是销毁后重建, 所以尽量不要频繁调用
     void SetWidth(UInt32 width);
+
     void SetHeight(UInt32 height);
+
     void Resize(UInt32 width, UInt32 height);
 
     bool BindToMaterial(const String &name, Material *mat) const;
 
+    StaticArray<SharedPtr<RHI::ImageView>, 6>  CreateCubeViews() const;
+
 private:
-    SharedPtr<RHI::Image> native_handle_ = nullptr;
+    SharedPtr<RHI::Image> mNativeHandle = nullptr;
     SharedPtr<RHI::ImageView> image_view_ = nullptr;
 
     RHI::ImageDesc desc_ = RHI::ImageDesc::Default();

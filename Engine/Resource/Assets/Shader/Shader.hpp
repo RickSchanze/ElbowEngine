@@ -9,19 +9,24 @@
 #include "slang-com-ptr.h"
 #pragma once
 
-namespace RHI {
-    struct ComputePipelineDesc;
+namespace RHI
+{
+struct ComputePipelineDesc;
 }
-namespace RHI {
-    class LowShader;
-    struct GraphicsPipelineDesc;
+
+namespace RHI
+{
+class LowShader;
+struct GraphicsPipelineDesc;
 } // namespace rhi
-enum class BlendState {
+enum class BlendState
+{
     Opaque, // 不透明
     Transparent, // 透明
 };
 
-enum class ShaderAnnotation {
+enum class ShaderAnnotation
+{
     Pipeline,
     InputLayout, // 输入布局: VertexNormal, Vertex, Vertex_UI
     EnableDepth, // 是否启用深度测试 默认为true: true false
@@ -32,19 +37,23 @@ enum class ShaderAnnotation {
     Count,
 };
 
-enum class ShaderParamType {
+enum class ShaderParamType
+{
     Float3,
     Float4,
     Float,
     Texture2D,
+    CubeTexture2D,
     StorageTexture2D,
     SamplerState,
     Struct,
     Matrix4x4f,
+    PushConstant,
     Count,
 };
 
-struct ShaderParam {
+struct ShaderParam
+{
     ShaderParamType type;
     UInt32 binding; // binding
     UInt32 size = 0; // 整个结构的大小, 等于零表示这个是结构体成员
@@ -63,7 +72,9 @@ struct ShaderParam {
  * 不能有相同的stage
  */
 REFLECTED()
-class Shader : public Asset {
+
+class Shader : public Asset
+{
     REFLECTED_CLASS(Shader)
 public:
     constexpr static auto SHADER_STAGE_COUNT = 3;
@@ -75,7 +86,7 @@ public:
 
     void PerformLoad() override;
 
-    void GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_lights);
+    void GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &HasLights);
 
     bool IsLoaded() const override;
 
@@ -88,22 +99,46 @@ public:
 
     bool IsGraphics() const;
 
-    bool IsCompiled() const { return mCompiled; }
+    bool IsCompiled() const
+    {
+        return mCompiled;
+    }
 
     bool IsDepthEnabled() const;
 
-    AssetType GetAssetType() const override { return AssetType::Shader; }
+    AssetType GetAssetType() const override
+    {
+        return AssetType::Shader;
+    }
 
-    int GetEntryPointIndex(int stage_index) const { return mStageToEntryPointIndex[stage_index]; }
+    int GetEntryPointIndex(int stage_index) const
+    {
+        return mStageToEntryPointIndex[stage_index];
+    }
 
-    auto &GetShaderHandles() { return mShaderHandles; }
-    const auto &GetAnnotations() const { return mAnnotations; }
-    Int32 GetAnnotation(ShaderAnnotation annotation) const { return mAnnotations[static_cast<Int32>(annotation)]; }
+    auto &GetShaderHandles()
+    {
+        return mShaderHandles;
+    }
 
-    const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return mLinedProgram; }
+    const auto &GetAnnotations() const
+    {
+        return mAnnotations;
+    }
+
+    Int32 GetAnnotation(ShaderAnnotation annotation) const
+    {
+        return mAnnotations[static_cast<Int32>(annotation)];
+    }
+
+    const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const
+    {
+        return mLinedProgram;
+    }
 
     bool FillGraphicsPSODescFromShader(RHI::GraphicsPipelineDesc &desc, bool output_glsl = true);
-    bool FillComputePSODescFromShader(RHI::ComputePipelineDesc& desc, bool output_glsl = true);
+
+    bool FillComputePSODescFromShader(RHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl = true);
 
 protected:
     Int32 mStageToEntryPointIndex[SHADER_STAGE_COUNT];

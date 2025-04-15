@@ -20,20 +20,20 @@ Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {
     const auto device = ctx->GetDevice();
     VkImageCreateInfo image_info{};
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_info.imageType = RHIImageDimensionToVkImageType(desc.dimension);
-    image_info.format = RHIFormatToVkFormat(desc.format);
-    image_info.extent.width = desc.width;
-    image_info.extent.height = desc.height;
-    image_info.extent.depth = desc.dimension == ImageDimension::D2 ? 1 : desc.depth_or_layers;
-    image_info.mipLevels = desc.mip_levels;
-    image_info.arrayLayers = desc.dimension == ImageDimension::D2 ? desc.depth_or_layers : 1;
-    image_info.usage = RHIImageUsageToVkImageUsageFlags(desc.usage);
-    image_info.samples = RHISampleCountToVkSampleCount(desc.samples);
-    image_info.initialLayout = RHIImageLayoutToVkImageLayout(desc.initial_state);
+    image_info.imageType = RHIImageDimensionToVkImageType(desc.Dimension);
+    image_info.format = RHIFormatToVkFormat(desc.Format);
+    image_info.extent.width = desc.Width;
+    image_info.extent.height = desc.Height;
+    image_info.extent.depth = desc.Dimension == ImageDimension::D2 ? 1 : desc.DepthOrLayers;
+    image_info.mipLevels = desc.MipLevels;
+    image_info.arrayLayers = desc.Dimension == ImageDimension::D2 ? desc.DepthOrLayers : 1;
+    image_info.usage = RHIImageUsageToVkImageUsageFlags(desc.Usage);
+    image_info.samples = RHISampleCountToVkSampleCount(desc.Samples);
+    image_info.initialLayout = RHIImageLayoutToVkImageLayout(desc.InitialState);
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     image_info.queueFamilyIndexCount = 0;
     image_info.pQueueFamilyIndices = nullptr;
-    if (desc.depth_or_layers == 6) {
+    if (desc.DepthOrLayers == 6) {
         image_info.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     }
     image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -48,15 +48,15 @@ Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {
     vkBindImageMemory(device, image_handle_, image_memory_, 0);
     auto cmd = GfxCommandHelper::BeginSingleCommand();
     ImageSubresourceRange range{};
-    if (desc_.usage & ImageUsageBits::IUB_RenderTarget || desc_.usage & ImageUsageBits::IUB_ShaderRead) {
+    if (desc_.Usage & ImageUsageBits::IUB_RenderTarget || desc_.Usage & ImageUsageBits::IUB_ShaderRead) {
         range.aspect_mask = IA_Color;
-    } else if (desc_.usage & ImageUsageBits::IUB_DepthStencil) {
+    } else if (desc_.Usage & ImageUsageBits::IUB_DepthStencil) {
         range.aspect_mask = IA_Depth;
     }
     range.base_array_layer = 0;
-    range.layer_count = desc.depth_or_layers;
+    range.layer_count = desc.DepthOrLayers;
     range.base_mip_level = 0;
-    range.level_count = desc.mip_levels;
+    range.level_count = desc.MipLevels;
     auto new_layout = ImageLayout::Count;
     if (range.aspect_mask & IA_Color) {
         new_layout = ImageLayout::ShaderReadOnly;
@@ -73,21 +73,21 @@ Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {
 
 Image_Vulkan::Image_Vulkan(VkImage handle_, Int32 index, UInt32 width_, UInt32 height_, Format format_) {
     image_handle_ = handle_;
-    desc_.width = width_;
-    desc_.height = height_;
-    desc_.format = format_;
-    desc_.usage = IUB_SwapChain;
-    desc_.depth_or_layers = 1;
-    desc_.mip_levels = 1;
+    desc_.Width = width_;
+    desc_.Height = height_;
+    desc_.Format = format_;
+    desc_.Usage = IUB_SwapChain;
+    desc_.DepthOrLayers = 1;
+    desc_.MipLevels = 1;
     // TODO: samples应该为1吗？
-    desc_.samples = SampleCount::SC_1;
-    desc_.initial_state = ImageLayout::Undefined;
-    desc_.dimension = ImageDimension::D2;
+    desc_.Samples = SampleCount::SC_1;
+    desc_.InitialState = ImageLayout::Undefined;
+    desc_.Dimension = ImageDimension::D2;
 }
 
 Image_Vulkan::~Image_Vulkan() {
-    if (desc_.usage & IUB_SwapChain) {
-        if (desc_.usage != IUB_SwapChain) {
+    if (desc_.Usage & IUB_SwapChain) {
+        if (desc_.Usage != IUB_SwapChain) {
             Log(Warn) << "Image usage IU_SwapChain cannot combined with other usage.";
         } else {
             // 交换链的Image由交换链销毁
@@ -145,27 +145,27 @@ UInt8 Image_Vulkan::GetFormatComponentSize() {
 }
 
 void Image_Vulkan::GenerateMipmaps(CommandBuffer &cmd) {
-    if (desc_.mip_levels <= 1)
+    if (desc_.MipLevels <= 1)
         return;
     // 检查支不支持线性blitting
     VkFormatProperties format_properties;
     auto &ctx = *GetVulkanGfxContext();
-    vkGetPhysicalDeviceFormatProperties(ctx.GetPhysicalDevice(), RHIFormatToVkFormat(desc_.format), &format_properties);
+    vkGetPhysicalDeviceFormatProperties(ctx.GetPhysicalDevice(), RHIFormatToVkFormat(desc_.Format), &format_properties);
     if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
         // TODO: Enum string
-        VLOG_FATAL("图像格式 {} 不支持 linear blitting.", RHIFormatToVkFormat(desc_.format));
+        VLOG_FATAL("图像格式 {} 不支持 linear blitting.", RHIFormatToVkFormat(desc_.Format));
     }
-    UInt32 mip_width = desc_.width;
-    UInt32 mip_height = desc_.height;
+    UInt32 mip_width = desc_.Width;
+    UInt32 mip_height = desc_.Height;
     ImageSubresourceRange range{};
     // TODO: 这里可能需要更多格式
     range.aspect_mask = IA_Color;
     range.base_array_layer = 0;
-    range.layer_count = desc_.depth_or_layers;
-    range.level_count = desc_.mip_levels;
+    range.layer_count = desc_.DepthOrLayers;
+    range.level_count = desc_.MipLevels;
     cmd.ImagePipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::TransferDst, this, range, AFB_ShaderRead, AFB_TransferWrite,
                              PSFB_FragmentShader, PSFB_Transfer);
-    for (Int32 i = 1; i < desc_.mip_levels; i++) {
+    for (Int32 i = 1; i < desc_.MipLevels; i++) {
         range.base_mip_level = i - 1;
         range.level_count = 1;
         // 当前只能在Image立即创建时调用此函数, 意味着其Layout肯定是Undefined
@@ -192,7 +192,7 @@ void Image_Vulkan::GenerateMipmaps(CommandBuffer &cmd) {
         mip_height = mip_height > 1 ? mip_height / 2 : 1;
         mip_width = mip_width > 1 ? mip_width / 2 : 1;
     }
-    range.base_mip_level = desc_.mip_levels - 1;
+    range.base_mip_level = desc_.MipLevels - 1;
     cmd.ImagePipelineBarrier(ImageLayout::TransferDst, ImageLayout::ShaderReadOnly, this, range, AFB_TransferWrite, AFB_ShaderRead, PSFB_Transfer,
                              PSFB_FragmentShader);
     cmd.Execute();

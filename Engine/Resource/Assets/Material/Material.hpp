@@ -10,22 +10,34 @@
 #include "Resource/Assets/Asset.hpp"
 
 
-namespace RHI {
-    class Sampler;
+namespace RHI
+{
+class CommandBuffer;
 }
-namespace RHI {
-    class ImageView;
+
+namespace RHI
+{
+class Sampler;
 }
+
+namespace RHI
+{
+class ImageView;
+}
+
 class RenderTexture;
 class Shader;
 class SharedMaterial;
-namespace RHI {
-    class Buffer;
-    class DescriptorSet;
+
+namespace RHI
+{
+class Buffer;
+class DescriptorSet;
 } // namespace rhi
 class Texture2D;
 
-class REFLECTED() Material : public Asset {
+class REFLECTED() Material : public Asset
+{
     REFLECTED_CLASS(Material)
 
 public:
@@ -33,12 +45,19 @@ public:
 
     void PerformLoad() override;
 
-    void PerformUnload() override { Clean(); }
+    void PerformUnload() override
+    {
+        Clean();
+    }
 
-    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Material; }
+    [[nodiscard]] AssetType GetAssetType() const override
+    {
+        return AssetType::Material;
+    }
 
     // 这些Set表达的都不是const的语义, 因此不加const
-    void SetFloat3(const String &name, const Vector3f &value) {
+    void SetFloat3(const String &name, const Vector3f &value)
+    {
         if (!shared_material_)
             return;
         const UInt64 name_hash = name.GetHashCode();
@@ -52,6 +71,7 @@ public:
     void SetFloat4(UInt64 name_hash, const Vector4f &value);
 
     bool SetTexture2D(UInt64 name_hash, const Texture2D *texture, bool is_storage = false);
+
     bool SetTexture2D(const String &name, const Texture2D *texture, bool is_storage = false);
 
     bool SetFloat(StringView name, Float value);
@@ -61,23 +81,33 @@ public:
     void SetShader(const Shader *shader);
 
     bool SetMatrix4x4(StringView name, const Matrix4x4f &value);
+
     bool SetMatrix3x3(StringView name, const Matrix3x3f &value);
 
     bool IsComputeMaterial() const;
 
     [[nodiscard]] ObjectHandle GetParam_Texture2DHandle(const String &name) const;
+
     [[nodiscard]] Texture2D *GetParam_Texture2D(const String &name) const;
 
-    [[nodiscard]] RHI::DescriptorSet *GetDescriptorSet() const { return descriptor_set_.get(); }
+    [[nodiscard]] RHI::DescriptorSet *GetDescriptorSet() const
+    {
+        return descriptor_set_.get();
+    }
 
     void Build();
 
     void Clean();
 
-    [[nodiscard]] SharedMaterial *GetSharedMaterial() const { return shared_material_.get(); }
+    [[nodiscard]] SharedMaterial *GetSharedMaterial() const
+    {
+        return shared_material_.get();
+    }
 
     static Material *GetDefaultMaterial();
+
     static Material *CreateFromShader(Shader *s);
+
     static Material *CreateFromShader(StringView path);
 
 protected:
@@ -91,7 +121,7 @@ protected:
     Map<String, Float> float_params_;
 
     REFLECTED()
-    Map<String, ObjectPtr<Texture2D>> texture_params_;
+    Map<String, ObjectPtr<Texture2D> > texture_params_;
 
     // 所有UniformBuffer都使用这一个Buffer
     // UniformBuffer尽量用块对齐 因为有256字节对齐的限制

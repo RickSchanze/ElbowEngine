@@ -8,6 +8,7 @@
 #include "Core/Memory/Memory.hpp"
 #include "Core/Misc/Other.hpp"
 #include "Core/Profile.hpp"
+#include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/GfxContext.hpp"
 #include "Platform/RHI/Pipeline.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
@@ -21,6 +22,10 @@ static UInt64 CalcUniformBufferOffsetsTotalSize(const Array<ShaderParam> &params
     Map<UInt32, ShaderParam> binding_shader_params;
     for (auto &param : params)
     {
+        if (param.type == ShaderParamType::PushConstant)
+            continue;
+        if (param.type == ShaderParamType::CubeTexture2D)
+            continue;
         if (param.type == ShaderParamType::Struct)
         {
             binding_shader_params[param.binding] = param;
@@ -62,6 +67,11 @@ SharedPtr<SharedMaterial> SharedMaterial::CreateSharedMaterial(Shader *shader)
         return existing;
     }
     return MakeShared<SharedMaterial>(shader);
+}
+
+void SharedMaterial::InternalPushConstant(RHI::CommandBuffer &Cmd, void *Data, UInt32 Size) const
+{
+    Cmd.PushConstant(mPipeline.Get(), 0, Size, Data);
 }
 
 SharedPtr<SharedMaterial> SharedMaterialManager::GetSharedMaterial(Shader *shader)
@@ -203,10 +213,18 @@ SharedMaterial::SharedMaterial(Shader *shader)
         }
         else
         {
-            desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
+            // TODO: 扩展实现
+            if (shader->GetName().EndsWith("ShadowPass.slang"))
+            {
+                desc.attachments.color_formats.Add(Format::R32_Float);
+            }
+            else
+            {
+                desc.attachments.color_formats.Add(Format::B8G8R8A8_UNorm);
+            }
         }
 
-        pipeline_ = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
+        mPipeline = GetGfxContextRef().CreateGraphicsPipeline(desc, nullptr);
         set_layouts_ = desc.descriptor_set_layouts;
     }
     else if (shader->IsCompute())
@@ -217,7 +235,7 @@ SharedMaterial::SharedMaterial(Shader *shader)
             VLOG_ERROR("无法填充ComputePipelineDesc");
             return;
         }
-        pipeline_ = GetGfxContextRef().CreateComputePipeline(my_desc);
+        mPipeline = GetGfxContextRef().CreateComputePipeline(my_desc);
         set_layouts_ = {my_desc.pipline_layout};
     }
 
@@ -226,6 +244,14 @@ SharedMaterial::SharedMaterial(Shader *shader)
     bool has_camera = false;
     bool has_light = false;
     shader->GetParams(params, has_camera, has_light);
+    for (auto &param : params)
+    {
+        if (param.type == ShaderParamType::PushConstant)
+        {
+            mPushConstant.Offset = param.offset;
+            mPushConstant.Size = param.size;
+        }
+    }
     // 2. 看情况更新永远binding = 0的摄像机数据的UniformBuffer
     has_camera_ = has_camera;
     has_lights_ = has_light;

@@ -126,7 +126,8 @@ int main()
             ResourceInitCreate( //
                 Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/PBR/PBRSphere.obj")), // Mesh
                 Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/PBR/PBRSphere_Albedo.jpg")), // Albedo,
-                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/IntegrateBRDF.slang")) // Albedo,
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/IntegrateBRDF.slang")), // Albedo,
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/ShadowPass.slang")) // Albedo,
                 );
 
 #if WITH_EDITOR
@@ -145,6 +146,8 @@ int main()
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<PBRRenderPipeline>());
 
         auto cam_holder = Scene::GetByRef().CreateActor<ACameraHolder>();
+        cam_holder->SetLocation({0, 0, 5.5});
+        cam_holder->SetScale({0.8, 0.8, 0.8});
         cam_holder->SetDisplayName("摄像机");
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
@@ -179,6 +182,13 @@ int main()
         PBRRenderPipelineSettingWindow *PBRWindow =
             reinterpret_cast<PBRRenderPipelineSettingWindow *>(RenderContext::GetBoundRenderPipeline()->GetSettingWindow());
         PBRWindow->SetMeshMaterial(ObjectMaterial);
+
+        auto MeshComp = Scene::GetByRef().CreateActor<Actor>()->AddComponent<StaticMeshComponent>();
+        MeshComp->GetOwner()->SetDisplayName("地板");
+        MeshComp->SetMesh(AssetDataBase::LoadFromPath<Mesh>("Assets/Mesh/Cube.fbx"));
+        MeshComp->SetMaterial(ObjectMaterial);
+        MeshComp->SetLocation(Vector3f(0, -13, 0));
+        MeshComp->SetScale({3, 0.1, 6});
 
         while (true)
         {

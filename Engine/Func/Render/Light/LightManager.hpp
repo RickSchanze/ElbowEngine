@@ -33,6 +33,7 @@ public:
     static void UpdateLight(PointLightComponent *point_light_component);
     static void RemoveLight(PointLightComponent *point_light_component);
     static RHI::Buffer* GetGlobalLightBuffer();
+    static Vector3f GetLightPositions(PointLightComponent * Index);
 
 private:
     Int8 FindNextAvailablePointLightIndex() const;

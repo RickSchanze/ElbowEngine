@@ -2,7 +2,7 @@ module Light;
 
 public struct PointLight {
     public float3 Location;
-    public float3 Color; 
+    public float3 Color;
 }
 
 public struct GlobalLights {

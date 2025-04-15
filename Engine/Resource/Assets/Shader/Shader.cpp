@@ -116,7 +116,7 @@ static ShaderParamType FindParamType(StringView path, StringView name, slang::Ty
         }
         if (shape == SlangResourceShape::SLANG_TEXTURE_CUBE)
         {
-            return ShaderParamType::Texture2D;
+            return ShaderParamType::CubeTexture2D;
         }
         else
         {
@@ -226,7 +226,7 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
     return true;
 }
 
-void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_lights)
+void Shader::GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &HasLights)
 {
     if (!IsLoaded())
     {
@@ -250,6 +250,17 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_ligh
         for (int i = 0; i < param_cnt; ++i)
         {
             const auto field_layout = type_layout_reflection->getFieldByIndex(i);
+            if (field_layout->getCategory() == slang::PushConstantBuffer)
+            {
+                ShaderParam Param{};
+                Param.binding = field_layout->getBindingIndex();
+                Param.size = field_layout->getTypeLayout()->getSize();
+                Param.offset = field_layout->getOffset();
+                Param.name = field_layout->getName();
+                Param.type = ShaderParamType::PushConstant;
+                OutParams.Add(Param);
+                continue;
+            }
             const auto field = global->getType()->getFieldByIndex(i);
             auto variable_binding = field_layout->getBindingIndex();
             auto category = field_layout->getCategory();
@@ -260,9 +271,9 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_ligh
             {
                 if (variable_kind == slang::TypeReflection::Kind::ConstantBuffer)
                 {
-                    FindAllConstantBufferParams(variable_type_layout, out, variable_binding, field_layout->getName(),
-                                                GetName(), field, has_camera,
-                                                has_lights);
+                    FindAllConstantBufferParams(variable_type_layout, OutParams, variable_binding, field_layout->getName(),
+                                                GetName(), field, HasCamera,
+                                                HasLights);
                 }
                 if (variable_kind == slang::TypeReflection::Kind::SamplerState)
                 {
@@ -271,7 +282,7 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_ligh
                     param.name = field_layout->getName();
                     param.type = ShaderParamType::SamplerState;
                     GetLabel(field, param.label);
-                    out.Add(param);
+                    OutParams.Add(param);
                 }
                 if (variable_kind == slang::TypeReflection::Kind::Resource)
                 {
@@ -286,7 +297,7 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_ligh
                     else
                     {
                         param.type = type;
-                        out.Add(param);
+                        OutParams.Add(param);
                     }
                 }
             }
@@ -294,7 +305,7 @@ void Shader::GetParams(Array<ShaderParam> &out, bool &has_camera, bool &has_ligh
     }
     if (!success)
     {
-        out.Clear();
+        OutParams.Clear();
         Log(Error) << "Shader::GetParams: 解析参数错误, 是否有非Texture和Sampler参数未被ConstantBuffer包围?";
     }
 }
@@ -499,7 +510,8 @@ static void FillInputLayout(GraphicsPipelineDesc &desc, uint32_t index)
     }
 }
 
-static Array<SharedPtr<DescriptorSetLayout> > GetShaderDescriptorSetLayout(const Shader *shader)
+// OutDesc用于填充PushConstant
+static Array<SharedPtr<DescriptorSetLayout> > GetShaderDescriptorSetLayout(const Shader *shader, PipelineDesc &OutDesc)
 {
     const auto &linked_program = shader->_GetLinkedProgram();
     auto prog_layout = linked_program->getLayout();
@@ -553,6 +565,16 @@ static Array<SharedPtr<DescriptorSetLayout> > GetShaderDescriptorSetLayout(const
                         binding.descriptor_type = DescriptorType::SampledImage;
                     }
                 }
+            }
+            if (field->getCategory() == slang::PushConstantBuffer)
+            {
+                PushConstantDesc Desc{};
+                Desc.Offset = field->getOffset();
+                // TODO: 先写死, 后面改
+                Desc.Size = sizeof(Matrix4x4f);
+                Desc.Stage = ShaderStageBits::Vertex;
+                OutDesc.PushConstants.Add(Desc);
+                continue;
             }
             layout_desc.bindings.Add(binding);
         }
@@ -623,7 +645,7 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     const auto &anno = GetAnnotations();
     const uint32_t input_layout_idx = anno[static_cast<Int32>(ShaderAnnotation::InputLayout)];
     FillInputLayout(pso_desc, input_layout_idx);
-    auto layout = GetShaderDescriptorSetLayout(this);
+    auto layout = GetShaderDescriptorSetLayout(this, pso_desc);
     if (anno[static_cast<Int32>(ShaderAnnotation::CullMode)] == 1)
     {
         pso_desc.rasterization.cull_mode = CullMode::Front;
@@ -647,7 +669,7 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     return true;
 }
 
-bool Shader::FillComputePSODescFromShader(RHI::ComputePipelineDesc &desc, bool output_glsl)
+bool Shader::FillComputePSODescFromShader(RHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl)
 {
     ProfileScope _(__func__);
     if (!IsLoaded())
@@ -669,9 +691,9 @@ bool Shader::FillComputePSODescFromShader(RHI::ComputePipelineDesc &desc, bool o
         Log(Error) << "shader is not compute";
         return false;
     }
-    auto layout = GetShaderDescriptorSetLayout(this);
-    desc.pipline_layout = layout[0];
-    desc.shader.shader = mShaderHandles[COMPUTE_STAGE_IDX].get();
-    desc.shader.stage = Compute;
+    auto layout = GetShaderDescriptorSetLayout(this, OutComputeDesc);
+    OutComputeDesc.pipline_layout = layout[0];
+    OutComputeDesc.shader.shader = mShaderHandles[COMPUTE_STAGE_IDX].get();
+    OutComputeDesc.shader.stage = Compute;
     return true;
 }

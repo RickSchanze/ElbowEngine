@@ -435,7 +435,7 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
             vk_imgs | range::view::Enumerate | range::view::Select([vulkan_ctx](const auto &pair) {
                 auto &desc = vulkan_ctx->swapchain_image_desc_;
                 const auto &[idx, img] = pair;
-                return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
+                return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
             }) |
             range::To<Array<Image_Vulkan *>>();
     vulkan_ctx->swapchain_image_views_ = //
@@ -881,12 +881,12 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    desc.depth_or_layers = 1;
-    desc.format = Format::B8G8R8A8_UNorm;
-    desc.height = size.X;
-    desc.width = size.Y;
-    desc.mip_levels = 1;
-    desc.initial_state = ImageLayout::Undefined;
+    desc.DepthOrLayers = 1;
+    desc.Format = Format::B8G8R8A8_UNorm;
+    desc.Height = size.X;
+    desc.Width = size.Y;
+    desc.MipLevels = 1;
+    desc.InitialState = ImageLayout::Undefined;
 
     QueueFamilyIndices indices = FindQueueFamilies(physical_device, surface);
     uint32_t queue_family_indices[] = {*indices.graphics_family, *indices.present_family};
@@ -956,7 +956,7 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height) {
             vk_imgs | range::view::Enumerate | range::view::Select([this](const auto &pair) {
                 auto &desc = swapchain_image_desc_;
                 const auto &[idx, img] = pair;
-                return New<Image_Vulkan>(img, idx, desc.width, desc.height, desc.format);
+                return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
             }) |
             range::To<Array<Image_Vulkan *>>();
     swapchain_image_views_ = //

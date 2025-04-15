@@ -5,19 +5,53 @@
 #include <array>
 #include "Core/TypeAlias.hpp"
 
-template<typename T, UInt64 I>
-struct StaticArray {
-    auto begin() { return data_.begin(); }
-    auto begin() const { return data_.begin(); }
-    auto end() { return data_.end(); }
-    auto end() const { return data_.end(); }
+template <typename T, UInt64 I>
+struct StaticArray
+{
+    auto begin()
+    {
+        return data_.begin();
+    }
 
-    T &operator[](UInt64 idx) { return data_[idx]; }
+    auto begin() const
+    {
+        return data_.begin();
+    }
 
-    const T &operator[](UInt64 idx) const { return data_[idx]; }
+    auto end()
+    {
+        return data_.end();
+    }
 
-    bool Contains(const T &v) const {
-        for (UInt64 i = 0; i < I; i++) {
+    auto end() const
+    {
+        return data_.end();
+    }
+
+    T &operator[](UInt64 idx)
+    {
+        return data_[idx];
+    }
+
+    StaticArray(const StaticArray &Other)
+    {
+        for (UInt64 i = 0; i < I; i++)
+        {
+            data_[i] = Other[i];
+        }
+    }
+
+    StaticArray() = default;
+
+    const T &operator[](UInt64 idx) const
+    {
+        return data_[idx];
+    }
+
+    bool Contains(const T &v) const
+    {
+        for (UInt64 i = 0; i < I; i++)
+        {
             if (v == data_[i])
                 return true;
         }

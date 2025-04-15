@@ -10,7 +10,7 @@ namespace RHI {
     class RenderPass;
     class GraphicsPipeline_Vulkan : public GraphicsPipeline {
     public:
-        GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &desc, const RenderPass *render_pass = nullptr);
+        GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &Desc, const RenderPass *render_pass = nullptr);
 
         ~GraphicsPipeline_Vulkan() override;
 
