@@ -16,7 +16,7 @@ void Actor::SetTransform(const Transform &transform) { transform_ = transform; }
 Vector3f Actor::GetWorldLocation() const { return GetLocation(); }
 
 void Actor::SetLocation(const Vector3f &location) {
-    transform_.location = location;
+    transform_.Location = location;
     SetTransformDirty();
 }
 
@@ -31,7 +31,7 @@ void Actor::SetRotation(const Vector3f &eluer) {
 }
 
 void Actor::SetScale(const Vector3f &scale) {
-    transform_.scale = scale;
+    transform_.Scale = scale;
     SetTransformDirty();
 }
 

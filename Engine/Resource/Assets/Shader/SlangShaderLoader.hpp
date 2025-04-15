@@ -12,7 +12,7 @@ static void ParseAnnotations(StringView path, Int32 (&output)[static_cast<Int32>
 
 class SlangShaderLoader {
 public:
-    static void Load(StringView path, OUT Shader &shader);
+    static void Load(StringView InPath, OUT Shader &InShader);
 
     static void DiagnosticsIfNeeded(const Slang::ComPtr<slang::IBlob> &diag);
 

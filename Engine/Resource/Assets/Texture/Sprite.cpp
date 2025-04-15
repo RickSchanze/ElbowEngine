@@ -63,13 +63,13 @@ Rect2Df Sprite::GetUVRange(const Texture2D *tex, const UInt64 id) {
     // https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas?newreg=0dbdf79fa0214a718ac7cd38488c56df
     auto rect = static_cast<Rect2Df>(tex->GetSpriteRange(id).range);
     rect.pos += 0.5;
-    rect.size.x -= 1;
-    rect.size.y -= 1;
+    rect.size.X -= 1;
+    rect.size.Y -= 1;
     const Float w = static_cast<Float>(tex->GetWidth());
     const Float h = static_cast<Float>(tex->GetHeight());
-    rect.pos.x /= w;
-    rect.pos.y /= h;
-    rect.size.x /= w;
-    rect.size.y /= h;
+    rect.pos.X /= w;
+    rect.pos.Y /= h;
+    rect.size.X /= w;
+    rect.size.Y /= h;
     return rect;
 }

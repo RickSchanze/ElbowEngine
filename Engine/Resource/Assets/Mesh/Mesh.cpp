@@ -21,10 +21,7 @@ using namespace RHI;
 static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out, Float scale) {
     ProfileScope _(__func__);
     Assimp::Importer importer;
-    uint32_t import_flag = aiProcess_CalcTangentSpace | aiProcess_FlipUVs; // FlipUVs处理图行API差异
-    if (meta.GetTriangulate()) {
-        import_flag |= aiProcess_Triangulate;
-    }
+    uint32_t import_flag = aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate; // FlipUVs处理图行API差异
     if (meta.GetGenerateNormals()) {
         import_flag |= aiProcess_GenNormals;
     }
@@ -56,14 +53,11 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
         const aiVector3D &nor = mesh->mNormals[i];
         const aiVector3D &tex = mesh->mTextureCoords[0][i];
         const aiVector3D &tangent = mesh->mTangents[i];
-        const aiVector3D &bitangent = mesh->mBitangents[i];
         vertices.Add(Vertex1{
                 Vector3f{pos.x, pos.y, pos.z} * scale,
                 {nor.x, nor.y, nor.z},
                 {tex.x, tex.y},
                 {tangent.x, tangent.y, tangent.z},
-                {bitangent.x, bitangent.y, bitangent.z},
-
         });
     }
     for (UInt32 i = 0; i < mesh->mNumFaces; ++i) {
@@ -72,8 +66,7 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
             indices.Add(face.mIndices[j]);
         }
     }
-    auto &ctx = GetGfxContextRef();
-    {
+    auto &ctx = GetGfxContextRef(); {
         // vertex buffer
         size_t vertex_buffer_size = vertices.Count() * sizeof(Vertex1);
         BufferDesc vertex_buffer_info{vertex_buffer_size, BUB_VertexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
@@ -81,8 +74,7 @@ static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorag
         String name = String::Format("VertexBuffer_{}", *path);
         out->vertex_buffer = ctx.CreateBuffer(vertex_buffer_info, name);
         GfxCommandHelper::CopyDataToBuffer(vertices.Data(), out->vertex_buffer.get(), vertex_buffer_size, 0);
-    }
-    {
+    } {
         // index buffer
         size_t index_buffer_size = indices.Count() * sizeof(UInt32);
         BufferDesc index_buffer_info{index_buffer_size, BUB_IndexBuffer | BUB_TransferDst, BMPB_DeviceLocal};
@@ -101,13 +93,13 @@ void Mesh::PerformLoad() {
         Log(Error) << String::Format("加载失败, handle = {}", GetHandle());
         return;
     }
-    meta_ = *op_meta;
-    auto file_path = meta_.GetPath();
+    mMate = *op_meta;
+    auto file_path = mMate.GetPath();
     if (!Path::IsExist(file_path)) {
         Log(Error) << String::Format("加载失败, 文件不存在, path = {}", *file_path);
         return;
     }
-    loaded_ = LoadMesh(file_path, meta_, storage_, meta_.ImportScale);
+    mLoaded = LoadMesh(file_path, mMate, storage_, mMate.ImportScale);
 }
 
 UInt32 Mesh::GetIndexCount() const {
@@ -116,22 +108,23 @@ UInt32 Mesh::GetIndexCount() const {
     }
     return 0;
 }
+
 SharedPtr<RHI::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
 SharedPtr<RHI::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
 
 void Mesh::Save() {
     ProfileScope _(__func__);
     Super::Save();
-    if (auto op_meta = AssetDataBase::QueryMeta<MeshMeta>(String::Format("path = '{}'", *GetAssetPath()))) {
-        AssetDataBase::UpdateMeta(meta_);
+    if (auto op_meta = AssetDataBase::QueryMeta<MeshMeta>(String::Format("Path = '{}'", *GetAssetPath()))) {
+        AssetDataBase::UpdateMeta(mMate);
     } else {
-        VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " path = ", *GetAssetPath());
+        VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " Path = ", *GetAssetPath());
     }
 }
 
 void Mesh::SetImportScale(float scale) {
     ProfileScope _(__func__);
-    meta_.ImportScale = scale;
+    mMate.ImportScale = scale;
     SetNeedSave();
-    loaded_ = LoadMesh(meta_.Path, meta_, storage_, meta_.ImportScale);
+    mLoaded = LoadMesh(mMate.Path, mMate, storage_, mMate.ImportScale);
 }

@@ -26,7 +26,7 @@ Color Math::RandomColor(Color lower, Color upper) {
 Quaternionf Math::FindLookAtRotation(Vector3f pos, Vector3f target) {
     glm::vec3 ref{0, 0, 1};
     Vector3f dir = target - pos;
-    glm::vec3 glm_dir = {dir.x, dir.y, dir.z};
+    glm::vec3 glm_dir = {dir.X, dir.Y, dir.Z};
     glm_dir = -glm::normalize(glm_dir);
     glm::vec3 axis = glm::cross(ref, glm_dir);
     if (glm::length(axis) < 1e-6) {

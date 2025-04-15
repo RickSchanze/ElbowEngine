@@ -15,11 +15,11 @@ class Window : public Object {
     REFLECTED_CLASS(Window)
 public:
     virtual StringView GetWindowIdentity();
-    bool IsVisible() const { return visible_; }
-    void SetVisible(bool visible) { visible_ = visible; }
+    bool IsVisible() const { return mVisible; }
+    void SetVisible(bool visible) { mVisible = visible; }
 
 protected:
-    bool visible_ = true;
+    bool mVisible = true;
 };
 
 REGISTER_TYPE(Window)

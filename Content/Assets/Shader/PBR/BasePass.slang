@@ -11,120 +11,103 @@ import "GGX";
 import "Common/Math";
 
 struct PBRFloatParam {
-    float metallic;
-    float roughness;
-    float ao;
+    float Metallic;
+    float Roughness;
+    float AO;
 }
 
-struct MatrixParam {
-    float4x4 NormalMatrix;
-}
 
-uniform ConstantBuffer<Camera> camera;
-uniform ConstantBuffer<GlobalLights> dynamic_lights;
+uniform ConstantBuffer<Camera> uCamera;
+uniform ConstantBuffer<GlobalLights> uDynamicLights;
 
-uniform ConstantBuffer<PBRFloatParam> float_param;
-uniform ConstantBuffer<MatrixParam> InMatrixParam;
+uniform ConstantBuffer<PBRFloatParam> InFloatParams;
 
-uniform Texture2D tex;
-uniform Texture2D<float> tex_metallic;
-uniform Texture2D<float> tex_roughness;
-uniform Texture2D<float> tex_ao;
+uniform Texture2D<float3> Tex_Albedo;
+uniform Texture2D<float> Tex_Metallic;
+uniform Texture2D<float> Tex_Roughness;
+uniform Texture2D<float> Tex_AO;
 uniform Texture2D<float3> Tex_Normal;
 uniform Texture2D<float3> Tex_Irradiance;
 uniform Texture2D<float3> Tex_Prefiltered;
 uniform Texture2D<float2> Tex_BRDFLUT;
-uniform SamplerState common_sampler;
+uniform SamplerState LinearSampler;
 
 struct VertexOutput {
-    float4 position : SV_Position;
-    float3 normal;
-    float3 tagent;
-    float3 bitangent;
-    float3 world_position;
-    float2 uv : TEXCOORD0;
+    float4 Position : SV_Position;
+    float3 Normal;
+    float3 WorldPosition;
+    float2 UV0 : TEXCOORD0;
 }
 
 struct FragOutput {
-    float4 color: SV_Target;
+    float4 Color: SV_Target;
 }
 
 [shader("vertex")]
-VertexOutput vert(Vertex vert) {
-    VertexOutput output;
-    float4 pos_vec4 = float4(vert.position, 1);
-    float4x4 model = vert.GetModelFloat4x4();
-    float4 world_pos = mul(pos_vec4, model);
-    float3x3 model_3x3 = float3x3(model);
+VertexOutput Vertex(Vertex Input) {
+    VertexOutput Output;
+    float4 Position = float4(Input.Position, 1);
+    float4x4 Model = Input.GetModelFloat4x4();
+    float3 WorldPosition = mul(Position, Model).xyz;
 
-    output.position = mul(world_pos, camera.GetView());
-    output.position = mul(output.position, camera.GetProjection());
-    output.uv = vert.uv0;
-    output.world_position = world_pos.xyz;
-    output.tagent = vert.tangent;
-    output.bitangent = vert.bitangent;
-
-    float3 T = mul(vert.tangent, model_3x3);
-    float3 B = mul(vert.bitangent, model_3x3);
-    float3 N = mul(vert.normal, model_3x3);
-    float3x3 TBN = float3x3(T.x, B.x, N.x, T.y, B.y, N.y, T.z, B.z, N.z);
-    float3 TangentNormal = Tex_Normal.SampleLevel(common_sampler, vert.uv0, 0);
-    output.normal = normalize(mul(TangentNormal, TBN));
-    return output;
+    Output.Position = mul(mul(mul(Position, Model), uCamera.GetView()), uCamera.GetProjection());
+    Output.UV0 = Input.UV0;
+    Output.Normal = mul(Input.Normal, float3x3(Model)).xyz;
+    Output.WorldPosition = WorldPosition;
+    return Output;
 }
 
 [shader("fragment")]
-FragOutput frag(VertexOutput input) {
-    float3 camera_world_pos = camera.GetLocation();
-    float3 N = input.normal;
-    float3 world_pos = input.world_position;
-    float3 V = normalize(camera_world_pos - input.world_position);
-    float3 R = reflect(-V, N);
-    FragOutput output;
+FragOutput Fragment(VertexOutput Input) {
+    FragOutput Output;
 
-    float3 albedo = tex.Sample(common_sampler, input.uv).xyz;
-    float Metallic = float_param.metallic * tex_metallic.Sample(common_sampler, input.uv);
-    float Roughness = float_param.roughness * tex_roughness.Sample(common_sampler, input.uv);
-    float AO = float_param.ao * tex_ao.Sample(common_sampler, input.uv);
-    float3 F0 = GetFresnelF0(albedo.xyz, Metallic);
-    
-    float3 L_0 = float3(0); // 渲染方程输出
-    for (int i = 0; i < dynamic_lights.point_light_count; i++)
-    {
-        float3 L = normalize(dynamic_lights.point_light[i].location - world_pos);
-        float Distance = length(dynamic_lights.point_light[i].location - world_pos);
-        float Distance2 = Distance * Distance + 0.0001;
-        float3 H = normalize(V + L);
-        float NdotV = clamp(dot(N, V), 0.0, 1.0);
-        float NdotL = clamp(dot(N, L), 0.0, 1.0);
-        float LdotH = clamp(dot(L, H), 0, 1);
-        float NdotH = clamp(dot(N, H), 0, 1);
-        float3 light_color = dynamic_lights.point_light[i].color * 10 / Distance2;
-        if (NdotL > 0.0) {
-            float D = GGX_TrowbridgeReitz(NdotH, Roughness);
-            float G = GGX_GeometrySmith(NdotV, NdotL, Roughness);
-            float3 F = FresnelSchlick(float3(0.04), NdotV);
-            float3 numerator = D * G * F;
-            float3 denominator = 4 * NdotL * NdotV + 0.00001;
-            float3 specular = numerator / denominator;
-            float3 kS = F;
-            float3 kD = float3(1) - kS;
-            kD *= 1 - Metallic;
-            L_0 += (kD * albedo / PI + specular) * light_color * NdotL; 
-        }
+    float3 N = normalize(Input.Normal);
+    float3 V = normalize(uCamera.GetLocation() - Input.WorldPosition);
+    float3 R = reflect(-V, N);
+    float NdotV = clamp(dot(N, V), 0, 1);
+    float Roughess = Tex_Roughness.Sample(LinearSampler, Input.UV0) * InFloatParams.Roughness;
+    float Metallic = Tex_Metallic.Sample(LinearSampler, Input.UV0) * InFloatParams.Metallic;
+    float3 Albedo = Tex_Albedo.Sample(LinearSampler, Input.UV0);
+    float3 L0 = float3(0.0);
+    for (int I = 0; I < uDynamicLights.PointLightsCount; I++) {
+        float3 L = normalize(uDynamicLights.PointLights[I].Location - Input.WorldPosition);
+        float3 H = normalize(L + V);
+        float Distance = length(uDynamicLights.PointLights[I].Location - Input.WorldPosition);
+        float Attenuation = 1 / (Distance * Distance);
+        float3 Radiance = uDynamicLights.PointLights[I].Color * Attenuation;
+
+        float NdotH = max(0, dot(N, H));
+        float HdotV = clamp(dot(H, V), 0, 1);
+        float NdotL = clamp(dot(N, L), 0, 1);
+
+        float D = GGX_Distribution(NdotH, Roughess);
+        float3 F = FresnelSchlick(HdotV);
+        float G = GGX_GeometrySmith(NdotV, NdotH, Roughess);
+
+        float3 Numerator = D * F * G;
+        float Denominator = 4 * NdotV * NdotL + 0.0001;
+        float3 Specular = Numerator / Denominator;
+
+        float3 Ks = F;
+        float3 Kd = float3(1) - Ks;
+        Kd *= 1 - Metallic;
+        L0 += (Kd * Albedo / PI + Specular) * Radiance * NdotL;
     }
-    // 计算环境光
-    float3 F = FresnelSchlickRoughess(max(dot(N, V), 0.0), F0, Roughness);
+    float3 F = FresnelSchlickRoughess(NdotV, Roughess);
     float3 Ks = F;
     float3 Kd = 1 - Ks;
     Kd *= 1 - Metallic;
-    float3 Irradiance = Tex_Irradiance.Sample(common_sampler, input.uv);
-    float3 Diffuse = Irradiance * albedo.xyz;
-    const static float MAX_REFLECTION_LOD = 4.0;
-    float3 PrefilteredColor = Tex_Prefiltered.SampleLevel(common_sampler, GetUVFromDirection(R), Roughness * MAX_REFLECTION_LOD);
-    float2 EnvBRDF = Tex_BRDFLUT.Sample(common_sampler, float2(max(dot(N, V), 0.0), Roughness));
-    float3 Specular = PrefilteredColor * (F * EnvBRDF.x + EnvBRDF.y);
+    float3 Irradiance = Tex_Irradiance.Sample(LinearSampler, Input.UV0);
+    float AO = Tex_AO.Sample(LinearSampler, Input.UV0) * InFloatParams.AO;
+    float3 Diffuse = Irradiance * Albedo;
+
+    const float MAX_REFLECTION_LOD = 4.0;
+    float3 PrefilteredColor = Tex_Prefiltered.SampleLevel(LinearSampler, GetUVFromDirection(R), Roughess * MAX_REFLECTION_LOD).rgb;
+    float2 BRDF = Tex_BRDFLUT.Sample(LinearSampler, float2(NdotV, Roughess));
+    float3 Specular = PrefilteredColor * (F * BRDF.x + BRDF.y);
+
     float3 Ambient = (Kd * Diffuse + Specular) * AO;
-    output.color = float4(L_0 + Ambient, 1);
-    return output;
+    float3 Color = L0 + Ambient;
+    Output.Color = float4(Color, 1.0);
+    return Output;
 }

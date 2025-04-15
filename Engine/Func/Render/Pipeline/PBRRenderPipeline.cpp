@@ -36,7 +36,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     if (has_active_viewport) {
         Vector2f active_viewport_size = UIManager::GetActiveViewportWindow()->GetSize();
         if (!sdr_color_ || active_viewport_size != sdr_color_->GetSize()) {
-            OnWindowResized(nullptr, active_viewport_size.x, active_viewport_size.y);
+            OnWindowResized(nullptr, active_viewport_size.X, active_viewport_size.Y);
         }
     }
 
@@ -84,7 +84,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
                                      PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
             Rect2Df rect{};
             rect.size = UIManager::GetActiveViewportWindow()->GetSize();
-            if (rect.size.x != 0 && rect.size.y != 0) {
+            if (rect.size.X != 0 && rect.size.Y != 0) {
                 cmd.BeginDebugLabel("ColorTransformPass");
                 cmd.SetViewport(rect);
                 cmd.SetScissor(rect);
@@ -257,9 +257,9 @@ void PBRRenderPipeline::OnWindowResized(PlatformWindow *window, Int32 width, Int
         return;
     }
     GetGfxContextRef().WaitForQueueExecution(QueueFamilyType::Graphics);
-    depth_target_->Resize(viewport_size.x, viewport_size.y);
-    hdr_color_->Resize(viewport_size.x, viewport_size.y);
+    depth_target_->Resize(viewport_size.X, viewport_size.Y);
+    hdr_color_->Resize(viewport_size.X, viewport_size.Y);
     hdr_color_->BindToMaterial("tex", color_transform_pass_material_);
-    sdr_color_->Resize(viewport_size.x, viewport_size.y);
+    sdr_color_->Resize(viewport_size.X, viewport_size.Y);
     UIManager::GetActiveViewportWindow()->BindRenderTexture(sdr_color_.get());
 }

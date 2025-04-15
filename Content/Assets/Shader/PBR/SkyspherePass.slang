@@ -23,8 +23,8 @@ struct FragOutput {
 }
 
 [shader("vertex")]
-VertOutput vert(Vertex vert) {
-    float4 vert_pos = float4(vert.position, 1);
+VertOutput Vertex(Vertex vert) {
+    float4 vert_pos = float4(vert.Position, 1);
     float3 cam_loc = camera.GetLocation();
     float4x4 model = {
         1, 0, 0, 0,
@@ -37,12 +37,12 @@ VertOutput vert(Vertex vert) {
     outpos.z = outpos.w;
     VertOutput output;
     output.position = outpos;
-    output.ray_dir = vert.position;
+    output.ray_dir = vert.Position;
     return output;
 }
 
 [shader("fragment")]
-FragOutput frag(VertOutput vert_in) {
+FragOutput Fragment(VertOutput vert_in) {
     float2 uv = GetUVFromDirection(vert_in.ray_dir);
     FragOutput output;
     output.color = skybox_texture.SampleLevel(common_sampler, uv, 1);

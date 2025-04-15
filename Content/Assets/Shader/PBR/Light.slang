@@ -1,11 +1,11 @@
 module Light;
 
 public struct PointLight {
-    public float3 location;
-    public float3 color; 
+    public float3 Location;
+    public float3 Color; 
 }
 
 public struct GlobalLights {
-    public PointLight point_light[8];
-    public int point_light_count;
+    public PointLight PointLights[8];
+    public int PointLightsCount;
 }

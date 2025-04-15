@@ -8,9 +8,12 @@
 #include "IResource.hpp"
 
 namespace RHI {
-    class Pipeline : public IResource {};
+    class Pipeline : public IResource {
+    };
+
     class DescriptorSetLayout;
     class LowShader;
+
     struct RasterizationDecs {
         bool enable_depth_clamp = false;
         bool enable_discard_rasterizer = false;
@@ -45,16 +48,16 @@ namespace RHI {
     };
 
     struct VertexInputDesc {
-        UInt32 binding{};
-        UInt32 stride{};
-        VertexInputRate rate = VertexInputRate::Vertex;
+        UInt32 Binding{};
+        UInt32 Stride{};
+        VertexInputRate Rate = VertexInputRate::Vertex;
     };
 
     struct VertexAttributeDesc {
-        UInt32 location;
-        UInt32 binding;
-        Format format;
-        UInt32 offset;
+        UInt32 Location;
+        UInt32 Binding;
+        Format Format;
+        UInt32 Offset;
     };
 
     struct MultiSampleDesc {
@@ -98,15 +101,18 @@ namespace RHI {
         // vulkan: dynamic_rendering启用时使用此
         // 否则使用render pass指定的attachment
         AttachmentsDesc attachments{};
-        Array<SharedPtr<DescriptorSetLayout>> descriptor_set_layouts{};
+        Array<SharedPtr<DescriptorSetLayout> > descriptor_set_layouts{};
     };
 
 
-    class GraphicsPipeline : public Pipeline {};
+    class GraphicsPipeline : public Pipeline {
+    };
 
     struct ComputePipelineDesc {
         ShaderDesc shader{};
         SharedPtr<DescriptorSetLayout> pipline_layout{};
     };
-    class ComputePipeline : public Pipeline {};
+
+    class ComputePipeline : public Pipeline {
+    };
 } // namespace rhi

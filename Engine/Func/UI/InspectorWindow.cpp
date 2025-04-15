@@ -13,7 +13,7 @@ IMPL_REFLECTED(InspectorWindow) { return Type::Create<InspectorWindow>("Inspecto
 void InspectorWindow::Draw() {
     static bool a = true;
     static float b[3];
-    if (ImGuiDrawer::Begin("Inspector", &visible_)) {
+    if (ImGuiDrawer::Begin("Inspector", &mVisible)) {
         ImGui::BeginTable("##Actors", 1);
         ImGui::TableNextRow();
         ImGui::TableNextColumn();

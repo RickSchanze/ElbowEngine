@@ -28,6 +28,14 @@ void PBRRenderPipelineSettingWindow::Draw() {
         if (mBRDFMap) {
             ImGuiDrawer::Image(mBRDFMap, Vector2f{200, 200});
         }
+        ImGui::DragFloat("粗糙度", &mRoughness, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("金属度", &mMetallic, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("AO", &mAO, 0.01f, 0.0f, 1.0f);
+        ThreadManager::ScheduleFutureAsync(exec::Just() | exec::Then([this]() {
+            mMeshMat->SetFloat("InFloatParams.Roughness", mRoughness);
+            mMeshMat->SetFloat("InFloatParams.Metallic", mMetallic);
+            mMeshMat->SetFloat("InFloatParams.AO", mAO);
+        }), NamedThread::Game);
     }
     ImGui::End();
 }

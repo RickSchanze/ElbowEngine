@@ -11,10 +11,10 @@ class SceneComponent : public Component {
 
 public:
     const Transform &GetTransform() const { return transform_; }
-    const Transform &GetWorldTransform() const { return world_transform_; }
+    const Transform &GetWorldTransform() const { return mWorldTransform; }
     void SetTransform(const Transform &transform);
 
-    Vector3f GetLocation() const { return transform_.location; }
+    Vector3f GetLocation() const { return transform_.Location; }
     Vector3f GetWorldLocation() const;
     void SetLocation(const Vector3f &location);
 
@@ -25,7 +25,7 @@ public:
     void SetRotation(const Quaternionf &rotation);
     void SetRotation(const Vector3f& eluer);
 
-    Vector3f GetScale() const { return world_transform_.scale; }
+    Vector3f GetScale() const { return mWorldTransform.Scale; }
     void SetScale(const Vector3f &scale);
 
     virtual void UpdateTransform(const Transform &parent_transform);
@@ -38,7 +38,7 @@ public:
 protected:
     REFLECTED()
     Transform transform_;
-    Transform world_transform_;
+    Transform mWorldTransform;
 
     bool transform_dirty_ = true;
 };

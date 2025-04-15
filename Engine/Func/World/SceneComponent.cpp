@@ -13,18 +13,18 @@ IMPL_REFLECTED(SceneComponent) {
 
 void SceneComponent::SetTransform(const Transform &transform) { transform_ = transform; }
 
-Vector3f SceneComponent::GetWorldLocation() const { return world_transform_.location; }
+Vector3f SceneComponent::GetWorldLocation() const { return mWorldTransform.Location; }
 
 void SceneComponent::SetLocation(const Vector3f &location) {
-    transform_.location = location;
+    transform_.Location = location;
     SetTransformDirty();
 }
 
-Quaternionf SceneComponent::GetWorldRotationQuaterion() const { return world_transform_.GetRotationQuaterion(); }
+Quaternionf SceneComponent::GetWorldRotationQuaterion() const { return mWorldTransform.GetRotationQuaterion(); }
 
 Quaternionf SceneComponent::GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
 
-Vector3f SceneComponent::GetWorldRotation() const { return world_transform_.GetRotationEuler(); }
+Vector3f SceneComponent::GetWorldRotation() const { return mWorldTransform.GetRotationEuler(); }
 
 Vector3f SceneComponent::GetRotation() const { return transform_.GetRotationEuler(); }
 
@@ -39,7 +39,7 @@ void SceneComponent::SetRotation(const Vector3f &eluer) {
 }
 
 void SceneComponent::SetScale(const Vector3f &scale) {
-    transform_.scale = scale;
+    transform_.Scale = scale;
     SetTransformDirty();
 }
 
@@ -50,9 +50,9 @@ void SceneComponent::Rotate(Vector3f eluer_degree) {
 
 void SceneComponent::UpdateTransform(const Transform &parent_transform) {
     SetTransformDirty(false);
-    world_transform_.location = transform_.location + parent_transform.location;
-    world_transform_.scale = transform_.scale * parent_transform.scale;
+    mWorldTransform.Location = transform_.Location + parent_transform.Location;
+    mWorldTransform.Scale = transform_.Scale * parent_transform.Scale;
     glm::quat parent_q = parent_transform.GetRotationQuaterion();
     glm::quat now_q = transform_.GetRotationQuaterion();
-    world_transform_.SetRotation(parent_q * now_q);
+    mWorldTransform.SetRotation(parent_q * now_q);
 }

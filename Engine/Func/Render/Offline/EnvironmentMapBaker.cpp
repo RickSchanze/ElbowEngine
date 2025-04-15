@@ -22,7 +22,7 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
         VLOG_ERROR("烘焙失败!输入环境贴图为空");
         return nullptr;
     }
-    if (output_size.x == 0 || output_size.y == 0) {
+    if (output_size.X == 0 || output_size.Y == 0) {
         VLOG_ERROR("烘焙失败!输出贴图大小为0");
         return nullptr;
     }
@@ -33,8 +33,8 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
     Texture2DMeta irradiance_map_meta;
     irradiance_map_meta.IsDynamic = true;
     irradiance_map_meta.Format = environment_sphere->GetFormat();
-    irradiance_map_meta.Height = output_size.y;
-    irradiance_map_meta.Width = output_size.x;
+    irradiance_map_meta.Height = output_size.Y;
+    irradiance_map_meta.Width = output_size.X;
     Texture2D *irradiance_map = ObjectManager::CreateNewObject<Texture2D>();
     irradiance_map->Load(irradiance_map_meta);
     irradiance_map->SetName("IrradianceMap");

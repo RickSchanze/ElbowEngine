@@ -22,7 +22,7 @@ public float2 GetUVFromDirection(float3 dir) {
     float phi = atan2(dir.z, dir.x) + PI;
     float theta = acos(dir.y);
     float2 uv;
-    uv.x = phi / (2.f * PI);
+    uv.x = 1 - phi / (2.f * PI);
     uv.y = theta / PI;
     return uv;
 }

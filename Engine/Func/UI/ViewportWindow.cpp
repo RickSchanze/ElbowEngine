@@ -11,12 +11,20 @@
 #include "ImGuiDrawer.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 
-IMPL_REFLECTED(ViewportWindow) { return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
+IMPL_REFLECTED(ViewportWindow)
+{
+    return Type::Create<ViewportWindow>("ViewportWindow") | refl_helper::AddParents<ImGuiDrawWindow>();
+}
 
-ViewportWindow::ViewportWindow() { bound_camera_ = Camera::GetByRef().GetActive(); }
+ViewportWindow::ViewportWindow()
+{
+    mBoundCamera = Camera::GetByRef().GetActive();
+}
 
-void ViewportWindow::Draw() {
-    if (ImGuiDrawer::Begin("视口", &visible_)) {
+void ViewportWindow::Draw()
+{
+    if (ImGuiDrawer::Begin("视口", &mVisible))
+    {
         // 获取窗口的屏幕坐标原点（包括标题栏和边框）
         ImVec2 window_pos = ImGui::GetWindowPos();
 
@@ -34,34 +42,71 @@ void ViewportWindow::Draw() {
         // size变化了则绑定camera的viewport
         Vector2f pos = content_pos | ToVector2f;
         Vector2f size = content_size | ToVector2f;
-        if (size != size_) {
+        if (size != size_)
+        {
             // 重新计算摄像机的aspect_ratio和viewport
-            if (!bound_camera_) {
-                bound_camera_ = Camera::GetByRef().GetActive();
+            if (!mBoundCamera)
+            {
+                mBoundCamera = Camera::GetByRef().GetActive();
             }
-            if (!bound_camera_) {
+            if (!mBoundCamera)
+            {
                 VLOG_ERROR("Viewport没有绑定摄像机");
-            } else {
-                bound_camera_->SetAspectRatio(size.x / size.y);
+            }
+            else
+            {
+                mBoundCamera->SetAspectRatio(size.X / size.Y);
             }
         }
         size_ = size;
         pos_ = pos;
-        if (bound_render_texture_) {
+        if (bound_render_texture_)
+        {
             ImGuiDrawer::Image(*bound_render_texture_, size_);
+        }
+        // TODO: 临时措施
+        if (ImGui::IsWindowFocused())
+        {
+            if (ImGui::IsKeyDown(ImGuiKey_W))
+            {
+                mBoundCamera->SetLocation(mBoundCamera->GetLocation() + 0.1f);
+            }
+            if (ImGui::IsKeyDown(ImGuiKey_S))
+            {
+                mBoundCamera->SetLocation(mBoundCamera->GetLocation() + -0.1f);
+            }
+            if (ImGui::IsKeyDown(ImGuiKey_A))
+            {
+                mBoundCamera->SetLocation(mBoundCamera->GetLocation() + 0.1f);
+            }
+            if (ImGui::IsKeyDown(ImGuiKey_D))
+            {
+                mBoundCamera->SetLocation(mBoundCamera->GetLocation() + -0.1f);
+            }
+            if (ImGui::IsKeyDown(ImGuiKey_MouseLeft))
+            {
+                Vector3f Eluer{};
+                auto &IO = ImGui::GetIO();
+                Eluer.X = IO.MouseDelta.y;
+                Eluer.Y = IO.MouseDelta.x;
+                mBoundCamera->Rotate(Eluer);
+            }
         }
     }
     ImGui::End();
 }
 
-void ViewportWindow::BindCamera(CameraComponent *camera) {
-    if (camera == nullptr) {
+void ViewportWindow::BindCamera(CameraComponent *InCamera)
+{
+    if (InCamera == nullptr)
+    {
         return;
     }
-    bound_camera_ = camera;
+    mBoundCamera = InCamera;
 }
 
-void ViewportWindow::BindRenderTexture(RenderTexture *tex) {
+void ViewportWindow::BindRenderTexture(RenderTexture *tex)
+{
     if (tex == nullptr)
         return;
     if (tex == bound_render_texture_)

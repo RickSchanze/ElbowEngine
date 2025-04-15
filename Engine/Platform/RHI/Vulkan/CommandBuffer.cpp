@@ -146,8 +146,8 @@ static void ExecuteCmdBeginRender(const VkCommandBuffer &cmd, Cmd_BeginRender *c
     VkRenderingInfo render_info = {};
     render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
     render_info.renderArea.offset = {0, 0};
-    render_info.renderArea.extent = {static_cast<UInt32>(cmd_begin_render_pass->render_size.x),
-                                     static_cast<UInt32>(cmd_begin_render_pass->render_size.y)};
+    render_info.renderArea.extent = {static_cast<UInt32>(cmd_begin_render_pass->render_size.X),
+                                     static_cast<UInt32>(cmd_begin_render_pass->render_size.Y)};
     render_info.layerCount = 1;
     render_info.colorAttachmentCount = static_cast<uint32_t>(colors.Count());
     render_info.pColorAttachments = colors.Data();
@@ -190,10 +190,10 @@ static void ExecuteCmdSetScissor(const VkCommandBuffer cmd, const Cmd_SetScissor
         return;
     }
     VkRect2D scissor = {};
-    scissor.offset.x = cmd_set_scissor->scissor.pos.x;
-    scissor.offset.y = cmd_set_scissor->scissor.pos.y;
-    scissor.extent.width = cmd_set_scissor->scissor.size.x;
-    scissor.extent.height = cmd_set_scissor->scissor.size.y;
+    scissor.offset.x = cmd_set_scissor->scissor.pos.X;
+    scissor.offset.y = cmd_set_scissor->scissor.pos.Y;
+    scissor.extent.width = cmd_set_scissor->scissor.size.X;
+    scissor.extent.height = cmd_set_scissor->scissor.size.Y;
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
@@ -203,10 +203,10 @@ static void ExecuteCmdSetViewport(const VkCommandBuffer cmd, const Cmd_SetViewpo
         return;
     }
     VkViewport viewport = {};
-    viewport.x = cmd_set_viewport->viewport.pos.x;
-    viewport.y = cmd_set_viewport->viewport.pos.y;
-    viewport.width = cmd_set_viewport->viewport.size.x;
-    viewport.height = cmd_set_viewport->viewport.size.y;
+    viewport.x = cmd_set_viewport->viewport.pos.X;
+    viewport.y = cmd_set_viewport->viewport.pos.Y;
+    viewport.width = cmd_set_viewport->viewport.size.X;
+    viewport.height = cmd_set_viewport->viewport.size.Y;
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
     vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -226,11 +226,11 @@ static void ExecuteCmdCopyBufferToImage(const VkCommandBuffer cmd, const Cmd_Cop
     copy_region.imageSubresource.mipLevel = cmd_copy_buffer_to_image->subresource_range.base_mip_level;
     copy_region.imageSubresource.baseArrayLayer = cmd_copy_buffer_to_image->subresource_range.base_array_layer;
     copy_region.imageSubresource.layerCount = cmd_copy_buffer_to_image->subresource_range.layer_count;
-    copy_region.imageOffset = {cmd_copy_buffer_to_image->offset.x, cmd_copy_buffer_to_image->offset.y, cmd_copy_buffer_to_image->offset.z};
+    copy_region.imageOffset = {cmd_copy_buffer_to_image->offset.X, cmd_copy_buffer_to_image->offset.Y, cmd_copy_buffer_to_image->offset.Z};
     VkExtent3D extent{};
-    extent.width = cmd_copy_buffer_to_image->size.x;
-    extent.height = cmd_copy_buffer_to_image->size.y;
-    extent.depth = cmd_copy_buffer_to_image->size.z;
+    extent.width = cmd_copy_buffer_to_image->size.X;
+    extent.height = cmd_copy_buffer_to_image->size.Y;
+    extent.depth = cmd_copy_buffer_to_image->size.Z;
     copy_region.imageExtent = extent;
     const auto src = cmd_copy_buffer_to_image->src->GetNativeHandleT<VkBuffer>();
     const auto dst = cmd_copy_buffer_to_image->dst->GetNativeHandleT<VkImage>();
@@ -251,11 +251,11 @@ static void ExecuteCmdCopyImageToBuffer(const VkCommandBuffer cmd, const Cmd_Cop
     copy_region.imageSubresource.mipLevel = cmd_copy_image_to_buffer->subresource_range.base_mip_level;
     copy_region.imageSubresource.baseArrayLayer = cmd_copy_image_to_buffer->subresource_range.base_array_layer;
     copy_region.imageSubresource.layerCount = cmd_copy_image_to_buffer->subresource_range.layer_count;
-    copy_region.imageOffset = {cmd_copy_image_to_buffer->offset.x, cmd_copy_image_to_buffer->offset.y, cmd_copy_image_to_buffer->offset.z};
+    copy_region.imageOffset = {cmd_copy_image_to_buffer->offset.X, cmd_copy_image_to_buffer->offset.Y, cmd_copy_image_to_buffer->offset.Z};
     VkExtent3D extent{};
-    extent.width = cmd_copy_image_to_buffer->size.x;
-    extent.height = cmd_copy_image_to_buffer->size.y;
-    extent.depth = cmd_copy_image_to_buffer->size.z;
+    extent.width = cmd_copy_image_to_buffer->size.X;
+    extent.height = cmd_copy_image_to_buffer->size.Y;
+    extent.depth = cmd_copy_image_to_buffer->size.Z;
     copy_region.imageExtent = extent;
     const auto src = cmd_copy_image_to_buffer->src->GetNativeHandleT<VkImage>();
     const auto dst = cmd_copy_image_to_buffer->dst->GetNativeHandleT<VkBuffer>();
@@ -307,22 +307,22 @@ static void ExecuteCmdBlitImage(VkCommandBuffer buffer, Cmd_BlitImage *command) 
     blit.srcSubresource.layerCount = command->desc.src_subresource.layer_count;
     blit.srcSubresource.baseArrayLayer = command->desc.src_subresource.base_array_layer;
     blit.srcSubresource.mipLevel = command->desc.src_subresource.base_mip_level;
-    blit.srcOffsets[0].x = command->desc.src_offsets[0].x;
-    blit.srcOffsets[0].y = command->desc.src_offsets[0].y;
-    blit.srcOffsets[0].z = command->desc.src_offsets[0].z;
-    blit.srcOffsets[1].x = command->desc.src_offsets[1].x;
-    blit.srcOffsets[1].y = command->desc.src_offsets[1].y;
-    blit.srcOffsets[1].z = command->desc.src_offsets[1].z;
+    blit.srcOffsets[0].x = command->desc.src_offsets[0].X;
+    blit.srcOffsets[0].y = command->desc.src_offsets[0].Y;
+    blit.srcOffsets[0].z = command->desc.src_offsets[0].Z;
+    blit.srcOffsets[1].x = command->desc.src_offsets[1].X;
+    blit.srcOffsets[1].y = command->desc.src_offsets[1].Y;
+    blit.srcOffsets[1].z = command->desc.src_offsets[1].Z;
     blit.dstSubresource.aspectMask = RHIImageAspectToVkImageAspect(command->desc.dst_subresource.aspect_mask);
     blit.dstSubresource.layerCount = command->desc.dst_subresource.layer_count;
     blit.dstSubresource.baseArrayLayer = command->desc.dst_subresource.base_array_layer;
     blit.dstSubresource.mipLevel = command->desc.dst_subresource.base_mip_level;
-    blit.dstOffsets[0].x = command->desc.dst_offsets[0].x;
-    blit.dstOffsets[0].y = command->desc.dst_offsets[0].y;
-    blit.dstOffsets[0].z = command->desc.dst_offsets[0].z;
-    blit.dstOffsets[1].x = command->desc.dst_offsets[1].x;
-    blit.dstOffsets[1].y = command->desc.dst_offsets[1].y;
-    blit.dstOffsets[1].z = command->desc.dst_offsets[1].z;
+    blit.dstOffsets[0].x = command->desc.dst_offsets[0].X;
+    blit.dstOffsets[0].y = command->desc.dst_offsets[0].Y;
+    blit.dstOffsets[0].z = command->desc.dst_offsets[0].Z;
+    blit.dstOffsets[1].x = command->desc.dst_offsets[1].X;
+    blit.dstOffsets[1].y = command->desc.dst_offsets[1].Y;
+    blit.dstOffsets[1].z = command->desc.dst_offsets[1].Z;
     vkCmdBlitImage(buffer, src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
                    VK_FILTER_LINEAR);
 }

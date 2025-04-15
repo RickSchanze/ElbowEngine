@@ -25,19 +25,19 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &des
     input_bindings.Resize(desc.vertex_inputs.Count());
     for (size_t i = 0; i < desc.vertex_inputs.Count(); ++i) {
         const auto &input = desc.vertex_inputs[i];
-        input_bindings[i].binding = input.binding;
-        input_bindings[i].stride = input.stride;
-        input_bindings[i].inputRate = RHIVertexInputRateToVkVertexInputRate(input.rate);
+        input_bindings[i].binding = input.Binding;
+        input_bindings[i].stride = input.Stride;
+        input_bindings[i].inputRate = RHIVertexInputRateToVkVertexInputRate(input.Rate);
     }
 
     Array<VkVertexInputAttributeDescription> input_attributes;
     input_attributes.Resize(desc.vertex_attributes.Count());
     for (size_t i = 0; i < desc.vertex_attributes.Count(); ++i) {
         const auto &attribute = desc.vertex_attributes[i];
-        input_attributes[i].location = attribute.location;
-        input_attributes[i].binding = attribute.binding;
-        input_attributes[i].format = RHIFormatToVkFormat(attribute.format);
-        input_attributes[i].offset = attribute.offset;
+        input_attributes[i].location = attribute.Location;
+        input_attributes[i].binding = attribute.Binding;
+        input_attributes[i].format = RHIFormatToVkFormat(attribute.Format);
+        input_attributes[i].offset = attribute.Offset;
     }
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};

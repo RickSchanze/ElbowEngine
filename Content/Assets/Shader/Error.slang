@@ -17,15 +17,15 @@ struct FragOutput {
 }
 
 [shader("vertex")]
-VertexOutput vert(Vertex vert) {
+VertexOutput Vertex(Vertex vert) {
     VertexOutput output;
-    float4 pos_vec4 = float4(vert.position, 1);
+    float4 pos_vec4 = float4(vert.Position, 1);
     output.position = PerformMVP(pos_vec4, vert.GetModelFloat4x4(), camera.GetView(), camera.GetProjection());
     return output;
 }
 
 [shader("fragment")]
-FragOutput frag(VertexOutput input) {
+FragOutput Fragment(VertexOutput input) {
     FragOutput output;
     output.color = float4(1, 0, 1, 1);
     return output;

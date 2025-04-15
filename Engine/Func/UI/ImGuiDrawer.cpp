@@ -24,7 +24,7 @@ void ImGuiDrawer::Image(RenderTexture &tex, Vector2f size, Vector2f uv0, Vector2
     if (self.mRenderTextureMap.Contains(p_tex)) {
         auto &image_data = self.mRenderTextureMap[p_tex];
         if (image_data.view == tex.GetImageView()) {
-            ImGui::Image(self.mRenderTextureMap[p_tex].id, ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+            ImGui::Image(self.mRenderTextureMap[p_tex].id, ImVec2{size.X, size.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});
             return;
         }
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(image_data.id));
@@ -33,7 +33,7 @@ void ImGuiDrawer::Image(RenderTexture &tex, Vector2f size, Vector2f uv0, Vector2
     VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
                                                       tex.GetImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     self.mRenderTextureMap[p_tex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), tex.GetImageView()};
-    ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{size.x, size.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+    ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{size.X, size.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});
 }
 
 void ImGuiDrawer::Image(Texture2D *InTex, Vector2f InSize, Vector2f uv0, Vector2f uv1) {
@@ -45,7 +45,7 @@ void ImGuiDrawer::Image(Texture2D *InTex, Vector2f InSize, Vector2f uv0, Vector2
     if (Self.mTextureMap.Contains(InTex)) {
         auto &ImageData = Self.mTextureMap[InTex];
         if (ImageData.view == InTex->GetNativeImageView()) {
-            ImGui::Image(Self.mTextureMap[InTex].id, ImVec2{InSize.x, InSize.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+            ImGui::Image(Self.mTextureMap[InTex].id, ImVec2{InSize.X, InSize.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});
             return;
         }
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(ImageData.id));
@@ -55,7 +55,7 @@ void ImGuiDrawer::Image(Texture2D *InTex, Vector2f InSize, Vector2f uv0, Vector2
             ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
                                         InTex->GetNativeImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     Self.mTextureMap[InTex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), InTex->GetNativeImageView()};
-    ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{InSize.x, InSize.y}, ImVec2{uv0.x, uv0.y}, ImVec2{uv1.x, uv1.y});
+    ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{InSize.X, InSize.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});
 }
 
 void ImGuiDrawer::ItemLabel(StringView title, ImGuiItemLabelFlag flags) {
@@ -119,21 +119,21 @@ void ImGuiDrawer::DrawTransform(Actor *actor) {
     Vector3f rotation = trans.GetRotationEuler();
     ImGui::PushID(actor);
     ImGui::PushID("位置");
-    ImGui::DragFloat3("位置", &trans.location.x, 0.1);
+    ImGui::DragFloat3("位置", &trans.Location.X, 0.1);
     ImGui::PopID();
     ImGui::PushID("旋转");
-    ImGui::DragFloat3("旋转", &rotation.x, 0.1);
+    ImGui::DragFloat3("旋转", &rotation.X, 0.1);
     ImGui::PopID();
     ImGui::PushID("缩放");
-    ImGui::DragFloat3("缩放", &trans.scale.x, 0.1);
+    ImGui::DragFloat3("缩放", &trans.Scale.X, 0.1);
     ImGui::PopID();
     ImGui::PopID();
     Transform old = actor->GetTransform();
-    if (trans.location != old.location) {
-        actor->SetLocation(trans.location);
+    if (trans.Location != old.Location) {
+        actor->SetLocation(trans.Location);
     }
-    if (trans.scale != old.scale) {
-        actor->SetScale(trans.scale);
+    if (trans.Scale != old.Scale) {
+        actor->SetScale(trans.Scale);
     }
     if (rotation != trans.GetRotationEuler()) {
         actor->SetRotation(rotation);
@@ -145,16 +145,16 @@ void ImGuiDrawer::DrawTransform(SceneComponent *comp) {
     Transform trans = comp->GetTransform();
     Vector3f rotation = trans.GetRotationEuler();
     ImGui::PushID(comp);
-    ImGui::DragFloat3("位置", &trans.location.x);
-    ImGui::DragFloat3("旋转", &rotation.x);
-    ImGui::DragFloat3("缩放", &trans.scale.x);
+    ImGui::DragFloat3("位置", &trans.Location.X);
+    ImGui::DragFloat3("旋转", &rotation.X);
+    ImGui::DragFloat3("缩放", &trans.Scale.X);
     ImGui::PopID();
     Transform old = comp->GetTransform();
-    if (trans.location != old.location) {
-        comp->SetLocation(trans.location);
+    if (trans.Location != old.Location) {
+        comp->SetLocation(trans.Location);
     }
-    if (trans.scale != old.scale) {
-        comp->SetScale(trans.scale);
+    if (trans.Scale != old.Scale) {
+        comp->SetScale(trans.Scale);
     }
     if (rotation != trans.GetRotationEuler()) {
         comp->SetRotation(rotation);

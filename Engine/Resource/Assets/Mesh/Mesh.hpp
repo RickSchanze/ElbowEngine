@@ -30,24 +30,24 @@ public:
 
     void PerformLoad() override;
 
-    [[nodiscard]] bool IsLoaded() const override { return loaded_; };
+    [[nodiscard]] bool IsLoaded() const override { return mLoaded; };
 
     MeshStorage &InternalGetStorage() const { return *storage_; }
     UInt32 GetIndexCount() const;
     SharedPtr<RHI::Buffer> GetVertexBuffer() const;
     SharedPtr<RHI::Buffer> GetIndexBuffer() const;
-    StringView GetAssetPath() const { return meta_.Path; }
+    StringView GetAssetPath() const { return mMate.Path; }
 
 #if WITH_EDITOR
     void Save() override;
     void SetImportScale(float scale);
-    Float GetImportScale() const { return meta_.ImportScale; }
+    Float GetImportScale() const { return mMate.ImportScale; }
 #endif
 
 private:
     UniquePtr<MeshStorage> storage_;
-    MeshMeta meta_{};
-    Atomic<bool> loaded_ = false;
+    MeshMeta mMate{};
+    Atomic<bool> mLoaded = false;
 };
 
 IMPL_REFLECTED_INPLACE(Mesh) { return Type::Create<Mesh>("Mesh") | refl_helper::AddParents<Asset>(); }

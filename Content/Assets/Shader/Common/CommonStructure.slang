@@ -3,35 +3,64 @@ module CommonStructure;
 import Utility;
 
 public struct Vertex {
-  public float3 position;
-  public float3 normal;
-  public float2 uv0;
-  public float3 tangent;
-  public float3 bitangent;
+  public float3 Position;
+  public float3 Normal;
+  public float2 UV0;
+  public float3 Tangent;
   
 
   // 实例化数据: 整个模型的位置, 旋转, 缩放
-  public float3 location;
-  public float3 rotation;
-  public float3 scale;
+  public float3 Location;
+  public float3 Rotation;
+  public float3 Scale;
 
   public float4x4 GetModelFloat4x4() {
-    float4x4 scale = float4x4(scale.x, 0, 0, 0, 0, scale.y, 0, 0, 0, 0, scale.z, 0, 0, 0, 0, 1);
-    float4x4 rot = GetFloat4x4Identity();
-    rot = RotateX(rotation[0], rot);
-    rot = RotateY(rotation[1], rot);
-    rot = RotateZ(rotation[2], rot);
-    float4x4 trans = GetFloat4x4Identity();
-    trans = Translate(location, trans);
-    return mul(scale, mul(rot, trans));
+    float3 Euler = Rotation; // pitch(y), yaw(z), roll(x)
+    float CZ = cos(Euler.z), SZ = sin(Euler.z);
+    float CY = cos(Euler.y), SY = sin(Euler.y);
+    float CX = cos(Euler.x), SX = sin(Euler.x);
+
+        // 绕Z轴旋转矩阵
+    float4x4 RZ = {
+        float4(CZ, -SZ, 0, 0),
+        float4(SZ, CZ, 0, 0),
+        float4(0, 0, 1, 0),
+        float4(0, 0, 0, 1)
+    };  
+
+      // 绕Y轴旋转矩阵
+    float4x4 RY = {
+      float4(CY, 0, SY, 0),
+      float4(0, 1, 0, 0),
+      float4(-SY, 0, CY, 0),
+      float4(0, 0, 0, 1)
+    };
+
+      // 绕X轴旋转矩阵
+    float4x4 RX = {
+      float4(1, 0, 0, 0),
+      float4(0, CX, -SX, 0),
+      float4(0, SX, CX, 0),
+      float4(0, 0, 0, 1)
+    };
+
+    float4x4 R = mul(mul(RZ, RY), RX); // Z-Y-X顺序组合
+
+    float4x4 T = {
+      float4(1, 0, 0, 0),
+      float4(0, 1, 0, 0),
+      float4(0, 0, 1, 0),
+      float4(Location, 1)
+    };
+    float4x4 S = {
+        float4(Scale.x, 0, 0, 0),
+        float4(0, Scale.y, 0, 0),
+        float4(0, 0, Scale.z, 0),
+        float4(0, 0, 0, 1)
+    };
+    return mul(T, mul(R, S));
   }
 };
-
-public struct VertexUI {
-  public float3 position;
-  public float2 uv;
-  public float4 color;
-}
 
 public struct Camera {
   float4x4 view;
@@ -48,17 +77,8 @@ public struct Camera {
   public float3 GetLocation() {
       return float3(data2[0][1], data2[1][1], data2[2][1]);
   }
+
+  public float3 GetRotation() {
+      return float3(data2[0][2], data2[1][2], data2[2][2]);
+  }
 };
-
-public struct Model {
-  float4x4 model;
-
-  public float4x4 GetModel() { return model; }
-}
-
-public struct Texture2DSampler {
-  Texture2D texture;
-  SamplerState sampler;
-
-  public float4 Sample(float2 uv) { return texture.Sample(sampler, uv); }
-}

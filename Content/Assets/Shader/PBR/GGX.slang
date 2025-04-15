@@ -4,7 +4,7 @@ import "Common/Math";
 
 // 这个GGX一版用于发现分布函数
 // 直接传入粗糙度
-public float GGX_TrowbridgeReitz(float3 normal, float3 half, float roughness) {
+public float GGX_Distribution(float3 normal, float3 half, float roughness) {
     // According to Epic, 用平方更正确一点
     float a = roughness * roughness; // 这里对粗糙度二次加工
     float a2 = a * a;
@@ -18,7 +18,7 @@ public float GGX_TrowbridgeReitz(float3 normal, float3 half, float roughness) {
     return nom / denom;
 }
 
-public float GGX_TrowbridgeReitz(float NdotH, float roughness) {
+public float GGX_Distribution(float NdotH, float roughness) {
     // According to Epic, 用平方更正确一点
     float a = roughness * roughness; // 这里对粗糙度二次加工
     float a2 = a * a;
@@ -55,26 +55,54 @@ public float GGX_SchlickSpecularIBL(float NdotV, float Roughnes) {
 /// V: 实现方向
 /// L: 光纤方向
 /// 这里为了考虑两个视角, 一个是视线方向造成的遮挡, 一个是光源方向造成的阴影
-public float GGX_GeometrySmith(float3 N, float3 V, float3 L, float roughness) {
+// ----------------------------------------------------------------------------
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+// ----------------------------------------------------------------------------
+public float GGX_GeometrySmith(float3 N, float3 V, float3 L, float Roughness)
+{
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = GGX_Schlick(NdotV, roughness);
-    float ggx2 = GGX_Schlick(NdotL, roughness);
-    return ggx1 * ggx2;
+    float GGX1 = GeometrySchlickGGX(NdotV, Roughness);
+    float GGX2 = GeometrySchlickGGX(NdotL, Roughness);
+
+    return GGX1 * GGX2;
 }
 
-public float GGX_GeometrySmithSpecularIBL(float3 N, float3 V, float3 L, float roughness) {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = GGX_SchlickSpecularIBL(NdotV, roughness);
-    float ggx2 = GGX_SchlickSpecularIBL(NdotL, roughness);
-    return ggx1 * ggx2;
+float GGX_GeometrySchlickSpecularIBL(float NdotV, float roughness)
+{
+    // note that we use a different k for IBL
+    float a = roughness;
+    float k = (a * a) / 2.0;
+
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
 }
 
-public float GGX_GeometrySmith(float NdotV, float NdotL, float roughness) {
-    float ggx1 = GGX_Schlick(NdotV, roughness);
-    float ggx2 = GGX_Schlick(NdotL, roughness);
-    return ggx1 * ggx2;
+public float GGX_GeometrySmithSpecularIBL(float NdotV, float NdotL, float Roughness)
+{
+    float GGX1 = GGX_GeometrySchlickSpecularIBL(NdotV, Roughness);
+    float GGX2 = GGX_GeometrySchlickSpecularIBL(NdotL, Roughness);
+
+    return GGX1 * GGX2;
+}
+
+public float GGX_GeometrySmith(float NdotV, float NdotL, float Roughness)
+{
+    float GGX1 = GeometrySchlickGGX(NdotV, Roughness);
+    float GGX2 = GeometrySchlickGGX(NdotL, Roughness);
+
+    return GGX1 * GGX2;
 }
 
 public float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness) {

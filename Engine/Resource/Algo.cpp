@@ -24,15 +24,15 @@ Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vecto
             Rect2Di not_enough_rect = {.pos = {0, 0}, .size = {0, 0}};
             return not_enough_rect;
         }
-        Int32 width = rect.x;
-        Int32 height = rect.y;
+        Int32 width = rect.X;
+        Int32 height = rect.Y;
         // 首先按高度划分
         Rect2Di current_rect = current->GetData().rect;
         Rect2Di free_rect;
-        free_rect.pos.x = current_rect.pos.x;
-        free_rect.pos.y = current_rect.pos.y + height;
-        free_rect.size.x = current_rect.size.x;
-        free_rect.size.y = current_rect.size.y - height;
+        free_rect.pos.X = current_rect.pos.X;
+        free_rect.pos.Y = current_rect.pos.Y + height;
+        free_rect.size.X = current_rect.size.X;
+        free_rect.size.Y = current_rect.size.Y - height;
         PackingRect right_rect = {.rect = free_rect};
         current->SetChild(1, right_rect);
         /** 插入矩形(30, 50) 首先处理height, 插入后下面是完全Free 上面仍有占用
@@ -41,10 +41,10 @@ Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vecto
          *                                 (0, 50, 1024, 974) Free1
          */
         Rect2Di occupied_rect;
-        occupied_rect.pos.x = current_rect.pos.x;
-        occupied_rect.pos.y = current_rect.pos.y;
-        occupied_rect.size.x = current_rect.size.x;
-        occupied_rect.size.y = height;
+        occupied_rect.pos.X = current_rect.pos.X;
+        occupied_rect.pos.Y = current_rect.pos.Y;
+        occupied_rect.size.X = current_rect.size.X;
+        occupied_rect.size.Y = height;
         PackingRect left_rect = {.rect = occupied_rect, .free = false};
         current->SetChild(0, left_rect);
         current->GetData().free = false;
@@ -55,10 +55,10 @@ Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vecto
          */
         current = current->GetChild(0);
         // 处理width, 首先是Free
-        free_rect.pos.x = current_rect.pos.x + width;
-        free_rect.pos.y = current_rect.pos.y;
-        free_rect.size.x = current_rect.size.x - width;
-        free_rect.size.y = current_rect.size.y;
+        free_rect.pos.X = current_rect.pos.X + width;
+        free_rect.pos.Y = current_rect.pos.Y;
+        free_rect.size.X = current_rect.size.X - width;
+        free_rect.size.Y = current_rect.size.Y;
         right_rect = {.rect = free_rect};
         current->SetChild(1, right_rect);
         /**
@@ -68,10 +68,10 @@ Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vecto
          *                        \
          *                       (30, 0, 994, 50) Free2
          */
-        occupied_rect.pos.x = current_rect.pos.x;
-        occupied_rect.pos.y = current_rect.pos.y;
-        occupied_rect.size.x = width;
-        occupied_rect.size.y = current_rect.size.y;
+        occupied_rect.pos.X = current_rect.pos.X;
+        occupied_rect.pos.Y = current_rect.pos.Y;
+        occupied_rect.size.X = width;
+        occupied_rect.size.Y = current_rect.size.Y;
         left_rect = {.rect = occupied_rect, .free = false};
         current->SetChild(0, left_rect);
         /**
@@ -108,7 +108,7 @@ Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vecto
 Rect2Di RectPacking::GetNextAvailableRect(const Vector2i bound, const Span<Vector2i> rects, const Vector2i required_size) {
     ProfileScope _(__func__);
     Rect2Di rect = GetNextAvailableRect(bound, rects);
-    if (rect.size.x < required_size.x || rect.size.y < required_size.y) {
+    if (rect.size.X < required_size.X || rect.size.Y < required_size.Y) {
         return Rect2Di{};
     }
     // 这时候rect已经是一个合适的矩形了, 选择required_size合适的位置和大小

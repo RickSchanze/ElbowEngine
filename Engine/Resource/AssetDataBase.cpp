@@ -82,13 +82,13 @@ ExecFuture<ObjectHandle> AssetDataBase::Import(StringView path) {
     // 先查一下是否存在, 存在的话按现有配置重新导入
     auto query = String::Format("path = '{}'", *path);
     auto &registry = ObjectManager::GetRegistry();
-    if (path.EndsWith(".fbx")) {
+    if (path.EndsWith(".fbx") || path.EndsWith(".obj")) {
         return InternalImport<Mesh, MeshMeta>(query, path, registry);
     }
     if (path.EndsWith(".slang")) {
         return InternalImport<Shader, ShaderMeta>(query, path, registry);
     }
-    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr")) {
+    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr") || path.EndsWith(".jpg")) {
         return InternalImport<Texture2D, Texture2DMeta>(query, path, registry);
     }
     if (path.EndsWith(".ttf")) {
@@ -128,10 +128,10 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView path) {
     if (path.EndsWith(".slang")) {
         return InternalLoadAsync<Shader, ShaderMeta>(path);
     }
-    if (path.EndsWith(".fbx")) {
+    if (path.EndsWith(".fbx") || path.EndsWith(".obj")) {
         return InternalLoadAsync<Mesh, MeshMeta>(path);
     }
-    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr")) {
+    if (path.EndsWith(".png") || path.EndsWith(".exr") || path.EndsWith(".hdr") || path.EndsWith(".jpg")) {
         return InternalLoadAsync<Texture2D, Texture2DMeta>(path);
     }
     if (path.EndsWith(".ttf")) {
@@ -201,19 +201,19 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadAsync(ObjectHandle handle, const Typ
 
 ExecFuture<ObjectHandle> AssetDataBase::LoadOrImportAsync(StringView path) {
     if (path.EndsWith(".slang")) {
-        if (const auto op_meta = QueryMeta<ShaderMeta>(String::Format("path = '{}'", *path))) {
+        if (const auto op_meta = QueryMeta<ShaderMeta>(String::Format("Path = '{}'", *path))) {
             return LoadFromPathAsync(path);
         }
         return Import(path);
     }
-    if (path.EndsWith(".exr") || path.EndsWith(".png") || path.EndsWith(".hdr")) {
-        if (const auto op_meta = QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *path))) {
+    if (path.EndsWith(".exr") || path.EndsWith(".png") || path.EndsWith(".hdr") || path.EndsWith(".jpg")) {
+        if (const auto op_meta = QueryMeta<Texture2DMeta>(String::Format("Path = '{}'", *path))) {
             return LoadFromPathAsync(path);
         }
         return Import(path);
     }
-    if (path.EndsWith(".fbx")) {
-        if (const auto op_meta = QueryMeta<MeshMeta>(String::Format("path = '{}'", *path))) {
+    if (path.EndsWith(".fbx") || path.EndsWith(".obj")) {
+        if (const auto op_meta = QueryMeta<MeshMeta>(String::Format("Path = '{}'", *path))) {
             return LoadFromPathAsync(path);
         }
         return Import(path);

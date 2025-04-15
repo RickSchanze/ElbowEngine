@@ -43,42 +43,50 @@
 class Texture2D;
 using namespace RHI;
 
-static void TickManagerUpdate(const MilliSeconds &sec) {
+static void TickManagerUpdate(const MilliSeconds &sec)
+{
     static UInt32 interval = GetConfig<CoreConfig>()->GetTickFrameInterval();
     static UInt32 cnt = 0;
     cnt++;
-    if (cnt >= interval) {
+    if (cnt >= interval)
+    {
         SharedMaterialManager::GetByRef().UpdateSharedMaterialSet();
         DescriptorSetLayoutPool::GetByRef().Update();
         cnt = 0;
     }
 }
 
-template<typename... Args>
-static void ResourceInitCreate(Args &&...args) {
-    while (true) {
+template <typename... Args>
+static void ResourceInitCreate(Args &&... args)
+{
+    while (true)
+    {
         const bool all_completed = (args.IsCompleted() && ...);
-        if (!all_completed) {
+        if (!all_completed)
+        {
             ThreadManager::PollGameThread(100);
-        } else {
+        }
+        else
+        {
             break;
         }
     }
 }
 
-int main() {
-    try {
+int main()
+{
+    try
+    {
         VLOG_INFO("正在初始化...");
         // 让std::wcout 顺利运行
         setlocale(LC_ALL, "zh_CN");
         // 让spdlog不产生乱码
         SetConsoleOutputCP(65001);
-        if (!Path::SetProjectPath("C:/Users/Echo/Documents/Projects/ElbowEngine/Content")) {
+        if (!Path::SetProjectPath("C:/Users/Echo/Documents/Projects/ElbowEngine/Content"))
+        {
             VLOG_FATAL("Set project path failed, Abort!!!");
             return -1;
-        }
-
-        {
+        } {
             ThreadManager::Get();
         }
         // 窗口初始化
@@ -102,28 +110,24 @@ int main() {
             AssetDataBase::Get();
             // TODO: 这个函数并没有真正等待所有任务完成
             ResourceInitCreate( //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/Error.slang")),
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Default.png")), //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cube.fbx")), //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/BasePass.slang")),
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/SkyspherePass.slang")),
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/ColorTransformPass.slang")), //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/PrefilteredColor.slang")), //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Black.png")), // Black
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")), // White
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")) // White
-            );
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/Error.slang")),
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Default.png")), //
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cube.fbx")), //
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/BasePass.slang")),
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/SkyspherePass.slang")),
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/ColorTransformPass.slang")), //
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/PrefilteredColor.slang")), //
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/Black.png")), // Black
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")), // White
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Texture/White.png")) // White
+                );
 
             // PBR资产(测试用)
             ResourceInitCreate( //
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Cerberus_LP.fbx")), // Mesh
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_A.png")), // Albedo,
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_M.png")), // Metallic
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_N.png")), // Normal
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_R.png")), // Roughness
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png")), // AO
-                    Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/IntegrateBRDF.slang")) //
-            );
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/PBR/PBRSphere.obj")), // Mesh
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Mesh/PBR/PBRSphere_Albedo.jpg")), // Albedo,
+                Move(AssetDataBase::LoadOrImportAsync("Assets/Shader/PBR/Environment/IntegrateBRDF.slang")) // Albedo,
+                );
 
 #if WITH_EDITOR
             ObjectManager::SaveObjectRegistry();
@@ -146,63 +150,42 @@ int main() {
         auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
         mesh_actor->SetDisplayName("PBR物体");
         auto mesh = mesh_actor->AddComponent<StaticMeshComponent>();
-        auto mesh_res = static_cast<Mesh *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Cerberus_LP.fbx"));
-        mesh_res->SetImportScale(0.01f);
+        auto mesh_res = static_cast<Mesh *>(AssetDataBase::LoadFromPath("Assets/Mesh/PBR/PBRSphere.obj"));
         mesh_res->SaveIfNeed();
         mesh->SetMesh(mesh_res);
-        mesh_actor->SetRotation({90, 0, 0});
-        mesh->SetLocation({0, 0, 0});
 
-        Material *m = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
-        auto color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_A.png"));
-        auto metallic = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_M.png"));
-        metallic->SetTextureFormat(Format::R8_UNorm);
-        metallic->SaveIfNeed();
-        auto roughness = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_R.png"));
-        roughness->SetTextureFormat(Format::R8_UNorm);
-        roughness->SaveIfNeed();
-        auto ao = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_AO.png"));
-        ao->SetTextureFormat(Format::R8_UNorm);
-        ao->SaveIfNeed();
-        auto Normal = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/Cerberus/Textures/Cerberus_N.png"));
-        Normal->SetTextureFormat(Format::R8G8B8A8_SRGB);
-        Normal->SaveIfNeed();
-        auto Black = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/Black.png"));
-        m->SetName("MeshMaterial");
-        m->SetTexture2D("tex", color);
-        m->SetTexture2D("tex_metallic", metallic);
-        m->SetTexture2D("tex_roughness", roughness);
-        m->SetTexture2D("tex_ao", ao);
-        m->SetTexture2D("Tex_Normal", Normal);
-        m->SetTexture2D("Tex_Irradiance", Black);
-        m->SetTexture2D("Tex_Prefiltered", Black);
-        m->SetTexture2D("Tex_BRDFLUT", Black);
-        m->SetFloat("float_param.roughness", 1.0f);
-        m->SetFloat("float_param.metallic", 1.0f);
-        m->SetFloat("float_param.ao", 1.0f);
+        Material *ObjectMaterial = Material::CreateFromShader("Assets/Shader/PBR/BasePass.slang");
+        auto Color = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Mesh/PBR/PBRSphere_Albedo.jpg"));
+        auto White = static_cast<Texture2D *>(AssetDataBase::LoadFromPath("Assets/Texture/White.png"));
+        ObjectMaterial->SetName("MeshMaterial");
+        ObjectMaterial->SetTexture2D("Tex_Albedo", Color);
+        ObjectMaterial->SetTexture2D("Tex_Metallic", White);
+        ObjectMaterial->SetTexture2D("Tex_Roughness", White);
+        ObjectMaterial->SetTexture2D("Tex_AO", White);
+        ObjectMaterial->SetTexture2D("Tex_Normal", White);
+        ObjectMaterial->SetTexture2D("Tex_Irradiance", White);
+        ObjectMaterial->SetTexture2D("Tex_Prefiltered", White);
+        ObjectMaterial->SetTexture2D("Tex_BRDFLUT", White);
+        ObjectMaterial->SetFloat("InFloatParams.Metallic", 1.0f);
+        ObjectMaterial->SetFloat("InFloatParams.Roughness", 1.0f);
+        ObjectMaterial->SetFloat("InFloatParams.AO", 1.0f);
         auto light = cam_holder->AddComponent<PointLightComponent>();
         light->SetColor(Color::White());
-        mesh->SetMaterial(m);
+        mesh->SetMaterial(ObjectMaterial);
         light->SetIntensity(5);
         UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());
         PBRRenderPipelineSettingWindow *PBRWindow =
-                reinterpret_cast<PBRRenderPipelineSettingWindow *>(RenderContext::GetBoundRenderPipeline()->GetSettingWindow());
-        PBRWindow->SetMeshMaterial(m);
+            reinterpret_cast<PBRRenderPipelineSettingWindow *>(RenderContext::GetBoundRenderPipeline()->GetSettingWindow());
+        PBRWindow->SetMeshMaterial(ObjectMaterial);
 
-        while (true) {
+        while (true)
+        {
             ProfileScope _("Tick");
-            // 构建normal_matrix
-            glm::vec3 location = mesh->GetLocation() | ToGLMVec3;
-            glm::vec3 rotation = mesh->GetRotation() | ToGLMVec3;
-            glm::vec3 scale = mesh->GetScale() | ToGLMVec3;
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), location) * glm::yawPitchRoll(rotation.y, rotation.x, rotation.z) *
-                              glm::scale(glm::mat4(1.0f), scale);
-            Matrix4x4f normal_matrix = glm::transpose(glm::inverse(glm::mat3(model))) | ToMatrix4x4f;
-            m->SetMatrix4x4("InMatrixParam.NormalMatrix", normal_matrix);
             GetWorldClock().TickAll(main_window);
-            if (main_window->ShouldClose()) {
+            if (main_window->ShouldClose())
+            {
                 GetGfxContextRef().WaitForDeviceIdle();
                 main_window->Close();
                 break;
@@ -213,7 +196,9 @@ int main() {
         TickEvents::Evt_TickInput.Unbind();
         VLOG_INFO("关闭引擎, 清理资源...");
         MManager::Get()->Shutdown();
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
         VLOG_FATAL("程序因为异常崩溃了! ", e.what());
         return -1;
     }

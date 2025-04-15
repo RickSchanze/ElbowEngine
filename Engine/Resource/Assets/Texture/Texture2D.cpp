@@ -82,7 +82,7 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             return false;
         }
     }
-    if (path.EndsWith(".png")) {
+    if (path.EndsWith(".png") || path.EndsWith(".jpg")) {
         if (format == Format::R8_UNorm) {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
             if (!pixels) {
@@ -138,8 +138,8 @@ void Texture2D::Load(const Texture2DMeta &meta) {
     ProfileScope _(__func__);
     if (!meta.IsDynamic) {
         StringView path = meta.Path;
-        if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr")) {
-            Log(Error) << String::Format("加载失败: Texture2D必须以.png结尾: {}", *path);
+        if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr") && !path.EndsWith(".jpg")) {
+            Log(Error) << String::Format("加载失败: Texture2D可用结尾格式: png, jpg, hdr, exr: {}", *path);
             return;
         }
         if (!Path::IsExist(path)) {
@@ -220,10 +220,10 @@ Texture2D *Texture2D::GetDefault() {
 Rect2Df Texture2D::GetUVRect(const SpriteRange &sprite_range) const {
     ProfileScope _(__func__);
     Rect2Df uv_rect;
-    uv_rect.pos.x = static_cast<Float>(sprite_range.range.pos.x) / static_cast<Float>(GetWidth());
-    uv_rect.pos.y = static_cast<Float>(sprite_range.range.pos.y) / static_cast<Float>(GetHeight());
-    uv_rect.size.x = static_cast<Float>(sprite_range.range.size.x) / static_cast<Float>(GetWidth());
-    uv_rect.size.y = static_cast<Float>(sprite_range.range.size.y) / static_cast<Float>(GetHeight());
+    uv_rect.pos.X = static_cast<Float>(sprite_range.range.pos.X) / static_cast<Float>(GetWidth());
+    uv_rect.pos.Y = static_cast<Float>(sprite_range.range.pos.Y) / static_cast<Float>(GetHeight());
+    uv_rect.size.X = static_cast<Float>(sprite_range.range.size.X) / static_cast<Float>(GetWidth());
+    uv_rect.size.Y = static_cast<Float>(sprite_range.range.size.Y) / static_cast<Float>(GetHeight());
     return uv_rect;
 }
 
@@ -253,7 +253,7 @@ void Texture2D::SetTextureFormat(Format format) {
 
 bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect) {
     ProfileScope _(__func__);
-    if (target_rect.pos.x + target_rect.size.x > GetWidth() || target_rect.pos.y + target_rect.size.y > GetHeight()) {
+    if (target_rect.pos.X + target_rect.size.X > GetWidth() || target_rect.pos.Y + target_rect.size.Y > GetHeight()) {
         Log(Error) << "target_rect超出了Texture2D的尺寸";
         return false;
     }
@@ -266,8 +266,8 @@ bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect) {
     }
     // 拷贝数据到图像
     const auto num_channels = GetNumChannels();
-    GfxCommandHelper::CopyDataToImage2D(data, native_image_.get(), target_rect.Area() * num_channels, {target_rect.pos.x, target_rect.pos.y, 0},
-                                        {target_rect.size.x, target_rect.size.y, 1});
+    GfxCommandHelper::CopyDataToImage2D(data, native_image_.get(), target_rect.Area() * num_channels, {target_rect.pos.X, target_rect.pos.Y, 0},
+                                        {target_rect.size.X, target_rect.size.Y, 1});
     SpriteRange new_sprite_range{};
     new_sprite_range.id = id;
     new_sprite_range.range = target_rect;
@@ -280,7 +280,7 @@ bool Texture2D::AppendSprite(const UInt64 id, const char *data, const UInt32 wid
     Vector2i bound;
     const UInt32 tex_w = GetWidth();
     const UInt32 tex_h = GetHeight();
-    bound.x = tex_w, bound.y = tex_h;
+    bound.X = tex_w, bound.Y = tex_h;
     Array<Vector2i> sprite_ranges;
     for (const auto &sprite_range: sprite_ranges_) {
         sprite_ranges.Add(sprite_range.range.size);
@@ -364,8 +364,8 @@ UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 
 String Texture2D::GetSpriteRangeString() const {
     String sprite_range_str;
     for (auto sprite_range: sprite_ranges_) {
-        sprite_range_str += String::Format("{}:{}-{}-{}-{}\n", sprite_range.id, sprite_range.range.pos.x, sprite_range.range.pos.y,
-                                           sprite_range.range.size.x, sprite_range.range.size.y);
+        sprite_range_str += String::Format("{}:{}-{}-{}-{}\n", sprite_range.id, sprite_range.range.pos.X, sprite_range.range.pos.Y,
+                                           sprite_range.range.size.X, sprite_range.range.size.Y);
     }
     return sprite_range_str;
 }
@@ -399,13 +399,13 @@ void Texture2D::SetSpriteRangeString(const StringView str) {
                 continue;
             }
             if (i == 0)
-                range.range.pos.x = element;
+                range.range.pos.X = element;
             if (i == 1)
-                range.range.pos.y = element;
+                range.range.pos.Y = element;
             if (i == 2)
-                range.range.size.x = element;
+                range.range.size.X = element;
             if (i == 3)
-                range.range.size.y = element;
+                range.range.size.Y = element;
         }
         sprite_ranges_.Add(range);
     }

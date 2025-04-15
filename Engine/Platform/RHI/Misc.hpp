@@ -8,18 +8,16 @@
 
 namespace RHI {
     struct Vertex1 {
-        Vector3f position;
-        Vector3f normal;
-        Vector2f texcoord;
-        Vector3f tangent;
-        Vector3f bitangent;
-
+        Vector3f Position;
+        Vector3f Normal;
+        Vector2f UV0;
+        Vector3f Tangent;
     };
 
     struct InstancedData1 {
-        Vector3f location;
-        Vector3f rotation;
-        Vector3f scale;
+        Vector3f Location;
+        Vector3f Rotation;
+        Vector3f Scale;
     };
 
     struct Vertex_UI {

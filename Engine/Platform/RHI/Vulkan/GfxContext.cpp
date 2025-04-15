@@ -77,8 +77,8 @@ Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkPhysica
 
 static Vector2f FromVkExtent2D(const VkExtent2D &extent) {
     Vector2f size{};
-    size.x = extent.width;
-    size.y = extent.height;
+    size.X = extent.width;
+    size.Y = extent.height;
     return size;
 }
 
@@ -504,8 +504,8 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
     VkFramebufferCreateInfo framebuffer_create_info = {};
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebuffer_create_info.renderPass = render_pass;
-    framebuffer_create_info.width = cfg->GetDefaultWindowSize().x;
-    framebuffer_create_info.height = cfg->GetDefaultWindowSize().y;
+    framebuffer_create_info.width = cfg->GetDefaultWindowSize().X;
+    framebuffer_create_info.height = cfg->GetDefaultWindowSize().Y;
     framebuffer_create_info.layers = 1;
     framebuffer_create_info.attachmentCount = 1;
     vulkan_ctx->imgui_framebuffers_.Resize(vulkan_ctx->swapchain_image_views_.Count());
@@ -877,14 +877,14 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
     swapchain_create_info.minImageCount = image_count;
     swapchain_create_info.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
     swapchain_create_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    swapchain_create_info.imageExtent = VkExtent2D{.width = static_cast<UInt32>(size.x), .height = static_cast<UInt32>(size.y)};
+    swapchain_create_info.imageExtent = VkExtent2D{.width = static_cast<UInt32>(size.X), .height = static_cast<UInt32>(size.Y)};
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     desc.depth_or_layers = 1;
     desc.format = Format::B8G8R8A8_UNorm;
-    desc.height = size.x;
-    desc.width = size.y;
+    desc.height = size.X;
+    desc.width = size.Y;
     desc.mip_levels = 1;
     desc.initial_state = ImageLayout::Undefined;
 

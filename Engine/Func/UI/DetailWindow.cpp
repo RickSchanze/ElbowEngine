@@ -14,7 +14,7 @@ IMPL_REFLECTED(DetailWindow) { return Type::Create<DetailWindow>("DetailWindow")
 void DetailWindow::Draw() {
     InspectorWindow *inspector = UIManager::GetWindow<InspectorWindow>();
     Actor *selected_actor = inspector ? inspector->GetSelectedActor() : nullptr;
-    if (ImGuiDrawer::Begin("细节", &visible_)) {
+    if (ImGuiDrawer::Begin("细节", &mVisible)) {
         if (!selected_actor) {
             ImGui::Text("选中一个Actor以查看其细节");
         } else {

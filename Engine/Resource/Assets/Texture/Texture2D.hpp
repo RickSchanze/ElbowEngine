@@ -25,7 +25,7 @@ struct SpriteRange {
     // 表示ID, 是使用字符串的hash值
     UInt64 id{};
 
-    bool IsValid() const { return range.size.x != 0 && range.size.y != 0; }
+    bool IsValid() const { return range.size.X != 0 && range.size.Y != 0; }
 };
 
 class REFLECTED() Texture2D : public Asset {

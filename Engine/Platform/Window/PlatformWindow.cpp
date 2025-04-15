@@ -20,8 +20,8 @@ PlatformWindow::PlatformWindow(StringView title, Int32 width, Int32 height, Int3
     auto *core_cfg = GetConfig<CoreConfig>();
     auto *platform_cfg = GetConfig<PlatformConfig>();
     title_ = title.IsEmpty() ? core_cfg->GetAppName().ToStringView() : title;
-    width_ = width == 0 ? platform_cfg->GetDefaultWindowSize().x : width;
-    height_ = height == 0 ? platform_cfg->GetDefaultWindowSize().y : height;
+    width_ = width == 0 ? platform_cfg->GetDefaultWindowSize().X : width;
+    height_ = height == 0 ? platform_cfg->GetDefaultWindowSize().Y : height;
     flags_ = flags == -1 ? platform_cfg->GetWindowFlag() : flags;
     PlatformWindowManager::Get()->AddWindow(this);
 }

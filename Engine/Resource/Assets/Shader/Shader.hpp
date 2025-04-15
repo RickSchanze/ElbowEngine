@@ -88,33 +88,33 @@ public:
 
     bool IsGraphics() const;
 
-    bool IsCompiled() const { return is_compiled_; }
+    bool IsCompiled() const { return mCompiled; }
 
     bool IsDepthEnabled() const;
 
     AssetType GetAssetType() const override { return AssetType::Shader; }
 
-    int GetEntryPointIndex(int stage_index) const { return stage_to_entry_point_index_[stage_index]; }
+    int GetEntryPointIndex(int stage_index) const { return mStageToEntryPointIndex[stage_index]; }
 
-    auto &GetShaderHandles() { return shader_handles_; }
-    const auto &GetAnnotations() const { return annotations_; }
-    Int32 GetAnnotation(ShaderAnnotation annotation) const { return annotations_[static_cast<Int32>(annotation)]; }
+    auto &GetShaderHandles() { return mShaderHandles; }
+    const auto &GetAnnotations() const { return mAnnotations; }
+    Int32 GetAnnotation(ShaderAnnotation annotation) const { return mAnnotations[static_cast<Int32>(annotation)]; }
 
-    const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return linked_program_; }
+    const Slang::ComPtr<slang::IComponentType> &_GetLinkedProgram() const { return mLinedProgram; }
 
     bool FillGraphicsPSODescFromShader(RHI::GraphicsPipelineDesc &desc, bool output_glsl = true);
     bool FillComputePSODescFromShader(RHI::ComputePipelineDesc& desc, bool output_glsl = true);
 
 protected:
-    Int32 stage_to_entry_point_index_[SHADER_STAGE_COUNT];
+    Int32 mStageToEntryPointIndex[SHADER_STAGE_COUNT];
 
-    SharedPtr<RHI::LowShader> shader_handles_[SHADER_STAGE_COUNT];
+    SharedPtr<RHI::LowShader> mShaderHandles[SHADER_STAGE_COUNT];
 
-    Slang::ComPtr<slang::IComponentType> linked_program_;
+    Slang::ComPtr<slang::IComponentType> mLinedProgram;
 
-    Int32 annotations_[static_cast<Int32>(ShaderAnnotation::Count)];
+    Int32 mAnnotations[static_cast<Int32>(ShaderAnnotation::Count)];
 
-    Slang::ComPtr<slang::ISession> slang_session_;
+    Slang::ComPtr<slang::ISession> mSlangSession;
 
-    bool is_compiled_ = false;
+    bool mCompiled = false;
 };

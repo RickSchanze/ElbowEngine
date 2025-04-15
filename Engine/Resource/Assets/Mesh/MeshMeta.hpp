@@ -12,7 +12,6 @@ struct MeshMeta {
 
     [[nodiscard]] Int32 GetId() const { return Id; }
     [[nodiscard]] Int32 GetObjectHandle() const { return ObjectHandle; }
-    [[nodiscard]] bool GetTriangulate() const { return Triangulate; }
     [[nodiscard]] bool GetGenerateNormals() const { return GenerateNormals; }
     [[nodiscard]] bool GetGenerateSmoothNormals() const { return GenerateSmoothNormals; }
     [[nodiscard]] bool GetMergeDuplicateVertices() const { return MergeDuplicateVertices; }
@@ -29,10 +28,6 @@ struct MeshMeta {
     String Path;
 
     Float ImportScale = 1.0f;
-
-    // 将所有网格多边形面转换为三角形面
-    REFLECTED(Label = "三角化", Category = "基础")
-    bool Triangulate = true;
 
     REFLECTED(Label = "生成法线", Category = "基础")
     bool GenerateNormals = true;
@@ -57,7 +52,6 @@ IMPL_REFLECTED_INPLACE(MeshMeta) {
            refl_helper::AddField("Id", &MeshMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
            refl_helper::AddField("ObjectHandle", &MeshMeta::ObjectHandle) | //
            refl_helper::AddField("Path", &MeshMeta::Path) | //
-           refl_helper::AddField("Triangulate", &MeshMeta::Triangulate) | //
            refl_helper::AddField("GenerateNormals", &MeshMeta::GenerateNormals) | //
            refl_helper::AddField("GenerateSmoothNormals", &MeshMeta::GenerateSmoothNormals) | //
            refl_helper::AddField("MergeDuplicateVertices", &MeshMeta::MergeDuplicateVertices) | //

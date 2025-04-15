@@ -29,18 +29,18 @@ struct FragOutput {
 }
 
 [shader("vertex")]
-VertexOutput vert(Vertex vert) {
+VertexOutput Vertex(Vertex vert) {
     VertexOutput output;
-    float4 pos_vec4 = float4(vert.position, 1);
+    float4 pos_vec4 = float4(vert.Position, 1);
     pos_vec4.z = 0;
     pos_vec4.w = 1;
     output.position = pos_vec4;
-    output.uv = vert.uv0;
+    output.uv = vert.UV0;
     return output;
 }
 
 [shader("fragment")]
-FragOutput frag(VertexOutput input) {
+FragOutput Fragment(VertexOutput input) {
     FragOutput output;
     output.color = tex.Sample(common_sampler, input.uv);
     output.color = ReinhardToneMapping(output.color, param.exposure);

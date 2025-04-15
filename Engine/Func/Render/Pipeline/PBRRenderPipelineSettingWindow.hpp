@@ -25,6 +25,9 @@ protected:
     Texture2D *mBRDFMap = nullptr;
     PBRRenderPipeline *mPipeline = nullptr;
     Material *mMeshMat = nullptr;
+    Float mRoughness = 1;
+    Float mMetallic = 1;
+    Float mAO = 1;
 };
 
 REGISTER_TYPE(PBRRenderPipelineSettingWindow)

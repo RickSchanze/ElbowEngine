@@ -164,11 +164,11 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
     }
     const FT_GlyphSlot slot = dynamic_font_handle_->face->glyph;
     const FT_Bitmap &bitmap = slot->bitmap;
-    if (cursor_.x + bitmap.width >= font_atlas_width_) {
-        cursor_.x = 0;
-        cursor_.y += bitmap.rows;
+    if (cursor_.X + bitmap.width >= font_atlas_width_) {
+        cursor_.X = 0;
+        cursor_.Y += bitmap.rows;
     }
-    if (cursor_.y + bitmap.rows >= font_atlas_height_) {
+    if (cursor_.Y + bitmap.rows >= font_atlas_height_) {
         Log(Error) << String::Format("字体{}的字体图集不够大.", path_);
         return;
     }
@@ -179,20 +179,20 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
             data.Add(bitmap.buffer[x + y * bitmap.pitch]);
         }
     }
-    RHI::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.x, cursor_.y, 0},
+    RHI::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.X, cursor_.Y, 0},
                                              {static_cast<Int32>(bitmap.width), static_cast<Int32>(bitmap.rows), 1});
     // 保存此字符的信息
     FontCharacterInfo info{};
     // 这里uv原点在左上角 再加上半像素矫正
-    info.uv.pos.x = (static_cast<Float>(cursor_.x) + 0.5f) / static_cast<Float>(font_atlas_width_);
-    info.uv.pos.y = (static_cast<Float>(cursor_.y) + 0.5f) / static_cast<Float>(font_atlas_height_);
-    info.uv.size.x = (static_cast<Float>(bitmap.width) - 1.f) / static_cast<Float>(font_atlas_width_);
-    info.uv.size.y = (static_cast<Float>(bitmap.rows) - 1.f) / static_cast<Float>(font_atlas_height_);
-    info.bearing.x = slot->bitmap_left;
-    info.bearing.y = slot->bitmap_top;
+    info.uv.pos.X = (static_cast<Float>(cursor_.X) + 0.5f) / static_cast<Float>(font_atlas_width_);
+    info.uv.pos.Y = (static_cast<Float>(cursor_.Y) + 0.5f) / static_cast<Float>(font_atlas_height_);
+    info.uv.size.X = (static_cast<Float>(bitmap.width) - 1.f) / static_cast<Float>(font_atlas_width_);
+    info.uv.size.Y = (static_cast<Float>(bitmap.rows) - 1.f) / static_cast<Float>(font_atlas_height_);
+    info.bearing.X = slot->bitmap_left;
+    info.bearing.Y = slot->bitmap_top;
     info.advance = slot->advance.x;
-    info.size.x = bitmap.width;
-    info.size.y = bitmap.rows;
-    cursor_.x += bitmap.width;
+    info.size.X = bitmap.width;
+    info.size.Y = bitmap.rows;
+    cursor_.X += bitmap.width;
     glyphs_[code_point] = info;
 }

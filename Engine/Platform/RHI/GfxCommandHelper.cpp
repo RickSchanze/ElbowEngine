@@ -97,9 +97,9 @@ void RHI::GfxCommandHelper::CopyDataToImage2D(const void *data, Image *target, U
                     PSFB_Transfer);
     auto cmd = BeginSingleCommand();
     Vector3i img_size{};
-    img_size.x = copy_range.x == 0 ? target->GetWidth() : copy_range.x;
-    img_size.y = copy_range.y == 0 ? target->GetHeight() : copy_range.y;
-    img_size.z = copy_range.z == 0 ? 1 : copy_range.z;
+    img_size.X = copy_range.X == 0 ? target->GetWidth() : copy_range.X;
+    img_size.Y = copy_range.Y == 0 ? target->GetHeight() : copy_range.Y;
+    img_size.Z = copy_range.Z == 0 ? 1 : copy_range.Z;
     cmd->CopyBufferToImage(staging_buffer.get(), target, range, offset, img_size);
     cmd->Execute();
     EndSingleCommandTransfer(cmd);
