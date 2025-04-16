@@ -9,6 +9,7 @@
 #include "Func/UI/ImGuiDrawer.hpp"
 #include "PBRRenderPipeline.hpp"
 #include "Func/Render/RenderTexture.hpp"
+#include "Platform/RHI/GfxContext.hpp"
 #include "Resource/Assets/Material/Material.hpp"
 
 IMPL_REFLECTED(PBRRenderPipelineSettingWindow)
@@ -35,6 +36,7 @@ void PBRRenderPipelineSettingWindow::Draw()
         if (ImGui::Button("应用ShadowMap"))
         {
             ThreadManager::ScheduleFutureAsync(exec::Just() | exec::Then([this]() {
+                RHI::GetGfxContextRef().WaitForQueueExecution(RHI::QueueFamilyType::Graphics);
                 mMeshMat->SetParamNativeImageView("Tex_ShadowMap", mPipeline->mShadowBox->GetImageView());
             }), NamedThread::Game);
         }

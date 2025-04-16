@@ -174,11 +174,11 @@ int main()
         ObjectMaterial->SetFloat("InFloatParams.AO", 1.0f);
         auto* LightActor = Scene::GetByRef().CreateActor<Actor>();
         LightActor->SetDisplayName("光");
-        auto light = cam_holder->AddComponent<PointLightComponent>();
+        auto light = LightActor->AddComponent<PointLightComponent>();
         light->SetColor(Color::White());
         mesh->SetMaterial(ObjectMaterial);
         light->SetIntensity(5);
-        // light->SetLocation({0, 5, 0});
+        light->SetLocation({0, 5, 0});
         UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());

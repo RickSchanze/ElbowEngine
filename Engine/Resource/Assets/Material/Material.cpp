@@ -81,14 +81,19 @@ void Material::Build()
             // 当前情况是Compute Shader compute shader绑定时应该所有的都准备好了
             continue;
         }
-        if (param.type == ShaderParamType::CubeTexture2D)
-        {
-            continue;
-        }
         DescriptorImageUpdateDesc update_info{};
         update_info.image_layout = ImageLayout::ShaderReadOnly;
-        update_info.image_view = Texture2D::GetDefault()->GetNativeImageView();
+
         update_info.sampler = nullptr;
+        if (param.type == ShaderParamType::CubeTexture2D)
+        {
+            update_info.image_view = Texture2D::GetDefaultCubeTexture2D()->GetNativeImageView();
+        }
+        else
+        {
+            update_info.image_view = Texture2D::GetDefault()->GetNativeImageView();
+        }
+
         descriptor_set_->Update(param.binding, update_info);
     }
     for (auto &param : shared_material_->GetSamplerBindings() | range::view::Values)

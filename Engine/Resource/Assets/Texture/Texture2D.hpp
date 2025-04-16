@@ -11,38 +11,55 @@
 #include "Texture2DMeta.hpp"
 
 
-namespace RHI {
-    struct ImageViewDesc;
+namespace RHI
+{
+struct ImageViewDesc;
 }
-namespace RHI {
-    class Image;
-    class ImageView;
+
+namespace RHI
+{
+class Image;
+class ImageView;
 } // namespace rhi
 struct Texture2DMeta;
-struct SpriteRange {
+
+struct SpriteRange
+{
     // 表示位置和尺寸, 左上角是(0,0)
     Rect2Di range{};
     // 表示ID, 是使用字符串的hash值
     UInt64 id{};
 
-    bool IsValid() const { return range.size.X != 0 && range.size.Y != 0; }
+    bool IsValid() const
+    {
+        return range.size.X != 0 && range.size.Y != 0;
+    }
 };
 
-class REFLECTED() Texture2D : public Asset {
+class REFLECTED() Texture2D : public Asset
+{
     REFLECTED_CLASS(Texture2D)
 public:
-    AssetType GetAssetType() const override { return AssetType::Texture2D; }
+    AssetType GetAssetType() const override
+    {
+        return AssetType::Texture2D;
+    }
 
     void PerformLoad() override;
 
-    void PerformUnload() override {
+    void PerformUnload() override
+    {
         native_image_view_ = nullptr;
         native_image_ = nullptr;
     }
 
     // TODO: 返回bool 错误处理
     void Load(const Texture2DMeta &meta);
-    bool IsLoaded() const override { return static_cast<bool>(native_image_); }
+
+    bool IsLoaded() const override
+    {
+        return static_cast<bool>(native_image_);
+    }
 
     UInt32 GetWidth() const;
 
@@ -56,19 +73,34 @@ public:
 
     static Texture2D *GetDefault();
 
-    RHI::ImageView *GetNativeImageView() const { return native_image_view_.get(); }
-    RHI::Image *GetNativeImage() const { return native_image_.get(); }
+    RHI::ImageView *GetNativeImageView() const
+    {
+        return native_image_view_.get();
+    }
+
+    RHI::Image *GetNativeImage() const
+    {
+        return native_image_.get();
+    }
 
     Rect2Df GetUVRect(const SpriteRange &sprite_range) const;
 
 
     SpriteRange GetSpriteRange(const UInt64 id) const;
 
-    SpriteRange GetSpriteRange(const StringView name) const { return GetSpriteRange(name.GetHashCode()); }
+    SpriteRange GetSpriteRange(const StringView name) const
+    {
+        return GetSpriteRange(name.GetHashCode());
+    }
 
-    StringView GetAssetPath() const { return meta_.Path; }
+    StringView GetAssetPath() const
+    {
+        return meta_.Path;
+    }
 
-    SharedPtr<RHI::ImageView> CreateImageView(RHI::ImageViewDesc& desc) const;
+    SharedPtr<RHI::ImageView> CreateImageView(RHI::ImageViewDesc &desc) const;
+
+    static Texture2D *GetDefaultCubeTexture2D();
 
 #if WITH_EDITOR
     void SetTextureFormat(RHI::Format format);
@@ -80,8 +112,10 @@ public:
      * 2. 待补充
      * 当asset_path被设置时, 调用此函数会触发Assert
      */
-    void SetAssetPath(const StringView new_path) {
-        if (meta_.IsDynamic) {
+    void SetAssetPath(const StringView new_path)
+    {
+        if (meta_.IsDynamic)
+        {
             VLOG_ERROR("只要dynamic的可以修改path, 且修改完后变成非dynamic");
             return;
         }
@@ -112,7 +146,8 @@ public:
      */
     bool AppendSprite(const UInt64 id, const char *data, const UInt32 width, const UInt32 height);
 
-    bool AppendSprite(const StringView name, const char *data, const UInt32 width, const UInt32 height) {
+    bool AppendSprite(const StringView name, const char *data, const UInt32 width, const UInt32 height)
+    {
         ProfileScope _(__func__);
         return AppendSprite(name.GetHashCode(), data, width, height);
     }
@@ -124,7 +159,8 @@ public:
      * @param path
      * @return
      */
-    bool AppendSprite(const StringView name, const StringView path) {
+    bool AppendSprite(const StringView name, const StringView path)
+    {
         ProfileScope _(__func__);
         return AppendSprite(name.GetHashCode(), path);
     }
@@ -135,6 +171,7 @@ public:
      * 拉取GPU图像保存到当前的GetAssetPath()中
      */
     void Download() const;
+
     void Download(StringView path) const;
 
     /**

@@ -25,12 +25,17 @@
 #undef max
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
+#include "Core/Object/ObjectManager.hpp"
 
 using namespace RHI;
 
-IMPL_REFLECTED_INPLACE(Texture2D) { return Type::Create<Texture2D>("Texture2D") | refl_helper::AddParents<Asset>(); }
+IMPL_REFLECTED_INPLACE(Texture2D)
+{
+    return Type::Create<Texture2D>("Texture2D") | refl_helper::AddParents<Asset>();
+}
 
-static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *channels) {
+static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *channels)
+{
 #ifdef ELBOW_PLATFORM_WINDOWS
     const auto str = path.ToWideString();
     FILE *f;
@@ -46,13 +51,17 @@ static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *chan
 }
 
 static bool LoadTextureAccordingFormat(const StringView path, Format format, UInt8 *&out, Int32 &width, Int32 &height, Int32 &channel,
-                                       UInt64 &byte_count) {
-    if (path.EndsWith(".exr")) {
-        if (format == Format::R32G32B32A32_Float) {
+                                       UInt64 &byte_count)
+{
+    if (path.EndsWith(".exr"))
+    {
+        if (format == Format::R32G32B32A32_Float)
+        {
             const char *err = nullptr;
             Float *out_temp = nullptr;
             Int32 ret = LoadEXR(&out_temp, &width, &height, *path, &err);
-            if (ret != TINYEXR_SUCCESS) {
+            if (ret != TINYEXR_SUCCESS)
+            {
                 VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败, code=", ret);
                 FreeEXRErrorMessage(err);
                 return false;
@@ -62,14 +71,19 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             byte_count = width * height * 4 * sizeof(Float);
             return true;
 
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
-    if (path.EndsWith(".hdr")) {
-        if (format == Format::R32G32B32A32_Float) {
+    if (path.EndsWith(".hdr"))
+    {
+        if (format == Format::R32G32B32A32_Float)
+        {
             Float *out_temp = stbi_loadf(*path, &width, &height, &channel, 4);
-            if (!out_temp) {
+            if (!out_temp)
+            {
                 VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败");
                 return false;
             }
@@ -78,14 +92,19 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             byte_count = width * height * 4 * sizeof(Float);
             return true;
 
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
-    if (path.EndsWith(".png") || path.EndsWith(".jpg")) {
-        if (format == Format::R8_UNorm) {
+    if (path.EndsWith(".png") || path.EndsWith(".jpg"))
+    {
+        if (format == Format::R8_UNorm)
+        {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
-            if (!pixels) {
+            if (!pixels)
+            {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
                 stbi_image_free(pixels);
                 out = nullptr;
@@ -95,9 +114,11 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             out = reinterpret_cast<UInt8 *>(pixels);
             return true;
         }
-        if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB) {
+        if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB)
+        {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb_alpha);
-            if (!pixels) {
+            if (!pixels)
+            {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
                 stbi_image_free(pixels);
                 out = nullptr;
@@ -107,9 +128,11 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
             out = reinterpret_cast<UInt8 *>(pixels);
             return true;
         }
-        if (format == Format::R8G8B8_UNorm) {
+        if (format == Format::R8G8B8_UNorm)
+        {
             stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb);
-            if (!pixels) {
+            if (!pixels)
+            {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
                 stbi_image_free(pixels);
                 out = nullptr;
@@ -124,32 +147,39 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
     return false;
 }
 
-void Texture2D::PerformLoad() {
+void Texture2D::PerformLoad()
+{
     ProfileScope _(__func__);
     auto meta_op = AssetDataBase::QueryMeta<Texture2DMeta>(GetHandle());
-    if (!meta_op) {
+    if (!meta_op)
+    {
         Log(Error) << String("加载失败: handle为{}的Texture2D不在资产数据库", GetHandle());
         return;
     }
     Load(*meta_op);
 }
 
-void Texture2D::Load(const Texture2DMeta &meta) {
+void Texture2D::Load(const Texture2DMeta &meta)
+{
     ProfileScope _(__func__);
-    if (!meta.IsDynamic) {
+    if (!meta.IsDynamic)
+    {
         StringView path = meta.Path;
-        if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr") && !path.EndsWith(".jpg")) {
+        if (!path.EndsWith(".png") && !path.EndsWith(".exr") && !path.EndsWith(".hdr") && !path.EndsWith(".jpg"))
+        {
             Log(Error) << String::Format("加载失败: Texture2D可用结尾格式: png, jpg, hdr, exr: {}", *path);
             return;
         }
-        if (!Path::IsExist(path)) {
+        if (!Path::IsExist(path))
+        {
             Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件不存在", *path);
             return;
         }
         Int32 width = 0, height = 0, channels = 0;
         UInt64 byte_count = 0;
         UInt8 *pixels = nullptr;
-        if (!LoadTextureAccordingFormat(path, meta.Format, pixels, width, height, channels, byte_count)) {
+        if (!LoadTextureAccordingFormat(path, meta.Format, pixels, width, height, channels, byte_count))
+        {
             return;
         }
         const ImageDesc desc{static_cast<UInt32>(width),
@@ -167,15 +197,18 @@ void Texture2D::Load(const Texture2DMeta &meta) {
         free(pixels);
         meta_ = meta;
         SetSpriteRangeString(meta.SpritesString);
-    } else {
-        if (meta.Width == 0 || meta.Height == 0) {
+    }
+    else
+    {
+        if (meta.Width == 0 || meta.Height == 0)
+        {
             Log(Error) << "加载失败: Texture2D的宽度和高度必须大于0";
             return;
         }
         const Format format = meta.Format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
-        const ImageDesc desc{meta.Width, meta.Height,        IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
-                             format,     ImageDimension::D2, meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
+        const ImageDesc desc{meta.Width, meta.Height, IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
+                             format, ImageDimension::D2, meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
         String debug_name = String::Format("Texture2D_{}", *name_);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
@@ -187,37 +220,48 @@ void Texture2D::Load(const Texture2DMeta &meta) {
     }
 }
 
-UInt32 Texture2D::GetWidth() const {
+UInt32 Texture2D::GetWidth() const
+{
     if (!native_image_)
         return 0;
     return native_image_->GetWidth();
 }
 
-UInt32 Texture2D::GetHeight() const {
+UInt32 Texture2D::GetHeight() const
+{
     if (!native_image_)
         return 0;
     return native_image_->GetHeight();
 }
 
-UInt32 Texture2D::GetNumChannels() const { return native_image_->GetNumChannels(); }
+UInt32 Texture2D::GetNumChannels() const
+{
+    return native_image_->GetNumChannels();
+}
 
-UInt32 Texture2D::GetMipLevelCount() const { return native_image_->GetMipLevelCount(); }
+UInt32 Texture2D::GetMipLevelCount() const
+{
+    return native_image_->GetMipLevelCount();
+}
 
 
-RHI::Format Texture2D::GetFormat() const {
+RHI::Format Texture2D::GetFormat() const
+{
     if (!native_image_)
         return RHI::Format::Count;
     return native_image_->GetFormat();
 }
 
-Texture2D *Texture2D::GetDefault() {
+Texture2D *Texture2D::GetDefault()
+{
     ProfileScope _(__func__);
     const auto rtn = AssetDataBase::LoadFromPath<Texture2D>("Assets/Texture/Default.png");
     Assert(rtn != nullptr, "Default.png不存在");
     return rtn;
 }
 
-Rect2Df Texture2D::GetUVRect(const SpriteRange &sprite_range) const {
+Rect2Df Texture2D::GetUVRect(const SpriteRange &sprite_range) const
+{
     ProfileScope _(__func__);
     Rect2Df uv_rect;
     uv_rect.pos.X = static_cast<Float>(sprite_range.range.pos.X) / static_cast<Float>(GetWidth());
@@ -227,10 +271,13 @@ Rect2Df Texture2D::GetUVRect(const SpriteRange &sprite_range) const {
     return uv_rect;
 }
 
-SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
+SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const
+{
     ProfileScope _(__func__);
-    for (const auto &sprite_range: sprite_ranges_) {
-        if (sprite_range.id == id) {
+    for (const auto &sprite_range : sprite_ranges_)
+    {
+        if (sprite_range.id == id)
+        {
             return sprite_range;
         }
     }
@@ -238,30 +285,56 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const {
 }
 
 
-SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const {
+SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const
+{
     desc.image = native_image_.get();
     return GetGfxContext()->CreateImageView(desc);
 }
 
-void Texture2D::SetTextureFormat(Format format) {
-    if (meta_.Format != format) {
+Texture2D *Texture2D::GetDefaultCubeTexture2D()
+{
+    static Texture2D *DefaultCube = nullptr;
+    if (!DefaultCube)
+    {
+        Texture2DMeta NewMeta;
+        NewMeta.IsDynamic = true;
+        NewMeta.Width = 1;
+        NewMeta.Height = 1;
+        NewMeta.Format = Format::R8G8B8A8_UNorm;
+        NewMeta.IsCubeMap = true;
+        DefaultCube = CreateNewObject<Texture2D>();
+        DefaultCube->Load(NewMeta);
+    }
+    return DefaultCube;
+}
+
+void Texture2D::SetTextureFormat(Format format)
+{
+    if (meta_.Format != format)
+    {
         meta_.Format = format;
         SetNeedSave();
         Load(meta_);
     }
 }
 
-bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect) {
+bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect)
+{
     ProfileScope _(__func__);
-    if (target_rect.pos.X + target_rect.size.X > GetWidth() || target_rect.pos.Y + target_rect.size.Y > GetHeight()) {
+    if (target_rect.pos.X + target_rect.size.X > GetWidth() || target_rect.pos.Y + target_rect.size.Y > GetHeight())
+    {
         Log(Error) << "target_rect超出了Texture2D的尺寸";
         return false;
     }
-    if (range::AnyOf(sprite_ranges_, [id](const SpriteRange &sprite_range) { return sprite_range.id == id; })) {
+    if (range::AnyOf(sprite_ranges_, [id](const SpriteRange &sprite_range) {
+        return sprite_range.id == id;
+    }))
+    {
         Log(Error) << String::Format("id为{}的SpriteRange已经存在", id);
         return false;
     }
-    if (!data) {
+    if (!data)
+    {
         return false;
     }
     // 拷贝数据到图像
@@ -275,32 +348,38 @@ bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect) {
     return true;
 }
 
-bool Texture2D::AppendSprite(const UInt64 id, const char *data, const UInt32 width, const UInt32 height) {
+bool Texture2D::AppendSprite(const UInt64 id, const char *data, const UInt32 width, const UInt32 height)
+{
     ProfileScope _(__func__);
     Vector2i bound;
     const UInt32 tex_w = GetWidth();
     const UInt32 tex_h = GetHeight();
     bound.X = tex_w, bound.Y = tex_h;
     Array<Vector2i> sprite_ranges;
-    for (const auto &sprite_range: sprite_ranges_) {
+    for (const auto &sprite_range : sprite_ranges_)
+    {
         sprite_ranges.Add(sprite_range.range.size);
     }
     const Rect2Di target_rect =
-            algo::RectPacking::GetNextAvailableRect(bound, sprite_ranges, {static_cast<Int32>(width), static_cast<Int32>(height)});
+        algo::RectPacking::GetNextAvailableRect(bound, sprite_ranges, {static_cast<Int32>(width), static_cast<Int32>(height)});
     return AppendSprite(id, data, target_rect);
 }
 
-bool Texture2D::AppendSprite(const UInt64 id, StringView path) {
+bool Texture2D::AppendSprite(const UInt64 id, StringView path)
+{
     ProfileScope _(__func__);
-    if (!File::IsExist(path)) {
+    if (!File::IsExist(path))
+    {
         Log(Error) << String::Format("AppendSprite: 文件{}不存在", *path);
         return false;
     }
     Int32 width = 0, height = 0, channels = 0;
     stbi_uc *pixels = LoadImageStb(path, &width, &height, &channels);
     auto num_channel = GetNumChannels();
-    if (channels != num_channel) {
-        if (num_channel == 4 && channels == 3) {
+    if (channels != num_channel)
+    {
+        if (num_channel == 4 && channels == 3)
+        {
             const auto new_pixels = ConvertChannels(pixels, width, height, channels, num_channel);
             stbi_image_free(pixels);
             const bool success = AppendSprite(id, reinterpret_cast<char *>(new_pixels), width, height);
@@ -315,15 +394,21 @@ bool Texture2D::AppendSprite(const UInt64 id, StringView path) {
     return success;
 }
 
-void Texture2D::Download() const { Download(GetAssetPath()); }
+void Texture2D::Download() const
+{
+    Download(GetAssetPath());
+}
 
-void Texture2D::Download(StringView path) const {
+void Texture2D::Download(StringView path) const
+{
     ProfileScope _(__func__);
-    if (path.IsEmpty()) {
+    if (path.IsEmpty())
+    {
         Log(Error) << "下载纹理失败: 资源路径为空";
         return;
     }
-    if (path.EndsWith(".png")) {
+    if (path.EndsWith(".png"))
+    {
         // 将图像数据拉取下来保存到新的图片中
         const auto w = GetWidth();
         const auto h = GetHeight();
@@ -333,7 +418,9 @@ void Texture2D::Download(StringView path) const {
         stbi_write_png(*path, w, h, num_channels, data, w * num_channels);
 
         cpu_buffer->EndRead();
-    } else if (path.EndsWith(".hdr")) {
+    }
+    else if (path.EndsWith(".hdr"))
+    {
         // 将图像数据拉取下来保存到新的图片中
         const auto w = GetWidth();
         const auto h = GetHeight();
@@ -345,13 +432,16 @@ void Texture2D::Download(StringView path) const {
     }
 }
 
-UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels) {
+UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels)
+{
     if (src_channels == dst_channels)
         return data;
     const UInt64 required_size = width * height * dst_channels;
     const auto result = static_cast<UInt8 *>(Malloc(required_size));
-    if (src_channels == 3 && dst_channels == 4) {
-        for (UInt64 i = 0; i < width * height; i++) {
+    if (src_channels == 3 && dst_channels == 4)
+    {
+        for (UInt64 i = 0; i < width * height; i++)
+        {
             result[i * 4 + 0] = data[i * 3 + 0];
             result[i * 4 + 1] = data[i * 3 + 1];
             result[i * 4 + 2] = data[i * 3 + 2];
@@ -361,40 +451,49 @@ UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 
     return result;
 }
 
-String Texture2D::GetSpriteRangeString() const {
+String Texture2D::GetSpriteRangeString() const
+{
     String sprite_range_str;
-    for (auto sprite_range: sprite_ranges_) {
+    for (auto sprite_range : sprite_ranges_)
+    {
         sprite_range_str += String::Format("{}:{}-{}-{}-{}\n", sprite_range.id, sprite_range.range.pos.X, sprite_range.range.pos.Y,
                                            sprite_range.range.size.X, sprite_range.range.size.Y);
     }
     return sprite_range_str;
 }
 
-void Texture2D::SetSpriteRangeString(const StringView str) {
+void Texture2D::SetSpriteRangeString(const StringView str)
+{
     auto sprite_range_lines = str.Split();
-    for (auto sprite_range_line: sprite_range_lines) {
+    for (auto sprite_range_line : sprite_range_lines)
+    {
         auto id_range = sprite_range_line.Split(":");
-        if (id_range.Count() != 2) {
+        if (id_range.Count() != 2)
+        {
             Log(Error) << String::Format("SetSpriteRangeString: sprite range line {}格式不正确!", *sprite_range_line);
             continue;
         }
         SpriteRange range;
         UInt64 id;
         const auto result = std::from_chars(id_range[0].Data(), id_range[0].Data() + id_range[0].ByteCount(), id);
-        if (result.ec != std::errc()) {
+        if (result.ec != std::errc())
+        {
             Log(Error) << String::Format("SetSpriteRangeString: sprite range line {} id解析失败!", *sprite_range_line);
             continue;
         }
         range.id = id;
         auto range_str = id_range[1].Split("-");
-        if (range_str.Count() != 4) {
+        if (range_str.Count() != 4)
+        {
             Log(Error) << String::Format("SetSpriteRangeString: sprite range line {} range格式不正确!", *sprite_range_line);
             continue;
         }
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             Int32 element = 0;
             if (const auto [ptr, ec] = std::from_chars(range_str[i].Data(), range_str[i].Data() + range_str[i].ByteCount(), element);
-                ec != std::errc()) {
+                ec != std::errc())
+            {
                 Log(Warn) << String::Format("SetSpriteRangeString: sprite range line {} range {}解析失败!", *sprite_range_line, i);
                 continue;
             }
@@ -411,11 +510,15 @@ void Texture2D::SetSpriteRangeString(const StringView str) {
     }
 }
 
-void Texture2D::Save() {
+void Texture2D::Save()
+{
     Super::Save();
-    if (auto op_meta = AssetDataBase::QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *GetAssetPath()))) {
+    if (auto op_meta = AssetDataBase::QueryMeta<Texture2DMeta>(String::Format("path = '{}'", *GetAssetPath())))
+    {
         AssetDataBase::UpdateMeta(meta_);
-    } else {
+    }
+    else
+    {
         VLOG_ERROR("更新前请先导入! handle = ", GetHandle(), " path = ", *GetAssetPath());
     }
 }
