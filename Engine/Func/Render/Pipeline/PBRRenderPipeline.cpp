@@ -186,7 +186,7 @@ void PBRRenderPipeline::PerformImGuiPass(RHI::CommandBuffer &cmd, const RenderPa
     EndImGuiFrame(cmd);
 }
 
-glm::mat4 GetViewMatrix(Int32 Face)
+static glm::mat4 GetViewMatrix(Int32 Face, Vector3f InLocation)
 {
     glm::mat4 ViewMatrix = glm::mat4(1.0f);
     switch (Face)
@@ -212,6 +212,7 @@ glm::mat4 GetViewMatrix(Int32 Face)
         ViewMatrix = glm::rotate(ViewMatrix, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         break;
     }
+    // ViewMatrix = glm::rotate(ViewMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     return ViewMatrix;
 }
 
@@ -223,6 +224,7 @@ void PBRRenderPipeline::PerformShadowPass(RHI::CommandBuffer &Cmd)
     ThreadManager::ScheduleFutureAsync(exec::Just() | exec::Then([this, Model, Projection, LightLocation] {
         mShadowPassMaterial->SetMatrix4x4("uMatrix.Projection", Projection | ToMatrix4x4f);
         mShadowPassMaterial->SetFloat3("uFloat.LightPos", LightLocation);
+        mShadowPassMaterial->SetMatrix4x4("uMatrix.Model", Model | ToMatrix4x4f);
     }), NamedThread::Game);
     Cmd.BeginDebugLabel("ShadowPass");
     Cmd.ImagePipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::ColorAttachment, mShadowBox->GetImage(), {IA_Color, 0, 1, 0, 6}, 0,
@@ -245,7 +247,7 @@ void PBRRenderPipeline::PerformShadowPass(RHI::CommandBuffer &Cmd)
         Depth.load_op = AttachmentLoadOperation::Clear;
         Depth.clear_color.r = 1.0f;
         Cmd.BeginRender(Attachments, Depth, {mShadowBox->GetSize().X, mShadowBox->GetSize().Y});
-        auto View = GetViewMatrix(I);
+        auto View = GetViewMatrix(I, LightLocation);
         mShadowPassMaterial->GetSharedMaterial()->PushConstant(Cmd, View);
         for (auto &mesh : RenderContext::GetDrawStaticMesh())
         {

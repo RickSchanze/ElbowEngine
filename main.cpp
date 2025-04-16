@@ -146,8 +146,8 @@ int main()
         RenderContext::GetByRef().SetRenderPipeline(MakeUnique<PBRRenderPipeline>());
 
         auto cam_holder = Scene::GetByRef().CreateActor<ACameraHolder>();
-        cam_holder->SetLocation({0, 0, 5.5});
-        cam_holder->SetScale({0.8, 0.8, 0.8});
+        // cam_holder->SetLocation({0, 0, 5.5});
+        // cam_holder->SetScale({0.8, 0.8, 0.8});
         cam_holder->SetDisplayName("摄像机");
         const auto handle = TickEvents::Evt_WorldPostTick.AddBind(&TickManagerUpdate);
         auto mesh_actor = Scene::GetByRef().CreateActor<Actor>();
@@ -172,10 +172,13 @@ int main()
         ObjectMaterial->SetFloat("InFloatParams.Metallic", 1.0f);
         ObjectMaterial->SetFloat("InFloatParams.Roughness", 1.0f);
         ObjectMaterial->SetFloat("InFloatParams.AO", 1.0f);
+        auto* LightActor = Scene::GetByRef().CreateActor<Actor>();
+        LightActor->SetDisplayName("光");
         auto light = cam_holder->AddComponent<PointLightComponent>();
         light->SetColor(Color::White());
         mesh->SetMaterial(ObjectMaterial);
         light->SetIntensity(5);
+        // light->SetLocation({0, 5, 0});
         UIManager::CreateOrActivateWindow(TypeOf<ViewportWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<InspectorWindow>());
         UIManager::CreateOrActivateWindow(TypeOf<DetailWindow>());

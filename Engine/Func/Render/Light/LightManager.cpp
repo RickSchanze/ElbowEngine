@@ -95,7 +95,7 @@ RHI::Buffer *LightManager::GetGlobalLightBuffer()
 Vector3f LightManager::GetLightPositions(PointLightComponent *Index)
 {
     auto &Self = GetByRef();
-    return Self.point_light_map_.begin()->first->GetLocation();
+    return Self.point_light_map_.begin()->first->GetWorldLocation();
 }
 
 Int8 LightManager::FindNextAvailablePointLightIndex() const

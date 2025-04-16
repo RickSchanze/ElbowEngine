@@ -75,7 +75,7 @@ FragOutput Fragment(VertexOutput Input) {
         float3 H = normalize(L + V);
         float Distance = length(uDynamicLights.PointLights[I].Location - Input.WorldPosition);
         // 判断有没有在阴影
-        float SampledDistance = Tex_ShadowMap.Sample(LinearSampler, Input.WorldPosition - uDynamicLights.PointLights[I].Location);
+        float SampledDistance = Tex_ShadowMap.Sample(LinearSampler, -L);
         if (Distance > SampledDistance) {
             continue;
         }

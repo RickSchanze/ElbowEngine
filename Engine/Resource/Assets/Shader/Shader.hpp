@@ -54,8 +54,8 @@ enum class ShaderParamType
 
 struct ShaderParam
 {
-    ShaderParamType type;
-    UInt32 binding; // binding
+    ShaderParamType Type;
+    UInt32 Binding; // binding
     UInt32 size = 0; // 整个结构的大小, 等于零表示这个是结构体成员
     Bool is_struct_member = false; // 是否是结构体成员
     UInt32 offset = 0; // 在整个结构中的偏移量

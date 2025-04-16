@@ -22,19 +22,19 @@ static UInt64 CalcUniformBufferOffsetsTotalSize(const Array<ShaderParam> &params
     Map<UInt32, ShaderParam> binding_shader_params;
     for (auto &param : params)
     {
-        if (param.type == ShaderParamType::PushConstant)
+        if (param.Type == ShaderParamType::PushConstant)
             continue;
-        if (param.type == ShaderParamType::CubeTexture2D)
+        if (param.Type == ShaderParamType::CubeTexture2D)
             continue;
-        if (param.type == ShaderParamType::Struct)
+        if (param.Type == ShaderParamType::Struct)
         {
-            binding_shader_params[param.binding] = param;
+            binding_shader_params[param.Binding] = param;
         }
         if (!param.is_struct_member)
         {
-            if (param.type != ShaderParamType::Texture2D && param.type != ShaderParamType::SamplerState)
+            if (param.Type != ShaderParamType::Texture2D && param.Type != ShaderParamType::SamplerState)
             {
-                binding_shader_params[param.binding] = param;
+                binding_shader_params[param.Binding] = param;
             }
         }
     }
@@ -132,53 +132,53 @@ void SharedMaterialManager::UpdateSharedMaterialSet()
     }
 }
 
-static UInt64 RearrangeShaderParams(const Array<ShaderParam> &params, Map<UInt64, MaterialParamBlock> &offsets,
+static UInt64 RearrangeShaderParams(const Array<ShaderParam> &InParams, Map<UInt64, MaterialParamBlock> &offsets,
                                     Map<UInt64, MaterialParamBlock> &texture_bindings,
                                     Map<UInt64, MaterialParamBlock> &sampler_bindings,
                                     Map<UInt64, MaterialParamBlock> &struct_only_offsets)
 {
     ProfileScope _(__func__);
     Map<UInt32, MaterialParamBlock> blocks;
-    UInt64 size = CalcUniformBufferOffsetsTotalSize(params, blocks);
-    for (auto &param : params)
+    UInt64 size = CalcUniformBufferOffsetsTotalSize(InParams, blocks);
+    for (auto &Param : InParams)
     {
-        UInt64 name_hash = param.name.GetHashCode();
-        if (param.type == ShaderParamType::Texture2D)
+        UInt64 name_hash = Param.name.GetHashCode();
+        if (Param.Type == ShaderParamType::Texture2D || Param.Type == ShaderParamType::CubeTexture2D)
         {
             MaterialParamBlock param_block{};
-            param_block.binding = param.binding;
-            param_block.type = param.type;
+            param_block.binding = Param.Binding;
+            param_block.type = Param.Type;
             texture_bindings[name_hash] = param_block;
         }
-        else if (param.type == ShaderParamType::SamplerState)
+        else if (Param.Type == ShaderParamType::SamplerState)
         {
             MaterialParamBlock param_block{};
-            param_block.binding = param.binding;
-            param_block.type = param.type;
+            param_block.binding = Param.Binding;
+            param_block.type = Param.Type;
             sampler_bindings[name_hash] = param_block;
         }
-        else if (param.type == ShaderParamType::StorageTexture2D)
+        else if (Param.Type == ShaderParamType::StorageTexture2D)
         {
             MaterialParamBlock param_block{};
-            param_block.binding = param.binding;
-            param_block.type = param.type;
+            param_block.binding = Param.Binding;
+            param_block.type = Param.Type;
             texture_bindings[name_hash] = param_block;
         }
         else
         {
-            if (param.is_struct_member)
+            if (Param.is_struct_member)
             {
-                MaterialParamBlock block = blocks[param.binding];
-                block.size = param.size;
-                block.offset = param.offset + block.offset;
-                block.binding = param.binding;
-                block.type = param.type;
+                MaterialParamBlock block = blocks[Param.Binding];
+                block.size = Param.size;
+                block.offset = Param.offset + block.offset;
+                block.binding = Param.Binding;
+                block.type = Param.Type;
                 offsets[name_hash] = block;
             }
             else
             {
-                offsets[name_hash] = blocks[param.binding];
-                struct_only_offsets[name_hash] = blocks[param.binding];
+                offsets[name_hash] = blocks[Param.Binding];
+                struct_only_offsets[name_hash] = blocks[Param.Binding];
             }
         }
     }
@@ -246,7 +246,7 @@ SharedMaterial::SharedMaterial(Shader *shader)
     shader->GetParams(params, has_camera, has_light);
     for (auto &param : params)
     {
-        if (param.type == ShaderParamType::PushConstant)
+        if (param.Type == ShaderParamType::PushConstant)
         {
             mPushConstant.Offset = param.offset;
             mPushConstant.Size = param.size;

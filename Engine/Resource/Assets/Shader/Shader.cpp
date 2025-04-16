@@ -171,7 +171,7 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
     if (UInt32 field_cnt = element_type_layout->getFieldCount(); field_cnt == 0)
     {
         ShaderParam param{};
-        param.binding = binding;
+        param.Binding = binding;
         param.size = element_type_layout->getSize();
         param.offset = 0;
         param.name = variable_name;
@@ -181,23 +181,23 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
             Log(Error) << String::Format("{}:{} 无法识别的类型", *path, *variable_name);
             return false;
         }
-        param.type = type;
+        param.Type = type;
         GetLabel(variable, param.label);
         output.Add(param);
     }
     else
     {
         ShaderParam param1{};
-        param1.binding = binding;
+        param1.Binding = binding;
         param1.size = element_type_layout->getSize();
         param1.offset = 0;
         param1.name = variable_name;
-        param1.type = ShaderParamType::Struct;
+        param1.Type = ShaderParamType::Struct;
         output.Add(param1);
         for (UInt32 i = 0; i < field_cnt; ++i)
         {
             ShaderParam param{};
-            param.binding = binding;
+            param.Binding = binding;
             param.is_struct_member = true;
             auto field_type_layout = element_type_layout->getFieldByIndex(i);
             auto field_variable = element_type->getFieldByIndex(i);
@@ -217,7 +217,7 @@ static bool FindAllConstantBufferParams(slang::TypeLayoutReflection *constant_bu
             }
             else
             {
-                param.type = param_type;
+                param.Type = param_type;
             }
             GetLabel(field_variable, param.label);
             output.Add(param);
@@ -253,11 +253,11 @@ void Shader::GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &Has
             if (field_layout->getCategory() == slang::PushConstantBuffer)
             {
                 ShaderParam Param{};
-                Param.binding = field_layout->getBindingIndex();
+                Param.Binding = field_layout->getBindingIndex();
                 Param.size = field_layout->getTypeLayout()->getSize();
                 Param.offset = field_layout->getOffset();
                 Param.name = field_layout->getName();
-                Param.type = ShaderParamType::PushConstant;
+                Param.Type = ShaderParamType::PushConstant;
                 OutParams.Add(Param);
                 continue;
             }
@@ -278,16 +278,16 @@ void Shader::GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &Has
                 if (variable_kind == slang::TypeReflection::Kind::SamplerState)
                 {
                     ShaderParam param{};
-                    param.binding = variable_binding;
+                    param.Binding = variable_binding;
                     param.name = field_layout->getName();
-                    param.type = ShaderParamType::SamplerState;
+                    param.Type = ShaderParamType::SamplerState;
                     GetLabel(field, param.label);
                     OutParams.Add(param);
                 }
                 if (variable_kind == slang::TypeReflection::Kind::Resource)
                 {
                     ShaderParam param{};
-                    param.binding = variable_binding;
+                    param.Binding = variable_binding;
                     param.name = field_layout->getName();
                     if (const auto type = FindParamType(GetName(), param.name, field_layout->getTypeLayout());
                         type == ShaderParamType::Count)
@@ -296,7 +296,7 @@ void Shader::GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &Has
                     }
                     else
                     {
-                        param.type = type;
+                        param.Type = type;
                         OutParams.Add(param);
                     }
                 }
