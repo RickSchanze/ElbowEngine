@@ -7,6 +7,7 @@
 #include "Core/Object/ObjectPtr.hpp"
 #include "Resource/Assets/Asset.hpp"
 
+#include GEN_HEADER("Font.generated.hpp")
 
 class Texture2D;
 struct FontMeta;
@@ -24,8 +25,8 @@ struct FontCharacterInfo {
     UInt32 advance{}; // 从远点到下一个字形原点的距离
 };
 
-class REFLECTED() Font : public Asset {
-    REFLECTED_CLASS(Font)
+class ECLASS() Font : public Asset {
+    GENERATED_BODY(Font)
 public:
     static Font *GetDefaultFont();
     static Material *GetDefaultFontMaterial();
@@ -35,7 +36,7 @@ public:
 
     void PerformLoad() override;
 
-    void PerformUnload() override { font_atlas_ = nullptr; }
+    void PerformUnload() override;
 
     bool Load(const FontMeta &meta);
 
@@ -72,6 +73,8 @@ private:
     String path_; // 资源路径
     Int32 font_atlas_width_ = 0; // 字体图集的宽度
     Int32 font_atlas_height_ = 0; // 字体图集的高度
+
+    EFIELD()
     ObjectPtr<Texture2D> font_atlas_ = nullptr; // 字体图集
     Map<UInt32, FontCharacterInfo> glyphs_; // 记录每个字符对应font atlas的信息
 
@@ -80,7 +83,3 @@ private:
 
     Vector2i cursor_ = {0, 0};
 };
-
-IMPL_REFLECTED_INPLACE(Font) {
-    return Type::Create<Font>("Font") | refl_helper::AddParents<Asset>() | refl_helper::AddField("font_atlas", &Font::font_atlas_);
-}

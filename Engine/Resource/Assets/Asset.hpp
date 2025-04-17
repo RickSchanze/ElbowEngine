@@ -7,9 +7,10 @@
 #include "Core/Object/PersistentObject.hpp"
 #include "Resource/AssetType.hpp"
 
-REFLECTED()
-class Asset : public PersistentObject {
-    REFLECTED_CLASS(Asset)
+#include GEN_HEADER("Asset.generated.hpp")
+
+class ECLASS() Asset : public PersistentObject {
+    GENERATED_BODY(Asset)
 public:
     virtual AssetType GetAssetType() const { return AssetType::Count; }
 
@@ -21,5 +22,3 @@ public:
     bool need_save_ = false;
 #endif
 };
-
-REGISTER_TYPE(Asset)

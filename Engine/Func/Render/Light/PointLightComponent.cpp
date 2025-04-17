@@ -6,10 +6,6 @@
 
 #include "LightManager.hpp"
 
-IMPL_REFLECTED(PointLightComponent) {
-    return Type::Create<PointLightComponent>("PointLightComponent") | refl_helper::AddParents<SceneComponent>() |
-           refl_helper::AddField("dynamic", &PointLightComponent::dynamic_);
-}
 
 PointLightComponent::PointLightComponent() {
     LightManager::AddLight(this);

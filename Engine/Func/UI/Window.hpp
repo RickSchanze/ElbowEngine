@@ -9,10 +9,12 @@
 #include "Core/Math/Types.hpp"
 #include "Core/Object/Object.hpp"
 
+#include GEN_HEADER("Window.generated.hpp")
+
 
 struct ImVec2;
-class Window : public Object {
-    REFLECTED_CLASS(Window)
+class ECLASS() Window : public Object {
+    GENERATED_BODY(Window)
 public:
     virtual StringView GetWindowIdentity();
     bool IsVisible() const { return mVisible; }
@@ -21,8 +23,6 @@ public:
 protected:
     bool mVisible = true;
 };
-
-REGISTER_TYPE(Window)
 
 // 一些通用扩展
 namespace impl {

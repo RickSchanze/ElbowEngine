@@ -8,8 +8,6 @@
 #include "Func/World/Scene/Scene.hpp"
 #include "ImGuiDrawer.hpp"
 
-IMPL_REFLECTED(InspectorWindow) { return Type::Create<InspectorWindow>("InspectorWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
-
 void InspectorWindow::Draw() {
     static bool a = true;
     static float b[3];

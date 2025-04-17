@@ -10,7 +10,7 @@
 #include "Resource/Assets/Asset.hpp"
 #include "Texture2DMeta.hpp"
 
-
+#include GEN_HEADER("Texture2D.generated.hpp")
 namespace RHI
 {
 struct ImageViewDesc;
@@ -36,9 +36,9 @@ struct SpriteRange
     }
 };
 
-class REFLECTED() Texture2D : public Asset
+class ECLASS() Texture2D : public Asset
 {
-    REFLECTED_CLASS(Texture2D)
+    GENERATED_BODY(Texture2D)
 public:
     AssetType GetAssetType() const override
     {

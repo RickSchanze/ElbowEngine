@@ -5,10 +5,11 @@
 #include "Core/Object/Object.hpp"
 #include "Core/Object/ObjectPtr.hpp"
 
+#include GEN_HEADER("Component.generated.hpp")
 
 class Actor;
-class Component : public Object {
-    REFLECTED_CLASS(Component)
+class ECLASS() Component : public Object {
+    GENERATED_BODY(Component)
 public:
     Component();
     Component(const Component &) = delete;
@@ -18,6 +19,6 @@ public:
     Actor *GetOwner() const { return owner_; }
 
 protected:
-    REFLECTED()
+    EFIELD()
     ObjectPtr<Actor> owner_ = nullptr;
 };

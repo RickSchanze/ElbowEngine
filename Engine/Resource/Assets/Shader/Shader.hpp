@@ -7,7 +7,8 @@
 #include "Core/Misc/SharedPtr.hpp"
 #include "Resource/Assets/Asset.hpp"
 #include "slang-com-ptr.h"
-#pragma once
+
+#include GEN_HEADER("Shader.generated.hpp")
 
 namespace RHI
 {
@@ -71,11 +72,10 @@ struct ShaderParam
  * 一个slang可以通过[shader]语法声明多个shader
  * 不能有相同的stage
  */
-REFLECTED()
 
-class Shader : public Asset
+class ECLASS() Shader : public Asset
 {
-    REFLECTED_CLASS(Shader)
+    GENERATED_BODY(Shader)
 public:
     constexpr static auto SHADER_STAGE_COUNT = 3;
     constexpr static auto VERTEX_STAGE_IDX = 0;

@@ -10,8 +10,6 @@
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 
-IMPL_REFLECTED(CameraComponent) { return Type::Create<CameraComponent>("CameraComponent") | refl_helper::AddParents<SceneComponent>(); }
-
 CameraComponent::CameraComponent() : SceneComponent() {
     SetDisplayName("摄像机组件");
     name_ = "CameraComponent";

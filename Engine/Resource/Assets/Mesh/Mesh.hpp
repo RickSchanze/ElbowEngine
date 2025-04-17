@@ -8,6 +8,7 @@
 #include "MeshMeta.hpp"
 #include "Resource/Assets/Asset.hpp"
 
+#include GEN_HEADER("Mesh.generated.hpp")
 
 struct MeshMeta;
 namespace RHI {
@@ -22,9 +23,8 @@ struct MeshStorage {
     [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
-REFLECTED()
-class Mesh : public Asset {
-    REFLECTED_CLASS(Mesh)
+class ECLASS() Mesh : public Asset {
+    GENERATED_BODY(Mesh)
 public:
     [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
 
@@ -49,5 +49,3 @@ private:
     MeshMeta mMate{};
     Atomic<bool> mLoaded = false;
 };
-
-IMPL_REFLECTED_INPLACE(Mesh) { return Type::Create<Mesh>("Mesh") | refl_helper::AddParents<Asset>(); }

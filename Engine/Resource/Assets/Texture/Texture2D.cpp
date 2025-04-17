@@ -29,11 +29,6 @@
 
 using namespace RHI;
 
-IMPL_REFLECTED_INPLACE(Texture2D)
-{
-    return Type::Create<Texture2D>("Texture2D") | refl_helper::AddParents<Asset>();
-}
-
 static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *channels)
 {
 #ifdef ELBOW_PLATFORM_WINDOWS

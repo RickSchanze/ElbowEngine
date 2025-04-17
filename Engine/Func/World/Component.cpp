@@ -5,9 +5,6 @@
 #include "Component.hpp"
 #include "Actor.hpp"
 
-IMPL_REFLECTED_INPLACE(Component) {
-    return Type::Create<Component>("Component") | refl_helper::AddParents<Object>() | refl_helper::AddField("owner", &Component::owner_);
-}
 
 Component::Component() {
     name_ = "Component";

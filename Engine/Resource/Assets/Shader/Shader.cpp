@@ -20,11 +20,6 @@
 #include "SlangShaderLoader.hpp"
 using namespace RHI;
 
-IMPL_REFLECTED_INPLACE(Shader)
-{
-    return Type::Create<Shader>("Shader") | refl_helper::AddParents<Asset>();
-}
-
 void Shader::PerformLoad()
 {
     auto op_meta = AssetDataBase::QueryMeta<ShaderMeta>(GetHandle());

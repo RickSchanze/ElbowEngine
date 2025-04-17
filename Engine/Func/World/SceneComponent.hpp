@@ -6,9 +6,11 @@
 #include "Core/Core.hpp"
 #include "Transform.hpp"
 
-class SceneComponent : public Component
+#include GEN_HEADER("SceneComponent.generated.hpp")
+
+class ECLASS() SceneComponent : public Component
 {
-    REFLECTED_CLASS(SceneComponent)
+    GENERATED_BODY(SceneComponent)
 
 public:
     const Transform &GetTransform() const
@@ -66,7 +68,7 @@ public:
     void Rotate(Vector3f eluer_degree);
 
 protected:
-    REFLECTED()
+    EFIELD()
     Transform transform_;
     Transform mWorldTransform;
 

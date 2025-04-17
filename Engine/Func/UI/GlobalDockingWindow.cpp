@@ -12,10 +12,7 @@
 #include "Func/Render/RenderContext.hpp"
 #include "ImGuiDemoWindow.hpp"
 #include "InspectorWindow.hpp"
-#include "Platform/Window/TestFunctionWindow.hpp"
 #include "UIManager.hpp"
-
-IMPL_REFLECTED(GlobalDockingWindow) { return Type::Create<GlobalDockingWindow>("GlobalDockingWindow") | refl_helper::AddParents<ImGuiDrawWindow>(); }
 
 void GlobalDockingWindow::Draw() {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -47,9 +44,6 @@ void GlobalDockingWindow::Draw() {
             }
             if (ImGui::MenuItem("细节")) {
                 UIManager::CreateOrActivateWindow<DetailWindow>();
-            }
-            if (ImGui::MenuItem("功能测试")) {
-                UIManager::CreateOrActivateWindow<TestFunctionWindow>();
             }
             ImGui::EndMenu();
         }

@@ -12,11 +12,6 @@
 #include "Platform/RHI/GfxContext.hpp"
 #include "Resource/Assets/Material/Material.hpp"
 
-IMPL_REFLECTED(PBRRenderPipelineSettingWindow)
-{
-    return Type::Create<PBRRenderPipelineSettingWindow>("PBRRenderPipelineSettingWindow") | refl_helper::AddParents<ImGuiDrawWindow>();
-}
-
 void PBRRenderPipelineSettingWindow::Draw()
 {
     if (ImGuiDrawer::Begin("PBR渲染管线设置"))

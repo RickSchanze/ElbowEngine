@@ -5,10 +5,12 @@
 #pragma once
 #include "ImGuiDrawWindow.hpp"
 
+#include GEN_HEADER("InspectorWindow.generated.hpp")
+
 
 class Actor;
-class InspectorWindow : public ImGuiDrawWindow {
-    REFLECTED_CLASS(InspectorWindow)
+class ECLASS() InspectorWindow : public ImGuiDrawWindow {
+    GENERATED_BODY(InspectorWindow)
 public:
     void Draw() override;
     StringView GetWindowIdentity() override { return "InspectorWindow"; }
@@ -17,5 +19,3 @@ public:
 private:
     Actor *selected_actor_ = nullptr;
 };
-
-REGISTER_TYPE(InspectorWindow)

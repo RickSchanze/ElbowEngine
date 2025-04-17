@@ -8,22 +8,23 @@
 #include "ITick.hpp"
 #include "Transform.hpp"
 
+#include GEN_HEADER("Actor.generated.hpp")
 
 class Component;
-class Actor : public Object, public ITick {
-    REFLECTED_CLASS(Actor)
+class ECLASS() Actor : public Object, public ITick {
+    GENERATED_BODY(Actor)
 public:
-    Transform &GetTransform() { return transform_; }
+    Transform &GetTransform() { return mTransform; }
     void SetTransform(const Transform &transform);
-    Vector3f GetLocation() const { return transform_.Location; }
+    Vector3f GetLocation() const { return mTransform.Location; }
     Vector3f GetWorldLocation() const;
     void SetLocation(const Vector3f &location);
-    Quaternionf GetRotationQuaterion() const { return transform_.GetRotationQuaterion(); }
+    Quaternionf GetRotationQuaterion() const { return mTransform.GetRotationQuaterion(); }
 
     void SetRotation(const Quaternionf &rotation);
     void SetRotation(const Vector3f &eluer);
 
-    Vector3f GetScale() const { return transform_.Scale; }
+    Vector3f GetScale() const { return mTransform.Scale; }
     void SetScale(const Vector3f &scale);
 
     void PreTick(MilliSeconds delta_time) override;
@@ -43,12 +44,10 @@ protected:
     void SetTransformDirty(bool dirty = true) { transform_dirty_ = dirty; }
 
 private:
-    REFLECTED()
-    Transform transform_;
+    EFIELD()
+    Transform mTransform;
 
     bool transform_dirty_ = true;
 
     Array<ObjectPtr<Component>> components_;
 };
-
-REGISTER_TYPE(Actor)

@@ -5,9 +5,10 @@
 #pragma once
 #include "Func/World/SceneComponent.hpp"
 
+#include GEN_HEADER("PointLightComponent.generated.hpp")
 
-class PointLightComponent : public SceneComponent {
-    REFLECTED_CLASS(PointLightComponent)
+class ECLASS() PointLightComponent : public SceneComponent {
+    GENERATED_BODY(PointLightComponent)
 
     bool dynamic_ = true;
     Color color_ = Color::White();
@@ -30,5 +31,3 @@ public:
 protected:
     void UpdateSelf();
 };
-
-REGISTER_TYPE(PointLightComponent)

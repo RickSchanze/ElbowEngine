@@ -9,11 +9,6 @@
 #include "Resource/Assets/Material/Material.hpp"
 #include "Resource/Assets/Mesh/Mesh.hpp"
 
-IMPL_REFLECTED(StaticMeshComponent) {
-    return Type::Create<StaticMeshComponent>("StaticMeshComponent") | refl_helper::AddParents<SceneComponent>() |
-           refl_helper::AddField("mesh", &ThisClass::mesh_);
-}
-
 StaticMeshComponent::StaticMeshComponent() {
     SetName("StaticMeshComponent");
     SetDisplayName("静态网格体");

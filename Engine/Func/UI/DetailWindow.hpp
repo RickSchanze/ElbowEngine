@@ -5,13 +5,17 @@
 #pragma once
 #include "ImGuiDrawWindow.hpp"
 
+#include GEN_HEADER("DetailWindow.generated.hpp")
 
-class DetailWindow : public ImGuiDrawWindow {
-    REFLECTED_CLASS(DetailWindow)
+class ECLASS() DetailWindow : public ImGuiDrawWindow
+{
+    GENERATED_BODY(DetailWindow)
 
 public:
     void Draw() override;
-    StringView GetWindowIdentity() override { return "DetailWindow"; }
-};
 
-REGISTER_TYPE(DetailWindow)
+    StringView GetWindowIdentity() override
+    {
+        return "DetailWindow";
+    }
+};

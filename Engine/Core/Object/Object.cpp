@@ -16,25 +16,6 @@
 using namespace exec;
 
 class PersistentObject;
-Type *ObjectFlag_ConstructType() {
-    return Type::Create<ObjectFlagBits>("ObjectFlag") | refl_helper::AddEnumField("Persistent", OFT_Persistent) |
-           refl_helper::AddEnumField("Actor", OFT_Actor) | refl_helper::AddEnumField("Component", OFT_Component) |
-           refl_helper::AddEnumField("Widget", OFT_Widget) | refl_helper::Attribute(Type::Flag);
-}
-
-Type *ObjectState_ConstructType() {
-    return Type::Create<ObjectStateBits>("ObjectState") | refl_helper::AddEnumField("PendingKill", PendingKill) | refl_helper::Attribute(Type::Flag);
-}
-
-struct ObjectRegTrigger {
-    ObjectRegTrigger() {
-        ReflManager::Get()->Register<Object>();
-        ReflManager::Get()->Register<ObjectFlagBits>(&ObjectFlag_ConstructType);
-        ReflManager::Get()->Register<ObjectStateBits>(&ObjectState_ConstructType);
-    }
-};
-
-static inline ObjectRegTrigger _{};
 
 Object::~Object() {
     if (referenced_.Empty())

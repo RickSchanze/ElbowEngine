@@ -9,6 +9,7 @@
 #include "Core/Object/ObjectPtr.hpp"
 #include "Resource/Assets/Asset.hpp"
 
+#include GEN_HEADER("Material.generated.hpp")
 
 namespace RHI
 {
@@ -36,9 +37,9 @@ class DescriptorSet;
 } // namespace rhi
 class Texture2D;
 
-class REFLECTED() Material : public Asset
+class ECLASS() Material : public Asset
 {
-    REFLECTED_CLASS(Material)
+    GENERATED_BODY(Material)
 
 public:
     Material() = default;
@@ -111,16 +112,16 @@ public:
     static Material *CreateFromShader(StringView path);
 
 protected:
-    REFLECTED()
+    EFIELD()
     ObjectPtr<Shader> shader_;
 
-    REFLECTED()
+    EFIELD()
     Map<String, Vector3f> float3_params_;
 
-    REFLECTED()
+    EFIELD()
     Map<String, Float> float_params_;
 
-    REFLECTED()
+    EFIELD()
     Map<String, ObjectPtr<Texture2D> > texture_params_;
 
     // 所有UniformBuffer都使用这一个Buffer

@@ -6,10 +6,6 @@
 
 #include "UIManager.hpp"
 
-IMPL_REFLECTED(ImGuiDrawWindow) {
-    return Type::Create<ImGuiDrawWindow>("ImGuiDrawWindow") | refl_helper::AddParents<Window>();
-}
-
 StringView ImGuiDrawWindow::GetWindowIdentity() {
     NeverEnter();
     return "空白ImGui窗口";

@@ -126,14 +126,17 @@ private:                                                                        
 #define OUT
 #define NAMEOF(x) #x
 
-template<typename T>
+template <typename T>
     requires IsEnum<T>
-StringView GetEnumString(T e) {
+StringView GetEnumString(T e)
+{
     const Type *type = TypeOf<T>();
     Assert(type != nullptr && type->IsEnumType(), "Type not valid");
-    for (auto field: type->GetSelfDefinedFields()) {
+    for (auto field : type->GetSelfDefinedFields())
+    {
         Assert(type != nullptr && type->IsEnumType(), "Type is a enum but its fields are not enum values");
-        if (field->GetEnumFieldValue() == static_cast<Int32>(e)) {
+        if (field->GetEnumFieldValue() == static_cast<Int32>(e))
+        {
             return field->GetName();
         }
     }
@@ -141,3 +144,21 @@ StringView GetEnumString(T e) {
 }
 
 void NeverEnter();
+
+// 反射标记
+#ifdef ENABLE_REFLECTION
+#define META(...) __attribute__((annotate("Reflected, " #__VA_ARGS__)))
+#define GEN_HEADER(header) <string>
+#define GENERATED_BODY(_class)
+#else
+#define META(...)
+#define GEN_HEADER(header) header
+#define GENERATED_BODY(_class) CONCAT(GENERATED_BODY, _class)
+#endif
+
+#define ECLASS(...) META(Class, __VA_ARGS__)
+#define ESTRUCT(...) META(Struct, __VA_ARGS__)
+#define EINTERFACE(...) META(Interface, __VA_ARGS__)
+#define EFIELD(...) META(Field, __VA_ARGS__)
+#define EENUM(...) META(Enum, __VA_ARGS__)
+#define EVALUE(...) META(Value, __VA_ARGS__)

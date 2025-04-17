@@ -106,6 +106,12 @@ void Font::PerformLoad() {
     SetName(meta.Path);
 }
 
+void Font::PerformUnload()
+{
+    Super::PerformUnload();
+    font_atlas_ = nullptr;
+}
+
 bool Font::Load(const FontMeta &meta) {
     path_ = meta.Path;
     font_atlas_width_ = meta.FontAtlasWidth;

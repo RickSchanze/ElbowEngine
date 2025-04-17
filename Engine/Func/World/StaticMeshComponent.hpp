@@ -5,14 +5,15 @@
 #pragma once
 #include "SceneComponent.hpp"
 
+#include GEN_HEADER("StaticMeshComponent.generated.hpp")
 
 class Material;
 namespace RHI {
     class Buffer;
 }
 class Mesh;
-class StaticMeshComponent : public SceneComponent {
-    REFLECTED_CLASS(StaticMeshComponent)
+class ECLASS() StaticMeshComponent : public SceneComponent {
+    GENERATED_BODY(StaticMeshComponent)
 
     ObjectPtr<Mesh> mesh_; // mesh资产
     ObjectPtr<Material> material_;
@@ -33,5 +34,3 @@ public:
     SharedPtr<RHI::Buffer> GetVertexBuffer() const;
     SharedPtr<RHI::Buffer> GetIndexBuffer() const;
 };
-
-REGISTER_TYPE(StaticMeshComponent)

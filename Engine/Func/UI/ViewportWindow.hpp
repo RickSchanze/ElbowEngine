@@ -6,14 +6,15 @@
 #include "Core/Math/Types.hpp"
 #include "ImGuiDrawWindow.hpp"
 
+#include GEN_HEADER("ViewportWindow.generated.hpp")
 
 class RenderTexture;
 namespace RHI {
     class DescriptorSet;
 }
 class CameraComponent;
-class ViewportWindow : public ImGuiDrawWindow {
-    REFLECTED_CLASS(ViewportWindow)
+class ECLASS() ViewportWindow : public ImGuiDrawWindow {
+    GENERATED_BODY(ViewportWindow)
 public:
     ViewportWindow();
     void Draw() override;
@@ -33,5 +34,3 @@ protected:
 
     RenderTexture *bound_render_texture_ = nullptr;
 };
-
-REGISTER_TYPE(ViewportWindow)

@@ -6,6 +6,8 @@
 #include "Func/World/SceneComponent.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 
+#include GEN_HEADER("CameraComponent.generated.hpp")
+
 struct CameraShaderData {
     Matrix4x4f view = Matrix4x4f::Identity();
     Matrix4x4f proj = Matrix4x4f::Identity();
@@ -13,8 +15,8 @@ struct CameraShaderData {
     Matrix4x4f Data = Matrix4x4f::Zero();
 };
 
-class CameraComponent : public SceneComponent {
-    REFLECTED_CLASS(CameraComponent)
+class ECLASS() CameraComponent : public SceneComponent {
+    GENERATED_BODY(CameraComponent)
 public:
     CameraComponent();
     ~CameraComponent() override;
@@ -46,5 +48,3 @@ protected:
 
     UInt64 window_resize_event_handle_ = 0;
 };
-
-REGISTER_TYPE(CameraComponent)

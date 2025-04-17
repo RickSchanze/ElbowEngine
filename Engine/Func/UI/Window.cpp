@@ -4,6 +4,4 @@
 
 #include "Window.hpp"
 
-IMPL_REFLECTED(Window) { return Type::Create<Window>("Window") | refl_helper::AddParents<Object>(); }
-
 StringView Window::GetWindowIdentity() { return "空白窗口"; }

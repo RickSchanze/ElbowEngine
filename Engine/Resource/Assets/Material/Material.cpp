@@ -17,12 +17,6 @@
 
 using namespace RHI;
 
-IMPL_REFLECTED_INPLACE(Material)
-{
-    return Type::Create<Material>("Material") | refl_helper::AddParents<Asset>() | refl_helper::AddField("shader", &Material::shader_) |
-           refl_helper::AddField("float3_params", &Material::float3_params_) | refl_helper::AddField("texture_params", &Material::texture_params_);
-}
-
 void Material::Build()
 {
     auto *shader_ptr = static_cast<Shader *>(shader_);

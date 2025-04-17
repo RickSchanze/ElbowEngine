@@ -11,14 +11,14 @@ project(ElbowEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+add_compile_options(-Wno-inconsistent-missing-override)
 add_subdirectory(Engine)
 add_executable(ElbowEngine main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Core -WHOLEARCHIVE:$<TARGET_FILE:Core>)
-target_link_libraries(${PROJECT_NAME} PRIVATE Platform -WHOLEARCHIVE:$<TARGET_FILE:Platform>)
-target_link_libraries(${PROJECT_NAME} PRIVATE Resource -WHOLEARCHIVE:$<TARGET_FILE:Resource>)
-target_link_libraries(${PROJECT_NAME} PRIVATE Func -WHOLEARCHIVE:$<TARGET_FILE:Func>)
+target_link_libraries(${PROJECT_NAME} PRIVATE Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Platform)
+target_link_libraries(${PROJECT_NAME} PRIVATE Resource)
+target_link_libraries(${PROJECT_NAME} PRIVATE Func)
 
 set(ENV{VULKAN_SDK} ${VULKAN_PATH})
 find_package(Vulkan REQUIRED)

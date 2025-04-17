@@ -6,15 +6,14 @@
 #include "Core/Object/Object.hpp"
 #include "Window.hpp"
 
+#include GEN_HEADER("ImGuiDrawWindow.generated.hpp")
 
 class ImGuiDrawer;
-class ImGuiDrawWindow : public Window {
-    REFLECTED_CLASS(ImGuiDrawWindow)
+class ECLASS() ImGuiDrawWindow : public Window {
+    GENERATED_BODY(ImGuiDrawWindow)
 
 public:
     StringView GetWindowIdentity() override;
 
     virtual void Draw();
 };
-
-REGISTER_TYPE(ImGuiDrawWindow)

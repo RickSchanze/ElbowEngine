@@ -6,10 +6,12 @@
 #include "Core/Async/ThreadManager.hpp"
 #include "Core/Core.hpp"
 
+#include GEN_HEADER("Object.generated.hpp")
 
 using ObjectHandle = Int32;
 
-enum ObjectFlagBits {
+
+enum EENUM(Flag) ObjectFlagBits {
     OFT_Persistent = 1 << 1, // 此对象需要持久化存储
     OFT_Actor = 1 << 2,
     OFT_Component = 1 << 3,
@@ -17,7 +19,8 @@ enum ObjectFlagBits {
 };
 using ObjectFlag = Int32;
 
-enum ObjectStateBits {
+
+enum EENUM(Flag) ObjectStateBits {
     PendingKill,
 };
 
@@ -27,23 +30,11 @@ using ObjectState = Int32;
  * Object不自动生成默认构造函数
  * TODO: Destroy
  */
-class Object {
+class ECLASS() Object {
     friend struct ObjectPtrBase;
     friend struct ObjectRegistry;
 
-public:
-    typedef Object ThisClass;
-    static Type *ConstructType() {
-        const auto t = Type::Create<Object>("CoreConfig") | refl_helper::AddField("name", &Object::name_) |
-                       refl_helper::AddField("flags", &Object::flags_) | refl_helper::AddField("state", &Object::state_) |
-                       refl_helper::AddField("handle", &Object::handle_) EDITOR_ONLY(| refl_helper::AddField("display_name", &Object::display_name_));
-        return t;
-    }
-
-    static void ConstructSelf(void *self) { new (self) Object(); }
-    static void DestructSelf(void *self) { static_cast<Object *>(self)->~Object(); }
-    virtual const Type *GetType() const { return TypeOf<Object>(); }
-    static const Type *GetStaticType() { return TypeOf<Object, true>(); }
+    GENERATED_BODY(Object)
 
 public:
     explicit Object(const ObjectFlag flag) : flags_(flag) { GenerateInstanceHandle(); }
@@ -66,9 +57,13 @@ public:
     void SetObjectHandle(const Int32 handle) { handle_ = handle; }
 
 protected:
+    EFIELD()
     Int32 handle_ = 0;
+    EFIELD()
     ObjectFlag flags_ = 0;
+    EFIELD()
     ObjectState state_ = 0;
+    EFIELD()
     String name_{};
 
 #if WITH_EDITOR

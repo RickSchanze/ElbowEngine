@@ -5,12 +5,16 @@
 #pragma once
 #include "ImGuiDrawWindow.hpp"
 
+#include GEN_HEADER("GlobalDockingWindow.generated.hpp")
 
-class GlobalDockingWindow : public ImGuiDrawWindow{
-    REFLECTED_CLASS(GlobalDockingWindow)
+class ECLASS() GlobalDockingWindow : public ImGuiDrawWindow
+{
+    GENERATED_BODY(GlobalDockingWindow)
 public:
     void Draw() override;
-    StringView GetWindowIdentity() override { return "GlobalDockingWindow"; }
-};
 
-REGISTER_TYPE(GlobalDockingWindow)
+    StringView GetWindowIdentity() override
+    {
+        return "GlobalDockingWindow";
+    }
+};

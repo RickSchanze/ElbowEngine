@@ -6,11 +6,6 @@
 
 #include "Actor.hpp"
 
-IMPL_REFLECTED(SceneComponent) {
-    return Type::Create<SceneComponent>("SceneComponent") | refl_helper::AddField("transform", &SceneComponent::transform_) |
-           refl_helper::AddParents<Component>();
-}
-
 void SceneComponent::SetTransform(const Transform &transform) { transform_ = transform; }
 
 Vector3f SceneComponent::GetWorldLocation() const { return mWorldTransform.Location; }

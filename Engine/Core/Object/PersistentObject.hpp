@@ -4,8 +4,10 @@
 #pragma once
 #include "Object.hpp"
 
-class PersistentObject : public Object {
-    REFLECTED_CLASS(PersistentObject);
+#include GEN_HEADER("PersistentObject.generated.hpp")
+
+class ECLASS() PersistentObject : public Object {
+    GENERATED_BODY(PersistentObject);
 
 public:
     PersistentObject() : Object(OFT_Persistent) {}
@@ -27,5 +29,3 @@ public:
 protected:
     bool dirty_ = false;
 };
-
-REGISTER_TYPE(PersistentObject)
