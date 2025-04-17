@@ -46,6 +46,10 @@ cmake-build-*/
 build/
 .cache/
 
+EHT/EHT/bin
+EHT/EHT/obj
+EHT/.idea
+
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
