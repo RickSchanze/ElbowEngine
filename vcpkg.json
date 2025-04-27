@@ -1,58 +1,42 @@
 {
-  "dependencies": [
-    {
-      "name": "mimalloc"
-    },
-    {
-      "name": "shader-slang"
-    },
-    {
-      "name": "spdlog"
-    },
-    {
-      "name": "tracy"
-    },
-    {
-      "name": "yaml-cpp"
-    },
-    {
-      "name": "concurrentqueue"
-    },
-    {
-      "name": "glm"
-    },
-    {
-      "name": "xxhash"
-    },
-    {
-      "name": "glfw3"
-    },
-    {
-      "name": "sqlitecpp"
-    },
-    {
-      "name": "nlohmann-json"
-    },
-    {
-      "name": "assimp"
-    },
-    {
-      "name": "stb"
-    },
-    {
-      "name": "freetype"
-    },
-    {
-      "name": "utfcpp"
-    },
-    {
-      "name": "tinyexr"
-    },
-    {
-      "name": "imgui",
-      "features": ["docking-experimental", "glfw-binding", "vulkan-binding"]
-    }
-  ],
-  "version": "0.0.1",
-  "name": "elbow-engine"
+  "dependencies" : [ {
+    "name" : "mimalloc"
+  }, {
+    "name" : "shader-slang"
+  }, {
+    "name" : "spdlog"
+  }, {
+    "name" : "tracy"
+  }, {
+    "name" : "yaml-cpp"
+  }, {
+    "name" : "concurrentqueue"
+  }, {
+    "name" : "glm"
+  }, {
+    "name" : "xxhash"
+  }, {
+    "name" : "glfw3"
+  }, {
+    "name" : "sqlitecpp"
+  }, {
+    "name" : "nlohmann-json"
+  }, {
+    "name" : "assimp"
+  }, {
+    "name" : "stb"
+  }, {
+    "name" : "freetype"
+  }, {
+    "name" : "utfcpp"
+  }, {
+    "name" : "tinyexr"
+  }, {
+    "name" : "imgui",
+    "features" : [ "docking-experimental", "glfw-binding", "vulkan-binding" ]
+  }, {
+    "name" : "cereal"
+  } ],
+  "version" : "0.0.1",
+  "name" : "elbow-engine"
 }

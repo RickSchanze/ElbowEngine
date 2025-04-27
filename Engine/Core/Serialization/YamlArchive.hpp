@@ -6,8 +6,11 @@
 #pragma once
 #include "Archive.hpp"
 
-class YamlArchive final : public Archive {
+struct Type;
+struct Any;
+
+class YamlArchive final {
 public:
-    bool Serialize(const Any &obj, String &out) override;
-    bool Deserialize(StringView source, void *out, const Type *type) override;
+    bool Serialize(const Any &obj, String &out);
+    bool Deserialize(StringView source, void *out, const Type *type) ;
 };

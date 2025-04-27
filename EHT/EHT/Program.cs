@@ -20,17 +20,17 @@ rootCommand.SetHandler((output, input, include) =>
 {
     if (string.IsNullOrEmpty(output))
     {
-        output = "C:/Users/Echo/Documents/Projects/ElbowEngine/cmake-build-debug/Engine";
+        output = "C:/Users/kita/Documents/Projects/ElbowEngine/cmake-build-debug/Engine";
     }
 
     if (string.IsNullOrEmpty(input))
     {
-        input = "C:/Users/Echo/Documents/Projects/ElbowEngine/Engine";
+        input = "C:/Users/kita/Documents/Projects/ElbowEngine/Engine";
     }
 
     if (string.IsNullOrEmpty(include))
     {
-        include = @"C:\Users\Echo\Documents\Projects\ElbowEngine\cmake-build-debug\vcpkg_installed\x64-windows\include";
+        include = @"C:\Users\kita\Documents\Projects\ElbowEngine\cmake-build-debug\vcpkg_installed\x64-windows\include";
     }
 
     var cMakeProjects = CMakeProjectProcessor.FindCMakeProjects(input);

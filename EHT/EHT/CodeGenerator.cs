@@ -82,7 +82,8 @@ public static class CodeGenerator
 
     public static bool Generate(ProjectMap projectMap, List<string> extraIncludes)
     {
-        List<string> files = Directory.GetFiles(projectMap.RootDirectory, "*.hpp", SearchOption.AllDirectories).ToList();
+        List<string> files = Directory.GetFiles(projectMap.RootDirectory, "*.hpp", SearchOption.AllDirectories)
+            .ToList();
         files = GetModifiedFiles(files);
         if (files.Count == 0) return true;
         CppParserOptions options = new CppParserOptions();
@@ -189,7 +190,8 @@ public static class CodeGenerator
         reflectedEntity.Enums.Add(cppEnum, attributes);
     }
 
-    static void InternalEnumerateNamespace(CppNamespace cppNamespace, Dictionary<string, FileReflectedEntities> reflectedEntities)
+    static void InternalEnumerateNamespace(CppNamespace cppNamespace,
+        Dictionary<string, FileReflectedEntities> reflectedEntities)
     {
         foreach (var newNamespace in cppNamespace.Namespaces)
         {
@@ -293,327 +295,539 @@ public static class CodeGenerator
         }
     }
 
+    static void GenerateClassFieldSerializationSaveCode(StringBuilder builder,
+        Dictionary<CppField, Dictionary<string, string>> fields)
+    {
+        foreach (var (key, value) in fields)
+        {
+            bool skipSerialization = false;
+            foreach (var (attrKey, attrValue) in value)
+            {
+                if (CheckKey(attrKey)) continue;
+                if (attrKey == "Transient")
+                {
+                    skipSerialization = true;
+                    break;
+                }
+            }
+
+            if (!skipSerialization)
+            {
+                if (key.Type.FullName is "Int8" or "Int16" or "Int32" or "Int64" or "UInt8" or "UInt16" or "UInt32"
+                    or "UInt64" or "Float" or "Double" // aliased type
+                    or "float" or "double")
+                {
+                    builder.AppendLine($"Archive.WriteNumber(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "Bool" or "bool")
+                {
+                    builder.AppendLine($"Archive.WriteBool(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "String")
+                {
+                    builder.AppendLine($"Archive.WriteString(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "StringView")
+                {
+                    Console.WriteLine("StringView不可被序列化");
+                    throw new Exception("StringView不可被序列化");
+                }
+                else
+                {
+                    builder.AppendLine($"Archive.WriteType(\"{key.Name}\", this->{key.Name});");
+                }
+            }
+
+            builder.AppendLine();
+        }
+    }
+
+    static void GenerateClassFieldSerializationLoadCode(StringBuilder builder,
+        Dictionary<CppField, Dictionary<string, string>> fields)
+    {
+        foreach (var (key, value) in fields)
+        {
+            bool skipSerialization = false;
+            foreach (var (attrKey, attrValue) in value)
+            {
+                if (CheckKey(attrKey)) continue;
+                if (attrKey == "Transient")
+                {
+                    skipSerialization = true;
+                    break;
+                }
+            }
+
+            if (!skipSerialization)
+            {
+                if (key.Type.FullName is "Int8" or "Int16" or "Int32" or "Int64" or "UInt8" or "UInt16" or "UInt32"
+                    or "UInt64" or "Float" or "Double" // aliased type
+                    or "float" or "double")
+                {
+                    builder.AppendLine($"Archive.ReadNumber(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "Bool" or "bool")
+                {
+                    builder.AppendLine($"Archive.ReadBool(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "String")
+                {
+                    builder.AppendLine($"Archive.ReadString(\"{key.Name}\", this->{key.Name});");
+                }
+                else if (key.Type.FullName is "StringView")
+                {
+                    Console.WriteLine("StringView不可被序列化");
+                    throw new Exception("StringView不可被序列化");
+                }
+                else
+                {
+                    builder.AppendLine($"Archive.ReadType(\"{key.Name}\", this->{key.Name});");
+                }
+            }
+
+            builder.AppendLine();
+        }
+    }
+
+    static bool HasValidSuper(CppClass cppClass)
+    {
+        if (cppClass.BaseTypes.Count == 0) return false;
+        if (cppClass.BaseTypes[0].Type is CppClass baseClass)
+        {
+            bool reflected = false;
+            Dictionary<string, string> attributes = ParseAttribute(baseClass.Attributes[0].Arguments, ref reflected);
+            if (!reflected) return false;
+            if (attributes.ContainsKey("Interface")) return false;
+            return true;
+        }
+    }
+
+    static bool GenerateHeader(string file, FileReflectedEntities entities, ProjectMap map)
+    {
+        StringBuilder headerContent = new StringBuilder();
+        headerContent.AppendLine("// 此文件由代码生成器自动生成");
+        headerContent.AppendLine("#pragma once");
+        headerContent.AppendLine("class InputArchive;");
+        headerContent.AppendLine("class OutputArchive;");
+        foreach (var _class in entities.Classes)
+        {
+            headerContent.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
+            headerContent.AppendLine("public: \\");
+            if (!HasValidSuper(_class.Key))
+            {
+                headerContent.AppendLine($"typedef {_class.Key.Name} ThisClass; \\");
+            }
+            else
+            {
+                headerContent.AppendLine($"typedef ThisClass Super; \\");
+                headerContent.AppendLine($"typedef {_class.Key.Name} ThisClass; \\");
+            }
+
+            headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
+            headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"}}\\");
+            headerContent.AppendLine($"}}; \\");
+            headerContent.AppendLine(
+                $"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
+            if (!_class.Value.ContainsKey("Abstract"))
+            {
+                headerContent.AppendLine(
+                    $"static void ConstructSelf(void* Self) {{ new (Self) {_class.Key.Name}(); }} \\");
+                headerContent.AppendLine(
+                    $"static void DestructSelf(void* Self) {{ static_cast<{_class.Key.Name}*>(Self)->~{_class.Key.Name}(); }} \\");
+            }
+
+            // class只能用继承自Object, 需要用虚函数
+            headerContent.AppendLine("virtual void Serialization_Load(InputArchive& Archive); \\");
+            headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive); \\");
+
+            headerContent.AppendLine(
+                $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
+            headerContent.AppendLine(
+                $"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
+            headerContent.AppendLine($"static Type* ConstructType(); \\");
+            headerContent.AppendLine($"private: \\");
+            headerContent.AppendLine();
+        }
+
+        foreach (var _class in entities.Interfaces)
+        {
+            headerContent.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
+            headerContent.AppendLine("public: \\");
+
+            headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
+            headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"}}\\");
+            headerContent.AppendLine($"}}; \\");
+            headerContent.AppendLine(
+                $"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
+            headerContent.AppendLine(
+                $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
+            headerContent.AppendLine(
+                $"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
+            headerContent.AppendLine($"static Type* ConstructType(); \\");
+            headerContent.AppendLine($"private: \\");
+            headerContent.AppendLine();
+        }
+
+        foreach (var _class in entities.Structs)
+        {
+            headerContent.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
+            headerContent.AppendLine("public: \\");
+            if (!HasValidSuper(_class.Key))
+            {
+                headerContent.AppendLine($"typedef {_class.Key.Name} ThisStruct; \\");
+            }
+            else
+            {
+                headerContent.AppendLine($"typedef ThisStruct Super; \\");
+                headerContent.AppendLine($"typedef {_class.Key.Name} ThisStruct; \\");
+            }
+
+            headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
+            headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"}}\\");
+            headerContent.AppendLine($"}}; \\");
+            // struct不继承任何类型, 不使用虚函数
+            headerContent.AppendLine("void Serialization_Load(InputArchive& Archive); \\");
+            headerContent.AppendLine("void Serialization_Save(OutputArchive& Archive); \\");
+            headerContent.AppendLine(
+                $"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
+            if (_class.Value.ContainsKey("Abstract"))
+            {
+                Console.WriteLine($"[EUT] {file}: struct {_class.Key.Name}不能有Abstract属性");
+                return false;
+            }
+
+            headerContent.AppendLine(
+                $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
+            headerContent.AppendLine(
+                $"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
+            headerContent.AppendLine($"static Type* ConstructType(); \\");
+            headerContent.AppendLine();
+        }
+
+        foreach (var _enum in entities.Enums)
+        {
+            headerContent.AppendLine();
+            headerContent.AppendLine($"Type* ConstructType_{_enum.Key.Name}();");
+            headerContent.AppendLine($"void Z_CallRegisterFunction{_enum.Key.Name}();");
+            headerContent.AppendLine($"struct Z_ReflectionInitializer{_enum.Key.Name} {{ ");
+            headerContent.AppendLine($"Z_ReflectionInitializer{_enum.Key.Name}() {{");
+            headerContent.AppendLine($"Z_CallRegisterFunction{_enum.Key.Name}();");
+            headerContent.AppendLine($"}}");
+            headerContent.AppendLine($"}}; ");
+            headerContent.AppendLine(
+                $"extern Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name};");
+            headerContent.AppendLine();
+        }
+
+        if (map.TryGetFileProjectInfo(file, out var info))
+        {
+            string outHeader = Path.Combine(info.IncludeDirectory,
+                Path.GetFileName(file).Replace(".hpp", ".generated.hpp"));
+            File.WriteAllText(outHeader, headerContent.ToString());
+            return true;
+        }
+        else
+        {
+            Console.WriteLine($"[EHT] 没有为{file}找到对应的工程文件夹.");
+            return false;
+        }
+    }
+
+    static bool GenerateSource(string file, FileReflectedEntities entities, ProjectMap map)
+    {
+        StringBuilder source_content = new();
+        source_content.AppendLine("// 此文件由工具自动生成");
+        source_content.AppendLine($"#include \"{file.Replace("\\", "/")}\"");
+        source_content.AppendLine("#include \"Core/Serialization/Archive.hpp\"");
+        foreach (var _class in entities.Classes)
+        {
+            source_content.AppendLine();
+            source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
+            source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
+
+            bool hasBases = false;
+            if (_class.Key.BaseTypes.Count > 0)
+            {
+                string parents = "";
+                bool firstParent = true;
+                for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
+                {
+                    if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
+                    {
+                        if (parentClass.Attributes.Count > 0)
+                        {
+                            if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
+                            {
+                                if (firstParent)
+                                {
+                                    parents += _class.Key.BaseTypes[i].Type.FullName;
+                                }
+                                else
+                                {
+                                    parents += ", " + _class.Key.BaseTypes[i].Type.FullName;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+                hasBases = true;
+            }
+
+            bool customSerialization = false;
+            foreach (var (key, value) in _class.Value)
+            {
+                if (key == "Abstract") continue;
+                if (key == "CustomSerialization") customSerialization = true;
+                if (CheckKey(key)) continue;
+                if (string.IsNullOrEmpty(value))
+                {
+                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                }
+                else
+                {
+                    string v = value.Trim('"').Trim().Trim('"');
+                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                }
+            }
+
+            source_content.AppendLine();
+            var allReflectedFields = FindAllFields(_class.Key);
+            GenerateClassFieldCode(source_content, allReflectedFields);
+
+            source_content.AppendLine(";}");
+
+            if (!customSerialization)
+            {
+                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Load(InputArchive& Archive) {{");
+                if (hasBases)
+                {
+                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                }
+
+                GenerateClassFieldSerializationLoadCode(source_content, allReflectedFields);
+                source_content.AppendLine($"}}");
+
+                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
+                if (hasBases)
+                {
+                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                }
+
+                GenerateClassFieldSerializationSaveCode(source_content, allReflectedFields);
+                source_content.AppendLine($"}}");
+            }
+        }
+
+        foreach (var _class in entities.Interfaces)
+        {
+            source_content.AppendLine();
+            source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
+            source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
+
+            if (_class.Key.BaseTypes.Count > 0)
+            {
+                string parents = "";
+                for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
+                {
+                    if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
+                    {
+                        if (parentClass.Attributes.Count > 0)
+                        {
+                            if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
+                            {
+                                parents += _class.Key.BaseTypes[i].Type.FullName;
+                                if (i != _class.Key.BaseTypes.Count - 1)
+                                {
+                                    parents += ", ";
+                                }
+                            }
+                        }
+                    }
+                }
+
+                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+            }
+
+            foreach (var (key, value) in _class.Value)
+            {
+                if (key == "Abstract") continue;
+                if (CheckKey(key)) continue;
+                if (string.IsNullOrEmpty(value))
+                {
+                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                }
+                else
+                {
+                    string v = value.Trim('"').Trim().Trim('"');
+                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                }
+            }
+
+            // 不会为Interface生成字段反射
+            source_content.AppendLine(";}");
+        }
+
+        foreach (var _class in entities.Structs)
+        {
+            source_content.AppendLine();
+            source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
+            source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
+
+            bool hasBases = false;
+            if (_class.Key.BaseTypes.Count > 0)
+            {
+                string parents = "";
+                for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
+                {
+                    if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
+                    {
+                        if (parentClass.Attributes.Count > 0)
+                        {
+                            if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
+                            {
+                                parents += _class.Key.BaseTypes[i].Type.FullName;
+                                if (i != _class.Key.BaseTypes.Count - 1)
+                                {
+                                    parents += ", ";
+                                }
+                            }
+                        }
+                    }
+                }
+
+                hasBases = true;
+                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+            }
+
+            bool customSerialization = false;
+            foreach (var (key, value) in _class.Value)
+            {
+                if (key == "Abstract") continue;
+                if (key == "CustomSerialization") customSerialization = true;
+                if (CheckKey(key)) continue;
+                if (string.IsNullOrEmpty(value))
+                {
+                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                }
+                else
+                {
+                    string v = value.Trim('"').Trim().Trim('"');
+                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                }
+            }
+
+            source_content.AppendLine();
+
+            var allReflectedFields = FindAllFields(_class.Key);
+            GenerateClassFieldCode(source_content, allReflectedFields);
+
+            source_content.AppendLine(";}");
+            if (!customSerialization)
+            {
+                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Load(InputArchive& Archive) {{");
+                if (hasBases)
+                {
+                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                }
+
+                GenerateClassFieldSerializationLoadCode(source_content, allReflectedFields);
+                source_content.AppendLine($"}}");
+
+                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
+                if (hasBases)
+                {
+                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                }
+
+                GenerateClassFieldSerializationSaveCode(source_content, allReflectedFields);
+                source_content.AppendLine($"}}");
+            }
+        }
+
+        foreach (var _enum in entities.Enums)
+        {
+            source_content.AppendLine($"void Z_CallRegisterFunction{_enum.Key.Name}() {{");
+            source_content.AppendLine(
+                $"ReflManager::GetByRef().Register<{_enum.Key.FullName}>(&ConstructType_{_enum.Key.Name});");
+            source_content.AppendLine($"}}");
+            source_content.AppendLine(
+                $"Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name}{{}};");
+            source_content.AppendLine($"Type* ConstructType_{_enum.Key.Name}() {{");
+            source_content.AppendLine($"return Type::Create<{_enum.Key.FullName}>(\"{_enum.Key.FullName}\")");
+            foreach (var (key, value) in _enum.Value)
+            {
+                if (CheckKey(key)) continue;
+                if (string.IsNullOrEmpty(value))
+                {
+                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                }
+                else
+                {
+                    string v = value.Trim('"').Trim().Trim('"');
+                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                }
+            }
+
+            var enumFields = FindAllFields(_enum.Key);
+            foreach (var (key, value) in enumFields)
+            {
+                source_content.Append(
+                    $"| refl_helper::AddEnumField(\"{key.Name}\", std::to_underlying({_enum.Key.FullName}::{key.Name}))");
+                foreach (var (attrKey, attrValue) in value)
+                {
+                    if (CheckKey(attrKey)) continue;
+                    if (string.IsNullOrEmpty(attrKey))
+                    {
+                        source_content.Append($".Attribute(Field::FlagAttributeBits::{attrKey})");
+                    }
+                    else
+                    {
+                        string v = attrValue.Trim('"').Trim().Trim('"');
+                        source_content.Append($".Attribute(Field::ValueAttribute::{attrKey}, \"{v}\")");
+                    }
+                }
+
+                source_content.AppendLine("");
+            }
+
+            source_content.AppendLine(";}");
+        }
+
+        if (map.TryGetFileProjectInfo(file, out var info))
+        {
+            string outHeader = Path.Combine(info.SourceDirectory,
+                Path.GetFileName(file).Replace(".hpp", ".generated.cpp"));
+            File.WriteAllText(outHeader, source_content.ToString());
+            return true;
+        }
+        else
+        {
+            Console.WriteLine($"[EHT] 没有为{file}找到对应的工程文件夹.");
+            return false;
+        }
+    }
+
 
     static bool Generate(Dictionary<string, FileReflectedEntities> fileEntities, ProjectMap map)
     {
         foreach (var (file, entities) in fileEntities)
         {
-            StringBuilder header_content = new StringBuilder();
-            header_content.AppendLine("// 此文件由代码生成器自动生成");
-            header_content.AppendLine("#pragma once");
-            foreach (var _class in entities.Classes)
+            if (GenerateHeader(file, entities, map) && GenerateSource(file, entities, map))
             {
-                header_content.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
-                header_content.AppendLine("public: \\");
-                if (_class.Key.BaseTypes.Count == 0)
-                {
-                    header_content.AppendLine($"typedef {_class.Key.Name} ThisClass; \\");
-                }
-                else
-                {
-                    header_content.AppendLine($"typedef ThisClass Super; \\");
-                    header_content.AppendLine($"typedef {_class.Key.Name} ThisClass; \\");
-                }
-
-                header_content.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
-                header_content.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-                header_content.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
-                header_content.AppendLine($"}}\\");
-                header_content.AppendLine($"}}; \\");
-                header_content.AppendLine($"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
-                if (!_class.Value.ContainsKey("Abstract"))
-                {
-                    header_content.AppendLine($"static void ConstructSelf(void* Self) {{ new (Self) {_class.Key.Name}(); }} \\");
-                    header_content.AppendLine($"static void DestructSelf(void* Self) {{ static_cast<{_class.Key.Name}*>(Self)->~{_class.Key.Name}(); }} \\");
-                }
-
-                header_content.AppendLine($"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
-                header_content.AppendLine($"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
-                header_content.AppendLine($"static Type* ConstructType(); \\");
-                header_content.AppendLine($"private: \\");
-            }
-
-            foreach (var _class in entities.Interfaces)
-            {
-                header_content.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
-                header_content.AppendLine("public: \\");
-
-                header_content.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
-                header_content.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-                header_content.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
-                header_content.AppendLine($"}}\\");
-                header_content.AppendLine($"}}; \\");
-                header_content.AppendLine($"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
-                header_content.AppendLine($"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
-                header_content.AppendLine($"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
-                header_content.AppendLine($"static Type* ConstructType(); \\");
-                header_content.AppendLine($"private: \\");
-            }
-
-            foreach (var _class in entities.Structs)
-            {
-                header_content.AppendLine($"#define GENERATED_BODY{_class.Key.Name} \\");
-                header_content.AppendLine("public: \\");
-                if (_class.Key.BaseTypes.Count == 0)
-                {
-                    header_content.AppendLine($"typedef {_class.Key.Name} ThisStruct; \\");
-                }
-                else
-                {
-                    header_content.AppendLine($"typedef ThisStruct Super; \\");
-                    header_content.AppendLine($"typedef {_class.Key.Name} ThisStruct; \\");
-                }
-
-                header_content.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
-                header_content.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-                header_content.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
-                header_content.AppendLine($"}}\\");
-                header_content.AppendLine($"}}; \\");
-                header_content.AppendLine($"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
-                if (!_class.Value.ContainsKey("Abstract"))
-                {
-                    Console.WriteLine($"[EUT] {file}: struct {_class.Key.Name}不能有Abstract属性");
-                    return false;
-                }
-
-                header_content.AppendLine($"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
-                header_content.AppendLine($"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
-                header_content.AppendLine($"static Type* ConstructType(); \\");
-            }
-
-            foreach (var _enum in entities.Enums)
-            {
-                header_content.AppendLine();
-                header_content.AppendLine($"Type* ConstructType_{_enum.Key.Name}();");
-                header_content.AppendLine($"void Z_CallRegisterFunction{_enum.Key.Name}();");
-                header_content.AppendLine($"struct Z_ReflectionInitializer{_enum.Key.Name} {{ ");
-                header_content.AppendLine($"Z_ReflectionInitializer{_enum.Key.Name}() {{");
-                header_content.AppendLine($"Z_CallRegisterFunction{_enum.Key.Name}();");
-                header_content.AppendLine($"}}");
-                header_content.AppendLine($"}}; ");
-                header_content.AppendLine($"extern Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name};");
-            }
-
-            if (map.TryGetFileProjectInfo(file, out var info))
-            {
-                string outHeader = Path.Combine(info.IncludeDirectory, Path.GetFileName(file).Replace(".hpp", ".generated.hpp"));
-                File.WriteAllText(outHeader, header_content.ToString());
             }
             else
             {
-                Console.WriteLine($"[EHT] 没有为{file}找到对应的工程文件夹.");
+                Console.WriteLine($"[EHT] {file}解析失败!");
                 return false;
             }
-
-            StringBuilder source_content = new();
-            source_content.AppendLine("// 此文件由工具自动生成");
-            source_content.AppendLine($"#include \"{file.Replace("\\", "/")}\"");
-            foreach (var _class in entities.Classes)
-            {
-                source_content.AppendLine();
-                source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
-                source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
-
-                if (_class.Key.BaseTypes.Count > 0)
-                {
-                    string parents = "";
-                    bool firstParent = true;
-                    for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
-                    {
-                        if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
-                        {
-                            if (parentClass.Attributes.Count > 0)
-                            {
-                                if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
-                                {
-                                    if (firstParent)
-                                    {
-                                        parents += _class.Key.BaseTypes[i].Type.FullName;
-                                    }
-                                    else
-                                    {
-                                        parents += ", " + _class.Key.BaseTypes[i].Type.FullName;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    source_content.Append($"| refl_helper::AddParents<{parents}>()");
-                }
-
-                foreach (var (key, value) in _class.Value)
-                {
-                    if (key == "Abstract") continue;
-                    if (CheckKey(key)) continue;
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
-                    }
-                    else
-                    {
-                        string v = value.Trim('"').Trim().Trim('"');
-                        source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
-                    }
-                }
-
-                source_content.AppendLine();
-
-                GenerateClassFieldCode(source_content, FindAllFields(_class.Key));
-
-                source_content.AppendLine(";}");
-            }
-
-            foreach (var _class in entities.Interfaces)
-            {
-                source_content.AppendLine();
-                source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
-                source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
-
-                if (_class.Key.BaseTypes.Count > 0)
-                {
-                    string parents = "";
-                    for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
-                    {
-                        if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
-                        {
-                            if (parentClass.Attributes.Count > 0)
-                            {
-                                if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
-                                {
-                                    parents += _class.Key.BaseTypes[i].Type.FullName;
-                                    if (i != _class.Key.BaseTypes.Count - 1)
-                                    {
-                                        parents += ", ";
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    source_content.Append($"| refl_helper::AddParents<{parents}>()");
-                }
-
-                foreach (var (key, value) in _class.Value)
-                {
-                    if (key == "Abstract") continue;
-                    if (CheckKey(key)) continue;
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
-                    }
-                    else
-                    {
-                        string v = value.Trim('"').Trim().Trim('"');
-                        source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
-                    }
-                }
-
-                // 不会为Interface生成字段反射
-                source_content.AppendLine(";}");
-            }
-
-            foreach (var _class in entities.Structs)
-            {
-                source_content.AppendLine();
-                source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
-                source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
-
-                if (_class.Key.BaseTypes.Count > 0)
-                {
-                    string parents = "";
-                    for (int i = 0; i < _class.Key.BaseTypes.Count; i++)
-                    {
-                        if (_class.Key.BaseTypes[i].Type is CppClass parentClass)
-                        {
-                            if (parentClass.Attributes.Count > 0)
-                            {
-                                if (parentClass.Attributes[0].Arguments.Contains("Reflected"))
-                                {
-                                    parents += _class.Key.BaseTypes[i].Type.FullName;
-                                    if (i != _class.Key.BaseTypes.Count - 1)
-                                    {
-                                        parents += ", ";
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    source_content.Append($"| refl_helper::AddParents<{parents}>()");
-                }
-
-                foreach (var (key, value) in _class.Value)
-                {
-                    if (key == "Abstract") continue;
-                    if (CheckKey(key)) continue;
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
-                    }
-                    else
-                    {
-                        string v = value.Trim('"').Trim().Trim('"');
-                        source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
-                    }
-                }
-
-                source_content.AppendLine();
-
-                GenerateClassFieldCode(source_content, FindAllFields(_class.Key));
-
-                source_content.AppendLine(";}");
-            }
-
-            foreach (var _enum in entities.Enums)
-            {
-                source_content.AppendLine($"void Z_CallRegisterFunction{_enum.Key.Name}() {{");
-                source_content.AppendLine($"ReflManager::GetByRef().Register<{_enum.Key.FullName}>(&ConstructType_{_enum.Key.Name});");
-                source_content.AppendLine($"}}");
-                source_content.AppendLine($"Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name}{{}};");
-                source_content.AppendLine($"Type* ConstructType_{_enum.Key.Name}() {{");
-                source_content.AppendLine($"return Type::Create<{_enum.Key.FullName}>(\"{_enum.Key.FullName}\")");
-                foreach (var (key, value) in _enum.Value)
-                {
-                    if (CheckKey(key)) continue;
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
-                    }
-                    else
-                    {
-                        string v = value.Trim('"').Trim().Trim('"');
-                        source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
-                    }
-                }
-
-                var enumFields = FindAllFields(_enum.Key);
-                foreach (var (key, value) in enumFields)
-                {
-                    source_content.Append($"| refl_helper::AddEnumField(\"{key.Name}\", std::to_underlying({_enum.Key.FullName}::{key.Name}))");
-                    foreach (var (attrKey, attrValue) in value)
-                    {
-                        if (CheckKey(attrKey)) continue;
-                        if (string.IsNullOrEmpty(attrKey))
-                        {
-                            source_content.Append($".Attribute(Field::FlagAttributeBits::{attrKey})");
-                        }
-                        else
-                        {
-                            string v = attrValue.Trim('"').Trim().Trim('"');
-                            source_content.Append($".Attribute(Field::ValueAttribute::{attrKey}, \"{v}\")");
-                        }
-                    }
-
-                    source_content.AppendLine("");
-                }
-
-                source_content.AppendLine(";}");
-            }
-
-
-            string outSource = Path.Combine(info.SourceDirectory, Path.GetFileName(file).Replace(".hpp", ".generated.cpp"));
-            File.WriteAllText(outSource, source_content.ToString());
         }
 
         return true;

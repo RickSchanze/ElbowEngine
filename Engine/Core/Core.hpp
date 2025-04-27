@@ -108,31 +108,29 @@ public:                                                                         
     static const Type *GetStaticType() { return TypeOf<_class, true>(); }                                                                            \
     static Type *ConstructType()
 
-#define DEFINE_CFG_ITEM(type, name, NAME, ...)                                                                                                       \
-public:                                                                                                                                              \
-    const type &Get##NAME() const { return name; }                                                                                                   \
-                                                                                                                                                     \
-    void Set##NAME(const type &enable) {                                                                                                             \
-        if (enable == name) {                                                                                                                        \
-            return;                                                                                                                                  \
-        }                                                                                                                                            \
-        name = enable;                                                                                                                               \
-        SetDirty(true);                                                                                                                              \
-    }                                                                                                                                                \
-                                                                                                                                                     \
-private:                                                                                                                                             \
-    type name = __VA_ARGS__;
+#define DEFINE_CFG_ITEM(type, name, NAME, ...) \
+type name = __VA_ARGS__; \
+public: \
+    const type &Get##NAME() const { return name; } \
+    void Set##NAME(const type &enable) { \
+        if (enable == name) { \
+            return; \
+        } \
+        name = enable; \
+        SetDirty(true); \
+    } \
+private:
 
 #define OUT
 #define NAMEOF(x) #x
 
-template <typename T>
+template<typename T>
     requires IsEnum<T>
 StringView GetEnumString(T e)
 {
-    const Type *type = TypeOf<T>();
+    const Type* type = TypeOf<T>();
     Assert(type != nullptr && type->IsEnumType(), "Type not valid");
-    for (auto field : type->GetSelfDefinedFields())
+    for (auto field: type->GetSelfDefinedFields())
     {
         Assert(type != nullptr && type->IsEnumType(), "Type is a enum but its fields are not enum values");
         if (field->GetEnumFieldValue() == static_cast<Int32>(e))

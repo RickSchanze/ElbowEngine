@@ -11,69 +11,128 @@
 
 class SequentialContainerView;
 class AssociativeContainerView;
-struct Type {
+
+struct Type
+{
     Type(const StringView name_, const UInt64 size_) : name(name_), size(size_), hash(0), flag_attrs(0) {}
 
     template<typename T>
-    static Type *Create(StringView name) {
-        Type *rtn = New<Type>(name, sizeof(T));
+    static Type* Create(StringView name)
+    {
+        Type* rtn = New<Type>(name, sizeof(T));
         rtn->hash = typeid(T).hash_code();
         return rtn;
     }
 
-    enum FlagAttributeBits {
+    enum FlagAttributeBits
+    {
         Interface = 1 << 0,
-        Atomic = 1 << 1,
-        Enum = 1 << 2, // 枚举类型
-        Trivial = 1 << 3, // 简单类型
-        Flag = 1 << 4, // 这是一个EnumFlag, 表示可以通过 | 连接(枚举使用)
+        Atomic    = 1 << 1,
+        // 枚举类型
+        Enum = 1 << 2,
+        // 简单类型
+        Trivial = 1 << 3,
+        // 这是一个EnumFlag, 表示可以通过 | 连接(枚举使用)
+        Flag = 1 << 4,
     };
+
     typedef Int32 FlagAttribute;
 
-    enum class ValueAttribute {
+    enum class ValueAttribute
+    {
         Config,
         Category,
-        SQLTable, // 这个类型是一个数据库表, 其值代表数据库名字
+        SQLTable,
+        // 这个类型是一个数据库表, 其值代表数据库名字
         Count,
     };
 
-    StringView GetName() const { return name; }
-    UInt64 GetHashCode() const { return hash; }
-
-    void SetName(const StringView name) { this->name = name; }
-
-    void AddField(Field *field) { fields.Add(field); }
-
-    bool IsEnumType() const {
-        return range::AnyOf(fields, [](const Field *field) { return field->IsEnumField(); });
+    StringView GetName() const
+    {
+        return name;
     }
 
-    UInt64 GetSize() const { return size; }
+    UInt64 GetHashCode() const
+    {
+        return hash;
+    }
 
-    const auto &GetSelfDefinedFields() const { return fields; }
+    void SetName(const StringView name)
+    {
+        this->name = name;
+    }
 
-    UInt64 GetSelfDefinedFieldsCount() const { return fields.Count(); }
+    void AddField(Field* field)
+    {
+        fields.Add(field);
+    }
 
-    Optional<const Field *> GetSelfDefinedField(StringView name) const;
+    bool IsEnumType() const
+    {
+        return range::AnyOf(
+            fields, [](const Field* field)
+            {
+                return field->IsEnumField();
+            }
+        );
+    }
 
-    bool HasSelfDefinedMember(const StringView name) const { return GetSelfDefinedField(name); }
+    UInt64 GetSize() const
+    {
+        return size;
+    }
 
-    [[nodiscard]] Array<const Field *> GetFields() const;
+    const auto& GetSelfDefinedFields() const
+    {
+        return fields;
+    }
 
-    [[nodiscard]] UInt64 GetFieldsCount() const { return GetFields().Count(); }
+    UInt64 GetSelfDefinedFieldsCount() const
+    {
+        return fields.Count();
+    }
 
-    bool IsDerivedFrom(const Type *type) const;
+    Optional<const Field*> GetSelfDefinedField(StringView name) const;
 
-    [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (flag_attrs & attr) != 0; }
-    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return !value_attrs[static_cast<Int32>(attr)].IsEmpty(); }
+    bool HasSelfDefinedMember(const StringView name) const
+    {
+        return GetSelfDefinedField(name);
+    }
 
-    Type *AddParent(const Type *parent) {
+    [[nodiscard]] Array<const Field*> GetFields() const;
+
+    [[nodiscard]] UInt64 GetFieldsCount() const
+    {
+        return GetFields().Count();
+    }
+
+    bool IsDerivedFrom(const Type* type) const;
+
+    [[nodiscard]] bool IsDefined(FlagAttribute attr) const
+    {
+        return (flag_attrs & attr) != 0;
+    }
+
+    [[nodiscard]] bool IsDefined(ValueAttribute attr) const
+    {
+        return !value_attrs[static_cast<Int32>(attr)].IsEmpty();
+    }
+
+    Type* AddParent(const Type* parent)
+    {
         parents.Add(parent);
         return this;
     }
 
-    void SetAttribute(ValueAttribute attr, StringView value) { value_attrs[static_cast<Int32>(attr)] = value; }
-    StringView GetAttributeValue(ValueAttribute attr) const { return value_attrs[static_cast<Int32>(attr)]; }
+    void SetAttribute(ValueAttribute attr, StringView value)
+    {
+        value_attrs[static_cast<Int32>(attr)] = value;
+    }
+
+    StringView GetAttributeValue(ValueAttribute attr) const
+    {
+        return value_attrs[static_cast<Int32>(attr)];
+    }
 
     Optional<StringView> GetEnumValueString(Int32 value) const;
 
@@ -82,8 +141,8 @@ struct Type {
     StringView name;
     UInt64 size;
     UInt64 hash;
-    Array<Field *> fields;
-    Array<const Type *> parents;
+    Array<Field*> fields;
+    Array<const Type*> parents;
     FlagAttribute flag_attrs;
     StringView value_attrs[static_cast<Int32>(ValueAttribute::Count)];
 };

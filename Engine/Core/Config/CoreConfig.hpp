@@ -5,48 +5,42 @@
 #include "Core/Core.hpp"
 #include "IConfig.hpp"
 
-struct Version {
-    REFLECTED_STRUCT(Version)
+#include GEN_HEADER("CoreConfig.generated.hpp")
 
-    REFLECTED()
-    int major;
+struct ESTRUCT() Version
+{
+    // GENERATED_BODY(Version)
 
-    REFLECTED()
-    int minor;
+    EFIELD()
+    int Major;
 
-    REFLECTED()
-    int patch;
+    EFIELD()
+    int Minor;
 
-    bool operator==(const Version &o) const { return major == o.major && minor == o.minor && patch == o.patch; }
+    EFIELD()
+    int Patch;
+
+    bool operator==(const Version& o) const
+    {
+        return Major == o.Major && Minor == o.Minor && Patch == o.Patch;
+    }
 };
 
-class CoreConfig : public IConfig {
-    REFLECTED_CLASS(CoreConfig);
+class ECLASS() CoreConfig : public IConfig
+{
+    GENERATED_BODY(CoreConfig)
 
-    REFLECTED()
-    DEFINE_CFG_ITEM(UInt32, anonymous_thread_count, AnonymousThreadCount, 0);
+public:
+    EFIELD()
+    DEFINE_CFG_ITEM(UInt32, mAnonymousThreadCount, AnonymousThreadCount, 0);
 
-    REFLECTED()
-    DEFINE_CFG_ITEM(Version, app_version, AppVersion, {0, 0, 0})
+    EFIELD()
+    DEFINE_CFG_ITEM(Version, mAppVersion, AppVersion, {0, 0, 0})
 
     // 应用的名称
-    REFLECTED()
-    DEFINE_CFG_ITEM(String, app_name, AppName, "肘击引擎");
+    EFIELD()
+    DEFINE_CFG_ITEM(String, mAppName, AppName, "肘击引擎");
 
-    REFLECTED()
-    DEFINE_CFG_ITEM(UInt32, tick_frame_interval, TickFrameInterval, 30);
+    EFIELD()
+    DEFINE_CFG_ITEM(UInt32, mTickFrameInterval, TickFrameInterval, 30);
 };
-
-IMPL_REFLECTED_INPLACE(CoreConfig) {
-    const auto type = Type::Create<CoreConfig>("CoreConfig") | refl_helper::AddParents<IConfig>() |
-                      refl_helper::AddField("anonymous_thread_count", &ThisClass::anonymous_thread_count) |
-                      refl_helper::AddField("version", &ThisClass::app_version) | refl_helper::AddField("app_name", &ThisClass::app_name) |
-                      refl_helper::AddField("tick_frame_interval", &ThisClass::tick_frame_interval);
-    type->SetAttribute(Type::ValueAttribute::Config, "Config/Core/Core.cfg");
-    return type;
-}
-
-IMPL_REFLECTED_INPLACE(Version) {
-    return Type::Create<Version>("Version") | refl_helper::AddField("major", &Version::major) | refl_helper::AddField("minor", &ThisStruct::minor) |
-           refl_helper::AddField("patch", &ThisStruct::patch);
-}

@@ -669,7 +669,7 @@ static void CreateInstance(VkInstance &instance) {
     VkApplicationInfo app_info{};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName = core_cfg->GetAppName().Data();
-    app_info.applicationVersion = VK_MAKE_VERSION(core_cfg->GetAppVersion().major, core_cfg->GetAppVersion().minor, core_cfg->GetAppVersion().patch);
+    app_info.applicationVersion = VK_MAKE_VERSION(core_cfg->GetAppVersion().Major, core_cfg->GetAppVersion().Minor, core_cfg->GetAppVersion().Patch);
     app_info.pEngineName = "Elbow Engine";
     app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
     app_info.apiVersion = VK_API_VERSION_1_3;

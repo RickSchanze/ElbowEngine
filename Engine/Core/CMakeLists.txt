@@ -11,7 +11,9 @@ get_property(GEN_INCLUDE_DIR GLOBAL PROPERTY ${PROJECT_NAME}_GEN_INCLUDE_DIR)
 get_property(GEN_SOURCES GLOBAL PROPERTY ${PROJECT_NAME}_GEN_SOURCES)
 
 add_library(Core
-        ${CORE_CPP_FILES} ${CORE_HEADER_FILES} ${GEN_SOURCES})
+        ${CORE_CPP_FILES} ${CORE_HEADER_FILES} ${GEN_SOURCES}
+        Serialization/XMLArchive.cpp
+        Serialization/XMLArchive.hpp)
 
 # 添加生成的头文件目录
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -43,5 +45,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 find_package(yaml-cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)
+
+find_package(cereal CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE cereal::cereal)
 
 target_include_directories(Core PUBLIC ../)
