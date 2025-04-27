@@ -5,13 +5,15 @@
 #include "Core/Core.hpp"
 #include "Core/Math/Types.hpp"
 
-struct Transform {
-    REFLECTED_STRUCT(Transform)
+#include GEN_HEADER("Transform.generated.hpp")
 
-    REFLECTED(Label = "位置")
+struct ESTRUCT() Transform {
+    GENERATED_BODY(Transform)
+
+    EFIELD()
     Vector3f Location = {0, 0, 0};
 
-    REFLECTED(Label = "缩放")
+    EFIELD()
     Vector3f Scale = {1, 1, 1};
 
     void SetRotation(Quaternionf now);
@@ -27,10 +29,9 @@ struct Transform {
 
 private:
     // TODO: UI上的Rotation不应该用四元数
-    REFLECTED(Label = "旋转")
+    EFIELD()
     Quaternionf mRotation = {0, 0, 0, 1};
 
+    EFIELD(Transient)
     Vector3f mCachedEuler = {0, 0, 0};
 };
-
-REGISTER_TYPE(Transform)

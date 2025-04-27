@@ -3,7 +3,11 @@
 //
 
 #include "XMLArchive.hpp"
+
+#include <fstream>
+
 #include "cereal/types/map.hpp"
+#include "Core/FileSystem/File.hpp"
 
 XMLOutputArchive::XMLOutputArchive(std::ostream& InOutputStream)
 {
@@ -175,6 +179,14 @@ XMLInputArchive::XMLInputArchive(std::istream& InInputStream)
     mArchive = New<cereal::XMLInputArchive>(InInputStream);
 }
 
+XMLInputArchive::XMLInputArchive(StringView InPath)
+{
+    if (File::IsExist(InPath))
+    {
+        mArchive = New<cereal::XMLInputArchive>(std::ifstream(*InPath));
+    }
+}
+
 XMLInputArchive::XMLInputArchive(cereal::XMLInputArchive* InExistArchive)
 {
     Assert(InExistArchive, "输入的Archive必须存在");
@@ -196,6 +208,8 @@ void XMLInputArchive::EndScope()
 {
     mArchive->finishNode();
 }
+
+void XMLInputArchive::Deserialize(const Object& InObjectRef) {}
 
 XMLInputArchive::~XMLInputArchive()
 {

@@ -21,10 +21,10 @@ Object::~Object() {
     if (referenced_.Empty())
         return;
     if constexpr (DUMP_OBJECT_REFERENCE_WHEN_DESTROY) {
-        Log(Warn, "Object::~Object") << String::Format("对象 {} 被销毁时仍有{}个对象引用它", *name_, referenced_.Count());
+        Log(Warn, "Object::~Object") << String::Format("对象 {} 被销毁时仍有{}个对象引用它", *mName, referenced_.Count());
         for (const auto &handle: referenced_) {
             if (Object *obj = ObjectManager::GetRegistry().GetObjectByHandle(handle)) {
-                Log(Warn) << String::FromInt(handle) + ": " + obj->name_;
+                Log(Warn) << String::FromInt(handle) + ": " + obj->mName;
             } else {
                 Log(Warn) << String::FromInt(handle) + ": " + "已失效";
             }
@@ -32,7 +32,7 @@ Object::~Object() {
     }
 }
 
-void Object::GenerateInstanceHandle() { handle_ = ObjectManager::GetRegistry().NextInstanceHandle(); }
+void Object::GenerateInstanceHandle() { mHandle = ObjectManager::GetRegistry().NextInstanceHandle(); }
 
 void Object::UnregisterSelf() const { ObjectManager::GetRegistry().UnregisterHandle(GetHandle()); }
 
@@ -47,7 +47,7 @@ void Object::ResolveObjectPtr() {
             } else if (field->IsAssociativeContainer()) {
             } else {
                 auto ptr = field->GetFieldPtr(this);
-                static_cast<ObjectPtrBase *>(ptr)->SetOuter(handle_);
+                static_cast<ObjectPtrBase *>(ptr)->SetOuter(mHandle);
             }
         }
     }
@@ -74,7 +74,7 @@ void Object::InternalSetAssetHandle(ObjectHandle handle) {
     auto type = GetType();
     FindObjPtr(type, this, handle);
     UnregisterSelf();
-    handle_ = handle;
+    mHandle = handle;
     RegisterSelf();
 }
 

@@ -33,6 +33,9 @@ rootCommand.SetHandler((output, input, include) =>
         include = @"C:\Users\kita\Documents\Projects\ElbowEngine\cmake-build-debug\vcpkg_installed\x64-windows\include";
     }
 
+    Console.WriteLine($"[EHT] 输出路径={output}");
+    Console.WriteLine($"[EHT] 输入路径={input}");
+
     var cMakeProjects = CMakeProjectProcessor.FindCMakeProjects(input);
     var projectMap = CMakeProjectProcessor.CreateFolders(output, cMakeProjects);
     projectMap.RootDirectory = input;

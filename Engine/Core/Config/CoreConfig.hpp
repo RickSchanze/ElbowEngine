@@ -9,7 +9,7 @@
 
 struct ESTRUCT() Version
 {
-    // GENERATED_BODY(Version)
+    GENERATED_BODY(Version)
 
     EFIELD()
     int Major;
@@ -26,17 +26,15 @@ struct ESTRUCT() Version
     }
 };
 
-class ECLASS() CoreConfig : public IConfig
+class ECLASS(Config = "Config/Core/Core.cfg") CoreConfig : public IConfig
 {
     GENERATED_BODY(CoreConfig)
-
 public:
     EFIELD()
     DEFINE_CFG_ITEM(UInt32, mAnonymousThreadCount, AnonymousThreadCount, 0);
 
     EFIELD()
     DEFINE_CFG_ITEM(Version, mAppVersion, AppVersion, {0, 0, 0})
-
     // 应用的名称
     EFIELD()
     DEFINE_CFG_ITEM(String, mAppName, AppName, "肘击引擎");

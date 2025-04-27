@@ -160,7 +160,7 @@ void SlangShaderLoader::Load(StringView InPath, Shader &InShader)
     session_desc.searchPathCount = static_cast<SlangInt>(search_path_cstrs.Count());
 
     Int32 annotations[static_cast<Int32>(ShaderAnnotation::Count)];
-    ParseAnnotations(InPath, annotations, InShader.name_);
+    ParseAnnotations(InPath, annotations, InShader.mName);
 
     TargetDesc target_desc[2]{};
     target_desc[0].format = SLANG_SPIRV;

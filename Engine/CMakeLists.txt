@@ -1,6 +1,6 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message(STATUS "[EHT] 启动代码生成任务")
-set(CODE_GENERATOR "C:/Users/Echo/Documents/Projects/ElbowEngine/EHT/EHT/bin/Release/net9.0/win-x64/EHT.exe")
+set(CODE_GENERATOR "C:/Users/kita/Documents/Projects/ElbowEngine/EHT/EHT/bin/Release/net9.0/win-x64/EHT.exe")
 execute_process(
         COMMAND ${CODE_GENERATOR} --output ${CMAKE_CURRENT_BINARY_DIR} --input ${CMAKE_CURRENT_SOURCE_DIR} --include ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

@@ -37,7 +37,7 @@ class ECLASS() Object {
     GENERATED_BODY(Object)
 
 public:
-    explicit Object(const ObjectFlag flag) : flags_(flag) { GenerateInstanceHandle(); }
+    explicit Object(const ObjectFlag flag) : mFlags(flag) { GenerateInstanceHandle(); }
 
     Object() { GenerateInstanceHandle(); }
 
@@ -45,29 +45,33 @@ public:
 
     void SetDisplayName(const StringView display_name) {
 #if WITH_EDITOR
-        display_name_ = display_name;
+        mDisplayName = display_name;
 #endif
     }
 
-    void SetName(const StringView name) { name_ = name; }
+    void SetName(const StringView name) { mName = name; }
 
-    [[nodiscard]] StringView GetName() const { return name_; }
-    [[nodiscard]] StringView GetDisplayName() const { return display_name_; }
+    [[nodiscard]] StringView GetName() const { return mName; }
+    [[nodiscard]] StringView GetDisplayName() const { return mDisplayName; }
 
-    void SetObjectHandle(const Int32 handle) { handle_ = handle; }
+    void SetObjectHandle(const Int32 handle) { mHandle = handle; }
 
 protected:
     EFIELD()
-    Int32 handle_ = 0;
+    Int32 mHandle = 0;
+
     EFIELD()
-    ObjectFlag flags_ = 0;
+    ObjectFlag mFlags = 0;
+
+    EFIELD(Transient)
+    ObjectState mState = 0;
+
     EFIELD()
-    ObjectState state_ = 0;
-    EFIELD()
-    String name_{};
+    String mName{};
 
 #if WITH_EDITOR
-    String display_name_{"空对象"};
+    EFIELD(Transient)
+    String mDisplayName{"空对象"};
 #endif
 
 private:
@@ -111,11 +115,11 @@ public:
 
     virtual void OnDestroyed();
 
-    [[nodiscard]] bool IsPendingKill() const { return state_ & PendingKill; }
+    [[nodiscard]] bool IsPendingKill() const { return mState & PendingKill; }
 
-    [[nodiscard]] ObjectHandle GetHandle() const { return handle_; }
+    [[nodiscard]] ObjectHandle GetHandle() const { return mHandle; }
 
-    [[nodiscard]] bool IsPersistent() const { return flags_ & OFT_Persistent; }
+    [[nodiscard]] bool IsPersistent() const { return mFlags & OFT_Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
 

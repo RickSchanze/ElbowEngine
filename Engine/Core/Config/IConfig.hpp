@@ -7,15 +7,22 @@
 
 #include GEN_HEADER("IConfig.generated.hpp")
 
-class EINTERFACE() IConfig {
+class EINTERFACE() IConfig
+{
     GENERATED_BODY(IConfig)
 public:
     virtual ~IConfig() = default;
 
-    [[nodiscard]] bool IsDirty() const { return dirty_; }
+    [[nodiscard]] bool IsDirty() const
+    {
+        return dirty_;
+    }
 
 protected:
-    void SetDirty(const bool dirty) { dirty_ = dirty; }
+    void SetDirty(const bool dirty)
+    {
+        dirty_ = dirty;
+    }
 
     bool dirty_ = false;
 };

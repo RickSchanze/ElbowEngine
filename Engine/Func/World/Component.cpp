@@ -7,9 +7,9 @@
 
 
 Component::Component() {
-    name_ = "Component";
+    mName = "Component";
     SetDisplayName("空组件");
-    flags_ |= OFT_Component;
+    mFlags |= OFT_Component;
 }
 
 void Component::SetOwner(const Actor *owner) { owner_ = owner; }

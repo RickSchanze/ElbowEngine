@@ -49,7 +49,7 @@ void Material::Build()
     // 4. 创建UniformBuffer
     if (uniform_buffer_size != 0)
     {
-        const String mat_uniform_debug_name = String::Format("{}-UniformBuffer", name_);
+        const String mat_uniform_debug_name = String::Format("{}-UniformBuffer", mName);
         const RHI::BufferDesc uniform_desc{uniform_buffer_size, BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
         buffer_ = GetGfxContextRef().CreateBuffer(uniform_desc, mat_uniform_debug_name);
 

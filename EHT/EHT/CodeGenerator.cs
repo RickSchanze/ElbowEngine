@@ -82,6 +82,7 @@ public static class CodeGenerator
 
     public static bool Generate(ProjectMap projectMap, List<string> extraIncludes)
     {
+        // TODO: 执行Cache清理, 即将已经不需要的生成的文件删除
         List<string> files = Directory.GetFiles(projectMap.RootDirectory, "*.hpp", SearchOption.AllDirectories)
             .ToList();
         files = GetModifiedFiles(files);
@@ -337,8 +338,6 @@ public static class CodeGenerator
                     builder.AppendLine($"Archive.WriteType(\"{key.Name}\", this->{key.Name});");
                 }
             }
-
-            builder.AppendLine();
         }
     }
 
@@ -384,8 +383,6 @@ public static class CodeGenerator
                     builder.AppendLine($"Archive.ReadType(\"{key.Name}\", this->{key.Name});");
                 }
             }
-
-            builder.AppendLine();
         }
     }
 
@@ -400,6 +397,8 @@ public static class CodeGenerator
             if (attributes.ContainsKey("Interface")) return false;
             return true;
         }
+
+        return false;
     }
 
     static bool GenerateHeader(string file, FileReflectedEntities entities, ProjectMap map)
@@ -503,7 +502,7 @@ public static class CodeGenerator
             }
 
             headerContent.AppendLine(
-                $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
+                $"const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
             headerContent.AppendLine(
                 $"static const Type* GetStaticType() {{ return TypeOf<{_class.Key.Name}, true>();}}; \\");
             headerContent.AppendLine($"static Type* ConstructType(); \\");
@@ -550,8 +549,7 @@ public static class CodeGenerator
             source_content.AppendLine();
             source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
             source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
-
-            bool hasBases = false;
+            
             if (_class.Key.BaseTypes.Count > 0)
             {
                 string parents = "";
@@ -578,7 +576,6 @@ public static class CodeGenerator
                 }
 
                 source_content.Append($"| refl_helper::AddParents<{parents}>()");
-                hasBases = true;
             }
 
             bool customSerialization = false;
@@ -607,7 +604,8 @@ public static class CodeGenerator
             if (!customSerialization)
             {
                 source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Load(InputArchive& Archive) {{");
-                if (hasBases)
+                bool hasValidSuper = HasValidSuper(_class.Key);
+                if (hasValidSuper)
                 {
                     source_content.AppendLine("Super::Serialization_Load(Archive);");
                 }
@@ -616,9 +614,9 @@ public static class CodeGenerator
                 source_content.AppendLine($"}}");
 
                 source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
-                if (hasBases)
+                if (hasValidSuper)
                 {
-                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                    source_content.AppendLine("Super::Serialization_Save(Archive);");
                 }
 
                 GenerateClassFieldSerializationSaveCode(source_content, allReflectedFields);
@@ -744,7 +742,7 @@ public static class CodeGenerator
                 source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
                 if (hasBases)
                 {
-                    source_content.AppendLine("Super::Serialization_Load(Archive);");
+                    source_content.AppendLine("Super::Serialization_Save(Archive);");
                 }
 
                 GenerateClassFieldSerializationSaveCode(source_content, allReflectedFields);

@@ -2,222 +2,14 @@
 // Created by Echo on 25-3-19.
 //
 
-
 #pragma once
 #include "Core/Core.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/matrix_decompose.hpp>
 #include "Core/Logger/VLog.hpp"
 #include "Core/Reflection/Reflection.hpp"
 #include "Core/TypeTraits.hpp"
 #include "glm/glm.hpp"
-
-template <typename T>
-struct Vector3;
-
-template <typename T>
-struct Vector2;
-
-template <typename T>
-struct Vector4
-{
-public:
-    typedef Vector4 ThisStruct;
-
-    static void ConstructSelf(void *self)
-    {
-        new(self) Vector4();
-    }
-
-    static void DestructSelf(void *self)
-    {
-        static_cast<Vector4 *>(self)->~Vector4();
-    }
-
-    const Type *GetType();
-
-    T X = 0;
-    T Y = 0;
-    T Z = 0;
-    T W = 0;
-
-    Vector4() = default;
-
-    Vector4(T x, T y, T z, T w) : X(x), Y(y), Z(z), W(w)
-    {
-    }
-
-    explicit Vector4(const Vector3<T> &other, T w = 0);
-
-    bool operator==(const Vector4 &other) const
-    {
-        return X == other.X && Y == other.Y && Z == other.Z;
-    }
-
-    auto &operator[](this auto &&Self, UInt8 Index)
-    {
-        switch (Index)
-        {
-        case 0:
-            return Self.X;
-        case 1:
-            return Self.Y;
-        case 2:
-            return Self.Z;
-        case 3:
-            return Self.W;
-        default:
-            VLOG_FATAL("Vector4 index out of range, index = ", Index);
-            return Self.X;
-        }
-    }
-};
-
-template <typename T>
-struct Vector3
-{
-public:
-    typedef Vector3 ThisStruct;
-
-    static void ConstructSelf(void *self)
-    {
-        new(self) Vector3();
-    }
-
-    static void DestructSelf(void *self)
-    {
-        static_cast<Vector3 *>(self)->~Vector3();
-    }
-
-    const Type *GetType();
-
-    Vector3<Float> operator*(Float float_) const;
-
-    T X = 0;
-    T Y = 0;
-    T Z = 0;
-
-    Vector3() = default;
-
-    Vector3(T x, T y, T z) : X(x), Y(y), Z(z)
-    {
-    }
-
-    explicit Vector3(const Vector4<T> &vec) : X(vec.X), Y(vec.Y), Z(vec.Z)
-    {
-    }
-
-    explicit Vector3(const Vector2<T> &vec);
-
-    Vector3 &operator=(const Vector2<T> &vec);
-
-    bool operator==(const Vector3 &other) const
-    {
-        return X == other.X && Y == other.Y && Z == other.Z;
-    }
-
-    Vector3 operator+(Vector3 rhs)
-    {
-        return Vector3(X + rhs.X, Y + rhs.Y, Z + rhs.Z);
-    }
-
-    Vector3 operator+(T value) const
-    {
-        return {X + value, Y + value, Z + value};
-    }
-
-    Vector3 operator-(Vector3 rhs)
-    {
-        return Vector3(X - rhs.X, Y - rhs.Y, Z - rhs.Z);
-    }
-
-    template <typename Self>
-    auto &operator[](this Self &&self, UInt64 index)
-    {
-        switch (index)
-        {
-        case 0:
-            return self.X;
-        case 1:
-            return self.Y;
-        case 2:
-            return self.Z;
-        default:
-            VLOG_FATAL("Vector3 index out of range, index = ", index);
-            return self.X;
-        }
-    }
-};
-
-template <typename T>
-struct Vector2
-{
-    typedef Vector2 ThisStruct;
-
-    static void ConstructSelf(void *self)
-    {
-        new(self) Vector2();
-    }
-
-    static void DestructSelf(void *self)
-    {
-        static_cast<Vector2 *>(self)->~Vector2();
-    }
-
-    const Type *GetType();
-
-    T X = 0;
-    T Y = 0;
-
-    bool operator==(const Vector2 &other) const
-    {
-        return X == other.X && Y == other.Y;
-    }
-
-    Vector2 operator/(T rhs)
-    {
-        return Vector2{X / rhs, Y / rhs};
-    }
-
-    Vector2 operator+(T value) const
-    {
-        return {X + value, Y + value};
-    }
-
-    Vector2 operator+(Vector2 rhs);
-
-    Vector2 &operator+=(T value)
-    {
-        X += value;
-        Y += value;
-        return *this;
-    }
-
-    Vector2 operator-(Vector2 rhs)
-    {
-        return Vector2(X - rhs.X, Y - rhs.Y);
-    }
-
-    String ToString()
-    {
-        return String::Format("Vector2{{x = {}, y = {}}}", X, Y);
-    }
-
-    bool IsZero()
-    {
-        return X == 0 && Y == 0;
-    }
-
-    T SizeSquare()
-    {
-        return X * X + Y * Y;
-    }
-
-    T Size()
-    {
-        return std::sqrt(SizeSquare());
-    }
-};
+#include <glm/gtx/matrix_decompose.hpp>
 
 template <typename T>
 struct Matrix4x4;
@@ -229,7 +21,7 @@ struct Quaternion
 
     static void ConstructSelf(void *self)
     {
-        new(self) Quaternion();
+        new (self) Quaternion();
     }
 
     static void DestructSelf(void *self)
@@ -336,63 +128,6 @@ inline Color::operator Vector3<float>()
 }
 
 template <typename T>
-struct Rect2D
-{
-    typedef Rect2D ThisStruct;
-
-    static void ConstructSelf(void *self)
-    {
-        new(self) Rect2D();
-    }
-
-    static void DestructSelf(void *self)
-    {
-        static_cast<Rect2D *>(self)->~Rect2D();
-    }
-
-    const Type *GetType();
-
-    Vector2<T> pos = {};
-    Vector2<T> size = {};
-
-    template <typename U>
-    explicit operator Rect2D<U>()
-    {
-        return {static_cast<U>(pos.X), static_cast<U>(pos.Y), static_cast<U>(size.X), static_cast<U>(size.Y)};
-    }
-
-    Vector2<T> LeftTop() const
-    {
-        return pos;
-    }
-
-    Vector2<T> RightTop() const
-    {
-        return {pos.X + size.X, pos.Y};
-    }
-
-    Vector2<T> LeftBottom() const
-    {
-        return {pos.X, pos.Y + size.Y};
-    }
-
-    Vector2<T> RightBottom() const
-    {
-        return {pos.X + size.X, pos.Y + size.Y};
-    }
-
-    Vector2<T> Center() const
-    {
-        return {pos.X + size.X / 2, pos.Y + size.Y / 2};
-    }
-
-    T Area() const
-    {
-        return size.X * size.Y;
-    }
-};
-
-template <typename T>
 struct Matrix3x3;
 
 template <typename T>
@@ -402,7 +137,7 @@ struct Matrix4x4
 
     static void ConstructSelf(void *self)
     {
-        new(self) Matrix4x4();
+        new (self) Matrix4x4();
     }
 
     static void DestructSelf(void *self)
@@ -470,7 +205,7 @@ struct Matrix3x3
 
     static void ConstructSelf(void *self)
     {
-        new(self) Matrix3x3();
+        new (self) Matrix3x3();
     }
 
     static void DestructSelf(void *self)
@@ -524,75 +259,11 @@ struct Matrix3x3
     static Matrix3x3 Identity();
 };
 
-// 注册反射代码
-
-//
-//
-// Vector3
-//
-//
-
-#define VECTOR3_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name() {                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z);                                                                                                 \
-    }
-
-typedef Vector3<Float> Vector3f;
-VECTOR3_REFL_CONSTRUCTOR(Vector3f)
-typedef Vector3<Int32> Vector3i;
-VECTOR3_REFL_CONSTRUCTOR(Vector3i)
-
-//
-//
-// Vector2
-//
-//
-
-#define VECTOR2_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name() {                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y);                              \
-    }
-
-typedef Vector2<Float> Vector2f;
-VECTOR2_REFL_CONSTRUCTOR(Vector2f)
-typedef Vector2<Int32> Vector2i;
-VECTOR2_REFL_CONSTRUCTOR(Vector2i)
-typedef Vector2<UInt32> Vector2ui;
-VECTOR2_REFL_CONSTRUCTOR(Vector2ui)
-
-//
-//
-// Vector4
-//
-//
-
-#define VECTOR4_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name() {                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
-    }
-
-typedef Vector4<Float> Vector4f;
-VECTOR4_REFL_CONSTRUCTOR(Vector4f)
-typedef Vector4<Int32> Vector4i;
-VECTOR4_REFL_CONSTRUCTOR(Vector4i)
-
 //
 //
 // Rect2D
 //
 //
-
-#define RECT2D_REFL_CONSTRUCTOR(name)                                                                                                                \
-    inline Type *Construct_##name() {                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("pos", &name::pos) | refl_helper::AddField("size", &name::size);                    \
-    }
-
-typedef Rect2D<Float> Rect2Df;
-RECT2D_REFL_CONSTRUCTOR(Rect2Df)
-typedef Rect2D<Int32> Rect2Di;
-RECT2D_REFL_CONSTRUCTOR(Rect2Di)
 
 //
 //
@@ -600,7 +271,8 @@ RECT2D_REFL_CONSTRUCTOR(Rect2Di)
 //
 //
 #define QUATERNION_REFL_CONSTRUCTOR(name)                                                                                                            \
-    inline Type *Construct_##name() {                                                                                                                \
+    inline Type *Construct_##name()                                                                                                                  \
+    {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
                refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
     }
@@ -616,7 +288,8 @@ QUATERNION_REFL_CONSTRUCTOR(Quaternioni)
 //
 //
 #define MATRIX4X4_REFL_CONSTRUCTOR(name)                                                                                                             \
-    inline Type *Construct_##name() {                                                                                                                \
+    inline Type *Construct_##name()                                                                                                                  \
+    {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("col1", &name::col1) | refl_helper::AddField("col2", &name::col2) |                 \
                refl_helper::AddField("col3", &name::col3) | refl_helper::AddField("col4", &name::col4);                                              \
     }
@@ -632,7 +305,8 @@ MATRIX4X4_REFL_CONSTRUCTOR(Matrix4x4i)
 //
 //
 #define MATRIX3X3_REFL_CONSTRUCTOR(name)                                                                                                             \
-    inline Type *Construct_##name() {                                                                                                                \
+    inline Type *Construct_##name()                                                                                                                  \
+    {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("col1", &name::col1) | refl_helper::AddField("col2", &name::col2) |                 \
                refl_helper::AddField("col3", &name::col3);                                                                                           \
     }
@@ -640,7 +314,6 @@ typedef Matrix3x3<Float> Matrix3x3f;
 MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3f)
 typedef Matrix3x3<Int32> Matrix3x3i;
 MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3i)
-
 
 //
 //
@@ -655,20 +328,12 @@ MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3i)
         mgr.RegisterTypeRegisterer(type_info, type_register);                                                                                        \
     }
 
-struct MathTypeRegTrigger
+struct MathTypeRegTrigger_Vector
 {
-    MathTypeRegTrigger()
+
+    MathTypeRegTrigger_Vector()
     {
         auto &mgr = ReflManager::GetByRef();
-        REGISTER_MATH_TYPE(Vector3f, Construct_Vector3f);
-        REGISTER_MATH_TYPE(Vector3i, Construct_Vector3i);
-        REGISTER_MATH_TYPE(Vector2f, Construct_Vector2f);
-        REGISTER_MATH_TYPE(Vector2i, Construct_Vector2i);
-        REGISTER_MATH_TYPE(Vector2ui, Construct_Vector2ui);
-        REGISTER_MATH_TYPE(Rect2Df, Construct_Rect2Df);
-        REGISTER_MATH_TYPE(Rect2Di, Construct_Rect2Di);
-        REGISTER_MATH_TYPE(Vector4f, Construct_Vector4f);
-        REGISTER_MATH_TYPE(Vector4i, Construct_Vector4i);
         REGISTER_MATH_TYPE(Quaternionf, Construct_Quaternionf);
         REGISTER_MATH_TYPE(Quaternioni, Construct_Quaternioni);
         REGISTER_MATH_TYPE(Matrix4x4f, Construct_Matrix4x4f);
@@ -679,58 +344,8 @@ struct MathTypeRegTrigger
     }
 };
 
-static inline const MathTypeRegTrigger reg{};
+static inline const MathTypeRegTrigger_Vector reg{};
 
-template <typename T>
-Vector4<T>::Vector4(const Vector3<T> &other, T w) : X(other.X), Y(other.Y), Z(other.Z), W(w)
-{
-}
-
-template <typename T>
-const Type *Vector3<T>::GetType()
-{
-    if constexpr (SameAs<T, Float>)
-        return TypeOf<Vector3f>();
-    if constexpr (SameAs<T, Int32>)
-        return TypeOf<Vector3i>();
-    return nullptr;
-}
-
-template <typename T>
-Vector3<Float> Vector3<T>::operator*(Float float_) const
-{
-    return Vector3<Float>(X * float_, Y * float_, Z * float_);
-}
-
-template <typename T>
-Vector3<T>::Vector3(const Vector2<T> &vec) : X{vec.X}, Y{vec.Y}, Z{0}
-{
-}
-
-template <typename T>
-Vector3<T> &Vector3<T>::operator=(const Vector2<T> &vec)
-{
-    X = vec.X;
-    Y = vec.Y;
-    Z = 0;
-    return *this;
-}
-
-template <typename T>
-const Type *Vector2<T>::GetType()
-{
-    if constexpr (SameAs<T, Float>)
-        return TypeOf<Vector2f>();
-    if constexpr (SameAs<T, Int32>)
-        return TypeOf<Vector2i>();
-    return nullptr;
-}
-
-template <typename T>
-Vector2<T> Vector2<T>::operator+(Vector2 rhs)
-{
-    return Vector2<T>(X + rhs.X, Y + rhs.Y);
-}
 
 template <typename T>
 const Type *Quaternion<T>::GetType()
@@ -754,32 +369,12 @@ Quaternion<T> Quaternion<T>::FromMatrix4x4(const Matrix4x4<T> &mat)
 }
 
 template <typename T>
-const Type *Rect2D<T>::GetType()
-{
-    if constexpr (SameAs<T, Float>)
-        return TypeOf<Rect2Df>();
-    if constexpr (SameAs<T, Int32>)
-        return TypeOf<Rect2Di>();
-    return nullptr;
-}
-
-template <typename T>
 const Type *Matrix4x4<T>::GetType()
 {
     if constexpr (SameAs<T, Float>)
         return TypeOf<Matrix4x4f>();
     if constexpr (SameAs<T, Int32>)
         return TypeOf<Matrix4x4i>();
-    return nullptr;
-}
-
-template <typename T>
-const Type *Vector4<T>::GetType()
-{
-    if constexpr (SameAs<T, Float>)
-        return TypeOf<Vector4f>();
-    if constexpr (SameAs<T, Int32>)
-        return TypeOf<Vector4i>();
     return nullptr;
 }
 

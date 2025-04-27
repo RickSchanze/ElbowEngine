@@ -12,7 +12,7 @@
 
 CameraComponent::CameraComponent() : SceneComponent() {
     SetDisplayName("摄像机组件");
-    name_ = "CameraComponent";
+    mName = "CameraComponent";
     SetFOV(45);
     SetNearPlane(0.1f);
     SetFarPlane(1000.f);

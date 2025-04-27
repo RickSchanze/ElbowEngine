@@ -8,12 +8,6 @@
 
 #include "Core/Math/MathExtensions.hpp"
 
-IMPL_REFLECTED(Transform)
-{
-    return Type::Create<Transform>("Transform") | refl_helper::AddField("location", &Transform::Location) |
-           refl_helper::AddField("scale", &Transform::Scale) | refl_helper::AddField("rotation", &Transform::mRotation);
-}
-
 void Transform::SetRotation(Quaternionf now)
 {
     mRotation = now;

@@ -13,7 +13,11 @@ get_property(GEN_SOURCES GLOBAL PROPERTY ${PROJECT_NAME}_GEN_SOURCES)
 add_library(Core
         ${CORE_CPP_FILES} ${CORE_HEADER_FILES} ${GEN_SOURCES}
         Serialization/XMLArchive.cpp
-        Serialization/XMLArchive.hpp)
+        Serialization/XMLArchive.hpp
+        Math/Vector.cpp
+        Math/Vector.hpp
+        Math/Rect.cpp
+        Math/Rect.hpp)
 
 # 添加生成的头文件目录
 target_include_directories(${PROJECT_NAME} PUBLIC

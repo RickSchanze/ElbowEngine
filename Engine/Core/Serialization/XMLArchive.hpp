@@ -3,6 +3,7 @@
 #include "cereal/archives/xml.hpp"
 #include "Core/TypeTraits.hpp"
 #include "Core/Object/Object.hpp"
+
 namespace cereal
 {
 // 适配cereal的序列化
@@ -59,16 +60,21 @@ public:
     virtual void WriteString(StringView InName, String& Data) override;
     virtual void WriteString(String& Data) override;
 
-    void WriteObject(Object* InObj)
+    template<typename T>
+    void Serialize(const T& InValue)
     {
-        if (InObj)
-        {
-            WriteObject(*InObj);
-        }
-        VLOG_ERROR("序列化Obj失败! InObj是空的!");
+        // 先写入类型元信息
+        SetNextScopeName("TypeMeta");
+        BeginScope();
+        const Type* MyType = TypeOf<T>();
+        String TypeName = MyType->GetName();
+        UInt64 TypeHash = MyType->GetHashCode();
+        WriteString("TypeName", TypeName);
+        WriteNumber("TypeHash", TypeHash);
+        EndScope();
+        // 写入实际数据
+        WriteType("Data", InValue);
     }
-
-    void WriteObject(Object& InObj);
 
     virtual void SetNextScopeName(StringView InName) override;
     virtual void BeginScope() override;
@@ -81,7 +87,6 @@ private:
      * @param InExistArchive
      */
     explicit XMLOutputArchive(cereal::XMLOutputArchive* InExistArchive);
-
 
 private:
     cereal::XMLOutputArchive* mArchive;
@@ -100,6 +105,8 @@ public:
      * @param InInputStream 此流可以是文件流、字符串流，etc...
      */
     explicit XMLInputArchive(std::istream& InInputStream);
+
+    explicit XMLInputArchive(StringView InPath);
 
 
     virtual ~XMLInputArchive() override;
@@ -146,6 +153,22 @@ public:
     virtual void SetNextScopeName(StringView InName) override;
     virtual void BeginScope() override;
     virtual void EndScope() override;
+
+    template<typename T>
+    void Deserialize(const T& Value)
+    {
+        // 读取类型
+    }
+
+    void Deserialize(const Object* InObject)
+    {
+        if (InObject)
+        {
+            Deserialize(*InObject);
+        }
+    }
+
+    void Deserialize(const Object& InObjectRef);
 
 private:
     cereal::XMLInputArchive* mArchive;

@@ -204,10 +204,10 @@ void Texture2D::Load(const Texture2DMeta &meta)
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
         const ImageDesc desc{meta.Width, meta.Height, IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
                              format, ImageDimension::D2, meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
-        String debug_name = String::Format("Texture2D_{}", *name_);
+        String debug_name = String::Format("Texture2D_{}", *mName);
         native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
         const ImageViewDesc view_desc{native_image_.get()};
-        debug_name = String::Format("Texture2DView_{}", *name_);
+        debug_name = String::Format("Texture2DView_{}", *mName);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         meta_ = meta;
 

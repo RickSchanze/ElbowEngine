@@ -344,7 +344,7 @@ void Shader::Compile(bool output_glsl)
             }
             output_code += String::Format("{}", static_cast<const char *>(vert_code->getBufferPointer()));
             StringView intermediate_path = cfg->GetValidShaderIntermediatePath();
-            String file_name = String::Format("{}_generated.glsl", *name_);
+            String file_name = String::Format("{}_generated.glsl", *mName);
             String output_path = Path::Combine(intermediate_path, file_name);
             File::WriteAllText(output_path, output_code);
         }
@@ -367,8 +367,8 @@ void Shader::Compile(bool output_glsl)
             return;
         }
         auto *ctx = GetGfxContext();
-        String vert_name = String::Format("{}.Vert", *name_);
-        String frag_name = String::Format("{}.Frag", *name_);
+        String vert_name = String::Format("{}.Vert", *mName);
+        String frag_name = String::Format("{}.Frag", *mName);
         mShaderHandles[VERTEX_STAGE_IDX] =
             ctx->CreateShader(static_cast<const char *>(vert_code->getBufferPointer()), vert_code->getBufferSize(),
                               vert_name);
@@ -394,7 +394,7 @@ void Shader::Compile(bool output_glsl)
             }
             output_code += String::Format("{}\n", static_cast<const char *>(compute_code->getBufferPointer()));
             StringView intermediate_path = cfg->GetValidShaderIntermediatePath();
-            String file_name = String::Format("{}_generated.glsl", *name_);
+            String file_name = String::Format("{}_generated.glsl", *mName);
             String output_path = Path::Combine(intermediate_path, file_name);
             File::WriteAllText(output_path, output_code);
         }
@@ -408,7 +408,7 @@ void Shader::Compile(bool output_glsl)
             return;
         }
         auto *ctx = GetGfxContext();
-        String compute_name = String::Format("{}.Compute", *name_);
+        String compute_name = String::Format("{}.Compute", *mName);
         mShaderHandles[COMPUTE_STAGE_IDX] =
             ctx->CreateShader(static_cast<const char *>(compute_code->getBufferPointer()),
                               compute_code->getBufferSize(), compute_name);
