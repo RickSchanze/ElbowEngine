@@ -16,7 +16,7 @@ struct Vector4
 public:
     typedef Vector4 ThisStruct;
 
-    void Serialization_Save(OutputArchive &Archive)
+    void Serialization_Save(OutputArchive& Archive)
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);
@@ -24,7 +24,7 @@ public:
         Archive.WriteNumber("W", W);
     }
 
-    void Serialization_Load(InputArchive &Archive)
+    void Serialization_Load(InputArchive& Archive)
     {
         Archive.ReadNumber("X", X);
         Archive.ReadNumber("Y", Y);
@@ -32,17 +32,17 @@ public:
         Archive.ReadNumber("W", W);
     }
 
-    static void ConstructSelf(void *self)
+    static void ConstructSelf(void* self)
     {
         new (self) Vector4();
     }
 
-    static void DestructSelf(void *self)
+    static void DestructSelf(void* self)
     {
-        static_cast<Vector4 *>(self)->~Vector4();
+        static_cast<Vector4*>(self)->~Vector4();
     }
 
-    const Type *GetType();
+    const Type* GetType();
 
     T X = 0;
     T Y = 0;
@@ -55,14 +55,14 @@ public:
     {
     }
 
-    explicit Vector4(const Vector3<T> &Other, T W = 0);
+    explicit Vector4(const Vector3<T>& Other, T W = 0);
 
-    bool operator==(const Vector4 &other) const
+    bool operator==(const Vector4& other) const
     {
         return X == other.X && Y == other.Y && Z == other.Z;
     }
 
-    auto &operator[](this auto &&Self, UInt8 Index)
+    auto& operator[](this auto&& Self, UInt8 Index)
     {
         switch (Index)
         {
@@ -87,31 +87,31 @@ struct Vector3
 public:
     typedef Vector3 ThisStruct;
 
-    void Serialization_Save(OutputArchive &Archive)
+    void Serialization_Save(OutputArchive& Archive)
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);
         Archive.WriteNumber("Z", Z);
     }
 
-    void Serialization_Load(InputArchive &Archive)
+    void Serialization_Load(InputArchive& Archive)
     {
         Archive.ReadNumber("X", X);
         Archive.ReadNumber("Y", Y);
         Archive.ReadNumber("Z", Z);
     }
 
-    static void ConstructSelf(void *self)
+    static void ConstructSelf(void* self)
     {
         new (self) Vector3();
     }
 
-    static void DestructSelf(void *self)
+    static void DestructSelf(void* self)
     {
-        static_cast<Vector3 *>(self)->~Vector3();
+        static_cast<Vector3*>(self)->~Vector3();
     }
 
-    const Type *GetType();
+    const Type* GetType();
 
     Vector3 operator*(T Value) const
     {
@@ -128,13 +128,13 @@ public:
     {
     }
 
-    explicit Vector3(const Vector4<T> &vec) : X(vec.X), Y(vec.Y), Z(vec.Z)
+    explicit Vector3(const Vector4<T>& vec) : X(vec.X), Y(vec.Y), Z(vec.Z)
     {
     }
 
-    explicit Vector3(const Vector2<T> &Vec);
+    explicit Vector3(const Vector2<T>& Vec);
 
-    Vector3 &operator=(const Vector2<T> &Vec)
+    Vector3& operator=(const Vector2<T>& Vec)
     {
         X = Vec.X;
         Y = Vec.Y;
@@ -142,7 +142,7 @@ public:
         return *this;
     }
 
-    bool operator==(const Vector3 &other) const
+    bool operator==(const Vector3& other) const
     {
         return X == other.X && Y == other.Y && Z == other.Z;
     }
@@ -163,7 +163,7 @@ public:
     }
 
     template <typename Self>
-    auto &operator[](this Self &&self, UInt64 index)
+    auto& operator[](this Self&& self, UInt64 index)
     {
         switch (index)
         {
@@ -185,34 +185,34 @@ struct Vector2
 {
     typedef Vector2 ThisStruct;
 
-    void Serialization_Save(OutputArchive &Archive)
+    void Serialization_Save(OutputArchive& Archive)
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);
     }
 
-    void Serialization_Load(InputArchive &Archive)
+    void Serialization_Load(InputArchive& Archive)
     {
         Archive.ReadNumber("X", X);
         Archive.ReadNumber("Y", Y);
     }
 
-    static void ConstructSelf(void *self)
+    static void ConstructSelf(void* self)
     {
         new (self) Vector2();
     }
 
-    static void DestructSelf(void *self)
+    static void DestructSelf(void* self)
     {
-        static_cast<Vector2 *>(self)->~Vector2();
+        static_cast<Vector2*>(self)->~Vector2();
     }
 
-    const Type *GetType();
+    const Type* GetType();
 
     T X = 0;
     T Y = 0;
 
-    bool operator==(const Vector2 &other) const
+    bool operator==(const Vector2& other) const
     {
         return X == other.X && Y == other.Y;
     }
@@ -232,7 +232,7 @@ struct Vector2
         return Vector2{X + Right.X, Y + Right.Y};
     }
 
-    Vector2 &operator+=(T value)
+    Vector2& operator+=(T value)
     {
         X += value;
         Y += value;
@@ -274,7 +274,7 @@ struct Vector2
 //
 
 #define VECTOR3_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name()                                                                                                                  \
+    inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
                refl_helper::AddField("Z", &name::Z);                                                                                                 \
@@ -293,7 +293,7 @@ VECTOR3_REFL_CONSTRUCTOR(Vector3i)
 //
 
 #define VECTOR2_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name()                                                                                                                  \
+    inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y);                              \
     }
@@ -314,7 +314,7 @@ VECTOR2_REFL_CONSTRUCTOR(Vector2ui)
 //
 
 #define VECTOR4_REFL_CONSTRUCTOR(name)                                                                                                               \
-    inline Type *Construct_##name()                                                                                                                  \
+    inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
                refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
@@ -328,7 +328,7 @@ VECTOR4_REFL_CONSTRUCTOR(Vector4i)
 
 // TypeOf for Vector2
 template <typename T>
-const Type *Vector2<T>::GetType()
+const Type* Vector2<T>::GetType()
 {
     if constexpr (SameAs<T, Float>)
         return TypeOf<Vector2f>();
@@ -338,13 +338,13 @@ const Type *Vector2<T>::GetType()
 }
 
 template <typename T>
-Vector4<T>::Vector4(const Vector3<T> &Other, T W) : X(Other.X), Y(Other.Y), Z(Other.Z), W(W)
+Vector4<T>::Vector4(const Vector3<T>& Other, T W) : X(Other.X), Y(Other.Y), Z(Other.Z), W(W)
 {
 }
 
 // TypeOf for Vector3
 template <typename T>
-const Type *Vector3<T>::GetType()
+const Type* Vector3<T>::GetType()
 {
     if constexpr (SameAs<T, Float>)
         return TypeOf<Vector3f>();
@@ -354,13 +354,13 @@ const Type *Vector3<T>::GetType()
 }
 
 template <typename T>
-Vector3<T>::Vector3(const Vector2<T> &Vec) : X(Vec.X), Y(Vec.Y), Z(0)
+Vector3<T>::Vector3(const Vector2<T>& Vec) : X(Vec.X), Y(Vec.Y), Z(0)
 {
 }
 
 // TypeOf for Vector4
 template <typename T>
-const Type *Vector4<T>::GetType()
+const Type* Vector4<T>::GetType()
 {
     if constexpr (SameAs<T, Float>)
         return TypeOf<Vector4f>();

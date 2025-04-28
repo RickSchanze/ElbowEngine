@@ -17,7 +17,12 @@ add_library(Core
         Math/Vector.cpp
         Math/Vector.hpp
         Math/Rect.cpp
-        Math/Rect.hpp)
+        Math/Rect.hpp
+        Math/Quaternion.cpp
+        Math/Quaternion.hpp
+        Math/Rotator.cpp
+        Math/Rotator.hpp
+        Math/Constants.hpp)
 
 # 添加生成的头文件目录
 target_include_directories(${PROJECT_NAME} PUBLIC

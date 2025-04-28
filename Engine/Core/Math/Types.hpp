@@ -14,59 +14,7 @@
 template <typename T>
 struct Matrix4x4;
 
-template <typename T>
-struct Quaternion
-{
-    typedef Quaternion ThisStruct;
 
-    static void ConstructSelf(void *self)
-    {
-        new (self) Quaternion();
-    }
-
-    static void DestructSelf(void *self)
-    {
-        static_cast<Quaternion *>(self)->~Quaternion();
-    }
-
-    const Type *GetType();
-
-    static Quaternion Identity();
-
-    T X = 0;
-    T Y = 0;
-    T Z = 0;
-    T W = 0; // 实部(标量)
-
-    Quaternion() = default;
-
-    Quaternion(T x, T y, T z, T w) : X(x), Y(y), Z(z), W(w)
-    {
-    }
-
-    Quaternion(const glm::quat &q) : X(q.x), Y(q.y), Z(q.z), W(q.w)
-    {
-    }
-
-    Vector3<T> ToEulerAngle() const
-    {
-        glm::qua<T> q(X, Y, Z, W);
-        glm::vec<3, T> ang = glm::eulerAngles(q);
-        return {ang.X, ang.Y, ang.Z};
-    }
-
-    Quaternion FromMatrix4x4(const Matrix4x4<T> &mat);
-
-    operator glm::quat()
-    {
-        glm::quat q;
-        q.w = W;
-        q.x = X;
-        q.y = Y;
-        q.z = Z;
-        return q;
-    }
-};
 
 struct Color
 {
@@ -265,22 +213,7 @@ struct Matrix3x3
 //
 //
 
-//
-//
-// Quaternion
-//
-//
-#define QUATERNION_REFL_CONSTRUCTOR(name)                                                                                                            \
-    inline Type *Construct_##name()                                                                                                                  \
-    {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
-    }
 
-typedef Quaternion<Float> Quaternionf;
-QUATERNION_REFL_CONSTRUCTOR(Quaternionf)
-typedef Quaternion<Int32> Quaternioni;
-QUATERNION_REFL_CONSTRUCTOR(Quaternioni)
 
 //
 //
@@ -334,8 +267,6 @@ struct MathTypeRegTrigger_Vector
     MathTypeRegTrigger_Vector()
     {
         auto &mgr = ReflManager::GetByRef();
-        REGISTER_MATH_TYPE(Quaternionf, Construct_Quaternionf);
-        REGISTER_MATH_TYPE(Quaternioni, Construct_Quaternioni);
         REGISTER_MATH_TYPE(Matrix4x4f, Construct_Matrix4x4f);
         REGISTER_MATH_TYPE(Matrix4x4i, Construct_Matrix4x4i);
         REGISTER_MATH_TYPE(Matrix3x3f, Construct_Matrix3x3f);
@@ -347,15 +278,7 @@ struct MathTypeRegTrigger_Vector
 static inline const MathTypeRegTrigger_Vector reg{};
 
 
-template <typename T>
-const Type *Quaternion<T>::GetType()
-{
-    if constexpr (SameAs<T, Float>)
-        return TypeOf<Quaternionf>();
-    if constexpr (SameAs<T, Int32>)
-        return TypeOf<Quaternioni>();
-    return nullptr;
-}
+
 
 template <typename T>
 Quaternion<T> Quaternion<T>::Identity()

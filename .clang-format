@@ -20,4 +20,5 @@ BraceWrapping:
   BeforeWhile: true
   BeforeElse: true
 AlwaysBreakTemplateDeclarations: Yes
+PointerAlignment: Left
 ...

@@ -6,29 +6,29 @@ struct Rect2D
 {
     typedef Rect2D ThisStruct;
 
-    void Serialization_Save(OutputArchive &Archive)
+    void Serialization_Save(OutputArchive& Archive)
     {
         Archive.WriteType("Pos", Pos);
         Archive.WriteType("Size", Size);
     }
 
-    void Serialization_Load(InputArchive &Archive)
+    void Serialization_Load(InputArchive& Archive)
     {
         Archive.ReadType("Pos", Pos);
         Archive.ReadType("Size", Size);
     }
 
-    static void ConstructSelf(void *self)
+    static void ConstructSelf(void* self)
     {
         new (self) Rect2D();
     }
 
-    static void DestructSelf(void *self)
+    static void DestructSelf(void* self)
     {
-        static_cast<Rect2D *>(self)->~Rect2D();
+        static_cast<Rect2D*>(self)->~Rect2D();
     }
 
-    const Type *GetType();
+    const Type* GetType();
 
     Vector2<T> Pos = {};
     Vector2<T> Size = {};
@@ -71,7 +71,7 @@ struct Rect2D
 };
 
 #define RECT2D_REFL_CONSTRUCTOR(name)                                                                                                                \
-    inline Type *Construct_##name()                                                                                                                  \
+    inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
         return Type::Create<name>(#name) | refl_helper::AddField("Pos", &name::Pos) | refl_helper::AddField("Size", &name::Size);                    \
     }
@@ -82,7 +82,7 @@ typedef Rect2D<Int32> Rect2Di;
 RECT2D_REFL_CONSTRUCTOR(Rect2Di)
 
 template <typename T>
-const Type *Rect2D<T>::GetType()
+const Type* Rect2D<T>::GetType()
 {
     if constexpr (SameAs<T, Float>)
         return TypeOf<Rect2Df>();
