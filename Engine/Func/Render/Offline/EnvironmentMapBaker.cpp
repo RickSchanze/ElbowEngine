@@ -17,16 +17,21 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 using namespace RHI;
 
-Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Vector2f output_size, Float sample_delta, Float intensity) {
-    if (!environment_sphere) {
+Texture2D* EnvironmentMapBaker::BakeIrradianceMap(const Texture2D* environment_sphere, const Vector2f output_size, const Float sample_delta,
+                                                  const Float intensity)
+{
+    if (!environment_sphere)
+    {
         VLOG_ERROR("烘焙失败!输入环境贴图为空");
         return nullptr;
     }
-    if (output_size.X == 0 || output_size.Y == 0) {
+    if (output_size.X == 0 || output_size.Y == 0)
+    {
         VLOG_ERROR("烘焙失败!输出贴图大小为0");
         return nullptr;
     }
-    if (intensity == 0) {
+    if (intensity == 0)
+    {
         VLOG_ERROR("烘焙失败!强度为0, 是否忘了设置？");
         return nullptr;
     }
@@ -35,7 +40,7 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
     irradiance_map_meta.Format = environment_sphere->GetFormat();
     irradiance_map_meta.Height = output_size.Y;
     irradiance_map_meta.Width = output_size.X;
-    Texture2D *irradiance_map = ObjectManager::CreateNewObject<Texture2D>();
+    Texture2D* irradiance_map = ObjectManager::CreateNewObject<Texture2D>();
     irradiance_map->Load(irradiance_map_meta);
     irradiance_map->SetName("IrradianceMap");
     BakeIrradianceMap(environment_sphere, irradiance_map, sample_delta, intensity);
@@ -43,17 +48,21 @@ Texture2D *EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere,
     return irradiance_map;
 }
 
-void EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Texture2D *target, Float sample_delta, Float intensity) {
-    if (target == nullptr || environment_sphere == nullptr) {
+void EnvironmentMapBaker::BakeIrradianceMap(const Texture2D* environment_sphere, const Texture2D* target, const Float sample_delta,
+                                            const Float intensity)
+{
+    if (target == nullptr || environment_sphere == nullptr)
+    {
         VLOG_ERROR("烘焙失败!输入环境贴图或者输出target为空");
         return;
     }
-    if (intensity == 0) {
+    if (intensity == 0)
+    {
         VLOG_ERROR("烘焙失败!强度为0, 是否忘了设置？");
         return;
     }
-    Material *material = CreateNewObject<Material>();
-    Shader *ss = AssetDataBase::LoadOrImportT<Shader>("Assets/Shader/PBR/Environment/Irradiance.slang");
+    Material* material = CreateNewObject<Material>();
+    Shader* ss = AssetDataBase::LoadOrImportT<Shader>("Assets/Shader/PBR/Environment/Irradiance.slang");
     material->SetShader(ss);
     material->SetTexture2D("output_irradiance", target, true);
     material->SetTexture2D("input_equirect_map", environment_sphere);
@@ -67,8 +76,11 @@ void EnvironmentMapBaker::BakeIrradianceMap(Texture2D *environment_sphere, Textu
     Destroy(material);
 }
 
-void EnvironmentMapBaker::BakeIrradianceMap(RHI::CommandBuffer &buffer, Texture2D *environment_sphere, Texture2D *target, Material *material) {
-    if (!environment_sphere || !target || !material) {
+void EnvironmentMapBaker::BakeIrradianceMap(RHI::CommandBuffer& buffer, const Texture2D* environment_sphere, const Texture2D* target,
+                                            const Material* material)
+{
+    if (!environment_sphere || !target || !material)
+    {
         return;
     }
     buffer.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::General, target->GetNativeImage(), ImageSubresourceRange{IA_Color, 0, 1, 0, 1},
@@ -83,8 +95,10 @@ void EnvironmentMapBaker::BakeIrradianceMap(RHI::CommandBuffer &buffer, Texture2
     buffer.Execute();
 }
 
-void EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environment_sphere, Texture2D *target, Material *material) {
-    if (!environment_sphere || !target || !material) {
+void EnvironmentMapBaker::BakePrefilteredEnvironmentMap(const Texture2D* environment_sphere, const Texture2D* target, Material* material)
+{
+    if (!environment_sphere || !target || !material)
+    {
         VLOG_ERROR("输入参数为空");
         return;
     }
@@ -100,7 +114,8 @@ void EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environment_s
     range.base_mip_level = 0;
     GfxCommandHelper::PipelineBarrier(ImageLayout::ShaderReadOnly, ImageLayout::General, target->GetNativeImage(), range, 0, AFB_ShaderWrite,
                                       PSFB_TopOfPipe, PSFB_ComputeShader);
-    for (UInt32 mip_level = 0; mip_level < mip_level_count; mip_level++) {
+    for (UInt32 mip_level = 0; mip_level < mip_level_count; mip_level++)
+    {
         UInt32 mip_width = tex_width * std::pow(0.5, mip_level);
         UInt32 mip_height = tex_height * std::pow(0.5, mip_level);
         Float roughness = static_cast<Float>(mip_level) / static_cast<Float>(mip_level_count - 1);
@@ -128,8 +143,10 @@ void EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environment_s
     }
 }
 
-Texture2D *EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environment_sphere, UInt32 width, UInt32 height, UInt32 mip_level) {
-    if (!environment_sphere) {
+Texture2D* EnvironmentMapBaker::BakePrefilteredEnvironmentMap(const Texture2D* environment_sphere, UInt32 width, UInt32 height, UInt32 mip_level)
+{
+    if (!environment_sphere)
+    {
         VLOG_ERROR("输入环境贴图为空");
         return nullptr;
     }
@@ -140,11 +157,11 @@ Texture2D *EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environ
     meta.Width = width;
     meta.Height = height;
     meta.MipmapLevel = mip_level;
-    Texture2D *prefiltered_map = CreateNewObject<Texture2D>();
+    Texture2D* prefiltered_map = CreateNewObject<Texture2D>();
     prefiltered_map->Load(meta);
     // 创建Material
-    Shader *bake_shader = AssetDataBase::LoadFromPath<Shader>("Assets/Shader/PBR/Environment/PrefilteredColor.slang");
-    Material *material = CreateNewObject<Material>();
+    Shader* bake_shader = AssetDataBase::LoadFromPath<Shader>("Assets/Shader/PBR/Environment/PrefilteredColor.slang");
+    Material* material = CreateNewObject<Material>();
     material->SetShader(bake_shader);
     BakePrefilteredEnvironmentMap(environment_sphere, prefiltered_map, material);
     Destroy(material);
@@ -152,15 +169,16 @@ Texture2D *EnvironmentMapBaker::BakePrefilteredEnvironmentMap(Texture2D *environ
     return prefiltered_map;
 }
 
-Texture2D *EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize) {
+Texture2D* EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize)
+{
     Texture2DMeta meta;
     meta.IsDynamic = true;
     meta.Format = RHI::Format::R32G32_Float;
     meta.Width = InSize;
     meta.Height = InSize;
-    Texture2D *BRDFMap = CreateNewObject<Texture2D>();
+    Texture2D* BRDFMap = CreateNewObject<Texture2D>();
     BRDFMap->Load(meta);
-    Material *MyMaterial = CreateNewObject<Material>();
+    Material* MyMaterial = CreateNewObject<Material>();
     MyMaterial->SetShader(AssetDataBase::LoadFromPath<Shader>("Assets/Shader/PBR/Environment/IntegrateBRDF.slang"));
     BakeIntegrateBRDFLookUpMap(BRDFMap, MyMaterial);
     Destroy(MyMaterial);
@@ -168,7 +186,8 @@ Texture2D *EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize) 
     return BRDFMap;
 }
 
-void EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const Texture2D *OutBRDFMap, Material *InMaterial) {
+void EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const Texture2D* OutBRDFMap, Material* InMaterial)
+{
     auto Cmd = GfxCommandHelper::BeginSingleCommand();
     const Float OutSizeX = static_cast<Float>(OutBRDFMap->GetWidth());
     const Float OutSizeY = static_cast<Float>(OutBRDFMap->GetHeight());

@@ -12,17 +12,17 @@ class PlatformWindow_GLFW final : public PlatformWindow {
 public:
     PlatformWindow_GLFW(StringView window_title, int width, int height, int flags);
 
-    ~PlatformWindow_GLFW() override;
+    virtual ~PlatformWindow_GLFW() override;
 
-    [[nodiscard]] void *GetNativeHandle() const override;
+    virtual void* GetNativeHandle() const override;
 
-    void PollInputs(const MilliSeconds &sec) override;
-    bool ShouldClose() override;
-    void Close() override;
-    void BeginImGuiFrame() override;
+    virtual void PollInputs(const MilliSeconds& sec) override;
+    virtual bool ShouldClose() override;
+    virtual void Close() override;
+    virtual void BeginImGuiFrame() override;
 
-    RHI::Surface *CreateSurface(void *user_data, RHI::GraphicsAPI api) override;
-    void DestroySurface(RHI::Surface *&surface) override;
+    virtual RHI::Surface* CreateSurface(void* user_data, RHI::GraphicsAPI api) override;
+    virtual void DestroySurface(RHI::Surface *&surface) override;
 
 private:
     GLFWwindow *window_ = nullptr;

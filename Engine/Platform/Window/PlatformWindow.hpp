@@ -66,7 +66,7 @@ public:
     explicit PlatformWindow(StringView title = "", Int32 width = 0, Int32 height = 0, Int32 flags = -1);
     virtual ~PlatformWindow() = default;
 
-    [[nodiscard]] virtual void *GetNativeHandle() const = 0;
+    virtual void *GetNativeHandle() const = 0;
 
     virtual void PollInputs(const MilliSeconds &sec) = 0;
     virtual bool ShouldClose() = 0;
@@ -87,10 +87,10 @@ public:
      */
     virtual void DestroySurface(RHI::Surface *&surface) = 0;
 
-    [[nodiscard]] StringView GetTitle() const { return title_; }
-    [[nodiscard]] Int32 GetWidth() const { return width_; }
-    [[nodiscard]] Int32 GetHeight() const { return height_; }
-    [[nodiscard]] Int32 GetFlags() const { return flags_; }
+    StringView GetTitle() const { return title_; }
+    Int32 GetWidth() const { return width_; }
+    Int32 GetHeight() const { return height_; }
+    Int32 GetFlags() const { return flags_; }
 
     /**
      * 下面俩函数用于设置窗口宽高

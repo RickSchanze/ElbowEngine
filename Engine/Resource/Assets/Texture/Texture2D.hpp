@@ -3,7 +3,8 @@
 //
 #pragma once
 #include "Core/Core.hpp"
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
+#include "Core/Math/Rect.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Profile.hpp"
 #include "Platform/RHI/Enums.hpp"
@@ -26,13 +27,13 @@ struct Texture2DMeta;
 struct SpriteRange
 {
     // 表示位置和尺寸, 左上角是(0,0)
-    Rect2Di range{};
+    Rect2Di Range{};
     // 表示ID, 是使用字符串的hash值
-    UInt64 id{};
+    UInt64 ID{};
 
     bool IsValid() const
     {
-        return range.size.X != 0 && range.size.Y != 0;
+        return Range.Size.X != 0 && Range.Size.Y != 0;
     }
 };
 
@@ -40,25 +41,25 @@ class ECLASS() Texture2D : public Asset
 {
     GENERATED_BODY(Texture2D)
 public:
-    AssetType GetAssetType() const override
+    virtual AssetType GetAssetType() const override
     {
         return AssetType::Texture2D;
     }
 
-    void PerformLoad() override;
+    virtual void PerformLoad() override;
 
-    void PerformUnload() override
+    virtual void PerformUnload() override
     {
         native_image_view_ = nullptr;
-        native_image_ = nullptr;
+        mNativeImage = nullptr;
     }
 
     // TODO: 返回bool 错误处理
-    void Load(const Texture2DMeta &meta);
+    void Load(const Texture2DMeta& meta);
 
-    bool IsLoaded() const override
+    virtual bool IsLoaded() const override
     {
-        return static_cast<bool>(native_image_);
+        return static_cast<bool>(mNativeImage);
     }
 
     UInt32 GetWidth() const;
@@ -80,7 +81,7 @@ public:
 
     RHI::Image *GetNativeImage() const
     {
-        return native_image_.get();
+        return mNativeImage.get();
     }
 
     Rect2Df GetUVRect(const SpriteRange &sprite_range) const;
@@ -172,7 +173,7 @@ public:
      */
     void Download() const;
 
-    void Download(StringView path) const;
+    void Download(StringView Path) const;
 
     /**
      * 将data数据通道转换
@@ -190,11 +191,11 @@ public:
 
     void SetSpriteRangeString(const StringView str);
 
-    void Save() override;
+    virtual void Save() override;
 #endif
 
 private:
-    SharedPtr<RHI::Image> native_image_ = nullptr;
+    SharedPtr<RHI::Image> mNativeImage = nullptr;
     SharedPtr<RHI::ImageView> native_image_view_ = nullptr;
 
     // 这个Texture2D包含的sprites

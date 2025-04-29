@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
+#include "Core/Math/Color.hpp"
 
 namespace RHI {
     struct Vertex1 {

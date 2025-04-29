@@ -15,10 +15,10 @@ public:
   static Project &GetCurrentProject();
   static void CreateInstance(StringView path);
 
-  [[nodiscard]] StringView GetProjectName() const { return name_; }
-  [[nodiscard]] StringView GetProjectPath() const { return path_; }
-  [[nodiscard]] StringView GetVersion() const { return version_; }
-  [[nodiscard]] StringView GetDatabasePath() const { return database_path_; }
+  StringView GetProjectName() const { return name_; }
+  StringView GetProjectPath() const { return path_; }
+  StringView GetVersion() const { return version_; }
+  StringView GetDatabasePath() const { return database_path_; }
 
 protected:
   Project() = default;

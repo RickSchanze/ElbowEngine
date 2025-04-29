@@ -3,7 +3,7 @@
 //
 #pragma once
 #include "Core/Core.hpp"
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Rect.hpp"
 #include "Core/Object/ObjectPtr.hpp"
 #include "Resource/Assets/Asset.hpp"
 
@@ -19,30 +19,33 @@ enum class FontRenderMethod {
 };
 
 struct FontCharacterInfo {
-    Rect2Df uv{}; // 字形的UV
-    Vector2i size{}; // 字形的大小
-    Vector2i bearing{}; // 从baseline到字形左部/顶部的便宜
-    UInt32 advance{}; // 从远点到下一个字形原点的距离
+    Rect2Df UV{}; // 字形的UV
+    Vector2i Size{}; // 字形的大小
+    Vector2i Bearing{}; // 从baseline到字形左部/顶部的便宜
+    UInt32 Advance{}; // 从远点到下一个字形原点的距离
 };
 
 class ECLASS() Font : public Asset {
     GENERATED_BODY(Font)
 public:
     static Font *GetDefaultFont();
-    static Material *GetDefaultFontMaterial();
+    static Material* GetDefaultFontMaterial();
 
-    ~Font() override;
-    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Font; }
+    virtual ~Font() override;
+    virtual AssetType GetAssetType() const override
+    {
+        return AssetType::Font;
+    }
 
-    void PerformLoad() override;
+    virtual void PerformLoad() override;
 
-    void PerformUnload() override;
+    virtual void PerformUnload() override;
 
-    bool Load(const FontMeta &meta);
+    bool Load(const FontMeta& meta);
 
-    [[nodiscard]] bool IsLoaded() const override;
+    virtual bool IsLoaded() const override;
 
-    [[nodiscard]] Int16 GetFontSize() const { return font_size_; }
+    Int16 GetFontSize() const { return font_size_; }
     /**
      * 设置字体大小, 这会生成新的FontAtlas
      */
@@ -53,13 +56,13 @@ public:
         }
     }
 
-    [[nodiscard]] Texture2D *GetFontAtlas() const { return font_atlas_; }
+    Texture2D *GetFontAtlas() const { return font_atlas_; }
 
-    [[nodiscard]] FontRenderMethod GetRenderMethod() const { return render_method_; }
-    [[nodiscard]] StringView GetAssetPath() const { return path_; }
+    FontRenderMethod GetRenderMethod() const { return render_method_; }
+    StringView GetAssetPath() const { return path_; }
 
-    [[nodiscard]] const FontCharacterInfo &GetCharacterInfo(const UInt32 unicode) { return glyphs_[unicode]; }
-    [[nodiscard]] bool HasCharacterInfo(const UInt32 unicode) const { return glyphs_.Contains(unicode); }
+    const FontCharacterInfo &GetCharacterInfo(const UInt32 unicode) { return glyphs_[unicode]; }
+    bool HasCharacterInfo(const UInt32 unicode) const { return glyphs_.Contains(unicode); }
 
     void RequestLoadGlyphs(const StringView &str);
 

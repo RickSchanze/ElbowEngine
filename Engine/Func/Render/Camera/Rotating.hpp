@@ -12,7 +12,7 @@ class ECLASS() Rotating : public Actor
     GENERATED_BODY(Rotating)
 
 public:
-    void Tick(MilliSeconds delta_time) override;
+    virtual void Tick(MilliSeconds delta_time) override;
 
 private:
     Float speed_ = 3.f;

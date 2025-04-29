@@ -103,6 +103,7 @@ public static class CodeGenerator
                 if (diag.Type == CppLogMessageType.Error)
                 {
                     Console.WriteLine(diag);
+                    return false;
                 }
             }
         }
@@ -424,7 +425,15 @@ public static class CodeGenerator
 
             headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
             headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            if (!_class.Value.ContainsKey("Abstract"))
+            {
+                headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            }
+            else
+            {
+                headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>();\\");
+            }
+
             headerContent.AppendLine($"}}\\");
             headerContent.AppendLine($"}}; \\");
             headerContent.AppendLine(
@@ -457,7 +466,7 @@ public static class CodeGenerator
 
             headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
             headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>();\\");
             headerContent.AppendLine($"}}\\");
             headerContent.AppendLine($"}}; \\");
             headerContent.AppendLine(
@@ -549,7 +558,7 @@ public static class CodeGenerator
             source_content.AppendLine();
             source_content.AppendLine($"Type* {_class.Key.FullName}::ConstructType() {{");
             source_content.AppendLine($"return Type::Create<{_class.Key.FullName}>(\"{_class.Key.FullName}\")");
-            
+
             if (_class.Key.BaseTypes.Count > 0)
             {
                 string parents = "";

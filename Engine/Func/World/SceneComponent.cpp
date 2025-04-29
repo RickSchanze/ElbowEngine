@@ -8,10 +8,10 @@
 
 void SceneComponent::SetTransform(const Transform &transform) { transform_ = transform; }
 
-Vector3f SceneComponent::GetWorldLocation() const { return mWorldTransform.Location; }
+Vector3f SceneComponent::GetWorldLocation() const { return mWorldTransform.mLocation; }
 
 void SceneComponent::SetLocation(const Vector3f &location) {
-    transform_.Location = location;
+    transform_.mLocation = location;
     SetTransformDirty();
 }
 
@@ -34,7 +34,7 @@ void SceneComponent::SetRotation(const Vector3f &eluer) {
 }
 
 void SceneComponent::SetScale(const Vector3f &scale) {
-    transform_.Scale = scale;
+    transform_.mScale = scale;
     SetTransformDirty();
 }
 
@@ -45,8 +45,8 @@ void SceneComponent::Rotate(Vector3f eluer_degree) {
 
 void SceneComponent::UpdateTransform(const Transform &parent_transform) {
     SetTransformDirty(false);
-    mWorldTransform.Location = transform_.Location + parent_transform.Location;
-    mWorldTransform.Scale = transform_.Scale * parent_transform.Scale;
+    mWorldTransform.mLocation = transform_.mLocation + parent_transform.mLocation;
+    mWorldTransform.mScale = transform_.mScale * parent_transform.mScale;
     glm::quat parent_q = parent_transform.GetRotationQuaterion();
     glm::quat now_q = transform_.GetRotationQuaterion();
     mWorldTransform.SetRotation(parent_q * now_q);

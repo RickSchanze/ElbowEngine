@@ -28,19 +28,19 @@ namespace RHI {
         using ThisType = GfxContext_Vulkan;
 
         GfxContext_Vulkan();
-        GfxContext_Vulkan(const GfxContext_Vulkan &) = delete;
-        ~GfxContext_Vulkan() override;
+        GfxContext_Vulkan(const GfxContext_Vulkan&) = delete;
+        virtual ~GfxContext_Vulkan() override;
 
-        GraphicsAPI GetAPI() const override;
+        virtual GraphicsAPI GetAPI() const override;
 
         static Array<VkExtensionProperties> GetAvailableExtensions(VkPhysicalDevice);
 
-        SwapChainSupportInfo QuerySwapChainSupportInfo() override;
-        const PhysicalDeviceFeature &QueryDeviceFeature() override;
-        const PhysicalDeviceInfo &QueryDeviceInfo() override;
+        virtual SwapChainSupportInfo QuerySwapChainSupportInfo() override;
+        virtual const PhysicalDeviceFeature& QueryDeviceFeature() override;
+        virtual const PhysicalDeviceInfo& QueryDeviceInfo() override;
 
-        Format GetDefaultDepthStencilFormat() const override;
-        Format GetDefaultColorFormat() const override;
+        virtual Format GetDefaultDepthStencilFormat() const override;
+        virtual Format GetDefaultColorFormat() const override;
 
         const QueueFamilyIndices &GetCurrentQueueFamilyIndices() const;
 
@@ -60,19 +60,19 @@ namespace RHI {
 
         VkCommandPool CreateCommandPool_VK(const VkCommandPoolCreateInfo &info) const;
         void DestroyCommandPool_VK(VkCommandPool pool) const;
-        void CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo &alloc_info, VkCommandBuffer *command_buffers) const;
+        void CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const;
 
-        UniquePtr<Fence> CreateFence(bool signaled) override;
+        virtual UniquePtr<Fence> CreateFence(bool signaled) override;
 
-        SharedPtr<LowShader> CreateShader(const char *code, size_t size, StringView debug_name) override;
+        virtual SharedPtr<LowShader> CreateShader(const char* code, size_t size, StringView debug_name) override;
 
-        exec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) override;
+        virtual exec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
 
-        SharedPtr<Buffer> CreateBuffer(const BufferDesc &create_info, StringView debug_name) override;
+        virtual SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info, StringView debug_name) override;
 
-        SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo &create_info) override;
+        virtual SharedPtr<CommandPool> CreateCommandPool(const CommandPoolCreateInfo& create_info) override;
 
-        CommandPool &GetTransferPool() override { return *transfer_pool_; }
+        virtual CommandPool &GetTransferPool() override { return *transfer_pool_; }
 
         void SetObjectDebugName(VkObjectType type, void *handle, StringView name) const;
 
@@ -85,13 +85,13 @@ namespace RHI {
 
         VkQueue GetQueue(QueueFamilyType type) const;
 
-        SharedPtr<Image> CreateImage(const ImageDesc &desc, StringView debug_name) override;
+        virtual SharedPtr<Image> CreateImage(const ImageDesc& desc, StringView debug_name) override;
 
-        SharedPtr<ImageView> CreateImageView(const ImageViewDesc &desc, StringView debug_name) override;
+        virtual SharedPtr<ImageView> CreateImageView(const ImageViewDesc &desc, StringView debug_name) override;
 
         static Format GetSwapchainImageFormat();
 
-        UniquePtr<Pipeline> CreateComputePipeline(const ComputePipelineDesc &create_info) override;
+        virtual UniquePtr<Pipeline> CreateComputePipeline(const ComputePipelineDesc &create_info) override;
 
         VkPhysicalDevice GetPhysicalDevice() const { return physical_device_; }
 
@@ -106,35 +106,38 @@ namespace RHI {
         static void PreVulkanGfxContextDestroyed(GfxContext *ctx);
 
     public:
-        UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RHI::RenderPass *render_pass) override;
+        virtual UniquePtr<Pipeline> CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, RHI::RenderPass* render_pass) override;
 
-        Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore) override;
+        virtual Optional<int32_t> GetCurrentSwapChainImageIndexSync(Semaphore* signal_semaphore) override;
 
-        SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc &desc) override;
+        virtual SharedPtr<DescriptorSetLayout> CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc) override;
 
-        UniquePtr<Semaphore> Create_Semaphore(UInt64 init_value, bool timeline) override;
+        virtual UniquePtr<Semaphore> Create_Semaphore(UInt64 init_value, bool timeline) override;
 
-        bool Present(uint32_t image_index, Semaphore *wait_semaphore) override;
+        virtual bool Present(uint32_t image_index, Semaphore *wait_semaphore) override;
 
-        VkSwapchainKHR GetSwapchain() const { return swapchain_; }
+        VkSwapchainKHR GetSwapchain() const
+        {
+            return swapchain_;
+        }
 
-        ImageView *GetSwapChainView(UInt32 index) override;
+        virtual ImageView* GetSwapChainView(UInt32 index) override;
 
-        Image *GetSwapChainImage(UInt32 index) override;
+        virtual Image* GetSwapChainImage(UInt32 index) override;
 
-        void WaitForDeviceIdle() override;
+        virtual void WaitForDeviceIdle() override;
 
-        void WaitForQueueExecution(QueueFamilyType type) override;
+        virtual void WaitForQueueExecution(QueueFamilyType type) override;
 
-        void ResizeSwapChain(Int32 width, Int32 height) override;
+        virtual void ResizeSwapChain(Int32 width, Int32 height) override;
 
-        SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc &desc) override;
+        virtual SharedPtr<DescriptorSetPool> CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc) override;
 
-        void BeginImGuiFrame(RHI::CommandBuffer &cmd, Int32, Int32 w, Int32 h) override;
-        void EndImGuiFrame(RHI::CommandBuffer &buffer) override;
+        virtual void BeginImGuiFrame(RHI::CommandBuffer& cmd, Int32, Int32 w, Int32 h) override;
+        virtual void EndImGuiFrame(RHI::CommandBuffer &buffer) override;
 
     protected:
-        SharedPtr<Sampler> CreateSampler(const SamplerDesc &desc, StringView debug_name) override;
+        virtual SharedPtr<Sampler> CreateSampler(const SamplerDesc &desc, StringView debug_name) override;
 
     private:
         VkInstance instance_ = nullptr;

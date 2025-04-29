@@ -5,7 +5,7 @@
 #pragma once
 #include "Core/Config/IConfig.hpp"
 #include "Core/Core.hpp"
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Platform/RHI/Enums.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 

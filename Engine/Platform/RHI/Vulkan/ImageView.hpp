@@ -13,11 +13,11 @@ class ImageView_Vulkan : public ImageView {
   friend class Image;
 
 public:
-  explicit ImageView_Vulkan(const ImageViewDesc &desc);
+  explicit ImageView_Vulkan(const ImageViewDesc& desc);
 
-  ~ImageView_Vulkan() override;
+    virtual ~ImageView_Vulkan() override;
 
-  void *GetNativeHandle() const override { return handle_; }
+    virtual void *GetNativeHandle() const override { return handle_; }
 
 private:
   VkImageView handle_ = VK_NULL_HANDLE;

@@ -49,12 +49,12 @@ public:
         return true;
     }
 
-    [[nodiscard]] size_t Size() const {
+    size_t Size() const {
         std::lock_guard<std::mutex> lock(mutex_);
         return queue_.size();
     }
 
-    [[nodiscard]] bool IsEmpty() const { return Size() == 0; }
+    bool IsEmpty() const { return Size() == 0; }
 
 private:
     mutable std::mutex mutex_;

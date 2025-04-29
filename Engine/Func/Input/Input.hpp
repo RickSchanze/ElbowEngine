@@ -4,7 +4,7 @@
 
 #pragma once
 #include "Core/Collection/StaticArray.hpp"
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Core/TypeAlias.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 
@@ -13,7 +13,8 @@ constexpr UInt64 PROCESS_KEY_EVENT_COUNT = 5;
 typedef StaticArray<KeyboardKey, PROCESS_KEY_EVENT_COUNT> RespondKeys;
 typedef StaticArray<MouseButton, static_cast<Int32>(MouseButton::Count)> RespondMouses;
 
-struct InputActions {
+struct InputActions
+{
     RespondKeys released_keys;
     RespondKeys pressed_keys;
     RespondMouses released_mouse;
@@ -22,7 +23,8 @@ struct InputActions {
     bool IsKeyPressed(KeyboardKey key) const;
 };
 
-class Input : public Manager<Input> {
+class Input : public Manager<Input>
+{
 public:
     // 这里是状态
     static bool IsKeyPress(KeyboardKey key);
@@ -36,13 +38,13 @@ public:
     static bool IsMouseButtonReleased(MouseButton button);
     static bool IsMouseButtonPressed(MouseButton button);
 
-    [[nodiscard]] Float GetLevel() const override;
-    [[nodiscard]] StringView GetName() const override;
-    void Startup() override;
-    void Shutdown() override;
+    virtual Float GetLevel() const override;
+    virtual StringView GetName() const override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
 private:
-    void CalculateInputEvent(const MilliSeconds &);
+    void CalculateInputEvent(const MilliSeconds&);
 
     LowLevelInputState previous_frame_state_;
     InputActions input_actions_ = {};

@@ -99,21 +99,21 @@ struct Type
         return GetSelfDefinedField(name);
     }
 
-    [[nodiscard]] Array<const Field*> GetFields() const;
+    Array<const Field*> GetFields() const;
 
-    [[nodiscard]] UInt64 GetFieldsCount() const
+    UInt64 GetFieldsCount() const
     {
         return GetFields().Count();
     }
 
     bool IsDerivedFrom(const Type* type) const;
 
-    [[nodiscard]] bool IsDefined(FlagAttribute attr) const
+    bool IsDefined(FlagAttribute attr) const
     {
         return (flag_attrs & attr) != 0;
     }
 
-    [[nodiscard]] bool IsDefined(ValueAttribute attr) const
+    bool IsDefined(ValueAttribute attr) const
     {
         return !value_attrs[static_cast<Int32>(attr)].IsEmpty();
     }

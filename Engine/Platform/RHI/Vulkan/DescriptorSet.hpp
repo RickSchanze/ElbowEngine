@@ -9,11 +9,11 @@
 namespace RHI {
 class DescriptorSetLayout_Vulkan : public DescriptorSetLayout {
 public:
-  [[nodiscard]] void *GetNativeHandle() const override { return handle_; }
+  virtual void *GetNativeHandle() const override { return handle_; }
 
-  explicit DescriptorSetLayout_Vulkan(const DescriptorSetLayoutDesc &desc);
+  explicit DescriptorSetLayout_Vulkan(const DescriptorSetLayoutDesc& desc);
 
-  ~DescriptorSetLayout_Vulkan() override;
+    virtual ~DescriptorSetLayout_Vulkan() override;
 
 private:
   VkDescriptorSetLayout handle_ = VK_NULL_HANDLE;
@@ -21,17 +21,20 @@ private:
 
 class DescriptorSetPool_Vulkan : public DescriptorSetPool {
 public:
-  DescriptorSetPool_Vulkan(const DescriptorSetPoolDesc &desc);
+  DescriptorSetPool_Vulkan(const DescriptorSetPoolDesc& desc);
 
-  ~DescriptorSetPool_Vulkan() override;
+    virtual ~DescriptorSetPool_Vulkan() override;
 
-  [[nodiscard]] void *GetNativeHandle() const override { return handle_; }
+  virtual void* GetNativeHandle() const override
+    {
+        return handle_;
+    }
 
-  void Reset() override;
+    virtual void Reset() override;
 
-  SharedPtr<DescriptorSet> Allocate(DescriptorSetLayout *layout) override;
+    virtual SharedPtr<DescriptorSet> Allocate(DescriptorSetLayout* layout) override;
 
-  Array<SharedPtr<DescriptorSet>> Allocates(const Array<DescriptorSetLayout *> &) override;
+    virtual Array<SharedPtr<DescriptorSet>> Allocates(const Array<DescriptorSetLayout *> &) override;
 
 private:
   VkDescriptorPool handle_ = VK_NULL_HANDLE;
@@ -39,14 +42,19 @@ private:
 
 class DescriptorSet_Vulkan : public DescriptorSet {
 public:
-  DescriptorSet_Vulkan(VkDescriptorSet handle) : handle_(handle) {}
-  ~DescriptorSet_Vulkan() override {
+  DescriptorSet_Vulkan(VkDescriptorSet handle) : handle_(handle)
+    {
+    }
+    virtual ~DescriptorSet_Vulkan() override {
       handle_ = nullptr;
   }
 
-  [[nodiscard]] void *GetNativeHandle() const override { return handle_; }
+  virtual void* GetNativeHandle() const override
+    {
+        return handle_;
+    }
 
-  void Update(const Array<DescriptorSetUpdateInfo> &update_infos) override;
+    virtual void Update(const Array<DescriptorSetUpdateInfo> &update_infos) override;
 
 private:
   VkDescriptorSet handle_ = VK_NULL_HANDLE;

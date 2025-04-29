@@ -12,9 +12,9 @@ class ECLASS() DetailWindow : public ImGuiDrawWindow
     GENERATED_BODY(DetailWindow)
 
 public:
-    void Draw() override;
+    virtual void Draw() override;
 
-    StringView GetWindowIdentity() override
+    virtual StringView GetWindowIdentity() override
     {
         return "DetailWindow";
     }

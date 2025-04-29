@@ -28,11 +28,11 @@ public:
 
     static bool CreateFolder(StringView path);
 
-    [[nodiscard]] bool Create() const { return CreateFolder(path_); }
-    [[nodiscard]] bool IsExist() const;
+    bool Create() const { return CreateFolder(path_); }
+    bool IsExist() const;
 
-    [[nodiscard]] String GetAbsolutePath() const;
-    [[nodiscard]] String GetRelativePath() const { return path_; }
+    String GetAbsolutePath() const;
+    String GetRelativePath() const { return path_; }
 
 private:
     String path_;

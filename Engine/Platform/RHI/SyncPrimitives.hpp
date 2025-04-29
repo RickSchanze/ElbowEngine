@@ -8,13 +8,13 @@
 
 namespace RHI {
     struct Fence : IResource {
-        ~Fence() override = default;
+        virtual ~Fence() override = default;
         virtual void SyncWait() = 0;
         virtual void Reset() = 0;
     };
 
     struct Semaphore : IResource {
-        ~Semaphore() override = default;
+        virtual ~Semaphore() override = default;
 
         virtual void Signal(UInt64 signal_value) = 0;
         virtual void Wait(UInt64 wait_value) = 0;

@@ -60,12 +60,15 @@ public:
     static_assert(!IsReference<T>, "T must not be a reference, could be Ref<T> instead");
     using Iterator = typename Container<T>::iterator;
 
-    explicit DynamicArrayView(Container<T> ClassT::*container, const Type *outer) : container_(container), outer_(outer) {
+    explicit DynamicArrayView(Container<T> ClassT::* container, const Type* outer) : container_(container), outer_(outer)
+    {
         element_type_ = TypeOf<T>();
     }
 
-    bool BeginIterate() override {
-        if (!instance_) {
+    virtual bool BeginIterate() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
             return false;
         }
@@ -78,26 +81,34 @@ public:
         return true;
     }
 
-    bool Add(Any element) override {
-        if (element.GetType() != element_type_) {
+    virtual bool Add(Any element) override
+    {
+        if (element.GetType() != element_type_)
+        {
             return false;
         }
-        if constexpr (IsSame<Container<T>, Array<T>>) {
+        if constexpr (IsSame<Container<T>, Array<T>>)
+        {
             (instance_->*container_).Add(*element.As<T>());
             return true;
-        } else {
+        }
+        else
+        {
             return (instance_->*container_).Insert(*element.As<T>()).second;
         }
     }
 
-    void EndIterate() override {
+    virtual void EndIterate() override
+    {
         iter_ = {};
         size_ = 0;
         iter_cnt_ = 0;
     }
 
-    void Next() override {
-        if (!instance_) {
+    virtual void Next() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
             return;
         }
@@ -105,40 +116,61 @@ public:
         ++iter_cnt_;
     }
 
-    bool HasNext() override { return iter_cnt_ < size_; }
+    virtual bool HasNext() override
+    {
+        return iter_cnt_ < size_;
+    }
 
-    void SetInstance(void *instance) override { instance_ = static_cast<ClassT *>(instance); }
+    virtual void SetInstance(void* instance) override
+    {
+        instance_ = static_cast<ClassT*>(instance);
+    }
 
-    Any GetCurrentElement() override {
-        if (!instance_) {
+    virtual Any GetCurrentElement() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
             return {};
         }
         return {AddressOf(*iter_), element_type_};
     }
 
-    ContainerViewType GetContainerType() override { return ContainerViewType::Sequential; }
+    virtual ContainerViewType GetContainerType() override
+    {
+        return ContainerViewType::Sequential;
+    }
 
-    const Type *GetElementType() override { return element_type_; }
-    const Type *GetOuterType() override { return outer_; }
+    virtual const Type* GetElementType() override
+    {
+        return element_type_;
+    }
+    virtual const Type* GetOuterType() override
+    {
+        return outer_;
+    }
 
-    Any GetElementAt(Int32 index) override {
+    virtual Any GetElementAt(Int32 index) override
+    {
         Iterator it = (instance_->*container_).begin();
-        for (Int32 i = 0; i < index; ++i) {
+        for (Int32 i = 0; i < index; ++i)
+        {
             ++it;
         }
         return {AddressOf(*it), element_type_};
     }
 
-    UInt64 GetSize() override {
-        if (!instance_) {
+    virtual UInt64 GetSize() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
             return 0;
         }
         return (instance_->*container_).Count();
     }
 
-    void Clear() override {
+    virtual void Clear() override {
         if (!instance_) {
             Log(Error) << "未设置Instance";
             return;
@@ -166,12 +198,15 @@ class MapView : public AssociativeContainerView {
     using iterator_type = typename Container<K, V>::iterator;
 
 public:
-    MapView(Container<K, V> ClassT::*container, const Type *outer) : container_(container), key_type_(TypeOf<K>()), outer_(outer) {
+    MapView(Container<K, V> ClassT::* container, const Type* outer) : container_(container), key_type_(TypeOf<K>()), outer_(outer)
+    {
         value_type_ = TypeOf<V>();
     }
 
-    bool BeginIterate() override {
-        if (!instance_) {
+    virtual bool BeginIterate() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
             return false;
         }
@@ -183,26 +218,37 @@ public:
         return true;
     }
 
-    void Next() override {
-        if (!instance_) {
+    virtual void Next() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
         }
         ++iter_;
         ++iter_cnt_;
     }
 
-    void EndIterate() override {
+    virtual void EndIterate() override
+    {
         iter_cnt_ = 0;
         size_ = 0;
         iter_ = {};
     }
 
-    bool HasNext() override { return iter_cnt_ < size_; }
+    virtual bool HasNext() override
+    {
+        return iter_cnt_ < size_;
+    }
 
-    void SetInstance(void *instance) override { instance_ = static_cast<ClassT *>(instance); }
+    virtual void SetInstance(void* instance) override
+    {
+        instance_ = static_cast<ClassT*>(instance);
+    }
 
-    UInt64 GetSize() override {
-        if (!instance_) {
+    virtual UInt64 GetSize() override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
 
             return 0;
@@ -210,45 +256,69 @@ public:
         return (instance_->*container_).Count();
     }
 
-    ContainerViewType GetContainerType() override { return ContainerViewType::Associative; }
-    const Type *GetOuterType() override { return outer_; }
-    const Type *GetKeyType() override { return key_type_; }
-    const Type *GetValueType() override { return value_type_; }
+    virtual ContainerViewType GetContainerType() override
+    {
+        return ContainerViewType::Associative;
+    }
+    virtual const Type* GetOuterType() override
+    {
+        return outer_;
+    }
+    virtual const Type* GetKeyType() override
+    {
+        return key_type_;
+    }
+    virtual const Type* GetValueType() override
+    {
+        return value_type_;
+    }
 
-    Any GetCurrentKey() override {
+    virtual Any GetCurrentKey() override
+    {
         // key使用const ref
         return {AddressOf(iter_->first), key_type_};
     }
 
-    Any GetCurrentValue() override { return {AddressOf(iter_->second), value_type_}; }
+    virtual Any GetCurrentValue() override
+    {
+        return {AddressOf(iter_->second), value_type_};
+    }
 
-    Any GetElementAt(const Any &key) override {
-        if (!instance_) {
+    virtual Any GetElementAt(const Any& key) override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
 
             return {};
         }
         auto cast_op = key.AsCopy<K>();
-        if (cast_op) {
-            auto &key_value = *cast_op;
-            if ((instance_->*container_).Find(key_value) != (instance_->*container_).end()) {
-                auto &it = (instance_->*container_)[key_value];
+        if (cast_op)
+        {
+            auto& key_value = *cast_op;
+            if ((instance_->*container_).Find(key_value) != (instance_->*container_).end())
+            {
+                auto& it = (instance_->*container_)[key_value];
                 return {AddressOf(it), value_type_};
             }
         }
         return {};
     }
 
-    bool Add(Any key, Any value) override {
-        if (!instance_) {
+    virtual bool Add(Any key, Any value) override
+    {
+        if (!instance_)
+        {
             Log(Error) << "未设置Instance";
 
             return {};
         }
         auto key_op = key.AsCopy<K>();
         auto value_op = value.AsCopy<V>();
-        if (key_op && value_op) {
-            if ((instance_->*container_).Find(*key_op) == (instance_->*container_).end()) {
+        if (key_op && value_op)
+        {
+            if ((instance_->*container_).Find(*key_op) == (instance_->*container_).end())
+            {
                 (instance_->*container_)[*key_op] = *value_op;
                 return true;
             }
@@ -256,7 +326,7 @@ public:
         return false;
     }
 
-    void Clear() override {
+    virtual void Clear() override {
         if (!instance_) {
             Log(Error) << "未设置Instance";
 

@@ -60,15 +60,15 @@ public:
     bool IsEnumField() const { return enum_value >= 0; }
     Int32 GetEnumValue() const { return enum_value; }
 
-    [[nodiscard]] bool IsDefined(FlagAttribute attr) const { return (flags_attrs & attr) != 0; }
-    [[nodiscard]] bool IsDefined(ValueAttribute attr) const { return !value_attrs[static_cast<Int32>(attr)].IsEmpty(); }
+    bool IsDefined(FlagAttribute attr) const { return (flags_attrs & attr) != 0; }
+    bool IsDefined(ValueAttribute attr) const { return !value_attrs[static_cast<Int32>(attr)].IsEmpty(); }
 
     // 这个字段是个枚举字段, 返回它的值
     Int32 GetEnumFieldValue() const { return enum_value; }
 
-    [[nodiscard]] bool IsAssociativeContainer() const { return container_identifier == ContainerIdentifier::Map; }
+    bool IsAssociativeContainer() const { return container_identifier == ContainerIdentifier::Map; }
 
-    [[nodiscard]] bool IsSequentialContainer() const { return container_identifier == ContainerIdentifier::Array; }
+    bool IsSequentialContainer() const { return container_identifier == ContainerIdentifier::Array; }
 
     SequentialContainerView *CreateSequentialContainerView(void *obj) const;
 

@@ -61,7 +61,7 @@ Rect2Df Sprite::GetUVRange(const Texture2D *tex, const UInt64 id) {
     // 半像素校正:
     // https://learn.microsoft.com/zh-cn/windows/win32/direct3d9/directly-mapping-texels-to-pixels?redirectedfrom=MSDN
     // https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas?newreg=0dbdf79fa0214a718ac7cd38488c56df
-    auto rect = static_cast<Rect2Df>(tex->GetSpriteRange(id).range);
+    auto rect = static_cast<Rect2Df>(tex->GetSpriteRange(id).Range);
     rect.pos += 0.5;
     rect.size.X -= 1;
     rect.size.Y -= 1;

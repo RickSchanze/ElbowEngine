@@ -20,15 +20,15 @@ class ECLASS() StaticMeshComponent : public SceneComponent {
 
 public:
     StaticMeshComponent();
-    ~StaticMeshComponent() override;
+    virtual ~StaticMeshComponent() override;
 
     Mesh *GetMesh();
     void SetMesh(const Mesh *m);
     Material* GetMaterial() const;
-    void SetMaterial(const Material *mat);
+    void SetMaterial(const Material* mat);
 
-    void OnCreated() override;
-    void UpdateTransform(const Transform &parent_transform) override;
+    virtual void OnCreated() override;
+    virtual void UpdateTransform(const Transform &parent_transform) override;
 
     UInt32 GetIndexCount();
     SharedPtr<RHI::Buffer> GetVertexBuffer() const;

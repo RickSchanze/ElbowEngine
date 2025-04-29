@@ -11,10 +11,10 @@ class ManagerBase {
 public:
     virtual ~ManagerBase() = default;
 
-    [[nodiscard]] virtual Float GetLevel() const = 0;
+    virtual Float GetLevel() const = 0;
     virtual void Startup() {}
     virtual void Shutdown() {}
-    [[nodiscard]] virtual StringView GetName() const = 0;
+    virtual StringView GetName() const = 0;
 };
 
 // Manager of Manager

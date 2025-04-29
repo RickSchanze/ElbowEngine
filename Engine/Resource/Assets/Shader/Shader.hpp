@@ -84,11 +84,11 @@ public:
 
     friend class SlangShaderLoader;
 
-    void PerformLoad() override;
+    virtual void PerformLoad() override;
 
-    void GetParams(Array<ShaderParam> &OutParams, bool &HasCamera, bool &HasLights);
+    void GetParams(Array<ShaderParam>& OutParams, bool& HasCamera, bool& HasLights);
 
-    bool IsLoaded() const override;
+    virtual bool IsLoaded() const override;
 
     /**
      * 编译, 获取shader_codes
@@ -106,7 +106,7 @@ public:
 
     bool IsDepthEnabled() const;
 
-    AssetType GetAssetType() const override
+    virtual AssetType GetAssetType() const override
     {
         return AssetType::Shader;
     }

@@ -10,13 +10,13 @@ REFLECTED(SQLTable = "Mesh")
 struct MeshMeta {
     REFLECTED_STRUCT(MeshMeta)
 
-    [[nodiscard]] Int32 GetId() const { return Id; }
-    [[nodiscard]] Int32 GetObjectHandle() const { return ObjectHandle; }
-    [[nodiscard]] bool GetGenerateNormals() const { return GenerateNormals; }
-    [[nodiscard]] bool GetGenerateSmoothNormals() const { return GenerateSmoothNormals; }
-    [[nodiscard]] bool GetMergeDuplicateVertices() const { return MergeDuplicateVertices; }
-    [[nodiscard]] bool GetRemoveUnusedMaterials() const { return RemoveUnusedMaterials; }
-    [[nodiscard]] StringView GetPath() const { return Path; }
+    Int32 GetId() const { return Id; }
+    Int32 GetObjectHandle() const { return ObjectHandle; }
+    bool GetGenerateNormals() const { return GenerateNormals; }
+    bool GetGenerateSmoothNormals() const { return GenerateSmoothNormals; }
+    bool GetMergeDuplicateVertices() const { return MergeDuplicateVertices; }
+    bool GetRemoveUnusedMaterials() const { return RemoveUnusedMaterials; }
+    StringView GetPath() const { return Path; }
 
     REFLECTED(SQLAttr = "(PrimaryKey, AutoIncrement)")
     Int32 Id = 0;

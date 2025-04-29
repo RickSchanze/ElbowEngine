@@ -23,11 +23,14 @@ struct DynamicGlobalLights {
 
 class LightManager : public Manager<LightManager> {
 public:
-    [[nodiscard]] Float GetLevel() const override { return 11.2f; }
-    [[nodiscard]] StringView GetName() const override { return "LightManager"; }
+    virtual Float GetLevel() const override { return 11.2f; }
+    virtual StringView GetName() const override
+    {
+        return "LightManager";
+    }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
     static void AddLight(PointLightComponent *point_light_component);
     static void UpdateLight(PointLightComponent *point_light_component);

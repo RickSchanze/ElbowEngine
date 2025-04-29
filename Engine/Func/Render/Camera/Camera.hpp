@@ -18,20 +18,26 @@ struct CameraShaderData;
 
 class Camera : public Manager<Camera>, public ITick {
 public:
-    [[nodiscard]] CameraComponent *GetActive() const { return active_; }
+    CameraComponent *GetActive() const { return active_; }
 
     void SetActive(CameraComponent *camera);
 
-    [[nodiscard]] Float GetLevel() const override { return 11; }
-    [[nodiscard]] StringView GetName() const override { return "Camera"; }
+    virtual Float GetLevel() const override { return 11; }
+    virtual StringView GetName() const override
+    {
+        return "Camera";
+    }
 
-    void Tick(MilliSeconds delta_time) override;
+    virtual void Tick(MilliSeconds delta_time) override;
 
     static void UpdateViewBuffer(const CameraShaderData &data);
-    static RHI::Buffer *GetViewBuffer() { return GetByRef().view_buffer_.get(); }
+    static RHI::Buffer* GetViewBuffer()
+    {
+        return GetByRef().view_buffer_.get();
+    }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
 private:
     CameraComponent *active_ = nullptr;

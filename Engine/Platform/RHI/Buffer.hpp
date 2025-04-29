@@ -21,8 +21,8 @@ namespace RHI {
     public:
         explicit Buffer(const BufferDesc &create_info) : create_info_(create_info) {}
 
-        [[nodiscard]] size_t GetSize() const { return create_info_.size; }
-        [[nodiscard]] BufferUsage GetUsage() const { return create_info_.usage; }
+        size_t GetSize() const { return create_info_.size; }
+        BufferUsage GetUsage() const { return create_info_.usage; }
 
         virtual UInt8 *BeginWrite() = 0;
         virtual void EndWrite() = 0;

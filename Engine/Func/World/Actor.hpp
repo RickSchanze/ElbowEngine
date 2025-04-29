@@ -16,7 +16,7 @@ class ECLASS() Actor : public Object, public ITick {
 public:
     Transform &GetTransform() { return mTransform; }
     void SetTransform(const Transform &transform);
-    Vector3f GetLocation() const { return mTransform.Location; }
+    Vector3f GetLocation() const { return mTransform.mLocation; }
     Vector3f GetWorldLocation() const;
     void SetLocation(const Vector3f &location);
     Quaternionf GetRotationQuaterion() const { return mTransform.GetRotationQuaterion(); }
@@ -24,10 +24,10 @@ public:
     void SetRotation(const Quaternionf &rotation);
     void SetRotation(const Vector3f &eluer);
 
-    Vector3f GetScale() const { return mTransform.Scale; }
-    void SetScale(const Vector3f &scale);
+    Vector3f GetScale() const { return mTransform.mScale; }
+    void SetScale(const Vector3f& scale);
 
-    void PreTick(MilliSeconds delta_time) override;
+    virtual void PreTick(MilliSeconds delta_time) override;
 
     template<typename T>
     T *AddComponent() {

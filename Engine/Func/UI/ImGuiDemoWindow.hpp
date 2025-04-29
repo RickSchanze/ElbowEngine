@@ -11,6 +11,6 @@
 class ECLASS() ImGuiDemoWindow : public ImGuiDrawWindow {
     GENERATED_BODY(ImGuiDemoWindow)
 public:
-    void Draw() override;
-    StringView GetWindowIdentity() override { return "ImGuiDemoWindow"; }
+    virtual void Draw() override;
+    virtual StringView GetWindowIdentity() override { return "ImGuiDemoWindow"; }
 };

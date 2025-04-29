@@ -44,15 +44,15 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                              PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
     RenderAttachment attachment{};
-    attachment.clear_color = Color::Clear();
-    attachment.target = view;
-    attachment.layout = ImageLayout::ColorAttachment;
+    attachment.ClearColor = Color::Clear();
+    attachment.Target = view;
+    attachment.Layout = ImageLayout::ColorAttachment;
     Array<RenderAttachment> attachments{};
     attachments.Add(attachment);
     RenderAttachment depth_attachment{};
-    depth_attachment.clear_color.r = 1.0f;
-    depth_attachment.layout = ImageLayout::DepthStencilAttachment;
-    depth_attachment.target = depth_target_->GetImageView();
+    depth_attachment.ClearColor.r = 1.0f;
+    depth_attachment.Layout = ImageLayout::DepthStencilAttachment;
+    depth_attachment.Target = depth_target_->GetImageView();
     cmd.BeginRender(attachments, depth_attachment);
     cmd.Execute();
     {

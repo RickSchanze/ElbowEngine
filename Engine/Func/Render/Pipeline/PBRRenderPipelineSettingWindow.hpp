@@ -16,9 +16,9 @@ class ECLASS() PBRRenderPipelineSettingWindow : public ImGuiDrawWindow
     GENERATED_BODY(PBRRenderPipelineSettingWindow)
 
 public:
-    void Draw() override;
+    virtual void Draw() override;
 
-    StringView GetWindowIdentity() override
+    virtual StringView GetWindowIdentity() override
     {
         return "PBRRenderPipelineSettingWindow";
     }

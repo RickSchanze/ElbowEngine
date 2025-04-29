@@ -10,7 +10,7 @@ namespace RHI {
     public:
         explicit RenderPass_Vulkan(const RenderPassCreateInfo &info);
 
-        [[nodiscard]] void *GetNativeHandle() const override { return handle_; }
+        virtual void *GetNativeHandle() const override { return handle_; }
 
     private:
         VkRenderPass handle_ = VK_NULL_HANDLE;

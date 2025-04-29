@@ -1,8 +1,9 @@
 //
-// Created by kita on 25-4-27.
+// Created by kita on 25-4-29.
 //
 
-#include "Vector.hpp"
+#include "Matrix.hpp"
+
 #define REGISTER_MATH_TYPE(name, type_register)                                                                                                      \
     {                                                                                                                                                \
         auto type_info = RTTITypeInfo::Create<name>();                                                                                               \
@@ -10,13 +11,11 @@
         Mgr.RegisterTypeRegisterer(type_info, type_register);                                                                                        \
     }
 
-MathTypeRegTrigger_Vector::MathTypeRegTrigger_Vector()
+MathTypeRegTrigger_Matrix::MathTypeRegTrigger_Matrix()
 {
     auto& Mgr = ReflManager::GetByRef();
-    REGISTER_MATH_TYPE(Vector2i, Construct_Vector2i);
-    REGISTER_MATH_TYPE(Vector2f, Construct_Vector2f);
-    REGISTER_MATH_TYPE(Vector3i, Construct_Vector3i);
-    REGISTER_MATH_TYPE(Vector3f, Construct_Vector3i);
-    REGISTER_MATH_TYPE(Vector4i, Construct_Vector4i);
-    REGISTER_MATH_TYPE(Vector4f, Construct_Vector4f);
+    REGISTER_MATH_TYPE(Matrix4x4f, Construct_Matrix4x4f);
+    REGISTER_MATH_TYPE(Matrix4x4d, Construct_Matrix4x4d);
+    REGISTER_MATH_TYPE(Matrix3x3d, Construct_Matrix3x3d);
+    REGISTER_MATH_TYPE(Matrix3x3d, Construct_Matrix3x3d);
 }

@@ -3,35 +3,48 @@
 //
 #pragma once
 #include "Core/Core.hpp"
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Quaternion.hpp"
+#include "Core/Math/Vector.hpp"
 
 #include GEN_HEADER("Transform.generated.hpp")
 
-struct ESTRUCT() Transform {
+struct ESTRUCT() Transform
+{
     GENERATED_BODY(Transform)
-
-    EFIELD()
-    Vector3f Location = {0, 0, 0};
-
-    EFIELD()
-    Vector3f Scale = {1, 1, 1};
 
     void SetRotation(Quaternionf now);
     void SetRotation(Vector3f now);
-    Vector3f GetRotationEuler() const { return mCachedEuler; }
-    Quaternionf GetRotationQuaterion() const { return mRotation; }
-    Vector3f GetLocation() const { return Location; }
-    Vector3f GetScale() const { return Scale; }
+    Vector3f GetRotationEuler() const
+    {
+        return mCachedEuler;
+    }
+    Quaternionf GetRotationQuaterion() const
+    {
+        return mRotation;
+    }
+    Vector3f GetLocation() const
+    {
+        return mLocation;
+    }
+    Vector3f GetScale() const
+    {
+        return mScale;
+    }
     Vector3f GetForwardVector() const;
     Vector3f GetRightVector() const;
 
     void Rotate(Vector3f rot);
 
 private:
-    // TODO: UI上的Rotation不应该用四元数
     EFIELD()
-    Quaternionf mRotation = {0, 0, 0, 1};
+    Vector3f mLocation = {0, 0, 0};
+
+    EFIELD()
+    Vector3f mScale = {1, 1, 1};
 
     EFIELD(Transient)
     Vector3f mCachedEuler = {0, 0, 0};
+
+    EFIELD()
+    Quaternionf mRotation = {0, 0, 0, 1};
 };

@@ -154,17 +154,17 @@ private:
 class SharedMaterialManager : public Manager<SharedMaterialManager>
 {
 public:
-    Float GetLevel() const override
+    virtual Float GetLevel() const override
     {
         return 6.1;
     }
 
-    StringView GetName() const override
+    virtual StringView GetName() const override
     {
         return "SharedMaterialManager";
     }
 
-    void Shutdown() override
+    virtual void Shutdown() override
     {
         shared_mats_.Clear();
     }

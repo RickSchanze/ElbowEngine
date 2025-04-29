@@ -13,7 +13,7 @@ class ECLASS() ImGuiDrawWindow : public Window {
     GENERATED_BODY(ImGuiDrawWindow)
 
 public:
-    StringView GetWindowIdentity() override;
+    virtual StringView GetWindowIdentity() override;
 
     virtual void Draw();
 };

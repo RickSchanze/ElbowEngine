@@ -27,7 +27,7 @@ public:
 
     Vector3f GetLocation() const
     {
-        return transform_.Location;
+        return transform_.mLocation;
     }
 
     Vector3f GetWorldLocation() const;
@@ -48,7 +48,7 @@ public:
 
     Vector3f GetScale() const
     {
-        return mWorldTransform.Scale;
+        return mWorldTransform.mScale;
     }
 
     void SetScale(const Vector3f &scale);

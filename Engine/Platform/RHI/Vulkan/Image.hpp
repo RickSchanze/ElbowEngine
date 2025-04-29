@@ -20,13 +20,16 @@ namespace RHI {
         /// **仅** 供交换链图像使用
         explicit Image_Vulkan(VkImage handle_, Int32 index, UInt32 width_, UInt32 height_, Format format_);
 
-        ~Image_Vulkan() override;
+        virtual ~Image_Vulkan() override;
 
-        [[nodiscard]] void *GetNativeHandle() const override { return image_handle_; }
+        virtual void *GetNativeHandle() const override { return image_handle_; }
 
-        [[nodiscard]] VkDeviceMemory GetNativeMemory() const { return image_memory_; }
+        VkDeviceMemory GetNativeMemory() const
+        {
+            return image_memory_;
+        }
 
-        SharedPtr<Buffer> CreateCPUVisibleBuffer() override;
+        virtual SharedPtr<Buffer> CreateCPUVisibleBuffer() override;
 
         UInt8 GetFormatComponentSize();
 
@@ -40,11 +43,11 @@ namespace RHI {
 
     class Sampler_Vulkan final : public Sampler {
     public:
-        explicit Sampler_Vulkan(const SamplerDesc &desc);
+        explicit Sampler_Vulkan(const SamplerDesc& desc);
 
-        ~Sampler_Vulkan() override;
+        virtual ~Sampler_Vulkan() override;
 
-        [[nodiscard]] void *GetNativeHandle() const override { return sampler_handle_; }
+        virtual void *GetNativeHandle() const override { return sampler_handle_; }
 
     private:
         VkSampler sampler_handle_ = VK_NULL_HANDLE;

@@ -6,7 +6,7 @@
 #include <imgui.h>
 
 
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Core/Object/Object.hpp"
 
 #include GEN_HEADER("Window.generated.hpp")

@@ -55,11 +55,14 @@ private:
     ObjectRegistry registry_;
 
 public:
-    [[nodiscard]] Float GetLevel() const override { return 14; }
-    [[nodiscard]] StringView GetName() const override { return "ObjectManager"; }
+    virtual Float GetLevel() const override { return 14; }
+    virtual StringView GetName() const override
+    {
+        return "ObjectManager";
+    }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
     template<typename T, typename... Args>
         requires std::derived_from<T, Object>

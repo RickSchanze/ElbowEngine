@@ -33,7 +33,7 @@ public:
 
     void Clean() override;
 
-    [[nodiscard]] bool IsReady() const override;
+    bool IsReady() const override;
 
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
 

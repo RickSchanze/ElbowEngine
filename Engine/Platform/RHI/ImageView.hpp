@@ -50,11 +50,11 @@ namespace RHI {
     public:
         explicit ImageView(const ImageViewDesc &decs_) : desc_(decs_) {}
 
-        [[nodiscard]] Image *GetImage() const { return desc_.image; }
-        [[nodiscard]] ImageDimension GetType() const { return desc_.type; }
-        [[nodiscard]] Format GetFormat() const { return desc_.format; }
-        [[nodiscard]] const ImageSubresourceRange &GetSubresourceRange() const { return desc_.subresource_range; }
-        [[nodiscard]] const ComponentMapping &GetComponentMapping() const { return desc_.component_mapping; }
+        Image *GetImage() const { return desc_.image; }
+        ImageDimension GetType() const { return desc_.type; }
+        Format GetFormat() const { return desc_.format; }
+        const ImageSubresourceRange &GetSubresourceRange() const { return desc_.subresource_range; }
+        const ComponentMapping &GetComponentMapping() const { return desc_.component_mapping; }
 
 
     protected:

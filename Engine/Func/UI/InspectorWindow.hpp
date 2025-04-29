@@ -12,8 +12,8 @@ class Actor;
 class ECLASS() InspectorWindow : public ImGuiDrawWindow {
     GENERATED_BODY(InspectorWindow)
 public:
-    void Draw() override;
-    StringView GetWindowIdentity() override { return "InspectorWindow"; }
+    virtual void Draw() override;
+    virtual StringView GetWindowIdentity() override { return "InspectorWindow"; }
     Actor *GetSelectedActor() const { return selected_actor_; }
 
 private:

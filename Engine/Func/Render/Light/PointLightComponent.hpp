@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Func/World/SceneComponent.hpp"
+#include "Core/Math/Color.hpp"
 
 #include GEN_HEADER("PointLightComponent.generated.hpp")
 
@@ -16,14 +17,14 @@ class ECLASS() PointLightComponent : public SceneComponent {
 
 public:
     PointLightComponent();
-    ~PointLightComponent() override;
+    virtual ~PointLightComponent() override;
 
     bool IsDynamic() const { return dynamic_; }
     void SetDynamic(bool dynamic);
     Color GetColor() const { return color_; }
     void SetColor(Color color);
-    void UpdateTransform(const Transform &parent_transform) override;
-    void OnCreated() override;
+    virtual void UpdateTransform(const Transform& parent_transform) override;
+    virtual void OnCreated() override;
 
     Float GetIntensity() const { return intensity_; }
     void SetIntensity(Float intensity);

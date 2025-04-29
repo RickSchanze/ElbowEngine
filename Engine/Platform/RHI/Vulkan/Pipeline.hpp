@@ -10,11 +10,11 @@ namespace RHI {
     class RenderPass;
     class GraphicsPipeline_Vulkan : public GraphicsPipeline {
     public:
-        GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &Desc, const RenderPass *render_pass = nullptr);
+        GraphicsPipeline_Vulkan(const GraphicsPipelineDesc& Desc, const RenderPass* render_pass = nullptr);
 
-        ~GraphicsPipeline_Vulkan() override;
+        virtual ~GraphicsPipeline_Vulkan() override;
 
-        void *GetNativeHandle() const override { return pipeline_; }
+        virtual void *GetNativeHandle() const override { return pipeline_; }
 
         VkPipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
 
@@ -31,10 +31,10 @@ namespace RHI {
 
     class ComputePipeline_Vulkan : public ComputePipeline {
     public:
-        [[nodiscard]] void *GetNativeHandle() const override { return pipeline_; }
+        virtual void *GetNativeHandle() const override { return pipeline_; }
 
-        explicit ComputePipeline_Vulkan(const ComputePipelineDesc &desc);
-        ~ComputePipeline_Vulkan() override;
+        explicit ComputePipeline_Vulkan(const ComputePipelineDesc& desc);
+        virtual ~ComputePipeline_Vulkan() override;
 
         VkPipelineLayout GetPipelineLayout() const { return pipeline_layout_; }
 

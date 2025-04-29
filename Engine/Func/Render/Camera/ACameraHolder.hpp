@@ -14,7 +14,7 @@ class ACameraHolder : public Actor {
 public:
     ACameraHolder();
 
-    void Tick(MilliSeconds delta_time) override;
+    virtual void Tick(MilliSeconds delta_time) override;
 
 private:
     Float speed_ = 1.f;

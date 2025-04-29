@@ -20,7 +20,7 @@ public:
 
     virtual void PerformUnload() {}
 
-    [[nodiscard]] virtual bool IsLoaded() const { return false; }
+    virtual bool IsLoaded() const { return false; }
 
     bool IsDirty() const { return dirty_; }
 

@@ -51,8 +51,8 @@ public:
 
     void SetName(const StringView name) { mName = name; }
 
-    [[nodiscard]] StringView GetName() const { return mName; }
-    [[nodiscard]] StringView GetDisplayName() const { return mDisplayName; }
+    StringView GetName() const { return mName; }
+    StringView GetDisplayName() const { return mDisplayName; }
 
     void SetObjectHandle(const Int32 handle) { mHandle = handle; }
 
@@ -115,11 +115,11 @@ public:
 
     virtual void OnDestroyed();
 
-    [[nodiscard]] bool IsPendingKill() const { return mState & PendingKill; }
+    bool IsPendingKill() const { return mState & PendingKill; }
 
-    [[nodiscard]] ObjectHandle GetHandle() const { return mHandle; }
+    ObjectHandle GetHandle() const { return mHandle; }
 
-    [[nodiscard]] bool IsPersistent() const { return mFlags & OFT_Persistent; }
+    bool IsPersistent() const { return mFlags & OFT_Persistent; }
 
     void InternalSetAssetHandle(ObjectHandle handle);
 

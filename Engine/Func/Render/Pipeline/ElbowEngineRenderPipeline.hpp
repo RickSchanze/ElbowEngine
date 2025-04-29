@@ -12,14 +12,14 @@ class Mesh;
 class RenderTexture;
 class ElbowEngineRenderPipeline : public RenderPipeline {
 public:
-    void Render(RHI::CommandBuffer &cmd, const RenderParams &params) override;
+    virtual void Render(RHI::CommandBuffer& cmd, const RenderParams& params) override;
 
-    void Build() override;
-    void Clean() override;
+    virtual void Build() override;
+    virtual void Clean() override;
 
-    [[nodiscard]] bool IsReady() const override;
+    virtual bool IsReady() const override;
 
-    void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
+    virtual void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
 
 private:
     Material *material_ = nullptr;

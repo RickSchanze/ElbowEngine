@@ -30,7 +30,7 @@ class WorldClock : public Manager<WorldClock> {
 public:
     void TickAll(PlatformWindow *w);
 
-    [[nodiscard]] MilliSeconds GetDeltaTime() const;
+    MilliSeconds GetDeltaTime() const;
 
     /**
      * 设置全局时间缩放
@@ -42,13 +42,16 @@ public:
      * 获取全局时间缩放
      * @return
      */
-    [[nodiscard]] float GetGlobalTimeScale() const;
+    float GetGlobalTimeScale() const;
 
     void RegisterTick(ITick *tick);
-    void UnRegisterTick(ITick *tick);
+    void UnRegisterTick(ITick* tick);
 
-    Float GetLevel() const override { return 9; }
-    StringView GetName() const override { return "WorldClock"; }
+    virtual Float GetLevel() const override
+    {
+        return 9;
+    }
+    virtual StringView GetName() const override { return "WorldClock"; }
 
 private:
     Array<ITick *> ticks_{};

@@ -193,18 +193,19 @@ void PlatformWindow_GLFW::BeginImGuiFrame() { ImGui_ImplGlfw_NewFrame(); }
 
 class GLFWSurface : public RHI::Surface {
 public:
-    explicit GLFWSurface(VkInstance instance, GLFWwindow *window) : instance_(instance) {
+    explicit GLFWSurface(VkInstance instance, GLFWwindow* window) : instance_(instance)
+    {
         auto result = glfwCreateWindowSurface(instance, window, nullptr, &surface_);
         Assert(result == VK_SUCCESS, "Failed to create window surface, code: {}", static_cast<Int32>(result));
     }
 
-    ~GLFWSurface() override {
+    virtual ~GLFWSurface() override {
         if (surface_ && instance_) {
             vkDestroySurfaceKHR(instance_, surface_, nullptr);
         }
     }
 
-    [[nodiscard]] void *GetNativeHandle() const override { return surface_; }
+    virtual void *GetNativeHandle() const override { return surface_; }
 
 private:
     VkSurfaceKHR surface_ = nullptr;

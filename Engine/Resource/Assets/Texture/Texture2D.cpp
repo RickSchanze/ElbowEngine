@@ -7,7 +7,6 @@
 #include "Windows.h"
 #endif
 #define STB_IMAGE_IMPLEMENTATION
-#include <charconv>
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Path.hpp"
 #include "Platform/RHI/Buffer.hpp"
@@ -19,25 +18,26 @@
 #include "Resource/AssetDataBase.hpp"
 #include "Texture2DMeta.hpp"
 #include "stb_image.h"
+#include <charconv>
 #define STB_IMAGE_WRITE_IMPLEMENTATION // 必须定义此宏以启用函数实现
 #include "stb_image_write.h"
 #undef min
 #undef max
 #define TINYEXR_IMPLEMENTATION
-#include "tinyexr.h"
 #include "Core/Object/ObjectManager.hpp"
+#include "tinyexr.h"
 
 using namespace RHI;
 
-static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *channels)
+static stbi_uc* LoadImageStb(StringView path, int* width, int* height, int* channels)
 {
 #ifdef ELBOW_PLATFORM_WINDOWS
     const auto str = path.ToWideString();
-    FILE *f;
+    FILE* f;
     _wfopen_s(&f, str.c_str(), L"rb");
     if (!f)
         return nullptr;
-    stbi_uc *pixels = stbi_load_from_file(f, width, height, channels, 4);
+    stbi_uc* pixels = stbi_load_from_file(f, width, height, channels, 4);
     fclose(f);
     return pixels;
 #else
@@ -45,15 +45,15 @@ static stbi_uc *LoadImageStb(StringView path, int *width, int *height, int *chan
 #endif
 }
 
-static bool LoadTextureAccordingFormat(const StringView path, Format format, UInt8 *&out, Int32 &width, Int32 &height, Int32 &channel,
-                                       UInt64 &byte_count)
+static bool LoadTextureAccordingFormat(const StringView path, Format format, UInt8*& out, Int32& width, Int32& height, Int32& channel,
+                                       UInt64& byte_count)
 {
     if (path.EndsWith(".exr"))
     {
         if (format == Format::R32G32B32A32_Float)
         {
-            const char *err = nullptr;
-            Float *out_temp = nullptr;
+            const char* err = nullptr;
+            Float* out_temp = nullptr;
             Int32 ret = LoadEXR(&out_temp, &width, &height, *path, &err);
             if (ret != TINYEXR_SUCCESS)
             {
@@ -61,11 +61,10 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
                 FreeEXRErrorMessage(err);
                 return false;
             }
-            out = reinterpret_cast<UInt8 *>(out_temp);
+            out = reinterpret_cast<UInt8*>(out_temp);
             channel = 4;
             byte_count = width * height * 4 * sizeof(Float);
             return true;
-
         }
         else
         {
@@ -76,17 +75,16 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
     {
         if (format == Format::R32G32B32A32_Float)
         {
-            Float *out_temp = stbi_loadf(*path, &width, &height, &channel, 4);
+            Float* out_temp = stbi_loadf(*path, &width, &height, &channel, 4);
             if (!out_temp)
             {
                 VLOG_ERROR("加载失败: 路径为", *path, "的纹理加载失败");
                 return false;
             }
-            out = reinterpret_cast<UInt8 *>(out_temp);
+            out = reinterpret_cast<UInt8*>(out_temp);
             channel = 4;
             byte_count = width * height * 4 * sizeof(Float);
             return true;
-
         }
         else
         {
@@ -97,7 +95,7 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
     {
         if (format == Format::R8_UNorm)
         {
-            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
+            stbi_uc* pixels = stbi_load(*path, &width, &height, &channel, STBI_grey);
             if (!pixels)
             {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
@@ -106,12 +104,12 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
                 return false;
             }
             byte_count = width * height;
-            out = reinterpret_cast<UInt8 *>(pixels);
+            out = reinterpret_cast<UInt8*>(pixels);
             return true;
         }
         if (format == Format::R8G8B8A8_UNorm || format == Format::R8G8B8A8_SRGB)
         {
-            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb_alpha);
+            stbi_uc* pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb_alpha);
             if (!pixels)
             {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
@@ -120,12 +118,12 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
                 return false;
             }
             byte_count = width * height * 4;
-            out = reinterpret_cast<UInt8 *>(pixels);
+            out = reinterpret_cast<UInt8*>(pixels);
             return true;
         }
         if (format == Format::R8G8B8_UNorm)
         {
-            stbi_uc *pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb);
+            stbi_uc* pixels = stbi_load(*path, &width, &height, &channel, STBI_rgb);
             if (!pixels)
             {
                 Log(Error) << String::Format("加载失败: 路径为{}的Texture2D文件无法加载", *path);
@@ -134,7 +132,7 @@ static bool LoadTextureAccordingFormat(const StringView path, Format format, UIn
                 return false;
             }
             byte_count = width * height * 3;
-            out = reinterpret_cast<UInt8 *>(pixels);
+            out = reinterpret_cast<UInt8*>(pixels);
             return true;
         }
     }
@@ -154,7 +152,7 @@ void Texture2D::PerformLoad()
     Load(*meta_op);
 }
 
-void Texture2D::Load(const Texture2DMeta &meta)
+void Texture2D::Load(const Texture2DMeta& meta)
 {
     ProfileScope _(__func__);
     if (!meta.IsDynamic)
@@ -172,7 +170,7 @@ void Texture2D::Load(const Texture2DMeta &meta)
         }
         Int32 width = 0, height = 0, channels = 0;
         UInt64 byte_count = 0;
-        UInt8 *pixels = nullptr;
+        UInt8* pixels = nullptr;
         if (!LoadTextureAccordingFormat(path, meta.Format, pixels, width, height, channels, byte_count))
         {
             return;
@@ -182,13 +180,14 @@ void Texture2D::Load(const Texture2DMeta &meta)
                              IUB_TransferDst | IUB_ShaderRead, //
                              meta.Format,
                              ImageDimension::D2, //
-                             meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
+                             meta.IsCubeMap ? 6 : 1,
+                             static_cast<UInt16>(meta.MipmapLevel)};
         String debug_name = String::Format("Texture2D_{}", *path);
-        native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
-        const ImageViewDesc view_desc{native_image_.get()};
+        mNativeImage = GetGfxContextRef().CreateImage(desc, *debug_name);
+        const ImageViewDesc view_desc{mNativeImage.get()};
         debug_name = String::Format("Texture2DView_{}", *path);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
-        GfxCommandHelper::CopyDataToImage2D(pixels, native_image_.get(), byte_count);
+        GfxCommandHelper::CopyDataToImage2D(pixels, mNativeImage.get(), byte_count);
         free(pixels);
         meta_ = meta;
         SetSpriteRangeString(meta.SpritesString);
@@ -202,11 +201,16 @@ void Texture2D::Load(const Texture2DMeta &meta)
         }
         const Format format = meta.Format;
         // 这里设为TransferSrc是因为很可能是要作为之后保存的图像创建的
-        const ImageDesc desc{meta.Width, meta.Height, IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
-                             format, ImageDimension::D2, meta.IsCubeMap ? 6 : 1, static_cast<UInt16>(meta.MipmapLevel)};
+        const ImageDesc desc{meta.Width,
+                             meta.Height,
+                             IUB_TransferDst | IUB_ShaderRead | IUB_TransferSrc | IUB_RenderTarget | IUB_Storage,
+                             format,
+                             ImageDimension::D2,
+                             meta.IsCubeMap ? 6 : 1,
+                             static_cast<UInt16>(meta.MipmapLevel)};
         String debug_name = String::Format("Texture2D_{}", *mName);
-        native_image_ = GetGfxContextRef().CreateImage(desc, *debug_name);
-        const ImageViewDesc view_desc{native_image_.get()};
+        mNativeImage = GetGfxContextRef().CreateImage(desc, *debug_name);
+        const ImageViewDesc view_desc{mNativeImage.get()};
         debug_name = String::Format("Texture2DView_{}", *mName);
         native_image_view_ = GetGfxContextRef().CreateImageView(view_desc, *debug_name);
         meta_ = meta;
@@ -217,37 +221,36 @@ void Texture2D::Load(const Texture2DMeta &meta)
 
 UInt32 Texture2D::GetWidth() const
 {
-    if (!native_image_)
+    if (!mNativeImage)
         return 0;
-    return native_image_->GetWidth();
+    return mNativeImage->GetWidth();
 }
 
 UInt32 Texture2D::GetHeight() const
 {
-    if (!native_image_)
+    if (!mNativeImage)
         return 0;
-    return native_image_->GetHeight();
+    return mNativeImage->GetHeight();
 }
 
 UInt32 Texture2D::GetNumChannels() const
 {
-    return native_image_->GetNumChannels();
+    return mNativeImage->GetNumChannels();
 }
 
 UInt32 Texture2D::GetMipLevelCount() const
 {
-    return native_image_->GetMipLevelCount();
+    return mNativeImage->GetMipLevelCount();
 }
-
 
 RHI::Format Texture2D::GetFormat() const
 {
-    if (!native_image_)
+    if (!mNativeImage)
         return RHI::Format::Count;
-    return native_image_->GetFormat();
+    return mNativeImage->GetFormat();
 }
 
-Texture2D *Texture2D::GetDefault()
+Texture2D* Texture2D::GetDefault()
 {
     ProfileScope _(__func__);
     const auto rtn = AssetDataBase::LoadFromPath<Texture2D>("Assets/Texture/Default.png");
@@ -255,23 +258,23 @@ Texture2D *Texture2D::GetDefault()
     return rtn;
 }
 
-Rect2Df Texture2D::GetUVRect(const SpriteRange &sprite_range) const
+Rect2Df Texture2D::GetUVRect(const SpriteRange& sprite_range) const
 {
     ProfileScope _(__func__);
     Rect2Df uv_rect;
-    uv_rect.pos.X = static_cast<Float>(sprite_range.range.pos.X) / static_cast<Float>(GetWidth());
-    uv_rect.pos.Y = static_cast<Float>(sprite_range.range.pos.Y) / static_cast<Float>(GetHeight());
-    uv_rect.size.X = static_cast<Float>(sprite_range.range.size.X) / static_cast<Float>(GetWidth());
-    uv_rect.size.Y = static_cast<Float>(sprite_range.range.size.Y) / static_cast<Float>(GetHeight());
+    uv_rect.Pos.X = static_cast<Float>(sprite_range.Range.Pos.X) / static_cast<Float>(GetWidth());
+    uv_rect.Pos.Y = static_cast<Float>(sprite_range.Range.Pos.Y) / static_cast<Float>(GetHeight());
+    uv_rect.Size.X = static_cast<Float>(sprite_range.Range.Size.X) / static_cast<Float>(GetWidth());
+    uv_rect.Size.Y = static_cast<Float>(sprite_range.Range.Size.Y) / static_cast<Float>(GetHeight());
     return uv_rect;
 }
 
 SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const
 {
     ProfileScope _(__func__);
-    for (const auto &sprite_range : sprite_ranges_)
+    for (const auto& sprite_range : sprite_ranges_)
     {
-        if (sprite_range.id == id)
+        if (sprite_range.ID == id)
         {
             return sprite_range;
         }
@@ -279,16 +282,15 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const
     return {};
 }
 
-
-SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc &desc) const
+SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc& desc) const
 {
-    desc.image = native_image_.get();
+    desc.image = mNativeImage.get();
     return GetGfxContext()->CreateImageView(desc);
 }
 
-Texture2D *Texture2D::GetDefaultCubeTexture2D()
+Texture2D* Texture2D::GetDefaultCubeTexture2D()
 {
-    static Texture2D *DefaultCube = nullptr;
+    static Texture2D* DefaultCube = nullptr;
     if (!DefaultCube)
     {
         Texture2DMeta NewMeta;
@@ -313,17 +315,15 @@ void Texture2D::SetTextureFormat(Format format)
     }
 }
 
-bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect)
+bool Texture2D::AppendSprite(UInt64 id, const char* data, Rect2Di target_rect)
 {
     ProfileScope _(__func__);
-    if (target_rect.pos.X + target_rect.size.X > GetWidth() || target_rect.pos.Y + target_rect.size.Y > GetHeight())
+    if (target_rect.Pos.X + target_rect.Size.X > GetWidth() || target_rect.Pos.Y + target_rect.Size.Y > GetHeight())
     {
         Log(Error) << "target_rect超出了Texture2D的尺寸";
         return false;
     }
-    if (range::AnyOf(sprite_ranges_, [id](const SpriteRange &sprite_range) {
-        return sprite_range.id == id;
-    }))
+    if (range::AnyOf(sprite_ranges_, [id](const SpriteRange& sprite_range) { return sprite_range.ID == id; }))
     {
         Log(Error) << String::Format("id为{}的SpriteRange已经存在", id);
         return false;
@@ -334,16 +334,16 @@ bool Texture2D::AppendSprite(UInt64 id, const char *data, Rect2Di target_rect)
     }
     // 拷贝数据到图像
     const auto num_channels = GetNumChannels();
-    GfxCommandHelper::CopyDataToImage2D(data, native_image_.get(), target_rect.Area() * num_channels, {target_rect.pos.X, target_rect.pos.Y, 0},
-                                        {target_rect.size.X, target_rect.size.Y, 1});
+    GfxCommandHelper::CopyDataToImage2D(data, mNativeImage.get(), target_rect.Area() * num_channels, {target_rect.Pos.X, target_rect.Pos.Y, 0},
+                                        {target_rect.Size.X, target_rect.Size.Y, 1});
     SpriteRange new_sprite_range{};
-    new_sprite_range.id = id;
-    new_sprite_range.range = target_rect;
+    new_sprite_range.ID = id;
+    new_sprite_range.Range = target_rect;
     sprite_ranges_.Add(new_sprite_range);
     return true;
 }
 
-bool Texture2D::AppendSprite(const UInt64 id, const char *data, const UInt32 width, const UInt32 height)
+bool Texture2D::AppendSprite(const UInt64 id, const char* data, const UInt32 width, const UInt32 height)
 {
     ProfileScope _(__func__);
     Vector2i bound;
@@ -351,9 +351,9 @@ bool Texture2D::AppendSprite(const UInt64 id, const char *data, const UInt32 wid
     const UInt32 tex_h = GetHeight();
     bound.X = tex_w, bound.Y = tex_h;
     Array<Vector2i> sprite_ranges;
-    for (const auto &sprite_range : sprite_ranges_)
+    for (const auto& sprite_range : sprite_ranges_)
     {
-        sprite_ranges.Add(sprite_range.range.size);
+        sprite_ranges.Add(sprite_range.Range.Size);
     }
     const Rect2Di target_rect =
         algo::RectPacking::GetNextAvailableRect(bound, sprite_ranges, {static_cast<Int32>(width), static_cast<Int32>(height)});
@@ -369,7 +369,7 @@ bool Texture2D::AppendSprite(const UInt64 id, StringView path)
         return false;
     }
     Int32 width = 0, height = 0, channels = 0;
-    stbi_uc *pixels = LoadImageStb(path, &width, &height, &channels);
+    stbi_uc* pixels = LoadImageStb(path, &width, &height, &channels);
     auto num_channel = GetNumChannels();
     if (channels != num_channel)
     {
@@ -377,14 +377,14 @@ bool Texture2D::AppendSprite(const UInt64 id, StringView path)
         {
             const auto new_pixels = ConvertChannels(pixels, width, height, channels, num_channel);
             stbi_image_free(pixels);
-            const bool success = AppendSprite(id, reinterpret_cast<char *>(new_pixels), width, height);
+            const bool success = AppendSprite(id, reinterpret_cast<char*>(new_pixels), width, height);
             Free(new_pixels);
             return success;
         }
         Log(Error) << String::Format("AppendSprite: 文件{}的通道数不匹配, [S={}, T={}]", *path, channels, num_channel);
         return false;
     }
-    const bool success = AppendSprite(id, reinterpret_cast<char *>(pixels), width, height);
+    const bool success = AppendSprite(id, reinterpret_cast<char*>(pixels), width, height);
     stbi_image_free(pixels);
     return success;
 }
@@ -394,45 +394,45 @@ void Texture2D::Download() const
     Download(GetAssetPath());
 }
 
-void Texture2D::Download(StringView path) const
+void Texture2D::Download(StringView Path) const
 {
     ProfileScope _(__func__);
-    if (path.IsEmpty())
+    if (Path.IsEmpty())
     {
         Log(Error) << "下载纹理失败: 资源路径为空";
         return;
     }
-    if (path.EndsWith(".png"))
+    if (Path.EndsWith(".png"))
     {
         // 将图像数据拉取下来保存到新的图片中
         const auto w = GetWidth();
         const auto h = GetHeight();
         const auto num_channels = GetNumChannels();
-        const auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
-        const void *data = cpu_buffer->BeginRead();
-        stbi_write_png(*path, w, h, num_channels, data, w * num_channels);
+        const auto cpu_buffer = mNativeImage->CreateCPUVisibleBuffer();
+        const void* data = cpu_buffer->BeginRead();
+        stbi_write_png(*Path, w, h, num_channels, data, w * num_channels);
 
         cpu_buffer->EndRead();
     }
-    else if (path.EndsWith(".hdr"))
+    else if (Path.EndsWith(".hdr"))
     {
         // 将图像数据拉取下来保存到新的图片中
-        const auto w = GetWidth();
-        const auto h = GetHeight();
-        const auto num_channels = 4;
-        const auto cpu_buffer = native_image_->CreateCPUVisibleBuffer();
-        const void *data = cpu_buffer->BeginRead();
-        stbi_write_hdr(*path, w, h, num_channels, static_cast<const Float *>(data));
-        cpu_buffer->EndRead();
+        const auto W = GetWidth();
+        const auto H = GetHeight();
+        constexpr auto NumChannels = 4;
+        const auto CpuBuffer = mNativeImage->CreateCPUVisibleBuffer();
+        const void* Data = CpuBuffer->BeginRead();
+        stbi_write_hdr(*Path, W, H, NumChannels, static_cast<const Float*>(Data));
+        CpuBuffer->EndRead();
     }
 }
 
-UInt8 *Texture2D::ConvertChannels(UInt8 *data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels)
+UInt8* Texture2D::ConvertChannels(UInt8* data, const UInt32 width, const UInt32 height, const UInt32 src_channels, const UInt32 dst_channels)
 {
     if (src_channels == dst_channels)
         return data;
     const UInt64 required_size = width * height * dst_channels;
-    const auto result = static_cast<UInt8 *>(Malloc(required_size));
+    const auto result = static_cast<UInt8*>(Malloc(required_size));
     if (src_channels == 3 && dst_channels == 4)
     {
         for (UInt64 i = 0; i < width * height; i++)
@@ -451,8 +451,8 @@ String Texture2D::GetSpriteRangeString() const
     String sprite_range_str;
     for (auto sprite_range : sprite_ranges_)
     {
-        sprite_range_str += String::Format("{}:{}-{}-{}-{}\n", sprite_range.id, sprite_range.range.pos.X, sprite_range.range.pos.Y,
-                                           sprite_range.range.size.X, sprite_range.range.size.Y);
+        sprite_range_str += String::Format("{}:{}-{}-{}-{}\n", sprite_range.ID, sprite_range.Range.Pos.X, sprite_range.Range.Pos.Y,
+                                           sprite_range.Range.Size.X, sprite_range.Range.Size.Y);
     }
     return sprite_range_str;
 }
@@ -476,7 +476,7 @@ void Texture2D::SetSpriteRangeString(const StringView str)
             Log(Error) << String::Format("SetSpriteRangeString: sprite range line {} id解析失败!", *sprite_range_line);
             continue;
         }
-        range.id = id;
+        range.ID = id;
         auto range_str = id_range[1].Split("-");
         if (range_str.Count() != 4)
         {
@@ -493,13 +493,13 @@ void Texture2D::SetSpriteRangeString(const StringView str)
                 continue;
             }
             if (i == 0)
-                range.range.pos.X = element;
+                range.Range.Pos.X = element;
             if (i == 1)
-                range.range.pos.Y = element;
+                range.Range.Pos.Y = element;
             if (i == 2)
-                range.range.size.X = element;
+                range.Range.Size.X = element;
             if (i == 3)
-                range.range.size.Y = element;
+                range.Range.Size.Y = element;
         }
         sprite_ranges_.Add(range);
     }

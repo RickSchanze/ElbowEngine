@@ -47,9 +47,9 @@ void CameraComponent::UpdateViewBuffer() {
     view[3] = Vector4f(translation, 1);
     mCameraShaderData.view = view;
     // 更新position
-    mCameraShaderData.Data[1, 0] = mWorldTransform.Location.X;
-    mCameraShaderData.Data[1, 1] = mWorldTransform.Location.Y;
-    mCameraShaderData.Data[1, 2] = mWorldTransform.Location.Z;
+    mCameraShaderData.Data[1, 0] = mWorldTransform.mLocation.X;
+    mCameraShaderData.Data[1, 1] = mWorldTransform.mLocation.Y;
+    mCameraShaderData.Data[1, 2] = mWorldTransform.mLocation.Z;
     mCameraShaderData.Data[2, 0] = mWorldTransform.GetRotationEuler().X;
     mCameraShaderData.Data[2, 1] = mWorldTransform.GetRotationEuler().Y;
     mCameraShaderData.Data[2, 2] = mWorldTransform.GetRotationEuler().Z;

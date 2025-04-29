@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Enums.hpp"
 

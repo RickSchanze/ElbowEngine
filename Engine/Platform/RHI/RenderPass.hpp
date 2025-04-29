@@ -56,7 +56,7 @@ namespace RHI {
     public:
         explicit RenderPass(const RenderPassCreateInfo &info) : info_(info) {}
 
-        [[nodiscard]] const RenderPassCreateInfo &GetCreateInfo() const { return info_; }
+        const RenderPassCreateInfo &GetCreateInfo() const { return info_; }
 
     protected:
         RenderPassCreateInfo info_{};

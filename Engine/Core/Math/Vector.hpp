@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/CoreMacros.hpp"
 #include "Core/Reflection/Helper.hpp"
 #include "Core/Serialization/Archive.hpp"
 #include "Core/String/String.hpp"
@@ -57,12 +58,14 @@ public:
 
     explicit Vector4(const Vector3<T>& Other, T W = 0);
 
+    ELBOW_FORCE_INLINE
     bool operator==(const Vector4& other) const
     {
         return X == other.X && Y == other.Y && Z == other.Z;
     }
 
-    auto& operator[](this auto&& Self, UInt8 Index)
+    ELBOW_FORCE_INLINE
+    auto& operator[](this auto&& Self, Int32 Index)
     {
         switch (Index)
         {
@@ -78,6 +81,23 @@ public:
             VLOG_FATAL("Vector4 index out of range, index = ", Index);
             return Self.X;
         }
+    }
+
+    ELBOW_FORCE_INLINE
+    static Vector4 Zero()
+    {
+        return {0, 0, 0, 0};
+    }
+
+    ELBOW_FORCE_INLINE
+    static inline Vector4 One()
+    {
+        return {1, 1, 1, 1};
+    }
+
+    ELBOW_FORCE_INLINE T SizeSquared()
+    {
+        return X * X + Y * Y + Z * Z + W * W;
     }
 };
 
@@ -147,23 +167,26 @@ public:
         return X == other.X && Y == other.Y && Z == other.Z;
     }
 
+    ELBOW_FORCE_INLINE
     Vector3 operator+(Vector3 rhs)
     {
         return Vector3(X + rhs.X, Y + rhs.Y, Z + rhs.Z);
     }
 
+    ELBOW_FORCE_INLINE
     Vector3 operator+(T value) const
     {
         return {X + value, Y + value, Z + value};
     }
 
+    ELBOW_FORCE_INLINE
     Vector3 operator-(Vector3 rhs)
     {
         return Vector3(X - rhs.X, Y - rhs.Y, Z - rhs.Z);
     }
 
     template <typename Self>
-    auto& operator[](this Self&& self, UInt64 index)
+    ELBOW_FORCE_INLINE auto& operator[](this Self&& self, UInt64 index)
     {
         switch (index)
         {
@@ -212,26 +235,31 @@ struct Vector2
     T X = 0;
     T Y = 0;
 
+    ELBOW_FORCE_INLINE
     bool operator==(const Vector2& other) const
     {
         return X == other.X && Y == other.Y;
     }
 
+    ELBOW_FORCE_INLINE
     Vector2 operator/(T rhs)
     {
         return Vector2{X / rhs, Y / rhs};
     }
 
+    ELBOW_FORCE_INLINE
     Vector2 operator+(T Value) const
     {
         return {X + Value, Y + Value};
     }
 
+    ELBOW_FORCE_INLINE
     Vector2 operator+(Vector2 Right)
     {
         return Vector2{X + Right.X, Y + Right.Y};
     }
 
+    ELBOW_FORCE_INLINE
     Vector2& operator+=(T value)
     {
         X += value;
@@ -239,26 +267,31 @@ struct Vector2
         return *this;
     }
 
+    ELBOW_FORCE_INLINE
     Vector2 operator-(Vector2 rhs)
     {
         return Vector2(X - rhs.X, Y - rhs.Y);
     }
 
+    ELBOW_FORCE_INLINE
     String ToString()
     {
         return String::Format("Vector2{{X = {}, Y = {}}}", X, Y);
     }
 
+    ELBOW_FORCE_INLINE
     bool IsZero()
     {
         return X == 0 && Y == 0;
     }
 
+    ELBOW_FORCE_INLINE
     T SizeSquare()
     {
         return X * X + Y * Y;
     }
 
+    ELBOW_FORCE_INLINE
     T Size()
     {
         return std::sqrt(SizeSquare());

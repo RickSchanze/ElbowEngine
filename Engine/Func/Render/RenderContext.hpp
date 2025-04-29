@@ -21,16 +21,22 @@ namespace RHI {
 
 class RenderContext final : public Manager<RenderContext> {
 public:
-    ~RenderContext() override;
+    virtual ~RenderContext() override;
     void Render(const MilliSeconds &sec);
 
     void SetRenderPipeline(UniquePtr<RenderPipeline> render_pipeline);
 
-    Float GetLevel() const override { return 7; }
-    StringView GetName() const override { return "RenderContext"; }
+    virtual Float GetLevel() const override
+    {
+        return 7;
+    }
+    virtual StringView GetName() const override
+    {
+        return "RenderContext";
+    }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
     void SetRenderEnable(bool enable);
     bool IsRenderEnable() const { return should_render_; }

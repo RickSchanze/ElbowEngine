@@ -8,11 +8,14 @@
 class PlatformWindow;
 class PlatformWindowManager : public Manager<PlatformWindowManager> {
 public:
-    [[nodiscard]] Float GetLevel() const override { return 5; }
-    [[nodiscard]] StringView GetName() const override { return "PlatformWindowManager"; }
+    virtual Float GetLevel() const override { return 5; }
+    virtual StringView GetName() const override
+    {
+        return "PlatformWindowManager";
+    }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
     void AddWindow(PlatformWindow *window);
 
@@ -22,18 +25,18 @@ public:
 
     PlatformWindow *_GetWindowByPtr(const void *ptr);
 
-    [[nodiscard]] static PlatformWindow *GetWindow(Int32 window_id) { return GetByRef().InternalGetWindow(window_id); }
-    [[nodiscard]] static PlatformWindow *GetWindow(StringView window_title) { return GetByRef().InternalGetWindow(window_title); }
-    [[nodiscard]] static PlatformWindow *GetMainWindow() { return GetWindow(0); }
+    static PlatformWindow *GetWindow(Int32 window_id) { return GetByRef().InternalGetWindow(window_id); }
+    static PlatformWindow *GetWindow(StringView window_title) { return GetByRef().InternalGetWindow(window_title); }
+    static PlatformWindow *GetMainWindow() { return GetWindow(0); }
 
     static void BeginImGuiFrame(Int32 window_id = 0);
 
 protected:
-    [[nodiscard]] PlatformWindow *InternalGetWindow(Int32 window_id) const;
+    PlatformWindow *InternalGetWindow(Int32 window_id) const;
 
-    [[nodiscard]] PlatformWindow *InternalGetWindow(StringView window_title) const;
+    PlatformWindow *InternalGetWindow(StringView window_title) const;
 
-    [[nodiscard]] PlatformWindow *InternalGetMainWindow() const { return InternalGetWindow(0); }
+    PlatformWindow *InternalGetMainWindow() const { return InternalGetWindow(0); }
 
     static inline Int32 next_window_id_ = 0;
 

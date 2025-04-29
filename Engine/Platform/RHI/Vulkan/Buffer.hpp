@@ -8,18 +8,21 @@
 namespace RHI {
     class Buffer_Vulkan final : public Buffer {
     public:
-        explicit Buffer_Vulkan(const BufferDesc &info);
+        explicit Buffer_Vulkan(const BufferDesc& info);
 
-        ~Buffer_Vulkan() override;
+        virtual ~Buffer_Vulkan() override;
 
-        [[nodiscard]] void *GetNativeHandle() const override { return buffer_; }
+        virtual void* GetNativeHandle() const override
+        {
+            return buffer_;
+        }
 
-        UInt8 *BeginWrite() override;
-        void EndWrite() override;
+        virtual UInt8* BeginWrite() override;
+        virtual void EndWrite() override;
 
-        UInt8 *BeginRead() override;
+        virtual UInt8* BeginRead() override;
 
-        void EndRead() override;
+        virtual void EndRead() override;
 
     private:
         VkBuffer buffer_ = VK_NULL_HANDLE;

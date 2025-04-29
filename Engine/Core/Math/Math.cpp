@@ -5,39 +5,18 @@
 
 #include <random>
 
-#include "MathExtensions.hpp"
-
-Float Math::RandomFloat(Float lower, Float upper) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(lower, upper);
-    return dis(gen);
+Float Math::RandomFloat(const Float Lower, const Float Upper) {
+    std::random_device RD;
+    std::mt19937 Gen(RD());
+    std::uniform_real_distribution<> Dis(Lower, Upper);
+    return Dis(Gen);
 }
 
-Color Math::RandomColor(Color lower, Color upper) {
+Color Math::RandomColor(const Color Lower, const Color Upper) {
     Color result;
-    result.r = RandomFloat(lower.r, upper.r);
-    result.g = RandomFloat(lower.g, upper.g);
-    result.b = RandomFloat(lower.b, upper.b);
-    result.a = RandomFloat(lower.a, upper.a);
+    result.R = RandomFloat(Lower.R, Upper.R);
+    result.G = RandomFloat(Lower.G, Upper.G);
+    result.B = RandomFloat(Lower.B, Upper.B);
+    result.A = RandomFloat(Lower.A, Upper.A);
     return result;
-}
-
-Quaternionf Math::FindLookAtRotation(Vector3f pos, Vector3f target) {
-    glm::vec3 ref{0, 0, 1};
-    Vector3f dir = target - pos;
-    glm::vec3 glm_dir = {dir.X, dir.Y, dir.Z};
-    glm_dir = -glm::normalize(glm_dir);
-    glm::vec3 axis = glm::cross(ref, glm_dir);
-    if (glm::length(axis) < 1e-6) {
-        return Quaternionf::Identity();
-    }
-    axis = glm::normalize(axis);
-    float angle = glm::acos(glm::dot(ref, glm_dir));
-    glm::quat result = glm::angleAxis(angle, axis);
-    return {result.x, result.y, result.z, result.w};
-}
-
-Matrix4x4f Math::LookAt(Vector3f pos, Vector3f target, Vector3f up) {
-    return lookAt(pos | ToGLMVec3, target | ToGLMVec3, up | ToGLMVec3) | ToMatrix4x4f;
 }

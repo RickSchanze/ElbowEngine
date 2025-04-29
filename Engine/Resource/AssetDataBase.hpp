@@ -21,15 +21,15 @@ namespace internal {
 
 class AssetDataBase : public Manager<AssetDataBase> {
 public:
-    [[nodiscard]] Float GetLevel() const override { return 13; }
-    [[nodiscard]] StringView GetName() const override { return "AssetDataBase"; }
+    virtual Float GetLevel() const override { return 13; }
+    virtual StringView GetName() const override { return "AssetDataBase"; }
 
     /**
      * 打开/创建资产数据库
      */
-    void Startup() override;
+    virtual void Startup() override;
 
-    void Shutdown() override;
+    virtual void Shutdown() override;
 
     /**
      * 导入资产

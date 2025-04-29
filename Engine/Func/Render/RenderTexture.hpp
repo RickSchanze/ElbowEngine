@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Core/Math/Types.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/TypeAlias.hpp"
 #include "Platform/RHI/Enums.hpp"
@@ -51,37 +51,37 @@ public:
 
     UInt32 GetWidth() const
     {
-        return desc_.Width;
+        return mDesc.Width;
     }
 
     UInt32 GetHeight() const
     {
-        return desc_.Height;
+        return mDesc.Height;
     }
 
     UInt32 GetDepth() const
     {
-        return desc_.DepthOrLayers;
+        return mDesc.DepthOrLayers;
     }
 
     UInt32 GetMipLevels() const
     {
-        return desc_.MipLevels;
+        return mDesc.MipLevels;
     }
 
     Vector2f GetSize() const
     {
-        return Vector2f{static_cast<Float>(desc_.Width), static_cast<Float>(desc_.Height)};
+        return Vector2f{static_cast<Float>(mDesc.Width), static_cast<Float>(mDesc.Height)};
     }
 
     RHI::Format GetFormat() const
     {
-        return desc_.Format;
+        return mDesc.Format;
     }
 
     RHI::ImageView *GetImageView() const
     {
-        return image_view_.get();
+        return mImageView.get();
     }
 
     // 下面三个用于设置RenderTexture的宽高, 注意是高耗时操作
@@ -98,7 +98,7 @@ public:
 
 private:
     SharedPtr<RHI::Image> mNativeHandle = nullptr;
-    SharedPtr<RHI::ImageView> image_view_ = nullptr;
+    SharedPtr<RHI::ImageView> mImageView = nullptr;
 
-    RHI::ImageDesc desc_ = RHI::ImageDesc::Default();
+    RHI::ImageDesc mDesc = RHI::ImageDesc::Default();
 };

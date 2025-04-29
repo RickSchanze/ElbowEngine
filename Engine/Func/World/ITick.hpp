@@ -16,7 +16,7 @@ public:
      */
     void SetTickScale(float scale);
 
-    [[nodiscard]] float GetTickScale() const { return tick_scale_; }
+    float GetTickScale() const { return tick_scale_; }
 
     /**
      * 执行Tick的一系列函数, 传入数值是delta_time * scale

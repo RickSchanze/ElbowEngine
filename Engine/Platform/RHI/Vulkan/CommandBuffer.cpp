@@ -144,35 +144,35 @@ static void ExecuteCmdBeginRender(const VkCommandBuffer &cmd, Cmd_BeginRender *c
     for (int i = 0; i < cmd_begin_render_pass->colors.Count(); i++)
     {
         const auto &color = cmd_begin_render_pass->colors[i];
-        if (color.target == nullptr || !color.target->IsValid())
+        if (color.Target == nullptr || !color.Target->IsValid())
         {
             Log(Error) << String::Format("命令BeginRender错误, 传入的colors[{}].target无效", i);
             return;
         }
         VkRenderingAttachmentInfo color_info = {};
         color_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        color_info.imageView = color.target->GetNativeHandleT<VkImageView>();
+        color_info.imageView = color.Target->GetNativeHandleT<VkImageView>();
         color_info.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        color_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(color.load_op);
-        color_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(color.store_op);
+        color_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(color.LoadOp);
+        color_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(color.StoreOp);
         VkClearValue clear_value = {};
-        clear_value.color.float32[0] = color.clear_color.r;
-        clear_value.color.float32[1] = color.clear_color.g;
-        clear_value.color.float32[2] = color.clear_color.b;
-        clear_value.color.float32[3] = color.clear_color.a;
+        clear_value.color.float32[0] = color.ClearColor.r;
+        clear_value.color.float32[1] = color.ClearColor.g;
+        clear_value.color.float32[2] = color.ClearColor.b;
+        clear_value.color.float32[3] = color.ClearColor.a;
         color_info.clearValue = clear_value;
         colors.Add(color_info);
     }
     VkRenderingAttachmentInfo depth_info = {};
     depth_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    if (cmd_begin_render_pass->depth.target != nullptr && cmd_begin_render_pass->depth.target->IsValid())
+    if (cmd_begin_render_pass->depth.Target != nullptr && cmd_begin_render_pass->depth.Target->IsValid())
     {
-        depth_info.imageView = cmd_begin_render_pass->depth.target->GetNativeHandleT<VkImageView>();
+        depth_info.imageView = cmd_begin_render_pass->depth.Target->GetNativeHandleT<VkImageView>();
         depth_info.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        depth_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(cmd_begin_render_pass->depth.load_op);
-        depth_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(cmd_begin_render_pass->depth.store_op);
+        depth_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(cmd_begin_render_pass->depth.LoadOp);
+        depth_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(cmd_begin_render_pass->depth.StoreOp);
         VkClearValue clear_value = {};
-        clear_value.depthStencil.depth = cmd_begin_render_pass->depth.clear_color.r;
+        clear_value.depthStencil.depth = cmd_begin_render_pass->depth.ClearColor.r;
         depth_info.clearValue = clear_value;
     }
     VkRenderingInfo render_info = {};

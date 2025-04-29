@@ -13,7 +13,7 @@ class EINTERFACE() IConfig
 public:
     virtual ~IConfig() = default;
 
-    [[nodiscard]] bool IsDirty() const
+    bool IsDirty() const
     {
         return dirty_;
     }

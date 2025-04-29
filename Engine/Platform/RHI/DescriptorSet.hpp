@@ -30,7 +30,7 @@ namespace RHI {
     struct DescriptorSetLayoutDesc {
         Array<DescriptorSetLayoutBinding> bindings;
 
-        [[nodiscard]] size_t GetHashCode() const {
+        size_t GetHashCode() const {
             // From gpt-4o
             std::hash<UInt32> hasher_uint32;
             size_t hash = 0;
@@ -48,11 +48,13 @@ namespace RHI {
 
     class DescriptorSetLayout : public IResource {
     public:
-        [[nodiscard]] size_t GetHashCode() const { return hash_; }
+        size_t GetHashCode() const { return hash_; }
 
-        explicit DescriptorSetLayout(const DescriptorSetLayoutDesc &desc) : hash_(desc.GetHashCode()) {}
+        explicit DescriptorSetLayout(const DescriptorSetLayoutDesc& desc) : hash_(desc.GetHashCode())
+        {
+        }
 
-        ~DescriptorSetLayout() override = default;
+        virtual ~DescriptorSetLayout() override = default;
 
     protected:
         size_t hash_ = 0;
@@ -171,7 +173,7 @@ namespace RHI {
 
     class DescriptorSetPool : public IResource {
     public:
-        ~DescriptorSetPool() override = default;
+        virtual ~DescriptorSetPool() override = default;
 
         virtual SharedPtr<DescriptorSet> Allocate(DescriptorSetLayout *layout) = 0;
         virtual Array<SharedPtr<DescriptorSet>> Allocates(const Array<DescriptorSetLayout *> &) = 0;

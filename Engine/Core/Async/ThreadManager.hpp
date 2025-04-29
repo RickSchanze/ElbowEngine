@@ -28,19 +28,19 @@ enum class NamedThread
 class ThreadManager : public Manager<ThreadManager>, public exec::Scheduler
 {
 public:
-    [[nodiscard]] Float GetLevel() const override
+    virtual Float GetLevel() const override
     {
         return 4;
     }
 
-    [[nodiscard]] StringView GetName() const override
+    virtual StringView GetName() const override
     {
         return "ThreadManager";
     }
 
-    void Startup() override;
+    virtual void Startup() override;
 
-    void Shutdown() override;
+    virtual void Shutdown() override;
 
     static ThreadId GetMainThread()
     {

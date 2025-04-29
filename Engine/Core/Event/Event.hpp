@@ -28,15 +28,15 @@ struct Delegate {
 
     bool operator==(const Delegate &other) const { return id_ == other.id_; }
 
-    [[nodiscard]] UInt64 GetID() const { return id_; }
+    UInt64 GetID() const { return id_; }
 
     void Unbind() {
         function_ = {};
         id_ = 0;
     }
 
-    [[nodiscard]] bool IsValid() const { return id_ != 0; }
-    [[nodiscard]] bool HasBound() const { return static_cast<bool>(function_); }
+    bool IsValid() const { return id_ != 0; }
+    bool HasBound() const { return static_cast<bool>(function_); }
 
     void Bind(Function<ReturnT(ArgumentTypes...)> &&function) {
         DebugAssert(!HasBound(), "Delegate is already bound, rebinding...");
@@ -92,7 +92,7 @@ struct Event {
 
     void Unbind() { delegate_.Unbind(); }
 
-    [[nodiscard]] bool HasBound() const { return delegate_.HasBound(); }
+    bool HasBound() const { return delegate_.HasBound(); }
 
     ReturnType Invoke(ArgumentArgs &&...args) { return delegate_.Invoke(Move(args)...); }
 

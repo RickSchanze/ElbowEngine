@@ -53,9 +53,9 @@ void GlobalObjectInstancedDataBuffer::UpdateInstancedData(ObjectHandle obj_handl
 }
 
 void GlobalObjectInstancedDataBuffer::UpdateInstancedData(ObjectHandle object_handle, const Transform &transform) {
-    Vector3f location = transform.Location;
+    Vector3f location = transform.mLocation;
     Vector3f rotation = transform.GetRotationEuler();
-    Vector3f scale = transform.Scale;
+    Vector3f scale = transform.mScale;
     UpdateInstancedData(object_handle, location, rotation, scale);
 }
 

@@ -2,13 +2,14 @@
 // Created by Echo on 25-3-19.
 //
 #pragma once
-#include "Constants.hpp"
-
-#include "Core/Assert.hpp"
-#include "Types.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
+
+#include "Color.hpp"
+#include "Constants.hpp"
+#include "Core/Assert.hpp"
+#include "Core/Math/Matrix.hpp"
 
 struct Math
 {
@@ -130,8 +131,8 @@ struct Math
         return result;
     }
 
-    static Float RandomFloat(Float lower = 0.f, Float upper = 1.f);
-    static Color RandomColor(Color lower = {0, 0, 0, 0}, Color upper = {1, 1, 1, 1});
+    static Float RandomFloat(Float Lower = 0.f, Float Upper = 1.f);
+    static Color RandomColor(Color Lower = {0, 0, 0, 0}, Color Upper = {1, 1, 1, 1});
 
     template <typename T>
     static T Degree(T InRadians)

@@ -38,7 +38,7 @@ void ViewportWindow::Draw()
         // size变化了则绑定camera的viewport
         Vector2f pos = content_pos | ToVector2f;
         Vector2f size = content_size | ToVector2f;
-        if (size != size_)
+        if (size != mSize)
         {
             // 重新计算摄像机的aspect_ratio和viewport
             if (!mBoundCamera)
@@ -54,11 +54,11 @@ void ViewportWindow::Draw()
                 mBoundCamera->SetAspectRatio(size.X / size.Y);
             }
         }
-        size_ = size;
-        pos_ = pos;
+        mSize = size;
+        mPos = pos;
         if (bound_render_texture_)
         {
-            ImGuiDrawer::Image(*bound_render_texture_, size_);
+            ImGuiDrawer::Image(*bound_render_texture_, mSize);
         }
         // TODO: 临时措施
         if (ImGui::IsWindowFocused())

@@ -19,7 +19,7 @@ class ECLASS() CameraComponent : public SceneComponent {
     GENERATED_BODY(CameraComponent)
 public:
     CameraComponent();
-    ~CameraComponent() override;
+    virtual ~CameraComponent() override;
 
     void UpdateViewBuffer();
 

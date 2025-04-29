@@ -46,7 +46,7 @@ private:
 struct Font::FontHandle {
     FT_Face face = nullptr;
 
-    [[nodiscard]] bool IsLoaded() const { return face != nullptr; }
+    bool IsLoaded() const { return face != nullptr; }
 
     FontHandle(StringView path, const Int32 size) {
         if (Int32 errcode = FontLib::Load(path, face); errcode != 0) {
@@ -190,15 +190,15 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
     // 保存此字符的信息
     FontCharacterInfo info{};
     // 这里uv原点在左上角 再加上半像素矫正
-    info.uv.pos.X = (static_cast<Float>(cursor_.X) + 0.5f) / static_cast<Float>(font_atlas_width_);
-    info.uv.pos.Y = (static_cast<Float>(cursor_.Y) + 0.5f) / static_cast<Float>(font_atlas_height_);
-    info.uv.size.X = (static_cast<Float>(bitmap.width) - 1.f) / static_cast<Float>(font_atlas_width_);
-    info.uv.size.Y = (static_cast<Float>(bitmap.rows) - 1.f) / static_cast<Float>(font_atlas_height_);
-    info.bearing.X = slot->bitmap_left;
-    info.bearing.Y = slot->bitmap_top;
-    info.advance = slot->advance.x;
-    info.size.X = bitmap.width;
-    info.size.Y = bitmap.rows;
+    info.UV.Pos.X = (static_cast<Float>(cursor_.X) + 0.5f) / static_cast<Float>(font_atlas_width_);
+    info.UV.Pos.Y = (static_cast<Float>(cursor_.Y) + 0.5f) / static_cast<Float>(font_atlas_height_);
+    info.UV.Size.X = (static_cast<Float>(bitmap.width) - 1.f) / static_cast<Float>(font_atlas_width_);
+    info.UV.Size.Y = (static_cast<Float>(bitmap.rows) - 1.f) / static_cast<Float>(font_atlas_height_);
+    info.Bearing.X = slot->bitmap_left;
+    info.Bearing.Y = slot->bitmap_top;
+    info.Advance = slot->advance.x;
+    info.Size.X = bitmap.width;
+    info.Size.Y = bitmap.rows;
     cursor_.X += bitmap.width;
     glyphs_[code_point] = info;
 }

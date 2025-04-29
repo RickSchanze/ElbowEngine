@@ -65,67 +65,67 @@ void ReflManager::Startup() {
 }
 
 void ReflManager::Shutdown() {
-    for (auto &val: types_registered_ | std::views::values) {
+    for (auto &val: mTypesRegistered | std::views::values) {
         Delete(val);
     }
-    types_registered_.Clear();
+    mTypesRegistered.Clear();
 }
 
 void ReflManager::RegisterType(const RTTITypeInfo &type_info) {
     ProfileScope _(__func__);
-    if (types_registered_.Contains(type_info)) {
+    if (mTypesRegistered.Contains(type_info)) {
         return;
     }
-    if (!meta_data_registers_.Contains(type_info)) {
+    if (!mMetaDataRegisters.Contains(type_info)) {
         Log(Fatal) << String::Format("类型{}没有对应的注册函数", *type_info.name);
         return;
     }
-    types_registered_[type_info] = meta_data_registers_[type_info]();
-    meta_data_registers_.Remove(type_info);
+    mTypesRegistered[type_info] = mMetaDataRegisters[type_info]();
+    mMetaDataRegisters.Remove(type_info);
 }
 
 void ReflManager::RegisterTypeRegisterer(const RTTITypeInfo &type_info, MetaDataRegisterer registerer) {
     ProfileScope _(__func__);
     if (registerer == nullptr)
         return;
-    if (meta_data_registers_.Contains(type_info)) {
-        if (meta_data_registers_[type_info] != registerer) {
+    if (mMetaDataRegisters.Contains(type_info)) {
+        if (mMetaDataRegisters[type_info] != registerer) {
             VLOG_FATAL("类型", *type_info.name, "有不同的注册函数注册");
         }
         return;
     }
-    meta_data_registers_[type_info] = registerer;
+    mMetaDataRegisters[type_info] = registerer;
 }
 
 void ReflManager::RegisterType(const RTTITypeInfo &type_info, Type *type) {
     ProfileScope _(__func__);
-    if (types_registered_.Contains(type_info)) {
+    if (mTypesRegistered.Contains(type_info)) {
         Log(Error) << String::Format("类型{}已经注册过了", *type_info.name);
         return;
     }
-    types_registered_[type_info] = type;
+    mTypesRegistered[type_info] = type;
 }
 
 Type *ReflManager::GetType(const RTTITypeInfo &type_info) {
-    if (types_registered_.Contains(type_info)) {
-        return types_registered_[type_info];
+    if (mTypesRegistered.Contains(type_info)) {
+        return mTypesRegistered[type_info];
     }
     RegisterType(type_info);
-    if (types_registered_.Contains(type_info)) {
-        return types_registered_[type_info];
+    if (mTypesRegistered.Contains(type_info)) {
+        return mTypesRegistered[type_info];
     }
     VLOG_FATAL("类型", *type_info.name, "没有注册成功");
     return nullptr;
 }
 
 void ReflManager::RegisterCtorDtor(const RTTITypeInfo &info, InplaceCtor ctor, InplaceDtor dtor) {
-    if (ctors_.Contains(info)) {
-        if (ctors_[info].ctor != ctor || ctors_[info].dtor != dtor) {
+    if (mCtors.Contains(info)) {
+        if (mCtors[info].ctor != ctor || mCtors[info].dtor != dtor) {
             VLOG_FATAL("类型", *info.name, "有多个构造函数和析构函数的注册");
         }
         return;
     }
-    ctors_[info] = {ctor, dtor};
+    mCtors[info] = {ctor, dtor};
 }
 
 bool ReflManager::ConstructAt(const Type *info, void *ptr) const {
@@ -141,7 +141,7 @@ bool ReflManager::ConstructAt(const Type *info, void *ptr) const {
         *static_cast<uint8_t *>(ptr) = 0;
         return true;
     }
-    for (auto &[key, value]: ctors_) {
+    for (auto &[key, value]: mCtors) {
         if (key.hash_code == info->GetHashCode()) {
             value.ctor(ptr);
             return true;
@@ -164,7 +164,7 @@ bool ReflManager::DestroyAt(const Type *info, void *ptr) const {
         *static_cast<uint8_t *>(ptr) = 0;
         return true;
     }
-    for (auto &[key, value]: ctors_) {
+    for (auto &[key, value]: mCtors) {
         if (key.hash_code == info->GetHashCode()) {
             value.dtor(ptr);
             return true;

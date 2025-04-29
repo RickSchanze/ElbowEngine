@@ -39,7 +39,7 @@ struct CommandPoolCreateInfo
 class CommandBuffer : public IResource
 {
 public:
-    ~CommandBuffer() override = default;
+    virtual ~CommandBuffer() override = default;
 
     /**
      * 交给渲染线程去翻译
@@ -145,7 +145,7 @@ protected:
 class CommandPool : public IResource
 {
 public:
-    ~CommandPool() override = default;
+    virtual ~CommandPool() override = default;
 
     explicit CommandPool(CommandPoolCreateInfo info)
     {

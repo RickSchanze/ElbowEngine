@@ -3,6 +3,7 @@
 //
 #include "Commands.hpp"
 
+#include "Core/Math/Vector.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 #include "Platform/Window/PlatformWindowManager.hpp"
 

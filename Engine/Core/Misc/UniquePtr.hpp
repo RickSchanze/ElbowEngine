@@ -74,7 +74,7 @@ public:
   // 检查指针是否为空
   explicit operator bool() const noexcept { return IsSet(); }
 
-  [[nodiscard]] bool IsSet() const { return ptr_ != nullptr; }
+  bool IsSet() const { return ptr_ != nullptr; }
 
 private:
   T *ptr_ = nullptr;

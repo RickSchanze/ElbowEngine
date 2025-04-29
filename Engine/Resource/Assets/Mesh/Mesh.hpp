@@ -20,17 +20,20 @@ struct MeshStorage {
     UInt32 vertex_count;
     UInt32 index_count;
 
-    [[nodiscard]] bool Loaded() const { return vertex_buffer && index_buffer; }
+    bool Loaded() const { return vertex_buffer && index_buffer; }
 };
 
 class ECLASS() Mesh : public Asset {
     GENERATED_BODY(Mesh)
 public:
-    [[nodiscard]] AssetType GetAssetType() const override { return AssetType::Mesh; }
+    virtual AssetType GetAssetType() const override
+    {
+        return AssetType::Mesh;
+    }
 
-    void PerformLoad() override;
+    virtual void PerformLoad() override;
 
-    [[nodiscard]] bool IsLoaded() const override { return mLoaded; };
+    virtual bool IsLoaded() const override { return mLoaded; };
 
     MeshStorage &InternalGetStorage() const { return *storage_; }
     UInt32 GetIndexCount() const;
@@ -39,7 +42,7 @@ public:
     StringView GetAssetPath() const { return mMate.Path; }
 
 #if WITH_EDITOR
-    void Save() override;
+    virtual void Save() override;
     void SetImportScale(float scale);
     Float GetImportScale() const { return mMate.ImportScale; }
 #endif

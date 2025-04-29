@@ -17,8 +17,11 @@ class ImGuiDrawWindow;
 class Window;
 class UIManager : public Manager<UIManager> {
 public:
-    Float GetLevel() const override { return 14.1f; }
-    StringView GetName() const override { return "UIManager"; }
+    virtual Float GetLevel() const override
+    {
+        return 14.1f;
+    }
+    virtual StringView GetName() const override { return "UIManager"; }
 
     static void DrawAll();
     static void AddWindow(ImGuiDrawWindow *w);
@@ -40,29 +43,39 @@ public:
         return static_cast<T *>(GetWindow(T::GetStaticType()));
     }
 
-    template<typename T>
+    template <typename T>
         requires IsBaseOf<ImGuiDrawWindow, T>
-    static T *CreateOrActivateWindow(bool silent = false) {
-        auto &self = GetByRef();
-        if constexpr (SameAs<T, ViewportWindow>) {
-            if (self.active_viewport_window_) {
+    static T* CreateOrActivateWindow(bool silent = false)
+    {
+        auto& self = GetByRef();
+        if constexpr (SameAs<T, ViewportWindow>)
+        {
+            if (self.active_viewport_window_)
+            {
                 self.active_viewport_window_->SetVisible(true);
-            } else {
+            }
+            else
+            {
                 self.active_viewport_window_ = CreateNewObject<ViewportWindow>();
             }
             return self.active_viewport_window_;
-        } else {
-            const Type *window_type = T::GetStaticType();
-            for (auto &pair: self.windows_) {
-                auto *w = pair.second;
-                if (w->GetType() == window_type) {
-                    if (!silent) {
+        }
+        else
+        {
+            const Type* window_type = T::GetStaticType();
+            for (auto& pair : self.windows_)
+            {
+                auto* w = pair.second;
+                if (w->GetType() == window_type)
+                {
+                    if (!silent)
+                    {
                         w->SetVisible(true);
                     }
-                    return static_cast<T *>(w);
+                    return static_cast<T*>(w);
                 }
             }
-            T *rtn = static_cast<T *>(CreateNewObject<T>());
+            T* rtn = static_cast<T*>(CreateNewObject<T>());
             if (silent)
                 rtn->SetVisible(false);
             AddWindow(rtn);
@@ -70,8 +83,8 @@ public:
         }
     }
 
-    void Startup() override;
-    void Shutdown() override;
+    virtual void Startup() override;
+    virtual void Shutdown() override;
 
 private:
     Map<StringView, ImGuiDrawWindow *> windows_;
