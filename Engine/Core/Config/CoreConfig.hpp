@@ -12,13 +12,13 @@ struct ESTRUCT() Version
     GENERATED_BODY(Version)
 
     EFIELD()
-    int Major;
+    Int32 Major;
 
     EFIELD()
-    int Minor;
+    Int32 Minor;
 
     EFIELD()
-    int Patch;
+    Int32 Patch;
 
     bool operator==(const Version& o) const
     {

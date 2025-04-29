@@ -6,19 +6,29 @@
 static inline UInt64 g_delegate_id_counter = 0;
 
 // TDelegate是一个带Id的TFunction wrapper
-template<typename ReturnT, typename... ArgumentTypes>
-struct Delegate {
+template <typename ReturnT, typename... ArgumentTypes>
+struct Delegate
+{
     using ReturnType = ReturnT;
 
-    explicit Delegate(Function<ReturnT(ArgumentTypes...)> &&function) : function_(Move(function)), id_(++g_delegate_id_counter) {}
+    explicit Delegate(Function<ReturnT(ArgumentTypes...)>&& function) : function_(Move(function)), id_(++g_delegate_id_counter)
+    {
+    }
 
     Delegate() = default;
 
-    Delegate(Delegate &&other) noexcept : function_(Move(other.function_)), id_(other.id_) { other.id_ = 0; }
-    Delegate(const Delegate &other) : function_(other.function_), id_(other.id_) {}
+    Delegate(Delegate&& other) noexcept : function_(Move(other.function_)), id_(other.id_)
+    {
+        other.id_ = 0;
+    }
+    Delegate(const Delegate& other) : function_(other.function_), id_(other.id_)
+    {
+    }
 
-    Delegate &operator=(Delegate &&other) noexcept {
-        if (this != &other) {
+    Delegate& operator=(Delegate&& other) noexcept
+    {
+        if (this != &other)
+        {
             function_ = Move(other.function_);
             id_ = other.id_;
             other.id_ = 0;
@@ -26,31 +36,50 @@ struct Delegate {
         return *this;
     }
 
-    bool operator==(const Delegate &other) const { return id_ == other.id_; }
+    bool operator==(const Delegate& other) const
+    {
+        return id_ == other.id_;
+    }
 
-    UInt64 GetID() const { return id_; }
+    UInt64 GetID() const
+    {
+        return id_;
+    }
 
-    void Unbind() {
+    void Unbind()
+    {
         function_ = {};
         id_ = 0;
     }
 
-    bool IsValid() const { return id_ != 0; }
-    bool HasBound() const { return static_cast<bool>(function_); }
+    bool IsValid() const
+    {
+        return id_ != 0;
+    }
+    bool HasBound() const
+    {
+        return static_cast<bool>(function_);
+    }
 
-    void Bind(Function<ReturnT(ArgumentTypes...)> &&function) {
+    void Bind(Function<ReturnT(ArgumentTypes...)>&& function)
+    {
         DebugAssert(!HasBound(), "Delegate is already bound, rebinding...");
         function_ = Move(function);
         // 重新绑定进行绑定则生成新的id
         id_ = ++g_delegate_id_counter;
     }
 
-    ReturnT Invoke(ArgumentTypes &&...args) {
-        if (HasBound()) {
+    ReturnT Invoke(ArgumentTypes&&... args)
+    {
+        if (HasBound())
+        {
             return function_(Forward<ArgumentTypes>(args)...);
-        } else {
+        }
+        else
+        {
             Log(Warn) << String::Format("Delegate {} is not bound, invoke failed. return {{}} if there needs a return value.", GetID());
-            if constexpr (!SameAs<ReturnT, void>) {
+            if constexpr (!Traits::SameAs<ReturnT, void>)
+            {
                 return {};
             }
         }
@@ -61,47 +90,67 @@ private:
     UInt64 id_{0};
 };
 
-template<typename ReturnT, typename... ArgumentArgs>
-struct Event {
+template <typename ReturnT, typename... ArgumentArgs>
+struct Event
+{
     using ReturnType = ReturnT;
     using DelegateType = Delegate<ReturnType, ArgumentArgs...>;
 
-    Event() : delegate_() {}
+    Event() : delegate_()
+    {
+    }
 
-    void Bind(DelegateType &&delegate) {
+    void Bind(DelegateType&& delegate)
+    {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
         delegate_ = Move(delegate);
     }
 
-    void Bind(ReturnType (*func)(ArgumentArgs...)) {
+    void Bind(ReturnType (*func)(ArgumentArgs...))
+    {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
         delegate_ = Move(DelegateType(func));
     }
 
-    template<typename Class>
-    void Bind(Class *obj, ReturnType (Class::*func)(ArgumentArgs...)) {
+    template <typename Class>
+    void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...))
+    {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(DelegateType([obj, func](ArgumentArgs &&...args) { return (obj->*func)(Move(args)...); }));
+        delegate_ = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
     }
 
-    template<typename Class>
-    void Bind(Class *obj, ReturnType (Class::*func)(ArgumentArgs...) const) {
+    template <typename Class>
+    void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
+    {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(DelegateType([obj, func](ArgumentArgs &&...args) { return (obj->*func)(Move(args)...); }));
+        delegate_ = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
     }
 
-    void Unbind() { delegate_.Unbind(); }
+    void Unbind()
+    {
+        delegate_.Unbind();
+    }
 
-    bool HasBound() const { return delegate_.HasBound(); }
+    bool HasBound() const
+    {
+        return delegate_.HasBound();
+    }
 
-    ReturnType Invoke(ArgumentArgs &&...args) { return delegate_.Invoke(Move(args)...); }
+    ReturnType Invoke(ArgumentArgs&&... args)
+    {
+        return delegate_.Invoke(Move(args)...);
+    }
 
-    ReturnType InvokeOnce(ArgumentArgs &&...args) {
-        if constexpr (SameAs<ReturnT, void>) {
+    ReturnType InvokeOnce(ArgumentArgs&&... args)
+    {
+        if constexpr (Traits::SameAs<ReturnT, void>)
+        {
             delegate_.Invoke(Move(args)...);
             Unbind();
             return;
-        } else {
+        }
+        else
+        {
             ReturnType ret = delegate_.Invoke(Move(args)...);
             Unbind();
             return ret;
@@ -116,11 +165,12 @@ private:
  * 多播委托
  * @note 顺序是乱的, 不能让逻辑依赖绑定顺序！！！
  */
-template<typename ReturnT, typename... ArgumentArgs>
-struct MulticastEvent {
+template <typename ReturnT, typename... ArgumentArgs>
+struct MulticastEvent
+{
     using ReturnType = ReturnT;
     using DelegateType = Delegate<ReturnType, ArgumentArgs...>;
-    static_assert(SameAs<ReturnType, void>, "MulticastEvent can not return value");
+    static_assert(Traits::SameAs<ReturnType, void>, "MulticastEvent can not return value");
 
     /**
      * 为这个多播事件增加一个委托绑定
@@ -130,34 +180,42 @@ struct MulticastEvent {
      * @param delegate 要进行绑定的委托
      * @return
      */
-    UInt64 AddBind(DelegateType &&delegate) {
-        if (delegates_.Contains(delegate)) {
+    UInt64 AddBind(DelegateType&& delegate)
+    {
+        if (delegates_.Contains(delegate))
+        {
             return delegate.GetID();
         }
         delegates_.Emplace(Move(delegate));
         return delegates_.Last().GetID();
     }
 
-    UInt64 AddBind(ReturnType (*func)(ArgumentArgs...)) {
+    UInt64 AddBind(ReturnType (*func)(ArgumentArgs...))
+    {
         DelegateType delegate(func);
         return AddBind(Move(delegate));
     }
 
-    template<typename Class>
-    UInt64 AddBind(Class *obj, ReturnType (Class::*func)(ArgumentArgs...)) {
+    template <typename Class>
+    UInt64 AddBind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...))
+    {
         DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args...); });
         return AddBind(Move(delegate));
     }
 
-    template<typename Class>
-    UInt64 AddBind(Class *obj, ReturnType (Class::*func)(ArgumentArgs...) const) {
+    template <typename Class>
+    UInt64 AddBind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
+    {
         DelegateType delegate([obj, func](ArgumentArgs... args) { return (obj->*func)(args...); });
         return AddBind(Move(delegate));
     }
 
-    bool RemoveBind(UInt64 id) {
-        for (int i = 0; i < delegates_.Count(); ++i) {
-            if (delegates_[i].GetID() == id) {
+    bool RemoveBind(UInt64 id)
+    {
+        for (int i = 0; i < delegates_.Count(); ++i)
+        {
+            if (delegates_[i].GetID() == id)
+            {
                 delegates_.FastRemoveAt(i);
                 return true;
             }
@@ -165,22 +223,27 @@ struct MulticastEvent {
         return false;
     }
 
-    void ClearBind() { delegates_.Clear(); }
-
-    template<typename... Args>
-    void Invoke(Args &&...args)
-        requires CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+    void ClearBind()
     {
-        for (auto &delegate: delegates_) {
+        delegates_.Clear();
+    }
+
+    template <typename... Args>
+    void Invoke(Args&&... args)
+        requires Traits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+    {
+        for (auto& delegate : delegates_)
+        {
             delegate.Invoke(Forward<ArgumentArgs>(args)...);
         }
     }
 
-    template<typename... Args>
-    void InvokeOnce(Args &&...args)
-        requires CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+    template <typename... Args>
+    void InvokeOnce(Args&&... args)
+        requires Traits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
     {
-        for (auto &delegate: delegates_) {
+        for (auto& delegate : delegates_)
+        {
             delegate.Invoke(Forward<ArgumentArgs>(args)...);
         }
         ClearBind();

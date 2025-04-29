@@ -95,6 +95,7 @@ public static class CodeGenerator
         options.Defines.Add("ENABLE_REFLECTION");
         options.ParseMacros = true;
         var compilation = CppParser.ParseFiles(files, options);
+        bool hasCompileErrors = false;
         if (compilation.HasErrors)
         {
             Console.WriteLine("[EHT] 代码生成错误:");
@@ -103,10 +104,12 @@ public static class CodeGenerator
                 if (diag.Type == CppLogMessageType.Error)
                 {
                     Console.WriteLine(diag);
-                    return false;
+                    hasCompileErrors = true;
                 }
             }
         }
+
+        if (hasCompileErrors) return false;
 
         if (Generate(compilation, projectMap))
         {
@@ -315,29 +318,7 @@ public static class CodeGenerator
 
             if (!skipSerialization)
             {
-                if (key.Type.FullName is "Int8" or "Int16" or "Int32" or "Int64" or "UInt8" or "UInt16" or "UInt32"
-                    or "UInt64" or "Float" or "Double" // aliased type
-                    or "float" or "double")
-                {
-                    builder.AppendLine($"Archive.WriteNumber(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "Bool" or "bool")
-                {
-                    builder.AppendLine($"Archive.WriteBool(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "String")
-                {
-                    builder.AppendLine($"Archive.WriteString(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "StringView")
-                {
-                    Console.WriteLine("StringView不可被序列化");
-                    throw new Exception("StringView不可被序列化");
-                }
-                else
-                {
-                    builder.AppendLine($"Archive.WriteType(\"{key.Name}\", this->{key.Name});");
-                }
+                builder.AppendLine($"Archive.WriteType(\"{key.Name}\", this->{key.Name});");
             }
         }
     }
@@ -360,29 +341,7 @@ public static class CodeGenerator
 
             if (!skipSerialization)
             {
-                if (key.Type.FullName is "Int8" or "Int16" or "Int32" or "Int64" or "UInt8" or "UInt16" or "UInt32"
-                    or "UInt64" or "Float" or "Double" // aliased type
-                    or "float" or "double")
-                {
-                    builder.AppendLine($"Archive.ReadNumber(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "Bool" or "bool")
-                {
-                    builder.AppendLine($"Archive.ReadBool(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "String")
-                {
-                    builder.AppendLine($"Archive.ReadString(\"{key.Name}\", this->{key.Name});");
-                }
-                else if (key.Type.FullName is "StringView")
-                {
-                    Console.WriteLine("StringView不可被序列化");
-                    throw new Exception("StringView不可被序列化");
-                }
-                else
-                {
-                    builder.AppendLine($"Archive.ReadType(\"{key.Name}\", this->{key.Name});");
-                }
+                builder.AppendLine($"Archive.ReadType(\"{key.Name}\", this->{key.Name});");
             }
         }
     }
@@ -448,7 +407,7 @@ public static class CodeGenerator
 
             // class只能用继承自Object, 需要用虚函数
             headerContent.AppendLine("virtual void Serialization_Load(InputArchive& Archive); \\");
-            headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive); \\");
+            headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive) const; \\");
 
             headerContent.AppendLine(
                 $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
@@ -501,7 +460,7 @@ public static class CodeGenerator
             headerContent.AppendLine($"}}; \\");
             // struct不继承任何类型, 不使用虚函数
             headerContent.AppendLine("void Serialization_Load(InputArchive& Archive); \\");
-            headerContent.AppendLine("void Serialization_Save(OutputArchive& Archive); \\");
+            headerContent.AppendLine("void Serialization_Save(OutputArchive& Archive) const; \\");
             headerContent.AppendLine(
                 $"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
             if (_class.Value.ContainsKey("Abstract"))
@@ -510,6 +469,10 @@ public static class CodeGenerator
                 return false;
             }
 
+            headerContent.AppendLine(
+                $"static void ConstructSelf(void* Self) {{ new (Self) {_class.Key.Name}(); }} \\");
+            headerContent.AppendLine(
+                $"static void DestructSelf(void* Self) {{ static_cast<{_class.Key.Name}*>(Self)->~{_class.Key.Name}(); }} \\");
             headerContent.AppendLine(
                 $"const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
             headerContent.AppendLine(
@@ -622,7 +585,8 @@ public static class CodeGenerator
                 GenerateClassFieldSerializationLoadCode(source_content, allReflectedFields);
                 source_content.AppendLine($"}}");
 
-                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
+                source_content.AppendLine(
+                    $"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) const {{");
                 if (hasValidSuper)
                 {
                     source_content.AppendLine("Super::Serialization_Save(Archive);");
@@ -748,7 +712,8 @@ public static class CodeGenerator
                 GenerateClassFieldSerializationLoadCode(source_content, allReflectedFields);
                 source_content.AppendLine($"}}");
 
-                source_content.AppendLine($"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) {{");
+                source_content.AppendLine(
+                    $"void {_class.Key.FullName}::Serialization_Save(OutputArchive& Archive) const {{");
                 if (hasBases)
                 {
                     source_content.AppendLine("Super::Serialization_Save(Archive);");

@@ -137,14 +137,14 @@ struct Math
     template <typename T>
     static T Degree(T InRadians)
     {
-        static_assert(SameAs<T, float> || SameAs<T, double>, "only float or double supported");
+        static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "only float or double supported");
         return static_cast<T>(InRadians * 180.0 / MathConstants::PI<T>());
     }
 
     template <typename T>
     static T Radians(T InDegree)
     {
-        static_assert(SameAs<T, float> || SameAs<T, double>, "only float or double supported");
+        static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "only float or double supported");
         return static_cast<T>(InDegree * MathConstants::PI<T>() / 180.0);
     }
 };

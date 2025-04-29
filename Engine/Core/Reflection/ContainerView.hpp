@@ -57,7 +57,7 @@ public:
 template<typename ClassT, typename T, template<typename...> typename Container>
 class DynamicArrayView : public SequentialContainerView {
 public:
-    static_assert(!IsReference<T>, "T must not be a reference, could be Ref<T> instead");
+    static_assert(!Traits::IsReference<T>, "T must not be a reference, could be Ref<T> instead");
     using Iterator = typename Container<T>::iterator;
 
     explicit DynamicArrayView(Container<T> ClassT::* container, const Type* outer) : container_(container), outer_(outer)
@@ -87,7 +87,7 @@ public:
         {
             return false;
         }
-        if constexpr (IsSame<Container<T>, Array<T>>)
+        if constexpr (Traits::IsSame<Container<T>, Array<T>>)
         {
             (instance_->*container_).Add(*element.As<T>());
             return true;

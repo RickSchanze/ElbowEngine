@@ -363,9 +363,9 @@ VECTOR4_REFL_CONSTRUCTOR(Vector4i)
 template <typename T>
 const Type* Vector2<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Vector2f>();
-    if constexpr (SameAs<T, Int32>)
+    if constexpr (Traits::SameAs<T, Int32>)
         return TypeOf<Vector2i>();
     return nullptr;
 }
@@ -379,9 +379,9 @@ Vector4<T>::Vector4(const Vector3<T>& Other, T W) : X(Other.X), Y(Other.Y), Z(Ot
 template <typename T>
 const Type* Vector3<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Vector3f>();
-    if constexpr (SameAs<T, Int32>)
+    if constexpr (Traits::SameAs<T, Int32>)
         return TypeOf<Vector3i>();
     return nullptr;
 }
@@ -395,9 +395,9 @@ Vector3<T>::Vector3(const Vector2<T>& Vec) : X(Vec.X), Y(Vec.Y), Z(0)
 template <typename T>
 const Type* Vector4<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Vector4f>();
-    if constexpr (SameAs<T, Int32>)
+    if constexpr (Traits::SameAs<T, Int32>)
         return TypeOf<Vector4i>();
     return nullptr;
 }

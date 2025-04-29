@@ -3,12 +3,11 @@
 //
 
 #pragma once
-#include "Core/Math/Types.hpp"
+#include "Core/Collection/StaticArray.hpp"
+#include "Core/Math/Vector.hpp"
 #include "Core/Misc/SharedPtr.hpp"
 #include "Core/Object/ObjectPtr.hpp"
 #include "RenderPipeline.hpp"
-#include "Core/Collection/StaticArray.hpp"
-
 
 class Texture2D;
 class StaticMeshComponent;
@@ -21,46 +20,45 @@ class Buffer;
 class RenderTexture;
 class Material;
 
-
 class PBRRenderPipeline : public RenderPipeline
 {
 public:
     friend class PBRRenderPipelineSettingWindow;
 
-    void Render(RHI::CommandBuffer &cmd, const RenderParams &params) override;
+    virtual void Render(RHI::CommandBuffer& cmd, const RenderParams& params) override;
 
-    void Build() override;
+    virtual void Build() override;
 
-    void Clean() override;
+    virtual void Clean() override;
 
-    bool IsReady() const override;
+    virtual bool IsReady() const override;
 
-    void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height) override;
+    virtual void OnWindowResized(PlatformWindow* window, Int32 width, Int32 height) override;
 
-    void PerformMeshPass(RHI::CommandBuffer &cmd) const;
+    void PerformMeshPass(RHI::CommandBuffer& cmd) const;
 
-    void PerformSkyboxPass(RHI::CommandBuffer &cmd);
+    void PerformSkyboxPass(RHI::CommandBuffer& cmd);
 
-    void PerformColorTransformPass(RHI::CommandBuffer &cmd, RHI::ImageView *target, Vector2f render_size) const;
+    void PerformColorTransformPass(RHI::CommandBuffer& cmd, RHI::ImageView* target, Vector2f render_size) const;
 
-    void PerformImGuiPass(RHI::CommandBuffer &cmd, const RenderParams &params);
+    void PerformImGuiPass(RHI::CommandBuffer& cmd, const RenderParams& params);
 
-    void PerformShadowPass(RHI::CommandBuffer &Cmd);
+    void PerformShadowPass(RHI::CommandBuffer& Cmd);
 
-    ImGuiDrawWindow *GetSettingWindow() override;
+    virtual ImGuiDrawWindow* GetSettingWindow() override;
 
 private:
-    Material *basepass_material_ = nullptr;
-    Material *skysphere_pass_material_ = nullptr;
-    Material *color_transform_pass_material_ = nullptr;
-    Texture2D *skybox_texture_ = nullptr;
+    Material* mBasePassMaterial = nullptr;
+    Material* skysphere_pass_material_ = nullptr;
+    Material* color_transform_pass_material_ = nullptr;
+    Texture2D* skybox_texture_ = nullptr;
     SharedPtr<RenderTexture> depth_target_;
     SharedPtr<RenderTexture> hdr_color_;
     SharedPtr<RenderTexture> sdr_color_;
 
     SharedPtr<RenderTexture> mShadowBox;
     SharedPtr<RenderTexture> mShadowPassDepth;
-    Material *mShadowPassMaterial = nullptr;
+    Material* mShadowPassMaterial = nullptr;
     StaticArray<SharedPtr<RHI::ImageView>, 6> mCubeViews;
     StaticArray<SharedPtr<RHI::ImageView>, 6> mShadowDepthCubeViews;
 

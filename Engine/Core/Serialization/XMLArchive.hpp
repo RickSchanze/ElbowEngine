@@ -33,42 +33,42 @@ public:
     virtual void WriteArraySize(UInt64 InSize) override;
     virtual void WriteMapSize(UInt64 InSize) override;
 
-    virtual void WriteNumber(StringView InName, Int8& Data) override;
-    virtual void WriteNumber(StringView InName, Int16& Data) override;
-    virtual void WriteNumber(StringView InName, Int32& Data) override;
-    virtual void WriteNumber(StringView InName, Int64& Data) override;
-    virtual void WriteNumber(StringView InName, UInt8& Data) override;
-    virtual void WriteNumber(StringView InName, UInt16& Data) override;
-    virtual void WriteNumber(StringView InName, UInt32& Data) override;
-    virtual void WriteNumber(StringView InName, UInt64& Data) override;
-    virtual void WriteNumber(StringView InName, Float& Data) override;
-    virtual void WriteNumber(StringView InName, Double& Data) override;
-    virtual void WriteNumber(Int8& Data) override;
-    virtual void WriteNumber(Int16& Data) override;
-    virtual void WriteNumber(Int32& Data) override;
-    virtual void WriteNumber(Int64& Data) override;
-    virtual void WriteNumber(UInt8& Data) override;
-    virtual void WriteNumber(UInt16& Data) override;
-    virtual void WriteNumber(UInt32& Data) override;
-    virtual void WriteNumber(UInt64& Data) override;
-    virtual void WriteNumber(Float& Data) override;
-    virtual void WriteNumber(Double& Data) override;
+    virtual void WriteNumber(StringView InName, const Int8& Data) override;
+    virtual void WriteNumber(StringView InName, const Int16& Data) override;
+    virtual void WriteNumber(StringView InName, const Int32& Data) override;
+    virtual void WriteNumber(StringView InName, const Int64& Data) override;
+    virtual void WriteNumber(StringView InName, const UInt8& Data) override;
+    virtual void WriteNumber(StringView InName, const UInt16& Data) override;
+    virtual void WriteNumber(StringView InName, const UInt32& Data) override;
+    virtual void WriteNumber(StringView InName, const UInt64& Data) override;
+    virtual void WriteNumber(StringView InName, const Float& Data) override;
+    virtual void WriteNumber(StringView InName, const Double& Data) override;
+    virtual void WriteNumber(const Int8& Data) override;
+    virtual void WriteNumber(const Int16& Data) override;
+    virtual void WriteNumber(const Int32& Data) override;
+    virtual void WriteNumber(const Int64& Data) override;
+    virtual void WriteNumber(const UInt8& Data) override;
+    virtual void WriteNumber(const UInt16& Data) override;
+    virtual void WriteNumber(const UInt32& Data) override;
+    virtual void WriteNumber(const UInt64& Data) override;
+    virtual void WriteNumber(const Float& Data) override;
+    virtual void WriteNumber(const Double& Data) override;
 
-    virtual void WriteBool(StringView InName, bool& Data) override;
-    virtual void WriteBool(bool& Data) override;
+    virtual void WriteBool(StringView InName, const bool& Data) override;
+    virtual void WriteBool(const bool& Data) override;
 
-    virtual void WriteString(StringView InName, String& Data) override;
-    virtual void WriteString(String& Data) override;
+    virtual void WriteString(StringView InName, const String& Data) override;
+    virtual void WriteString(const String& Data) override;
 
     template<typename T>
-    void Serialize(const T& InValue)
+    ELBOW_FORCE_INLINE void Serialize(const T& InValue)
     {
         // 先写入类型元信息
         SetNextScopeName("TypeMeta");
         BeginScope();
         const Type* MyType = TypeOf<T>();
-        String TypeName = MyType->GetName();
-        UInt64 TypeHash = MyType->GetHashCode();
+        const String TypeName = MyType->GetName();
+        const UInt64 TypeHash = MyType->GetHashCode();
         WriteString("TypeName", TypeName);
         WriteNumber("TypeHash", TypeHash);
         EndScope();

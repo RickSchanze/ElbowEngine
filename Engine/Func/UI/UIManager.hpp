@@ -9,46 +9,50 @@
 #include "ImGuiDrawWindow.hpp"
 #include "ViewportWindow.hpp"
 
-
 struct Type;
 class ViewportWindow;
 class GlobalDockingWindow;
 class ImGuiDrawWindow;
 class Window;
-class UIManager : public Manager<UIManager> {
+class UIManager : public Manager<UIManager>
+{
 public:
     virtual Float GetLevel() const override
     {
         return 14.1f;
     }
-    virtual StringView GetName() const override { return "UIManager"; }
+    virtual StringView GetName() const override
+    {
+        return "UIManager";
+    }
 
     static void DrawAll();
-    static void AddWindow(ImGuiDrawWindow *w);
-    static void RemoveWindow(ImGuiDrawWindow *w);
-    static ViewportWindow *GetActiveViewportWindow();
+    static void AddWindow(ImGuiDrawWindow* w);
+    static void RemoveWindow(ImGuiDrawWindow* w);
+    static ViewportWindow* GetActiveViewportWindow();
     static void ActivateViewportWindow();
     static bool HasActiveViewportWindow();
     // 这里可见默认为true
-    static ImGuiDrawWindow *CreateOrActivateWindow(const Type *t);
+    static ImGuiDrawWindow* CreateOrActivateWindow(const Type* t);
     /**
      * @param t
      * @param silent 创建窗口时是否可见?
      * @return
      */
-    static ImGuiDrawWindow *CreateOrActivateWindow(const Type *t, bool silent);
-    static ImGuiDrawWindow *GetWindow(const Type *t);
-    template<typename T>
-    static T *GetWindow() {
-        return static_cast<T *>(GetWindow(T::GetStaticType()));
+    static ImGuiDrawWindow* CreateOrActivateWindow(const Type* t, bool silent);
+    static ImGuiDrawWindow* GetWindow(const Type* t);
+    template <typename T>
+    static T* GetWindow()
+    {
+        return static_cast<T*>(GetWindow(T::GetStaticType()));
     }
 
     template <typename T>
-        requires IsBaseOf<ImGuiDrawWindow, T>
+        requires Traits::IsBaseOf<ImGuiDrawWindow, T>
     static T* CreateOrActivateWindow(bool silent = false)
     {
         auto& self = GetByRef();
-        if constexpr (SameAs<T, ViewportWindow>)
+        if constexpr (Traits::SameAs<T, ViewportWindow>)
         {
             if (self.active_viewport_window_)
             {
@@ -63,16 +67,15 @@ public:
         else
         {
             const Type* window_type = T::GetStaticType();
-            for (auto& pair : self.windows_)
+            for (auto& Window : self.windows_ | std::views::values)
             {
-                auto* w = pair.second;
-                if (w->GetType() == window_type)
+                if (Window->GetType() == window_type)
                 {
                     if (!silent)
                     {
-                        w->SetVisible(true);
+                        Window->SetVisible(true);
                     }
-                    return static_cast<T*>(w);
+                    return static_cast<T*>(Window);
                 }
             }
             T* rtn = static_cast<T*>(CreateNewObject<T>());
@@ -87,7 +90,7 @@ public:
     virtual void Shutdown() override;
 
 private:
-    Map<StringView, ImGuiDrawWindow *> windows_;
-    GlobalDockingWindow *global_docking_window_ = nullptr;
-    ViewportWindow *active_viewport_window_ = nullptr;
+    Map<StringView, ImGuiDrawWindow*> windows_;
+    GlobalDockingWindow* global_docking_window_ = nullptr;
+    ViewportWindow* active_viewport_window_ = nullptr;
 };

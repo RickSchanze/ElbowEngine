@@ -15,17 +15,17 @@ public:
     template<typename T>
         requires(!std::is_convertible_v<T, const char *>)
     static void Concat(std::ostringstream &stream, const T &t) {
-        static_assert(!SameAs<Pure<T>, StringView>, "Did you forget to call operator *?");
-        static_assert(!SameAs<Pure<T>, String>, "Did you forget to call operator *?");
-        if constexpr (SameAs<Pure<T>, bool>) {
+        static_assert(!Traits::SameAs<Pure<T>, StringView>, "Did you forget to call operator *?");
+        static_assert(!Traits::SameAs<Pure<T>, String>, "Did you forget to call operator *?");
+        if constexpr (Traits::SameAs<Pure<T>, bool>) {
             stream << (t ? "true" : "false");
         } else if constexpr (std::disjunction_v<std::is_arithmetic<Pure<T>>>) {
             stream << t;
         } else if constexpr (std::is_pointer_v<Pure<T>>) {
             stream << std::hex << std::showbase << t;
-        } else if constexpr (CToStringAble<Pure<T>>) {
+        } else if constexpr (Traits::CToStringAble<Pure<T>>) {
             stream << *t.ToString();
-        } else if constexpr (IsEnum<Pure<T>>) {
+        } else if constexpr (Traits::IsEnum<Pure<T>>) {
             stream << std::to_underlying(t);
         } else {
             static_assert(false, "T Can not Stringify.");

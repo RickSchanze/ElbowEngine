@@ -45,7 +45,7 @@ struct Ext_AddParent
 };
 
 template <typename ClassT, typename FiledT>
-    requires(!IsEnum<ClassT>)
+    requires(!Traits::IsEnum<ClassT>)
 struct Ext_AddField
 {
     Ext_AddField(const StringView name, FiledT ClassT::* class_field, UInt64 offset, const Type* outer_t)
@@ -140,11 +140,11 @@ Ext_AddField<ClassT, FiledT> AddField(const StringView name, FiledT ClassT::* cl
 
 inline Ext_AddEnumField AddEnumField(const StringView name, Int32 value)
 {
-    return Ext_AddEnumField(name, value, nullptr);
+    return {name, value, nullptr};
 }
 
 template <typename T>
-    requires IsEnum<T>
+    requires Traits::IsEnum<T>
 Ext_AddEnumField AddEnumField(const StringView name, T enum_val)
 {
     return Ext_AddEnumField(name, std::to_underlying(enum_val), nullptr);

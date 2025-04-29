@@ -46,7 +46,7 @@ public:
     static Object *LoadFromPath(StringView path);
 
     template<typename T>
-        requires IsBaseOf<Object, T>
+        requires Traits::IsBaseOf<Object, T>
     static T *LoadFromPath(StringView path) {
         return static_cast<T *>(LoadFromPath(path));
     }
@@ -58,7 +58,7 @@ public:
     static exec::ExecFuture<ObjectHandle> LoadOrImportAsync(StringView path);
     static Object *LoadOrImport(StringView path);
 
-    template<typename T> requires IsBaseOf<Object, T>
+    template<typename T> requires Traits::IsBaseOf<Object, T>
     static T *LoadOrImportT(StringView path) {
         return static_cast<T *>(LoadOrImport(path));
     }
@@ -137,7 +137,7 @@ void AssetDataBase::InsertMeta(const T &meta) {
 
 template<typename T>
 void AssetDataBase::UpdateMeta(const T &meta) {
-    if constexpr (SameAs<T, Texture2DMeta>) {
+    if constexpr (Traits::SameAs<T, Texture2DMeta>) {
         auto &self = GetByRef();
         const Type *meta_type = TypeOf<T>();
         if (!self.tables_.Contains(meta_type))

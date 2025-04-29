@@ -7,7 +7,6 @@
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/Config/CoreConfig.hpp"
 #include "Core/FileSystem/Path.hpp"
-#include "Core/Math/MathExtensions.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
 #include "Core/TypeAlias.hpp"

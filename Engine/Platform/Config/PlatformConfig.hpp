@@ -9,43 +9,47 @@
 #include "Platform/RHI/Enums.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 
+#include GEN_HEADER("PlatformConfig.generated.hpp")
+
 class ECLASS(Config = "Config/Platform/PlatformConfig.cfg") PlatformConfig : public IConfig
 {
-    EFIELD()
-    DEFINE_CFG_ITEM(bool, enable_multithread_render, EnableMultithreadRender, true)
-    EFIELD()
-    DEFINE_CFG_ITEM(bool, enable_validation_layer, EnableValidationLayer, true)
-    EFIELD()
-    DEFINE_CFG_ITEM(RHI::PresentMode, present_mode, PresentMode, RHI::PresentMode::VSync);
+    GENERATED_BODY(PlatformConfig)
 
     EFIELD()
-    DEFINE_CFG_ITEM(UInt32, swapchain_image_count, SwapchainImageCount, 2);
+    DEFINE_CFG_ITEM(bool, mEnableMultithreadRender, EnableMultithreadRender, true)
 
     EFIELD()
-    DEFINE_CFG_ITEM(Vector2f, default_window_size, DefaultWindowSize, Vector2f(1920, 1080));
+    DEFINE_CFG_ITEM(bool, mEnableValidationLayer, EnableValidationLayer, true)
 
     EFIELD()
-    DEFINE_CFG_ITEM(RHI::GraphicsAPI, api, GraphicsAPI, RHI::GraphicsAPI::Vulkan);
+    DEFINE_CFG_ITEM(RHI::PresentMode, mPresentMode, PresentMode, RHI::PresentMode::VSync);
 
     EFIELD()
-    DEFINE_CFG_ITEM(WindowLib, window_lib, WindowLib, WindowLib::GLFW);
+    DEFINE_CFG_ITEM(UInt32, mSwapchainImageCount, SwapchainImageCount, 2);
 
     EFIELD()
-    DEFINE_CFG_ITEM(Int32, window_flag, WindowFlag, 0);
+    DEFINE_CFG_ITEM(Vector2f, mDefaultWindowSize, DefaultWindowSize, Vector2f(1920, 1080));
 
     EFIELD()
-    DEFINE_CFG_ITEM(UInt8, frame_count_in_flight, FrameCountInFlight, 2);
-
-    #if USE_IMGUI
-    EFIELD()
-    DEFINE_CFG_ITEM(UInt32, min_imgui_image_sampler_pool_size, MinImGuiImageSamplerPoolSize, 100);
+    DEFINE_CFG_ITEM(RHI::GraphicsAPI, mGraphicsAPI, GraphicsAPI, RHI::GraphicsAPI::Vulkan);
 
     EFIELD()
-    DEFINE_CFG_ITEM(String, default_imgui_font_path, DefaultImGuiFontPath, "Assets/Font/Default.ttf");
+    DEFINE_CFG_ITEM(WindowLib, mWindowLib, WindowLib, WindowLib::GLFW);
 
     EFIELD()
-    DEFINE_CFG_ITEM(UInt32, default_imgui_font_size, DefaultImGuiFontSize, 20);
-    #endif
+    DEFINE_CFG_ITEM(Int32, mWindowFlag, WindowFlag, 0);
+
+    EFIELD()
+    DEFINE_CFG_ITEM(UInt8, mFrameCountInFlight, FrameCountInFlight, 2);
+
+    EFIELD()
+    DEFINE_CFG_ITEM(UInt32, minImGuiImageSamplerPoolSize, MinImGuiImageSamplerPoolSize, 100);
+
+    EFIELD()
+    DEFINE_CFG_ITEM(String, mDefaultImGuiFontPath, DefaultImGuiFontPath, "Assets/Font/Default.ttf");
+
+    EFIELD()
+    DEFINE_CFG_ITEM(UInt32, mDefaultImGuiFontSize, DefaultImGuiFontSize, 20);
 
 public:
     bool GetValidEnableValidationLayer() const;

@@ -60,7 +60,7 @@ public:
 
     // 启动一个Sender并返回Future, 加Async是因为他只是启动不保证完成
     template <typename SenderType>
-        requires IsBaseOf<exec::Sender, Pure<SenderType> >
+        requires Traits::IsBaseOf<exec::Sender, Pure<SenderType> >
     static Future<typename Pure<SenderType>::value_type> ScheduleFutureAsync(
         SenderType &&sender, const NamedThread named_thread = NamedThread::Count,
         bool immediate_exec_on_game_thread = false)
@@ -74,7 +74,7 @@ public:
     }
 
     template <typename F, typename... Args>
-        requires(SameAs<typename exec::WhenAllExecFutureSender<Pure<Args>...>::value_type, FunctionArgsAsTuple<Pure<
+        requires(Traits::SameAs<typename exec::WhenAllExecFutureSender<Pure<Args>...>::value_type, Traits::FunctionArgsAsTuple<Pure<
                             F> > >)
     static void WhenAllExecFuturesCompleted(const NamedThread thread, F &&func, Args &&... args)
     {

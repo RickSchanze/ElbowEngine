@@ -9,13 +9,13 @@ struct Rotator;
 template <typename T>
 struct Quaternion
 {
-    static_assert(SameAs<T, Float> || SameAs<T, Double>, "Quaternion only support float or double type");
+    static_assert(Traits::SameAs<T, Float> || Traits::SameAs<T, Double>, "Quaternion only support float or double type");
     typedef Quaternion ThisStruct;
 
-    T W;
-    T X;
-    T Y;
-    T Z;
+    T W{0};
+    T X{0};
+    T Y{0};
+    T Z{0};
 
     Quaternion(const Rotator<T>& InRot);
 
@@ -47,22 +47,13 @@ struct Quaternion
 
     const Type* GetType();
 
-    static Quaternion Identity();
+    ELBOW_FORCE_INLINE static Quaternion Identity();
 
     Quaternion() = default;
 
     Quaternion(T W, T X, T Y, T Z) : W(W), X(X), Y(Y), Z(Z)
     {
     }
-
-    Vector3<T> ToEulerAngle() const
-    {
-        glm::qua<T> q(X, Y, Z, W);
-        glm::vec<3, T> ang = glm::eulerAngles(q);
-        return {ang.X, ang.Y, ang.Z};
-    }
-
-    Quaternion FromMatrix4x4(const Matrix4x4<T>& mat);
 };
 
 //
@@ -92,13 +83,12 @@ static inline Z_MathTypeRegTrigger_Quaternion Z_Registerer_MathType_Quaternion;
 template <typename T>
 const Type* Quaternion<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Quaternionf>();
-    if constexpr (SameAs<T, Double>)
+    if constexpr (Traits::SameAs<T, Double>)
         return TypeOf<Quaterniond>();
     return nullptr;
 }
-
 
 template <>
 Quaternion<float>::Quaternion(const Rotator<float>& InRot);
@@ -107,6 +97,9 @@ template <>
 Quaternion<double>::Quaternion(const Rotator<double>& InRot);
 
 template <typename T>
-Quaternion<T> Quaternion<T>::Identity()
+ELBOW_FORCE_INLINE Quaternion<T> Quaternion<T>::Identity()
 {
+    Quaternion Q{};
+    Q.W = static_cast<T>(1);
+    return Q;
 }

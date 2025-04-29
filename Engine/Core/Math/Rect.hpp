@@ -84,9 +84,9 @@ RECT2D_REFL_CONSTRUCTOR(Rect2Di)
 template <typename T>
 const Type* Rect2D<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Rect2Df>();
-    if constexpr (SameAs<T, Int32>)
+    if constexpr (Traits::SameAs<T, Int32>)
         return TypeOf<Rect2Di>();
     return nullptr;
 }

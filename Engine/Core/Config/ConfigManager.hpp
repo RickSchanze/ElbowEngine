@@ -15,7 +15,8 @@ class IConfig;
 class ConfigManager : public Manager<ConfigManager>
 {
 public:
-    template<typename T> requires IsBaseOf<IConfig, T>
+    template <typename T>
+        requires Traits::IsBaseOf<IConfig, T>
     T* GetConfig();
 
     virtual Float GetLevel() const override
@@ -34,7 +35,8 @@ private:
     Map<const Type*, IConfig*> mCachedConfigs;
 };
 
-template<typename T> requires IsBaseOf<IConfig, T>
+template <typename T>
+    requires Traits::IsBaseOf<IConfig, T>
 T* ConfigManager::GetConfig()
 {
     const Type* ConfigType = TypeOf<T>();
@@ -45,9 +47,9 @@ T* ConfigManager::GetConfig()
     }
     if (mCachedConfigs.Contains(ConfigType))
     {
-        return mCachedConfigs.Get(ConfigType);
+        return static_cast<T*>(mCachedConfigs.Get(ConfigType));
     }
-    StringView ConfigPath = ConfigType->GetAttributeValue(Type::ValueAttribute::Config);
+    const StringView ConfigPath = ConfigType->GetAttributeValue(Type::ValueAttribute::Config);
     if (!File::IsExist(ConfigPath))
     {
         VLOG_WARN("没有找到路径为", *ConfigPath, "的配置文件", *ConfigType->GetName(), "! 将会重新创建一个.");
@@ -62,9 +64,9 @@ T* ConfigManager::GetConfig()
     return nullptr;
 }
 
-template<typename T>
-    requires IsBaseOf<IConfig, T>
+template <typename T>
+    requires Traits::IsBaseOf<IConfig, T>
 T* GetConfig()
 {
-    return static_cast<T*>(ConfigManager::GetByRef().GetConfig(TypeOf<T>()));
+    return static_cast<T*>(ConfigManager::GetByRef().GetConfig<T>());
 }

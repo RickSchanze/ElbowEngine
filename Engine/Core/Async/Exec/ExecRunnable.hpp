@@ -12,12 +12,12 @@
 
 namespace exec {
 template <typename OpType>
-  requires IsBaseOf<Op, OpType>
+  requires Traits::IsBaseOf<Op, OpType>
 struct ExecRunnable final : IRunnable {
   explicit ExecRunnable(Pure<OpType>&) = delete;
 
     virtual bool Run() override {
-    if constexpr (SameAs<decltype(std::declval<Pure<OpType>>().Start()), bool>) {
+    if constexpr (Traits::SameAs<decltype(std::declval<Pure<OpType>>().Start()), bool>) {
       return op_.Start();
     } else {
       op_.Start();

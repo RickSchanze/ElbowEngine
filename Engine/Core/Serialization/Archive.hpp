@@ -3,8 +3,9 @@
 //
 
 #pragma once
-#include "Core/TypeTraits.hpp"
+#include "Core/CoreMacros.hpp"
 #include "Core/String/String.hpp"
+#include "Core/TypeTraits.hpp"
 
 class OutputArchive
 {
@@ -14,67 +15,103 @@ public:
     virtual void WriteArraySize(UInt64 InSize) = 0;
     virtual void WriteMapSize(UInt64 InSize) = 0;
 
-    virtual void WriteNumber(StringView InName, Int8& Data) = 0;
-    virtual void WriteNumber(StringView InName, Int16& Data) = 0;
-    virtual void WriteNumber(StringView InName, Int32& Data) = 0;
-    virtual void WriteNumber(StringView InName, Int64& Data) = 0;
-    virtual void WriteNumber(StringView InName, UInt8& Data) = 0;
-    virtual void WriteNumber(StringView InName, UInt16& Data) = 0;
-    virtual void WriteNumber(StringView InName, UInt32& Data) = 0;
-    virtual void WriteNumber(StringView InName, UInt64& Data) = 0;
-    virtual void WriteNumber(StringView InName, Float& Data) = 0;
-    virtual void WriteNumber(StringView InName, Double& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Int8& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Int16& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Int32& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Int64& Data) = 0;
+    virtual void WriteNumber(StringView InName, const UInt8& Data) = 0;
+    virtual void WriteNumber(StringView InName, const UInt16& Data) = 0;
+    virtual void WriteNumber(StringView InName, const UInt32& Data) = 0;
+    virtual void WriteNumber(StringView InName, const UInt64& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Float& Data) = 0;
+    virtual void WriteNumber(StringView InName, const Double& Data) = 0;
 
-    virtual void WriteNumber(Int8& Data) = 0;
-    virtual void WriteNumber(Int16& Data) = 0;
-    virtual void WriteNumber(Int32& Data) = 0;
-    virtual void WriteNumber(Int64& Data) = 0;
-    virtual void WriteNumber(UInt8& Data) = 0;
-    virtual void WriteNumber(UInt16& Data) = 0;
-    virtual void WriteNumber(UInt32& Data) = 0;
-    virtual void WriteNumber(UInt64& Data) = 0;
-    virtual void WriteNumber(Float& Data) = 0;
-    virtual void WriteNumber(Double& Data) = 0;
+    virtual void WriteNumber(const Int8& Data) = 0;
+    virtual void WriteNumber(const Int16& Data) = 0;
+    virtual void WriteNumber(const Int32& Data) = 0;
+    virtual void WriteNumber(const Int64& Data) = 0;
+    virtual void WriteNumber(const UInt8& Data) = 0;
+    virtual void WriteNumber(const UInt16& Data) = 0;
+    virtual void WriteNumber(const UInt32& Data) = 0;
+    virtual void WriteNumber(const UInt64& Data) = 0;
+    virtual void WriteNumber(const Float& Data) = 0;
+    virtual void WriteNumber(const Double& Data) = 0;
 
-    virtual void WriteBool(StringView InName, bool& Data) = 0;
-    virtual void WriteBool(bool& Data) = 0;
+    virtual void WriteBool(StringView InName, const bool& Data) = 0;
+    virtual void WriteBool(const bool& Data) = 0;
 
     // 不允许StringView序列化
-    virtual void WriteString(StringView InName, String& Data) = 0;
-    virtual void WriteString(String& Data) = 0;
+    virtual void WriteString(StringView InName, const String& Data) = 0;
+    virtual void WriteString(const String& Data) = 0;
 
     virtual void SetNextScopeName(StringView InName) = 0;
     virtual void BeginScope() = 0;
     virtual void EndScope() = 0;
 
-    template<typename T> requires (!IsEnum<T>)
-    void WriteType(StringView InName, const T& Value)
+    template <typename T>
+        requires(!Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void WriteType(const StringView InName, const T& Value)
     {
-        SetNextScopeName(InName);
-        BeginScope();
-        Value.Serialization_Save(*this);
-        EndScope();
+        static_assert(!Traits::SameAs<T, StringView>, "StringView does not support serialization!");
+        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        {
+            WriteNumber(InName, Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        {
+            WriteBool(InName, Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        {
+            WriteString(InName, Value);
+        }
+        else
+        {
+            SetNextScopeName(InName);
+            BeginScope();
+            Value.Serialization_Save(*this);
+            EndScope();
+        }
     }
 
-    template<typename T> requires (!IsEnum<T>)
-    void WriteType(const T& Value)
+    template <typename T>
+        requires(!Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void WriteType(const T& Value)
     {
-        BeginScope();
-        Value.Serialization_Save(*this);
-        EndScope();
+        static_assert(!Traits::SameAs<T, StringView>, "StringView does not support serialization!");
+        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        {
+            WriteNumber(Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        {
+            WriteBool(Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        {
+            WriteString(Value);
+        }
+        else
+        {
+            BeginScope();
+            Value.Serialization_Save(*this);
+            EndScope();
+        }
     }
 
-    template<typename T> requires (IsEnum<T>)
-    void WriteType(StringView InName, const T& Value)
+    template <typename T>
+        requires(Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void WriteType(const StringView InName, const T& Value)
     {
-        Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
+        const Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
         WriteNumber(InName, Tmp);
     }
 
-    template<typename T> requires (IsEnum<T>)
-    void WriteType(const T& Value)
+    template <typename T>
+        requires(Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void WriteType(const T& Value)
     {
-        Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
+        const Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
         WriteNumber(Tmp);
     }
 };
@@ -90,7 +127,7 @@ public:
     virtual void ReadNumber(StringView InName, Int8& OutData) = 0;
     virtual void ReadNumber(StringView InName, Int16& OutData) = 0;
     virtual void ReadNumber(StringView InName, Int32& OutData) = 0;
-    virtual void ReadNumber(StringView InName, Int64& OutData) =0;
+    virtual void ReadNumber(StringView InName, Int64& OutData) = 0;
     virtual void ReadNumber(StringView InName, UInt8& OutData) = 0;
     virtual void ReadNumber(StringView InName, UInt16& OutData) = 0;
     virtual void ReadNumber(StringView InName, UInt32& OutData) = 0;
@@ -118,33 +155,67 @@ public:
     virtual void BeginScope() = 0;
     virtual void EndScope() = 0;
 
-    template<typename T> requires (!IsEnum<T>)
-    void ReadType(StringView InName, T& Value)
+    template <typename T>
+        requires(!Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void ReadType(const StringView InName, T& Value)
     {
-        SetNextScopeName(InName);
-        BeginScope();
-        Value.Serialization_Load(*this);
-        EndScope();
+        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        {
+            ReadNumber(InName, Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        {
+            ReadBool(InName, Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        {
+            ReadString(InName, Value);
+        }
+        else
+        {
+            SetNextScopeName(InName);
+            BeginScope();
+            Value.Serialization_Load(*this);
+            EndScope();
+        }
     }
 
-    template<typename T> requires (!IsEnum<T>)
-    void ReadType(T& Value)
+    template <typename T>
+        requires(!Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void ReadType(T& Value)
     {
-        BeginScope();
-        Value.Serialization_Save(*this);
-        EndScope();
+        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        {
+            ReadNumber(Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        {
+            ReadBool(Value);
+        }
+        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        {
+            ReadString(Value);
+        }
+        else
+        {
+            BeginScope();
+            Value.Serialization_Load(*this);
+            EndScope();
+        }
     }
 
-    template<typename T> requires (IsEnum<T>)
-    void ReadType(StringView InName, T& Value)
+    template <typename T>
+        requires(Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void ReadType(const StringView InName, T& Value)
     {
         Int32 Tmp;
         ReadNumber(InName, Tmp);
         Value = Tmp;
     }
 
-    template<typename T> requires (IsEnum<T>)
-    void ReadType(T& Value)
+    template <typename T>
+        requires(Traits::IsEnum<T>)
+    ELBOW_FORCE_INLINE void ReadType(T& Value)
     {
         Int32 Tmp;
         ReadNumber(Tmp);

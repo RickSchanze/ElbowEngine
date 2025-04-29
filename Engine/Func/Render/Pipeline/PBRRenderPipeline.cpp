@@ -6,7 +6,6 @@
 
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
-#include "Core/Math/MathExtensions.hpp"
 #include "Func/Render/GlobalObjectInstancedDataBuffer.hpp"
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/Pipeline/PBRRenderPipelineSettingWindow.hpp"
@@ -60,7 +59,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params)
         {
             {
                 Rect2Df Rect{};
-                Rect.size = mShadowBox->GetSize();
+                Rect.Size = mShadowBox->GetSize();
                 cmd.SetScissor(Rect);
                 cmd.SetViewport(Rect);
                 cmd.Execute();
@@ -68,7 +67,7 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params)
             }
             Rect2Df rect{};
 
-            rect.size = hdr_color_->GetSize();
+            rect.Size = hdr_color_->GetSize();
             cmd.SetScissor(rect);
             cmd.SetViewport(rect);
             cmd.Execute();
@@ -98,13 +97,13 @@ void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params)
             cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, sdr_color_->GetImage(), range, 0, AFB_ColorAttachmentWrite,
                                      PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
             Rect2Df rect{};
-            rect.size = UIManager::GetActiveViewportWindow()->GetSize();
-            if (rect.size.X != 0 && rect.size.Y != 0)
+            rect.Size = UIManager::GetActiveViewportWindow()->GetSize();
+            if (rect.Size.X != 0 && rect.Size.Y != 0)
             {
                 cmd.BeginDebugLabel("ColorTransformPass");
                 cmd.SetViewport(rect);
                 cmd.SetScissor(rect);
-                PerformColorTransformPass(cmd, sdr_color_->GetImageView(), rect.size);
+                PerformColorTransformPass(cmd, sdr_color_->GetImageView(), rect.Size);
                 cmd.EndDebugLabel();
             }
             cmd.ImagePipelineBarrier(ImageLayout::ColorAttachment, ImageLayout::ShaderReadOnly, sdr_color_->GetImage(), range, 0,
@@ -303,11 +302,11 @@ void PBRRenderPipeline::Build()
             skybox_cube_ = ObjectManager::CreateNewObject<Actor>()->AddComponent<StaticMeshComponent>();
             skybox_cube_->SetMesh(cube_mesh);
 
-            basepass_material_ = ObjectManager::CreateNewObject<Material>();
+            mBasePassMaterial = ObjectManager::CreateNewObject<Material>();
             skysphere_pass_material_ = ObjectManager::CreateNewObject<Material>();
             color_transform_pass_material_ = ObjectManager::CreateNewObject<Material>();
 
-            basepass_material_->SetShader(baspass_shader);
+            mBasePassMaterial->SetShader(baspass_shader);
             skysphere_pass_material_->SetShader(skysphere_pass_shader);
             color_transform_pass_material_->SetShader(color_transform_pass_shader);
 
@@ -362,7 +361,7 @@ void PBRRenderPipeline::Clean()
     sdr_color_ = nullptr;
     hdr_color_ = nullptr;
     ready_ = false;
-    basepass_material_ = nullptr;
+    mBasePassMaterial = nullptr;
 }
 
 bool PBRRenderPipeline::IsReady() const

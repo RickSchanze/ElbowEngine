@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Reflection/Helper.hpp"
 #include "Core/Serialization/Archive.hpp"
 #include "Core/TypeTraits.hpp"
 
@@ -12,7 +13,7 @@ struct Quaternion;
 template <typename T>
 struct Rotator
 {
-    static_assert(SameAs<T, float> || SameAs<T, double>, "T must be float or double");
+    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "T must be float or double");
 
     void Serialization_Save(OutputArchive& Archive)
     {
@@ -28,14 +29,27 @@ struct Rotator
         Archive.ReadNumber("Roll", Roll);
     }
 
+    static void ConstructSelf(void* self)
+    {
+        new (self) Rotator();
+    }
+
+    static void DestructSelf(void* self)
+    {
+        static_cast<Rotator*>(self)->~Rotator();
+    }
+
     Rotator(const Quaternion<T>& Quat);
     Rotator(T InYaw, T InPitch, T InRoll) : Yaw(InYaw), Pitch(InPitch), Roll(InRoll)
     {
     }
+    Rotator() = default;
 
-    T Yaw{};
-    T Pitch{};
-    T Roll{};
+    T Yaw{0};
+    T Pitch{0};
+    T Roll{0};
+
+    const Type* GetType();
 };
 
 template <>
@@ -43,3 +57,33 @@ Rotator<float>::Rotator(const Quaternion<float>& Quat);
 
 template <>
 Rotator<double>::Rotator(const Quaternion<double>& Quat);
+
+#define ROTATOR_REFL_CONSTRUCTOR(name)                                                                                                               \
+    inline Type* Construct_##name()                                                                                                                  \
+    {                                                                                                                                                \
+        return Type::Create<name>(#name) | refl_helper::AddField("Yaw", &name::Yaw) | refl_helper::AddField("Pitch", &name::Pitch) |                 \
+               refl_helper::AddField("Roll", &name::Roll);                                                                                           \
+    }
+
+typedef Rotator<Float> Rotatorf;
+ROTATOR_REFL_CONSTRUCTOR(Rotatorf)
+
+typedef Rotator<Double> Rotatord;
+ROTATOR_REFL_CONSTRUCTOR(Rotatord)
+
+template <typename T>
+const Type* Rotator<T>::GetType()
+{
+    if constexpr (Traits::SameAs<T, Float>)
+        return TypeOf<Rotatorf>();
+    if constexpr (Traits::SameAs<T, Int32>)
+        return TypeOf<Rotatord>();
+    return nullptr;
+}
+
+struct MathTypeRegTrigger_Rotator
+{
+    MathTypeRegTrigger_Rotator();
+};
+
+static inline MathTypeRegTrigger_Rotator Z_Registerer_MathType_Rotator;

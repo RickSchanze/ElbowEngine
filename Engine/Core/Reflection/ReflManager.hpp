@@ -87,7 +87,7 @@ public:
     }
 
     template <typename T>
-        requires IsEnum<T>
+        requires Traits::IsEnum<T>
     void Register(MetaDataRegisterer registerer)
     {
         auto type_info = RTTITypeInfo::Create<T>();

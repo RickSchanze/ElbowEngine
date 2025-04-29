@@ -4,7 +4,7 @@
 template <typename T>
 struct Matrix4x4
 {
-    static_assert(SameAs<T, float> || SameAs<T, double>, "Matrix support float or double only.");
+    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
     Vector4<T> Column0{}, Column1{}, Column2{}, Column3{};
 
     typedef Matrix4x4 ThisStruct;
@@ -106,9 +106,9 @@ MATRIX4X4_REFL_CONSTRUCTOR(Matrix4x4d)
 template <typename T>
 const Type* Matrix4x4<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Matrix4x4f>();
-    if constexpr (SameAs<T, Double>)
+    if constexpr (Traits::SameAs<T, Double>)
         return TypeOf<Matrix4x4d>();
     return nullptr;
 }
@@ -133,7 +133,7 @@ ELBOW_FORCE_INLINE Matrix4x4<T> Matrix4x4<T>::Zero()
 template <typename T>
 struct Matrix3x3
 {
-    static_assert(SameAs<T, float> || SameAs<T, double>, "Matrix support float or double only.");
+    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
     Vector4<T> Column0{}, Column1{}, Column2{};
 
     typedef Matrix3x3 ThisStruct;
@@ -247,9 +247,9 @@ MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3d)
 template <typename T>
 const Type* Matrix3x3<T>::GetType()
 {
-    if constexpr (SameAs<T, Float>)
+    if constexpr (Traits::SameAs<T, Float>)
         return TypeOf<Matrix3x3f>();
-    if constexpr (SameAs<T, Double>)
+    if constexpr (Traits::SameAs<T, Double>)
         return TypeOf<Matrix3x3d>();
     return nullptr;
 }

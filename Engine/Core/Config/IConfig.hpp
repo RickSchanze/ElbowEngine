@@ -9,6 +9,7 @@
 
 class EINTERFACE() IConfig
 {
+
     GENERATED_BODY(IConfig)
 public:
     virtual ~IConfig() = default;

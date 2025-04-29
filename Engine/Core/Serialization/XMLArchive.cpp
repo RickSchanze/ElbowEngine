@@ -27,139 +27,137 @@ XMLOutputArchive::~XMLOutputArchive()
         Delete(mArchive);
 }
 
-void XMLOutputArchive::WriteArraySize(UInt64 InSize)
+void XMLOutputArchive::WriteArraySize(const UInt64 InSize)
 {
     (*mArchive)(cereal::make_size_tag(InSize));
 }
 
-void XMLOutputArchive::WriteMapSize(UInt64 InSize)
+void XMLOutputArchive::WriteMapSize(const UInt64 InSize)
 {
     (*mArchive)(cereal::make_size_tag(InSize));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Int8& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Int8& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Int16& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Int16& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Int32& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Int32& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Int64& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Int64& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, UInt8& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const UInt8& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, UInt16& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName,const  UInt16& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, UInt32& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const UInt32& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, UInt64& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const UInt64& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Float& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Float& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(StringView InName, Double& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const Double& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(Int8& Data)
+void XMLOutputArchive::WriteNumber(const Int8& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(Int16& Data)
+void XMLOutputArchive::WriteNumber(const Int16& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(Int32& Data)
+void XMLOutputArchive::WriteNumber(const Int32& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(Int64& Data)
+void XMLOutputArchive::WriteNumber(const Int64& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(UInt8& Data)
+void XMLOutputArchive::WriteNumber(const UInt8& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(UInt16& Data)
+void XMLOutputArchive::WriteNumber(const UInt16& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(UInt32& Data)
+void XMLOutputArchive::WriteNumber(const UInt32& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(UInt64& Data)
+void XMLOutputArchive::WriteNumber(const UInt64& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(Float& Data)
+void XMLOutputArchive::WriteNumber(const Float& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteNumber(Double& Data)
+void XMLOutputArchive::WriteNumber(const Double& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteBool(StringView InName, bool& Data)
+void XMLOutputArchive::WriteBool(const StringView InName, const bool& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteBool(bool& Data)
+void XMLOutputArchive::WriteBool(const bool& Data)
 {
     (*mArchive)(Data);
 }
 
-void XMLOutputArchive::WriteString(StringView InName, String& Data)
+void XMLOutputArchive::WriteString(const StringView InName, const String& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data.ToStdString()));
 }
 
-void XMLOutputArchive::WriteString(String& Data)
+void XMLOutputArchive::WriteString(const String& Data)
 {
     (*mArchive)(Data.ToStdString());
 }
 
-void XMLOutputArchive::WriteObject(Object& InObj) {}
-
-void XMLOutputArchive::SetNextScopeName(StringView InName)
+void XMLOutputArchive::SetNextScopeName(const StringView InName)
 {
     mArchive->setNextName(*InName);
 }
@@ -179,7 +177,7 @@ XMLInputArchive::XMLInputArchive(std::istream& InInputStream)
     mArchive = New<cereal::XMLInputArchive>(InInputStream);
 }
 
-XMLInputArchive::XMLInputArchive(StringView InPath)
+XMLInputArchive::XMLInputArchive(const StringView InPath)
 {
     if (File::IsExist(InPath))
     {
@@ -194,7 +192,7 @@ XMLInputArchive::XMLInputArchive(cereal::XMLInputArchive* InExistArchive)
     mRequireDelete = false;
 }
 
-void XMLInputArchive::SetNextScopeName(StringView InName)
+void XMLInputArchive::SetNextScopeName(const StringView InName)
 {
     mArchive->setNextName(*InName);
 }
@@ -227,52 +225,52 @@ void XMLInputArchive::ReadMapSize(Int64& OutMapSize)
     (*mArchive)(cereal::make_size_tag(OutMapSize));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Int8& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Int8& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Int16& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Int16& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Int32& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Int32& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Int64& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Int64& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, UInt8& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, UInt8& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, UInt16& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, UInt16& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, UInt32& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, UInt32& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, UInt64& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, UInt64& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Float& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Float& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
 
-void XMLInputArchive::ReadNumber(StringView InName, Double& OutData)
+void XMLInputArchive::ReadNumber(const StringView InName, Double& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
@@ -327,7 +325,7 @@ void XMLInputArchive::ReadNumber(Double& OutData)
     (*mArchive)(OutData);
 }
 
-void XMLInputArchive::ReadBool(StringView InName, bool& OutData)
+void XMLInputArchive::ReadBool(const StringView InName, bool& OutData)
 {
     (*mArchive)(cereal::make_nvp(*InName, OutData));
 }
@@ -337,7 +335,7 @@ void XMLInputArchive::ReadBool(bool& OutData)
     (*mArchive)(OutData);
 }
 
-void XMLInputArchive::ReadString(StringView InName, String& OutData)
+void XMLInputArchive::ReadString(const StringView InName, String& OutData)
 {
     std::string Out;
     (*mArchive)(cereal::make_nvp(*InName, Out));
