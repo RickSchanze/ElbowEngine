@@ -18,11 +18,11 @@ using namespace exec;
 class PersistentObject;
 
 Object::~Object() {
-    if (referenced_.Empty())
+    if (mReferenced.Empty())
         return;
     if constexpr (DUMP_OBJECT_REFERENCE_WHEN_DESTROY) {
-        Log(Warn, "Object::~Object") << String::Format("对象 {} 被销毁时仍有{}个对象引用它", *mName, referenced_.Count());
-        for (const auto &handle: referenced_) {
+        Log(Warn, "Object::~Object") << String::Format("对象 {} 被销毁时仍有{}个对象引用它", *mName, mReferenced.Count());
+        for (const auto &handle: mReferenced) {
             if (Object *obj = ObjectManager::GetRegistry().GetObjectByHandle(handle)) {
                 Log(Warn) << String::FromInt(handle) + ": " + obj->mName;
             } else {

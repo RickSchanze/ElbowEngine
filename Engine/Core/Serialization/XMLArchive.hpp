@@ -46,8 +46,12 @@ public:
     virtual void WriteString(const String& Data) override;
 
     template <typename T>
-    ELBOW_FORCE_INLINE void Serialize(const T& InValue)
+    ELBOW_FORCE_INLINE void Serialize(T& InValue)
     {
+        if constexpr (CHas_Serialization_BeforeSave<T>)
+        {
+            InValue.Serialization_BeforeSave();
+        }
         // 先写入类型元信息
         SetNextScopeName("TypeMeta");
         BeginScope();
@@ -59,6 +63,10 @@ public:
         EndScope();
         // 写入实际数据
         WriteType("Data", InValue);
+        if constexpr (CHas_Serialization_AfterSave<T>)
+        {
+            InValue.Serialization_AfterSave();
+        }
     }
 
     virtual void SetNextScopeName(StringView InName) override;
@@ -135,6 +143,10 @@ public:
     template <typename T>
     ELBOW_FORCE_INLINE void Deserialize(T& InValue)
     {
+        if constexpr (CHas_Serialization_BeforeLoad<T>)
+        {
+            InValue.Serialization_BeforeLoad();
+        }
         // 先写入类型元信息
         SetNextScopeName("TypeMeta");
         BeginScope();
@@ -150,17 +162,11 @@ public:
         }
         // 写入实际数据
         ReadType("Data", InValue);
-    }
-
-    void Deserialize(const Object* InObject)
-    {
-        if (InObject)
+        if constexpr (CHas_Serialization_AfterLoad<T>)
         {
-            Deserialize(*InObject);
+            InValue.Serialization_AfterLoad();
         }
     }
-
-    void Deserialize(const Object& InObjectRef);
 
 private:
     cereal::XMLInputArchive* mArchive;

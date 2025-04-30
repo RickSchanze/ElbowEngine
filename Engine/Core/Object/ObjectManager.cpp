@@ -87,7 +87,7 @@ void ObjectRegistry::RemoveAllObjectLayered() {
             return;
         }
         Object *obj = begin->second;
-        if (obj->referenced_.Empty()) {
+        if (obj->mReferenced.Empty()) {
             RemoveObject(obj);
         } else {
             skip++;

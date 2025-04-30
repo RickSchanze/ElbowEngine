@@ -259,3 +259,23 @@ void Array<T>::Serialization_Save(OutputArchive& Archive) const
         Archive.WriteType(Item);
     }
 }
+
+template <typename T>
+concept CHas_Serialization_BeforeSave = requires(T t) {
+    { t.Serialization_BeforeSave() } -> std::same_as<void>; // 假设返回 void
+};
+
+template <typename T>
+concept CHas_Serialization_AfterSave = requires(T t) {
+    { t.Serialization_AfterSave() } -> std::same_as<void>; // 假设返回 void
+};
+
+template <typename T>
+concept CHas_Serialization_BeforeLoad = requires(T t) {
+    { t.Serialization_BeforeLoad() } -> std::same_as<void>; // 假设返回 void
+};
+
+template <typename T>
+concept CHas_Serialization_AfterLoad = requires(T t) {
+    { t.Serialization_AfterLoad() } -> std::same_as<void>; // 假设返回 void
+};
