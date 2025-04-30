@@ -7,6 +7,7 @@
 #include "Core/Config/ConfigManager.hpp"
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Path.hpp"
+#include "Core/Math/Matrix.hpp"
 #include "Core/Profile.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/GfxContext.hpp"

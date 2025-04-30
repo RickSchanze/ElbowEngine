@@ -9,6 +9,7 @@
 #include "Platform/RHI/Enums.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
 
+#include "Core/Math/Color.hpp"
 #include GEN_HEADER("PlatformConfig.generated.hpp")
 
 class ECLASS(Config = "Config/Platform/PlatformConfig.cfg") PlatformConfig : public IConfig
@@ -50,6 +51,9 @@ class ECLASS(Config = "Config/Platform/PlatformConfig.cfg") PlatformConfig : pub
 
     EFIELD()
     DEFINE_CFG_ITEM(UInt32, mDefaultImGuiFontSize, DefaultImGuiFontSize, 20);
+
+    EFIELD()
+    DEFINE_CFG_ITEM(Color, mDefaultClearColor, DefaultClearColor, {0.3f, 0.3f, 0.3f, 1.0f});
 
 public:
     bool GetValidEnableValidationLayer() const;

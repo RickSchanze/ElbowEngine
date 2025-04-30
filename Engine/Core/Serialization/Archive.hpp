@@ -210,7 +210,7 @@ public:
     {
         Int32 Tmp;
         ReadNumber(InName, Tmp);
-        Value = Tmp;
+        Value = static_cast<T>(Tmp);
     }
 
     template <typename T>
@@ -219,6 +219,16 @@ public:
     {
         Int32 Tmp;
         ReadNumber(Tmp);
-        Value = Tmp;
+        Value = static_cast<T>(Tmp);
     }
 };
+
+template <typename T>
+void Array<T>::Serialization_Load(InputArchive& Archive)
+{
+}
+
+template <typename T>
+void Array<T>::Serialization_Save(OutputArchive& Archive) const
+{
+}

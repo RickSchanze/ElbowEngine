@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/Reflection/Helper.hpp"
 #include "Core/TypeTraits.hpp"
-#include "Vector.hpp"
 
 template <typename T>
 struct Rotator;
@@ -19,7 +18,7 @@ struct Quaternion
 
     Quaternion(const Rotator<T>& InRot);
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteNumber("W", W);
         Archive.WriteNumber("X", X);

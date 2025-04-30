@@ -1,32 +1,17 @@
 #pragma once
 #include "Archive.hpp"
-#include "cereal/archives/xml.hpp"
-#include "Core/TypeTraits.hpp"
 #include "Core/Object/Object.hpp"
-
-namespace cereal
-{
-// 适配cereal的序列化
-template<typename TType>
-void save(::cereal::XMLOutputArchive& Archive, const TType& Value);
-
-template<typename TType>
-void load(::cereal::XMLInputArchive& Archive, TType& Value);
-}
+#include "Core/TypeTraits.hpp"
+#include "cereal/archives/xml.hpp"
 
 class XMLOutputArchive : public OutputArchive
 {
 public:
-    // 适配cereal的序列化
-    template<typename TType>
-    friend void cereal::save(::cereal::XMLOutputArchive& Archive, const TType& Value);
-
     /**
      * 构造一个XML输出流
      * @param InOutputStream 此流可以是文件流、字符串流，etc...
      */
     explicit XMLOutputArchive(std::ostream& InOutputStream);
-
 
     virtual ~XMLOutputArchive() override;
 
@@ -60,7 +45,7 @@ public:
     virtual void WriteString(StringView InName, const String& Data) override;
     virtual void WriteString(const String& Data) override;
 
-    template<typename T>
+    template <typename T>
     ELBOW_FORCE_INLINE void Serialize(const T& InValue)
     {
         // 先写入类型元信息
@@ -93,21 +78,14 @@ private:
     bool mRequireDelete = true;
 };
 
-
 class XMLInputArchive : public InputArchive
 {
 public:
-    template<typename TType>
-    friend void ::cereal::load(::cereal::XMLInputArchive& Archive, TType& Value);
-
     /**
      * 构造一个XML输入流
      * @param InInputStream 此流可以是文件流、字符串流，etc...
      */
     explicit XMLInputArchive(std::istream& InInputStream);
-
-    explicit XMLInputArchive(StringView InPath);
-
 
     virtual ~XMLInputArchive() override;
 
@@ -143,10 +121,10 @@ public:
 
 private:
     /**
-         * 使用已存在的Archive初始化, 主要是为了配合cereal的序列化流程
-         * 因此你在外部使用时**不应该**调用构造函数
-         * @param InExistArchive
-         */
+     * 使用已存在的Archive初始化, 主要是为了配合cereal的序列化流程
+     * 因此你在外部使用时**不应该**调用构造函数
+     * @param InExistArchive
+     */
     explicit XMLInputArchive(cereal::XMLInputArchive* InExistArchive);
 
 public:
@@ -154,7 +132,7 @@ public:
     virtual void BeginScope() override;
     virtual void EndScope() override;
 
-    template<typename T>
+    template <typename T>
     void Deserialize(const T& Value)
     {
         // 读取类型
@@ -174,21 +152,3 @@ private:
     cereal::XMLInputArchive* mArchive;
     bool mRequireDelete = true;
 };
-
-namespace cereal
-{
-// 适配cereal的序列化
-template<typename TType>
-void save(::cereal::XMLOutputArchive& Archive, const TType& Value)
-{
-    ::XMLOutputArchive ExistArchive(&Archive);
-    Value.Serialization_Save(ExistArchive);
-}
-
-template<typename TType>
-void load(::cereal::XMLInputArchive& Archive, TType& Value)
-{
-    ::XMLInputArchive ExistArchive(&Archive);
-    Value.Serialization_Load(ExistArchive);
-}
-}

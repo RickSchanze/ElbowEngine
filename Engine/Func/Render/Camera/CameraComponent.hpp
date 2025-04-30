@@ -5,13 +5,14 @@
 #pragma once
 #include "Func/World/SceneComponent.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
+#include "Core/Math/Matrix.hpp"
 
 #include GEN_HEADER("CameraComponent.generated.hpp")
 
 struct CameraShaderData {
-    Matrix4x4f view = Matrix4x4f::Identity();
-    Matrix4x4f proj = Matrix4x4f::Identity();
-    Matrix4x4f ortho = Matrix4x4f::Zero();
+    Matrix4x4f View = Matrix4x4f::Identity();
+    Matrix4x4f Proj = Matrix4x4f::Identity();
+    Matrix4x4f Ortho = Matrix4x4f::Zero();
     Matrix4x4f Data = Matrix4x4f::Zero();
 };
 
@@ -44,7 +45,7 @@ protected:
     // 与Shader里的对应
     CameraShaderData mCameraShaderData{};
 
-    bool active_ = false;
+    bool mActive = false;
 
-    UInt64 window_resize_event_handle_ = 0;
+    UInt64 mWindowResizeEventHandle = 0;
 };

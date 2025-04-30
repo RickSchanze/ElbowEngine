@@ -6,7 +6,7 @@ struct Rect2D
 {
     typedef Rect2D ThisStruct;
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteType("Pos", Pos);
         Archive.WriteType("Size", Size);

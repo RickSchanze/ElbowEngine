@@ -407,7 +407,7 @@ public static class CodeGenerator
 
             // class只能用继承自Object, 需要用虚函数
             headerContent.AppendLine("virtual void Serialization_Load(InputArchive& Archive); \\");
-            headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive) const; \\");
+            headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive) const const; \\");
 
             headerContent.AppendLine(
                 $"virtual const Type* GetType() const {{ return TypeOf<{_class.Key.Name}>(); }}; \\");
@@ -460,7 +460,7 @@ public static class CodeGenerator
             headerContent.AppendLine($"}}; \\");
             // struct不继承任何类型, 不使用虚函数
             headerContent.AppendLine("void Serialization_Load(InputArchive& Archive); \\");
-            headerContent.AppendLine("void Serialization_Save(OutputArchive& Archive) const; \\");
+            headerContent.AppendLine("void Serialization_Save(OutputArchive& Archive) const const; \\");
             headerContent.AppendLine(
                 $"static inline Z_ReflectionInitializer{_class.Key.Name} Z_ReflectionInitializer; \\");
             if (_class.Value.ContainsKey("Abstract"))

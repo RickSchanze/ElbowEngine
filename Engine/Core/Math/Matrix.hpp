@@ -21,7 +21,7 @@ struct Matrix4x4
 
     const Type* GetType();
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteType("Column0", Column0);
         Archive.WriteType("Column1", Column1);
@@ -52,7 +52,7 @@ struct Matrix4x4
             return Self.Column3;
         default:
             VLOG_FATAL("Matrix4x4 index out of range, col = ", InCol);
-            return Self.col1;
+            return Self.Column0;
         }
     }
 
@@ -131,10 +131,16 @@ ELBOW_FORCE_INLINE Matrix4x4<T> Matrix4x4<T>::Zero()
 }
 
 template <typename T>
+struct Quaternion;
+
+template <typename T>
 struct Matrix3x3
 {
+    Matrix3x3() = default;
+    Matrix3x3(const Quaternion<T>& InQuat);
+
     static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
-    Vector4<T> Column0{}, Column1{}, Column2{};
+    Vector3<T> Column0{}, Column1{}, Column2{};
 
     typedef Matrix3x3 ThisStruct;
 
@@ -150,7 +156,7 @@ struct Matrix3x3
 
     const Type* GetType();
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteType("Column0", Column0);
         Archive.WriteType("Column1", Column1);
@@ -177,7 +183,7 @@ struct Matrix3x3
             return Self.Column2;
         default:
             VLOG_FATAL("Matrix4x4 index out of range, col = ", InCol);
-            return Self.col1;
+            return Self.Column0;
         }
     }
 
@@ -211,6 +217,7 @@ struct Matrix3x3
         return Result;
     }
 };
+
 template <typename T>
 Matrix3x3<T> Matrix3x3<T>::Identity()
 {
@@ -243,6 +250,12 @@ typedef Matrix3x3<Float> Matrix3x3f;
 MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3f)
 typedef Matrix3x3<Double> Matrix3x3d;
 MATRIX3X3_REFL_CONSTRUCTOR(Matrix3x3d)
+
+template <>
+Matrix3x3<Float>::Matrix3x3(const Quaternion<Float>& InQuat);
+
+template <>
+Matrix3x3<Double>::Matrix3x3(const Quaternion<Double>& InQuat);
 
 template <typename T>
 const Type* Matrix3x3<T>::GetType()

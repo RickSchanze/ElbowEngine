@@ -156,10 +156,10 @@ static void ExecuteCmdBeginRender(const VkCommandBuffer &cmd, Cmd_BeginRender *c
         color_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(color.LoadOp);
         color_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(color.StoreOp);
         VkClearValue clear_value = {};
-        clear_value.color.float32[0] = color.ClearColor.r;
-        clear_value.color.float32[1] = color.ClearColor.g;
-        clear_value.color.float32[2] = color.ClearColor.b;
-        clear_value.color.float32[3] = color.ClearColor.a;
+        clear_value.color.float32[0] = color.ClearColor.R;
+        clear_value.color.float32[1] = color.ClearColor.G;
+        clear_value.color.float32[2] = color.ClearColor.B;
+        clear_value.color.float32[3] = color.ClearColor.A;
         color_info.clearValue = clear_value;
         colors.Add(color_info);
     }
@@ -172,7 +172,7 @@ static void ExecuteCmdBeginRender(const VkCommandBuffer &cmd, Cmd_BeginRender *c
         depth_info.loadOp = RHIAttachmentLoadOpToVkAttachmentLoadOp(cmd_begin_render_pass->depth.LoadOp);
         depth_info.storeOp = RHIAttachmentStoreOpToVkAttachmentStoreOp(cmd_begin_render_pass->depth.StoreOp);
         VkClearValue clear_value = {};
-        clear_value.depthStencil.depth = cmd_begin_render_pass->depth.ClearColor.r;
+        clear_value.depthStencil.depth = cmd_begin_render_pass->depth.ClearColor.R;
         depth_info.clearValue = clear_value;
     }
     VkRenderingInfo render_info = {};
@@ -227,10 +227,10 @@ static void ExecuteCmdSetScissor(const VkCommandBuffer cmd, const Cmd_SetScissor
         return;
     }
     VkRect2D scissor = {};
-    scissor.offset.x = cmd_set_scissor->scissor.pos.X;
-    scissor.offset.y = cmd_set_scissor->scissor.pos.Y;
-    scissor.extent.width = cmd_set_scissor->scissor.size.X;
-    scissor.extent.height = cmd_set_scissor->scissor.size.Y;
+    scissor.offset.x = cmd_set_scissor->scissor.Pos.X;
+    scissor.offset.y = cmd_set_scissor->scissor.Pos.Y;
+    scissor.extent.width = cmd_set_scissor->scissor.Size.X;
+    scissor.extent.height = cmd_set_scissor->scissor.Size.Y;
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
@@ -242,10 +242,10 @@ static void ExecuteCmdSetViewport(const VkCommandBuffer cmd, const Cmd_SetViewpo
         return;
     }
     VkViewport viewport = {};
-    viewport.x = cmd_set_viewport->viewport.pos.X;
-    viewport.y = cmd_set_viewport->viewport.pos.Y;
-    viewport.width = cmd_set_viewport->viewport.size.X;
-    viewport.height = cmd_set_viewport->viewport.size.Y;
+    viewport.x = cmd_set_viewport->viewport.Pos.X;
+    viewport.y = cmd_set_viewport->viewport.Pos.Y;
+    viewport.width = cmd_set_viewport->viewport.Size.X;
+    viewport.height = cmd_set_viewport->viewport.Size.Y;
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
     vkCmdSetViewport(cmd, 0, 1, &viewport);

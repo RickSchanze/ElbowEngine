@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "Core/TypeAlias.hpp"
+#include "Core/Serialization/Archive.hpp"
 
 template<typename Key, typename Value>
 class Map {
@@ -105,6 +106,16 @@ public:
 
     template <typename T>
     auto Erase(T&& key_or_iter) { return data_.erase(Forward<T>(key_or_iter)); }
+
+    void Serialization_Load(InputArchive& Archive)
+    {
+        // TODO:
+    }
+
+    void Serialization_Save(OutputArchive& Archive) const
+    {
+        // TODO:
+    }
 
 private:
     std::unordered_map<Key, Value> data_;

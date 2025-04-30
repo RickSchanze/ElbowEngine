@@ -177,14 +177,6 @@ XMLInputArchive::XMLInputArchive(std::istream& InInputStream)
     mArchive = New<cereal::XMLInputArchive>(InInputStream);
 }
 
-XMLInputArchive::XMLInputArchive(const StringView InPath)
-{
-    if (File::IsExist(InPath))
-    {
-        mArchive = New<cereal::XMLInputArchive>(std::ifstream(*InPath));
-    }
-}
-
 XMLInputArchive::XMLInputArchive(cereal::XMLInputArchive* InExistArchive)
 {
     Assert(InExistArchive, "输入的Archive必须存在");

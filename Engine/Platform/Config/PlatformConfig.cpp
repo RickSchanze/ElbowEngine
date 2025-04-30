@@ -6,7 +6,7 @@
 #include "Core/Core.hpp"
 bool PlatformConfig::GetValidEnableValidationLayer() const {
 #ifdef ELBOW_DEBUG
-    return enable_validation_layer;
+    return mEnableValidationLayer;
 #else
     return false;
 #endif

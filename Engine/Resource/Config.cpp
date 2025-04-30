@@ -15,10 +15,3 @@ StringView ResourceConfig::GetValidShaderIntermediatePath() const {
     }
     return p;
 }
-
-using namespace refl_helper;
-IMPL_REFLECTED_INPLACE(ResourceConfig) {
-    return Type::Create<ResourceConfig>("ResourceConfig") | AddParents<IConfig>() | Attribute(Type::ValueAttribute::Config, "Config/Resource.cfg") |
-           AddField("shader_search_path", &ResourceConfig::shader_search_path) | //
-           AddField("shader_intermediate_path", &ResourceConfig::shader_intermediate_path);
-}

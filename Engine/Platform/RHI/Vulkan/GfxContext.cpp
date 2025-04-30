@@ -35,7 +35,8 @@ static Array<VkLayerProperties> available_layers;
 static Array<VkPhysicalDevice> physical_devices;
 static Array<String> required_instance_extensions;
 
-static Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance) {
+static Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance)
+{
     uint32_t device_cnt = 0;
     vkEnumeratePhysicalDevices(instance, &device_cnt, nullptr);
     Assert(device_cnt > 0, "No physical device found");
@@ -45,7 +46,8 @@ static Array<VkPhysicalDevice> GetAvailablePhysicalDevices(VkInstance instance) 
     return physical_devices;
 }
 
-static Array<VkLayerProperties> GetAvailableLayers() {
+static Array<VkLayerProperties> GetAvailableLayers()
+{
     uint32_t layer_count;
     vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
     Array<VkLayerProperties> available_layers;
@@ -54,9 +56,12 @@ static Array<VkLayerProperties> GetAvailableLayers() {
     return available_layers;
 }
 
-static bool SupportValidationLayer(StringView layer_name) {
-    for (auto &layer: available_layers) {
-        if (layer_name == layer.layerName) {
+static bool SupportValidationLayer(StringView layer_name)
+{
+    for (auto& layer : available_layers)
+    {
+        if (layer_name == layer.layerName)
+        {
             return true;
         }
     }
@@ -64,9 +69,13 @@ static bool SupportValidationLayer(StringView layer_name) {
 }
 
 using namespace RHI;
-GraphicsAPI GfxContext_Vulkan::GetAPI() const { return GraphicsAPI::Vulkan; }
+GraphicsAPI GfxContext_Vulkan::GetAPI() const
+{
+    return GraphicsAPI::Vulkan;
+}
 
-Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkPhysicalDevice) {
+Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkPhysicalDevice)
+{
     uint32_t extension_count;
     vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
     Array<VkExtensionProperties> available_extensions;
@@ -75,14 +84,16 @@ Array<VkExtensionProperties> GfxContext_Vulkan::GetAvailableExtensions(VkPhysica
     return available_extensions;
 }
 
-static Vector2f FromVkExtent2D(const VkExtent2D &extent) {
+static Vector2f FromVkExtent2D(const VkExtent2D& extent)
+{
     Vector2f size{};
     size.X = extent.width;
     size.Y = extent.height;
     return size;
 }
 
-static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice device, const Surface *surface) {
+static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice device, const Surface* surface)
+{
     SwapChainSupportInfo info;
     const auto surfaceVk = static_cast<VkSurfaceKHR>(surface->GetNativeHandle());
     VkSurfaceCapabilitiesKHR capabilities;
@@ -96,20 +107,22 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
 
     uint32_t format_count;
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, nullptr);
-    if (format_count != 0) {
+    if (format_count != 0)
+    {
         Array<VkSurfaceFormatKHR> formats;
         formats.Resize(format_count);
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, formats.Data());
         info.formats =
-                formats | range::view::Select([](const VkSurfaceFormatKHR &format) {
-                    return SurfaceFormat{.format = VkFormatToRHIFormat(format.format), .color_space = VkColorSpaceToRHIColorSpace(format.colorSpace)};
-                }) |
-                range::To<Array<SurfaceFormat>>();
+            formats | range::view::Select([](const VkSurfaceFormatKHR& format) {
+                return SurfaceFormat{.format = VkFormatToRHIFormat(format.format), .color_space = VkColorSpaceToRHIColorSpace(format.colorSpace)};
+            }) |
+            range::To<Array<SurfaceFormat>>();
     }
 
     uint32_t present_mode_count;
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, nullptr);
-    if (present_mode_count != 0) {
+    if (present_mode_count != 0)
+    {
         Array<VkPresentModeKHR> present_modes;
         present_modes.Resize(present_mode_count);
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, present_modes.Data());
@@ -119,9 +132,13 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
     return info;
 }
 
-SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo() { return ::QuerySwapChainSupportInfo(physical_device_, surface_); }
+SwapChainSupportInfo GfxContext_Vulkan::QuerySwapChainSupportInfo()
+{
+    return ::QuerySwapChainSupportInfo(physical_device_, surface_);
+}
 
-const PhysicalDeviceFeature &GfxContext_Vulkan::QueryDeviceFeature() {
+const PhysicalDeviceFeature& GfxContext_Vulkan::QueryDeviceFeature()
+{
     if (device_feature_)
         return *device_feature_;
     VkPhysicalDeviceFeatures features;
@@ -132,7 +149,8 @@ const PhysicalDeviceFeature &GfxContext_Vulkan::QueryDeviceFeature() {
     return *device_feature_;
 }
 
-const PhysicalDeviceInfo &GfxContext_Vulkan::QueryDeviceInfo() {
+const PhysicalDeviceInfo& GfxContext_Vulkan::QueryDeviceInfo()
+{
     if (device_info_)
         return *device_info_;
     VkPhysicalDeviceProperties properties;
@@ -145,16 +163,24 @@ const PhysicalDeviceInfo &GfxContext_Vulkan::QueryDeviceInfo() {
     return *device_info_;
 }
 
-Format GfxContext_Vulkan::GetDefaultDepthStencilFormat() const { return default_depth_stencil_format_; }
+Format GfxContext_Vulkan::GetDefaultDepthStencilFormat() const
+{
+    return default_depth_stencil_format_;
+}
 
-Format GfxContext_Vulkan::GetDefaultColorFormat() const {
+Format GfxContext_Vulkan::GetDefaultColorFormat() const
+{
     // TODO: 灵活切换是否HDR渲染
     return Format::R32G32B32A32_Float;
 }
 
-const QueueFamilyIndices &GfxContext_Vulkan::GetCurrentQueueFamilyIndices() const { return queue_family_indices_; }
+const QueueFamilyIndices& GfxContext_Vulkan::GetCurrentQueueFamilyIndices() const
+{
+    return queue_family_indices_;
+}
 
-VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc &desc) const {
+VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc& desc) const
+{
     const auto img = desc.image;
     const auto img_handle = static_cast<VkImage>(img->GetNativeHandle());
     Assert(img, "Image cannot be nullptr when creating a ImageView.");
@@ -171,15 +197,20 @@ VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc &desc) con
     view_info.viewType = RHIImageDimensionToVkImageViewType(desc.type);
     view_info.pNext = nullptr;
     VkImageView view_handle = VK_NULL_HANDLE;
-    if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS) {
+    if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS)
+    {
         Log(Error) << "Failed to create ImageView: "_es + RHI::VulkanErrorToString(result);
     }
     return view_handle;
 }
 
-void GfxContext_Vulkan::DestroyImageView_VK(const VkImageView view) const { vkDestroyImageView(device_, view, nullptr); }
+void GfxContext_Vulkan::DestroyImageView_VK(const VkImageView view) const
+{
+    vkDestroyImageView(device_, view, nullptr);
+}
 
-VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const {
+VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlags usage) const
+{
     VkBufferCreateInfo buffer_info{};
     buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_info.size = size;
@@ -191,9 +222,13 @@ VkBuffer GfxContext_Vulkan::CreateBuffer_VK(VkDeviceSize size, VkBufferUsageFlag
     return buffer;
 }
 
-void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const { vkDestroyBuffer(device_, buffer, nullptr); }
+void GfxContext_Vulkan::DestroyBuffer_VK(VkBuffer buffer) const
+{
+    vkDestroyBuffer(device_, buffer, nullptr);
+}
 
-VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const {
+VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMemoryPropertyFlags properties) const
+{
     VkMemoryRequirements mem_requirements;
     vkGetBufferMemoryRequirements(device_, buffer, &mem_requirements);
 
@@ -207,39 +242,61 @@ VkDeviceMemory GfxContext_Vulkan::AllocateBufferMemory_VK(VkBuffer buffer, VkMem
     return memory;
 }
 
-void GfxContext_Vulkan::FreeBufferMemory_VK(VkDeviceMemory memory) const { vkFreeMemory(device_, memory, nullptr); }
+void GfxContext_Vulkan::FreeBufferMemory_VK(VkDeviceMemory memory) const
+{
+    vkFreeMemory(device_, memory, nullptr);
+}
 
-void GfxContext_Vulkan::BindBufferMemory_VK(VkBuffer buffer, VkDeviceMemory memory) const { vkBindBufferMemory(device_, buffer, memory, 0); }
+void GfxContext_Vulkan::BindBufferMemory_VK(VkBuffer buffer, VkDeviceMemory memory) const
+{
+    vkBindBufferMemory(device_, buffer, memory, 0);
+}
 
-void GfxContext_Vulkan::MapMemory_VK(VkDeviceMemory memory, VkDeviceSize size, void **data, VkDeviceSize offset) const {
+void GfxContext_Vulkan::MapMemory_VK(VkDeviceMemory memory, VkDeviceSize size, void** data, VkDeviceSize offset) const
+{
     vkMapMemory(device_, memory, offset, size, 0, data);
 }
 
-void GfxContext_Vulkan::UnmapMemory_VK(VkDeviceMemory memory) const { vkUnmapMemory(device_, memory); }
+void GfxContext_Vulkan::UnmapMemory_VK(VkDeviceMemory memory) const
+{
+    vkUnmapMemory(device_, memory);
+}
 
-VkCommandPool GfxContext_Vulkan::CreateCommandPool_VK(const VkCommandPoolCreateInfo &info) const {
+VkCommandPool GfxContext_Vulkan::CreateCommandPool_VK(const VkCommandPoolCreateInfo& info) const
+{
     VkCommandPool command_pool_;
     const auto result = vkCreateCommandPool(device_, &info, nullptr, &command_pool_);
     VerifyVulkanResult(result);
     return command_pool_;
 }
 
-void GfxContext_Vulkan::DestroyCommandPool_VK(VkCommandPool pool) const { vkDestroyCommandPool(device_, pool, nullptr); }
+void GfxContext_Vulkan::DestroyCommandPool_VK(VkCommandPool pool) const
+{
+    vkDestroyCommandPool(device_, pool, nullptr);
+}
 
-void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo &alloc_info, VkCommandBuffer *command_buffers) const {
-    auto *cfg = GetConfig<PlatformConfig>();
+void GfxContext_Vulkan::CreateCommandBuffers_VK(const VkCommandBufferAllocateInfo& alloc_info, VkCommandBuffer* command_buffers) const
+{
+    auto* cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([alloc_info, command_buffers, this] { vkAllocateCommandBuffers(device_, &alloc_info, command_buffers); });
-    if (cfg->GetEnableMultithreadRender()) {
+    if (cfg->GetEnableMultithreadRender())
+    {
 
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render).Wait();
-    } else {
+    }
+    else
+    {
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true).Wait();
     }
 }
 
-UniquePtr<Fence> GfxContext_Vulkan::CreateFence(bool signaled) { return MakeUnique<Fence_Vulkan>(signaled); }
+UniquePtr<Fence> GfxContext_Vulkan::CreateFence(bool signaled)
+{
+    return MakeUnique<Fence_Vulkan>(signaled);
+}
 
-SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char *code, size_t size, StringView debug_name) {
+SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char* code, size_t size, StringView debug_name)
+{
     auto rtn = MakeShared<LowShader_Vulkan>(code, size);
 #ifdef ELBOW_DEBUG
     SetObjectDebugName(VK_OBJECT_TYPE_SHADER_MODULE, rtn->GetNativeHandleT<VkShaderModule>(), debug_name);
@@ -247,8 +304,9 @@ SharedPtr<LowShader> GfxContext_Vulkan::CreateShader(const char *code, size_t si
     return rtn;
 }
 
-static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitParameter &parameter) {
-    auto *ctx = GetVulkanGfxContext();
+static void InternalSubmit(const SharedPtr<CommandBuffer>& buffer, const SubmitParameter& parameter)
+{
+    auto* ctx = GetVulkanGfxContext();
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
@@ -258,8 +316,10 @@ static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitP
     timeline_submit_info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     VkSemaphore signal_semaphore = VK_NULL_HANDLE;
     VkSemaphore wait_semaphore = VK_NULL_HANDLE;
-    if (parameter.signal_semaphore != nullptr) {
-        if (parameter.signal_semaphore->Vulkan_IsTimelineSemaphore()) {
+    if (parameter.signal_semaphore != nullptr)
+    {
+        if (parameter.signal_semaphore->Vulkan_IsTimelineSemaphore())
+        {
             timeline_submit_info.signalSemaphoreValueCount = 1;
             timeline_submit_info.pSignalSemaphoreValues = &parameter.signal_value;
         }
@@ -267,8 +327,10 @@ static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitP
         signal_semaphore = parameter.signal_semaphore->GetNativeHandleT<VkSemaphore>();
         submit_info.pSignalSemaphores = &signal_semaphore;
     }
-    if (parameter.wait_semaphore != nullptr) {
-        if (parameter.wait_semaphore->Vulkan_IsTimelineSemaphore()) {
+    if (parameter.wait_semaphore != nullptr)
+    {
+        if (parameter.wait_semaphore->Vulkan_IsTimelineSemaphore())
+        {
             timeline_submit_info.waitSemaphoreValueCount = 1;
             timeline_submit_info.pWaitSemaphoreValues = &parameter.wait_value;
         }
@@ -281,37 +343,46 @@ static void InternalSubmit(const SharedPtr<CommandBuffer> &buffer, const SubmitP
     VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submit_info.pWaitDstStageMask = &wait_stages;
     VkFence fence = VK_NULL_HANDLE;
-    if (parameter.fence != nullptr) {
+    if (parameter.fence != nullptr)
+    {
         fence = parameter.fence->GetNativeHandleT<VkFence>();
     }
     vkQueueSubmit(ctx->GetQueue(parameter.submit_queue_type), 1, &submit_info, fence);
 }
 
-ExecFuture<> GfxContext_Vulkan::Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter &parameter) {
-    auto *cfg = GetConfig<PlatformConfig>();
+ExecFuture<> GfxContext_Vulkan::Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter)
+{
+    auto* cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([buffer, &parameter] { InternalSubmit(buffer, parameter); });
-    if (cfg->GetEnableMultithreadRender()) {
+    if (cfg->GetEnableMultithreadRender())
+    {
         return ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
-    } else {
+    }
+    else
+    {
         return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 
-SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferDesc &create_info, StringView name) {
+SharedPtr<Buffer> GfxContext_Vulkan::CreateBuffer(const BufferDesc& create_info, StringView name)
+{
     auto rtn = MakeShared<Buffer_Vulkan>(create_info);
 #ifdef ELBOW_DEBUG
-    if (!name.IsEmpty()) {
+    if (!name.IsEmpty())
+    {
         SetObjectDebugName(VK_OBJECT_TYPE_BUFFER, rtn->GetNativeHandle(), *name);
     }
 #endif
     return rtn;
 }
 
-SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandPoolCreateInfo &create_info) {
+SharedPtr<CommandPool> GfxContext_Vulkan::CreateCommandPool(const CommandPoolCreateInfo& create_info)
+{
     return MakeShared<CommandPool_Vulkan>(create_info);
 }
 
-void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void *handle, const StringView name) const {
+void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void* handle, const StringView name) const
+{
 #ifdef ELBOW_DEBUG
     if (GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false)
         return;
@@ -320,17 +391,21 @@ void GfxContext_Vulkan::SetObjectDebugName(const VkObjectType type, void *handle
     name_info.objectType = type;
     name_info.objectHandle = reinterpret_cast<uint64_t>(handle);
     name_info.pObjectName = name.Data();
-    if (const VkResult result = SetDebugUtilsObjectNameEXT(device_, &name_info); result != VK_SUCCESS) {
+    if (const VkResult result = SetDebugUtilsObjectNameEXT(device_, &name_info); result != VK_SUCCESS)
+    {
         Log(Fatal) << "Failed to set debug name for object "_es + VulkanErrorToString(result);
     }
 #endif
 }
 
-UInt32 GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+UInt32 GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const
+{
     VkPhysicalDeviceMemoryProperties mem_properties;
     vkGetPhysicalDeviceMemoryProperties(physical_device_, &mem_properties);
-    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++) {
-        if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+    {
+        if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
             return i;
         }
     }
@@ -338,113 +413,132 @@ UInt32 GfxContext_Vulkan::FindMemoryType(uint32_t type_filter, VkMemoryPropertyF
     return 0;
 }
 
-void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT &info) const {
+void GfxContext_Vulkan::BeginDebugLabel(VkCommandBuffer cmd, const VkDebugUtilsLabelEXT& info) const
+{
     if (GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false)
         return;
     CmdBeginDebugUtilsLabelEXT(cmd, &info);
 }
 
-void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const {
+void GfxContext_Vulkan::EndDebugLabel(VkCommandBuffer cmd) const
+{
     if (GetConfig<PlatformConfig>()->GetValidEnableValidationLayer() == false)
         return;
     CmdEndDebugUtilsLabelEXT(cmd);
 }
 
-VkQueue GfxContext_Vulkan::GetQueue(QueueFamilyType type) const {
-    switch (type) {
-        case QueueFamilyType::Graphics:
-            return graphics_queue_;
-            break;
-        case QueueFamilyType::Compute:
-            return compute_queue_;
-            break;
-        case QueueFamilyType::Transfer:
-            return transfer_queue_;
-            break;
-        case QueueFamilyType::Present:
-            return present_queue_;
+VkQueue GfxContext_Vulkan::GetQueue(QueueFamilyType type) const
+{
+    switch (type)
+    {
+    case QueueFamilyType::Graphics:
+        return graphics_queue_;
+        break;
+    case QueueFamilyType::Compute:
+        return compute_queue_;
+        break;
+    case QueueFamilyType::Transfer:
+        return transfer_queue_;
+        break;
+    case QueueFamilyType::Present:
+        return present_queue_;
     }
     return VK_NULL_HANDLE;
 }
 
-SharedPtr<Image> GfxContext_Vulkan::CreateImage(const ImageDesc &desc, StringView debug_name) {
+SharedPtr<Image> GfxContext_Vulkan::CreateImage(const ImageDesc& desc, StringView debug_name)
+{
     auto rtn = MakeShared<Image_Vulkan>(desc);
 #ifdef ELBOW_DEBUG
-    if (!debug_name.IsEmpty()) {
+    if (!debug_name.IsEmpty())
+    {
         SetObjectDebugName(VK_OBJECT_TYPE_IMAGE, rtn->GetNativeHandle(), debug_name);
     }
 #endif
     return rtn;
 }
 
-SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc &desc, StringView debug_name) {
+SharedPtr<ImageView> GfxContext_Vulkan::CreateImageView(const ImageViewDesc& desc, StringView debug_name)
+{
     auto rtn = MakeShared<ImageView_Vulkan>(desc);
 #ifdef ELBOW_DEBUG
-    if (!debug_name.IsEmpty()) {
+    if (!debug_name.IsEmpty())
+    {
         SetObjectDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, rtn->GetNativeHandle(), debug_name);
     }
 #endif
     return rtn;
 }
 
-Format GfxContext_Vulkan::GetSwapchainImageFormat() { return Format::B8G8R8A8_UNorm; }
+Format GfxContext_Vulkan::GetSwapchainImageFormat()
+{
+    return Format::B8G8R8A8_UNorm;
+}
 
-UniquePtr<Pipeline> GfxContext_Vulkan::CreateComputePipeline(const ComputePipelineDesc &create_info) {
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateComputePipeline(const ComputePipelineDesc& create_info)
+{
     return MakeUnique<ComputePipeline_Vulkan>(create_info);
 }
 
-Format GfxContext_Vulkan::FindSupportedFormat(const Array<Format> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
+Format GfxContext_Vulkan::FindSupportedFormat(const Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
+{
     for (const Array<VkFormat> fmts =
-                 candidates | range::view::Select([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | range::To<Array<VkFormat>>();
-         const auto fmt: fmts) {
+             candidates | range::view::Select([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | range::To<Array<VkFormat>>();
+         const auto fmt : fmts)
+    {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physical_device_, fmt, &props);
-        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+        {
             return VkFormatToRHIFormat(fmt);
         }
-        if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+        if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+        {
             return VkFormatToRHIFormat(fmt);
         }
     }
     return Format::Count;
 }
 
-void GfxContext_Vulkan::FindVulkanExtensionSymbols() {
+void GfxContext_Vulkan::FindVulkanExtensionSymbols()
+{
     SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(instance_, "vkSetDebugUtilsObjectNameEXT"));
     CmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device_, "vkCmdBeginDebugUtilsLabelEXT"));
     CmdEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device_, "vkCmdEndDebugUtilsLabelEXT"));
 }
 
-constexpr const char *swapchain_image_view_names_[] = {
-        "SwapChainImageView0", "SwapChainImageView1", "SwapChainImageView2", "SwapChainImageView3",
-        "SwapChainImageView4", "SwapChainImageView5", "SwapChainImageView6", "SwapChainImageView7",
-        "SwapChainImageView8", // 开发设备最多支持八个
+constexpr const char* swapchain_image_view_names_[] = {
+    "SwapChainImageView0", "SwapChainImageView1", "SwapChainImageView2", "SwapChainImageView3",
+    "SwapChainImageView4", "SwapChainImageView5", "SwapChainImageView6", "SwapChainImageView7",
+    "SwapChainImageView8", // 开发设备最多支持八个
 };
 
-void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
-    auto vulkan_ctx = static_cast<GfxContext_Vulkan *>(ctx);
+void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
+{
+    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
     UInt32 img_cnt = 0;
     VerifyVulkanResult(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, nullptr));
     auto vk_imgs = Array<VkImage>{};
     vk_imgs.Resize(img_cnt);
     VerifyVulkanResult(vkGetSwapchainImagesKHR(vulkan_ctx->device_, vulkan_ctx->swapchain_, &img_cnt, vk_imgs.Data()));
-    if (img_cnt <= 0) {
+    if (img_cnt <= 0)
+    {
         Log(Fatal) << "创建交换链失败";
     }
     vulkan_ctx->swapchain_images_ = //
-            vk_imgs | range::view::Enumerate | range::view::Select([vulkan_ctx](const auto &pair) {
-                auto &desc = vulkan_ctx->swapchain_image_desc_;
-                const auto &[idx, img] = pair;
-                return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
-            }) |
-            range::To<Array<Image_Vulkan *>>();
+        vk_imgs | range::view::Enumerate | range::view::Select([vulkan_ctx](const auto& pair) {
+            auto& desc = vulkan_ctx->swapchain_image_desc_;
+            const auto& [idx, img] = pair;
+            return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
+        }) |
+        range::To<Array<Image_Vulkan*>>();
     vulkan_ctx->swapchain_image_views_ = //
-            vulkan_ctx->swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto &pair) {
-                const auto &[idx, img] = pair;
-                ImageViewDesc desc(img);
-                return New<ImageView_Vulkan>(desc);
-            }) |
-            range::To<Array<ImageView_Vulkan *>>();
+        vulkan_ctx->swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto& pair) {
+            const auto& [idx, img] = pair;
+            ImageViewDesc desc(img);
+            return New<ImageView_Vulkan>(desc);
+        }) |
+        range::To<Array<ImageView_Vulkan*>>();
 
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
@@ -453,13 +547,14 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
     // 初始化ImGui环境
     auto cfg = GetConfig<PlatformConfig>();
     VkDescriptorPoolSize pool_size[] = {
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, cfg->GetMinImGuiImageSamplerPoolSize()},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, cfg->GetMinImGuiImageSamplerPoolSize()},
     };
     VkDescriptorPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     pool_info.maxSets = 0;
-    for (const auto &size: pool_size) {
+    for (const auto& size : pool_size)
+    {
         pool_info.maxSets += size.descriptorCount;
     }
     pool_info.poolSizeCount = std::size(pool_size);
@@ -509,7 +604,8 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
     framebuffer_create_info.layers = 1;
     framebuffer_create_info.attachmentCount = 1;
     vulkan_ctx->imgui_framebuffers_.Resize(vulkan_ctx->swapchain_image_views_.Count());
-    for (UInt32 i = 0; i < vulkan_ctx->imgui_framebuffers_.Count(); i++) {
+    for (UInt32 i = 0; i < vulkan_ctx->imgui_framebuffers_.Count(); i++)
+    {
         VkImageView view = vulkan_ctx->swapchain_image_views_[i]->GetNativeHandleT<VkImageView>();
         framebuffer_create_info.pAttachments = &view;
         VerifyVulkanResult(vkCreateFramebuffer(vulkan_ctx->device_, &framebuffer_create_info, nullptr, &vulkan_ctx->imgui_framebuffers_[i]));
@@ -532,24 +628,29 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext *ctx) {
 #endif
 }
 
-void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext *ctx) {
-    auto vulkan_ctx = static_cast<GfxContext_Vulkan *>(ctx);
+void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext* ctx)
+{
+    auto vulkan_ctx = static_cast<GfxContext_Vulkan*>(ctx);
     vkDeviceWaitIdle(vulkan_ctx->device_);
 #if USE_IMGUI
     ImGui_ImplVulkan_Shutdown();
     vkDestroyRenderPass(vulkan_ctx->device_, vulkan_ctx->imgui_render_pass_, nullptr);
-    for (const auto framebuffer: vulkan_ctx->imgui_framebuffers_) {
+    for (const auto framebuffer : vulkan_ctx->imgui_framebuffers_)
+    {
         vkDestroyFramebuffer(vulkan_ctx->device_, framebuffer, nullptr);
     }
-    if (vulkan_ctx->imgui_pool_) {
+    if (vulkan_ctx->imgui_pool_)
+    {
         vkDestroyDescriptorPool(vulkan_ctx->device_, vulkan_ctx->imgui_pool_, nullptr);
     }
 #endif
     vulkan_ctx->transfer_pool_ = nullptr;
-    for (auto img: vulkan_ctx->swapchain_images_) {
+    for (auto img : vulkan_ctx->swapchain_images_)
+    {
         Delete(img);
     }
-    for (auto img_view: vulkan_ctx->swapchain_image_views_) {
+    for (auto img_view : vulkan_ctx->swapchain_image_views_)
+    {
         Delete(img_view);
     }
     vulkan_ctx->swapchain_images_.Clear();
@@ -557,32 +658,44 @@ void GfxContext_Vulkan::PreVulkanGfxContextDestroyed(GfxContext *ctx) {
     vulkan_ctx->swapchain_image_desc_ = ImageDesc::Default();
 }
 
-void GfxContext_Vulkan::WaitForDeviceIdle() { vkDeviceWaitIdle(device_); }
+void GfxContext_Vulkan::WaitForDeviceIdle()
+{
+    vkDeviceWaitIdle(device_);
+}
 
-void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type) { vkQueueWaitIdle(GetQueue(type)); }
+void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type)
+{
+    vkQueueWaitIdle(GetQueue(type));
+}
 
-UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc &create_info, RHI::RenderPass *render_pass) {
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, RHI::RenderPass* render_pass)
+{
     return MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
 
-Optional<int32_t> GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync(Semaphore *signal_semaphore = nullptr) {
+Optional<int32_t> GfxContext_Vulkan::GetCurrentSwapChainImageIndexSync(Semaphore* signal_semaphore = nullptr)
+{
     uint32_t image_idx;
     VkSemaphore semaphore = VK_NULL_HANDLE;
-    if (signal_semaphore != nullptr) {
+    if (signal_semaphore != nullptr)
+    {
         semaphore = signal_semaphore->GetNativeHandleT<VkSemaphore>();
     }
     VkResult result = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX, semaphore, VK_NULL_HANDLE, &image_idx);
-    if (result == VK_SUCCESS) {
+    if (result == VK_SUCCESS)
+    {
         return MakeOptional<int32_t>(image_idx);
     }
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
         return {};
     }
     Log(Fatal) << "获取交换链图像索引失败: "_es + VulkanErrorToString(result);
     return {};
 }
 
-SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc &desc) {
+SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc& desc)
+{
     auto rtn = MakeShared<DescriptorSetLayout_Vulkan>(desc);
     // #ifdef ELBOW_DEBUG
     //     VkDebugUtilsObjectNameInfoEXT name_info{};
@@ -595,15 +708,18 @@ SharedPtr<DescriptorSetLayout> GfxContext_Vulkan::CreateDescriptorSetLayout(cons
     return rtn;
 }
 
-UniquePtr<Semaphore> GfxContext_Vulkan::Create_Semaphore(uint64_t init_value, bool timeline) {
+UniquePtr<Semaphore> GfxContext_Vulkan::Create_Semaphore(uint64_t init_value, bool timeline)
+{
     return MakeUnique<Semaphore_Vulkan>(init_value, timeline);
 }
 
-static bool InternalPresent(uint32_t image_index, const Semaphore *wait_semaphore) {
+static bool InternalPresent(uint32_t image_index, const Semaphore* wait_semaphore)
+{
     VkPresentInfoKHR present_info{};
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     VkSemaphore semaphore = VK_NULL_HANDLE;
-    if (wait_semaphore != nullptr) {
+    if (wait_semaphore != nullptr)
+    {
         present_info.waitSemaphoreCount = 1;
         semaphore = wait_semaphore->GetNativeHandleT<VkSemaphore>();
         present_info.pWaitSemaphores = &semaphore;
@@ -613,59 +729,87 @@ static bool InternalPresent(uint32_t image_index, const Semaphore *wait_semaphor
     present_info.pSwapchains = &swapchain;
     present_info.pImageIndices = &image_index;
     VkResult result = vkQueuePresentKHR(GetVulkanGfxContext()->GetQueue(QueueFamilyType::Present), &present_info);
-    if (result == VK_SUCCESS) {
+    if (result == VK_SUCCESS)
+    {
         return true;
     }
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
         return false;
     }
     Log(Fatal) << "交换链呈现操作提交失败: "_es + VulkanErrorToString(result);
     return false;
 }
 
-bool GfxContext_Vulkan::Present(uint32_t image_index, Semaphore *wait_semaphore) { return InternalPresent(image_index, wait_semaphore); }
+bool GfxContext_Vulkan::Present(uint32_t image_index, Semaphore* wait_semaphore)
+{
+    return InternalPresent(image_index, wait_semaphore);
+}
 
-ImageView *GfxContext_Vulkan::GetSwapChainView(UInt32 index) {
+ImageView* GfxContext_Vulkan::GetSwapChainView(UInt32 index)
+{
     Assert(index < swapchain_image_views_.Count(), "交换链索引超出范围");
     return swapchain_image_views_[index];
 }
 
-Image *GfxContext_Vulkan::GetSwapChainImage(UInt32 index) {
+Image* GfxContext_Vulkan::GetSwapChainImage(UInt32 index)
+{
     Assert(index < swapchain_images_.Count(), "交换链索引超出范围");
     return swapchain_images_[index];
 }
 
-GfxContext_Vulkan *RHI::GetVulkanGfxContext() { return static_cast<GfxContext_Vulkan *>(GetGfxContext()); }
+GfxContext_Vulkan* RHI::GetVulkanGfxContext()
+{
+    return static_cast<GfxContext_Vulkan*>(GetGfxContext());
+}
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
-                                                    const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data) {
-    const char *message_type = nullptr;
-    if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
+                                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data)
+{
+    const char* message_type = nullptr;
+    if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+    {
         message_type = "General";
-    } else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+    }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+    {
         message_type = "Validation";
-    } else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
+    }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+    {
         message_type = "Performance";
-    } else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT) {
+    }
+    else if (type & VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT)
+    {
         message_type = "Device Address Binding";
-    } else {
+    }
+    else
+    {
         message_type = "Unknown";
     }
-    if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+    if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
         Log(Error) << String::Format("[{}] {}", message_type, callback_data->pMessage);
-    } else if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    }
+    else if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
         Log(Warn) << String::Format("[{}] {}", message_type, callback_data->pMessage);
-    } else if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    }
+    else if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    {
         Log(Info) << String::Format("[{}] {}", message_type, callback_data->pMessage);
-    } else {
+    }
+    else
+    {
     }
     return VK_FALSE;
 }
 
-static void CreateInstance(VkInstance &instance) {
+static void CreateInstance(VkInstance& instance)
+{
     ProfileScope _(__func__);
-    auto *rhi_cfg = GetConfig<PlatformConfig>();
-    auto *core_cfg = GetConfig<CoreConfig>();
+    auto* rhi_cfg = GetConfig<PlatformConfig>();
+    auto* core_cfg = GetConfig<CoreConfig>();
     VkApplicationInfo app_info{};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName = core_cfg->GetAppName().Data();
@@ -674,11 +818,13 @@ static void CreateInstance(VkInstance &instance) {
     app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
     app_info.apiVersion = VK_API_VERSION_1_3;
 
-    if (rhi_cfg->GetValidEnableValidationLayer()) {
+    if (rhi_cfg->GetValidEnableValidationLayer())
+    {
         required_instance_extensions.Add("VK_EXT_debug_utils");
     }
     required_instance_extensions = Evt_PostProcessVulkanExtensions.InvokeOnce(required_instance_extensions);
-    for (auto &extension: required_instance_extensions) {
+    for (auto& extension : required_instance_extensions)
+    {
         Log(Info) << "  Enabled instance extension: "_es + extension;
     }
 
@@ -686,14 +832,15 @@ static void CreateInstance(VkInstance &instance) {
     instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_info.pApplicationInfo = &app_info;
     const auto required_extension_cstr =
-            required_instance_extensions | range::view::Select([](const String &str) { return str.Data(); }) | range::To<Array<const char *>>();
+        required_instance_extensions | range::view::Select([](const String& str) { return str.Data(); }) | range::To<Array<const char*>>();
     instance_info.enabledExtensionCount = required_extension_cstr.Count();
     instance_info.ppEnabledExtensionNames = required_extension_cstr.Data();
     Log(Info) << "  Enabled validation layer: "_es + String::FromBool(rhi_cfg->GetValidEnableValidationLayer());
     VkDebugUtilsMessengerCreateInfoEXT debug_info = {};
-    if (rhi_cfg->GetValidEnableValidationLayer()) {
+    if (rhi_cfg->GetValidEnableValidationLayer())
+    {
         Assert(SupportValidationLayer("VK_LAYER_KHRONOS_validation"), "Validation layer is not supported!");
-        const char *validation_layer_names = "VK_LAYER_KHRONOS_validation";
+        const char* validation_layer_names = "VK_LAYER_KHRONOS_validation";
         debug_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debug_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         debug_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
@@ -702,48 +849,57 @@ static void CreateInstance(VkInstance &instance) {
         instance_info.enabledLayerCount = 1;
         instance_info.ppEnabledLayerNames = &validation_layer_names;
         instance_info.pNext = &debug_info;
-    } else {
+    }
+    else
+    {
         instance_info.enabledLayerCount = 0;
         instance_info.pNext = nullptr;
     }
     VerifyVulkanResult(vkCreateInstance(&instance_info, nullptr, AddressOf(instance)));
 }
 
-static void DestroyInstance(VkInstance &instance) {
+static void DestroyInstance(VkInstance& instance)
+{
     vkDestroyInstance(instance, nullptr);
     instance = VK_NULL_HANDLE;
 }
 
-static void CreateSurface(Surface *&surface, const VkInstance instance) {
+static void CreateSurface(Surface*& surface, const VkInstance instance)
+{
     const auto window = PlatformWindowManager::GetMainWindow();
     Assert(window != nullptr, "Window must be initialized before create surface!");
     surface = window->CreateSurface(instance, GraphicsAPI::Vulkan);
 }
 
-static void DestroySurface(Surface *&surface) {
+static void DestroySurface(Surface*& surface)
+{
     const auto window = PlatformWindowManager::GetMainWindow();
     Assert(window != nullptr, "Window must be destroyed after surface destroyed!");
     window->DestroySurface(surface);
     surface = nullptr;
 }
 
-static bool CheckDeviceExtensionSupport(VkPhysicalDevice device) {
+static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
+{
     uint32_t cnt;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, nullptr);
     Array<VkExtensionProperties> extensions;
     extensions.Resize(cnt);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &cnt, extensions.Data());
     Array my_required_extensions = {"VK_KHR_swapchain"};
-    for (Int32 i = my_required_extensions.Count() - 1; i >= 0; --i) {
+    for (Int32 i = my_required_extensions.Count() - 1; i >= 0; --i)
+    {
         if (range::AnyOf(extensions,
-                         [ext = String(my_required_extensions[i])](const VkExtensionProperties &prop) { return ext == prop.extensionName; })) {
+                         [ext = String(my_required_extensions[i])](const VkExtensionProperties& prop) { return ext == prop.extensionName; }))
+        {
             my_required_extensions.FastRemoveAt(i);
         }
     }
     return my_required_extensions.Empty();
 }
 
-static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surface *surface) {
+static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surface* surface)
+{
     QueueFamilyIndices indices;
     UInt32 queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
@@ -751,22 +907,28 @@ static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surfa
     queue_families.Resize(queue_family_count);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.Data());
     int i = 0;
-    for (const auto &queue_family: queue_families) {
-        if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    for (const auto& queue_family : queue_families)
+    {
+        if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
             indices.graphics_family = i;
         }
         VkBool32 present_support = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, static_cast<VkSurfaceKHR>(surface->GetNativeHandle()), &present_support);
-        if (present_support) {
+        if (present_support)
+        {
             indices.present_family = i;
         }
-        if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+        if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT)
+        {
             indices.transfer_family = i;
         }
-        if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+        if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT)
+        {
             indices.compute_family = i;
         }
-        if (indices.IsComplete()) {
+        if (indices.IsComplete())
+        {
             break;
         }
         ++i;
@@ -774,7 +936,8 @@ static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, const Surfa
     return indices;
 }
 
-static bool IsDeviceSuitable(VkPhysicalDevice device, Surface *surface) {
+static bool IsDeviceSuitable(VkPhysicalDevice device, Surface* surface)
+{
     QueueFamilyIndices indices = FindQueueFamilies(device, surface);
     if (!indices.IsComplete())
         return false;
@@ -788,13 +951,17 @@ static bool IsDeviceSuitable(VkPhysicalDevice device, Surface *surface) {
     return features.samplerAnisotropy;
 }
 
-static void SelectPhysicalDevice(VkPhysicalDevice &physical_device, VkInstance instance, Surface *surface) {
+static void SelectPhysicalDevice(VkPhysicalDevice& physical_device, VkInstance instance, Surface* surface)
+{
     ProfileScope _(__func__);
-    if (physical_devices.Empty()) {
+    if (physical_devices.Empty())
+    {
         physical_devices = GetAvailablePhysicalDevices(instance);
     }
-    for (auto candidate: physical_devices) {
-        if (IsDeviceSuitable(candidate, surface)) {
+    for (auto candidate : physical_devices)
+    {
+        if (IsDeviceSuitable(candidate, surface))
+        {
             physical_device = candidate;
             break;
         }
@@ -802,15 +969,18 @@ static void SelectPhysicalDevice(VkPhysicalDevice &physical_device, VkInstance i
     Assert(physical_device != VK_NULL_HANDLE, "Failed to find a suitable GPU!");
 }
 
-static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface *surface, OUT VkDevice &device, OUT VkQueue &graphics_queue,
-                                OUT VkQueue &present_queue, OUT VkQueue &transfer_queue, OUT VkQueue &compute_queue) {
+static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface* surface, OUT VkDevice& device, OUT VkQueue& graphics_queue,
+                                OUT VkQueue& present_queue, OUT VkQueue& transfer_queue, OUT VkQueue& compute_queue)
+{
     auto indices = FindQueueFamilies(physical_device, surface);
     Assert(indices.IsComplete(), "Find uncompleted queue families.");
     Array<VkDeviceQueueCreateInfo> queue_create_infos;
     queue_create_infos.Reserve(2);
-    Array unique_queue_families = Array{*indices.graphics_family, *indices.present_family, *indices.transfer_family, *indices.compute_family}.Unique();
+    Array unique_queue_families =
+        Array{*indices.graphics_family, *indices.present_family, *indices.transfer_family, *indices.compute_family}.Unique();
     float queue_priority = 1.0f;
-    for (UInt32 queue_family: unique_queue_families) {
+    for (UInt32 queue_family : unique_queue_families)
+    {
         VkDeviceQueueCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         create_info.queueFamilyIndex = queue_family;
@@ -838,10 +1008,13 @@ static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface *surfa
     create_info.enabledExtensionCount = required_extension_cstrs.Count();
     create_info.ppEnabledExtensionNames = required_extension_cstrs.Data();
     Array layers = {"VK_LAYER_KHRONOS_validation"};
-    if (cfg->GetValidEnableValidationLayer()) {
+    if (cfg->GetValidEnableValidationLayer())
+    {
         create_info.enabledLayerCount = 1;
         create_info.ppEnabledLayerNames = layers.Data();
-    } else {
+    }
+    else
+    {
         create_info.enabledLayerCount = 0;
     }
     VerifyVulkanResult(vkCreateDevice(physical_device, &create_info, nullptr, &device));
@@ -851,19 +1024,23 @@ static void CreateLogicalDevice(VkPhysicalDevice physical_device, Surface *surfa
     vkGetDeviceQueue(device, *indices.compute_family, 0, &compute_queue);
 }
 
-static void DestroyLogicalDevice(VkDevice &device) {
+static void DestroyLogicalDevice(VkDevice& device)
+{
     vkDestroyDevice(device, nullptr);
     device = nullptr;
 }
 
-static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, const Surface *surface, VkPhysicalDevice physical_device,
-                              VkDevice device, ImageDesc &desc, Vector2f size, OUT VkSwapchainKHR &swapchain) {
+static Format CreateSwapChain(const SwapChainSupportInfo& swapchain_support, const Surface* surface, VkPhysicalDevice physical_device,
+                              VkDevice device, ImageDesc& desc, Vector2f size, OUT VkSwapchainKHR& swapchain)
+{
     const auto cfg = GetConfig<PlatformConfig>();
     auto surface_handle = static_cast<VkSurfaceKHR>(surface->GetNativeHandle());
 
     SurfaceFormat available_format{};
-    for (auto &surface_format: swapchain_support.formats) {
-        if (surface_format.format == Format::B8G8R8A8_UNorm && surface_format.color_space == ColorSpace::sRGB) {
+    for (auto& surface_format : swapchain_support.formats)
+    {
+        if (surface_format.format == Format::B8G8R8A8_UNorm && surface_format.color_space == ColorSpace::sRGB)
+        {
             available_format = surface_format;
         }
     }
@@ -890,11 +1067,14 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
 
     QueueFamilyIndices indices = FindQueueFamilies(physical_device, surface);
     uint32_t queue_family_indices[] = {*indices.graphics_family, *indices.present_family};
-    if (indices.graphics_family != indices.present_family) {
+    if (indices.graphics_family != indices.present_family)
+    {
         swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         swapchain_create_info.queueFamilyIndexCount = 2;
         swapchain_create_info.pQueueFamilyIndices = queue_family_indices;
-    } else {
+    }
+    else
+    {
         swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
     swapchain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -903,16 +1083,17 @@ static Format CreateSwapChain(const SwapChainSupportInfo &swapchain_support, con
     swapchain_create_info.clipped = VK_TRUE;
     VerifyVulkanResult(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, AddressOf(swapchain)));
 
-
     return VkFormatToRHIFormat(swapchain_create_info.imageFormat);
 }
 
-static void DestroySwapChain(VkDevice device, VkSwapchainKHR &swapchain) {
+static void DestroySwapChain(VkDevice device, VkSwapchainKHR& swapchain)
+{
     vkDestroySwapchainKHR(device, swapchain, nullptr);
     swapchain = nullptr;
 }
 
-GfxContext_Vulkan::GfxContext_Vulkan() {
+GfxContext_Vulkan::GfxContext_Vulkan()
+{
     post_vulkan_gfx_context_init_ = Evt_OnGfxContextPostInitialized.AddBind(&ThisType::PostVulkanGfxContextInit);
     pre_vulkan_gfx_context_destroyed_ = Evt_OnGfxContextPreDestroyed.AddBind(&ThisType::PreVulkanGfxContextDestroyed);
     available_layers = GetAvailableLayers();
@@ -935,8 +1116,10 @@ GfxContext_Vulkan::GfxContext_Vulkan() {
     Log(Info) << "Using device: "_es + name;
 }
 
-void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height) {
-    for (auto &image_view: swapchain_image_views_) {
+void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
+{
+    for (auto& image_view : swapchain_image_views_)
+    {
         Delete(image_view);
     }
     swapchain_image_views_.Clear();
@@ -949,24 +1132,26 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height) {
     auto vk_imgs = Array<VkImage>{};
     vk_imgs.Resize(img_cnt);
     VerifyVulkanResult(vkGetSwapchainImagesKHR(device_, swapchain_, &img_cnt, vk_imgs.Data()));
-    if (img_cnt <= 0) {
+    if (img_cnt <= 0)
+    {
         Log(Fatal) << "创建交换链失败";
     }
     swapchain_images_ = //
-            vk_imgs | range::view::Enumerate | range::view::Select([this](const auto &pair) {
-                auto &desc = swapchain_image_desc_;
-                const auto &[idx, img] = pair;
-                return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
-            }) |
-            range::To<Array<Image_Vulkan *>>();
+        vk_imgs | range::view::Enumerate | range::view::Select([this](const auto& pair) {
+            auto& desc = swapchain_image_desc_;
+            const auto& [idx, img] = pair;
+            return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
+        }) |
+        range::To<Array<Image_Vulkan*>>();
     swapchain_image_views_ = //
-            swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto &pair) {
-                const auto &[idx, img] = pair;
-                ImageViewDesc desc{img};
-                return New<ImageView_Vulkan>(desc);
-            }) |
-            range::To<Array<ImageView_Vulkan *>>();
-    for (const auto framebuffer: imgui_framebuffers_) {
+        swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto& pair) {
+            const auto& [idx, img] = pair;
+            ImageViewDesc desc{img};
+            return New<ImageView_Vulkan>(desc);
+        }) |
+        range::To<Array<ImageView_Vulkan*>>();
+    for (const auto framebuffer : imgui_framebuffers_)
+    {
         vkDestroyFramebuffer(device_, framebuffer, nullptr);
     }
     VkFramebufferCreateInfo framebuffer_create_info = {};
@@ -977,71 +1162,84 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height) {
     framebuffer_create_info.layers = 1;
     framebuffer_create_info.attachmentCount = 1;
     imgui_framebuffers_.Resize(swapchain_image_views_.Count());
-    for (UInt32 i = 0; i < imgui_framebuffers_.Count(); i++) {
+    for (UInt32 i = 0; i < imgui_framebuffers_.Count(); i++)
+    {
         VkImageView view = swapchain_image_views_[i]->GetNativeHandleT<VkImageView>();
         framebuffer_create_info.pAttachments = &view;
         VerifyVulkanResult(vkCreateFramebuffer(device_, &framebuffer_create_info, nullptr, &imgui_framebuffers_[i]));
     }
 }
 
-SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const DescriptorSetPoolDesc &desc) {
+SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const DescriptorSetPoolDesc& desc)
+{
     return MakeShared<DescriptorSetPool_Vulkan>(desc);
 }
 
-void GfxContext_Vulkan::BeginImGuiFrame(RHI::CommandBuffer &cmd, Int32 img_index, Int32 w, Int32 h) {
-    VkCommandBuffer buffer = cmd.GetNativeHandleT<VkCommandBuffer>();
-    auto cfg = GetConfig<PlatformConfig>();
-    auto task = Just() | Then([buffer, this, img_index, w, h]() {
+void GfxContext_Vulkan::BeginImGuiFrame(RHI::CommandBuffer& cmd, Int32 img_index, Int32 w, Int32 h)
+{
+    auto Buffer = cmd.GetNativeHandleT<VkCommandBuffer>();
+    const auto Cfg = GetConfig<PlatformConfig>();
+    const Color ClearColor = Cfg->GetDefaultClearColor();
+    auto Task = Just() | Then([Buffer, this, img_index, w, h, ClearColor]() {
                     ImGui_ImplVulkan_NewFrame();
-                    VkDebugUtilsLabelEXT debug_label_info = {};
-                    debug_label_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-                    debug_label_info.pLabelName = "ImGui Pass";
-                    BeginDebugLabel(buffer, debug_label_info);
-                    VkRenderPassBeginInfo info = {};
-                    VkClearValue clear_value;
-                    Color clear_color = Color::Clear();
-                    clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
-                    info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                    info.renderPass = imgui_render_pass_;
-                    info.framebuffer = imgui_framebuffers_[img_index];
-                    info.renderArea.extent.width = w;
-                    info.renderArea.extent.height = h;
-                    info.clearValueCount = 1;
-                    info.pClearValues = &clear_value;
-                    vkCmdBeginRenderPass(buffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+                    VkDebugUtilsLabelEXT DebugLabelInfo = {};
+                    DebugLabelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                    DebugLabelInfo.pLabelName = "ImGui Pass";
+                    BeginDebugLabel(Buffer, DebugLabelInfo);
+                    VkRenderPassBeginInfo Info = {};
+                    VkClearValue ClearValue;
+                    ClearValue.color = VkClearColorValue{ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A};
+                    Info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                    Info.renderPass = imgui_render_pass_;
+                    Info.framebuffer = imgui_framebuffers_[img_index];
+                    Info.renderArea.extent.width = w;
+                    Info.renderArea.extent.height = h;
+                    Info.clearValueCount = 1;
+                    Info.pClearValues = &ClearValue;
+                    vkCmdBeginRenderPass(Buffer, &Info, VK_SUBPASS_CONTENTS_INLINE);
                 });
-    if (cfg->GetEnableMultithreadRender()) {
-        ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
-    } else {
-        ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
+    if (Cfg->GetEnableMultithreadRender())
+    {
+        ThreadManager::ScheduleFutureAsync(Task, NamedThread::Render);
+    }
+    else
+    {
+        ThreadManager::ScheduleFutureAsync(Task, NamedThread::Game, true);
     }
 }
 
-void GfxContext_Vulkan::EndImGuiFrame(RHI::CommandBuffer &buffer) {
+void GfxContext_Vulkan::EndImGuiFrame(RHI::CommandBuffer& buffer)
+{
     auto cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([&buffer]() {
                     ImGui::Render();
                     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), buffer.GetNativeHandleT<VkCommandBuffer>());
                     vkCmdEndRenderPass(buffer.GetNativeHandleT<VkCommandBuffer>());
                 });
-    if (cfg->GetEnableMultithreadRender()) {
+    if (cfg->GetEnableMultithreadRender())
+    {
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Render);
-    } else {
+    }
+    else
+    {
         ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
     }
 }
 
-SharedPtr<Sampler> GfxContext_Vulkan::CreateSampler(const SamplerDesc &desc, StringView debug_name) {
+SharedPtr<Sampler> GfxContext_Vulkan::CreateSampler(const SamplerDesc& desc, StringView debug_name)
+{
     auto rtn = MakeShared<Sampler_Vulkan>(desc);
 #ifdef ELBOW_DEBUG
-    if (!debug_name.IsEmpty()) {
+    if (!debug_name.IsEmpty())
+    {
         SetObjectDebugName(VK_OBJECT_TYPE_SAMPLER, rtn->GetNativeHandle(), debug_name);
     }
 #endif
     return rtn;
 }
 
-GfxContext_Vulkan::~GfxContext_Vulkan() {
+GfxContext_Vulkan::~GfxContext_Vulkan()
+{
     DestroySwapChain(device_, swapchain_);
     DestroySurface(surface_);
     DestroyLogicalDevice(device_);

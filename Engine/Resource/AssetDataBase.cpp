@@ -76,7 +76,7 @@ ExecFuture<ObjectHandle> InternalImport(StringView InQuery, StringView InPath, O
         NewMeta.Path = InPath;
         auto* Asset = ObjectManager::CreateNewObjectAsync<T>().Get();
         NewMeta.ObjectHandle = InRegistry.NextPersistentHandle().Get();
-        if constexpr (SameAs<T, Texture2D>)
+        if constexpr (Traits::SameAs<T, Texture2D>)
         {
             if (InPath.EndsWith(".exr") || InPath.EndsWith(".hdr"))
             {

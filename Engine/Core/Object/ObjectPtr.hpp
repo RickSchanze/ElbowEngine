@@ -129,6 +129,16 @@ public:
         }
         return object_ == other->GetHandle();
     }
+
+    void Serialization_Load(InputArchive& Archive)
+    {
+
+    }
+
+    void Serialization_Save(OutputArchive& Archive) const
+    {
+
+    }
 };
 
 template<typename T>

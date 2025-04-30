@@ -15,7 +15,7 @@ struct Rotator
 {
     static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "T must be float or double");
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteNumber("Yaw", Yaw);
         Archive.WriteNumber("Pitch", Pitch);

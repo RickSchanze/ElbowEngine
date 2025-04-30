@@ -14,22 +14,27 @@ struct ESTRUCT() Transform
 
     void SetRotation(Quaternionf now);
     void SetRotation(Vector3f now);
-    Vector3f GetRotationEuler() const
+
+    ELBOW_FORCE_INLINE Vector3f GetRotationEuler() const
     {
         return mCachedEuler;
     }
-    Quaternionf GetRotationQuaterion() const
+
+    ELBOW_FORCE_INLINE Quaternionf GetRotationQuaterion() const
     {
         return mRotation;
     }
-    Vector3f GetLocation() const
+
+    ELBOW_FORCE_INLINE Vector3f GetLocation() const
     {
         return mLocation;
     }
-    Vector3f GetScale() const
+
+    ELBOW_FORCE_INLINE Vector3f GetScale() const
     {
         return mScale;
     }
+
     Vector3f GetForwardVector() const;
     Vector3f GetRightVector() const;
 

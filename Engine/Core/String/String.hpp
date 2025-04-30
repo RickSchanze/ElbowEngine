@@ -1,9 +1,9 @@
 #pragma once
+#include "Core/Collection/Array.hpp"
+#include "Core/TypeAlias.hpp"
 #include <format>
 #include <string>
 #include <utility>
-#include "Core/Collection/Array.hpp"
-#include "Core/TypeAlias.hpp"
 
 class String;
 

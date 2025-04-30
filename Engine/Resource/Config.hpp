@@ -5,14 +5,17 @@
 #pragma once
 #include "Core/Config/IConfig.hpp"
 
+#include GEN_HEADER("Config.generated.hpp")
+
 class ECLASS(Config = "Config/Resource.cfg") ResourceConfig : public IConfig
 {
+    GENERATED_BODY(ResourceConfig)
 public:
     EFIELD()
-    DEFINE_CFG_ITEM(Array<String>, shader_search_path, ShaderSearchPath, {"Assets/Shader"});
+    DEFINE_CFG_ITEM(Array<String>, mShaderSearchPath, ShaderSearchPath, {"Assets/Shader"});
 
     EFIELD()
-    DEFINE_CFG_ITEM(String, shader_intermediate_path, ShaderIntermediatePath, {"Intermediate/Shader"});
+    DEFINE_CFG_ITEM(String, mShaderIntermediatePath, ShaderIntermediatePath, {"Intermediate/Shader"});
 
 public:
     /**

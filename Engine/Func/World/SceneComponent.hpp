@@ -15,7 +15,7 @@ class ECLASS() SceneComponent : public Component
 public:
     const Transform &GetTransform() const
     {
-        return transform_;
+        return mTransform;
     }
 
     const Transform &GetWorldTransform() const
@@ -27,7 +27,7 @@ public:
 
     Vector3f GetLocation() const
     {
-        return transform_.mLocation;
+        return mTransform.GetLocation();
     }
 
     Vector3f GetWorldLocation() const;
@@ -48,7 +48,7 @@ public:
 
     Vector3f GetScale() const
     {
-        return mWorldTransform.mScale;
+        return mWorldTransform.GetScale();
     }
 
     void SetScale(const Vector3f &scale);
@@ -69,7 +69,7 @@ public:
 
 protected:
     EFIELD()
-    Transform transform_;
+    Transform mTransform;
     Transform mWorldTransform;
 
     bool transform_dirty_ = true;

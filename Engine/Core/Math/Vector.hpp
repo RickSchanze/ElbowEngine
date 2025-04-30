@@ -17,7 +17,7 @@ struct Vector4
 public:
     typedef Vector4 ThisStruct;
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);
@@ -107,7 +107,7 @@ struct Vector3
 public:
     typedef Vector3 ThisStruct;
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);
@@ -208,7 +208,7 @@ struct Vector2
 {
     typedef Vector2 ThisStruct;
 
-    void Serialization_Save(OutputArchive& Archive)
+    void Serialization_Save(OutputArchive& Archive) const
     {
         Archive.WriteNumber("X", X);
         Archive.WriteNumber("Y", Y);

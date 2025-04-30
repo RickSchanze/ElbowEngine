@@ -62,14 +62,14 @@ Rect2Df Sprite::GetUVRange(const Texture2D *tex, const UInt64 id) {
     // https://learn.microsoft.com/zh-cn/windows/win32/direct3d9/directly-mapping-texels-to-pixels?redirectedfrom=MSDN
     // https://gamedev.stackexchange.com/questions/46963/how-to-avoid-texture-bleeding-in-a-texture-atlas?newreg=0dbdf79fa0214a718ac7cd38488c56df
     auto rect = static_cast<Rect2Df>(tex->GetSpriteRange(id).Range);
-    rect.pos += 0.5;
-    rect.size.X -= 1;
-    rect.size.Y -= 1;
+    rect.Pos += 0.5;
+    rect.Size.X -= 1;
+    rect.Size.Y -= 1;
     const Float w = static_cast<Float>(tex->GetWidth());
     const Float h = static_cast<Float>(tex->GetHeight());
-    rect.pos.X /= w;
-    rect.pos.Y /= h;
-    rect.size.X /= w;
-    rect.size.Y /= h;
+    rect.Pos.X /= w;
+    rect.Pos.Y /= h;
+    rect.Size.X /= w;
+    rect.Size.Y /= h;
     return rect;
 }
