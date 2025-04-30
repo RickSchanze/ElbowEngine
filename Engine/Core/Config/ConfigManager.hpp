@@ -7,6 +7,8 @@
 #include <fstream>
 
 #include "Core/FileSystem/File.hpp"
+#include "Core/FileSystem/Folder.hpp"
+#include "Core/FileSystem/Path.hpp"
 #include "Core/Reflection/Reflection.hpp"
 #include "Core/Serialization/XMLArchive.hpp"
 
@@ -53,6 +55,10 @@ T* ConfigManager::GetConfig()
     if (!File::IsExist(ConfigPath))
     {
         VLOG_WARN("没有找到路径为", *ConfigPath, "的配置文件", *ConfigType->GetName(), "! 将会重新创建一个.");
+        if (!Path::IsExist(Path::GetParent(ConfigPath)))
+        {
+            Folder::CreateFolder(Path::GetParent(ConfigPath));
+        }
         std::ofstream ConfigFileStream{*ConfigPath};
         // TODO: Text序列化信息可配置
         XMLOutputArchive ConfigFileArchive{ConfigFileStream};
@@ -61,7 +67,15 @@ T* ConfigManager::GetConfig()
         mCachedConfigs.Add(ConfigType, Config);
         return Config;
     }
-    return nullptr;
+    else
+    {
+        std::ifstream ConfigFileStream{*ConfigPath};
+        XMLInputArchive ConfigFileArchive{ConfigFileStream};
+        T* Config = New<T>();
+        ConfigFileArchive.Deserialize(*Config);
+        mCachedConfigs.Add(ConfigType, Config);
+        return Config;
+    }
 }
 
 template <typename T>

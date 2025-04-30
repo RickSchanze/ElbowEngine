@@ -48,6 +48,13 @@ public:
     virtual void BeginScope() = 0;
     virtual void EndScope() = 0;
 
+    template <typename TKey, typename TValue>
+    void WriteKeyValue(const TKey& Key, const TValue& Value)
+    {
+        WriteType("Key", Key);
+        WriteType("Value", Value);
+    }
+
     template <typename T>
         requires(!Traits::IsEnum<T>)
     ELBOW_FORCE_INLINE void WriteType(const StringView InName, const T& Value)
@@ -155,6 +162,13 @@ public:
     virtual void BeginScope() = 0;
     virtual void EndScope() = 0;
 
+    template <typename TKey, typename TValue>
+    void ReadKeyValue(TKey& Key, TValue& Value)
+    {
+        ReadType("Key", Key);
+        ReadType("Value", Value);
+    }
+
     template <typename T>
         requires(!Traits::IsEnum<T>)
     ELBOW_FORCE_INLINE void ReadType(const StringView InName, T& Value)
@@ -226,9 +240,22 @@ public:
 template <typename T>
 void Array<T>::Serialization_Load(InputArchive& Archive)
 {
+    Int64 Size;
+    Archive.ReadArraySize(Size);
+    for (Int64 i = 0; i < Size; ++i)
+    {
+        T Item;
+        Archive.ReadType(Item);
+        Add(Item);
+    }
 }
 
 template <typename T>
 void Array<T>::Serialization_Save(OutputArchive& Archive) const
 {
+    Archive.WriteArraySize(Count());
+    for (const auto& Item : *this)
+    {
+        Archive.WriteType(Item);
+    }
 }

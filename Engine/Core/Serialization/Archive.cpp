@@ -3,3 +3,4 @@
 //
 
 #include "Archive.hpp"
+#include "cereal/types/map.hpp"

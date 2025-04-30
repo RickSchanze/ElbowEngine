@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 set(VULKAN_PATH "C:/VulkanSDK/1.3.296.0" CACHE PATH "Vulkan SDK path")
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Echo/Software/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/kita/Documents/Projects/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 # 设置使用 Ninja 和 Clang
 set(CMAKE_GENERATOR "Ninja")

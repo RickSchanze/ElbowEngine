@@ -5,18 +5,36 @@
 #include "Core/Core.hpp"
 #include "Object.hpp"
 
-
-struct ObjectPtrBase {
+struct ObjectPtrBase
+{
     typedef ObjectPtrBase ThisClass;
-    static void ConstructSelf(void *self) { new (self) ObjectPtrBase(); }
-    static void DestructSelf(void *self) { static_cast<ObjectPtrBase *>(self)->~ObjectPtrBase(); }
-    const Type *GetType() { return TypeOf<ObjectPtrBase>(); }
-    static const Type *GetStaticType() { return TypeOf<ObjectPtrBase, true>(); }
-    static Type *ConstructType() { return Type::Create<ObjectPtrBase>("ObjectPtr") | refl_helper::AddField("object", &ObjectPtrBase::object_); }
+    static void ConstructSelf(void* self)
+    {
+        new (self) ObjectPtrBase();
+    }
+    static void DestructSelf(void* self)
+    {
+        static_cast<ObjectPtrBase*>(self)->~ObjectPtrBase();
+    }
+    const Type* GetType()
+    {
+        return TypeOf<ObjectPtrBase>();
+    }
+    static const Type* GetStaticType()
+    {
+        return TypeOf<ObjectPtrBase, true>();
+    }
+    static Type* ConstructType()
+    {
+        return Type::Create<ObjectPtrBase>("ObjectPtr") | refl_helper::AddField("object", &ObjectPtrBase::mObject);
+    }
 
 private:
 public:
-    ~ObjectPtrBase() { SetObject(0); }
+    ~ObjectPtrBase()
+    {
+        SetObject(0);
+    }
 
     /**
      * 设置"Outer"
@@ -48,18 +66,25 @@ public:
     void ModifyOuter(const ObjectHandle handle);
 #endif
 
-    ObjectHandle GetOuter() const { return outer_; }
-    ObjectHandle GetHandle() const { return object_; }
+    ObjectHandle GetOuter() const
+    {
+        return mOuter;
+    }
+    ObjectHandle GetHandle() const
+    {
+        return mObject;
+    }
 
 protected:
-    ObjectHandle outer_ = 0; // 即包含此成员的父对象
-    ObjectHandle object_ = 0; // 引用的Object
+    ObjectHandle mOuter = 0;  // 即包含此成员的父对象
+    ObjectHandle mObject = 0; // 引用的Object
 };
 
 REGISTER_TYPE(ObjectPtrBase)
 
-namespace internal {
-    Object *GetObjectFromObjectManager(ObjectHandle handle);
+namespace internal
+{
+Object* GetObjectFromObjectManager(ObjectHandle handle);
 } // namespace internal
 
 /**
@@ -68,86 +93,125 @@ namespace internal {
  * 但是支持容器操作 即Array<ObjectPtr<>>
  * @tparam T
  */
-template<typename T>
-class ObjectPtr : public ObjectPtrBase {
+template <typename T>
+class ObjectPtr : public ObjectPtrBase
+{
 public:
-    static const Type *GetStaticType() { return TypeOf<ObjectPtrBase>(); }
-    ObjectPtr() : ObjectPtr(nullptr) {}
+    static const Type* GetStaticType()
+    {
+        return TypeOf<ObjectPtrBase>();
+    }
+    ObjectPtr() : ObjectPtr(nullptr)
+    {
+    }
 
-    ObjectPtr(std::nullptr_t) {
+    ObjectPtr(std::nullptr_t)
+    {
         SetObject(0);
     }
 
-    ObjectPtr(T *obj) {
-        if (obj == nullptr) {
+    ObjectPtr(T* obj)
+    {
+        if (obj == nullptr)
+        {
             SetObject(0);
-        } else {
-            SetObject(static_cast<Object *>(obj)->GetHandle());
+        }
+        else
+        {
+            SetObject(static_cast<Object*>(obj)->GetHandle());
         }
     }
 
-    operator T *() {
-        Object *obj = internal::GetObjectFromObjectManager(object_);
-        return reinterpret_cast<T *>(obj);
+    operator T*()
+    {
+        Object* obj = internal::GetObjectFromObjectManager(mObject);
+        return reinterpret_cast<T*>(obj);
     }
 
-    operator T *() const {
-        Object *obj = internal::GetObjectFromObjectManager(object_);
-        return reinterpret_cast<T *>(obj);
+    operator T*() const
+    {
+        Object* obj = internal::GetObjectFromObjectManager(mObject);
+        return reinterpret_cast<T*>(obj);
     }
 
-    T *operator->() { return static_cast<T *>(*this); }
-    const T *operator->() const { return static_cast<T *>(*this); }
+    T* operator->()
+    {
+        return static_cast<T*>(*this);
+    }
+    const T* operator->() const
+    {
+        return static_cast<T*>(*this);
+    }
 
-    T &operator*() { return *static_cast<T *>(*this); }
+    T& operator*()
+    {
+        return *static_cast<T*>(*this);
+    }
 
-    operator bool() { return static_cast<T *>(*this) != nullptr; }
-    operator bool() const { return static_cast<T *>(*this) != nullptr; }
+    operator bool()
+    {
+        return static_cast<T*>(*this) != nullptr;
+    }
+    operator bool() const
+    {
+        return static_cast<T*>(*this) != nullptr;
+    }
 
-    ObjectPtr &operator=(const ObjectPtr &other) {
+    ObjectPtr& operator=(const ObjectPtr& other)
+    {
         if (this == &other)
             return *this;
-        SetObject(other.object_);
+        SetObject(other.mObject);
         return *this;
     }
 
-    ObjectPtr &operator=(const T *other) {
+    ObjectPtr& operator=(const T* other)
+    {
         if (other == nullptr)
             return *this;
         SetObject(other->GetHandle());
         return *this;
     }
 
-    bool operator==(const ObjectPtr & other) const {
-        return object_ == other.object_;
+    bool operator==(const ObjectPtr& other) const
+    {
+        return mObject == other.mObject;
     }
 
-    bool operator==(const T* other) const {
-        if (other == nullptr) {
-            if (object_ == 0) return true;
+    bool operator==(const T* other) const
+    {
+        if (other == nullptr)
+        {
+            if (mObject == 0)
+                return true;
             return false;
         }
-        return object_ == other->GetHandle();
+        return mObject == other->GetHandle();
     }
 
     void Serialization_Load(InputArchive& Archive)
     {
-
+        Archive.ReadNumber("Object", mObject);
     }
 
     void Serialization_Save(OutputArchive& Archive) const
     {
-
+        Archive.WriteNumber("Object", mObject);
     }
 };
 
-template<typename T>
-struct IsObjectPtr : std::false_type {};
+template <typename T>
+struct IsObjectPtr : std::false_type
+{
+};
 
-template<typename T>
-struct IsObjectPtr<ObjectPtr<T>> : std::true_type {};
+template <typename T>
+struct IsObjectPtr<ObjectPtr<T>> : std::true_type
+{
+};
 
-template<typename T>
-struct ObjPtrTraits {
+template <typename T>
+struct ObjPtrTraits
+{
     using Type = typename T::Type;
 };

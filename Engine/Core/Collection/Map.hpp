@@ -5,118 +5,192 @@
 
 #include <unordered_map>
 
-#include "Core/TypeAlias.hpp"
 #include "Core/Serialization/Archive.hpp"
+#include "Core/TypeAlias.hpp"
 
-template<typename Key, typename Value>
-class Map {
+template <typename TKey, typename TValue>
+class Map
+{
 public:
-    using key_type = typename std::unordered_map<Key, Value>::key_type;
-    using mapped_type = typename std::unordered_map<Key, Value>::mapped_type;
-    using value_type = typename std::unordered_map<Key, Value>::value_type;
-    using iterator = typename std::unordered_map<Key, Value>::iterator;
+    using key_type = typename std::unordered_map<TKey, TValue>::key_type;
+    using mapped_type = typename std::unordered_map<TKey, TValue>::mapped_type;
+    using value_type = typename std::unordered_map<TKey, TValue>::value_type;
+    using iterator = typename std::unordered_map<TKey, TValue>::iterator;
 
     Map() = default;
-    Map(const Map &) = default;
-    Map(Map &&) = default;
-    Map &operator=(const Map &) = default;
-    Map &operator=(Map &&) = default;
+    Map(const Map&) = default;
+    Map(Map&&) = default;
+    Map& operator=(const Map&) = default;
+    Map& operator=(Map&&) = default;
 
-    bool Add(const Key &key, const Value &value) {
-        if (!data_.contains(key)) {
-            data_[key] = value;
+    bool Add(const TKey& key, const TValue& value)
+    {
+        if (!mData.contains(key))
+        {
+            mData[key] = value;
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
-    bool Remove(const Key &key) {
-        if (data_.contains(key)) {
-            data_.erase(key);
+    bool Remove(const TKey& key)
+    {
+        if (mData.contains(key))
+        {
+            mData.erase(key);
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
-    bool RemoveByValue(const Value &value) {
-        for (auto it = data_.begin(); it != data_.end();) {
-            if (it->second == value) {
-                data_.erase(it);
+    bool RemoveByValue(const TValue& value)
+    {
+        for (auto it = mData.begin(); it != mData.end();)
+        {
+            if (it->second == value)
+            {
+                mData.erase(it);
                 return true;
             }
         }
         return false;
     }
 
-    Value Get(const Key &key, const Value &default_value = Value()) {
-        if (data_.contains(key)) {
-            return data_[key];
-        } else {
+    TValue Get(const TKey& key, const TValue& default_value = TValue())
+    {
+        if (mData.contains(key))
+        {
+            return mData[key];
+        }
+        else
+        {
             return default_value;
         }
     }
 
-    bool TryGet(const Key &key, Value &value) {
-        if (data_.contains(key)) {
-            value = data_[key];
+    bool TryGet(const TKey& key, TValue& value)
+    {
+        if (mData.contains(key))
+        {
+            value = mData[key];
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
-    bool Contains(const Key &key) const { return data_.contains(key); }
+    bool Contains(const TKey& key) const
+    {
+        return mData.contains(key);
+    }
 
-    void Clear() { data_.clear(); }
+    void Clear()
+    {
+        mData.clear();
+    }
 
-    UInt64 Count() { return data_.size(); }
+    UInt64 Count() const
+    {
+        return mData.size();
+    }
 
-    Value &operator[](const Key &key) { return data_[key]; }
+    TValue& operator[](const TKey& key)
+    {
+        return mData[key];
+    }
 
-    Value operator[](const Key &key) const { return data_.at(key); }
+    TValue operator[](const TKey& key) const
+    {
+        return mData.at(key);
+    }
 
-    bool Empty() { return data_.empty(); }
+    bool Empty()
+    {
+        return mData.empty();
+    }
 
-    auto Find(const Key &key) { return data_.find(key); }
+    auto Find(const TKey& key)
+    {
+        return mData.find(key);
+    }
 
-    template<typename Func>
-        requires std::is_invocable_v<Func, Pair<const Key, Value> &>
-    bool RemoveIf(Func &&func, const bool remove_all = false) {
+    template <typename Func>
+        requires std::is_invocable_v<Func, Pair<const TKey, TValue>&>
+    bool RemoveIf(Func&& func, const bool remove_all = false)
+    {
         bool removed = false;
-        for (auto it = data_.begin(); it != data_.end();) {
-            if (func(*it)) {
-                it = data_.erase(it);
+        for (auto it = mData.begin(); it != mData.end();)
+        {
+            if (func(*it))
+            {
+                it = mData.erase(it);
                 removed = true;
-                if (!remove_all) {
+                if (!remove_all)
+                {
                     return true;
                 }
-            } else {
+            }
+            else
+            {
                 ++it;
             }
         }
         return removed;
     }
 
-    auto begin() { return data_.begin(); }
-    auto end() { return data_.end(); }
-    auto begin() const { return data_.begin(); }
-    auto end() const { return data_.end(); }
+    auto begin()
+    {
+        return mData.begin();
+    }
+    auto end()
+    {
+        return mData.end();
+    }
+    auto begin() const
+    {
+        return mData.begin();
+    }
+    auto end() const
+    {
+        return mData.end();
+    }
 
     template <typename T>
-    auto Erase(T&& key_or_iter) { return data_.erase(Forward<T>(key_or_iter)); }
+    auto Erase(T&& key_or_iter)
+    {
+        return mData.erase(Forward<T>(key_or_iter));
+    }
 
     void Serialization_Load(InputArchive& Archive)
     {
-        // TODO:
+        Int64 MapSize;
+        Archive.ReadMapSize(MapSize);
+        for (Int32 i = 0; i < Count(); ++i)
+        {
+            TKey Key;
+            TValue Value;
+            Archive.ReadKeyValue(Key, Value);
+            mData[Key] = Value;
+        }
     }
 
     void Serialization_Save(OutputArchive& Archive) const
     {
-        // TODO:
+        Archive.WriteMapSize(Count());
+        for (auto& item : mData)
+        {
+            Archive.WriteKeyValue(item.first, item.second);
+        }
     }
 
 private:
-    std::unordered_map<Key, Value> data_;
+    std::unordered_map<TKey, TValue> mData;
 };

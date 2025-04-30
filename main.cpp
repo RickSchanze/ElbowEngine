@@ -81,7 +81,7 @@ int main()
         setlocale(LC_ALL, "zh_CN");
         // 让spdlog不产生乱码
         SetConsoleOutputCP(65001);
-        if (!Path::SetProjectPath("C:/Users/Echo/Documents/Projects/ElbowEngine/Content"))
+        if (!Path::SetProjectPath("C:/Users/kita/Documents/Projects/ElbowEngine/Content"))
         {
             VLOG_FATAL("Set project path failed, Abort!!!");
             return -1;

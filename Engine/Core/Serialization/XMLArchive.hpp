@@ -133,9 +133,23 @@ public:
     virtual void EndScope() override;
 
     template <typename T>
-    void Deserialize(const T& Value)
+    ELBOW_FORCE_INLINE void Deserialize(T& InValue)
     {
-        // 读取类型
+        // 先写入类型元信息
+        SetNextScopeName("TypeMeta");
+        BeginScope();
+        const Type* MyType = TypeOf<T>();
+        String TypeName;
+        UInt64 TypeHash;
+        ReadString("TypeName", TypeName);
+        ReadNumber("TypeHash", TypeHash);
+        EndScope();
+        if (MyType->GetName() != TypeName || MyType->GetHashCode() != TypeHash)
+        {
+            VLOG_FATAL("反序列化错误, 类型元数据校验失败.");
+        }
+        // 写入实际数据
+        ReadType("Data", InValue);
     }
 
     void Deserialize(const Object* InObject)
