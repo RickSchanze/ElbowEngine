@@ -12,7 +12,7 @@
 #include "Core/Math/Color.hpp"
 #include GEN_HEADER("PlatformConfig.generated.hpp")
 
-class ECLASS(Config = "Config/Platform/PlatformConfig.cfg") PlatformConfig : public IConfig
+class ECLASS(Config = "Config/PlatformConfig.cfg") PlatformConfig : public IConfig
 {
     GENERATED_BODY(PlatformConfig)
 

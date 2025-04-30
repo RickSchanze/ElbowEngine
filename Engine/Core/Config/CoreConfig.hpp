@@ -26,7 +26,7 @@ struct ESTRUCT() Version
     }
 };
 
-class ECLASS(Config = "Config/Core/Core.cfg") CoreConfig : public IConfig
+class ECLASS(Config = "Config/Core.cfg") CoreConfig : public IConfig
 {
     GENERATED_BODY(CoreConfig)
 public:

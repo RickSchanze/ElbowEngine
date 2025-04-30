@@ -7,7 +7,7 @@
 
 #include GEN_HEADER("FuncConfig.generated.hpp")
 
-class ECLASS() FuncConfig : public IConfig
+class ECLASS(Config = "Config/Func.cfg") FuncConfig : public IConfig
 {
     GENERATED_BODY(FuncConfig)
 

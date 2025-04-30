@@ -1,0 +1,9 @@
+Meta:
+  TypeInfo:
+    Name: Project
+    HashCode: 3190929582518845222
+Data:
+  name: New Project
+  path: C:/Users/kita/Documents/Projects/ElbowEngine/Content
+  version: 0.0.1
+  database_path: Library/AssetDataBase
