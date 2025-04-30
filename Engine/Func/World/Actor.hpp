@@ -18,14 +18,14 @@ public:
     void SetTransform(const Transform &transform);
     Vector3f GetLocation() const { return mTransform.GetLocation(); }
     Vector3f GetWorldLocation() const;
-    void SetLocation(const Vector3f &location);
-    Quaternionf GetRotationQuaterion() const { return mTransform.GetRotationQuaterion(); }
+    void SetLocation(const Vector3f &Location);
+    Quaternionf GetRotationQuaterion() const { return mTransform.GetRotation(); }
 
     void SetRotation(const Quaternionf &rotation);
-    void SetRotation(const Vector3f &eluer);
+    void SetRotator(const Rotatorf &eluer);
 
     Vector3f GetScale() const { return mTransform.GetScale(); }
-    void SetScale(const Vector3f& scale);
+    void SetScale(const Vector3f& InScale);
 
     virtual void PreTick(MilliSeconds delta_time) override;
 

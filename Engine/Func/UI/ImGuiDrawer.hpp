@@ -47,7 +47,7 @@ public:
 
     static bool CheckBox(const char *label, bool *checked);
     static bool InputFloat3(const char *label, float *v, const char *format = "%.3f", ImGuiInputTextFlags extra_flags = 0);
-    static void DrawTransform(Actor *actor);
+    static void DrawTransform(Actor *InActor);
     static void DrawTransform(SceneComponent *comp);
 
 private:

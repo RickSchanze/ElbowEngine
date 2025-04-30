@@ -201,7 +201,29 @@ public:
             return self.X;
         }
     }
+
+    Vector3& operator+=(Vector3 InDelta)
+    {
+        X += InDelta.X;
+        Y += InDelta.Y;
+        Z += InDelta.Z;
+        return *this;
+    }
+
+    Vector3& operator*=(Vector3 InDelta)
+    {
+        X *= InDelta.X;
+        Y *= InDelta.Y;
+        Z *= InDelta.Z;
+        return *this;
+    }
 };
+
+template <typename T>
+Vector3<T> operator-(Vector3<T> InVec)
+{
+    return Vector3<T>(-InVec.X, -InVec.Y, -InVec.Z);
+}
 
 template <typename T>
 struct Vector2

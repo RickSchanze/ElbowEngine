@@ -85,7 +85,7 @@ void ViewportWindow::Draw()
                 auto &IO = ImGui::GetIO();
                 Eluer.X = IO.MouseDelta.y;
                 Eluer.Y = IO.MouseDelta.x;
-                mBoundCamera->Rotate(Eluer);
+                // mBoundCamera->Rotate(Eluer);
             }
         }
     }

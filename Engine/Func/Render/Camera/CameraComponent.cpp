@@ -41,25 +41,25 @@ void CameraComponent::UpdateViewBuffer()
         VLOG_ERROR("摄像机组件丢失Actor");
         return;
     }
-    const Vector3 location = GetWorldLocation();
-    const auto rotation_quat = GetRotationQuaterion();
+    const Vector3 Location = GetWorldLocation();
+    const auto Rotation = GetRotation();
     // 正向旋转矩阵
-    const Matrix3x3f rotation = Matrix3x3f::FromQuaternion(rotation_quat);
+    auto RotationMatrix = Matrix3x3f(Rotation);
     // 反向旋转矩阵
-    const Matrix3x3f rotation_inv = rotation.Transpose();
+    RotationMatrix.Transpose();
     // 逆平移
-    const Vector3f translation = -rotation_inv * location;
+    const Vector3f translation = -(RotationMatrix * Location);
     // 计算view
-    auto view = Matrix4x4f(rotation_inv);
+    auto view = Matrix4x4f(RotationMatrix);
     view[3] = Vector4f(translation, 1);
     mCameraShaderData.View = view;
     // 更新position
     mCameraShaderData.Data[1, 0] = mWorldTransform.GetLocation().X;
     mCameraShaderData.Data[1, 1] = mWorldTransform.GetLocation().Y;
     mCameraShaderData.Data[1, 2] = mWorldTransform.GetLocation().Z;
-    mCameraShaderData.Data[2, 0] = mWorldTransform.GetRotationEuler().X;
-    mCameraShaderData.Data[2, 1] = mWorldTransform.GetRotationEuler().Y;
-    mCameraShaderData.Data[2, 2] = mWorldTransform.GetRotationEuler().Z;
+    mCameraShaderData.Data[2, 0] = mWorldTransform.GetRotator().Yaw;
+    mCameraShaderData.Data[2, 1] = mWorldTransform.GetRotator().Pitch;
+    mCameraShaderData.Data[2, 2] = mWorldTransform.GetRotator().Roll;
     Camera::UpdateViewBuffer(mCameraShaderData);
 }
 

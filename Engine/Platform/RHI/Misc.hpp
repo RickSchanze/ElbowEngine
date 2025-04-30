@@ -28,8 +28,8 @@ namespace RHI {
     };
 
     struct PointLight {
-        Vector3f location;
-        UInt8 _padding;
-        Vector3f color;
+        Vector3f Location;
+        UInt8 _Padding;
+        Vector3f Color;
     };
 } // namespace rhi

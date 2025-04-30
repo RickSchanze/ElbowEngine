@@ -9,7 +9,6 @@
 
 #include "Func/Render/RenderTexture.hpp"
 #include "Func/World/Actor.hpp"
-#include "Func/World/SceneComponent.hpp"
 #include "Func/World/Transform.hpp"
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/ImageView.hpp"
@@ -114,49 +113,34 @@ bool ImGuiDrawer::InputFloat3(const char *label, float *v, const char *format, I
     return ImGui::InputFloat3("##", v, format, extra_flags);
 }
 
-void ImGuiDrawer::DrawTransform(Actor *actor) {
-    Transform trans = actor->GetTransform();
-    Vector3f rotation = trans.GetRotationEuler();
-    ImGui::PushID(actor);
+void ImGuiDrawer::DrawTransform(Actor *InActor) {
+    Transform Trans = InActor->GetTransform();
+    Vector3f Rotation = Trans.GetRotator();
+    Vector3f Location = Trans.GetLocation();
+    Vector3f Scale = Trans.GetScale();
+    ImGui::PushID(InActor);
     ImGui::PushID("位置");
-    ImGui::DragFloat3("位置", &trans.mLocation.X, 0.1);
+    ImGui::DragFloat3("位置", &Location.X, 0.1);
     ImGui::PopID();
     ImGui::PushID("旋转");
-    ImGui::DragFloat3("旋转", &rotation.X, 0.1);
+    ImGui::DragFloat3("旋转", &Rotation.X, 0.1);
     ImGui::PopID();
     ImGui::PushID("缩放");
-    ImGui::DragFloat3("缩放", &trans.mScale.X, 0.1);
+    ImGui::DragFloat3("缩放", &Scale.X, 0.1);
     ImGui::PopID();
     ImGui::PopID();
-    Transform old = actor->GetTransform();
-    if (trans.mLocation != old.mLocation) {
-        actor->SetLocation(trans.mLocation);
+    if (Location != Trans.GetLocation()) {
+        InActor->SetLocation(Trans.GetLocation());
     }
-    if (trans.mScale != old.mScale) {
-        actor->SetScale(trans.mScale);
+    if (Scale != Trans.GetScale()) {
+        InActor->SetScale(Trans.GetScale());
     }
-    if (rotation != trans.GetRotationEuler()) {
-        actor->SetRotation(rotation);
+    if (Rotation != Trans.GetRotator()) {
+        InActor->SetRotator(Rotation);
     }
 }
 
 
 void ImGuiDrawer::DrawTransform(SceneComponent *comp) {
-    Transform trans = comp->GetTransform();
-    Vector3f rotation = trans.GetRotationEuler();
-    ImGui::PushID(comp);
-    ImGui::DragFloat3("位置", &trans.mLocation.X);
-    ImGui::DragFloat3("旋转", &rotation.X);
-    ImGui::DragFloat3("缩放", &trans.mScale.X);
-    ImGui::PopID();
-    Transform old = comp->GetTransform();
-    if (trans.mLocation != old.mLocation) {
-        comp->SetLocation(trans.mLocation);
-    }
-    if (trans.mScale != old.mScale) {
-        comp->SetScale(trans.mScale);
-    }
-    if (rotation != trans.GetRotationEuler()) {
-        comp->SetRotation(rotation);
-    }
+
 }

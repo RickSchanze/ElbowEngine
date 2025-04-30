@@ -6,6 +6,7 @@
 #include "Core/Math/Quaternion.hpp"
 #include "Core/Math/Vector.hpp"
 
+#include "Core/Math/Rotator.hpp"
 #include GEN_HEADER("Transform.generated.hpp")
 
 struct ESTRUCT() Transform
@@ -13,16 +14,16 @@ struct ESTRUCT() Transform
     GENERATED_BODY(Transform)
 
     void SetRotation(Quaternionf now);
-    void SetRotation(Vector3f now);
+    void SetRotator(Rotatorf now);
 
-    ELBOW_FORCE_INLINE Vector3f GetRotationEuler() const
-    {
-        return mCachedEuler;
-    }
-
-    ELBOW_FORCE_INLINE Quaternionf GetRotationQuaterion() const
+    ELBOW_FORCE_INLINE Quaternionf GetRotation() const
     {
         return mRotation;
+    }
+
+    ELBOW_FORCE_INLINE Rotatorf GetRotator() const
+    {
+        return mCachedEuler;
     }
 
     ELBOW_FORCE_INLINE Vector3f GetLocation() const
@@ -33,6 +34,26 @@ struct ESTRUCT() Transform
     ELBOW_FORCE_INLINE Vector3f GetScale() const
     {
         return mScale;
+    }
+
+    ELBOW_FORCE_INLINE void SetScale(const Vector3f Scale)
+    {
+        mScale = Scale;
+    }
+
+    ELBOW_FORCE_INLINE void SetLocation(const Vector3f InLocation)
+    {
+        mLocation = InLocation;
+    }
+
+    ELBOW_FORCE_INLINE void Translate(const Vector3f InDelta)
+    {
+        mLocation += InDelta;
+    }
+
+    ELBOW_FORCE_INLINE void Scale(const Vector3f Factor)
+    {
+        mScale *= Factor;
     }
 
     Vector3f GetForwardVector() const;
@@ -48,7 +69,7 @@ private:
     Vector3f mScale = {1, 1, 1};
 
     EFIELD(Transient)
-    Vector3f mCachedEuler = {0, 0, 0};
+    Rotatorf mCachedEuler = {0, 0, 0};
 
     EFIELD()
     Quaternionf mRotation = {0, 0, 0, 1};

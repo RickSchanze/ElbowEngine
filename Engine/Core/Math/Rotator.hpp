@@ -2,6 +2,7 @@
 #include "Core/Reflection/Helper.hpp"
 #include "Core/Serialization/Archive.hpp"
 #include "Core/TypeTraits.hpp"
+#include "Vector.hpp"
 
 template <typename T>
 struct Quaternion;
@@ -43,6 +44,12 @@ struct Rotator
     Rotator(T InYaw, T InPitch, T InRoll) : Yaw(InYaw), Pitch(InPitch), Roll(InRoll)
     {
     }
+
+    Rotator(const Vector3<T>& InVec) : Yaw(InVec.Y), Pitch(InVec.X), Roll(InVec.Z)
+    {
+
+    }
+
     Rotator() = default;
 
     T Yaw{0};
@@ -50,6 +57,11 @@ struct Rotator
     T Roll{0};
 
     const Type* GetType();
+
+    ELBOW_FORCE_INLINE operator Vector3<T>()
+    {
+        return Vector3<T>(Pitch, Yaw, Roll);
+    }
 };
 
 template <>

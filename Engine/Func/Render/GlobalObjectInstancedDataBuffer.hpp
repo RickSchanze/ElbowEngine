@@ -44,6 +44,6 @@ private:
 
     SharedPtr<RHI::Buffer> buffer_;
     UInt8* mapped_memory_ = nullptr;
-    Map<ObjectHandle, UInt32> instanced_data_map_; // 每个Object对应哪个Index
+    Map<ObjectHandle, UInt32> mInstancedDataMap; // 每个Object对应哪个Index
     Array<UInt32> occupied_indices_;
 };

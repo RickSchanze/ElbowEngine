@@ -13,17 +13,15 @@ class ECLASS() SceneComponent : public Component
     GENERATED_BODY(SceneComponent)
 
 public:
-    const Transform &GetTransform() const
+    const Transform& GetTransform() const
     {
         return mTransform;
     }
 
-    const Transform &GetWorldTransform() const
+    const Transform& GetWorldTransform() const
     {
         return mWorldTransform;
     }
-
-    void SetTransform(const Transform &transform);
 
     Vector3f GetLocation() const
     {
@@ -32,28 +30,40 @@ public:
 
     Vector3f GetWorldLocation() const;
 
-    void SetLocation(const Vector3f &location);
+    void SetLocation(const Vector3f& InLocation);
 
-    Quaternionf GetWorldRotationQuaterion() const;
+    ELBOW_FORCE_INLINE Quaternionf GetWorldRotation() const
+    {
+        return mWorldTransform.GetRotation();
+    }
 
-    Quaternionf GetRotationQuaterion() const;
+    ELBOW_FORCE_INLINE Rotatorf GetWorldRotator() const
+    {
+        return mWorldTransform.GetRotator();
+    }
 
-    Vector3f GetWorldRotation() const;
+    ELBOW_FORCE_INLINE Quaternionf GetRotation() const
+    {
+        return mTransform.GetRotation();
+    }
 
-    Vector3f GetRotation() const;
+    ELBOW_FORCE_INLINE Rotatorf GetRotator() const
+    {
+        return mTransform.GetRotator();
+    }
 
-    void SetRotation(const Quaternionf &rotation);
+    void SetRotation(const Quaternionf& rotation);
 
-    void SetRotation(const Vector3f &eluer);
+    void SetRotator(const Rotatorf& InRotator);
 
     Vector3f GetScale() const
     {
         return mWorldTransform.GetScale();
     }
 
-    void SetScale(const Vector3f &scale);
+    void SetScale(const Vector3f& InScale);
 
-    virtual void UpdateTransform(const Transform &parent_transform);
+    virtual void UpdateTransform(const Transform& InParentTransform);
 
     void SetTransformDirty(bool dirty = true)
     {
@@ -64,8 +74,6 @@ public:
     {
         return transform_dirty_;
     }
-
-    void Rotate(Vector3f eluer_degree);
 
 protected:
     EFIELD()

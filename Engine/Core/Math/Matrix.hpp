@@ -1,6 +1,11 @@
 #pragma once
 #include "Vector.hpp"
 
+#include <glm/glm.hpp>
+
+template <typename T>
+struct Matrix3x3;
+
 template <typename T>
 struct Matrix4x4
 {
@@ -8,6 +13,9 @@ struct Matrix4x4
     Vector4<T> Column0{}, Column1{}, Column2{}, Column3{};
 
     typedef Matrix4x4 ThisStruct;
+
+    Matrix4x4() = default;
+    Matrix4x4(const Matrix3x3<T>& InMat);
 
     static void ConstructSelf(void* self)
     {
@@ -137,7 +145,7 @@ template <typename T>
 struct Matrix3x3
 {
     Matrix3x3() = default;
-    Matrix3x3(const Quaternion<T>& InQuat);
+    explicit Matrix3x3(const Quaternion<T>& InQuat);
 
     static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
     Vector3<T> Column0{}, Column1{}, Column2{};
@@ -268,3 +276,22 @@ const Type* Matrix3x3<T>::GetType()
 }
 
 static inline MathTypeRegTrigger_Vector Z_Registerer_MathType_Matrix;
+
+template <typename T>
+Vector3<T> operator*(const Matrix3x3<T> Left, Vector3<T> Right)
+{
+    Vector3<T> Result;
+    Result.X = Left.Column0.X * Right.X + Left.Column1.X * Right.Y + Left.Column2.X * Right.Z;
+    Result.Y = Left.Column0.Y * Right.X + Left.Column1.Y * Right.Y + Left.Column2.Y * Right.Z;
+    Result.Z = Left.Column0.Z * Right.X + Left.Column1.Z * Right.Y + Left.Column2.Z * Right.Z;
+    return Result;
+}
+
+template <typename T>
+Matrix4x4<T>::Matrix4x4(const Matrix3x3<T>& InMat)
+{
+    Column0 = Vector4<T>(InMat.Column0);
+    Column1 = Vector4<T>(InMat.Column1);
+    Column2 = Vector4<T>(InMat.Column2);
+    Column3 = Vector4<T>(0, 0, 0, 1);
+}

@@ -4,12 +4,12 @@
 
 #include "ElbowEngineRenderPipeline.hpp"
 
+#include "Core/Config/ConfigManager.hpp"
 #include "Core/Object/ObjectManager.hpp"
 #include "Core/Profile.hpp"
 #include "Func/Render/Helper.hpp"
 #include "Func/Render/RenderTexture.hpp"
-#include "Func/UI/UIManager.hpp"
-#include "Func/UI/ViewportWindow.hpp"
+#include "Platform/Config/PlatformConfig.hpp"
 #include "Platform/RHI/CommandBuffer.hpp"
 #include "Platform/RHI/Commands.hpp"
 #include "Platform/Window/PlatformWindow.hpp"
@@ -30,7 +30,7 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
 
     auto w = PlatformWindowManager::GetMainWindow();
     Rect2Df rect{};
-    rect.size = {static_cast<Float>(w->GetWidth()), static_cast<Float>(w->GetHeight())};
+    rect.Size = {static_cast<Float>(w->GetWidth()), static_cast<Float>(w->GetHeight())};
     cmd.SetScissor(rect);
     cmd.SetViewport(rect);
     cmd.Execute();
@@ -44,13 +44,14 @@ void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &p
     cmd.ImagePipelineBarrier(ImageLayout::Undefined, ImageLayout::ColorAttachment, image, range, 0, AFB_ColorAttachmentWrite,
                              PSFB_ColorAttachmentOutput, PSFB_ColorAttachmentOutput);
     RenderAttachment attachment{};
-    attachment.ClearColor = Color::Clear();
+    PlatformConfig* Cfg = GetConfig<PlatformConfig>();
+    attachment.ClearColor = Cfg->GetDefaultClearColor();
     attachment.Target = view;
     attachment.Layout = ImageLayout::ColorAttachment;
     Array<RenderAttachment> attachments{};
     attachments.Add(attachment);
     RenderAttachment depth_attachment{};
-    depth_attachment.ClearColor.r = 1.0f;
+    depth_attachment.ClearColor.R = 1.0f;
     depth_attachment.Layout = ImageLayout::DepthStencilAttachment;
     depth_attachment.Target = depth_target_->GetImageView();
     cmd.BeginRender(attachments, depth_attachment);

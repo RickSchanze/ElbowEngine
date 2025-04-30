@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Core/Core.hpp"
+#include "Core/CoreMacros.hpp"
+#include "Vector.hpp"
 
 #include GEN_HEADER("Color.generated.hpp")
-#include "Core/CoreMacros.hpp"
 
 struct ESTRUCT() Color
 {
@@ -38,6 +39,16 @@ struct ESTRUCT() Color
     bool operator==(const Color& Other) const
     {
         return R == Other.R && G == Other.G && B == Other.B && A == Other.A;
+    }
+
+    ELBOW_FORCE_INLINE operator Vector3f()
+    {
+        return {R, G, B};
+    }
+
+    ELBOW_FORCE_INLINE operator Vector4f()
+    {
+        return {R, G, B, A};
     }
 };
 

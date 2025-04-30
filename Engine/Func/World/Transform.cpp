@@ -9,7 +9,7 @@ void Transform::SetRotation(Quaternionf now)
 
 }
 
-void Transform::SetRotation(Vector3f now)
+void Transform::SetRotator(Rotatorf now)
 {
 
 }

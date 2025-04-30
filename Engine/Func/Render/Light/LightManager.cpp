@@ -63,8 +63,8 @@ void LightManager::UpdateLight(PointLightComponent *point_light_component)
     {
         Int8 index = self.point_light_map_[point_light_component];
         PointLight light;
-        light.location = point_light_component->GetWorldLocation();
-        light.color = point_light_component->GetColor();
+        light.Location = point_light_component->GetWorldLocation();
+        light.Color = point_light_component->GetColor();
         memcpy(&self.dynamic_global_lights_->point_lights[index], &light, sizeof(PointLight));
     }
 }
