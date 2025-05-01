@@ -9,10 +9,12 @@
 
 class EINTERFACE() IConfig
 {
-
     GENERATED_BODY(IConfig)
 public:
     virtual ~IConfig() = default;
+
+    virtual void Serialization_Load(InputArchive& Archive) = 0;
+    virtual void Serialization_Save(OutputArchive& Archive) const = 0;
 
     bool IsDirty() const
     {

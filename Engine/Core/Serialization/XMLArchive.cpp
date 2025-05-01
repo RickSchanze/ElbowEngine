@@ -199,8 +199,6 @@ void XMLInputArchive::EndScope()
     mArchive->finishNode();
 }
 
-void XMLInputArchive::Deserialize(const Object& InObjectRef) {}
-
 XMLInputArchive::~XMLInputArchive()
 {
     if (mRequireDelete)

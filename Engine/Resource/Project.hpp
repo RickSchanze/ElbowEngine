@@ -4,37 +4,51 @@
 #pragma once
 #include "Core/Core.hpp"
 
+#include GEN_HEADER("Project.generated.hpp")
+
 /**
  * Project阐述了一个项目的基本信息
  * 例如 项目名称 项目路径 项目版本号 项目数据库位置等
  */
-REFLECTED()
-class Project {
-  REFLECTED_SINGLE_CLASS(Project)
-public:
-  static Project &GetCurrentProject();
-  static void CreateInstance(StringView path);
+struct ESTRUCT() Project
+{
+    GENERATED_BODY(Project)
 
-  StringView GetProjectName() const { return name_; }
-  StringView GetProjectPath() const { return path_; }
-  StringView GetVersion() const { return version_; }
-  StringView GetDatabasePath() const { return database_path_; }
+    static Project& GetCurrentProject();
+    static void CreateInstance(StringView InPath);
+
+    StringView GetProjectName() const
+    {
+        return mName;
+    }
+    StringView GetProjectPath() const
+    {
+        return mPath;
+    }
+    StringView GetVersion() const
+    {
+        return mVersion;
+    }
+    StringView GetDatabasePath() const
+    {
+        return mDatabasePath;
+    }
 
 protected:
-  Project() = default;
-  explicit Project(StringView path);
+    Project() = default;
+    explicit Project(StringView InPath);
 
 private:
-  REFLECTED()
-  String name_{"New Project"};
+    EFIELD()
+    String mName{"New Project"};
 
-  REFLECTED()
-  String path_{};
+    EFIELD()
+    String mPath{};
 
-  REFLECTED()
-  String version_{"0.0.1"};
+    EFIELD()
+    String mVersion{"0.0.1"};
 
-  /// 这个是资产数据库的路径
-  REFLECTED()
-  String database_path_{"Library/AssetDataBase"};
+    /// 这个是资产数据库的路径
+    EFIELD()
+    String mDatabasePath{"Library/AssetDataBase"};
 };

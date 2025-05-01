@@ -405,7 +405,7 @@ public static class CodeGenerator
                     $"static void DestructSelf(void* Self) {{ static_cast<{_class.Key.Name}*>(Self)->~{_class.Key.Name}(); }} \\");
             }
 
-            // class只能用继承自Object, 需要用虚函数
+            // class 使用虚函数
             headerContent.AppendLine("virtual void Serialization_Load(InputArchive& Archive); \\");
             headerContent.AppendLine("virtual void Serialization_Save(OutputArchive& Archive) const; \\");
 

@@ -7,50 +7,46 @@
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Path.hpp"
 #include "Core/Profile.hpp"
-#include "Core/Serialization/YamlArchive.hpp"
+#include "Core/Serialization/XMLArchive.hpp"
 
-Project::Project(const StringView path) {
+#include <fstream>
+
+Project::Project(const StringView InPath)
+{
     ProfileScope _(__func__);
-    auto meta_text = File::ReadAllText(".elbowengine");
-    Assert(meta_text, "Failed to read project meta file.");
-    if (const auto &meta = *meta_text; meta.IsEmpty()) {
-        YamlArchive ar;
-        name_ = "New Project";
-        path_ = path;
-        version_ = "0.0.1";
-        database_path_ = "Library/AssetDataBase";
-        bool success = true;
-        String temp;
-        success &= ar.Serialize(*this, temp);
-        success &= File::WriteAllText(".elbowengine", temp);
-        Assert(success, "Failed to create project {}", name_);
+    std::ifstream MetaFile(*InPath);
+    if (!MetaFile)
+    {
+        Log(Fatal) << String::Format("打开项目元文件失败: {}", *InPath);
         return;
     }
-    YamlArchive ar;
-    ar.Deserialize(*meta_text, this, TypeOf<Project>());
+    XMLInputArchive Archive(MetaFile);
+    Archive.Deserialize(*this);
 }
 
-
-struct BeforeMainTrigger_Project {
-    BeforeMainTrigger_Project() {
+struct BeforeMainTrigger_Project
+{
+    BeforeMainTrigger_Project()
+    {
         ReflManager::GetByRef().Register<Project>();
         Evt_OnProjectPathSet.AddBind(&Project::CreateInstance);
     }
 };
 
 static inline BeforeMainTrigger_Project beforeMainTrigger_Project;
-Type *Project::ConstructType() {
-    return Type::Create<Project>("Project") | refl_helper::AddField("name", &Project::name_) | refl_helper::AddField("path", &Project::path_) |
-           refl_helper::AddField("version", &Project::version_) | refl_helper::AddField("database_path", &Project::database_path_);
+
+inline Optional<Project> gLoadedProject;
+
+Project& Project::GetCurrentProject()
+{
+    return *gLoadedProject;
 }
 
-inline Optional<Project> loaded_project;
-
-Project &Project::GetCurrentProject() { return *loaded_project; }
-
-void Project::CreateInstance(StringView path) {
-    if (loaded_project) {
+void Project::CreateInstance(const StringView InPath)
+{
+    if (gLoadedProject)
+    {
         Log(Fatal) << "Project不能被加载两次";
     }
-    loaded_project = Project(path);
+    gLoadedProject = Project(InPath);
 }

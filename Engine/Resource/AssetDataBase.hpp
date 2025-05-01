@@ -51,7 +51,7 @@ public:
         return static_cast<T *>(LoadFromPath(path));
     }
 
-    static exec::ExecFuture<ObjectHandle> LoadFromPathAsync(StringView path);
+    static exec::ExecFuture<ObjectHandle> LoadFromPathAsync(StringView InPath);
 
     static exec::ExecFuture<ObjectHandle> LoadAsync(ObjectHandle handle, const Type *asset_type);
 
@@ -88,10 +88,10 @@ public:
 
     /**
      * 创建一个资产并保存
-     * @param asset
-     * @param path
+     * @param InAsset
+     * @param InPath
      */
-    static bool CreateAsset(Asset *asset, StringView path);
+    static bool CreateAsset(Asset *InAsset, StringView InPath);
 
 protected:
     void CreateAssetTables();
