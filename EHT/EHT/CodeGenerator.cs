@@ -493,7 +493,7 @@ public static class CodeGenerator
             headerContent.AppendLine($"}}");
             headerContent.AppendLine($"}}; ");
             headerContent.AppendLine(
-                $"extern Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name};");
+                $"inline Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name}{{}};");
             headerContent.AppendLine();
         }
 
@@ -739,8 +739,6 @@ public static class CodeGenerator
             source_content.AppendLine(
                 $"ReflManager::GetByRef().Register<{_enum.Key.FullName}>(\"{_enum.Key.FullName}\", &ConstructType_{_enum.Key.Name});");
             source_content.AppendLine($"}}");
-            source_content.AppendLine(
-                $"Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name}{{}};");
             source_content.AppendLine($"Type* ConstructType_{_enum.Key.Name}() {{");
             source_content.AppendLine($"return Type::Create<{_enum.Key.FullName}>(\"{_enum.Key.FullName}\")");
             foreach (var (key, value) in _enum.Value)

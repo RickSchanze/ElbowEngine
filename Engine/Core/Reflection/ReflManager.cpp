@@ -198,9 +198,10 @@ const Type* ReflManager::FindTypeImpl(StringView InName)
     {
         if (It->first.Name == InName)
         {
-            mTypesRegistered[It->first] = It->second();
+            Type* Result = It->second();
+            mTypesRegistered[It->first] = Result;
             mMetaDataRegisters.Remove(It->first);
-            return mTypesRegistered[It->first];
+            return Result;
         }
     }
     return nullptr;

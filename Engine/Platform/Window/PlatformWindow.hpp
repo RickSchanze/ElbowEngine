@@ -14,7 +14,8 @@
 namespace RHI {
     class Surface;
 }
-enum class EENUM() WindowLib {
+enum class EENUM() WindowLib
+{
     GLFW,
     SDL3,
     Count,
