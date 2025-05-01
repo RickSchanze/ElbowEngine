@@ -46,7 +46,7 @@ Rotator<double>::Rotator(const Quaternion<double>& Quat)
 
 #define REGISTER_MATH_TYPE(name, type_register)                                                                                                      \
     {                                                                                                                                                \
-        auto type_info = RTTITypeInfo::Create<name>();                                                                                               \
+        auto type_info = RTTITypeInfo::Create<name>(#name);                                                                                          \
         Mgr.RegisterCtorDtor(type_info, &name::ConstructSelf, &name::DestructSelf);                                                                  \
         Mgr.RegisterTypeRegisterer(type_info, type_register);                                                                                        \
     }

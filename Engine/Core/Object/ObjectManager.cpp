@@ -9,6 +9,7 @@
 #include "Core/Async/ThreadManager.hpp"
 #include "Core/FileSystem/File.hpp"
 #include "Core/FileSystem/Folder.hpp"
+#include "Core/FileSystem/Path.hpp"
 #include "Core/Memory/New.hpp"
 #include "Core/Profile.hpp"
 #include "Core/Serialization/XMLArchive.hpp"
@@ -120,11 +121,17 @@ void ObjectRegistry::Save() const {
 void ObjectManager::Startup() {
     if (!File::IsExist(REGISTRY_PATH))
     {
-        Folder::CreateFolder(REGISTRY_PATH);
+        Folder::CreateFolder(Path::GetParent(REGISTRY_PATH));
+        std::ofstream FileStream(REGISTRY_PATH);
+        XMLOutputArchive OutputArchive(FileStream);
+        OutputArchive.Serialize(mRegistry);
     }
-    std::ifstream InputStream(REGISTRY_PATH);
-    XMLInputArchive InputArchive(InputStream);
-    InputArchive.Deserialize(mRegistry);
+    else
+    {
+        std::ifstream InputStream(REGISTRY_PATH);
+        XMLInputArchive InputArchive(InputStream);
+        InputArchive.Deserialize(mRegistry);
+    }
 }
 
 void ObjectManager::Shutdown() {

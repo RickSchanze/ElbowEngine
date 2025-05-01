@@ -5,16 +5,17 @@
 #pragma once
 #include "Core/Core.hpp"
 
-REFLECTED()
-enum class AssetType {
-    Mesh REFLECTED(Label = "网格"),
-    Shader REFLECTED(Label = "着色器"),
-    Texture2D REFLECTED(Label = "2D纹理"),
-    Material REFLECTED(Label = "材质"),
-    Animation REFLECTED(Label = "动画"),
-    Audio REFLECTED(Label = "音频"),
-    Font REFLECTED(Label = "字体"),
-    Scene REFLECTED(Label = "场景"),
-    Prefab REFLECTED(Label = "预制体"),
-    Count REFLECTED(Label = "超出范围")
+#include GEN_HEADER("AssetType.generated.hpp") // 最后一个且不可删除
+
+enum class ECLASS() AssetType {
+    Mesh EVALUE(Label = "网格"),
+    Shader EVALUE(Label = "着色器"),
+    Texture2D EVALUE(Label = "2D纹理"),
+    Material EVALUE(Label = "材质"),
+    Animation EVALUE(Label = "动画"),
+    Audio EVALUE(Label = "音频"),
+    Font EVALUE(Label = "字体"),
+    Scene EVALUE(Label = "场景"),
+    Prefab EVALUE(Label = "预制体"),
+    Count EVALUE(Label = "超出范围")
 };

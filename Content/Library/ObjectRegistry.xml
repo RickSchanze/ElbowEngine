@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<TypeMeta>
+		<TypeName>ObjectRegistry</TypeName>
+		<TypeHash>6355387056163263090</TypeHash>
+	</TypeMeta>
+	<Data>
+		<mNextPersistentHandle>1</mNextPersistentHandle>
+		<mFreeHandles size="dynamic"/>
+	</Data>
+</cereal>
+

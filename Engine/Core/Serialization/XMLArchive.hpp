@@ -168,6 +168,9 @@ public:
         }
     }
 
+    // 当没找到时允不允许继续, 为False则直接崩溃, 否则发出警告然后继续
+    bool AllowFieldNameMismatch = true;
+
 private:
     cereal::XMLInputArchive* mArchive;
     bool mRequireDelete = true;

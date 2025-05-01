@@ -60,7 +60,7 @@ private:
     {                                                                                                                                                \
         BeforeMainTrigger_##type()                                                                                                                   \
         {                                                                                                                                            \
-            ReflManager::GetByRef().Register<type>();                                                                                                \
+            ReflManager::GetByRef().Register<type>(#type);                                                                                                \
         }                                                                                                                                            \
     };                                                                                                                                               \
     static inline BeforeMainTrigger_##type beforeMainTrigger_##type;                                                                                 \
@@ -73,7 +73,7 @@ private:
     {                                                                                                                                                \
         BeforeMainTrigger_Register_##type()                                                                                                          \
         {                                                                                                                                            \
-            ReflManager::GetByRef().Register<type>();                                                                                                \
+            ReflManager::GetByRef().Register<type>(#type);                                                                                           \
         }                                                                                                                                            \
     };                                                                                                                                               \
     static inline BeforeMainTrigger_Register_##type beforeMainTrigger_Register_##type;

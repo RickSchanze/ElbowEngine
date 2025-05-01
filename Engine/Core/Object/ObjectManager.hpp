@@ -11,7 +11,7 @@
 
 #include GEN_HEADER("ObjectManager.generated.hpp")
 
-constexpr auto REGISTRY_PATH = "Library/ObjectRegistry.yaml";
+constexpr auto REGISTRY_PATH = "Library/ObjectRegistry.xml";
 
 struct ESTRUCT() ObjectRegistry
 {

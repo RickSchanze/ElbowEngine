@@ -16,12 +16,12 @@ void Transform::SetRotator(Rotatorf now)
 
 Vector3f Transform::GetForwardVector() const
 {
-
+    return {};
 }
 
 Vector3f Transform::GetRightVector() const
 {
-
+    return {};
 }
 
 void Transform::Rotate(Vector3f rot)

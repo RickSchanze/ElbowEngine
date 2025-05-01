@@ -9,6 +9,8 @@
 #include "Core/Object/ObjectPtr.hpp"
 #include "RenderPipeline.hpp"
 
+#include GEN_HEADER("PBRRenderPipeline.generated.hpp")
+
 class Texture2D;
 class StaticMeshComponent;
 
@@ -20,8 +22,9 @@ class Buffer;
 class RenderTexture;
 class Material;
 
-class PBRRenderPipeline : public RenderPipeline
+class ECLASS() PBRRenderPipeline : public RenderPipeline
 {
+    GENERATED_BODY(PBRRenderPipeline)
 public:
     friend class PBRRenderPipelineSettingWindow;
 

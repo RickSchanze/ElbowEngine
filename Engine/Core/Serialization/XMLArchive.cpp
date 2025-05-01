@@ -6,8 +6,8 @@
 
 #include <fstream>
 
-#include "cereal/types/map.hpp"
 #include "Core/FileSystem/File.hpp"
+#include "cereal/types/map.hpp"
 
 XMLOutputArchive::XMLOutputArchive(std::ostream& InOutputStream)
 {
@@ -62,7 +62,7 @@ void XMLOutputArchive::WriteNumber(const StringView InName, const UInt8& Data)
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
 
-void XMLOutputArchive::WriteNumber(const StringView InName,const  UInt16& Data)
+void XMLOutputArchive::WriteNumber(const StringView InName, const UInt16& Data)
 {
     (*mArchive)(cereal::make_nvp(*InName, Data));
 }
@@ -215,54 +215,71 @@ void XMLInputArchive::ReadMapSize(Int64& OutMapSize)
     (*mArchive)(cereal::make_size_tag(OutMapSize));
 }
 
+#define READ_DATA                                                                                                                                    \
+    try                                                                                                                                              \
+    {                                                                                                                                                \
+        (*mArchive)(cereal::make_nvp(*InName, OutData));                                                                                             \
+    }                                                                                                                                                \
+    catch (std::exception & e)                                                                                                                       \
+    {                                                                                                                                                \
+        if (AllowFieldNameMismatch)                                                                                                                  \
+        {                                                                                                                                            \
+            VLOG_ERROR("读取字段", *InName, "失败, 或许文件里没有? ");                                                                               \
+        }                                                                                                                                            \
+        else                                                                                                                                         \
+        {                                                                                                                                            \
+            VLOG_FATAL("读取字段", *InName, "失败, 或许文件里没有? ");                                                                               \
+        }                                                                                                                                            \
+    }
+
 void XMLInputArchive::ReadNumber(const StringView InName, Int8& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, Int16& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, Int32& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, Int64& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, UInt8& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, UInt16& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, UInt32& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, UInt64& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, Float& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(const StringView InName, Double& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadNumber(Int8& OutData)
@@ -317,7 +334,7 @@ void XMLInputArchive::ReadNumber(Double& OutData)
 
 void XMLInputArchive::ReadBool(const StringView InName, bool& OutData)
 {
-    (*mArchive)(cereal::make_nvp(*InName, OutData));
+    READ_DATA;
 }
 
 void XMLInputArchive::ReadBool(bool& OutData)
@@ -327,9 +344,23 @@ void XMLInputArchive::ReadBool(bool& OutData)
 
 void XMLInputArchive::ReadString(const StringView InName, String& OutData)
 {
-    std::string Out;
-    (*mArchive)(cereal::make_nvp(*InName, Out));
-    OutData = String(Out);
+    try
+    {
+        std::string Out;
+        (*mArchive)(cereal::make_nvp(*InName, Out));
+        OutData = String(Out);
+    }
+    catch (std::exception& e)
+    {
+        if (AllowFieldNameMismatch)
+        {
+            VLOG_ERROR("读取字段", *InName, "失败, 或许文件里没有? ");
+        }
+        else
+        {
+            VLOG_FATAL("读取字段", *InName, "失败, 或许文件里没有? exception=", e.what());
+        }
+    };
 }
 
 void XMLInputArchive::ReadString(String& OutData)

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<TypeMeta>
+		<TypeName>Project</TypeName>
+		<TypeHash>10145777454052159907</TypeHash>
+	</TypeMeta>
+	<Data>
+		<mName>New Project</mName>
+		<mPath>C:/Users/kita/Documents/Projects/ElbowEngine/Content</mPath>
+		<mVersion>0.0.1</mVersion>
+		<mDatabasePath>Library/AssetDataBase</mDatabasePath>
+	</Data>
+</cereal>
+

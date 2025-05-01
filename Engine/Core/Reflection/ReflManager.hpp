@@ -43,18 +43,18 @@ struct CtorDtor
 
 struct RTTITypeInfo
 {
-    StringView name;
-    size_t hash_code{};
+    StringView Name;
+    size_t HashCode{};
 
     template <typename T>
-    static RTTITypeInfo Create()
+    static RTTITypeInfo Create(const StringView InName)
     {
-        return {typeid(T).name(), typeid(T).hash_code()};
+        return {InName, typeid(T).hash_code()};
     }
 
     bool operator==(const RTTITypeInfo& o) const
     {
-        return hash_code == o.hash_code;
+        return HashCode == o.HashCode;
     }
 };
 
@@ -71,26 +71,59 @@ public:
 
     void RegisterType(const RTTITypeInfo& type_info, Type* type);
 
-    template <typename T>
-    void Register()
+    /**
+     * 根据一个类型名字寻找此类型, 如果此类型已注册则直接返回, 没有则先注册则返回
+     * 没有注册也在待注册里找不到, 返回nullptr
+     * @param InName
+     * @return
+     */
+    const Type* FindTypeImpl(StringView InName);
+    static const Type* FindType(const StringView InName)
     {
-        auto type_info = RTTITypeInfo::Create<T>();
+        return GetByRef().FindTypeImpl(InName);
+    }
+
+    template <typename T>
+    static T* CreateInstance()
+    {
+        return static_cast<T*>(CreateInstance(T::GetStaticType()));
+    }
+
+    static void* CreateInstance(const Type* InType)
+    {
+        if (InType == nullptr)
+            return nullptr;
+        void* Ptr = Malloc(InType->GetSize());
+        if (ConstructAt(InType, Ptr))
+        {
+            return Ptr;
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    template <typename T>
+    void Register(StringView InName)
+    {
+        auto type_info = RTTITypeInfo::Create<T>(InName);
         RegisterTypeRegisterer(type_info, &T::ConstructType);
         RegisterCtorDtor(type_info, &T::ConstructSelf, &T::DestructSelf);
     }
 
     template <typename T>
-    void RegisterNoConstructor()
+    void RegisterNoConstructor(StringView InName)
     {
-        auto type_info = RTTITypeInfo::Create<T>();
+        auto type_info = RTTITypeInfo::Create<T>(InName);
         RegisterTypeRegisterer(type_info, &T::ConstructType);
     }
 
     template <typename T>
         requires Traits::IsEnum<T>
-    void Register(MetaDataRegisterer registerer)
+    void Register(StringView InName, MetaDataRegisterer registerer)
     {
-        auto type_info = RTTITypeInfo::Create<T>();
+        auto type_info = RTTITypeInfo::Create<T>(InName);
         RegisterTypeRegisterer(type_info, registerer);
         RegisterCtorDtor(type_info, EnumConstructor, EnumDestructor);
     }
@@ -99,7 +132,7 @@ public:
 
     void RegisterCtorDtor(const RTTITypeInfo& info, InplaceCtor ctor, InplaceDtor dtor);
 
-    bool ConstructAt(const Type* info, void* ptr) const;
+    static bool ConstructAt(const Type* info, void* ptr);
 
     bool DestroyAt(const Type* info, void* ptr) const;
 
@@ -135,5 +168,5 @@ const Type* TypeOf()
 
 inline size_t std::hash<RTTITypeInfo>::operator()(const RTTITypeInfo& type) const noexcept
 {
-    return type.hash_code;
+    return type.HashCode;
 }

@@ -24,8 +24,8 @@ using namespace Helper;
 
 void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {
     ProfileScope scope(__func__);
-    const auto view = GetBackBufferView(params.current_image_index);
-    auto image = GetBackBuffer(params.current_image_index);
+    const auto view = GetBackBufferView(params.CurrentImageIndex);
+    auto image = GetBackBuffer(params.CurrentImageIndex);
     cmd.Begin();
 
     auto w = PlatformWindowManager::GetMainWindow();

@@ -13,7 +13,7 @@
 using namespace RHI;
 
 void RenderPipeline::BeginImGuiFrame(RHI::CommandBuffer &cmd, const RenderParams &render_param) {
-    GetGfxContextRef().BeginImGuiFrame(cmd, render_param.current_image_index, render_param.window_width, render_param.window_height);
+    GetGfxContextRef().BeginImGuiFrame(cmd, render_param.CurrentImageIndex, render_param.WindowWidth, render_param.WindowHeight);
     PlatformWindowManager::BeginImGuiFrame();
     ImGui::NewFrame();
 }

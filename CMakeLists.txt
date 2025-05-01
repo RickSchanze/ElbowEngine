@@ -4,14 +4,18 @@ set(CMAKE_TOOLCHAIN_FILE "C:/Users/kita/Documents/Projects/vcpkg/scripts/buildsy
 
 # 设置使用 Ninja 和 Clang
 set(CMAKE_GENERATOR "Ninja")
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
+#set(CMAKE_C_COMPILER "clang")
+#set(CMAKE_CXX_COMPILER "clang++")
 
 project(ElbowEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_compile_options(-Wno-inconsistent-missing-override)
+if (MSVC)
+    add_compile_options(/utf-8)  # 强制 MSVC 使用 UTF-8 编码解析源文件
+else ()
+    add_compile_options(-Wno-inconsistent-missing-override)
+endif ()
 add_subdirectory(Engine)
 add_executable(ElbowEngine main.cpp)
 

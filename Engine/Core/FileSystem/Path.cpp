@@ -15,11 +15,11 @@ bool IsProjectPathValid(StringView path) {
     // path必须是一个文件夹
     if (!Path::IsFolder(path))
         return false;
-    // 文件夹要么为空, 要么必须有.elbowengine文件
+    // 文件夹要么为空, 要么必须有.elbowproj
     if (Folder::IsFolderEmpty(path)) {
         return true;
     }
-    if (Folder::ContainsFile(path, ".elbowengine")) {
+    if (Folder::ContainsFile(path, ".elbowproj")) {
         return true;
     }
     return false;
@@ -38,7 +38,7 @@ bool Path::SetProjectPath(StringView path) {
         return false;
     }
     if (!IsProjectPathValid(path)) {
-        Log(Error) << "The project path must either be an empty folder or contain an .elbowengine file.";
+        Log(Error) << "The project path must either be an empty folder or contain an .elbowproj file.";
         return false;
     }
     s_proj_path_ = path;

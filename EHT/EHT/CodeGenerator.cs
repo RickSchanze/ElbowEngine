@@ -292,7 +292,8 @@ public static class CodeGenerator
                 }
                 else
                 {
-                    builder.Append($".Attribute(Field::ValueAttribute::{attrKey}, \"{attrValue}\")");
+                    string trimmed = attrValue.Trim('"').Trim().Trim('"').Trim();
+                    builder.Append($".Attribute(Field::ValueAttribute::{attrKey}, \"{trimmed}\")");
                 }
             }
 
@@ -386,11 +387,11 @@ public static class CodeGenerator
             headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
             if (!_class.Value.ContainsKey("Abstract"))
             {
-                headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+                headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>(\"{_class.Key.FullName}\");\\");
             }
             else
             {
-                headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>();\\");
+                headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>(\"{_class.Key.FullName}\");\\");
             }
 
             headerContent.AppendLine($"}}\\");
@@ -425,7 +426,7 @@ public static class CodeGenerator
 
             headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
             headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-            headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().RegisterNoConstructor<{_class.Key.FullName}>(\"{_class.Key.FullName}\");\\");
             headerContent.AppendLine($"}}\\");
             headerContent.AppendLine($"}}; \\");
             headerContent.AppendLine(
@@ -455,7 +456,7 @@ public static class CodeGenerator
 
             headerContent.AppendLine($"struct Z_ReflectionInitializer{_class.Key.Name} {{ \\");
             headerContent.AppendLine($"Z_ReflectionInitializer{_class.Key.Name}() {{\\");
-            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>();\\");
+            headerContent.AppendLine($"ReflManager::GetByRef().Register<{_class.Key.FullName}>(\"{_class.Key.FullName}\");\\");
             headerContent.AppendLine($"}}\\");
             headerContent.AppendLine($"}}; \\");
             // struct不继承任何类型, 不使用虚函数
@@ -736,7 +737,7 @@ public static class CodeGenerator
         {
             source_content.AppendLine($"void Z_CallRegisterFunction{_enum.Key.Name}() {{");
             source_content.AppendLine(
-                $"ReflManager::GetByRef().Register<{_enum.Key.FullName}>(&ConstructType_{_enum.Key.Name});");
+                $"ReflManager::GetByRef().Register<{_enum.Key.FullName}>(\"{_enum.Key.FullName}\", &ConstructType_{_enum.Key.Name});");
             source_content.AppendLine($"}}");
             source_content.AppendLine(
                 $"Z_ReflectionInitializer{_enum.Key.Name} Z_ValueReflectionInitializer{_enum.Key.Name}{{}};");

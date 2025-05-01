@@ -36,6 +36,11 @@ struct ESTRUCT() Project
 
 protected:
     Project() = default;
+
+    /**
+     * 传入项目文件夹
+     * @param InPath
+     */
     explicit Project(StringView InPath);
 
 private:

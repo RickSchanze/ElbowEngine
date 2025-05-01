@@ -24,7 +24,8 @@ public:
     virtual ~RenderContext() override;
     void Render(const MilliSeconds &sec);
 
-    void SetRenderPipeline(UniquePtr<RenderPipeline> render_pipeline);
+    void SetRenderPipeline(UniquePtr<RenderPipeline> InRenderPipeline);
+    void SetRenderPipeline(StringView InRenderPipelineName);
 
     virtual Float GetLevel() const override
     {
@@ -39,7 +40,7 @@ public:
     virtual void Shutdown() override;
 
     void SetRenderEnable(bool enable);
-    bool IsRenderEnable() const { return should_render_; }
+    bool IsRenderEnable() const { return mShouldRender; }
 
     static SharedPtr<RHI::DescriptorSet> AllocateDescriptorSet(const SharedPtr<RHI::DescriptorSetLayout> &layout);
     static void UpdateCameraDescriptorSet(RHI::DescriptorSet &desc_set);
@@ -55,27 +56,27 @@ private:
     void OnWindowResized(PlatformWindow *window, Int32 width, Int32 height);
 
     // 当前渲染管线
-    UniquePtr<RenderPipeline> render_pipeline_{};
+    UniquePtr<RenderPipeline> mRenderPipeline{};
 
-    Array<UniquePtr<RHI::Semaphore>> image_available_semaphores_{};
-    Array<UniquePtr<RHI::Semaphore>> render_finished_semaphores_{};
-    Array<UniquePtr<RHI::Fence>> in_flight_fences_{};
+    Array<UniquePtr<RHI::Semaphore>> mImageAvailableSemaphores{};
+    Array<UniquePtr<RHI::Semaphore>> mRenderFinishedSemaphores{};
+    Array<UniquePtr<RHI::Fence>> mInFlightFences{};
 
     // 每次渲染时的命令池
-    SharedPtr<RHI::CommandPool> command_pool_{};
-    Array<SharedPtr<RHI::CommandBuffer>> command_buffers_{};
+    SharedPtr<RHI::CommandPool> mCommandPool{};
+    Array<SharedPtr<RHI::CommandBuffer>> mCommandBuffers{};
 
     // 窗口
-    UInt64 window_resized_evt_handle_{};
-    bool window_resized_{true};
+    UInt64 mWindowResizedEvtHandle{};
+    bool mIsWindowResized{true};
 
     // for descriptor
-    SharedPtr<RHI::DescriptorSetPool> descriptor_pool_{};
+    SharedPtr<RHI::DescriptorSetPool> mDescriptorPool{};
 
-    bool should_render_{true};
+    bool mShouldRender{true};
 
-    uint32_t frames_in_flight_{2};
-    uint32_t current_frame_{0};
+    uint32_t mFramesInFlight{2};
+    uint32_t mCurrentFrame{0};
 
-    Array<StaticMeshComponent *> static_meshes_{};
+    Array<StaticMeshComponent *> mStaticMeshes{};
 };

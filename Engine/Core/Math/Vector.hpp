@@ -90,7 +90,7 @@ public:
     }
 
     ELBOW_FORCE_INLINE
-    static inline Vector4 One()
+    static Vector4 One()
     {
         return {1, 1, 1, 1};
     }

@@ -9,16 +9,16 @@
 #include "Core/TypeAlias.hpp"
 #include "Platform/RHI/Enums.hpp"
 
+#include GEN_HEADER("PlatformWindow.generated.hpp") // 不可删除且需要是最后一个
+
 namespace RHI {
     class Surface;
 }
-enum class WindowLib {
+enum class EENUM() WindowLib {
     GLFW,
     SDL3,
     Count,
 };
-DECL_ENUM_REFL(WindowLib)
-REGISTER_ENUM_TYPE(WindowLib)
 
 enum WindowFlag {
     WF_NoWindowTitle = 1 << 0, // 窗口没有标题栏
