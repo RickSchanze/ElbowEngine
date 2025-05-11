@@ -13,7 +13,7 @@
 #include "IResource.hpp"
 
 
-namespace RHI {
+namespace NRHI {
 
     class Buffer;
     class ImageView;
@@ -112,11 +112,11 @@ namespace RHI {
 } // namespace rhi
 
 template<>
-struct std::hash<RHI::DescriptorSetLayoutDesc> {
-    size_t operator()(const RHI::DescriptorSetLayoutDesc &desc) const noexcept { return desc.GetHashCode(); }
+struct std::hash<NRHI::DescriptorSetLayoutDesc> {
+    size_t operator()(const NRHI::DescriptorSetLayoutDesc &desc) const noexcept { return desc.GetHashCode(); }
 }; // namespace std
 
-namespace RHI {
+namespace NRHI {
     class DescriptorSetLayoutPool : public Singleton<DescriptorSetLayoutPool> {
     public:
         DescriptorSetLayoutPool();
@@ -181,7 +181,7 @@ namespace RHI {
         SharedPtr<DescriptorSet> Allocate(const SharedPtr<DescriptorSetLayout> &layout) { return Allocate(layout.get()); }
         Array<SharedPtr<DescriptorSet>> Allocates(const Array<SharedPtr<DescriptorSetLayout>> &layouts) {
             Array<DescriptorSetLayout *> layout_ptrs =
-                    layouts | range::view::Select([](const auto &layout) { return layout.get(); }) | range::To<Array<DescriptorSetLayout *>>();
+                    layouts | NRange::NView::Select([](const auto &layout) { return layout.get(); }) | NRange::To<Array<DescriptorSetLayout *>>();
             return Allocates(layout_ptrs);
         }
 

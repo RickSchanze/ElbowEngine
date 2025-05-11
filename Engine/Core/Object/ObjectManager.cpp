@@ -18,17 +18,20 @@
 
 #include <fstream>
 
-exec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
-    ProfileScope _(__func__);
+exec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle()
+{
+    CPU_PROFILING_SCOPE;
     auto GetNext = [this]() -> ObjectHandle {
-        if (!mFreeHandles.Empty()) {
+        if (!mFreeHandles.Empty())
+        {
             const auto handle = mFreeHandles.Last();
             mFreeHandles.RemoveLast();
             return handle;
         }
         return mNextPersistentHandle++;
     };
-    if (IsMainThread()) {
+    if (IsMainThread())
+    {
         return exec::MakeExecFuture(GetNext());
     }
 
@@ -36,62 +39,101 @@ exec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle() {
     return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game);
 }
 
-Object *ObjectRegistry::GetObjectByHandle(ObjectHandle handle) {
+Object* ObjectRegistry::GetObjectByHandle(ObjectHandle handle)
+{
     ProfileScope _(__func__);
     if (handle == 0)
         return nullptr;
     if (!mObjects.Contains(handle))
         return nullptr;
-    Object *ptr = mObjects[handle];
+    Object* ptr = mObjects[handle];
     if (ptr->IsPendingKill())
         return nullptr;
     return ptr;
 }
 
-void ObjectRegistry::RemoveObject(Object *object) {
+void ObjectRegistry::RemoveObject(Object* object)
+{
     if (object == nullptr)
         return;
     ObjectHandle handle = object->GetHandle();
-    if (handle == 0) {
+    if (handle == 0)
+    {
         Log(Error) << "ObjectHandle为0, 无法删除";
         return;
     }
-    if (object->IsPersistent()) {
-        if (static_cast<PersistentObject *>(object)->IsLoaded()) {
-            static_cast<PersistentObject *>(object)->PerformUnload();
+    if (object->IsPersistent())
+    {
+        if (static_cast<PersistentObject*>(object)->IsLoaded())
+        {
+            static_cast<PersistentObject*>(object)->PerformUnload();
         }
     }
     Delete(object);
     mObjects.Remove(handle);
 }
 
-void ObjectRegistry::RemoveAllObjects() {
-    for (Int32 i = 0; i < 10; i++) {
+void ObjectRegistry::RemoveObject(ObjectHandle InHandle)
+{
+    if (InHandle == 0)
+    {
+        Log(Error) << "ObjectHandle为0, 无法删除";
+        return;
+    }
+    Object* Obj = GetObjectByHandle(InHandle);
+    if (!Obj)
+    {
+        VLOG_ERROR("ObjectHandle为", InHandle, "的对象已经失效");
+        return;
+    }
+    if (Obj->IsPersistent())
+    {
+        if (static_cast<PersistentObject*>(Obj)->IsLoaded())
+        {
+            static_cast<PersistentObject*>(Obj)->PerformUnload();
+        }
+    }
+    Delete(Obj);
+    mObjects.Remove(InHandle);
+}
+
+void ObjectRegistry::RemoveAllObjects()
+{
+    for (Int32 i = 0; i < 10; i++)
+    {
         RemoveAllObjectLayered();
     }
-    while (!mObjects.Empty()) {
+    while (!mObjects.Empty())
+    {
         RemoveObject(mObjects.begin()->second);
     }
 }
 
-void ObjectRegistry::RemoveAllObjectLayered() {
+void ObjectRegistry::RemoveAllObjectLayered()
+{
     Int32 skip = 0;
-    while (!mObjects.Empty()) {
+    while (!mObjects.Empty())
+    {
         auto begin = mObjects.begin();
         std::advance(begin, skip);
-        if (begin == mObjects.end()) {
+        if (begin == mObjects.end())
+        {
             return;
         }
-        Object *obj = begin->second;
-        if (obj->mReferenced.Empty()) {
+        Object* obj = begin->second;
+        if (obj->mReferenced.Empty())
+        {
             RemoveObject(obj);
-        } else {
+        }
+        else
+        {
             skip++;
         }
     }
 }
 
-void ObjectRegistry::RegisterObject(Object *object) {
+void ObjectRegistry::RegisterObject(Object* object)
+{
     ProfileScope _(__func__);
     AutoLock lock(mMutex);
     if (object == nullptr)
@@ -100,7 +142,8 @@ void ObjectRegistry::RegisterObject(Object *object) {
     mObjects[object->GetHandle()] = object;
 }
 
-void ObjectRegistry::UnregisterHandle(ObjectHandle handle) {
+void ObjectRegistry::UnregisterHandle(ObjectHandle handle)
+{
     ProfileScope _(__func__);
     AutoLock lock(mMutex);
     if (handle == 0)
@@ -110,7 +153,8 @@ void ObjectRegistry::UnregisterHandle(ObjectHandle handle) {
     mObjects.Remove(handle);
 }
 
-void ObjectRegistry::Save() const {
+void ObjectRegistry::Save() const
+{
 #if WITH_EDITOR
     std::ofstream FileStream(REGISTRY_PATH);
     XMLOutputArchive OutputArchive(FileStream);
@@ -118,7 +162,8 @@ void ObjectRegistry::Save() const {
 #endif
 }
 
-void ObjectManager::Startup() {
+void ObjectManager::Startup()
+{
     if (!File::IsExist(REGISTRY_PATH))
     {
         Folder::CreateFolder(Path::GetParent(REGISTRY_PATH));
@@ -134,7 +179,8 @@ void ObjectManager::Startup() {
     }
 }
 
-void ObjectManager::Shutdown() {
+void ObjectManager::Shutdown()
+{
 #if WITH_EDITOR
     SaveObjectRegistry();
 #endif

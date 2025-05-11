@@ -13,12 +13,12 @@
 #include "Image.hpp"
 
 
-namespace RHI
+namespace NRHI
 {
 class ComputePipeline;
 }
 
-namespace RHI
+namespace NRHI
 {
 struct RHICommand;
 enum class QueueFamilyType;

@@ -145,14 +145,14 @@ PlatformWindow_GLFW::PlatformWindow_GLFW(StringView window_title, int width, int
     if (GetFlags() & WF_NoResize) {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     }
-    if (config->GetGraphicsAPI() == RHI::GraphicsAPI::Vulkan) {
+    if (config->GetGraphicsAPI() == NRHI::GraphicsAPI::Vulkan) {
         Assert(glfwVulkanSupported(), "GLFW: Vulkan not supported");
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window_ = glfwCreateWindow(GetWidth(), GetHeight(), GetTitle().Data(), nullptr, nullptr);
     }
     if (!glfw_callback_registered) {
-        if (config->GetGraphicsAPI() == RHI::GraphicsAPI::Vulkan) {
-            RHI::Evt_PostProcessVulkanExtensions.Bind(GLFWGetVulkanExtensions);
+        if (config->GetGraphicsAPI() == NRHI::GraphicsAPI::Vulkan) {
+            NRHI::Evt_PostProcessVulkanExtensions.Bind(GLFWGetVulkanExtensions);
         }
         glfwSetFramebufferSizeCallback(window_, GLFWWindowResizeCallback);
         glfwSetKeyCallback(window_, GLFWKeyCallback);
@@ -191,7 +191,7 @@ void PlatformWindow_GLFW::Close() {
 
 void PlatformWindow_GLFW::BeginImGuiFrame() { ImGui_ImplGlfw_NewFrame(); }
 
-class GLFWSurface : public RHI::Surface {
+class GLFWSurface : public NRHI::Surface {
 public:
     explicit GLFWSurface(VkInstance instance, GLFWwindow* window) : instance_(instance)
     {
@@ -212,8 +212,8 @@ private:
     VkInstance instance_ = nullptr;
 };
 
-RHI::Surface *PlatformWindow_GLFW::CreateSurface(void *user_data, RHI::GraphicsAPI api) {
-    if (api == RHI::GraphicsAPI::Vulkan) {
+NRHI::Surface *PlatformWindow_GLFW::CreateSurface(void *user_data, NRHI::GraphicsAPI api) {
+    if (api == NRHI::GraphicsAPI::Vulkan) {
         auto instance = static_cast<VkInstance>(user_data);
         return New<GLFWSurface>(instance, window_);
     }
@@ -221,7 +221,7 @@ RHI::Surface *PlatformWindow_GLFW::CreateSurface(void *user_data, RHI::GraphicsA
     return nullptr;
 }
 
-void PlatformWindow_GLFW::DestroySurface(RHI::Surface *&surface) {
+void PlatformWindow_GLFW::DestroySurface(NRHI::Surface *&surface) {
     Delete(surface);
     surface = nullptr;
 }

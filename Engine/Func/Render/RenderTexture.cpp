@@ -11,7 +11,7 @@
 #include "Platform/Window/PlatformWindowManager.hpp"
 #include "Resource/Assets/Material/Material.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 ImageDesc GetDepthImageDesc(UInt32 width, UInt32 height)
 {

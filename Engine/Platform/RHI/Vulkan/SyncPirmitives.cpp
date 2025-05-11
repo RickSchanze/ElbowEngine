@@ -5,7 +5,7 @@
 
 #include "GfxContext.hpp"
 #include "vulkan/vulkan.h"
-using namespace RHI;
+using namespace NRHI;
 
 Fence_Vulkan::~Fence_Vulkan() {
     const auto &ctx = *GetVulkanGfxContext();

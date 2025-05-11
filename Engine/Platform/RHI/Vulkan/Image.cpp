@@ -12,7 +12,7 @@
 #include "Platform/RHI/GfxCommandHelper.hpp"
 #include "Platform/RHI/ImageView.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 
 Image_Vulkan::Image_Vulkan(const ImageDesc &desc) : Image(desc) {

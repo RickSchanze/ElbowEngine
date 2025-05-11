@@ -12,11 +12,12 @@ using ObjectHandle = Int32;
 
 enum EENUM(Flag) ObjectFlagBits
 {
-    OFT_Persistent = 1 << 1, // 此对象需要持久化存储
-    OFT_Actor = 1 << 2,
-    OFT_Component = 1 << 3,
-    OFT_Widget = 1 << 4,
+    OF_Persistent = 1 << 1, // 此对象需要持久化存储
+    OF_Actor = 1 << 2,
+    OF_Component = 1 << 3,
+    OF_Widget = 1 << 4,
 };
+
 using ObjectFlag = Int32;
 
 enum EENUM(Flag) ObjectStateBits
@@ -71,9 +72,21 @@ public:
         return mDisplayName;
     }
 
-    void SetObjectHandle(const Int32 handle)
+    void SetObjectHandle(const Int32 handle);
+
+    void SetFlag(const ObjectFlagBits InFlag)
     {
-        mHandle = handle;
+        mFlags |= InFlag;
+    }
+
+    void ClearFlag(const ObjectFlagBits InFlag)
+    {
+        mFlags &= ~InFlag;
+    }
+
+    bool IsFlagSet(const ObjectFlagBits InFlag) const
+    {
+        return mFlags & InFlag;
     }
 
 protected:
@@ -104,14 +117,17 @@ private:
     {
         mReferencing.Add(handle);
     }
+
     void RemoveReferencing(const ObjectHandle handle)
     {
         mReferencing.Remove(handle);
     }
+
     void AddReferenced(ObjectHandle handle)
     {
         mReferenced.Add(handle);
     }
+
     void RemoveReferenced(ObjectHandle handle)
     {
         mReferenced.Remove(handle);
@@ -155,10 +171,8 @@ public:
 
     bool IsPersistent() const
     {
-        return mFlags & OFT_Persistent;
+        return mFlags & OF_Persistent;
     }
-
-    void InternalSetAssetHandle(ObjectHandle handle);
 
     // TODO: 这里是否应该返回一个sender?
     exec::ExecFuture<ObjectHandle> PerformPersistentObjectLoadAsync();

@@ -8,7 +8,7 @@
 #include "Core/Misc/SharedPtr.hpp"
 #include "IResource.hpp"
 
-namespace RHI {
+namespace NRHI {
     class Buffer;
     struct ImageDesc {
         UInt32 Width;
@@ -21,7 +21,7 @@ namespace RHI {
         SampleCount Samples;
         ImageLayout InitialState; // 初始图像状态
 
-        ImageDesc(const UInt32 width_, const UInt32 height_, const ImageUsage usage_, const ::RHI::Format format_,
+        ImageDesc(const UInt32 width_, const UInt32 height_, const ImageUsage usage_, const ::NRHI::Format format_,
                   const ImageDimension dimension_ = ImageDimension::D2, const Int32 depth_or_layers_ = 1, const UInt16 mip_levels_ = 1,
                   const SampleCount samples_ = SampleCount::SC_1, const ImageLayout initial_state_ = ImageLayout::Undefined) :
             Width(width_), Height(height_), Usage(usage_), Dimension(dimension_), DepthOrLayers(depth_or_layers_), MipLevels(mip_levels_),
@@ -95,6 +95,6 @@ namespace RHI {
 } // namespace rhi
 
 template<>
-struct std::hash<RHI::SamplerDesc> {
-    size_t operator()(const RHI::SamplerDesc &desc) const noexcept { return desc.GetHashCode(); }
+struct std::hash<NRHI::SamplerDesc> {
+    size_t operator()(const NRHI::SamplerDesc &desc) const noexcept { return desc.GetHashCode(); }
 };

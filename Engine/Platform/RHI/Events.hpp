@@ -5,7 +5,7 @@
 #pragma once
 #include "Core/Event/Event.hpp"
 
-namespace RHI {
+namespace NRHI {
     class GfxContext;
     struct GfxContextPreInitializedEvent : MulticastEvent<void> {};
     struct GfxContextPostInitializedEvent : MulticastEvent<void, GfxContext *> {};

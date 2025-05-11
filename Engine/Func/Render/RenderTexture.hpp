@@ -12,7 +12,7 @@
 
 class Material;
 
-namespace RHI
+namespace NRHI
 {
 class ImageView;
 }
@@ -24,14 +24,14 @@ class ImageView;
  * @param height
  * @return
  */
-RHI::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
+NRHI::ImageDesc GetDepthImageDesc(UInt32 width = 0, UInt32 height = 0);
 
 class RenderTexture
 {
 public:
     RenderTexture() = default;
 
-    explicit RenderTexture(const RHI::ImageDesc &desc);
+    explicit RenderTexture(const NRHI::ImageDesc &desc);
 
     ~RenderTexture();
 
@@ -44,7 +44,7 @@ public:
         return mNativeHandle != nullptr;
     }
 
-    RHI::Image *GetImage() const
+    NRHI::Image *GetImage() const
     {
         return mNativeHandle.get();
     }
@@ -74,12 +74,12 @@ public:
         return Vector2f{static_cast<Float>(mDesc.Width), static_cast<Float>(mDesc.Height)};
     }
 
-    RHI::Format GetFormat() const
+    NRHI::Format GetFormat() const
     {
         return mDesc.Format;
     }
 
-    RHI::ImageView *GetImageView() const
+    NRHI::ImageView *GetImageView() const
     {
         return mImageView.get();
     }
@@ -94,11 +94,11 @@ public:
 
     bool BindToMaterial(const String &name, Material *mat) const;
 
-    StaticArray<SharedPtr<RHI::ImageView>, 6>  CreateCubeViews() const;
+    StaticArray<SharedPtr<NRHI::ImageView>, 6>  CreateCubeViews() const;
 
 private:
-    SharedPtr<RHI::Image> mNativeHandle = nullptr;
-    SharedPtr<RHI::ImageView> mImageView = nullptr;
+    SharedPtr<NRHI::Image> mNativeHandle = nullptr;
+    SharedPtr<NRHI::ImageView> mImageView = nullptr;
 
-    RHI::ImageDesc mDesc = RHI::ImageDesc::Default();
+    NRHI::ImageDesc mDesc = NRHI::ImageDesc::Default();
 };

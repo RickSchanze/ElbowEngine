@@ -22,7 +22,7 @@ struct REFLECTED(SQLTable = "Texture2D") Texture2DMeta {
     String Path;
 
     REFLECTED()
-    RHI::Format Format = RHI::Format::R8G8B8A8_SRGB;
+    NRHI::Format Format = NRHI::Format::R8G8B8A8_SRGB;
 
     // 这个Texture2D包含的所有Sprite
     REFLECTED()

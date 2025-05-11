@@ -69,7 +69,7 @@ struct Type
 
     bool IsEnumType() const
     {
-        return range::AnyOf(
+        return NRange::AnyOf(
             fields, [](const Field* field)
             {
                 return field->IsEnumField();

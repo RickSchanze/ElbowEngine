@@ -23,7 +23,7 @@ class ECLASS(Config = "Config/PlatformConfig.cfg") PlatformConfig : public IConf
     DEFINE_CFG_ITEM(bool, mEnableValidationLayer, EnableValidationLayer, true)
 
     EFIELD()
-    DEFINE_CFG_ITEM(RHI::PresentMode, mPresentMode, PresentMode, RHI::PresentMode::VSync);
+    DEFINE_CFG_ITEM(NRHI::PresentMode, mPresentMode, PresentMode, NRHI::PresentMode::VSync);
 
     EFIELD()
     DEFINE_CFG_ITEM(UInt32, mSwapchainImageCount, SwapchainImageCount, 2);
@@ -32,7 +32,7 @@ class ECLASS(Config = "Config/PlatformConfig.cfg") PlatformConfig : public IConf
     DEFINE_CFG_ITEM(Vector2f, mDefaultWindowSize, DefaultWindowSize, Vector2f(1920, 1080));
 
     EFIELD()
-    DEFINE_CFG_ITEM(RHI::GraphicsAPI, mGraphicsAPI, GraphicsAPI, RHI::GraphicsAPI::Vulkan);
+    DEFINE_CFG_ITEM(NRHI::GraphicsAPI, mGraphicsAPI, GraphicsAPI, NRHI::GraphicsAPI::Vulkan);
 
     EFIELD()
     DEFINE_CFG_ITEM(WindowLib, mWindowLib, WindowLib, WindowLib::GLFW);

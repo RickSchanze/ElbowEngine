@@ -29,7 +29,7 @@ void ImGuiDrawer::Image(RenderTexture &tex, Vector2f size, Vector2f uv0, Vector2
         ImGui_ImplVulkan_RemoveTexture(reinterpret_cast<VkDescriptorSet>(image_data.id));
         self.mRenderTextureMap.Remove(p_tex);
     }
-    VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
+    VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(NRHI::GetGfxContextRef().GetSampler(NRHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
                                                       tex.GetImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     self.mRenderTextureMap[p_tex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), tex.GetImageView()};
     ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{size.X, size.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});
@@ -51,7 +51,7 @@ void ImGuiDrawer::Image(Texture2D *InTex, Vector2f InSize, Vector2f uv0, Vector2
         Self.mTextureMap.Remove(InTex);
     }
     VkDescriptorSet set =
-            ImGui_ImplVulkan_AddTexture(RHI::GetGfxContextRef().GetSampler(RHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
+            ImGui_ImplVulkan_AddTexture(NRHI::GetGfxContextRef().GetSampler(NRHI::SamplerDesc{})->GetNativeHandleT<VkSampler>(),
                                         InTex->GetNativeImageView()->GetNativeHandleT<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     Self.mTextureMap[InTex] = ImGuiImageData{reinterpret_cast<ImTextureID>(set), InTex->GetNativeImageView()};
     ImGui::Image(reinterpret_cast<ImTextureID>(set), ImVec2{InSize.X, InSize.Y}, ImVec2{uv0.X, uv0.Y}, ImVec2{uv1.X, uv1.Y});

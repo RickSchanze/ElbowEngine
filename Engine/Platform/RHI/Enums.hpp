@@ -6,7 +6,7 @@
 #include "Core/Core.hpp"
 #include GEN_HEADER("Enums.generated.hpp") // 这行不能删除
 
-namespace RHI
+namespace NRHI
 {
 enum class EENUM() Format
 {

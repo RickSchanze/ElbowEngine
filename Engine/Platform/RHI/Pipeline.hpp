@@ -7,7 +7,7 @@
 #include "Enums.hpp"
 #include "IResource.hpp"
 
-namespace RHI
+namespace NRHI
 {
 class Pipeline : public IResource
 {

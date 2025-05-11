@@ -15,7 +15,7 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 #include "SharedMaterial.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 void Material::Build()
 {
@@ -50,11 +50,11 @@ void Material::Build()
     if (uniform_buffer_size != 0)
     {
         const String mat_uniform_debug_name = String::Format("{}-UniformBuffer", mName);
-        const RHI::BufferDesc uniform_desc{uniform_buffer_size, BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
+        const NRHI::BufferDesc uniform_desc{uniform_buffer_size, BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
         mBuffer = GetGfxContextRef().CreateBuffer(uniform_desc, mat_uniform_debug_name);
 
         // 5. Update DescriptorSet - 先全Update成默认的
-        for (auto& param : mSharedMaterial->GetStructOnlyOffsets() | range::view::Values)
+        for (auto& param : mSharedMaterial->GetStructOnlyOffsets() | NRange::NView::Values)
         {
             DescriptorBufferUpdateDesc update_info{};
             update_info.buffer = mBuffer.get();
@@ -68,7 +68,7 @@ void Material::Build()
             SetFloat3(fst, snd);
         }
     }
-    for (auto& param : mSharedMaterial->GetTextureBindings() | range::view::Values)
+    for (auto& param : mSharedMaterial->GetTextureBindings() | NRange::NView::Values)
     {
         if (param.type == ShaderParamType::StorageTexture2D)
         {
@@ -90,7 +90,7 @@ void Material::Build()
 
         mDescriptorSet->Update(param.binding, update_info);
     }
-    for (auto& param : mSharedMaterial->GetSamplerBindings() | range::view::Values)
+    for (auto& param : mSharedMaterial->GetSamplerBindings() | NRange::NView::Values)
     {
         DescriptorImageUpdateDesc update_info{};
         update_info.image_layout = ImageLayout::Undefined;
@@ -243,7 +243,7 @@ bool Material::SetFloat(StringView name, Float value)
     return true;
 }
 
-bool Material::SetParamNativeImageView(const String& name, RHI::ImageView* image_view, bool is_storage)
+bool Material::SetParamNativeImageView(const String& name, NRHI::ImageView* image_view, bool is_storage)
 {
     if (image_view == nullptr)
     {

@@ -6,7 +6,7 @@
 
 #include "Commands.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 void CommandBuffer::ImagePipelineBarrier(const ImageLayout old_layout, const ImageLayout new_layout, Image *target,
                                          const ImageSubresourceRange &subresource_range, const AccessFlags src_access, const AccessFlags dst_access,

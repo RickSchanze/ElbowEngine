@@ -56,9 +56,9 @@ void Input::CalculateInputEvent(const MilliSeconds &) {
     InputActions result{};
     // 键盘有两种响应: 按下和释放
     StaticArray<KeyboardKey, PROCESS_KEY_EVENT_COUNT> released_key_this_frame;
-    range::Fill(released_key_this_frame, KeyboardKey::Count);
+    NRange::Fill(released_key_this_frame, KeyboardKey::Count);
     StaticArray<KeyboardKey, PROCESS_KEY_EVENT_COUNT> pressed_key_this_frame;
-    range::Fill(pressed_key_this_frame, KeyboardKey::Count);
+    NRange::Fill(pressed_key_this_frame, KeyboardKey::Count);
 
     Int32 released_key_index = 0, pressed_key_index = 0;
     for (Int32 i = 0; i < static_cast<Int32>(KeyboardKey::Count); i++) {
@@ -77,9 +77,9 @@ void Input::CalculateInputEvent(const MilliSeconds &) {
 
     constexpr Int32 mouse_button_count = static_cast<Int32>(MouseButton::Count);
     StaticArray<MouseButton, static_cast<Int32>(MouseButton::Count)> released_mouse_button_this_frame;
-    range::Fill(released_mouse_button_this_frame, MouseButton::Count);
+    NRange::Fill(released_mouse_button_this_frame, MouseButton::Count);
     StaticArray<MouseButton, static_cast<Int32>(MouseButton::Count)> pressed_mouse_button_this_frame;
-    range::Fill(pressed_mouse_button_this_frame, MouseButton::Count);
+    NRange::Fill(pressed_mouse_button_this_frame, MouseButton::Count);
     for (Int32 i = 0; i < mouse_button_count; i++) {
         const auto mouse_i = static_cast<MouseButton>(i);
         if (Input::IsMouseButtonDown(mouse_i) && previous_frame_state_.mouse.mouses_state[i] == MouseEvent::Release) { // 按下了

@@ -5,7 +5,7 @@
 #include "Platform/RHI/LowShader.hpp"
 #include "vulkan/vulkan.h"
 
-namespace RHI {
+namespace NRHI {
     class LowShader_Vulkan : public LowShader {
     public:
         LowShader_Vulkan(const char* code, size_t size);

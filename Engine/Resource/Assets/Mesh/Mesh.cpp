@@ -16,7 +16,7 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
-using namespace RHI;
+using namespace NRHI;
 
 static bool LoadMesh(StringView path, const MeshMeta &meta, UniquePtr<MeshStorage> &out, Float scale) {
     ProfileScope _(__func__);
@@ -109,8 +109,8 @@ UInt32 Mesh::GetIndexCount() const {
     return 0;
 }
 
-SharedPtr<RHI::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
-SharedPtr<RHI::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
+SharedPtr<NRHI::Buffer> Mesh::GetVertexBuffer() const { return storage_->vertex_buffer; }
+SharedPtr<NRHI::Buffer> Mesh::GetIndexBuffer() const { return storage_->index_buffer; }
 
 void Mesh::Save() {
     ProfileScope _(__func__);

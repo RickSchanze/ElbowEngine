@@ -27,7 +27,7 @@
 #include "Core/Object/ObjectManager.hpp"
 #include "tinyexr.h"
 
-using namespace RHI;
+using namespace NRHI;
 
 static stbi_uc* LoadImageStb(StringView path, int* width, int* height, int* channels)
 {
@@ -243,10 +243,10 @@ UInt32 Texture2D::GetMipLevelCount() const
     return mNativeImage->GetMipLevelCount();
 }
 
-RHI::Format Texture2D::GetFormat() const
+NRHI::Format Texture2D::GetFormat() const
 {
     if (!mNativeImage)
-        return RHI::Format::Count;
+        return NRHI::Format::Count;
     return mNativeImage->GetFormat();
 }
 
@@ -282,7 +282,7 @@ SpriteRange Texture2D::GetSpriteRange(const UInt64 id) const
     return {};
 }
 
-SharedPtr<RHI::ImageView> Texture2D::CreateImageView(ImageViewDesc& desc) const
+SharedPtr<NRHI::ImageView> Texture2D::CreateImageView(ImageViewDesc& desc) const
 {
     desc.image = mNativeImage.get();
     return GetGfxContext()->CreateImageView(desc);
@@ -323,7 +323,7 @@ bool Texture2D::AppendSprite(UInt64 id, const char* data, Rect2Di target_rect)
         Log(Error) << "target_rect超出了Texture2D的尺寸";
         return false;
     }
-    if (range::AnyOf(sprite_ranges_, [id](const SpriteRange& sprite_range) { return sprite_range.ID == id; }))
+    if (NRange::AnyOf(sprite_ranges_, [id](const SpriteRange& sprite_range) { return sprite_range.ID == id; }))
     {
         Log(Error) << String::Format("id为{}的SpriteRange已经存在", id);
         return false;
@@ -356,7 +356,7 @@ bool Texture2D::AppendSprite(const UInt64 id, const char* data, const UInt32 wid
         sprite_ranges.Add(sprite_range.Range.Size);
     }
     const Rect2Di target_rect =
-        algo::RectPacking::GetNextAvailableRect(bound, sprite_ranges, {static_cast<Int32>(width), static_cast<Int32>(height)});
+        NAlgo::RectPacking::GetNextAvailableRect(bound, sprite_ranges, {static_cast<Int32>(width), static_cast<Int32>(height)});
     return AppendSprite(id, data, target_rect);
 }
 

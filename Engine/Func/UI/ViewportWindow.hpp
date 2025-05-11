@@ -9,7 +9,7 @@
 #include GEN_HEADER("ViewportWindow.generated.hpp")
 
 class RenderTexture;
-namespace RHI
+namespace NRHI
 {
 class DescriptorSet;
 }

@@ -9,7 +9,7 @@
 #include "Platform/RHI/LowShader.hpp"
 #include "Platform/RHI/RenderPass.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &Desc, const RenderPass *render_pass)
 {
@@ -129,10 +129,10 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &Des
 
     Array<VkDescriptorSetLayout> layouts_native =
         Desc.descriptor_set_layouts |
-        range::view::Select([](const SharedPtr<DescriptorSetLayout> &layout) {
+        NRange::NView::Select([](const SharedPtr<DescriptorSetLayout> &layout) {
             return layout->GetNativeHandleT<VkDescriptorSetLayout>();
         }) |
-        range::To<Array<VkDescriptorSetLayout> >();
+        NRange::To<Array<VkDescriptorSetLayout> >();
     descriptor_layouts_ = Desc.descriptor_set_layouts;
     PipelineLayoutInfo.pSetLayouts = layouts_native.Data();
     Array<VkPushConstantRange> PushConstants;
@@ -179,9 +179,9 @@ GraphicsPipeline_Vulkan::GraphicsPipeline_Vulkan(const GraphicsPipelineDesc &Des
         rendering_info.depthAttachmentFormat = RHIFormatToVkFormat(Desc.attachments.depth_format);
         rendering_info.stencilAttachmentFormat = RHIFormatToVkFormat(Desc.attachments.stencil_format);
         Array<VkFormat> color_formats = Desc.attachments.color_formats |
-                                        range::view::Select([](Format format) {
+                                        NRange::NView::Select([](Format format) {
                                             return RHIFormatToVkFormat(format);
-                                        }) | range::To<Array<VkFormat> >();
+                                        }) | NRange::To<Array<VkFormat> >();
         rendering_info.colorAttachmentCount = color_formats.Count();
         rendering_info.pColorAttachmentFormats = color_formats.Data();
 

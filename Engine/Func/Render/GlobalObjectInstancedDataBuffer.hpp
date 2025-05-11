@@ -11,7 +11,7 @@
 
 struct Transform;
 class SceneComponent;
-namespace RHI
+namespace NRHI
 {
 class Buffer;
 }
@@ -28,7 +28,7 @@ public:
         return "GlobalObjectInstancedDataBuffer";
     }
 
-    static RHI::Buffer* GetBuffer();
+    static NRHI::Buffer* GetBuffer();
 
     virtual void Startup() override;
     virtual void Shutdown() override;
@@ -42,7 +42,7 @@ public:
 private:
     UInt32 FindNextAvailableIndex();
 
-    SharedPtr<RHI::Buffer> buffer_;
+    SharedPtr<NRHI::Buffer> buffer_;
     UInt8* mapped_memory_ = nullptr;
     Map<ObjectHandle, UInt32> mInstancedDataMap; // 每个Object对应哪个Index
     Array<UInt32> occupied_indices_;

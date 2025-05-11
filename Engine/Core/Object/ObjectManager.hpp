@@ -28,6 +28,8 @@ public:
 
     void RemoveObject(Object* object);
 
+    void RemoveObject(ObjectHandle InHandle);
+
     void RemoveAllObjects();
 
     void RemoveAllObjectLayered();

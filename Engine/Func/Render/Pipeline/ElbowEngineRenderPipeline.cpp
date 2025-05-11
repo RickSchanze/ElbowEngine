@@ -19,7 +19,7 @@
 #include "Resource/Assets/Mesh/Mesh.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 using namespace Helper;
 
 void ElbowEngineRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params) {

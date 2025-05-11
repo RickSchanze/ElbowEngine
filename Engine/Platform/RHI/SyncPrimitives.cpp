@@ -5,7 +5,7 @@
 
 #include "Core/Logger/Logger.hpp"
 
-bool RHI::Semaphore::Vulkan_IsTimelineSemaphore()  {
+bool NRHI::Semaphore::Vulkan_IsTimelineSemaphore()  {
     Log(Fatal) << "此函数只能有Vulkan后端调用";
     return false;
 }

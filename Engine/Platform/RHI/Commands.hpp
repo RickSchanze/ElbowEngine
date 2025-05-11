@@ -12,12 +12,12 @@
 class SharedMaterial;
 class Material;
 
-namespace RHI
+namespace NRHI
 {
 class GraphicsPipeline;
 }
 
-namespace RHI
+namespace NRHI
 {
 class Buffer;
 class DescriptorSet;

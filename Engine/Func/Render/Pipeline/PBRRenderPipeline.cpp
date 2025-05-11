@@ -32,7 +32,7 @@
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 void PBRRenderPipeline::Render(CommandBuffer &cmd, const RenderParams &params)
 {

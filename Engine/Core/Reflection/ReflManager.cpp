@@ -187,7 +187,7 @@ void ReflManager::RegisterType(const RTTITypeInfo& type_info, Type* type)
 const Type* ReflManager::FindTypeImpl(StringView InName)
 {
     CPU_PROFILING_SCOPE;
-    for (const auto RegisteredType : mTypesRegistered | range::view::Values)
+    for (const auto RegisteredType : mTypesRegistered | NRange::NView::Values)
     {
         if (RegisteredType->GetName() == InName)
         {

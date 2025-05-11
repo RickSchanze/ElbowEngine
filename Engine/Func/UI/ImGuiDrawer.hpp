@@ -9,17 +9,17 @@
 class Texture2D;
 class SceneComponent;
 class Actor;
-namespace RHI {
+namespace NRHI {
     class ImageView;
 }
 class RenderTexture;
-namespace RHI {
+namespace NRHI {
     class DescriptorSet;
 }
 
 struct ImGuiImageData {
     ImTextureID id;
-    RHI::ImageView *view;
+    NRHI::ImageView *view;
 };
 
 enum class ImGuiItemLabelFlag {

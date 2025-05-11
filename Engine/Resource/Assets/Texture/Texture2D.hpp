@@ -12,12 +12,12 @@
 #include "Texture2DMeta.hpp"
 
 #include GEN_HEADER("Texture2D.generated.hpp")
-namespace RHI
+namespace NRHI
 {
 struct ImageViewDesc;
 }
 
-namespace RHI
+namespace NRHI
 {
 class Image;
 class ImageView;
@@ -70,16 +70,16 @@ public:
 
     UInt32 GetMipLevelCount() const;
 
-    RHI::Format GetFormat() const;
+    NRHI::Format GetFormat() const;
 
     static Texture2D *GetDefault();
 
-    RHI::ImageView *GetNativeImageView() const
+    NRHI::ImageView *GetNativeImageView() const
     {
         return native_image_view_.get();
     }
 
-    RHI::Image *GetNativeImage() const
+    NRHI::Image *GetNativeImage() const
     {
         return mNativeImage.get();
     }
@@ -99,12 +99,12 @@ public:
         return meta_.Path;
     }
 
-    SharedPtr<RHI::ImageView> CreateImageView(RHI::ImageViewDesc &desc) const;
+    SharedPtr<NRHI::ImageView> CreateImageView(NRHI::ImageViewDesc &desc) const;
 
     static Texture2D *GetDefaultCubeTexture2D();
 
 #if WITH_EDITOR
-    void SetTextureFormat(RHI::Format format);
+    void SetTextureFormat(NRHI::Format format);
 
     /**
      * 这个函数设置asset_path, 你仅应在下面的场景调用此函数:
@@ -195,8 +195,8 @@ public:
 #endif
 
 private:
-    SharedPtr<RHI::Image> mNativeImage = nullptr;
-    SharedPtr<RHI::ImageView> native_image_view_ = nullptr;
+    SharedPtr<NRHI::Image> mNativeImage = nullptr;
+    SharedPtr<NRHI::ImageView> native_image_view_ = nullptr;
 
     // 这个Texture2D包含的sprites
     Array<SpriteRange> sprite_ranges_;

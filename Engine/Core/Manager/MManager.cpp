@@ -7,8 +7,8 @@
 #include "Core/Logger/Logger.hpp"
 #include "Core/Misc/Other.hpp"
 
-using namespace range;
-using namespace view;
+using namespace NRange;
+using namespace NView;
 
 void MManager::RegisterManager(ManagerBase *manager) {
     if (managers_.Contains(manager)) {

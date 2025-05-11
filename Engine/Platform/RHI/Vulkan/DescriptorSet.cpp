@@ -10,8 +10,8 @@
 #include "Platform/RHI/Image.hpp"
 #include "Platform/RHI/ImageView.hpp"
 
-using namespace range;
-using namespace RHI;
+using namespace NRange;
+using namespace NRHI;
 DescriptorSetLayout_Vulkan::DescriptorSetLayout_Vulkan(const DescriptorSetLayoutDesc &desc) : DescriptorSetLayout(desc) {
     auto &ctx = *GetVulkanGfxContext();
     auto device = ctx.GetDevice();
@@ -19,7 +19,7 @@ DescriptorSetLayout_Vulkan::DescriptorSetLayout_Vulkan(const DescriptorSetLayout
     VkDescriptorSetLayoutCreateInfo layout_info{};
 
     Array<VkDescriptorSetLayoutBinding> bindings = //
-            desc.bindings | view::Select([](const DescriptorSetLayoutBinding &binding) {
+            desc.bindings | NView::Select([](const DescriptorSetLayoutBinding &binding) {
                 VkDescriptorSetLayoutBinding layout_binding{};
                 layout_binding.binding = binding.binding;
                 layout_binding.descriptorCount = binding.descriptor_count;
@@ -131,7 +131,7 @@ SharedPtr<DescriptorSet> DescriptorSetPool_Vulkan::Allocate(DescriptorSetLayout 
 Array<SharedPtr<DescriptorSet>> DescriptorSetPool_Vulkan::Allocates(const Array<DescriptorSetLayout *> &layouts) {
     VkDescriptorSetAllocateInfo alloc_info;
     Array<VkDescriptorSetLayout> layout_ptrs = //
-            layouts | view::Select([](const DescriptorSetLayout *layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) |
+            layouts | NView::Select([](const DescriptorSetLayout *layout) { return layout->GetNativeHandleT<VkDescriptorSetLayout>(); }) |
             To<Array<VkDescriptorSetLayout>>();
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorPool = handle_;

@@ -5,7 +5,7 @@
 #pragma once
 #include "IResource.hpp"
 
-namespace RHI {
+namespace NRHI {
 /**
  * Surface是对Vulkan Surface的抽象
  * 交由platform::Window类实现并创建

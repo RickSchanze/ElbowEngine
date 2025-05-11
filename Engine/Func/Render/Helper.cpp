@@ -11,7 +11,7 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
 using namespace Helper;
-using namespace RHI;
+using namespace NRHI;
 
 void Helper::BindAndDrawMesh(CommandBuffer &cmd, const Mesh *mesh) {
     if (mesh == nullptr)
@@ -38,7 +38,7 @@ void Helper::BindMaterial(CommandBuffer &cmd, const Material *mat) {
     cmd.BindDescriptorSet(shared_mat->GetPipeline(), descriptor_set);
 }
 
-void Helper::BindComputeMaterial(RHI::CommandBuffer &InCmd, const Material *InMat) {
+void Helper::BindComputeMaterial(NRHI::CommandBuffer &InCmd, const Material *InMat) {
     if (InMat == nullptr || !InMat->IsComputeMaterial()) {
         VLOG_ERROR("材质必须有效且为ComputeMaterial");
         return;

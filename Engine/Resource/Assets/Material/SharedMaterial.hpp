@@ -13,24 +13,24 @@
 #include "Resource/Assets/Shader/Shader.hpp"
 
 
-namespace RHI
+namespace NRHI
 {
 class CommandBuffer;
 }
 
 class Shader;
 
-namespace RHI
+namespace NRHI
 {
 class Pipeline;
 class DescriptorSetLayout;
 class DescriptorSet;
 } // namespace rhi
-inline SharedPtr<RHI::DescriptorSet> (*AllocateDescriptorSetFunc)(const SharedPtr<RHI::DescriptorSetLayout> &layout);
+inline SharedPtr<NRHI::DescriptorSet> (*AllocateDescriptorSetFunc)(const SharedPtr<NRHI::DescriptorSetLayout> &layout);
 
-inline void (*UpdateCameraDescriptorSetFunc)(RHI::DescriptorSet &descriptor_set);
+inline void (*UpdateCameraDescriptorSetFunc)(NRHI::DescriptorSet &descriptor_set);
 
-inline void (*UpdateLightsDescriptorSetFunc)(RHI::DescriptorSet &descriptor_set);
+inline void (*UpdateLightsDescriptorSetFunc)(NRHI::DescriptorSet &descriptor_set);
 
 struct MaterialParamBlock
 {
@@ -98,18 +98,18 @@ public:
         return struct_only_offsets_;
     }
 
-    RHI::Pipeline *GetPipeline() const
+    NRHI::Pipeline *GetPipeline() const
     {
         return mPipeline.Get();
     }
 
-    const Array<SharedPtr<RHI::DescriptorSetLayout> > &GetDescriptorSetLayouts() const
+    const Array<SharedPtr<NRHI::DescriptorSetLayout> > &GetDescriptorSetLayouts() const
     {
         return set_layouts_;
     }
 
     template <typename T>
-    void PushConstant(RHI::CommandBuffer &cmd, const T &Value)
+    void PushConstant(NRHI::CommandBuffer &cmd, const T &Value)
     {
         if (mPushConstant.Size != 0)
         {
@@ -122,11 +122,11 @@ public:
         InternalPushConstant(cmd, ValueCopy, sizeof(T));
     }
 
-    void InternalPushConstant(RHI::CommandBuffer &Cmd, void *Data, UInt32 Size) const;
+    void InternalPushConstant(NRHI::CommandBuffer &Cmd, void *Data, UInt32 Size) const;
 
 private:
     // 当前使用的pipeline
-    UniquePtr<RHI::Pipeline> mPipeline;
+    UniquePtr<NRHI::Pipeline> mPipeline;
 
     // 这个是参数名字的哈希哈希到buffer_偏移量的映射
     Map<UInt64, MaterialParamBlock> uniform_offsets_;
@@ -141,7 +141,7 @@ private:
     // 例如只有param, 而没有param.color, param.alpha等等
     Map<UInt64, MaterialParamBlock> struct_only_offsets_;
 
-    Array<SharedPtr<RHI::DescriptorSetLayout> > set_layouts_;
+    Array<SharedPtr<NRHI::DescriptorSetLayout> > set_layouts_;
 
     PushConstantInfo mPushConstant;
 

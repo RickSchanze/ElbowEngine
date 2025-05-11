@@ -8,7 +8,7 @@
 #include GEN_HEADER("StaticMeshComponent.generated.hpp")
 
 class Material;
-namespace RHI {
+namespace NRHI {
     class Buffer;
 }
 class Mesh;
@@ -31,6 +31,6 @@ public:
     virtual void UpdateTransform(const Transform &parent_transform) override;
 
     UInt32 GetIndexCount();
-    SharedPtr<RHI::Buffer> GetVertexBuffer() const;
-    SharedPtr<RHI::Buffer> GetIndexBuffer() const;
+    SharedPtr<NRHI::Buffer> GetVertexBuffer() const;
+    SharedPtr<NRHI::Buffer> GetIndexBuffer() const;
 };

@@ -12,30 +12,18 @@
 
 #include GEN_HEADER("Material.generated.hpp")
 
-namespace RHI
+namespace NRHI
 {
 class CommandBuffer;
-}
-
-namespace RHI
-{
 class Sampler;
-}
-
-namespace RHI
-{
+class Buffer;
+class DescriptorSet;
 class ImageView;
-}
+} // namespace RHI
 
 class RenderTexture;
 class Shader;
 class SharedMaterial;
-
-namespace RHI
-{
-class Buffer;
-class DescriptorSet;
-} // namespace RHI
 class Texture2D;
 
 class ECLASS() Material : public Asset
@@ -78,7 +66,7 @@ public:
 
     bool SetFloat(StringView name, Float value);
 
-    bool SetParamNativeImageView(const String& name, RHI::ImageView* image_view, bool is_storage = false);
+    bool SetParamNativeImageView(const String& name, NRHI::ImageView* image_view, bool is_storage = false);
 
     void SetShader(const Shader* shader);
 
@@ -92,7 +80,7 @@ public:
 
     Texture2D* GetParam_Texture2D(const String& name) const;
 
-    RHI::DescriptorSet* GetDescriptorSet() const
+    NRHI::DescriptorSet* GetDescriptorSet() const
     {
         return mDescriptorSet.get();
     }
@@ -114,7 +102,7 @@ public:
 
 protected:
     EFIELD()
-    ObjectPtr<Shader> mShader;
+    ObjectPtr<Shader> mShader = nullptr;
 
     EFIELD()
     Map<String, Vector3f> mFloat3Params;
@@ -127,11 +115,11 @@ protected:
 
     // 所有UniformBuffer都使用这一个Buffer
     // UniformBuffer尽量用块对齐 因为有256字节对齐的限制
-    SharedPtr<RHI::Buffer> mBuffer;
+    SharedPtr<NRHI::Buffer> mBuffer;
 
     UInt8* mMappedBufferMemory = nullptr;
 
-    SharedPtr<RHI::DescriptorSet> mDescriptorSet;
+    SharedPtr<NRHI::DescriptorSet> mDescriptorSet;
 
     SharedPtr<SharedMaterial> mSharedMaterial;
 };

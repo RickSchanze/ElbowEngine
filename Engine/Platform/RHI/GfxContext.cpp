@@ -13,7 +13,7 @@
 #include "Image.hpp"
 #include "Platform/Config/PlatformConfig.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 static GfxContext *ctx;
 
@@ -63,11 +63,11 @@ FrameAllocator &GfxContext::GetCommandAllocator() {
 
 void GfxContext::PreDestroyed(GfxContext *self) { self->sampler_pool_.Clear(); }
 
-GfxContext *RHI::GetGfxContext() { return ctx; }
+GfxContext *NRHI::GetGfxContext() { return ctx; }
 
-GfxContext &RHI::GetGfxContextRef() { return *GetGfxContext(); }
+GfxContext &NRHI::GetGfxContextRef() { return *GetGfxContext(); }
 
-void RHI::UseGraphicsAPI(GraphicsAPI api) {
+void NRHI::UseGraphicsAPI(GraphicsAPI api) {
     Evt_OnGfxContextPreInitialized.Invoke();
     switch (api) {
         case GraphicsAPI::Vulkan:
@@ -79,7 +79,7 @@ void RHI::UseGraphicsAPI(GraphicsAPI api) {
     Evt_OnGfxContextPostInitialized.Invoke(ctx);
 }
 
-void RHI::ReleaseGfxContext() {
+void NRHI::ReleaseGfxContext() {
     Evt_OnGfxContextPreDestroyed.Invoke(ctx);
     Delete(ctx);
     ctx = nullptr;

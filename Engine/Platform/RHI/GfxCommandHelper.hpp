@@ -8,7 +8,7 @@
 #include "Enums.hpp"
 
 
-namespace RHI {
+namespace NRHI {
     class Buffer;
     class Image;
     class CommandBuffer;

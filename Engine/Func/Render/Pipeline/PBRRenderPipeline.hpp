@@ -14,7 +14,7 @@
 class Texture2D;
 class StaticMeshComponent;
 
-namespace RHI
+namespace NRHI
 {
 class Buffer;
 }
@@ -28,7 +28,7 @@ class ECLASS() PBRRenderPipeline : public RenderPipeline
 public:
     friend class PBRRenderPipelineSettingWindow;
 
-    virtual void Render(RHI::CommandBuffer& cmd, const RenderParams& params) override;
+    virtual void Render(NRHI::CommandBuffer& cmd, const RenderParams& params) override;
 
     virtual void Build() override;
 

@@ -68,7 +68,7 @@ static bool SupportValidationLayer(StringView layer_name)
     return false;
 }
 
-using namespace RHI;
+using namespace NRHI;
 GraphicsAPI GfxContext_Vulkan::GetAPI() const
 {
     return GraphicsAPI::Vulkan;
@@ -113,10 +113,10 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
         formats.Resize(format_count);
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, surfaceVk, &format_count, formats.Data());
         info.formats =
-            formats | range::view::Select([](const VkSurfaceFormatKHR& format) {
+            formats | NRange::NView::Select([](const VkSurfaceFormatKHR& format) {
                 return SurfaceFormat{.format = VkFormatToRHIFormat(format.format), .color_space = VkColorSpaceToRHIColorSpace(format.colorSpace)};
             }) |
-            range::To<Array<SurfaceFormat>>();
+            NRange::To<Array<SurfaceFormat>>();
     }
 
     uint32_t present_mode_count;
@@ -126,8 +126,8 @@ static SwapChainSupportInfo QuerySwapChainSupportInfo(const VkPhysicalDevice dev
         Array<VkPresentModeKHR> present_modes;
         present_modes.Resize(present_mode_count);
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, surfaceVk, &present_mode_count, present_modes.Data());
-        info.present_modes = present_modes | range::view::Select([](VkPresentModeKHR mode) { return VkPresentModeToRHIPresentMode(mode); }) |
-                             range::To<Array<PresentMode>>();
+        info.present_modes = present_modes | NRange::NView::Select([](VkPresentModeKHR mode) { return VkPresentModeToRHIPresentMode(mode); }) |
+                             NRange::To<Array<PresentMode>>();
     }
     return info;
 }
@@ -199,7 +199,7 @@ VkImageView GfxContext_Vulkan::CreateImageView_VK(const ImageViewDesc& desc) con
     VkImageView view_handle = VK_NULL_HANDLE;
     if (const VkResult result = vkCreateImageView(device_, &view_info, nullptr, &view_handle); result != VK_SUCCESS)
     {
-        Log(Error) << "Failed to create ImageView: "_es + RHI::VulkanErrorToString(result);
+        Log(Error) << "Failed to create ImageView: "_es + NRHI::VulkanErrorToString(result);
     }
     return view_handle;
 }
@@ -483,7 +483,7 @@ UniquePtr<Pipeline> GfxContext_Vulkan::CreateComputePipeline(const ComputePipeli
 Format GfxContext_Vulkan::FindSupportedFormat(const Array<Format>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (const Array<VkFormat> fmts =
-             candidates | range::view::Select([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | range::To<Array<VkFormat>>();
+             candidates | NRange::NView::Select([](Format fmt) { return RHIFormatToVkFormat(fmt); }) | NRange::To<Array<VkFormat>>();
          const auto fmt : fmts)
     {
         VkFormatProperties props;
@@ -526,19 +526,19 @@ void GfxContext_Vulkan::PostVulkanGfxContextInit(GfxContext* ctx)
         Log(Fatal) << "创建交换链失败";
     }
     vulkan_ctx->swapchain_images_ = //
-        vk_imgs | range::view::Enumerate | range::view::Select([vulkan_ctx](const auto& pair) {
+        vk_imgs | NRange::NView::Enumerate | NRange::NView::Select([vulkan_ctx](const auto& pair) {
             auto& desc = vulkan_ctx->swapchain_image_desc_;
             const auto& [idx, img] = pair;
             return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
         }) |
-        range::To<Array<Image_Vulkan*>>();
+        NRange::To<Array<Image_Vulkan*>>();
     vulkan_ctx->swapchain_image_views_ = //
-        vulkan_ctx->swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto& pair) {
+        vulkan_ctx->swapchain_images_ | NRange::NView::Enumerate | NRange::NView::Select([](const auto& pair) {
             const auto& [idx, img] = pair;
             ImageViewDesc desc(img);
             return New<ImageView_Vulkan>(desc);
         }) |
-        range::To<Array<ImageView_Vulkan*>>();
+        NRange::To<Array<ImageView_Vulkan*>>();
 
     CommandPoolCreateInfo transfer_pool_info{QueueFamilyType::Transfer, true};
     vulkan_ctx->transfer_pool_ = vulkan_ctx->CreateCommandPool(transfer_pool_info);
@@ -668,7 +668,7 @@ void GfxContext_Vulkan::WaitForQueueExecution(QueueFamilyType type)
     vkQueueWaitIdle(GetQueue(type));
 }
 
-UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, RHI::RenderPass* render_pass)
+UniquePtr<Pipeline> GfxContext_Vulkan::CreateGraphicsPipeline(const GraphicsPipelineDesc& create_info, NRHI::RenderPass* render_pass)
 {
     return MakeUnique<GraphicsPipeline_Vulkan>(create_info, render_pass);
 }
@@ -758,7 +758,7 @@ Image* GfxContext_Vulkan::GetSwapChainImage(UInt32 index)
     return swapchain_images_[index];
 }
 
-GfxContext_Vulkan* RHI::GetVulkanGfxContext()
+GfxContext_Vulkan* NRHI::GetVulkanGfxContext()
 {
     return static_cast<GfxContext_Vulkan*>(GetGfxContext());
 }
@@ -832,7 +832,7 @@ static void CreateInstance(VkInstance& instance)
     instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_info.pApplicationInfo = &app_info;
     const auto required_extension_cstr =
-        required_instance_extensions | range::view::Select([](const String& str) { return str.Data(); }) | range::To<Array<const char*>>();
+        required_instance_extensions | NRange::NView::Select([](const String& str) { return str.Data(); }) | NRange::To<Array<const char*>>();
     instance_info.enabledExtensionCount = required_extension_cstr.Count();
     instance_info.ppEnabledExtensionNames = required_extension_cstr.Data();
     Log(Info) << "  Enabled validation layer: "_es + String::FromBool(rhi_cfg->GetValidEnableValidationLayer());
@@ -889,7 +889,7 @@ static bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     Array my_required_extensions = {"VK_KHR_swapchain"};
     for (Int32 i = my_required_extensions.Count() - 1; i >= 0; --i)
     {
-        if (range::AnyOf(extensions,
+        if (NRange::AnyOf(extensions,
                          [ext = String(my_required_extensions[i])](const VkExtensionProperties& prop) { return ext == prop.extensionName; }))
         {
             my_required_extensions.FastRemoveAt(i);
@@ -1137,19 +1137,19 @@ void GfxContext_Vulkan::ResizeSwapChain(Int32 width, Int32 height)
         Log(Fatal) << "创建交换链失败";
     }
     swapchain_images_ = //
-        vk_imgs | range::view::Enumerate | range::view::Select([this](const auto& pair) {
+        vk_imgs | NRange::NView::Enumerate | NRange::NView::Select([this](const auto& pair) {
             auto& desc = swapchain_image_desc_;
             const auto& [idx, img] = pair;
             return New<Image_Vulkan>(img, idx, desc.Width, desc.Height, desc.Format);
         }) |
-        range::To<Array<Image_Vulkan*>>();
+        NRange::To<Array<Image_Vulkan*>>();
     swapchain_image_views_ = //
-        swapchain_images_ | range::view::Enumerate | range::view::Select([](const auto& pair) {
+        swapchain_images_ | NRange::NView::Enumerate | NRange::NView::Select([](const auto& pair) {
             const auto& [idx, img] = pair;
             ImageViewDesc desc{img};
             return New<ImageView_Vulkan>(desc);
         }) |
-        range::To<Array<ImageView_Vulkan*>>();
+        NRange::To<Array<ImageView_Vulkan*>>();
     for (const auto framebuffer : imgui_framebuffers_)
     {
         vkDestroyFramebuffer(device_, framebuffer, nullptr);
@@ -1175,7 +1175,7 @@ SharedPtr<DescriptorSetPool> GfxContext_Vulkan::CreateDescriptorSetPool(const De
     return MakeShared<DescriptorSetPool_Vulkan>(desc);
 }
 
-void GfxContext_Vulkan::BeginImGuiFrame(RHI::CommandBuffer& cmd, Int32 img_index, Int32 w, Int32 h)
+void GfxContext_Vulkan::BeginImGuiFrame(NRHI::CommandBuffer& cmd, Int32 img_index, Int32 w, Int32 h)
 {
     auto Buffer = cmd.GetNativeHandleT<VkCommandBuffer>();
     const auto Cfg = GetConfig<PlatformConfig>();
@@ -1208,7 +1208,7 @@ void GfxContext_Vulkan::BeginImGuiFrame(RHI::CommandBuffer& cmd, Int32 img_index
     }
 }
 
-void GfxContext_Vulkan::EndImGuiFrame(RHI::CommandBuffer& buffer)
+void GfxContext_Vulkan::EndImGuiFrame(NRHI::CommandBuffer& buffer)
 {
     auto cfg = GetConfig<PlatformConfig>();
     auto task = Just() | Then([&buffer]() {

@@ -38,6 +38,35 @@ Object::~Object()
     }
 }
 
+static void FindObjPtr(const Type* t, void* field_ptr, ObjectHandle handle)
+{
+    if (t == nullptr)
+        return;
+    const auto fields = t->GetFields();
+    for (const auto& field : fields)
+    {
+        if (field->GetType() == TypeOf<ObjectPtrBase>())
+        {
+            const auto ptr = static_cast<ObjectPtrBase*>(field->GetFieldPtr(field_ptr));
+            ptr->ModifyOuter(handle);
+        }
+        else
+        {
+            FindObjPtr(field->GetType(), field->GetFieldPtr(field_ptr), handle);
+        }
+    }
+}
+
+void Object::SetObjectHandle(const Int32 handle)
+{
+    // 此时自己的Object Handle 需要通知所有的ObjectPtr
+    auto type = GetType();
+    FindObjPtr(type, this, handle);
+    UnregisterSelf();
+    mHandle = handle;
+    RegisterSelf();
+}
+
 void Object::GenerateInstanceHandle()
 {
     mHandle = ObjectManager::GetRegistry().NextInstanceHandle();
@@ -76,37 +105,8 @@ void Object::ResolveObjectPtr()
     }
 }
 
-static void FindObjPtr(const Type* t, void* field_ptr, ObjectHandle handle)
-{
-    if (t == nullptr)
-        return;
-    const auto fields = t->GetFields();
-    for (const auto& field : fields)
-    {
-        if (field->GetType() == TypeOf<ObjectPtrBase>())
-        {
-            auto ptr = static_cast<ObjectPtrBase*>(field->GetFieldPtr(field_ptr));
-            ptr->ModifyOuter(handle);
-        }
-        else
-        {
-            FindObjPtr(field->GetType(), field->GetFieldPtr(field_ptr), handle);
-        }
-    }
-}
-
 void Object::OnDestroyed()
 {
-}
-
-void Object::InternalSetAssetHandle(ObjectHandle handle)
-{
-    // 此时自己的Object Handle 需要通知所有的ObjectPtr
-    auto type = GetType();
-    FindObjPtr(type, this, handle);
-    UnregisterSelf();
-    mHandle = handle;
-    RegisterSelf();
 }
 
 ExecFuture<ObjectHandle> Object::PerformPersistentObjectLoadAsync()

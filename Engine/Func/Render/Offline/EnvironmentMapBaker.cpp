@@ -15,7 +15,7 @@
 #include "Resource/Assets/Material/SharedMaterial.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 #include "Resource/Assets/Texture/Texture2D.hpp"
-using namespace RHI;
+using namespace NRHI;
 
 Texture2D* EnvironmentMapBaker::BakeIrradianceMap(const Texture2D* environment_sphere, const Vector2f output_size, const Float sample_delta,
                                                   const Float intensity)
@@ -76,7 +76,7 @@ void EnvironmentMapBaker::BakeIrradianceMap(const Texture2D* environment_sphere,
     Destroy(material);
 }
 
-void EnvironmentMapBaker::BakeIrradianceMap(RHI::CommandBuffer& buffer, const Texture2D* environment_sphere, const Texture2D* target,
+void EnvironmentMapBaker::BakeIrradianceMap(NRHI::CommandBuffer& buffer, const Texture2D* environment_sphere, const Texture2D* target,
                                             const Material* material)
 {
     if (!environment_sphere || !target || !material)
@@ -173,7 +173,7 @@ Texture2D* EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(const UInt32 InSize)
 {
     Texture2DMeta meta;
     meta.IsDynamic = true;
-    meta.Format = RHI::Format::R32G32_Float;
+    meta.Format = NRHI::Format::R32G32_Float;
     meta.Width = InSize;
     meta.Height = InSize;
     Texture2D* BRDFMap = CreateNewObject<Texture2D>();

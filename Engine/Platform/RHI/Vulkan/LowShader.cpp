@@ -7,7 +7,7 @@
 
 #include "GfxContext.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 LowShader_Vulkan::LowShader_Vulkan(const char *code, const size_t size) {
     auto &ctx = *GetVulkanGfxContext();

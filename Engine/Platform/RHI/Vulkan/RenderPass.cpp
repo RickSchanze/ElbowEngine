@@ -6,7 +6,7 @@
 #include "Enums.hpp"
 #include "GfxContext.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 struct MySubpassDesc {
     Array<VkAttachmentReference> color_attachments;

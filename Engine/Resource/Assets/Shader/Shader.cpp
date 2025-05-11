@@ -19,7 +19,7 @@
 #include "Resource/Config.hpp"
 #include "ShaderMeta.hpp"
 #include "SlangShaderLoader.hpp"
-using namespace RHI;
+using namespace NRHI;
 
 void Shader::PerformLoad()
 {
@@ -665,7 +665,7 @@ bool Shader::FillGraphicsPSODescFromShader(GraphicsPipelineDesc &pso_desc, bool 
     return true;
 }
 
-bool Shader::FillComputePSODescFromShader(RHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl)
+bool Shader::FillComputePSODescFromShader(NRHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl)
 {
     ProfileScope _(__func__);
     if (!IsLoaded())

@@ -55,10 +55,10 @@ void AssetDataBase::Shutdown()
 template <typename T, typename TMeta>
 ExecFuture<ObjectHandle> InternalImport(const StringView InQuery, StringView InPath, ObjectRegistry& InRegistry)
 {
-    auto Reuslt = AssetDataBase::QueryMeta<TMeta>(InQuery);
-    if (Reuslt)
+    auto Result = AssetDataBase::QueryMeta<TMeta>(InQuery);
+    if (Result)
     {
-        auto& Meta = *Reuslt;
+        auto& Meta = *Result;
         ObjectHandle Handle = Meta.ObjectHandle;
         auto* Obj = InRegistry.GetObjectByHandle(Handle);
         if (Obj != nullptr)
@@ -79,7 +79,7 @@ ExecFuture<ObjectHandle> InternalImport(const StringView InQuery, StringView InP
         {
             if (InPath.EndsWith(".exr") || InPath.EndsWith(".hdr"))
             {
-                NewMeta.Format = RHI::Format::R32G32B32A32_Float;
+                NewMeta.Format = NRHI::Format::R32G32B32A32_Float;
             }
         }
         AssetDataBase::InsertMeta(NewMeta);
@@ -188,6 +188,7 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView InPath)
                 if (!InputStream)
                 {
                     VLOG_ERROR("加载资产", *InPath, "失败: errno=", errno, ", strerror=", strerror(errno));
+                    Destroy(MaterialAsset);
                     return MakeExecFuture(0);
                 }
                 XMLInputArchive InputArchive(InputStream);
@@ -198,6 +199,7 @@ ExecFuture<ObjectHandle> AssetDataBase::LoadFromPathAsync(StringView InPath)
                 const auto FileHandle = MaterialAsset->GetHandle();
                 Assert(FileHandle == DatabaseHandle, "FileHandle != DatabaseHandle");
                 // 校验通过则将临时注册的取消注册
+                // 这里没有手动注册新的ObjectHandle是因为它已经在Object的Serialization_AfterLoad完成
                 ObjectManager::GetRegistry().UnregisterHandle(OldInstanceHandle);
                 auto Result = MaterialAsset->PerformPersistentObjectLoadAsync();
                 return Result;

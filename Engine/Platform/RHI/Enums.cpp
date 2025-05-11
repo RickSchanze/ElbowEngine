@@ -4,6 +4,6 @@
 
 #include "Enums.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 

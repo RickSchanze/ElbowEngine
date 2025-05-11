@@ -9,7 +9,7 @@
 #include "Func/World/ITick.hpp"
 
 
-namespace RHI {
+namespace NRHI {
     class Buffer;
 }
 class CameraComponent;
@@ -31,7 +31,7 @@ public:
     virtual void Tick(MilliSeconds delta_time) override;
 
     static void UpdateViewBuffer(const CameraShaderData &data);
-    static RHI::Buffer* GetViewBuffer()
+    static NRHI::Buffer* GetViewBuffer()
     {
         return GetByRef().view_buffer_.get();
     }
@@ -43,6 +43,6 @@ private:
     CameraComponent *active_ = nullptr;
 
     // 全局摄像机视图缓存
-    SharedPtr<RHI::Buffer> view_buffer_ = nullptr;
+    SharedPtr<NRHI::Buffer> view_buffer_ = nullptr;
     UInt8 *mapped_view_buffer_memory_ = nullptr;
 };

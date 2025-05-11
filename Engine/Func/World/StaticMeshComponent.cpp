@@ -53,5 +53,5 @@ void StaticMeshComponent::UpdateTransform(const Transform &parent_transform) {
 
 UInt32 StaticMeshComponent::GetIndexCount() { return mesh_->GetIndexCount(); }
 
-SharedPtr<RHI::Buffer> StaticMeshComponent::GetVertexBuffer() const { return mesh_->GetVertexBuffer(); }
-SharedPtr<RHI::Buffer> StaticMeshComponent::GetIndexBuffer() const { return mesh_->GetIndexBuffer(); }
+SharedPtr<NRHI::Buffer> StaticMeshComponent::GetVertexBuffer() const { return mesh_->GetVertexBuffer(); }
+SharedPtr<NRHI::Buffer> StaticMeshComponent::GetIndexBuffer() const { return mesh_->GetIndexBuffer(); }

@@ -17,7 +17,7 @@ void UIManager::DrawAll() {
         self.global_docking_window_ = ObjectManager::CreateNewObject<GlobalDockingWindow>();
     }
     self.global_docking_window_->Draw();
-    for (auto &window: self.windows_ | range::view::Values) {
+    for (auto &window: self.windows_ | NRange::NView::Values) {
         if (window->IsVisible())
             window->Draw();
     }
@@ -80,7 +80,7 @@ ImGuiDrawWindow *UIManager::CreateOrActivateWindow(const Type *t, bool silent) {
         }
         return self.active_viewport_window_;
     } else {
-        for (auto *w: self.windows_ | range::view::Values) {
+        for (auto *w: self.windows_ | NRange::NView::Values) {
             if (w->GetType() == t) {
                 if (!silent) {
                     w->SetVisible(true);
@@ -101,7 +101,7 @@ ImGuiDrawWindow *UIManager::GetWindow(const Type *t) {
     if (t == ViewportWindow::GetStaticType()) {
         return self.active_viewport_window_;
     }
-    for (auto *w: self.windows_ | range::view::Values) {
+    for (auto *w: self.windows_ | NRange::NView::Values) {
         if (w->GetType() == t) {
             return w;
         }

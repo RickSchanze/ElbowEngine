@@ -6,7 +6,7 @@
 #include "Core/Collection/Tree.hpp"
 #include "Core/Profile.hpp"
 
-using namespace algo;
+using namespace NAlgo;
 
 Rect2Di RectPacking::GetNextAvailableRect(const Vector2i InBound, const Span<Vector2i> InRects)
 {

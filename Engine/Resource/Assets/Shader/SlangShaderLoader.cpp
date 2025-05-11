@@ -15,7 +15,7 @@
 #include "Resource/Config.hpp"
 
 using namespace slang;
-using namespace RHI;
+using namespace NRHI;
 
 #define VERIFY_SLANG_RESULT(result)                                                                                                                  \
     {                                                                                                                                                \
@@ -152,9 +152,9 @@ void SlangShaderLoader::Load(StringView InPath, Shader &InShader)
     }
 
     Array<const char *> search_path_cstrs =
-        search_paths | range::view::Select([](const String &path) {
+        search_paths | NRange::NView::Select([](const String &path) {
             return *path;
-        }) | range::To<Array<const char *> >();
+        }) | NRange::To<Array<const char *> >();
     search_path_cstrs.Add("");
     session_desc.searchPaths = search_path_cstrs.Data();
     session_desc.searchPathCount = static_cast<SlangInt>(search_path_cstrs.Count());
@@ -170,7 +170,7 @@ void SlangShaderLoader::Load(StringView InPath, Shader &InShader)
     target_desc[1].profile = global_session_->findProfile("glsl_460");
 
     CompilerOptionEntry option_entry[3];
-    if (RHI::GetGfxContextRef().GetAPI() == RHI::GraphicsAPI::Vulkan)
+    if (NRHI::GetGfxContextRef().GetAPI() == NRHI::GraphicsAPI::Vulkan)
     {
         option_entry[0].name = CompilerOptionName::EmitSpirvDirectly;
         option_entry[0].value.intValue0 = 1;
@@ -243,10 +243,10 @@ void SlangShaderLoader::Load(StringView InPath, Shader &InShader)
     }
 
     const Array<IComponentType *> components = linking_programs |
-                                               range::view::Select([](const Slang::ComPtr<IComponentType> &component) {
+                                               NRange::NView::Select([](const Slang::ComPtr<IComponentType> &component) {
                                                    return component.get();
                                                }) |
-                                               range::To<Array<IComponentType *> >();
+                                               NRange::To<Array<IComponentType *> >();
 
     Slang::ComPtr<IComponentType> composed;
     Result = session->createCompositeComponentType(components.Data(), static_cast<SlangInt>(linking_programs.Count()), composed.writeRef(),
@@ -261,7 +261,7 @@ void SlangShaderLoader::Load(StringView InPath, Shader &InShader)
 
     // 获取各个阶段的index
     Int32 StageIndex[Shader::SHADER_STAGE_COUNT];
-    range::Fill(StageIndex, -1);
+    NRange::Fill(StageIndex, -1);
     Module->getDefinedEntryPointCount();
     for (int i = 0; i < Module->getDefinedEntryPointCount(); i++)
     {

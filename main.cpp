@@ -41,7 +41,7 @@
 
 
 class Texture2D;
-using namespace RHI;
+using namespace NRHI;
 
 static void TickManagerUpdate(const MilliSeconds &sec)
 {

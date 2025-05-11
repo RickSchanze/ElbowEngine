@@ -8,7 +8,7 @@
 #include "Resource/Assets/Texture/Texture2D.hpp"
 
 class Material;
-namespace RHI
+namespace NRHI
 {
 class CommandBuffer;
 }
@@ -26,7 +26,7 @@ public:
     // TODO: BakeIrradianceMapAsync
     static Texture2D* BakeIrradianceMap(const Texture2D* environment_sphere, Vector2f output_size, Float sample_delta = 0.01f, Float intensity = 1.0f);
     static void BakeIrradianceMap(const Texture2D* environment_sphere, const Texture2D* target, Float sample_delta = 0.01f, Float intensity = 1.0f);
-    static void BakeIrradianceMap(RHI::CommandBuffer& buffer, const Texture2D* environment_sphere, const Texture2D* target, const Material* material);
+    static void BakeIrradianceMap(NRHI::CommandBuffer& buffer, const Texture2D* environment_sphere, const Texture2D* target, const Material* material);
 
     /**
      * 烘焙环境贴图的预过滤环境贴图(Prefiltered Environment Map)(相当于高光)

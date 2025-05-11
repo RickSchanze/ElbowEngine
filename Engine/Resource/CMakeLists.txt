@@ -12,6 +12,10 @@ get_property(GEN_SOURCES GLOBAL PROPERTY ${PROJECT_NAME}_GEN_SOURCES)
 
 add_library(Resource
         ${RESOURCE_CPP_FILES} ${RESOURCE_HEADER_FILES} ${GEN_SOURCES}
+        Assets/Scene/SceneMeta.cpp
+        Assets/Scene/SceneMeta.hpp
+        Assets/Scene/Scene.cpp
+        Assets/Scene/Scene.hpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${GEN_INCLUDE_DIR})

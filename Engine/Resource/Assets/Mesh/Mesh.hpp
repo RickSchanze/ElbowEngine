@@ -11,12 +11,12 @@
 #include GEN_HEADER("Mesh.generated.hpp")
 
 struct MeshMeta;
-namespace RHI {
+namespace NRHI {
     class Buffer;
 }
 struct MeshStorage {
-    SharedPtr<RHI::Buffer> vertex_buffer;
-    SharedPtr<RHI::Buffer> index_buffer;
+    SharedPtr<NRHI::Buffer> vertex_buffer;
+    SharedPtr<NRHI::Buffer> index_buffer;
     UInt32 vertex_count;
     UInt32 index_count;
 
@@ -37,8 +37,8 @@ public:
 
     MeshStorage &InternalGetStorage() const { return *storage_; }
     UInt32 GetIndexCount() const;
-    SharedPtr<RHI::Buffer> GetVertexBuffer() const;
-    SharedPtr<RHI::Buffer> GetIndexBuffer() const;
+    SharedPtr<NRHI::Buffer> GetVertexBuffer() const;
+    SharedPtr<NRHI::Buffer> GetIndexBuffer() const;
     StringView GetAssetPath() const { return mMate.Path; }
 
 #if WITH_EDITOR

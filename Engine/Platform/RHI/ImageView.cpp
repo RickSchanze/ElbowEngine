@@ -5,7 +5,7 @@
 #include "ImageView.hpp"
 
 #include "Image.hpp"
-RHI::ImageViewDesc::ImageViewDesc(Image *image_, ImageDimension type_, Format format_, const ImageSubresourceRange &subresource_range_,
+NRHI::ImageViewDesc::ImageViewDesc(Image *image_, ImageDimension type_, Format format_, const ImageSubresourceRange &subresource_range_,
                                   const ComponentMapping component_mapping_) :
     image(image_), type(type_), format(format_), subresource_range(subresource_range_), component_mapping(component_mapping_) {
     if (image == nullptr) {
@@ -73,7 +73,7 @@ RHI::ImageViewDesc::ImageViewDesc(Image *image_, ImageDimension type_, Format fo
     }
 }
 
-RHI::ImageViewDesc::ImageViewDesc(Image *image_) {
+NRHI::ImageViewDesc::ImageViewDesc(Image *image_) {
     image = image_;
     if (image_->GetDepthOrLayers() == 6) {
         type = ImageDimension::Cube;

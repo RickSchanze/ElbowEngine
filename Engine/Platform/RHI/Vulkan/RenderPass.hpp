@@ -5,7 +5,7 @@
 #include "vulkan/vulkan.h"
 #include "Platform/RHI/RenderPass.hpp"
 
-namespace RHI {
+namespace NRHI {
     class RenderPass_Vulkan final : public RenderPass {
     public:
         explicit RenderPass_Vulkan(const RenderPassCreateInfo &info);

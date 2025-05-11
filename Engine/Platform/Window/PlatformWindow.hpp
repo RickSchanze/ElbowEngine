@@ -11,7 +11,7 @@
 
 #include GEN_HEADER("PlatformWindow.generated.hpp") // 不可删除且需要是最后一个
 
-namespace RHI {
+namespace NRHI {
     class Surface;
 }
 enum class EENUM() WindowLib
@@ -35,7 +35,7 @@ struct MouseState {
     Float scroll_dx, scroll_dy;
     MouseEvent mouses_state[static_cast<Int32>(MouseButton::Count)];
 
-    MouseState() : x(0), y(0), scroll_dx(0), scroll_dy(0) { range::Fill(mouses_state, MouseEvent::Release); }
+    MouseState() : x(0), y(0), scroll_dx(0), scroll_dy(0) { NRange::Fill(mouses_state, MouseEvent::Release); }
 };
 
 // clang-format off
@@ -50,7 +50,7 @@ enum class KeyboardEvent { Press, Release, Count };
 
 struct KeyboardState {
     KeyboardEvent keys_state[static_cast<Int32>(KeyboardKey::Count)];
-    KeyboardState() { range::Fill(keys_state, KeyboardEvent::Release); }
+    KeyboardState() { NRange::Fill(keys_state, KeyboardEvent::Release); }
 };
 
 // 底层的输入
@@ -80,13 +80,13 @@ public:
      * @param api 表示当前在用什么API
      * @return
      */
-    virtual RHI::Surface *CreateSurface(void *instance, RHI::GraphicsAPI api) = 0;
+    virtual NRHI::Surface *CreateSurface(void *instance, NRHI::GraphicsAPI api) = 0;
 
     /**
      * 销毁一个Surface
      * @param surface 需要销毁的Surface, 因为是一个Ref因此也会将传入的surface置为nullptr
      */
-    virtual void DestroySurface(RHI::Surface *&surface) = 0;
+    virtual void DestroySurface(NRHI::Surface *&surface) = 0;
 
     StringView GetTitle() const { return title_; }
     Int32 GetWidth() const { return width_; }

@@ -10,12 +10,12 @@
 
 #include GEN_HEADER("Shader.generated.hpp")
 
-namespace RHI
+namespace NRHI
 {
 struct ComputePipelineDesc;
 }
 
-namespace RHI
+namespace NRHI
 {
 class LowShader;
 struct GraphicsPipelineDesc;
@@ -136,14 +136,14 @@ public:
         return mLinedProgram;
     }
 
-    bool FillGraphicsPSODescFromShader(RHI::GraphicsPipelineDesc &desc, bool output_glsl = true);
+    bool FillGraphicsPSODescFromShader(NRHI::GraphicsPipelineDesc &desc, bool output_glsl = true);
 
-    bool FillComputePSODescFromShader(RHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl = true);
+    bool FillComputePSODescFromShader(NRHI::ComputePipelineDesc &OutComputeDesc, bool output_glsl = true);
 
 protected:
     Int32 mStageToEntryPointIndex[SHADER_STAGE_COUNT];
 
-    SharedPtr<RHI::LowShader> mShaderHandles[SHADER_STAGE_COUNT];
+    SharedPtr<NRHI::LowShader> mShaderHandles[SHADER_STAGE_COUNT];
 
     Slang::ComPtr<slang::IComponentType> mLinedProgram;
 

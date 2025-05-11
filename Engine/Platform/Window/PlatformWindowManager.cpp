@@ -42,7 +42,7 @@ void PlatformWindowManager::AddWindow(PlatformWindow *window) {
         windows_[next_window_id_++] = window;
         return;
     }
-    for (const auto my_window: windows_ | range::view::Values) {
+    for (const auto my_window: windows_ | NRange::NView::Values) {
         if (my_window->GetTitle() == window->GetTitle()) {
             Log(Error) << String::Format("Failed to add window, window with same title {} already exists. Destroy it.", *window->GetTitle());
             Delete(window);
@@ -71,7 +71,7 @@ bool PlatformWindowManager::RemoveWindow(StringView window_title) {
 }
 
 PlatformWindow *PlatformWindowManager::_GetWindowByPtr(const void *ptr) {
-    for (const auto &window: windows_ | range::view::Values) {
+    for (const auto &window: windows_ | NRange::NView::Values) {
         if (window->GetNativeHandle() == ptr) {
             return window;
         }
@@ -89,7 +89,7 @@ PlatformWindow *PlatformWindowManager::InternalGetWindow(Int32 window_id) const 
 }
 
 PlatformWindow *PlatformWindowManager::InternalGetWindow(StringView window_title) const {
-    for (const auto &window: windows_ | range::view::Values) {
+    for (const auto &window: windows_ | NRange::NView::Values) {
         if (window->GetTitle() == window_title) {
             return window;
         }

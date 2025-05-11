@@ -6,9 +6,9 @@
 #include "Enums.hpp"
 #include "GfxContext.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
-Buffer_Vulkan::Buffer_Vulkan(const RHI::BufferDesc &info) : Buffer(info) {
+Buffer_Vulkan::Buffer_Vulkan(const NRHI::BufferDesc &info) : Buffer(info) {
     const auto &ctx = *GetVulkanGfxContext();
     buffer_ = ctx.CreateBuffer_VK(create_info_.size, RHIBufferUsageToVkBufferUsage(create_info_.usage));
     memory_ = ctx.AllocateBufferMemory_VK(buffer_, (create_info_.memory_property));

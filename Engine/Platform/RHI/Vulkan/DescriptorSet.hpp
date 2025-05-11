@@ -6,7 +6,7 @@
 #include "vulkan/vulkan.h"
 
 
-namespace RHI {
+namespace NRHI {
 class DescriptorSetLayout_Vulkan : public DescriptorSetLayout {
 public:
   virtual void *GetNativeHandle() const override { return handle_; }

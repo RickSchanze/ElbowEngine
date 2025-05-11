@@ -10,15 +10,15 @@
 #include "../../../Platform/RHI/GfxContext.hpp"
 #include "../../../Platform/Window/PlatformWindowManager.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
-void RenderPipeline::BeginImGuiFrame(RHI::CommandBuffer &cmd, const RenderParams &render_param) {
+void RenderPipeline::BeginImGuiFrame(NRHI::CommandBuffer &cmd, const RenderParams &render_param) {
     GetGfxContextRef().BeginImGuiFrame(cmd, render_param.CurrentImageIndex, render_param.WindowWidth, render_param.WindowHeight);
     PlatformWindowManager::BeginImGuiFrame();
     ImGui::NewFrame();
 }
 
-void RenderPipeline::EndImGuiFrame(RHI::CommandBuffer &cmd) { GetGfxContextRef().EndImGuiFrame(cmd); }
+void RenderPipeline::EndImGuiFrame(NRHI::CommandBuffer &cmd) { GetGfxContextRef().EndImGuiFrame(cmd); }
 
 ImageView *RenderPipeline::GetBackBufferView(UInt32 current_image_index) {
     // TODO: 区分BackBuffer为: 交换链图像, 或者一张新图像然后拷贝到交换链去(例如ImGui)

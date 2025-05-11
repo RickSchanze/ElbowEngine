@@ -125,7 +125,7 @@ bool Font::Load(const FontMeta &meta) {
     atlas_meta.Width = font_atlas_width_;
     atlas_meta.Height = font_atlas_height_;
     atlas_meta.IsDynamic = true;
-    atlas_meta.Format = RHI::Format::R8_SRGB;
+    atlas_meta.Format = NRHI::Format::R8_SRGB;
     auto *font_atlas = ObjectManager::CreateNewObject<Texture2D>();
     font_atlas->SetName(String::Format("Font Atlas for {}", *path_));
     font_atlas->Load(atlas_meta);
@@ -185,7 +185,7 @@ void Font::RequestLoadGlyph(UInt32 code_point) {
             data.Add(bitmap.buffer[x + y * bitmap.pitch]);
         }
     }
-    RHI::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.X, cursor_.Y, 0},
+    NRHI::GfxCommandHelper::CopyDataToImage2D(data.Data(), font_atlas_->GetNativeImage(), data.Count(), {cursor_.X, cursor_.Y, 0},
                                              {static_cast<Int32>(bitmap.width), static_cast<Int32>(bitmap.rows), 1});
     // 保存此字符的信息
     FontCharacterInfo info{};

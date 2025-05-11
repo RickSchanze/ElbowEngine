@@ -7,9 +7,9 @@
 #include "Enums.hpp"
 #include "GfxContext.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
-VkComponentMapping RHI::FromComponentMapping(const ComponentMapping &mapping) {
+VkComponentMapping NRHI::FromComponentMapping(const ComponentMapping &mapping) {
     VkComponentMapping vk_mapping;
     vk_mapping.a = RHIComponentMappingElementToVkComponentSwizzle(mapping.a);
     vk_mapping.r = RHIComponentMappingElementToVkComponentSwizzle(mapping.r);

@@ -8,13 +8,13 @@
 #include "Platform/RHI/GfxContext.hpp"
 #include "PointLightComponent.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 
 void LightManager::Startup()
 {
     BufferDesc desc{sizeof(DynamicGlobalLights), BUB_UniformBuffer, BMPB_HostVisible | BMPB_HostCoherent};
-    global_light_buffer_ = RHI::GetGfxContextRef().CreateBuffer(desc);
+    global_light_buffer_ = NRHI::GetGfxContextRef().CreateBuffer(desc);
     dynamic_global_lights_ = reinterpret_cast<DynamicGlobalLights *>(global_light_buffer_->BeginWrite());
 }
 
@@ -86,7 +86,7 @@ void LightManager::RemoveLight(PointLightComponent *point_light_component)
     }
 }
 
-RHI::Buffer *LightManager::GetGlobalLightBuffer()
+NRHI::Buffer *LightManager::GetGlobalLightBuffer()
 {
     auto &self = GetByRef();
     return self.global_light_buffer_.get();

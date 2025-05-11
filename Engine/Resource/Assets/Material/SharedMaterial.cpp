@@ -13,7 +13,7 @@
 #include "Platform/RHI/Pipeline.hpp"
 #include "Resource/Assets/Shader/Shader.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 static UInt64 CalcUniformBufferOffsetsTotalSize(const Array<ShaderParam> &params, Map<UInt32, MaterialParamBlock> &out)
 {
@@ -69,7 +69,7 @@ SharedPtr<SharedMaterial> SharedMaterial::CreateSharedMaterial(Shader *shader)
     return MakeShared<SharedMaterial>(shader);
 }
 
-void SharedMaterial::InternalPushConstant(RHI::CommandBuffer &Cmd, void *Data, UInt32 Size) const
+void SharedMaterial::InternalPushConstant(NRHI::CommandBuffer &Cmd, void *Data, UInt32 Size) const
 {
     Cmd.PushConstant(mPipeline.Get(), 0, Size, Data);
 }
@@ -119,7 +119,7 @@ void SharedMaterialManager::UpdateSharedMaterialSet()
 {
     Array<UInt64> removed_keys;
     // TODO: 这里应该是遍历ToArray, 寻找一种缓存更友好的遍历方法
-    for (const auto &key : shared_mats_ | range::view::Keys)
+    for (const auto &key : shared_mats_ | NRange::NView::Keys)
     {
         if (shared_mats_[key].use_count() == 1)
         {

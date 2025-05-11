@@ -21,8 +21,8 @@ public:
     virtual void Close() override;
     virtual void BeginImGuiFrame() override;
 
-    virtual RHI::Surface* CreateSurface(void* user_data, RHI::GraphicsAPI api) override;
-    virtual void DestroySurface(RHI::Surface *&surface) override;
+    virtual NRHI::Surface* CreateSurface(void* user_data, NRHI::GraphicsAPI api) override;
+    virtual void DestroySurface(NRHI::Surface *&surface) override;
 
 private:
     GLFWwindow *window_ = nullptr;

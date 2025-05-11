@@ -4,7 +4,7 @@
 
 #include "Enums.hpp"
 
-using namespace RHI;
+using namespace NRHI;
 
 // 实现
 VkFormat RHIFormatToVkFormat(const Format format)
@@ -550,7 +550,7 @@ AttachmentStoreOperation VkAttachmentStoreOpToRHIAttachmentStoreOp(const VkAttac
     }
 }
 
-VkPolygonMode RHIPolygonModeToVkPolygonMode(RHI::PolygonMode polygon_mode)
+VkPolygonMode RHIPolygonModeToVkPolygonMode(NRHI::PolygonMode polygon_mode)
 {
     switch (polygon_mode)
     {
@@ -580,7 +580,7 @@ PolygonMode VkPolygonModeToRHIPolygonMode(const VkPolygonMode polygon_mode)
     }
 }
 
-VkFrontFace RHIFrontFaceToVkFrontFace(RHI::FrontFace front_face)
+VkFrontFace RHIFrontFaceToVkFrontFace(NRHI::FrontFace front_face)
 {
     switch (front_face)
     {
@@ -593,7 +593,7 @@ VkFrontFace RHIFrontFaceToVkFrontFace(RHI::FrontFace front_face)
     }
 }
 
-RHI::FrontFace VkFrontFaceToRHIFrontFace(const VkFrontFace front_face)
+NRHI::FrontFace VkFrontFaceToRHIFrontFace(const VkFrontFace front_face)
 {
     switch (front_face)
     {
@@ -606,7 +606,7 @@ RHI::FrontFace VkFrontFaceToRHIFrontFace(const VkFrontFace front_face)
     }
 }
 
-VkCullModeFlags RHICullModeToVkCullMode(RHI::CullMode cull_mode)
+VkCullModeFlags RHICullModeToVkCullMode(NRHI::CullMode cull_mode)
 {
     switch (cull_mode)
     {
@@ -623,7 +623,7 @@ VkCullModeFlags RHICullModeToVkCullMode(RHI::CullMode cull_mode)
     }
 }
 
-RHI::CullMode VkCullModeToRHICullMode(const VkCullModeFlags cull_mode)
+NRHI::CullMode VkCullModeToRHICullMode(const VkCullModeFlags cull_mode)
 {
     switch (cull_mode)
     {
@@ -640,7 +640,7 @@ RHI::CullMode VkCullModeToRHICullMode(const VkCullModeFlags cull_mode)
     }
 }
 
-VkCompareOp RHICompareOpToVkCompareOp(RHI::CompareOp compare_op)
+VkCompareOp RHICompareOpToVkCompareOp(NRHI::CompareOp compare_op)
 {
     switch (compare_op)
     {
@@ -665,7 +665,7 @@ VkCompareOp RHICompareOpToVkCompareOp(RHI::CompareOp compare_op)
     }
 }
 
-RHI::CompareOp VkCompareOpToRHICompareOp(const VkCompareOp compare_op)
+NRHI::CompareOp VkCompareOpToRHICompareOp(const VkCompareOp compare_op)
 {
     switch (compare_op)
     {
@@ -726,7 +726,7 @@ ShaderStage VkShaderStageToRHIShaderStage(const VkShaderStageFlags stage)
     return flags;
 }
 
-VkDescriptorType RHIDescriptorTypeToVkDescriptorType(RHI::DescriptorType type)
+VkDescriptorType RHIDescriptorTypeToVkDescriptorType(NRHI::DescriptorType type)
 {
     switch (type)
     {
@@ -748,7 +748,7 @@ VkDescriptorType RHIDescriptorTypeToVkDescriptorType(RHI::DescriptorType type)
     }
 }
 
-RHI::DescriptorType VkDescriptorTypeToRHIDescriptorType(const VkDescriptorType type)
+NRHI::DescriptorType VkDescriptorTypeToRHIDescriptorType(const VkDescriptorType type)
 {
     switch (type)
     {
@@ -770,7 +770,7 @@ RHI::DescriptorType VkDescriptorTypeToRHIDescriptorType(const VkDescriptorType t
     }
 }
 
-VkAccessFlags RHIAccessFlagToVkAccessFlag(RHI::AccessFlags access_flag)
+VkAccessFlags RHIAccessFlagToVkAccessFlag(NRHI::AccessFlags access_flag)
 {
     if (access_flag == 0)
         return 0;
@@ -794,11 +794,11 @@ VkAccessFlags RHIAccessFlagToVkAccessFlag(RHI::AccessFlags access_flag)
     return flags;
 }
 
-RHI::AccessFlags VkAccessFlagToRHIAccessFlag(const VkAccessFlags access_flag)
+NRHI::AccessFlags VkAccessFlagToRHIAccessFlag(const VkAccessFlags access_flag)
 {
     if (access_flag == 0)
         return 0;
-    RHI::AccessFlags flags = 0;
+    NRHI::AccessFlags flags = 0;
     if (access_flag & VK_ACCESS_COLOR_ATTACHMENT_READ_BIT)
         flags |= AFB_ColorAttachmentRead;
     if (access_flag & VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
@@ -816,7 +816,7 @@ RHI::AccessFlags VkAccessFlagToRHIAccessFlag(const VkAccessFlags access_flag)
     return flags;
 }
 
-VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(RHI::PipelineStageFlags pipeline_stage)
+VkPipelineStageFlags RHIPipelineStageToVkPipelineStage(NRHI::PipelineStageFlags pipeline_stage)
 {
     if (pipeline_stage == 0)
         return 0;
@@ -858,33 +858,33 @@ PipelineStageFlags VkPipelineStageToRHIPipelineStage(const VkPipelineStageFlags 
     return flags;
 }
 
-VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(RHI::VertexInputRate rate)
+VkVertexInputRate RHIVertexInputRateToVkVertexInputRate(NRHI::VertexInputRate rate)
 {
     switch (rate)
     {
-    case RHI::VertexInputRate::Vertex:
+    case NRHI::VertexInputRate::Vertex:
         return VK_VERTEX_INPUT_RATE_VERTEX;
-    case RHI::VertexInputRate::Instance:
+    case NRHI::VertexInputRate::Instance:
         return VK_VERTEX_INPUT_RATE_INSTANCE;
     default:
         return VK_VERTEX_INPUT_RATE_MAX_ENUM;
     }
 }
 
-RHI::VertexInputRate VkVertexInputRateToRHIVertexInputRate(const VkVertexInputRate rate)
+NRHI::VertexInputRate VkVertexInputRateToRHIVertexInputRate(const VkVertexInputRate rate)
 {
     switch (rate)
     {
     case VK_VERTEX_INPUT_RATE_VERTEX:
-        return RHI::VertexInputRate::Vertex;
+        return NRHI::VertexInputRate::Vertex;
     case VK_VERTEX_INPUT_RATE_INSTANCE:
-        return RHI::VertexInputRate::Instance;
+        return NRHI::VertexInputRate::Instance;
     default:
-        return RHI::VertexInputRate::Count;
+        return NRHI::VertexInputRate::Count;
     }
 }
 
-VkImageType RHIImageDimensionToVkImageType(RHI::ImageDimension dimension)
+VkImageType RHIImageDimensionToVkImageType(NRHI::ImageDimension dimension)
 {
     switch (dimension)
     {
@@ -899,7 +899,7 @@ VkImageType RHIImageDimensionToVkImageType(RHI::ImageDimension dimension)
     }
 }
 
-RHI::ImageDimension VkImageTypeToRHIImageDimension(const VkImageType type)
+NRHI::ImageDimension VkImageTypeToRHIImageDimension(const VkImageType type)
 {
     switch (type)
     {
@@ -934,63 +934,63 @@ VkImageUsageFlags RHIImageUsageToVkImageUsageFlags(ImageUsage usage_flag)
     return flags;
 }
 
-VkFilter RHIFilterToVkFilter(RHI::FilterMode filter)
+VkFilter RHIFilterToVkFilter(NRHI::FilterMode filter)
 {
     switch (filter)
     {
-    case RHI::FilterMode::Linear:
+    case NRHI::FilterMode::Linear:
         return VK_FILTER_LINEAR;
-    case RHI::FilterMode::Nearest:
+    case NRHI::FilterMode::Nearest:
         return VK_FILTER_NEAREST;
     default:
         return VK_FILTER_MAX_ENUM;
     }
 }
 
-RHI::FilterMode VkFilterToRHIFilter(const VkFilter filter)
+NRHI::FilterMode VkFilterToRHIFilter(const VkFilter filter)
 {
     switch (filter)
     {
     case VK_FILTER_LINEAR:
-        return RHI::FilterMode::Linear;
+        return NRHI::FilterMode::Linear;
     case VK_FILTER_NEAREST:
-        return RHI::FilterMode::Nearest;
+        return NRHI::FilterMode::Nearest;
     default:
-        return RHI::FilterMode::Count;
+        return NRHI::FilterMode::Count;
     }
 }
 
-VkSamplerAddressMode RHISamplerAddressModeToVkSamplerAddressMode(RHI::SamplerAddressMode address_mode)
+VkSamplerAddressMode RHISamplerAddressModeToVkSamplerAddressMode(NRHI::SamplerAddressMode address_mode)
 {
     switch (address_mode)
     {
-    case RHI::SamplerAddressMode::Repeat:
+    case NRHI::SamplerAddressMode::Repeat:
         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    case RHI::SamplerAddressMode::MirroredRepeat:
+    case NRHI::SamplerAddressMode::MirroredRepeat:
         return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-    case RHI::SamplerAddressMode::ClampToEdge:
+    case NRHI::SamplerAddressMode::ClampToEdge:
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     default:
         return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
     }
 }
 
-RHI::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(const VkSamplerAddressMode address_mode)
+NRHI::SamplerAddressMode VkSamplerAddressModeToRHISamplerAddressMode(const VkSamplerAddressMode address_mode)
 {
     switch (address_mode)
     {
     case VK_SAMPLER_ADDRESS_MODE_REPEAT:
-        return RHI::SamplerAddressMode::Repeat;
+        return NRHI::SamplerAddressMode::Repeat;
     case VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT:
-        return RHI::SamplerAddressMode::MirroredRepeat;
+        return NRHI::SamplerAddressMode::MirroredRepeat;
     case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE:
-        return RHI::SamplerAddressMode::ClampToEdge;
+        return NRHI::SamplerAddressMode::ClampToEdge;
     default:
-        return RHI::SamplerAddressMode::Count;
+        return NRHI::SamplerAddressMode::Count;
     }
 }
 
-VkBlendFactor RHIBlendFactorToVkBlendFactor(RHI::BlendFactor blend_factor)
+VkBlendFactor RHIBlendFactorToVkBlendFactor(NRHI::BlendFactor blend_factor)
 {
     switch (blend_factor)
     {
@@ -1007,7 +1007,7 @@ VkBlendFactor RHIBlendFactorToVkBlendFactor(RHI::BlendFactor blend_factor)
     }
 }
 
-RHI::BlendFactor VkBlendFactorToRHIBlendFactor(const VkBlendFactor blend_factor)
+NRHI::BlendFactor VkBlendFactorToRHIBlendFactor(const VkBlendFactor blend_factor)
 {
     switch (blend_factor)
     {
@@ -1042,7 +1042,7 @@ ImageUsage VkImageUsageToRHIImageUsageFlags(const VkImageUsageFlags usage_flag)
     return flags;
 }
 
-VkBlendOp RHIBlendOpToVkBlendOp(RHI::BlendOp op)
+VkBlendOp RHIBlendOpToVkBlendOp(NRHI::BlendOp op)
 {
     switch (op)
     {
@@ -1053,7 +1053,7 @@ VkBlendOp RHIBlendOpToVkBlendOp(RHI::BlendOp op)
     }
 }
 
-RHI::BlendOp VKBlendOpToRHIBlendOp(const VkBlendOp op)
+NRHI::BlendOp VKBlendOpToRHIBlendOp(const VkBlendOp op)
 {
     switch (op)
     {

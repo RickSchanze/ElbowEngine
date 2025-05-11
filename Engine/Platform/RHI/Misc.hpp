@@ -7,7 +7,7 @@
 #include "Core/Math/Vector.hpp"
 #include "Core/Math/Color.hpp"
 
-namespace RHI {
+namespace NRHI {
     struct Vertex1 {
         Vector3f Position;
         Vector3f Normal;
