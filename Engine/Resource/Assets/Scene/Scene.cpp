@@ -58,9 +58,9 @@ static void SerializeSceneObject(OutputArchive& Archive, Object* InObj)
         const ObjectHandle NextHandle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
         InObj->SetObjectHandle(NextHandle);
     }
-    if (InObj->IsFlagSet(ObjectFlagBits::OF_Persistent))
+    if (InObj->IsFlagSet(OFB_Persistent))
     {
-        InObj->SetFlag(OF_Persistent);
+        InObj->SetFlag(OFB_Persistent);
     }
 }
 

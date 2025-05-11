@@ -12,10 +12,10 @@ using ObjectHandle = Int32;
 
 enum EENUM(Flag) ObjectFlagBits
 {
-    OF_Persistent = 1 << 1, // 此对象需要持久化存储
-    OF_Actor = 1 << 2,
-    OF_Component = 1 << 3,
-    OF_Widget = 1 << 4,
+    OFB_Persistent = 1 << 1, // 此对象需要持久化存储
+    OFB_Actor = 1 << 2,
+    OFB_Component = 1 << 3,
+    OFB_Widget = 1 << 4,
 };
 
 using ObjectFlag = Int32;
@@ -171,7 +171,7 @@ public:
 
     bool IsPersistent() const
     {
-        return mFlags & OF_Persistent;
+        return mFlags & OFB_Persistent;
     }
 
     // TODO: 这里是否应该返回一个sender?

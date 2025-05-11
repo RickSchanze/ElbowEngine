@@ -10,7 +10,7 @@ class ECLASS() PersistentObject : public Object {
     GENERATED_BODY(PersistentObject);
 
 public:
-    PersistentObject() : Object(OF_Persistent) {}
+    PersistentObject() : Object(OFB_Persistent) {}
 
     /**
      * 调用此函数时, handle_已经设置,
