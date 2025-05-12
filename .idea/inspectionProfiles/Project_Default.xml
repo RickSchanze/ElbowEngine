@@ -6,6 +6,8 @@
     </inspection_tool>
     <inspection_tool class="CppClassCanBeFinal" enabled="false" level="HINT" enabled_by_default="false" />
     <inspection_tool class="CppTooWideScopeInitStatement" enabled="false" level="HINT" enabled_by_default="false" />
+    <inspection_tool class="CppUseAuto" enabled="false" level="HINT" enabled_by_default="false" />
+    <inspection_tool class="CppUseAutoForNumeric" enabled="false" level="HINT" enabled_by_default="false" />
     <inspection_tool class="CppWrongIncludesOrder" enabled="false" level="HINT" enabled_by_default="false" />
   </profile>
 </component>

@@ -10,71 +10,71 @@
 
 void ThreadManager::Startup()
 {
-    main_thread_ = GetThisThreadId();
+    mMainThreadId = GetThisThreadId();
     auto cfg = GetConfig<CoreConfig>();
     UInt32 thread_count = cfg->GetAnonymousThreadCount();
     if (thread_count == 0)
     {
         thread_count = SystemInfo::GetCPUCoreCount() - static_cast<Int32>(NamedThread::Count);
     }
-    const char *named_thread_names[] = {"Render", "Game", "Count"};
+    const char* named_thread_names[] = {"Render", "Game", "Count"};
     for (Int32 i = 0; i < static_cast<Int32>(NamedThread::Count); i++)
     {
-        named_threads_[i] = MakeUnique<Thread>(i == static_cast<Int32>(NamedThread::Game));
-        named_threads_[i]->SetName(named_thread_names[i]);
+        mNamedThreads[i] = MakeUnique<Thread>(i == static_cast<Int32>(NamedThread::Game));
+        mNamedThreads[i]->SetName(named_thread_names[i]);
     }
-    anonymous_threads_.Resize(thread_count);
+    mAnonymousThreads.Resize(thread_count);
     for (Int32 i = 0; i < thread_count; i++)
     {
-        anonymous_threads_[i] = MakeUnique<Thread>(false);
-        anonymous_threads_[i]->SetName("AnonymousThread"_es + String::FromInt(i));
+        mAnonymousThreads[i] = MakeUnique<Thread>(false);
+        mAnonymousThreads[i]->SetName("AnonymousThread"_es + String::FromInt(i));
     }
 }
 
 void ThreadManager::Shutdown()
 {
-    for (auto &named_thread : named_threads_)
+    for (auto& named_thread : mNamedThreads)
     {
         named_thread = nullptr;
     }
-    anonymous_threads_.Clear();
-    main_thread_ = ThreadId{};
+    mAnonymousThreads.Clear();
+    mMainThreadId = ThreadId{};
 }
 
 void ThreadManager::StopAndWait(NamedThread named_thread)
 {
-    auto &self = GetByRef();
-    auto &thread = self.named_threads_[static_cast<Int32>(named_thread)];
+    auto& self = GetByRef();
+    auto& thread = self.mNamedThreads[static_cast<Int32>(named_thread)];
     thread->Stop();
     thread->Join();
 }
 
-void ThreadManager::AddRunnable(const SharedPtr<IRunnable> &runnable, NamedThread named_thread, bool immediate_exec)
+void ThreadManager::AddRunnable(const SharedPtr<IRunnable>& Runnable, NamedThread InNamedThread, bool ExecImmediatelyIfOnGameThread)
 {
-    auto &self = GetByRef();
-    if (named_thread == NamedThread::Count)
+    auto& self = GetByRef();
+    if (InNamedThread == NamedThread::Count)
     {
-        for (const auto &anonymous_thread : self.anonymous_threads_)
+        for (const auto& anonymous_thread : self.mAnonymousThreads)
         {
             if (anonymous_thread->Leisure())
             {
-                anonymous_thread->AddRunnable(runnable);
+                anonymous_thread->AddRunnable(Runnable);
                 return;
             }
         }
     }
     else
     {
-        if (immediate_exec)
+        if (ExecImmediatelyIfOnGameThread)
         {
-            if (IsMainThread() && named_thread == NamedThread::Game)
+            if (IsMainThread() && InNamedThread == NamedThread::Game)
             {
-                runnable->Run();
+                Runnable->Run();
                 return;
             }
         }
         // TODO: Task steeling
-        auto &thread = self.named_threads_[static_cast<Int32>(named_thread)];
-        thread->AddRunnable(runnable);
+        auto& thread = self.mNamedThreads[static_cast<Int32>(InNamedThread)];
+        thread->AddRunnable(Runnable);
     }
 }

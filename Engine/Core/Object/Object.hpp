@@ -175,7 +175,7 @@ public:
     }
 
     // TODO: 这里是否应该返回一个sender?
-    exec::ExecFuture<ObjectHandle> PerformPersistentObjectLoadAsync();
+    NExec::ExecFuture<ObjectHandle> PerformPersistentObjectLoadAsync();
 
     ObjectHandle PerformPersistentObjectLoad();
 };

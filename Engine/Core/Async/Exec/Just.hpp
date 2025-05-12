@@ -6,7 +6,7 @@
 #include "Common.hpp"
 #include "Core/Misc/Other.hpp"
 
-namespace exec
+namespace NExec
 {
 template <typename... Args>
 struct JustSender : Sender
@@ -39,7 +39,7 @@ struct JustSender : Sender
     };
 
     template <typename R>
-        requires Traits::SameAs<value_type, typename R::receive_type>
+        requires NTraits::SameAs<value_type, typename R::receive_type>
     Operation<Pure<R>> Connect(R&& r)
     {
         return {value, Forward<R>(r)};
@@ -76,7 +76,7 @@ struct VoidJustSender : Sender
 
     template <typename R>
     Operation<Pure<R>> Connect(R&& r)
-        requires Traits::SameAs<Tuple<>, typename Pure<R>::receive_type>
+        requires NTraits::SameAs<Tuple<>, typename Pure<R>::receive_type>
     {
         Operation<Pure<R>> rtn(Move(r));
         return Move(rtn);

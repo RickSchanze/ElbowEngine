@@ -196,7 +196,7 @@ private:
 #define NAMEOF(x) #x
 
 template <typename T>
-    requires Traits::IsEnum<T>
+    requires NTraits::IsEnum<T>
 StringView GetEnumString(T e)
 {
     const Type* type = TypeOf<T>();

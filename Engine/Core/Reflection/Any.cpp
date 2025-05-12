@@ -20,7 +20,7 @@ Any &Any::operator=(Any &&rhs) noexcept {
     return *this;
 }
 
-bool Any::IsPrimitive() const { return refl_helper::IsPrimitive(GetType()); }
+bool Any::IsPrimitive() const { return NReflHelper::IsPrimitive(GetType()); }
 
 Optional<Int64> Any::AsInt64() const {
     if (GetType() == nullptr || ptr_ == nullptr || ptr_->GetData() == nullptr)

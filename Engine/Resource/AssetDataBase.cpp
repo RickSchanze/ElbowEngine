@@ -24,7 +24,7 @@
 
 #include <fstream>
 
-using namespace exec;
+using namespace NExec;
 
 Object* internal::GetObjectByHandle(const ObjectHandle handle)
 {
@@ -66,7 +66,7 @@ ExecFuture<ObjectHandle> InternalImport(const StringView InQuery, StringView InP
             InRegistry.RemoveObject(Obj);
         }
         auto* Asset = ObjectManager::CreateNewObjectAsync<T>().Get();
-        Asset->InternalSetAssetHandle(Handle);
+        Asset->SetObjectHandle(Handle);
         return Asset->PerformPersistentObjectLoadAsync();
     }
     else
@@ -75,7 +75,7 @@ ExecFuture<ObjectHandle> InternalImport(const StringView InQuery, StringView InP
         NewMeta.Path = InPath;
         auto* Asset = ObjectManager::CreateNewObjectAsync<T>().Get();
         NewMeta.ObjectHandle = InRegistry.NextPersistentHandle().Get();
-        if constexpr (Traits::SameAs<T, Texture2D>)
+        if constexpr (NTraits::SameAs<T, Texture2D>)
         {
             if (InPath.EndsWith(".exr") || InPath.EndsWith(".hdr"))
             {
@@ -83,7 +83,7 @@ ExecFuture<ObjectHandle> InternalImport(const StringView InQuery, StringView InP
             }
         }
         AssetDataBase::InsertMeta(NewMeta);
-        Asset->InternalSetAssetHandle(NewMeta.ObjectHandle);
+        Asset->SetObjectHandle(NewMeta.ObjectHandle);
         return Asset->PerformPersistentObjectLoadAsync();
     }
 }
@@ -111,7 +111,7 @@ ExecFuture<ObjectHandle> AssetDataBase::Import(const StringView path)
     {
         return InternalImport<Font, FontMeta>(query, path, registry);
     }
-    return exec::MakeExecFuture(0);
+    return NExec::MakeExecFuture(0);
 }
 
 Object* AssetDataBase::LoadFromPath(const StringView path)
@@ -127,7 +127,7 @@ ExecFuture<ObjectHandle> InternalLoadAsync(const StringView path)
     if (const auto meta_op = AssetDataBase::QueryMeta<TMeta>(String::Format("path = '{}'", *path)); !meta_op)
     {
         Log(Error) << String::Format("资产{}未在资产数据库中找到.", *path);
-        return exec::MakeExecFuture(0);
+        return NExec::MakeExecFuture(0);
     }
     else
     {
@@ -142,7 +142,7 @@ ExecFuture<ObjectHandle> InternalLoadAsync(const StringView path)
         else
         {
             T* asset = ObjectManager::CreateNewObjectAsync<T>().Get();
-            asset->InternalSetAssetHandle(handle);
+            asset->SetObjectHandle(handle);
             return asset->PerformPersistentObjectLoadAsync();
         }
     }
@@ -305,7 +305,7 @@ bool AssetDataBase::CreateAsset(Asset* InAsset, StringView InPath)
             return false;
         }
         ObjectHandle handle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
-        InAsset->InternalSetAssetHandle(handle);
+        InAsset->SetObjectHandle(handle);
         std::ofstream OutputStream(*InPath);
         if (!OutputStream)
         {
@@ -328,7 +328,7 @@ bool AssetDataBase::CreateAsset(Asset* InAsset, StringView InPath)
             return false;
         }
         ObjectHandle handle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
-        InAsset->InternalSetAssetHandle(handle);
+        InAsset->SetObjectHandle(handle);
         auto tex = static_cast<Texture2D*>(InAsset);
         Assert(StringView(tex->GetAssetPath()) == InPath, "创建纹理资源失败: 路径不匹配");
         Texture2DMeta meta;

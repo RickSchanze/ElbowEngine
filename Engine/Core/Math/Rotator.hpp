@@ -14,7 +14,7 @@ struct Quaternion;
 template <typename T>
 struct Rotator
 {
-    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "T must be float or double");
+    static_assert(NTraits::SameAs<T, float> || NTraits::SameAs<T, double>, "T must be float or double");
 
     void Serialization_Save(OutputArchive& Archive) const
     {
@@ -73,8 +73,8 @@ Rotator<double>::Rotator(const Quaternion<double>& Quat);
 #define ROTATOR_REFL_CONSTRUCTOR(name)                                                                                                               \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("Yaw", &name::Yaw) | refl_helper::AddField("Pitch", &name::Pitch) |                 \
-               refl_helper::AddField("Roll", &name::Roll);                                                                                           \
+        return Type::Create<name>(#name) | NReflHelper::AddField("Yaw", &name::Yaw) | NReflHelper::AddField("Pitch", &name::Pitch) |                 \
+               NReflHelper::AddField("Roll", &name::Roll);                                                                                           \
     }
 
 typedef Rotator<Float> Rotatorf;
@@ -86,9 +86,9 @@ ROTATOR_REFL_CONSTRUCTOR(Rotatord)
 template <typename T>
 const Type* Rotator<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Rotatorf>();
-    if constexpr (Traits::SameAs<T, Int32>)
+    if constexpr (NTraits::SameAs<T, Int32>)
         return TypeOf<Rotatord>();
     return nullptr;
 }

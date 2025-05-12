@@ -45,7 +45,7 @@ struct Ext_AddParent
 };
 
 template <typename ClassT, typename FiledT>
-    requires(!Traits::IsEnum<ClassT>)
+    requires(!NTraits::IsEnum<ClassT>)
 struct Ext_AddField
 {
     Ext_AddField(const StringView name, FiledT ClassT::* class_field, UInt64 offset, const Type* outer_t)
@@ -120,7 +120,7 @@ struct Ext_TypeValueAttribute
     StringView value{};
 };
 
-namespace refl_helper
+namespace NReflHelper
 {
 
 bool IsPrimitive(const Type* t);
@@ -144,13 +144,19 @@ inline Ext_AddEnumField AddEnumField(const StringView name, Int32 value)
 }
 
 template <typename T>
-    requires Traits::IsEnum<T>
+    requires NTraits::IsEnum<T>
 Ext_AddEnumField AddEnumField(const StringView name, T enum_val)
 {
     return Ext_AddEnumField(name, std::to_underlying(enum_val), nullptr);
 }
 
 Any GetValue(const Field* field, const Any& obj);
+
+template <typename T>
+T GetValueDirectly(const Field* InField, void* InObj)
+{
+    return *static_cast<T*>(InField->GetFieldPtr(InObj));
+}
 
 /// 这个Field代表一个类的一个filed, 其类型是一个枚举
 /// 获取这个枚举值, 以int表示
@@ -184,7 +190,7 @@ inline bool IsString(const Type* t)
 
 bool SetValue(const Field* field, const Any& obj, const Any& value);
 
-} // namespace refl_helper
+} // namespace NReflHelper
 
 template <typename... Args>
 Type* operator|(Type* t, Ext_AddParent<Args...> parents)

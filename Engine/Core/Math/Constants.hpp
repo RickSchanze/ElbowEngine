@@ -7,9 +7,9 @@ namespace MathConstants
 template <typename T>
 constexpr T PI()
 {
-    if constexpr (Traits::SameAs<T, float>)
+    if constexpr (NTraits::SameAs<T, float>)
         return 3.141592653589793f;
-    else if constexpr (Traits::SameAs<T, double>)
+    else if constexpr (NTraits::SameAs<T, double>)
         return 3.14159265358979311599796346854;
     else
     {

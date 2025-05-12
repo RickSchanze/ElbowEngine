@@ -282,7 +282,7 @@ public static class CodeGenerator
     {
         foreach (var (key, value) in fields)
         {
-            builder.Append($"| refl_helper::AddField(\"{key.Name}\", &{key.FullParentName}::{key.Name})");
+            builder.Append($"| NReflHelper::AddField(\"{key.Name}\", &{key.FullParentName}::{key.Name})");
             foreach (var (attrKey, attrValue) in value)
             {
                 if (CheckKey(attrKey)) continue;
@@ -548,7 +548,7 @@ public static class CodeGenerator
                     }
                 }
 
-                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+                source_content.Append($"| NReflHelper::AddParents<{parents}>()");
             }
 
             bool customSerialization = false;
@@ -563,12 +563,12 @@ public static class CodeGenerator
                 if (CheckKey(key)) continue;
                 if (string.IsNullOrEmpty(value))
                 {
-                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                    source_content.Append($"| NReflHelper::Attribute(Type::FlagAttributeBits::{key})");
                 }
                 else
                 {
                     string v = value.Trim('"').Trim().Trim('"');
-                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                    source_content.Append($"| NReflHelper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
                 }
             }
 
@@ -629,7 +629,7 @@ public static class CodeGenerator
                     }
                 }
 
-                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+                source_content.Append($"| NReflHelper::AddParents<{parents}>()");
             }
 
             foreach (var (key, value) in _class.Value)
@@ -638,12 +638,12 @@ public static class CodeGenerator
                 if (CheckKey(key)) continue;
                 if (string.IsNullOrEmpty(value))
                 {
-                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                    source_content.Append($"| NReflHelper::Attribute(Type::FlagAttributeBits::{key})");
                 }
                 else
                 {
                     string v = value.Trim('"').Trim().Trim('"');
-                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                    source_content.Append($"| NReflHelper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
                 }
             }
 
@@ -680,7 +680,7 @@ public static class CodeGenerator
                 }
 
                 hasBases = true;
-                source_content.Append($"| refl_helper::AddParents<{parents}>()");
+                source_content.Append($"| NReflHelper::AddParents<{parents}>()");
             }
 
             bool customSerialization = false;
@@ -695,12 +695,12 @@ public static class CodeGenerator
                 if (CheckKey(key)) continue;
                 if (string.IsNullOrEmpty(value))
                 {
-                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                    source_content.Append($"| NReflHelper::Attribute(Type::FlagAttributeBits::{key})");
                 }
                 else
                 {
                     string v = value.Trim('"').Trim().Trim('"');
-                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                    source_content.Append($"| NReflHelper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
                 }
             }
 
@@ -746,12 +746,12 @@ public static class CodeGenerator
                 if (CheckKey(key)) continue;
                 if (string.IsNullOrEmpty(value))
                 {
-                    source_content.Append($"| refl_helper::Attribute(Type::FlagAttributeBits::{key})");
+                    source_content.Append($"| NReflHelper::Attribute(Type::FlagAttributeBits::{key})");
                 }
                 else
                 {
                     string v = value.Trim('"').Trim().Trim('"');
-                    source_content.Append($"| refl_helper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
+                    source_content.Append($"| NReflHelper::Attribute(Type::ValueAttribute::{key}, \"{v}\")");
                 }
             }
 
@@ -759,7 +759,7 @@ public static class CodeGenerator
             foreach (var (key, value) in enumFields)
             {
                 source_content.Append(
-                    $"| refl_helper::AddEnumField(\"{key.Name}\", std::to_underlying({_enum.Key.FullName}::{key.Name}))");
+                    $"| NReflHelper::AddEnumField(\"{key.Name}\", std::to_underlying({_enum.Key.FullName}::{key.Name}))");
                 foreach (var (attrKey, attrValue) in value)
                 {
                     if (CheckKey(attrKey)) continue;

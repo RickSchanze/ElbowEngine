@@ -19,8 +19,8 @@ struct REFLECTED(SQLTable = "Material") MaterialMeta {
 
 
 IMPL_REFLECTED_INPLACE(MaterialMeta) {
-    return Type::Create<MaterialMeta>("MaterialMeta") | refl_helper::Attribute(Type::ValueAttribute::SQLTable, "Material") | //
-           refl_helper::AddField("Id", &MaterialMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
-           refl_helper::AddField("ObjectHandle", &MaterialMeta::ObjectHandle) | //
-           refl_helper::AddField("Path", &MaterialMeta::Path);
+    return Type::Create<MaterialMeta>("MaterialMeta") | NReflHelper::Attribute(Type::ValueAttribute::SQLTable, "Material") | //
+           NReflHelper::AddField("Id", &MaterialMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
+           NReflHelper::AddField("ObjectHandle", &MaterialMeta::ObjectHandle) | //
+           NReflHelper::AddField("Path", &MaterialMeta::Path);
 }

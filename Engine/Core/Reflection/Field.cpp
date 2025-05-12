@@ -28,4 +28,4 @@ AssociativeContainerView *Field::CreateAssociativeContainerView(void *obj) const
   return static_cast<AssociativeContainerView *>(container_view);
 }
 
-bool Field::IsPrimitive() const { return type && refl_helper::IsPrimitive(type); }
+bool Field::IsPrimitive() const { return type && NReflHelper::IsPrimitive(type); }

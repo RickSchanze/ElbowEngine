@@ -13,7 +13,7 @@
 #include "ObjectPtr.hpp"
 #include "PersistentObject.hpp"
 
-using namespace exec;
+using namespace NExec;
 
 class PersistentObject;
 

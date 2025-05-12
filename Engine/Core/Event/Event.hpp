@@ -69,16 +69,18 @@ struct Delegate
         id_ = ++g_delegate_id_counter;
     }
 
-    ReturnT Invoke(ArgumentTypes&&... args)
+    template <typename... Args>
+        requires NTraits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentTypes...>>
+    ReturnT Invoke(Args&&... args)
     {
         if (HasBound())
         {
-            return function_(Forward<ArgumentTypes>(args)...);
+            return function_(Forward<Args>(args)...);
         }
         else
         {
             Log(Warn) << String::Format("Delegate {} is not bound, invoke failed. return {{}} if there needs a return value.", GetID());
-            if constexpr (!Traits::SameAs<ReturnT, void>)
+            if constexpr (!NTraits::SameAs<ReturnT, void>)
             {
                 return {};
             }
@@ -96,69 +98,71 @@ struct Event
     using ReturnType = ReturnT;
     using DelegateType = Delegate<ReturnType, ArgumentArgs...>;
 
-    Event() : delegate_()
+    Event() : mDelegate()
     {
     }
 
     void Bind(DelegateType&& delegate)
     {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(delegate);
+        mDelegate = Move(delegate);
     }
 
     void Bind(ReturnType (*func)(ArgumentArgs...))
     {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(DelegateType(func));
+        mDelegate = Move(DelegateType(func));
     }
 
     template <typename Class>
     void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...))
     {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
+        mDelegate = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
     }
 
     template <typename Class>
     void Bind(Class* obj, ReturnType (Class::*func)(ArgumentArgs...) const)
     {
         DebugAssert(!HasBound(), "Event has been bound, rebinding.");
-        delegate_ = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
+        mDelegate = Move(DelegateType([obj, func](ArgumentArgs&&... args) { return (obj->*func)(Move(args)...); }));
     }
 
     void Unbind()
     {
-        delegate_.Unbind();
+        mDelegate.Unbind();
     }
 
     bool HasBound() const
     {
-        return delegate_.HasBound();
+        return mDelegate.HasBound();
     }
 
-    ReturnType Invoke(ArgumentArgs&&... args)
+    template <typename... Args>
+        requires NTraits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+    ReturnType Invoke(Args&&... args)
     {
-        return delegate_.Invoke(Move(args)...);
+        return mDelegate.Invoke(Forward<Args>(args)...);
     }
 
     ReturnType InvokeOnce(ArgumentArgs&&... args)
     {
-        if constexpr (Traits::SameAs<ReturnT, void>)
+        if constexpr (NTraits::SameAs<ReturnT, void>)
         {
-            delegate_.Invoke(Move(args)...);
+            mDelegate.Invoke(Forward<ArgumentArgs>(args)...);
             Unbind();
             return;
         }
         else
         {
-            ReturnType ret = delegate_.Invoke(Move(args)...);
+            ReturnType ret = mDelegate.Invoke(Move(args)...);
             Unbind();
             return ret;
         }
     }
 
 private:
-    DelegateType delegate_;
+    DelegateType mDelegate;
 };
 
 /**
@@ -170,7 +174,7 @@ struct MulticastEvent
 {
     using ReturnType = ReturnT;
     using DelegateType = Delegate<ReturnType, ArgumentArgs...>;
-    static_assert(Traits::SameAs<ReturnType, void>, "MulticastEvent can not return value");
+    static_assert(NTraits::SameAs<ReturnType, void>, "MulticastEvent can not return value");
 
     /**
      * 为这个多播事件增加一个委托绑定
@@ -230,7 +234,7 @@ struct MulticastEvent
 
     template <typename... Args>
     void Invoke(Args&&... args)
-        requires Traits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+        requires NTraits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
     {
         for (auto& delegate : delegates_)
         {
@@ -240,7 +244,7 @@ struct MulticastEvent
 
     template <typename... Args>
     void InvokeOnce(Args&&... args)
-        requires Traits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
+        requires NTraits::CanParameterPackConvert<Tuple<Args...>, Tuple<ArgumentArgs...>>
     {
         for (auto& delegate : delegates_)
         {

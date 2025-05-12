@@ -10,7 +10,7 @@
 #include "Core/Profile.hpp"
 
 String MapTypeToSqlType(const Type *type) {
-    Assert(refl_helper::IsPrimitive(type) || type->IsEnumType(), "type必须为Primitive类型");
+    Assert(NReflHelper::IsPrimitive(type) || type->IsEnumType(), "type必须为Primitive类型");
     Assert(type != TypeOf<StringView>(), "StringView为视图类型, 不可用作表字段类型");
     if (type == TypeOf<String>()) {
         return "TEXT";
@@ -123,25 +123,25 @@ void SQLTable::Insert(const Any &data) {
             field_type == TypeOf<bool>() || field_type == TypeOf<int8_t>() || field_type == TypeOf<int16_t>() || field_type == TypeOf<int32_t>() ||
             field_type == TypeOf<int64_t>() || field_type == TypeOf<uint8_t>() || field_type == TypeOf<uint16_t>() ||
             field_type == TypeOf<uint32_t>() || field_type == TypeOf<uint64_t>()) {
-            auto op = refl_helper::GetValue(field_info, data).AsInt64();
+            auto op = NReflHelper::GetValue(field_info, data).AsInt64();
             if (!op) {
                 Log(Fatal) << "存储类型错误";
             }
             insert.bind(static_cast<int32_t>(i) + 1, *op);
         } else if (field_type == TypeOf<Float>() || field_type == TypeOf<Double>()) {
-            auto op = refl_helper::GetValue(field_info, data).AsDouble();
+            auto op = NReflHelper::GetValue(field_info, data).AsDouble();
             if (!op) {
                 Log(Fatal) << "存储类型错误";
             }
             insert.bind(static_cast<int32_t>(i) + 1, *op);
         } else if (field_type == TypeOf<String>()) {
-            const auto value = refl_helper::GetValue(field_info, data).As<String>();
+            const auto value = NReflHelper::GetValue(field_info, data).As<String>();
             if (value == nullptr) {
                 Log(Fatal) << "存储类型错误";
             }
             insert.bind(static_cast<int32_t>(i) + 1, *value);
         } else if (field_type->IsEnumType()) {
-            auto value = refl_helper::GetObjEnumValue(field_info, data);
+            auto value = NReflHelper::GetObjEnumValue(field_info, data);
             insert.bind(static_cast<int32_t>(i) + 1, *value);
         } else {
             Log(Fatal) << "存储类型错误";
@@ -167,7 +167,7 @@ void SQLTable::Update(const Any &data) {
     for (size_t i = 0; i < fields.Count(); ++i) {
         auto &field = fields[i];
         if (field->GetName() == "id") {
-            auto op = refl_helper::GetValue(field, data).AsInt64();
+            auto op = NReflHelper::GetValue(field, data).AsInt64();
             id = *op;
             continue;
         }
@@ -176,26 +176,26 @@ void SQLTable::Update(const Any &data) {
             field_type == TypeOf<bool>() || field_type == TypeOf<int8_t>() || field_type == TypeOf<int16_t>() || field_type == TypeOf<int32_t>() ||
             field_type == TypeOf<int64_t>() || field_type == TypeOf<uint8_t>() || field_type == TypeOf<uint16_t>() ||
             field_type == TypeOf<uint32_t>() || field_type == TypeOf<uint64_t>()) {
-            auto op = refl_helper::GetValue(field, data).AsInt64();
+            auto op = NReflHelper::GetValue(field, data).AsInt64();
             if (!op) {
                 Log(Fatal) << "存储类型错误";
             }
             update_stat += String::Format("{} = {} ", *field_name, *op);
         } else if (field_type == TypeOf<Float>() || field_type == TypeOf<Double>()) {
-            auto op = refl_helper::GetValue(field, data).AsDouble();
+            auto op = NReflHelper::GetValue(field, data).AsDouble();
             if (!op) {
                 Log(Fatal) << "存储类型错误";
             }
             update_stat += String::Format("{} = {} ", *field_name, *op);
         } else if (field_type == TypeOf<String>()) {
-            const auto value = refl_helper::GetValue(field, data).As<String>();
+            const auto value = NReflHelper::GetValue(field, data).As<String>();
             if (value == nullptr) {
                 Log(Fatal) << "存储类型错误";
                 continue;
             }
             update_stat += String::Format("{} = '{}' ", *field_name, **value);
         } else if (field_type->IsEnumType()) {
-            auto value = refl_helper::GetObjEnumValue(field, data);
+            auto value = NReflHelper::GetObjEnumValue(field, data);
             update_stat += String::Format("{} = {} ", *field_name, *value);
         } else {
             Log(Fatal) << "存储类型错误";
@@ -240,35 +240,35 @@ Array<SharedAny> SQLTable::Query(const Type *type, StringView where) {
             Any temp = result.AsAny();
             for (int i = 0; i < fields.Count(); ++i) {
                 auto &field = fields[i];
-                if (refl_helper::IsNumericInteger(field->GetType())) {
+                if (NReflHelper::IsNumericInteger(field->GetType())) {
                     const int64_t value = query.getColumn(i).getInt64();
                     Any any_value = Any{&value, TypeOf<Int64>()};
-                    refl_helper::SetValue(field, temp, any_value);
+                    NReflHelper::SetValue(field, temp, any_value);
                     continue;
                 }
-                if (refl_helper::IsNumericFloat(field->GetType())) {
+                if (NReflHelper::IsNumericFloat(field->GetType())) {
                     const double value = query.getColumn(i).getDouble();
                     Any any_value = Any{&value, TypeOf<Double>()};
-                    refl_helper::SetValue(field, temp, any_value);
+                    NReflHelper::SetValue(field, temp, any_value);
                     continue;
                 }
                 if (field->GetType() == TypeOf<Bool>()) {
                     const int64_t value = query.getColumn(i).getInt64();
                     bool v = value != 0;
                     Any any_value = Any{&v, TypeOf<Bool>()};
-                    refl_helper::SetValue(field, temp, any_value);
+                    NReflHelper::SetValue(field, temp, any_value);
                     continue;
                 }
                 if (field->GetType() == TypeOf<String>()) {
                     const String value = query.getColumn(i).getString();
                     Any any_value = Any{&value, TypeOf<String>()};
-                    refl_helper::SetValue(field, temp, any_value);
+                    NReflHelper::SetValue(field, temp, any_value);
                     continue;
                 }
                 if (field->GetType()->IsEnumType()) {
                     const Int32 value = query.getColumn(i).getInt64();
                     Any any_value = Any{&value, TypeOf<Int32>()};
-                    refl_helper::SetValue(field, temp, any_value);
+                    NReflHelper::SetValue(field, temp, any_value);
                     continue;
                 }
                 Log(Error) << "查询类型错误";

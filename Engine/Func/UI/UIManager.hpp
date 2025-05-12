@@ -48,11 +48,11 @@ public:
     }
 
     template <typename T>
-        requires Traits::IsBaseOf<ImGuiDrawWindow, T>
+        requires NTraits::IsBaseOf<ImGuiDrawWindow, T>
     static T* CreateOrActivateWindow(bool silent = false)
     {
         auto& self = GetByRef();
-        if constexpr (Traits::SameAs<T, ViewportWindow>)
+        if constexpr (NTraits::SameAs<T, ViewportWindow>)
         {
             if (self.active_viewport_window_)
             {

@@ -331,8 +331,8 @@ struct Vector2
 #define VECTOR3_REFL_CONSTRUCTOR(name)                                                                                                               \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z);                                                                                                 \
+        return Type::Create<name>(#name) | NReflHelper::AddField("X", &name::X) | NReflHelper::AddField("Y", &name::Y) |                             \
+               NReflHelper::AddField("Z", &name::Z);                                                                                                 \
     }
 
 typedef Vector3<Float> Vector3f;
@@ -350,7 +350,7 @@ VECTOR3_REFL_CONSTRUCTOR(Vector3i)
 #define VECTOR2_REFL_CONSTRUCTOR(name)                                                                                                               \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y);                              \
+        return Type::Create<name>(#name) | NReflHelper::AddField("X", &name::X) | NReflHelper::AddField("Y", &name::Y);                              \
     }
 
 typedef Vector2<Float> Vector2f;
@@ -371,8 +371,8 @@ VECTOR2_REFL_CONSTRUCTOR(Vector2ui)
 #define VECTOR4_REFL_CONSTRUCTOR(name)                                                                                                               \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
+        return Type::Create<name>(#name) | NReflHelper::AddField("X", &name::X) | NReflHelper::AddField("Y", &name::Y) |                             \
+               NReflHelper::AddField("Z", &name::Z) | NReflHelper::AddField("W", &name::W);                                                          \
     }
 
 typedef Vector4<Float> Vector4f;
@@ -385,9 +385,9 @@ VECTOR4_REFL_CONSTRUCTOR(Vector4i)
 template <typename T>
 const Type* Vector2<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Vector2f>();
-    if constexpr (Traits::SameAs<T, Int32>)
+    if constexpr (NTraits::SameAs<T, Int32>)
         return TypeOf<Vector2i>();
     return nullptr;
 }
@@ -401,9 +401,9 @@ Vector4<T>::Vector4(const Vector3<T>& Other, T W) : X(Other.X), Y(Other.Y), Z(Ot
 template <typename T>
 const Type* Vector3<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Vector3f>();
-    if constexpr (Traits::SameAs<T, Int32>)
+    if constexpr (NTraits::SameAs<T, Int32>)
         return TypeOf<Vector3i>();
     return nullptr;
 }
@@ -417,9 +417,9 @@ Vector3<T>::Vector3(const Vector2<T>& Vec) : X(Vec.X), Y(Vec.Y), Z(0)
 template <typename T>
 const Type* Vector4<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Vector4f>();
-    if constexpr (Traits::SameAs<T, Int32>)
+    if constexpr (NTraits::SameAs<T, Int32>)
         return TypeOf<Vector4i>();
     return nullptr;
 }

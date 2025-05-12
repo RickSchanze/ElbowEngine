@@ -12,9 +12,13 @@
 #if ENABLE_PROFILING
 #define CPU_PROFILING_SCOPE ZoneScoped
 #define CPU_PROFILING_SCOPE_N(Name) ZoneScopedN(Name)
+#define DECL_PROFILING_LOCK(Type, Name) TracyLockable(Type, Name)
+#define DECL_PROFILING_LOCK_N(Type, Name, Desc) TracyLockableN(Type, Name, Desc)
 #else
 #define CPU_PROFILING_SCOPE
 #define CPU_PROFILING_SCOPE_N(Name)
+#define DECL_PROFILING_LOCK(Type, Name) Type Name
+#define DECL_PROFILING_LOCK_N(Type, Name, Desc) Type Name
 #endif
 
 class ProfileScope

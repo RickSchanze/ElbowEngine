@@ -45,7 +45,7 @@ public:
      * 交给渲染线程去翻译
      * 执行完成后会调用Clear
      */
-    virtual exec::ExecFuture<> Execute() = 0;
+    virtual NExec::ExecFuture<> Execute() = 0;
 
     /// 利用ImagePipeline更改图形布局(2025.4.3理解)
     void ImagePipelineBarrier(ImageLayout old_layout, ImageLayout new_layout, Image *target, const ImageSubresourceRange &subresource_range,

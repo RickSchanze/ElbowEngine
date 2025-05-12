@@ -48,14 +48,14 @@ struct MeshMeta {
 };
 
 IMPL_REFLECTED_INPLACE(MeshMeta) {
-    return Type::Create<MeshMeta>("MeshMeta") | refl_helper::Attribute(Type::ValueAttribute::SQLTable, "Mesh") |
-           refl_helper::AddField("Id", &MeshMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
-           refl_helper::AddField("ObjectHandle", &MeshMeta::ObjectHandle) | //
-           refl_helper::AddField("Path", &MeshMeta::Path) | //
-           refl_helper::AddField("GenerateNormals", &MeshMeta::GenerateNormals) | //
-           refl_helper::AddField("GenerateSmoothNormals", &MeshMeta::GenerateSmoothNormals) | //
-           refl_helper::AddField("MergeDuplicateVertices", &MeshMeta::MergeDuplicateVertices) | //
-           refl_helper::AddField("RemoveUnusedMaterials", &MeshMeta::RemoveUnusedMaterials) | //
-           refl_helper::AddField("CanBeRemoved", &MeshMeta::CanBeRemoved) | //
-           refl_helper::AddField("import_scale", &MeshMeta::ImportScale);
+    return Type::Create<MeshMeta>("MeshMeta") | NReflHelper::Attribute(Type::ValueAttribute::SQLTable, "Mesh") |
+           NReflHelper::AddField("Id", &MeshMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") | //
+           NReflHelper::AddField("ObjectHandle", &MeshMeta::ObjectHandle) | //
+           NReflHelper::AddField("Path", &MeshMeta::Path) | //
+           NReflHelper::AddField("GenerateNormals", &MeshMeta::GenerateNormals) | //
+           NReflHelper::AddField("GenerateSmoothNormals", &MeshMeta::GenerateSmoothNormals) | //
+           NReflHelper::AddField("MergeDuplicateVertices", &MeshMeta::MergeDuplicateVertices) | //
+           NReflHelper::AddField("RemoveUnusedMaterials", &MeshMeta::RemoveUnusedMaterials) | //
+           NReflHelper::AddField("CanBeRemoved", &MeshMeta::CanBeRemoved) | //
+           NReflHelper::AddField("import_scale", &MeshMeta::ImportScale);
 }

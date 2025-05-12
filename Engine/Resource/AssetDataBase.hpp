@@ -45,7 +45,7 @@ public:
      * @param path
      * @return 异步handle
      */
-    static exec::ExecFuture<ObjectHandle> Import(StringView path);
+    static NExec::ExecFuture<ObjectHandle> Import(StringView path);
 
     /**
      * 加载一个资产
@@ -55,21 +55,21 @@ public:
     static Object* LoadFromPath(StringView path);
 
     template <typename T>
-        requires Traits::IsBaseOf<Object, T>
+        requires NTraits::IsBaseOf<Object, T>
     static T* LoadFromPath(StringView path)
     {
         return static_cast<T*>(LoadFromPath(path));
     }
 
-    static exec::ExecFuture<ObjectHandle> LoadFromPathAsync(StringView InPath);
+    static NExec::ExecFuture<ObjectHandle> LoadFromPathAsync(StringView InPath);
 
-    static exec::ExecFuture<ObjectHandle> LoadAsync(ObjectHandle handle, const Type* asset_type);
+    static NExec::ExecFuture<ObjectHandle> LoadAsync(ObjectHandle handle, const Type* asset_type);
 
-    static exec::ExecFuture<ObjectHandle> LoadOrImportAsync(StringView path);
+    static NExec::ExecFuture<ObjectHandle> LoadOrImportAsync(StringView path);
     static Object* LoadOrImport(StringView path);
 
     template <typename T>
-        requires Traits::IsBaseOf<Object, T>
+        requires NTraits::IsBaseOf<Object, T>
     static T* LoadOrImportT(StringView path)
     {
         return static_cast<T*>(LoadOrImport(path));
@@ -155,7 +155,7 @@ void AssetDataBase::InsertMeta(const T& meta)
 template <typename T>
 void AssetDataBase::UpdateMeta(const T& meta)
 {
-    if constexpr (Traits::SameAs<T, Texture2DMeta>)
+    if constexpr (NTraits::SameAs<T, Texture2DMeta>)
     {
         auto& self = GetByRef();
         const Type* meta_type = TypeOf<T>();

@@ -6,9 +6,9 @@
 #include "Common.hpp"
 #include "Core/Misc/Other.hpp"
 
-namespace exec {
-template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receiver {
-  using receive_type = Traits::FunctionArgsAsTuple<Pure<F>>;
+namespace NExec {
+template <typename ReceiverType, typename F> struct ThenReceiver : NExec::Receiver {
+  using receive_type = NTraits::FunctionArgsAsTuple<Pure<F>>;
   Pure<ReceiverType> next;
   F f;
 
@@ -16,7 +16,7 @@ template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receive
 
   void SetValue(receive_type &&v) noexcept {
     try {
-      if constexpr (Traits::SameAs<Traits::FunctionReturnType<Pure<Pure<F>>>, void>) {
+      if constexpr (NTraits::SameAs<NTraits::FunctionReturnType<Pure<Pure<F>>>, void>) {
         Apply(
             [this](auto &&...args) {
               f(args...);
@@ -36,7 +36,7 @@ template <typename ReceiverType, typename F> struct ThenReceiver : exec::Receive
 
 template <typename ReceiverType, typename F> struct VoidThenReceiver {
   using receive_type = Tuple<>;
-  static_assert(Traits::SameAs<Traits::FunctionArgsAsTuple<Pure<F>>, receive_type>, "void receiver type not match");
+  static_assert(NTraits::SameAs<NTraits::FunctionArgsAsTuple<Pure<F>>, receive_type>, "void receiver type not match");
 
   Pure<ReceiverType> next;
   F f;
@@ -47,7 +47,7 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
 
   void SetValue(const Tuple<> &) noexcept {
     try {
-      if constexpr (Traits::SameAs<Traits::FunctionReturnType<Pure<F>>, void>) {
+      if constexpr (NTraits::SameAs<NTraits::FunctionReturnType<Pure<F>>, void>) {
         f();
         next.SetValue(MakeTuple());
       } else {
@@ -61,10 +61,10 @@ template <typename ReceiverType, typename F> struct VoidThenReceiver {
   void SetError(ExceptionPtr ptr) noexcept { next.SetError(ptr); }
 };
 
-template <typename SenderT, typename F> struct ThenSender : exec::Sender {
-  using wrapped_type_ = typename Traits::WrapTuple<Traits::FunctionReturnType<Pure<F>>>::type;
-  using value_type = Traits::Conditional<Traits::SameAs<wrapped_type_, Tuple<void>>, Tuple<>, wrapped_type_>;
-  using input_type = Traits::FunctionArgsAsTuple<Pure<F>>;
+template <typename SenderT, typename F> struct ThenSender : NExec::Sender {
+  using wrapped_type_ = typename NTraits::WrapTuple<NTraits::FunctionReturnType<Pure<F>>>::type;
+  using value_type = NTraits::Conditional<NTraits::SameAs<wrapped_type_, Tuple<void>>, Tuple<>, wrapped_type_>;
+  using input_type = NTraits::FunctionArgsAsTuple<Pure<F>>;
 
   ThenSender(SenderT &&s, F &&f) : sender(Forward<SenderT>(s)), f(Forward<F>(f)) {}
 
@@ -73,9 +73,9 @@ template <typename SenderT, typename F> struct ThenSender : exec::Sender {
 
   template <typename ReceiverType>
   auto Connect(ReceiverType &&r)
-    requires Traits::SameAs<value_type, typename Pure<ReceiverType>::receive_type>
+    requires NTraits::SameAs<value_type, typename Pure<ReceiverType>::receive_type>
   {
-    if constexpr (Traits::SameAs<input_type, Tuple<>>) {
+    if constexpr (NTraits::SameAs<input_type, Tuple<>>) {
       return Move(sender.Connect(VoidThenReceiver<Pure<ReceiverType>, F>(Move(r), Forward<F>(f))));
     } else {
       ThenReceiver<Pure<ReceiverType>, F> receiver(Move(r), Forward<F>(f));
@@ -95,7 +95,7 @@ template <typename F> struct ThenClosure {
   template <typename SenderT>
   friend auto operator|(SenderT &&s, ThenClosure &&t) -> ThenSender<Pure<SenderT>, F>
       // 下面一大坨是约束, 即要求s的输出参数value_type和F的输入参数一致
-    requires(Traits::SameAs<typename Pure<SenderT>::value_type, Traits::FunctionArgsAsTuple<F>>)
+    requires(NTraits::SameAs<typename Pure<SenderT>::value_type, NTraits::FunctionArgsAsTuple<F>>)
   {
     ThenSender<SenderT, F> rtn(Forward<SenderT>(s), Forward<F>(t.f_));
     return rtn;

@@ -44,7 +44,7 @@ public:
     }
 
     // 子类到父类的转换
-    template <typename U, typename = Traits::EnableIfType<Traits::IsBaseOf<T, U>>>
+    template <typename U, typename = NTraits::EnableIfType<NTraits::IsBaseOf<T, U>>>
     UniquePtr(UniquePtr<U>&& other) noexcept : ptr_(other.Release())
     {
     }

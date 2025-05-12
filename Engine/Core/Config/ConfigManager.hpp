@@ -18,7 +18,7 @@ class ConfigManager : public Manager<ConfigManager>
 {
 public:
     template <typename T>
-        requires Traits::IsBaseOf<IConfig, T>
+        requires NTraits::IsBaseOf<IConfig, T>
     T* GetConfig();
 
     virtual Float GetLevel() const override
@@ -38,7 +38,7 @@ private:
 };
 
 template <typename T>
-    requires Traits::IsBaseOf<IConfig, T>
+    requires NTraits::IsBaseOf<IConfig, T>
 T* ConfigManager::GetConfig()
 {
     const Type* ConfigType = TypeOf<T>();
@@ -79,7 +79,7 @@ T* ConfigManager::GetConfig()
 }
 
 template <typename T>
-    requires Traits::IsBaseOf<IConfig, T>
+    requires NTraits::IsBaseOf<IConfig, T>
 T* GetConfig()
 {
     return static_cast<T*>(ConfigManager::GetByRef().GetConfig<T>());

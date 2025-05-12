@@ -4,7 +4,7 @@
 #include "ShaderMeta.hpp"
 
 IMPL_REFLECTED(ShaderMeta) {
-    return Type::Create<ShaderMeta>("ShaderMeta") | refl_helper::Attribute(Type::ValueAttribute::SQLTable, "Shader") |
-           refl_helper::AddField("Id", &ShaderMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") |
-           refl_helper::AddField("ObjectHandle", &ShaderMeta::ObjectHandle) | refl_helper::AddField("Path", &ShaderMeta::Path);
+    return Type::Create<ShaderMeta>("ShaderMeta") | NReflHelper::Attribute(Type::ValueAttribute::SQLTable, "Shader") |
+           NReflHelper::AddField("Id", &ShaderMeta::Id).Attribute(Field::ValueAttribute::SQLAttr, "(PrimaryKey, AutoIncrement)") |
+           NReflHelper::AddField("ObjectHandle", &ShaderMeta::ObjectHandle) | NReflHelper::AddField("Path", &ShaderMeta::Path);
 }

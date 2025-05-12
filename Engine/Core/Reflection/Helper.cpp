@@ -12,7 +12,7 @@ static void CastInteger(void *target, const Type *t, Int64 v);
 
 static void CastFloat(void *target, const Type *t, Double v);
 
-bool refl_helper::IsPrimitive(const Type *t) {
+bool NReflHelper::IsPrimitive(const Type *t) {
   if (t == TypeOf<Int8>())
     return true;
   if (t == TypeOf<UInt16>())
@@ -42,7 +42,7 @@ bool refl_helper::IsPrimitive(const Type *t) {
   return false;
 }
 
-Any refl_helper::GetValue(const Field *field, const Any &obj) {
+Any NReflHelper::GetValue(const Field *field, const Any &obj) {
     if (!obj.HasValue() || !field) {
         Log(Error) << "obj or field is null";
         return {};
@@ -54,12 +54,12 @@ Any refl_helper::GetValue(const Field *field, const Any &obj) {
     return {field->GetFieldPtr(obj.GetRawPtr()), field->GetType()};
 }
 
-Optional<Int32> refl_helper::GetObjEnumValue(const Field *field, const Any &obj) {
+Optional<Int32> NReflHelper::GetObjEnumValue(const Field *field, const Any &obj) {
     const auto value = GetValue(field, obj);
     return value.AsCopy<Int32>();
 }
 
-bool refl_helper::SetValue(const Field *field, const Any &obj, const Any &value) {
+bool NReflHelper::SetValue(const Field *field, const Any &obj, const Any &value) {
   if (!obj.HasValue() || !value.HasValue()) {
     Log(Error) << "value或者obj没有设置值";
     return false;

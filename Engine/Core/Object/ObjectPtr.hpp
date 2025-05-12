@@ -26,7 +26,7 @@ struct ObjectPtrBase
     }
     static Type* ConstructType()
     {
-        return Type::Create<ObjectPtrBase>("ObjectPtr") | refl_helper::AddField("object", &ObjectPtrBase::mObject);
+        return Type::Create<ObjectPtrBase>("ObjectPtr") | NReflHelper::AddField("object", &ObjectPtrBase::mObject);
     }
 
 private:

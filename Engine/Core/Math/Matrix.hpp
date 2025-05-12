@@ -9,7 +9,7 @@ struct Matrix3x3;
 template <typename T>
 struct Matrix4x4
 {
-    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
+    static_assert(NTraits::SameAs<T, float> || NTraits::SameAs<T, double>, "Matrix support float or double only.");
     Vector4<T> Column0{}, Column1{}, Column2{}, Column3{};
 
     typedef Matrix4x4 ThisStruct;
@@ -102,8 +102,8 @@ struct Matrix4x4
 #define MATRIX4X4_REFL_CONSTRUCTOR(name)                                                                                                             \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("Column0", &name::Column0) | refl_helper::AddField("Column1", &name::Column1) |     \
-               refl_helper::AddField("Column2", &name::Column2) | refl_helper::AddField("Column3", &name::Column3);                                  \
+        return Type::Create<name>(#name) | NReflHelper::AddField("Column0", &name::Column0) | NReflHelper::AddField("Column1", &name::Column1) |     \
+               NReflHelper::AddField("Column2", &name::Column2) | NReflHelper::AddField("Column3", &name::Column3);                                  \
     }
 
 typedef Matrix4x4<Float> Matrix4x4f;
@@ -114,9 +114,9 @@ MATRIX4X4_REFL_CONSTRUCTOR(Matrix4x4d)
 template <typename T>
 const Type* Matrix4x4<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Matrix4x4f>();
-    if constexpr (Traits::SameAs<T, Double>)
+    if constexpr (NTraits::SameAs<T, Double>)
         return TypeOf<Matrix4x4d>();
     return nullptr;
 }
@@ -147,7 +147,7 @@ struct Matrix3x3
     Matrix3x3() = default;
     explicit Matrix3x3(const Quaternion<T>& InQuat);
 
-    static_assert(Traits::SameAs<T, float> || Traits::SameAs<T, double>, "Matrix support float or double only.");
+    static_assert(NTraits::SameAs<T, float> || NTraits::SameAs<T, double>, "Matrix support float or double only.");
     Vector3<T> Column0{}, Column1{}, Column2{};
 
     typedef Matrix3x3 ThisStruct;
@@ -250,8 +250,8 @@ struct MathTypeRegTrigger_Matrix
 #define MATRIX3X3_REFL_CONSTRUCTOR(name)                                                                                                             \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("Column0", &name::Column0) | refl_helper::AddField("Column1", &name::Column1) |     \
-               refl_helper::AddField("Column2", &name::Column2);                                                                                     \
+        return Type::Create<name>(#name) | NReflHelper::AddField("Column0", &name::Column0) | NReflHelper::AddField("Column1", &name::Column1) |     \
+               NReflHelper::AddField("Column2", &name::Column2);                                                                                     \
     }
 
 typedef Matrix3x3<Float> Matrix3x3f;
@@ -268,9 +268,9 @@ Matrix3x3<Double>::Matrix3x3(const Quaternion<Double>& InQuat);
 template <typename T>
 const Type* Matrix3x3<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Matrix3x3f>();
-    if constexpr (Traits::SameAs<T, Double>)
+    if constexpr (NTraits::SameAs<T, Double>)
         return TypeOf<Matrix3x3d>();
     return nullptr;
 }

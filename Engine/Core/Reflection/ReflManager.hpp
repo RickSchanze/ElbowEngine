@@ -120,7 +120,7 @@ public:
     }
 
     template <typename T>
-        requires Traits::IsEnum<T>
+        requires NTraits::IsEnum<T>
     void Register(StringView InName, MetaDataRegisterer registerer)
     {
         auto type_info = RTTITypeInfo::Create<T>(InName);

@@ -124,7 +124,7 @@ public:
      * @param buffer
      * @param parameter
      */
-    virtual exec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) = 0;
+    virtual NExec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) = 0;
 
     /**
      * 创建同步原语: Fence

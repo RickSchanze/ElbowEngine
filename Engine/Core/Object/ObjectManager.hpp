@@ -9,6 +9,7 @@
 #include "Core/Core.hpp"
 #include "Object.hpp"
 
+#include "Core/Profile.hpp"
 #include GEN_HEADER("ObjectManager.generated.hpp")
 
 constexpr auto REGISTRY_PATH = "Library/ObjectRegistry.xml";
@@ -22,7 +23,7 @@ public:
         return mNextInstancedHandle--;
     }
 
-    exec::ExecFuture<ObjectHandle> NextPersistentHandle();
+    NExec::ExecFuture<ObjectHandle> NextPersistentHandle();
 
     Object* GetObjectByHandle(ObjectHandle handle);
 
@@ -40,6 +41,13 @@ public:
 
     void Save() const;
 
+    /**
+     * 将一个Handle加入到FreeHandles
+     * 此Handle不能再mObjects里
+     * @param InHandle
+     */
+    NExec::ExecFuture<> RecycleHandleAsync(ObjectHandle InHandle);
+
 private:
     // 所有的Object
     Map<ObjectHandle, Object*> mObjects{};
@@ -55,7 +63,7 @@ private:
     EFIELD()
     Array<ObjectHandle> mFreeHandles{};
 
-    Mutex mMutex{};
+    DECL_PROFILING_LOCK_N(std::mutex, mMutex, "Mutex for mObjects interacting");
 };
 
 class ObjectManager : public Manager<ObjectManager>
@@ -76,15 +84,25 @@ public:
     virtual void Startup() override;
     virtual void Shutdown() override;
 
+    static auto GetNextPersistentHandleAsync()
+    {
+        return GetByRef().mRegistry.NextPersistentHandle();
+    }
+
+    static NExec::ExecFuture<> RecycleHandleAsync(const ObjectHandle InHandle)
+    {
+        return GetByRef().mRegistry.RecycleHandleAsync(InHandle);
+    }
+
     template <typename T, typename... Args>
         requires std::derived_from<T, Object>
-    static exec::ExecFuture<T*> CreateNewObjectAsync(Args&&... args)
+    static NExec::ExecFuture<T*> CreateNewObjectAsync(Args&&... args)
     {
         if (IsMainThread())
         {
-            return exec::MakeExecFuture(NewObject<T>(Forward<Args>(args)...));
+            return NExec::MakeExecFuture(NewObject<T>(Forward<Args>(args)...));
         }
-        return ThreadManager::ScheduleFutureAsync(exec::Just() | exec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }),
+        return ThreadManager::ScheduleFutureAsync(NExec::Just() | NExec::Then([args...]() { return NewObject<T>(Forward<Args>(args)...); }),
                                                   NamedThread::Game);
     }
 

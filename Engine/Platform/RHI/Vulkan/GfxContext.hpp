@@ -66,7 +66,7 @@ namespace NRHI {
 
         virtual SharedPtr<LowShader> CreateShader(const char* code, size_t size, StringView debug_name) override;
 
-        virtual exec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
+        virtual NExec::ExecFuture<> Submit(SharedPtr<CommandBuffer> buffer, const SubmitParameter& parameter) override;
 
         virtual SharedPtr<Buffer> CreateBuffer(const BufferDesc& create_info, StringView debug_name) override;
 

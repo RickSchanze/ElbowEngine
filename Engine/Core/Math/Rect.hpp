@@ -73,7 +73,7 @@ struct Rect2D
 #define RECT2D_REFL_CONSTRUCTOR(name)                                                                                                                \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("Pos", &name::Pos) | refl_helper::AddField("Size", &name::Size);                    \
+        return Type::Create<name>(#name) | NReflHelper::AddField("Pos", &name::Pos) | NReflHelper::AddField("Size", &name::Size);                    \
     }
 
 typedef Rect2D<Float> Rect2Df;
@@ -84,9 +84,9 @@ RECT2D_REFL_CONSTRUCTOR(Rect2Di)
 template <typename T>
 const Type* Rect2D<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Rect2Df>();
-    if constexpr (Traits::SameAs<T, Int32>)
+    if constexpr (NTraits::SameAs<T, Int32>)
         return TypeOf<Rect2Di>();
     return nullptr;
 }

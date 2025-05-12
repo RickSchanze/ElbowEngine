@@ -8,7 +8,7 @@ struct Rotator;
 template <typename T>
 struct Quaternion
 {
-    static_assert(Traits::SameAs<T, Float> || Traits::SameAs<T, Double>, "Quaternion only support float or double type");
+    static_assert(NTraits::SameAs<T, Float> || NTraits::SameAs<T, Double>, "Quaternion only support float or double type");
     typedef Quaternion ThisStruct;
 
     T W{0};
@@ -63,8 +63,8 @@ struct Quaternion
 #define QUATERNION_REFL_CONSTRUCTOR(name)                                                                                                            \
     inline Type* Construct_##name()                                                                                                                  \
     {                                                                                                                                                \
-        return Type::Create<name>(#name) | refl_helper::AddField("X", &name::X) | refl_helper::AddField("Y", &name::Y) |                             \
-               refl_helper::AddField("Z", &name::Z) | refl_helper::AddField("W", &name::W);                                                          \
+        return Type::Create<name>(#name) | NReflHelper::AddField("X", &name::X) | NReflHelper::AddField("Y", &name::Y) |                             \
+               NReflHelper::AddField("Z", &name::Z) | NReflHelper::AddField("W", &name::W);                                                          \
     }
 
 typedef Quaternion<Float> Quaternionf;
@@ -82,9 +82,9 @@ static inline Z_MathTypeRegTrigger_Quaternion Z_Registerer_MathType_Quaternion;
 template <typename T>
 const Type* Quaternion<T>::GetType()
 {
-    if constexpr (Traits::SameAs<T, Float>)
+    if constexpr (NTraits::SameAs<T, Float>)
         return TypeOf<Quaternionf>();
-    if constexpr (Traits::SameAs<T, Double>)
+    if constexpr (NTraits::SameAs<T, Double>)
         return TypeOf<Quaterniond>();
     return nullptr;
 }

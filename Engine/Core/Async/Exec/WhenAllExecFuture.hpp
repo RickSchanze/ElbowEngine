@@ -7,11 +7,11 @@
 #include "Core/TypeAlias.hpp"
 #include "Core/TypeTraits.hpp"
 
-namespace exec {
+namespace NExec {
     template<typename... ExecFutures>
     struct WhenAllExecFutureSender {
         using combined_type = Tuple<typename ExecFutures::value_type...>;
-        using value_type = Traits::Flatten<combined_type>;
+        using value_type = NTraits::Flatten<combined_type>;
 
         Tuple<Pure<ExecFutures>...> futures;
 
@@ -22,7 +22,7 @@ namespace exec {
             Tuple<Pure<ExecFutures>...> op_futures;
             Pure<R> next;
 
-            using value_type = Traits::Flatten<combined_type>;
+            using value_type = NTraits::Flatten<combined_type>;
             using combined_type = Tuple<Pure<ExecFutures>...>;
 
             Operation(Pure<R> &&r, Tuple<Pure<ExecFutures>...> &&futures) : op_futures(Move(futures)), next(Move(r)) {}
@@ -39,7 +39,7 @@ namespace exec {
             template<size_t I, size_t Minus = 0>
             void CollectResultTuple(value_type &result) {
                 if constexpr (I < std::tuple_size_v<combined_type>) {
-                    if constexpr (Traits::SameAs<std::tuple_element_t<I, combined_type>, Tuple<>>) {
+                    if constexpr (NTraits::SameAs<std::tuple_element_t<I, combined_type>, Tuple<>>) {
                         CollectResultTuple<I + 1, Minus + 1>(result);
                     } else {
                         // TODO: 如果第i个是个多个参数的tuple, 又要将这个tuple展开遍历不能直接Get
@@ -62,7 +62,7 @@ namespace exec {
 
         template<typename ReceiverType>
         auto Connect(ReceiverType &&r)
-            requires Traits::SameAs<value_type, typename Pure<ReceiverType>::receive_type>
+            requires NTraits::SameAs<value_type, typename Pure<ReceiverType>::receive_type>
         {
             return Operation<Pure<ReceiverType>>(Move(r), Move(futures));
         }

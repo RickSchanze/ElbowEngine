@@ -56,19 +56,19 @@ public:
     }
 
     template <typename T>
-        requires(!Traits::IsEnum<T>)
+        requires(!NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void WriteType(const StringView InName, const T& Value)
     {
-        static_assert(!Traits::SameAs<T, StringView>, "StringView does not support serialization!");
-        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        static_assert(!NTraits::SameAs<T, StringView>, "StringView does not support serialization!");
+        if constexpr (NTraits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
         {
             WriteNumber(InName, Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, bool>)
         {
             WriteBool(InName, Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, String>)
         {
             WriteString(InName, Value);
         }
@@ -82,19 +82,19 @@ public:
     }
 
     template <typename T>
-        requires(!Traits::IsEnum<T>)
+        requires(!NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void WriteType(const T& Value)
     {
-        static_assert(!Traits::SameAs<T, StringView>, "StringView does not support serialization!");
-        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        static_assert(!NTraits::SameAs<T, StringView>, "StringView does not support serialization!");
+        if constexpr (NTraits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
         {
             WriteNumber(Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, bool>)
         {
             WriteBool(Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, String, StringView>)
         {
             WriteString(Value);
         }
@@ -107,7 +107,7 @@ public:
     }
 
     template <typename T>
-        requires(Traits::IsEnum<T>)
+        requires(NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void WriteType(const StringView InName, const T& Value)
     {
         const Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
@@ -115,7 +115,7 @@ public:
     }
 
     template <typename T>
-        requires(Traits::IsEnum<T>)
+        requires(NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void WriteType(const T& Value)
     {
         const Int32 Tmp = static_cast<Int32>(std::to_underlying(Value));
@@ -170,18 +170,18 @@ public:
     }
 
     template <typename T>
-        requires(!Traits::IsEnum<T>)
+        requires(!NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void ReadType(const StringView InName, T& Value)
     {
-        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        if constexpr (NTraits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
         {
             ReadNumber(InName, Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, bool>)
         {
             ReadBool(InName, Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, String>)
         {
             ReadString(InName, Value);
         }
@@ -195,18 +195,18 @@ public:
     }
 
     template <typename T>
-        requires(!Traits::IsEnum<T>)
+        requires(!NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void ReadType(T& Value)
     {
-        if constexpr (Traits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
+        if constexpr (NTraits::IsAnyOf<Pure<T>, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float, Double>)
         {
             ReadNumber(Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, bool>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, bool>)
         {
             ReadBool(Value);
         }
-        else if constexpr (Traits::IsAnyOf<Pure<T>, String>)
+        else if constexpr (NTraits::IsAnyOf<Pure<T>, String>)
         {
             ReadString(Value);
         }
@@ -219,7 +219,7 @@ public:
     }
 
     template <typename T>
-        requires(Traits::IsEnum<T>)
+        requires(NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void ReadType(const StringView InName, T& Value)
     {
         Int32 Tmp;
@@ -228,7 +228,7 @@ public:
     }
 
     template <typename T>
-        requires(Traits::IsEnum<T>)
+        requires(NTraits::IsEnum<T>)
     ELBOW_FORCE_INLINE void ReadType(T& Value)
     {
         Int32 Tmp;

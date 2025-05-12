@@ -48,7 +48,7 @@ namespace NRHI {
             return buffer_;
         }
 
-        virtual exec::ExecFuture<> Execute() override;
+        virtual NExec::ExecFuture<> Execute() override;
 
         virtual void Begin() override;
 

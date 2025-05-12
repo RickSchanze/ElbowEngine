@@ -29,7 +29,7 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 
-using namespace exec;
+using namespace NExec;
 
 static Array<VkLayerProperties> available_layers;
 static Array<VkPhysicalDevice> physical_devices;

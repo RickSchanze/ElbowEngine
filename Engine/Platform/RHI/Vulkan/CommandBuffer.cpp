@@ -17,7 +17,7 @@
 #include "Platform/RHI/DescriptorSet.hpp"
 #include "Platform/RHI/ImageView.hpp"
 
-using namespace exec;
+using namespace NExec;
 using namespace NRHI;
 
 static void ExecuteCmdBindDescriptorSetCompute(const VkCommandBuffer cmd, const Cmd_BindDescriptorSetCompute *cmd_bind_descriptor_set)

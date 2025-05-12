@@ -7,20 +7,33 @@
 #include "Common.hpp"
 #include "Core/Misc/Other.hpp"
 
-namespace exec {
-    template<typename T>
-    struct EmptyReceiver : Receiver {
-        using receive_type = T;
+namespace NExec
+{
+template <typename T>
+struct EmptyReceiver : Receiver
+{
+    using receive_type = T;
 
-        void SetValue(T &&t) {}
-        void SetError(const ExceptionPtr &ptr) { RethrowException(ptr); }
-    };
+    void SetValue(T&& t)
+    {
+    }
+    void SetError(const ExceptionPtr& ptr)
+    {
+        RethrowException(ptr);
+    }
+};
 
-    template<>
-    struct EmptyReceiver<void> : Receiver {
-        using receive_type = Tuple<>;
+template <>
+struct EmptyReceiver<void> : Receiver
+{
+    using receive_type = Tuple<>;
 
-        void SetValue(Tuple<> &&t) {}
-        void SetError(const ExceptionPtr &ptr) { RethrowException(ptr); }
-    };
-} // namespace exec
+    void SetValue(Tuple<>&& t)
+    {
+    }
+    void SetError(const ExceptionPtr& ptr)
+    {
+        RethrowException(ptr);
+    }
+};
+} // namespace NExec

@@ -19,6 +19,8 @@ BraceWrapping:
   BeforeCatch: true
   BeforeWhile: true
   BeforeElse: true
+  BeforeLambdaBody: true
+  AfterCaseLabel: true
 AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left
 ...

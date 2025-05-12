@@ -18,10 +18,11 @@
 
 #include <fstream>
 
-exec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle()
+NExec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle()
 {
     CPU_PROFILING_SCOPE;
-    auto GetNext = [this]() -> ObjectHandle {
+    auto GetNext = [this]() -> ObjectHandle
+    {
         if (!mFreeHandles.Empty())
         {
             const auto handle = mFreeHandles.Last();
@@ -32,16 +33,16 @@ exec::ExecFuture<ObjectHandle> ObjectRegistry::NextPersistentHandle()
     };
     if (IsMainThread())
     {
-        return exec::MakeExecFuture(GetNext());
+        return NExec::MakeExecFuture(GetNext());
     }
 
-    auto task = exec::Just() | exec::Then([GetNext]() { return GetNext(); });
-    return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game);
+    auto task = NExec::Just() | NExec::Then([GetNext]() { return GetNext(); });
+    return ThreadManager::ScheduleFutureAsync(task, NamedThread::Game, true);
 }
 
 Object* ObjectRegistry::GetObjectByHandle(ObjectHandle handle)
 {
-    ProfileScope _(__func__);
+    CPU_PROFILING_SCOPE;
     if (handle == 0)
         return nullptr;
     if (!mObjects.Contains(handle))
@@ -56,7 +57,7 @@ void ObjectRegistry::RemoveObject(Object* object)
 {
     if (object == nullptr)
         return;
-    ObjectHandle handle = object->GetHandle();
+    const ObjectHandle handle = object->GetHandle();
     if (handle == 0)
     {
         Log(Error) << "ObjectHandle为0, 无法删除";
@@ -134,8 +135,8 @@ void ObjectRegistry::RemoveAllObjectLayered()
 
 void ObjectRegistry::RegisterObject(Object* object)
 {
-    ProfileScope _(__func__);
-    AutoLock lock(mMutex);
+    CPU_PROFILING_SCOPE;
+    std::lock_guard Lock(mMutex);
     if (object == nullptr)
         return;
     Assert(!mObjects.Contains(object->GetHandle()), "ObjectHandle的重复注册");
@@ -144,8 +145,8 @@ void ObjectRegistry::RegisterObject(Object* object)
 
 void ObjectRegistry::UnregisterHandle(ObjectHandle handle)
 {
-    ProfileScope _(__func__);
-    AutoLock lock(mMutex);
+    CPU_PROFILING_SCOPE;
+    std::lock_guard Lock(mMutex);
     if (handle == 0)
         return;
     if (!mObjects.Contains(handle))
@@ -160,6 +161,18 @@ void ObjectRegistry::Save() const
     XMLOutputArchive OutputArchive(FileStream);
     OutputArchive.Serialize(*this);
 #endif
+}
+
+NExec::ExecFuture<> ObjectRegistry::RecycleHandleAsync(ObjectHandle InHandle)
+{
+    Assert(!mObjects.Contains(InHandle), "仍存在于mObjects的Handle不能被回收");
+    Assert(InHandle > 0, "Instanced Object的Handle or 无效的Handle不能被回收");
+    return ThreadManager::ScheduleFutureAsync(                  //
+        NExec::Just() | NExec::Then([this, InHandle]() {  //
+            mFreeHandles.Add(InHandle);
+        }),
+        NamedThread::Game, true//
+    );
 }
 
 void ObjectManager::Startup()

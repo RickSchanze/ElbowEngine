@@ -24,7 +24,7 @@ void Scene::PerformLoad()
     mMeta = *OpMeta;
     if (!File::IsExist(mMeta.Path))
     {
-        VLOG_ERROR("读取场景文件[", mMeta.Path, "]失败, 此文件存在");
+        VLOG_ERROR("读取场景文件[", *mMeta.Path, "]失败, 此文件存在");
         return;
     }
     std::ifstream InputStream(*mMeta.Path);
@@ -53,37 +53,78 @@ void Scene::Serialization_Load(InputArchive& Archive)
 
 static void SerializeSceneObject(OutputArchive& Archive, Object* InObj)
 {
-    if (InObj->GetHandle() < 0)
+}
+
+// 将树状结构扁平化, 并且把里面所有的ObjectHandle都转化为Persistent的
+static void FlattenAndTransferObjectToPersistent(const ObjectHandle InObjectHandle, Array<Object*>& OutFlattenObjects)
+{
+    if (InObjectHandle == 0)
+        return;
+    Object* MyObject = ObjectManager::GetObjectByHandle(InObjectHandle);
+    if (!MyObject)
     {
-        const ObjectHandle NextHandle = ObjectManager::GetRegistry().NextPersistentHandle().Get();
-        InObj->SetObjectHandle(NextHandle);
+        if (InObjectHandle > 0)
+        {
+            // 失效视为被删除了
+            ObjectManager::RecycleHandleAsync(InObjectHandle);
+        }
+        // else分支代表创建了但是没保存然后又删除了
+        return;
     }
-    if (InObj->IsFlagSet(OFB_Persistent))
+    if (InObjectHandle < 0)
     {
-        InObj->SetFlag(OFB_Persistent);
+        MyObject->SetObjectHandle(ObjectManager::GetNextPersistentHandleAsync().Get());
+    }
+    if (!MyObject->IsFlagSet(OFB_Persistent))
+    {
+        MyObject->SetFlag(OFB_Persistent);
+    }
+    OutFlattenObjects.Add(MyObject);
+    const Type* ObjectType = MyObject->GetType();
+    auto ObjectFields = ObjectType->GetFields();
+    for (Int32 Index = 0; Index < ObjectFields.Count(); Index++)
+    {
+        const Field* ObjectField = ObjectFields[Index];
+        if (ObjectField->IsDefined(Field::Transient))
+            continue;
+        if (ObjectField->GetType() == ObjectPtrBase::GetStaticType())
+        {
+            ObjectPtrBase ObjectPtr = NReflHelper::GetValueDirectly<ObjectPtrBase>(ObjectField, MyObject);
+            FlattenAndTransferObjectToPersistent(ObjectPtr.GetHandle(), OutFlattenObjects);
+        }
     }
 }
 
 void Scene::Serialization_Save(OutputArchive& Archive) const
 {
-    Archive.WriteArraySize(mTopObjects.Count());
+    CPU_PROFILING_SCOPE;
+    // 1 Pass 扁平化树, 找出所有需要序列化的Object
+    Array<Object*> ObjectsToSerialize;
     for (Int32 Index = 0; Index < mTopObjects.Count(); Index++)
     {
-        Object* Obj = mTopObjects[Index];
-        if (!Obj)
-        {
-            VLOG_ERROR("无效对象, ObjectHandle=", mTopObjects[Index].GetHandle());
-            continue;
-        }
-        const Type* ObjType = Obj->GetType();
-        Archive.SetNextScopeName("Type");
+        FlattenAndTransferObjectToPersistent(mTopObjects[Index].GetHandle(), ObjectsToSerialize);
+    }
+    // 2 Pass 序列化这些对象
+    for (auto ObjectToSerialize : ObjectsToSerialize)
+    {
+        // 写入Meta
+        Archive.SetNextScopeName("TypeMeta");
         Archive.BeginScope();
-        Archive.WriteString("Name", ObjType->GetName());
-        Archive.WriteType("Hash", ObjType->GetHashCode());
+        Archive.WriteType("TypeName", static_cast<String>(ObjectToSerialize->GetType()->GetName()));
+        Archive.WriteType("TypeHash", ObjectToSerialize->GetType()->GetHashCode());
         Archive.EndScope();
         Archive.SetNextScopeName("Data");
         Archive.BeginScope();
-        SerializeSceneObject(Archive, Obj);
+        ObjectToSerialize->Serialization_Save(Archive);
         Archive.EndScope();
     }
+    // 3 Pass 构建这些对象的关系
+    Assert(Evt_SceneSerializeObjectTree.HasBound(), "请绑定序列化树的方法");
+    Archive.SetNextScopeName("Tree");
+    Archive.BeginScope();
+    for (Object* ObjectToSerialize : ObjectsToSerialize)
+    {
+        Evt_SceneSerializeObjectTree.Invoke(Archive, ObjectToSerialize);
+    }
+    Archive.EndScope();
 }

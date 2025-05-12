@@ -22,7 +22,6 @@
 #include "Func/UI/DetailWindow.hpp"
 #include "Func/UI/InspectorWindow.hpp"
 #include "Func/UI/UIManager.hpp"
-#include "Func/World/Scene/Scene.hpp"
 #include "Func/World/StaticMeshComponent.hpp"
 #include "Func/World/WorldClock.hpp"
 #include "Platform/Config/PlatformConfig.hpp"

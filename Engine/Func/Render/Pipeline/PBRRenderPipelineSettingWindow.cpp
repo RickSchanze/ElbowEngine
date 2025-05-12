@@ -39,7 +39,7 @@ void PBRRenderPipelineSettingWindow::GenerateBRDFMapApply()
     mBRDFMap = EnvironmentMapBaker::BakeIntegrateBRDFLookUpMap(800);
     if (mBRDFMap)
     {
-        auto task = ThreadManager::ScheduleFutureAsync(exec::Just() | exec::Then([this]() {
+        auto task = ThreadManager::ScheduleFutureAsync(NExec::Just() | NExec::Then([this]() {
                                                            mMeshMat->SetTexture2D("Tex_BRDFLUT", mBRDFMap);
                                                        }),
                                                        NamedThread::Game);

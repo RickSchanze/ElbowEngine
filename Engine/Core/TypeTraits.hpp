@@ -105,7 +105,7 @@ struct Any : std::disjunction<std::is_same<T, Ts>...>
 };
 } // namespace internal
 
-namespace Traits
+namespace NTraits
 {
 template <typename T, typename... Ts>
 concept IsAnyOf = (std::is_same_v<T, Ts> || ...);
@@ -160,4 +160,4 @@ template <typename T>
 concept CToStringAble = requires(T t) {
     { t.ToString() } -> SameAs<String>;
 };
-} // namespace Traits
+} // namespace NTraits
